@@ -8,6 +8,8 @@ Build-Depends:
  libmagick++-dev, libmpeg2-4-dev, libpoppler-dev, libqt4-dev, libltdl-dev,
  librpm-dev, libvorbis-dev, pkg-config, zlib1g-dev
 Standards-Version: 3.9.3
+Vcs-Git: git://git.debian.org/git/users/bbk-guest/libextractor.git
+Vcs-browser: http://git.debian.org/?p=users/bbk-guest/libextractor.git
 Homepage: http://www.gnu.org/software/libextractor/
 
 Package: libextractor3
