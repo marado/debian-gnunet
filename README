@@ -1,0 +1,34 @@
+libextractor
+============
+
+libextractor is a simple library for keyword extraction.  libextractor
+does not support all formats but supports a simple plugging mechanism
+such that you can quickly add extractors for additional formats, even
+without recompiling libextractor.  libextractor typically ships with a
+few dozen helper-libraries (plugins) that can be used to obtain
+keywords from common file-types.
+
+libextractor is a GNU package (http://www.gnu.org/).
+
+More detailed documentation is available in the GNU libextractor manual.
+
+
+extract
+=======
+
+extract is a simple command-line interface to libextractor.
+
+
+
+Dependencies
+============
+
+* zlib (compression library)
+* GNU C/C++ compiler
+* libltdl 2.2.x (from GNU libtool)
+* GNU libtool 2.2 or higher
+* GNU gettext
+
+When building libextractor binaries, please make sure all of these
+dependencies are available.  Otherwise the build system may
+automatically build only a subset of libextractor.
