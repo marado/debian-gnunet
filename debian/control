@@ -5,7 +5,7 @@ Maintainer: Bertrand Marc <beberking@gmail.com>
 Build-Depends:
  debhelper (>= 9), autopoint, dh-autoreconf, libbz2-dev,
  libexiv2-dev, libflac-dev, libgsf-1-dev, libglib2.0-dev, libgtk2.0-dev,
- libmagick++-dev, libmpeg2-4-dev, libpoppler-dev, libqt4-dev, libltdl-dev,
+ libmagick++-dev, libmpeg2-4-dev, libpoppler-private-dev, libqt4-dev, libltdl-dev,
  librpm-dev, libvorbis-dev, pkg-config, zlib1g-dev
 Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/users/bbk-guest/libextractor.git
