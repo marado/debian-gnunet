@@ -1,8 +1,8 @@
 --- a/configure.ac
 +++ b/configure.ac
-@@ -159,6 +159,11 @@
-      DLLDIR=bin
+@@ -162,6 +162,11 @@
       UNIXONLY=""
+      funcstocheck=""
       ;;
 +gnu*)
 +     AC_DEFINE_UNQUOTED(GNU,1,[This is a GNU system])
@@ -12,7 +12,7 @@
  *)
       AC_MSG_RESULT(Unrecognised OS $host_os)
       AC_DEFINE_UNQUOTED(OTHEROS,1,[Some strange OS])
-@@ -180,6 +185,7 @@
+@@ -184,6 +189,7 @@
  AM_CONDITIONAL(XFREEBSD, test "$build_target" = "freebsd")
  AM_CONDITIONAL(OPENBSD, test "$build_target" = "openbsd")
  AM_CONDITIONAL(LINUX, test "$build_target" = "linux")
@@ -33,7 +33,7 @@
  #ifdef SOLARIS
 --- a/src/util/disk.c
 +++ b/src/util/disk.c
-@@ -51,7 +51,7 @@
+@@ -47,7 +47,7 @@
  
  
  
