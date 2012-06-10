@@ -22,6 +22,8 @@ override_dh_auto_install:
 	# Remove gnunet-download-manager.scm extension to match the manpage name
 	mv debian/tmp/usr/bin/gnunet-download-manager.scm \
 		debian/tmp/usr/bin/gnunet-download-manager
+	mv debian/tmp/usr/bin/gnunet-gns-import.sh \
+		debian/tmp/usr/bin/gnunet-gns-import
 	
 	# Removing useless files
 	rm -f debian/tmp/usr/lib/*.la debian/tmp/usr/lib/gnunet/*.la \
