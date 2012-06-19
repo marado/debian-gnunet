@@ -29,7 +29,8 @@ override_dh_auto_install:
 	rm -f debian/tmp/usr/lib/*.la debian/tmp/usr/lib/gnunet/*.la \
 		debian/tmp/usr/share/doc/gnunet/COPYING \
 		debian/tmp/usr/bin/gnunet-service-template \
-		debian/tmp/usr/bin/gnunet-template
+		debian/tmp/usr/bin/gnunet-template \
+		debian/tmp/usr/bin/gnunet-helper-transport-wlan-dummy
 
 override_dh_install:
 	dh_install -a --fail-missing
