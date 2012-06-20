@@ -22,6 +22,7 @@ case "${1}" in
 		GNUNETDNS_GROUP="gnunetdns"
 
 		for i in /usr/bin/gnunet-helper-exit \
+			/usr/bin/gnunet-helper-fs-publish \
 			/usr/bin/gnunet-helper-nat-client \
 			/usr/bin/gnunet-helper-nat-server \
 			/usr/bin/gnunet-helper-transport-wlan \

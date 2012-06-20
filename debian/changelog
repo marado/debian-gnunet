@@ -1,3 +1,10 @@
+gnunet (0.9.3-2) unstable; urgency=low
+
+  * Clean properly dpkg-statoverride in gnunet-server.postrm
+    (Closes: #678331).
+
+ -- Bertrand Marc <beberking@gmail.com>  Wed, 20 Jun 2012 23:55:11 +0200
+
 gnunet (0.9.3-1) unstable; urgency=low
 
   * Fix build on GNU Hurd, thanks to Cyril Roelandt (Closes: #670794).
