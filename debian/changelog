@@ -1,3 +1,13 @@
+libextractor (1:0.6.3-5) unstable; urgency=low
+
+  * debian/control: add Vcs-Git and Vcs-browser fields.
+  * Switch the libpoppler-dev build dependency to libpoppler-private-dev
+    (Closes: #673304).
+  * Include a patch to load plugins from path with underscore, thanks to Harun
+    Trefry (Closes: #675063).
+
+ -- Bertrand Marc <beberking@gmail.com>  Sat, 23 Jun 2012 18:45:49 +0200
+
 libextractor (1:0.6.3-4) unstable; urgency=low
 
   * New maintainer (Closes: #660442).
