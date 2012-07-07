@@ -52,6 +52,24 @@ case "${1}" in
 			echo " done."
 		fi
 
+		# this can go away after wheezy
+		if dpkg --compare-versions "$2" le "0.9.3-2" && dpkg --compare-versions "$2" ge "0.9.2-1"; then
+			for file in /usr/bin/gnunet-helper-exit \
+				/usr/bin/gnunet-helper-fs-publish \
+				/usr/bin/gnunet-helper-nat-client \
+				/usr/bin/gnunet-helper-nat-server \
+				/usr/bin/gnunet-helper-transport-wlan \
+				/usr/bin/gnunet-helper-vpn \
+				/usr/bin/gnunet-helper-dns \
+				/usr/bin/gnunet-service-dns
+			do
+				if dpkg-statoverride --list $file >/dev/null 2>&1
+				then
+					dpkg-statoverride --remove $file
+				fi
+			done
+		fi
+		
 		# Update files and directories permissions.
 		# Assuming default values, this *should* not be changed.
 		echo -n "Updating files and directories permissions:"
@@ -60,7 +78,7 @@ case "${1}" in
 		# Secure access to the data directory
 		chmod 0700 "${SERVICEHOME}" || true
 		# Restrict access on setuid binaries
-		for i in /usr/bin/gnunet-helper-exit \
+		for file in /usr/bin/gnunet-helper-exit \
 			/usr/bin/gnunet-helper-fs-publish \
 			/usr/bin/gnunet-helper-nat-client \
 			/usr/bin/gnunet-helper-nat-server \
@@ -68,18 +86,21 @@ case "${1}" in
 			/usr/bin/gnunet-helper-vpn
 		do
 			# only do something when no setting exists
-			if ! dpkg-statoverride --list $i >/dev/null 2>&1
+			if ! dpkg-statoverride --list $file >/dev/null 2>&1
 			then
-				dpkg-statoverride --update --add root ${_GROUPNAME} 4754 $i
+				chown root:${_GROUPNAME} $file
+				chmod 4754 $file
 			fi
 		done
 		if ! dpkg-statoverride --list /usr/bin/gnunet-helper-dns >/dev/null 2>&1
 		then
-			dpkg-statoverride --update --add root ${GNUNETDNS_GROUP} 4754 /usr/bin/gnunet-helper-dns
+			chown root:${GNUNETDNS_GROUP} /usr/bin/gnunet-helper-dns
+			chmod 4754 /usr/bin/gnunet-helper-dns
 		fi
 		if ! dpkg-statoverride --list /usr/bin/gnunet-service-dns >/dev/null 2>&1
 		then
-			dpkg-statoverride --update --add ${_USERNAME} ${GNUNETDNS_GROUP} 2754 /usr/bin/gnunet-service-dns
+			chown ${_USERNAME}:${GNUNETDNS_GROUP} /usr/bin/gnunet-service-dns
+			chmod 2754 /usr/bin/gnunet-service-dns
 		fi
 		echo  " done."
 
