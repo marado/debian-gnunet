@@ -1,3 +1,15 @@
+gnunet (0.9.3-3) unstable; urgency=low
+
+  * debian/control: update Vcs-* to the new repository in collab-maint.
+  * Install only the generated binaries on Hurd, thanks to Cyril Roelandt
+    (Closes: #670794).
+  * Use chmod and chown instead of dpkg-statoverride to set special permissions
+    and upgrade properly depending on the previous version (Closes: #673301).
+  * Rewrite gnunet-server.init based on /etc/init.d/skeleton and make
+    gnunet-server depend on lsb-base to use LSB logging.
+
+ -- Bertrand Marc <beberking@gmail.com>  Fri, 13 Jul 2012 22:13:55 +0200
+
 gnunet (0.9.3-2) unstable; urgency=low
 
   * Clean properly dpkg-statoverride in gnunet-server.postrm
