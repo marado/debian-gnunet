@@ -5,8 +5,6 @@ gnunet (0.9.3-3) unstable; urgency=low
     (Closes: #670794).
   * Use chmod and chown instead of dpkg-statoverride to set special permissions
     and upgrade properly depending on the previous version (Closes: #673301).
-  * Rewrite gnunet-server.init based on /etc/init.d/skeleton and make
-    gnunet-server depend on lsb-base to use LSB logging.
   * Fix "gcc-4.6: [sparc] compiler fails to align stack-allocated
     struct, with array of uint32-values to 32-bit boundary":
     new patch sparc_alignment.patch, taken from upstream:
@@ -14,7 +12,7 @@ gnunet (0.9.3-3) unstable; urgency=low
     Thanks to Jurij Smakov for the analysis.
     (Closes: #670578)
 
- -- Bertrand Marc <beberking@gmail.com>  Wed, 01 Aug 2012 22:09:49 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Sun, 05 Aug 2012 20:13:49 +0200
 
 gnunet (0.9.3-2) unstable; urgency=low
 
