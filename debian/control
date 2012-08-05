@@ -75,7 +75,7 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
  ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version}),
- adduser, gettext, netbase, lsb-base
+ adduser, gettext, netbase
 Suggests: miniupnpc
 Breaks: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
 Replaces: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
