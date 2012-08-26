@@ -1,4 +1,4 @@
-/var/log/gnunetd/gnunet.log {
+/var/log/gnunetd/gnunetd.log {
 	weekly
 	size=100k
 	rotate 7

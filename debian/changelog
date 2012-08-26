@@ -11,6 +11,7 @@ gnunet (0.9.3-3) unstable; urgency=low
     https://lists.gnu.org/archive/html/gnunet-svn/2012-07/msg00548.html
     Thanks to Jurij Smakov for the analysis.
     (Closes: #670578)
+  * Fix the logfile name in gnunet-server.logrotate (Closes: #685856).
 
  -- Bertrand Marc <beberking@gmail.com>  Sun, 05 Aug 2012 20:13:49 +0200
 
