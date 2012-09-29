@@ -1,3 +1,4 @@
 configure_libnss.diff
+fix_kfreebsd_build.diff
 support_GNU_hurd.patch
 sparc_alignment.patch
