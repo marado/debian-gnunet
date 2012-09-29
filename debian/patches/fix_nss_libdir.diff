@@ -1,0 +1,32 @@
+--- a/src/gns/nss/Makefile.am
++++ b/src/gns/nss/Makefile.am
+@@ -21,16 +21,10 @@
+ 
+ AM_LDFLAGS=-avoid-version -module -export-dynamic
+ 
+-if HAVE_SUDO
+-nssdir = /lib/
+-else
+-nssdir = $(libdir)
+-endif
+-
+ LIBTOOL = $(SUDO_BINARY) $(SHELL) $(top_builddir)/libtool
+ 
+ if !MINGW
+-nss_LTLIBRARIES = \
++lib_LTLIBRARIES = \
+ 	libnss_gns.la \
+ 	libnss_gns4.la \
+ 	libnss_gns6.la
+@@ -52,8 +46,8 @@
+ libnss_gns6_la_LDFLAGS=$(libnss_gns_la_LDFLAGS)
+ 
+ install-data-hook:
+-	$(SUDO_BINARY) $(SHELL) $(top_builddir)/libtool --finish $(nssdir)
+-	$(SUDO_BINARY) rm -f $(nssdir)/libnss_gns.la $(nssdir)/libnss_gns4.la $(nssdir)/libnss_gns6.la 
++	$(SUDO_BINARY) $(SHELL) $(top_builddir)/libtool --finish $(libdir)
++	$(SUDO_BINARY) rm -f $(libdir)/libnss_gns.la $(libdir)/libnss_gns4.la $(libdir)/libnss_gns6.la
+ 
+ uninstall-hook:
+-	$(SUDO_BINARY) rm -f $(nssdir)/libnss_gns.so.2 $(nssdir)/libnss_gns4.so.2 $(nssdir)/libnss_gns6.so.2 
++	$(SUDO_BINARY) rm -f $(libdir)/libnss_gns.so.2 $(libdir)/libnss_gns4.so.2 $(libdir)/libnss_gns6.so.2
