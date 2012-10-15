@@ -6,7 +6,7 @@ SHELL := sh -e
 	dh ${@} --with autoreconf
 
 override_dh_auto_configure:
-	dh_auto_configure -- --disable-rpath --enable-guile --enable-ipv6 --with-microhttpd=yes $(shell dpkg-buildflags --export=configure)
+	dh_auto_configure -- --disable-rpath --enable-guile --enable-ipv6 --with-microhttpd=yes --with-nssdir=yes $(shell dpkg-buildflags --export=configure)
 
 override_dh_auto_test:
 	# Disabling test suite, incomplete
@@ -27,6 +27,7 @@ override_dh_auto_install:
 	
 	# Removing useless files
 	rm -f debian/tmp/usr/lib/*.la debian/tmp/usr/lib/gnunet/*.la \
+		debian/tmp/lib/*.la \
 		debian/tmp/usr/share/doc/gnunet/COPYING \
 		debian/tmp/usr/bin/gnunet-service-template \
 		debian/tmp/usr/bin/gnunet-template \

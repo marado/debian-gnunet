@@ -41,9 +41,9 @@ usr/lib/libgnunettransport.so.*
 usr/lib/libgnunettransporttesting.so.*
 usr/lib/libgnunettun.so.*
 usr/lib/libgnunetvpn.so.*
-usr/lib/libnss_gns.so.2
-usr/lib/libnss_gns4.so.2
-usr/lib/libnss_gns6.so.2
+lib/libnss_gns.so.2
+lib/libnss_gns4.so.2
+lib/libnss_gns6.so.2
 usr/lib/gnunet/*.so
 usr/share/gnunet/config.d
 usr/share/gnunet/hellos/*

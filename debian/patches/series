@@ -1,6 +1,6 @@
+configure_libnss.diff
 libgcrypt_version_check.diff
 unix_match_uid.diff
-fix_nss_libdir.diff
 fix_kfreebsd_build.diff
 support_GNU_hurd.patch
 sparc_alignment.patch
