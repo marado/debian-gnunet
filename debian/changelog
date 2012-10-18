@@ -1,17 +1,21 @@
 gnunet (0.9.3-4) unstable; urgency=low
 
+  * Drop dependency on gettext for gnunet-client and gnunet-server as it is not
+    necessary, thanks to Ivan Shmakov (Closes: #690860).
   * Revert the use dh_installdocs --link-doc (Closes: #687875, #687881,
     #687883).
   * Fix build on kfreebsd, thanks to Christoph Egger (Closes: #688486).
-  * Remove special nssdir and hopefully fix FTBFS on ia64 (Closes: #688590).
-  * Change default option UNIX_MATCH_UID as suggested by Daniel Dehennin,
-    patch picked from upstream (Closes: #686238).
+  * Allways install libnss to /lib and fix FTBFS on ia64 (Closes: #688590).
+  * Install libnss to /lib, really fix #688590, thanks to Christian Grothoff.
+  * Change default option UNIX_MATCH_UID for services datastore and namestore,
+    so users in the gnunet group may use these services (Closes: #686238,
+    #684317).
   * Update libgcrypt version check to a less strict check, patch picked from
     upstream, following Werner Koch's advice (Closes: #684997).
   * gnunet-server.postinst: check the existence of a binary before changing its
     permissions (Closes: #688484).
 
- -- Bertrand Marc <beberking@gmail.com>  Sat, 29 Sep 2012 15:45:53 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Thu, 18 Oct 2012 21:59:44 +0200
 
 gnunet (0.9.3-3) unstable; urgency=low
 
