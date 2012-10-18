@@ -30,8 +30,7 @@ Package: gnunet-client
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
- ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version}),
- gettext
+ ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version})
 Suggests: gnunet-server, libextractor-plugins
 Description: secure, trust-based peer-to-peer framework (client)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
@@ -75,7 +74,7 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
  ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version}),
- adduser, gettext, netbase
+ adduser, netbase
 Suggests: miniupnpc
 Breaks: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
 Replaces: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
