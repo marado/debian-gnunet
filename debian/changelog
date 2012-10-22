@@ -14,8 +14,9 @@ gnunet (0.9.3-4) unstable; urgency=low
     upstream, following Werner Koch's advice (Closes: #684997).
   * gnunet-server.postinst: check the existence of a binary before changing its
     permissions (Closes: #688484).
+  * Do not set-UID gnunet-helper-fs-publish (Closes: #691154).
 
- -- Bertrand Marc <beberking@gmail.com>  Thu, 18 Oct 2012 21:59:44 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Mon, 22 Oct 2012 22:52:43 +0200
 
 gnunet (0.9.3-3) unstable; urgency=low
 

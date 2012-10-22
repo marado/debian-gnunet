@@ -79,7 +79,6 @@ case "${1}" in
 		chmod 0700 "${SERVICEHOME}" || true
 		# Restrict access on setuid binaries
 		for file in /usr/bin/gnunet-helper-exit \
-			/usr/bin/gnunet-helper-fs-publish \
 			/usr/bin/gnunet-helper-nat-client \
 			/usr/bin/gnunet-helper-nat-server \
 			/usr/bin/gnunet-helper-transport-wlan \
