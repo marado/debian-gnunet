@@ -1,5 +1,6 @@
 gnunet (0.9.3-4) unstable; urgency=low
 
+  [ Bertrand Marc ]
   * Drop dependency on gettext for gnunet-client and gnunet-server as it is not
     necessary, thanks to Ivan Shmakov (Closes: #690860).
   * Revert the use dh_installdocs --link-doc (Closes: #687875, #687881,
@@ -15,6 +16,9 @@ gnunet (0.9.3-4) unstable; urgency=low
   * gnunet-server.postinst: check the existence of a binary before changing its
     permissions (Closes: #688484).
   * Do not set-UID gnunet-helper-fs-publish (Closes: #691154).
+
+  [ David Prévot ]
+  * debian/po/fr.po: Fix charset, and use non-breaking spaces.
 
  -- Bertrand Marc <beberking@gmail.com>  Mon, 22 Oct 2012 22:52:43 +0200
 
