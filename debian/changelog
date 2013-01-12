@@ -1,3 +1,13 @@
+gnunet (0.9.3-5) unstable; urgency=low
+
+  * Revert previous changes to target wheezy:
+    + depend on gettext.
+    + drop patch to fix build on kfreebsd.
+    + drop patch to change default option UNIX_MATCH_UID.
+    + drop patch about libgcrypt version check.
+
+ -- Bertrand Marc <beberking@gmail.com>  Sun, 13 Jan 2013 18:00:29 +0100
+
 gnunet (0.9.3-4) unstable; urgency=low
 
   [ Bertrand Marc ]

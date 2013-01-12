@@ -1,7 +1,3 @@
-default_config_namestore.diff
 configure_libnss.diff
-libgcrypt_version_check.diff
-default_config_datastore.diff
-fix_kfreebsd_build.diff
 support_GNU_hurd.patch
 sparc_alignment.patch

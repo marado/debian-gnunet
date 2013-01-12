@@ -79,26 +79,25 @@ case "${1}" in
 		chmod 0700 "${SERVICEHOME}" || true
 		# Restrict access on setuid binaries
 		for file in /usr/bin/gnunet-helper-exit \
+			/usr/bin/gnunet-helper-fs-publish \
 			/usr/bin/gnunet-helper-nat-client \
 			/usr/bin/gnunet-helper-nat-server \
 			/usr/bin/gnunet-helper-transport-wlan \
 			/usr/bin/gnunet-helper-vpn
 		do
 			# only do something when no setting exists
-			if ! dpkg-statoverride --list $file >/dev/null 2>&1 && [ -e $file ]
+			if ! dpkg-statoverride --list $file >/dev/null 2>&1
 			then
 				chown root:${_GROUPNAME} $file
 				chmod 4754 $file
 			fi
 		done
-		if ! dpkg-statoverride --list /usr/bin/gnunet-helper-dns >/dev/null 2>&1 \
-			&& [ -e /usr/bin/gnunet-helper-dns ]
+		if ! dpkg-statoverride --list /usr/bin/gnunet-helper-dns >/dev/null 2>&1
 		then
 			chown root:${GNUNETDNS_GROUP} /usr/bin/gnunet-helper-dns
 			chmod 4754 /usr/bin/gnunet-helper-dns
 		fi
-		if ! dpkg-statoverride --list /usr/bin/gnunet-service-dns >/dev/null 2>&1 \
-			&& [ -e /usr/bin/gnunet-service-dns ]
+		if ! dpkg-statoverride --list /usr/bin/gnunet-service-dns >/dev/null 2>&1
 		then
 			chown ${_USERNAME}:${GNUNETDNS_GROUP} /usr/bin/gnunet-service-dns
 			chmod 2754 /usr/bin/gnunet-service-dns
