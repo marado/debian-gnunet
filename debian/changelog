@@ -1,3 +1,9 @@
+gnunet (0.9.3-7) unstable; urgency=low
+
+  * Revert previous changes and go back to 0.9.3-5 to target wheezy.
+
+ -- Bertrand Marc <beberking@gmail.com>  Thu, 28 Feb 2013 09:19:22 +0100
+
 gnunet (0.9.3-6) unstable; urgency=low
 
   * Fix build on kfreebsd, thanks to Christoph Egger (Closes: #688486).
