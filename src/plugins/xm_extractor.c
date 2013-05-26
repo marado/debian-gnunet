@@ -4,7 +4,7 @@
  *
  * libextractor is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2, or (at your
+ * by the Free Software Foundation; either version 3, or (at your
  * option) any later version.
  *
  * libextractor is distributed in the hope that it will be useful, but
@@ -18,14 +18,20 @@
  * Boston, MA 02111-1307, USA.
  *
  */
-
+/**
+ * @file plugins/xm_extractor.c
+ * @brief plugin to support XM files
+ * @author Toni Ruottu
+ * @author Christian Grothoff
+ */
 #include "platform.h"
 #include "extractor.h"
-#include "convert.h"
 
-#define HEADER_SIZE  64
 
-struct header
+/**
+ * Header of an XM file.
+ */
+struct Header
 {
   char magicid[17];
   char title[20];
@@ -34,51 +40,68 @@ struct header
   char version[2];
 };
 
-#define ADD(s,t) do { if (0 != proc (proc_cls, "xm", t, EXTRACTOR_METAFORMAT_UTF8, "text/plain", s, strlen(s)+1)) return 1; } while (0)
+
+/**
+ * Give meta data to LE.
+ *
+ * @param s utf-8 string meta data value
+ * @param t type of the meta data
+ */
+#define ADD(s,t) do { if (0 != ec->proc (ec->cls, "xm", t, EXTRACTOR_METAFORMAT_UTF8, "text/plain", s, strlen (s) + 1)) return; } while (0)
 
 
-/* "extract" keyword from an Extended Module
+/**
+ * "extract" metadata from an Extended Module
  *
  * The XM module format description for XM files
  * version $0104 that was written by Mr.H of Triton
  * in 1994 was used, while this piece of software
  * was originally written.
  *
+ * @param ec extraction context
  */
-int 
-EXTRACTOR_xm_extract (const unsigned char *data,
-		      size_t size,
-		      EXTRACTOR_MetaDataProcessor proc,
-		      void *proc_cls,
-		      const char *options)
+void
+EXTRACTOR_xm_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
+  void *data;
+  const struct Header *head;
   char title[21];
   char tracker[21];
   char xmversion[8];
-  const struct header *head;
+  size_t n;
 
-  /* Check header size */
-  if (size < HEADER_SIZE)
-    return 0;
-  head = (const struct header *) data;
+  if (sizeof (struct Header) >
+      ec->read (ec->cls,
+		&data,
+		sizeof (struct Header)))
+    return;
+  head = data;
   /* Check "magic" id bytes */
   if (memcmp (head->magicid, "Extended Module: ", 17))
-    return 0;
+    return;
   ADD("audio/x-xm", EXTRACTOR_METATYPE_MIMETYPE);
   /* Version of Tracker */
   snprintf (xmversion, 
-	    sizeof(xmversion),
+	    sizeof (xmversion),
 	    "%d.%d", 
 	    head->version[1],
 	    head->version[0]);
   ADD (xmversion, EXTRACTOR_METATYPE_FORMAT_VERSION);
   /* Song title */
   memcpy (&title, head->title, 20);
-  title[20] = '\0';
+  n = 19;
+  while ( (n > 0) && isspace ((unsigned char) title[n]))
+    n--;
+  title[n + 1] = '\0';
   ADD (title, EXTRACTOR_METATYPE_TITLE);
   /* software used for creating the data */
   memcpy (&tracker, head->tracker, 20);
-  tracker[20] = '\0';
+  n = 19;
+  while ( (n > 0) && isspace ((unsigned char) tracker[n]))
+    n--;
+  tracker[n + 1] = '\0'; 
   ADD (tracker, EXTRACTOR_METATYPE_CREATED_BY_SOFTWARE);
-  return 0;
+  return;
 }
+
+/* end of xm_extractor.c */

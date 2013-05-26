@@ -1,7 +1,6 @@
 man_MANS = extract.1  libextractor.3
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST = $(man_MANS)  
 
-DISTCLEANFILES = extractor.cps
-info_TEXINFOS = extractor.texi
-extractor_TEXINFOS = gpl.texi
-
+DISTCLEANFILES = libextractor.cps
+info_TEXINFOS = libextractor.texi
+libextractor_TEXINFOS = gpl.texi fdl-1.3.texi 

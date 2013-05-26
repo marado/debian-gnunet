@@ -1,3 +1,32 @@
+Sat Oct  6 15:24:20 CEST 2012
+	Fixing installation path discovery on Darwin (#2562).
+	Releasing GNU libextractor 1.0.1. -CG
+
+Tue Sep 25 16:25:05 CEST 2012
+	Releasing GNU libextractor 1.0.0. -CG
+
+Thu Sep  6 09:52:13 CEST 2012
+	Updated Ukrainian translation. -CG
+
+Tue Mar 27 15:04:00 CEST 2012
+	Refactoring plugin API to allow seeks to arbitrary positions in the
+	file (breaks existing plugins, so the current version will not
+	work). -LRN
+
+Sun Jan 29 17:27:08 CET 2012
+	Documented recently discovered issues with pthreads and
+	out-of-process plugin executions in the manual. -CG
+
+Tue Nov 29 12:55:40 CET 2011
+	Improved IPC code on W32 to use APIs correctly and make it work
+	on NT 6.1. -LRN
+
+Mon Nov 28 17:16:16 CET 2011
+	Reduce false-positives in MP3 extractor file format detection. -LRN
+
+Mon Nov 28 17:15:59 CET 2011
+	Improved winsock2 detection. -LRN
+
 Mon Nov 28 12:17:42 CET 2011
 	Fixing compiler warnings, cleaning up ASF plugin.  Finishing
 	Matroska plugin. -CG

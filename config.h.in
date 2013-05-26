@@ -18,6 +18,15 @@
 /* Build a Mac OS X Framework */
 #undef FRAMEWORK_BUILD
 
+/* We hope this is a GNU/Linux-compatible system */
+#undef GNU_LINUX
+
+/* Have libarchive */
+#undef HAVE_ARCHIVE
+
+/* Define to 1 if you have the <archive.h> header file. */
+#undef HAVE_ARCHIVE_H
+
 /* Define to 1 if you have the `argz_add' function. */
 #undef HAVE_ARGZ_ADD
 
@@ -134,6 +143,9 @@
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
+/* Define to 1 if you have the <gif_lib.h> header file. */
+#undef HAVE_GIF_LIB_H
+
 /* Have glib */
 #undef HAVE_GLIB
 
@@ -154,6 +166,12 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Have libjpeg */
+#undef HAVE_JPEG
+
+/* Define to 1 if you have the <jpeglib.h> header file. */
+#undef HAVE_JPEGLIB_H
 
 /* Define to 1 if you have the <langinfo.h> header file. */
 #undef HAVE_LANGINFO_H
@@ -185,17 +203,11 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
-/* Define to 1 if you have the `plibc' library (-lplibc). */
-#undef HAVE_LIBPLIBC
-
 /* Define to 1 if you have the `resolv' library (-lresolv). */
 #undef HAVE_LIBRESOLV
 
 /* Have librpm */
 #undef HAVE_LIBRPM
-
-/* Define to 1 if you have the `stdc++' library (-lstdc++). */
-#undef HAVE_LIBSTDC__
 
 /* Define to 1 if you have the <libswscale/swscale.h> header file. */
 #undef HAVE_LIBSWSCALE_SWSCALE_H
@@ -206,11 +218,17 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
+/* Define to 1 if you have the `lseek64' function. */
+#undef HAVE_LSEEK64
+
 /* Define this if a modern libltdl is already installed */
 #undef HAVE_LTDL
 
 /* Define to 1 if you have the <mach-o/dyld.h> header file. */
 #undef HAVE_MACH_O_DYLD_H
+
+/* Define to 1 if you have the <magic.h> header file. */
+#undef HAVE_MAGIC_H
 
 /* Define to 1 if you have the `memmove' function. */
 #undef HAVE_MEMMOVE
@@ -227,7 +245,13 @@
 /* Define to 1 if you have a working `mmap' system call. */
 #undef HAVE_MMAP
 
-/* Have libmpeg2 */
+/* Have libmp4v2 */
+#undef HAVE_MP4
+
+/* Define to 1 if you have the <mp4v2/mp4v2.h> header file. */
+#undef HAVE_MP4V2_MP4V2_H
+
+/* Have libsmf */
 #undef HAVE_MPEG2
 
 /* Define to 1 if you have the <mpeg2dec/mpeg2.h> header file. */
@@ -245,38 +269,14 @@
 /* Define to 1 if you have the `opendir' function. */
 #undef HAVE_OPENDIR
 
-/* Have libpoppler */
-#undef HAVE_POPPLER
-
-/* Have getPDFMajorVersion in libpoppler */
-#undef HAVE_POPPLER_GETPDFMAJORVERSION
-
-/* Define to 1 if you have the <poppler/goo/gmem.h> header file. */
-#undef HAVE_POPPLER_GOO_GMEM_H
+/* Define to 1 if you have the <plibc.h> header file. */
+#undef HAVE_PLIBC_H
 
 /* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
 /* Define if libtool can extract symbol lists from object files. */
 #undef HAVE_PRELOADED_SYMBOLS
-
-/* We have Qt */
-#undef HAVE_QT
-
-/* We have Qt4 */
-#undef HAVE_QT4
-
-/* Define to 1 if you have the <Qt/qpixmap.h> header file. */
-#undef HAVE_QT_QPIXMAP_H
-
-/* Define to 1 if you have the <Qt/qsvgrenderer.h> header file. */
-#undef HAVE_QT_QSVGRENDERER_H
-
-/* We have Qt SVG */
-#undef HAVE_QT_SVG
-
-/* We have Qt SVG4 */
-#undef HAVE_QT_SVG4
 
 /* Define to 1 if you have the `readdir' function. */
 #undef HAVE_READDIR
@@ -295,6 +295,9 @@
 
 /* Define to 1 if you have the `shm_unlink' function. */
 #undef HAVE_SHM_UNLINK
+
+/* Define to 1 if you have the <smf.h> header file. */
+#undef HAVE_SMF_H
 
 /* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
@@ -374,6 +377,15 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <tidy/tidy.h> header file. */
+#undef HAVE_TIDY_TIDY_H
+
+/* Have libtiff */
+#undef HAVE_TIFF
+
+/* Define to 1 if you have the <tiffio.h> header file. */
+#undef HAVE_TIFFIO_H
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -403,9 +415,6 @@
 
 /* iso-639 catalog */
 #undef ISOLOCALEDIR
-
-/* This is a LINUX system */
-#undef LINUX
 
 /* Defined if the host has little endian byte ordering */
 #undef LITTLE_ENDIAN_HOST
@@ -448,6 +457,9 @@
 
 /* Define if dlsym() requires a leading underscore in symbol names. */
 #undef NEED_USCORE
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
 
 /* Some strange OS */
 #undef OTHEROS
