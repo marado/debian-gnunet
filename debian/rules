@@ -7,9 +7,6 @@ override_dh_auto_clean:
 	dh_auto_clean
 	rm -f libextractor.pc libextractor.pc.in libextractor-uninstalled.pc libextractor-uninstalled.sh
 
-override_dh_auto_configure:
-	dh_auto_configure -- --enable-exiv2 --disable-ffmpeg --disable-xpdf --with-qt
-
 override_dh_auto_test:
 	# disabled
 
