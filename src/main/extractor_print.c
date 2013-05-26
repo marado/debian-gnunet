@@ -17,11 +17,17 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
  */
-
+/**
+ * @file main/extractor_print.c
+ * @brief convenience functions for printing meta data
+ * @author Christian Grothoff
+ */
 #include "platform.h"
 #include "extractor.h"
-
+#include "extractor_logging.h"
+#if HAVE_ICONV
 #include "iconv.c"
+#endif
 
 /**
  * Simple EXTRACTOR_MetaDataProcessor implementation that simply
@@ -40,44 +46,59 @@
  * @return non-zero if printing failed, otherwise 0.
  */
 int 
-EXTRACTOR_meta_data_print(void * handle,
-			  const char *plugin_name,
-			  enum EXTRACTOR_MetaType type,
-			  enum EXTRACTOR_MetaFormat format,
-			  const char *data_mime_type,
-			  const char *data,
-			  size_t data_len)
+EXTRACTOR_meta_data_print (void *handle,
+			   const char *plugin_name,
+			   enum EXTRACTOR_MetaType type,
+			   enum EXTRACTOR_MetaFormat format,
+			   const char *data_mime_type,
+			   const char *data,
+			   size_t data_len)
 {
+#if HAVE_ICONV
   iconv_t cd;
+#endif
   char * buf;
   int ret;
   const char *mt;
 
-  if (format != EXTRACTOR_METAFORMAT_UTF8)
+  if (EXTRACTOR_METAFORMAT_UTF8 != format)
     return 0;
-  cd = iconv_open(nl_langinfo(CODESET),
-		  "UTF-8");
-  if (cd == (iconv_t) -1)
-    return 1;
-  buf = iconv_helper(cd, data);
-  if (buf != NULL)
+#if HAVE_ICONV
+  cd = iconv_open (nl_langinfo(CODESET),
+		   "UTF-8");
+  if (((iconv_t) -1) == cd)
     {
-      mt = EXTRACTOR_metatype_to_string (type);
-      ret = fprintf(handle,
-		    "%s - %s\n",
-		    (mt == NULL) ? _("unknown") : dgettext ("libextractor",
-							    mt),
-		    buf);
-      free(buf);
+      LOG_STRERROR ("iconv_open");
+      return 1;
+    }
+  buf = iconv_helper (cd, data, data_len);
+  if (NULL == buf)
+    {
+      LOG_STRERROR ("iconv_helper");
+      ret = -1;
     }
   else
     {
-      ret = -1;
+      mt = EXTRACTOR_metatype_to_string (type);
+      ret = fprintf (handle,
+		     "%s - %s\n",
+		     (NULL == mt) 
+		     ? dgettext ("libextractor", gettext_noop ("unknown"))
+		     : dgettext ("libextractor", mt),
+		     buf);
+      free(buf);
     }
   iconv_close(cd);
-  if (ret < 0)
-    return 1;
-  return 0;
+#else
+  ret = fprintf (handle,
+		 "%s - %.*s\n",
+		 (NULL == mt) 
+		 ? dgettext ("libextractor", gettext_noop ("unknown"))
+		 : dgettext ("libextractor", mt),
+		 (int) data_len,
+		 data);
+#endif
+  return (ret < 0) ? 1 : 0;
 }
 
 /* end of extractor_print.c */

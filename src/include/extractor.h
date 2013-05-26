@@ -1,10 +1,10 @@
 /*
      This file is part of libextractor.
-     (C) 2002, 2003, 2004, 2005, 2006, 2009 Vidyut Samanta and Christian Grothoff
+     (C) 2002, 2003, 2004, 2005, 2006, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      libextractor is distributed in the hope that it will be useful, but
@@ -28,11 +28,14 @@ extern "C" {
 #endif
 #endif
 
+
+#include <stdint.h>
+
 /**
  * 0.2.6-1 => 0x00020601
  * 4.5.2-0 => 0x04050200
  */
-#define EXTRACTOR_VERSION 0x00060300
+#define EXTRACTOR_VERSION 0x01000000
 
 #include <stdio.h>
 
@@ -54,12 +57,7 @@ enum EXTRACTOR_Options
     EXTRACTOR_OPTION_DEFAULT_POLICY = 0,
 
     /**
-     * Run plugins out-of-process, starting the process
-     * once at the time the plugin is loaded.  This will
-     * prevent the main process crashing if a plugin dies.
-     * Ignored on platforms where out-of-process starts
-     * are not supported (in-process execution will be
-     * attempted, unless the plugin itself forbids it).
+     * Deprecated option.  Ignored.
      */
     EXTRACTOR_OPTION_OUT_OF_PROCESS_NO_RESTART = 1,
 
@@ -103,6 +101,7 @@ enum EXTRACTOR_MetaFormat
      * "data_len" is strlen(data)+1.
      */
     EXTRACTOR_METAFORMAT_C_STRING = 3
+
   };
 
 
@@ -318,7 +317,70 @@ enum EXTRACTOR_MetaType
     EXTRACTOR_METATYPE_GROUP = 179,
     EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME = 180,
 
-    EXTRACTOR_METATYPE_LAST = 181
+    EXTRACTOR_METATYPE_DISC_COUNT = 181,
+
+    EXTRACTOR_METATYPE_CODEC = 182,
+    EXTRACTOR_METATYPE_VIDEO_CODEC = 183,
+    EXTRACTOR_METATYPE_AUDIO_CODEC = 184,
+    EXTRACTOR_METATYPE_SUBTITLE_CODEC = 185,
+
+    EXTRACTOR_METATYPE_CONTAINER_FORMAT = 186,
+
+    EXTRACTOR_METATYPE_BITRATE = 187,
+    EXTRACTOR_METATYPE_NOMINAL_BITRATE = 188,
+    EXTRACTOR_METATYPE_MINIMUM_BITRATE = 189,
+    EXTRACTOR_METATYPE_MAXIMUM_BITRATE = 190,
+
+    EXTRACTOR_METATYPE_SERIAL = 191,
+
+    EXTRACTOR_METATYPE_ENCODER = 192,
+    EXTRACTOR_METATYPE_ENCODER_VERSION = 193,
+
+    EXTRACTOR_METATYPE_TRACK_GAIN = 194,
+    EXTRACTOR_METATYPE_TRACK_PEAK = 195,
+    EXTRACTOR_METATYPE_ALBUM_GAIN = 196,
+    EXTRACTOR_METATYPE_ALBUM_PEAK = 197,
+    EXTRACTOR_METATYPE_REFERENCE_LEVEL = 198,
+
+    EXTRACTOR_METATYPE_LOCATION_NAME = 199,
+    EXTRACTOR_METATYPE_LOCATION_ELEVATION = 200,
+    EXTRACTOR_METATYPE_LOCATION_HORIZONTAL_ERROR = 201,
+    EXTRACTOR_METATYPE_LOCATION_MOVEMENT_SPEED = 202,
+    EXTRACTOR_METATYPE_LOCATION_MOVEMENT_DIRECTION = 203,
+    EXTRACTOR_METATYPE_LOCATION_CAPTURE_DIRECTION = 204,
+
+    EXTRACTOR_METATYPE_SHOW_EPISODE_NUMBER = 205,
+    EXTRACTOR_METATYPE_SHOW_SEASON_NUMBER = 206,
+
+    EXTRACTOR_METATYPE_GROUPING = 207,
+
+    EXTRACTOR_METATYPE_DEVICE_MANUFACTURER = 208,
+    EXTRACTOR_METATYPE_DEVICE_MODEL = 209,
+
+    EXTRACTOR_METATYPE_AUDIO_LANGUAGE = 210,
+    EXTRACTOR_METATYPE_CHANNELS = 211,
+    EXTRACTOR_METATYPE_SAMPLE_RATE = 212,
+    EXTRACTOR_METATYPE_AUDIO_DEPTH = 213,
+    EXTRACTOR_METATYPE_AUDIO_BITRATE = 214,
+    EXTRACTOR_METATYPE_MAXIMUM_AUDIO_BITRATE = 215,
+
+    EXTRACTOR_METATYPE_VIDEO_DIMENSIONS = 216,
+    EXTRACTOR_METATYPE_VIDEO_DEPTH = 217,
+    EXTRACTOR_METATYPE_FRAME_RATE = 218,
+    EXTRACTOR_METATYPE_PIXEL_ASPECT_RATIO = 219,
+    EXTRACTOR_METATYPE_VIDEO_BITRATE = 220,
+    EXTRACTOR_METATYPE_MAXIMUM_VIDEO_BITRATE = 221,
+
+    EXTRACTOR_METATYPE_SUBTITLE_LANGUAGE = 222,
+    EXTRACTOR_METATYPE_VIDEO_LANGUAGE = 223,
+
+    EXTRACTOR_METATYPE_TOC = 224,
+
+    EXTRACTOR_METATYPE_VIDEO_DURATION = 225,
+    EXTRACTOR_METATYPE_AUDIO_DURATION = 226,
+    EXTRACTOR_METATYPE_SUBTITLE_DURATION = 227,
+
+    EXTRACTOR_METATYPE_LAST = 228
   };
 
 
@@ -331,7 +393,7 @@ enum EXTRACTOR_MetaType
  *         translate using 'dgettext ("libextractor", rval)'
  */
 const char *
-EXTRACTOR_metatype_to_string(enum EXTRACTOR_MetaType type);
+EXTRACTOR_metatype_to_string (enum EXTRACTOR_MetaType type);
 
 
 /**
@@ -343,7 +405,7 @@ EXTRACTOR_metatype_to_string(enum EXTRACTOR_MetaType type);
  *         translate using 'dgettext ("libextractor", rval)'
  */
 const char *
-EXTRACTOR_metatype_to_description(enum EXTRACTOR_MetaType type);
+EXTRACTOR_metatype_to_description (enum EXTRACTOR_MetaType type);
 
 
 /**
@@ -361,7 +423,7 @@ EXTRACTOR_metatype_get_max (void);
  *
  * @param cls closure (user-defined)
  * @param plugin_name name of the plugin that produced this value;
- *        special values can be used (i.e. '<zlib>' for zlib being
+ *        special values can be used (i.e. '&lt;zlib&gt;' for zlib being
  *        used in the main libextractor library and yielding
  *        meta data).
  * @param type libextractor-type describing the meta data
@@ -372,31 +434,83 @@ EXTRACTOR_metatype_get_max (void);
  * @param data_len number of bytes in data
  * @return 0 to continue extracting, 1 to abort
  */ 
-typedef int (*EXTRACTOR_MetaDataProcessor)(void *cls,
-					   const char *plugin_name,
-					   enum EXTRACTOR_MetaType type,
-					   enum EXTRACTOR_MetaFormat format,
-					   const char *data_mime_type,
-					   const char *data,
-					   size_t data_len);
+typedef int (*EXTRACTOR_MetaDataProcessor) (void *cls,
+					    const char *plugin_name,
+					    enum EXTRACTOR_MetaType type,
+					    enum EXTRACTOR_MetaFormat format,
+					    const char *data_mime_type,
+					    const char *data,
+					    size_t data_len);
 
-					   
+
+/**
+ * Context provided for plugins that perform meta data extraction.
+ */
+struct EXTRACTOR_ExtractContext
+{
+
+  /**
+   * Closure argument to pass to all callbacks.
+   */
+  void *cls;
+
+  /**
+   * Configuration string for the plugin.
+   */
+  const char *config;
+  
+  /**
+   * Obtain a pointer to up to 'size' bytes of data from the file to process.
+   *
+   * @param cls the 'cls' member of this struct
+   * @param data pointer to set to the file data, set to NULL on error
+   * @param size maximum number of bytes requested
+   * @return number of bytes now available in data (can be smaller than 'size'),
+   *         -1 on error
+   */
+  ssize_t (*read) (void *cls,
+		   void **data,
+		   size_t size);
+
+  
+  /**
+   * Seek in the file.  Use 'SEEK_CUR' for whence and 'pos' of 0 to
+   * obtain the current position in the file.
+   * 
+   * @param cls the 'cls' member of this struct
+   * @param pos position to seek (see 'man lseek')
+   * @param whence how to see (absolute to start, relative, absolute to end)
+   * @return new absolute position, -1 on error (i.e. desired position
+   *         does not exist)
+   */ 
+  int64_t (*seek) (void *cls,
+		   int64_t pos,
+		   int whence);
+
+
+  /**
+   * Determine the overall size of the file.
+   * 
+   * @param cls the 'cls' member of this struct
+   * @return overall file size, UINT64_MAX on error (i.e. IPC failure)
+   */ 
+  uint64_t (*get_size) (void *cls);
+
+  /**
+   * Function to call on extracted data.
+   */
+  EXTRACTOR_MetaDataProcessor proc;
+
+};
+
+
 /**
  * Signature of the extract method that each plugin
  * must provide.
  *
- * @param data data to process
- * @param datasize number of bytes available in data
- * @param proc function to call for meta data found
- * @param proc_cls cls argument to proc
- * @param options options for this plugin; can be NULL
- * @return 0 if all calls to proc returned 0, otherwise 1
+ * @param ec extraction context provided to the plugin
  */
-typedef int (*EXTRACTOR_ExtractMethod)(const char *data,
-				       size_t datasize,
-				       EXTRACTOR_MetaDataProcessor proc,
-				       void *proc_cls,
-				       const char *options);
+typedef void (*EXTRACTOR_extract_method) (struct EXTRACTOR_ExtractContext *ec);
 
 
 /**
@@ -430,7 +544,7 @@ struct EXTRACTOR_PluginList;
  * @return the default set of plugins, NULL if no plugins were found
  */
 struct EXTRACTOR_PluginList * 
-EXTRACTOR_plugin_add_defaults(enum EXTRACTOR_Options flags);
+EXTRACTOR_plugin_add_defaults (enum EXTRACTOR_Options flags);
 
 
 /**
@@ -444,9 +558,10 @@ EXTRACTOR_plugin_add_defaults(enum EXTRACTOR_Options flags);
  */
 struct EXTRACTOR_PluginList *
 EXTRACTOR_plugin_add (struct EXTRACTOR_PluginList * prev,
-		      const char * library,
+		      const char *library,
 		      const char *options,
 		      enum EXTRACTOR_Options flags);
+
 
 /**
  * Load multiple libraries as specified by the user.
@@ -464,7 +579,7 @@ EXTRACTOR_plugin_add (struct EXTRACTOR_PluginList * prev,
  *         or if config was empty (or NULL).
  */
 struct EXTRACTOR_PluginList *
-EXTRACTOR_plugin_add_config (struct EXTRACTOR_PluginList * prev,
+EXTRACTOR_plugin_add_config (struct EXTRACTOR_PluginList *prev,
 			     const char *config,
 			     enum EXTRACTOR_Options flags);
 
@@ -477,8 +592,8 @@ EXTRACTOR_plugin_add_config (struct EXTRACTOR_PluginList * prev,
  * @return the reduced list, unchanged if the plugin was not loaded
  */
 struct EXTRACTOR_PluginList *
-EXTRACTOR_plugin_remove(struct EXTRACTOR_PluginList * prev,
-			const char * library);
+EXTRACTOR_plugin_remove (struct EXTRACTOR_PluginList *prev,
+			 const char *library);
 
 
 /**
@@ -487,7 +602,7 @@ EXTRACTOR_plugin_remove(struct EXTRACTOR_PluginList * prev,
  * @param plugin the list of plugins
  */
 void 
-EXTRACTOR_plugin_remove_all(struct EXTRACTOR_PluginList *plugins);
+EXTRACTOR_plugin_remove_all (struct EXTRACTOR_PluginList *plugins);
 
 
 /**
@@ -502,12 +617,12 @@ EXTRACTOR_plugin_remove_all(struct EXTRACTOR_PluginList *plugins);
  * @param proc_cls cls argument to proc
  */
 void
-EXTRACTOR_extract(struct EXTRACTOR_PluginList *plugins,
-		  const char *filename,
-		  const void *data,
-		  size_t size,
-		  EXTRACTOR_MetaDataProcessor proc,
-		  void *proc_cls);
+EXTRACTOR_extract (struct EXTRACTOR_PluginList *plugins,
+		   const char *filename,
+		   const void *data,
+		   size_t size,
+		   EXTRACTOR_MetaDataProcessor proc,
+		   void *proc_cls);
 
 
 /**
@@ -527,13 +642,13 @@ EXTRACTOR_extract(struct EXTRACTOR_PluginList *plugins,
  * @return non-zero if printing failed, otherwise 0.
  */
 int 
-EXTRACTOR_meta_data_print(void * handle,
-			  const char *plugin_name,
-			  enum EXTRACTOR_MetaType type,
-			  enum EXTRACTOR_MetaFormat format,
-			  const char *data_mime_type,
-			  const char *data,
-			  size_t data_len);
+EXTRACTOR_meta_data_print (void * handle,
+			   const char *plugin_name,
+			   enum EXTRACTOR_MetaType type,
+			   enum EXTRACTOR_MetaFormat format,
+			   const char *data_mime_type,
+			   const char *data,
+			   size_t data_len);
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

@@ -1,10 +1,10 @@
 /*
      This file is part of libextractor.
-     (C) 2005, 2009 Vidyut Samanta and Christian Grothoff
+     (C) 2005, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      libextractor is distributed in the hope that it will be useful, but
@@ -17,50 +17,47 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
  */
-
 /**
- * @file thumbnailextractor.c
+ * @file plugins/thumbnailgtk_extractor.c
  * @author Christian Grothoff
  * @brief this extractor produces a binary (!) encoded
  * thumbnail of images (using gdk pixbuf).  The bottom
  * of the file includes a decoder method that can be used
- * to reproduce the 128x128 PNG thumbnails.
+ * to reproduce the 128x128 PNG thumbnails.  We use
+ * libmagic to test if the input data is actually an
+ * image before trying to give it to gtk.
  */
-
 #include "platform.h"
 #include "extractor.h"
+#include <magic.h>
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
+/**
+ * Target size for the thumbnails (width and height).
+ */
 #define THUMBSIZE 128
 
-/* using libgobject, needs init! */
-void __attribute__ ((constructor)) ole_gobject_init ()
-{
-  g_type_init ();
-}
+/**
+ * Maximum image size supported (to avoid unreasonable
+ * allocations)
+ */
+#define MAX_IMAGE_SIZE (32 * 1024 * 1024)
 
 
-const char *
-EXTRACTOR_thumbnailgtk_options ()
-{
-  /* 
-     Since the Gnome developers think that being unable to
-     unload plugins is an 'acceptable' limitation, we
-     require out-of-process execution for plugins depending
-     on libgsf and other glib-based plugins.
-     See also https://bugzilla.gnome.org/show_bug.cgi?id=374940 
-  */
-  return "oop-only"; 
-}
+/**
+ * Global handle to MAGIC data.
+ */
+static magic_t magic;
 
 
-int 
-EXTRACTOR_thumbnailgtk_extract (const char *data,
-				size_t size,
-				EXTRACTOR_MetaDataProcessor proc,
-				void *proc_cls,
-				const char *options)
+/**
+ * Main method for the gtk-thumbnailer plugin.
+ *
+ * @param ec extraction context
+ */
+void
+EXTRACTOR_thumbnailgtk_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
   GdkPixbufLoader *loader;
   GdkPixbuf *in;
@@ -70,43 +67,85 @@ EXTRACTOR_thumbnailgtk_extract (const char *data,
   unsigned long width;
   unsigned long height;
   char format[64];
-  int ret;
+  void *data;
+  uint64_t size;
+  size_t off;
+  ssize_t iret;
+  void *buf;
+  const char *mime;
+
+  if (-1 == (iret = ec->read (ec->cls,
+			      &data,
+			      16 * 1024)))
+    return;
+  if (NULL == (mime = magic_buffer (magic, data, iret)))
+    return;
+  if (0 != strncmp (mime,
+		    "image/",
+		    strlen ("image/")))
+    return; /* not an image */
+
+  /* read entire image into memory */
+  size = ec->get_size (ec->cls);
+  if (UINT64_MAX == size)
+    size = MAX_IMAGE_SIZE; /* unknown size, cap at max */
+  if (size > MAX_IMAGE_SIZE)
+    return; /* FAR too big to be an image */
+  if (NULL == (buf = malloc (size)))
+    return; /* too big to fit into memory on this system */
+
+  /* start with data already read */
+  memcpy (buf, data, iret);
+  off = iret;
+  while (off < size)
+    {
+      iret = ec->read (ec->cls, &data, size - off);
+      if (iret <= 0)
+	{
+	  /* io error */
+	  free (buf);
+	  return;
+	}
+      memcpy (buf + off, data, iret);
+      off += iret;
+    }
 
   loader = gdk_pixbuf_loader_new ();
   gdk_pixbuf_loader_write (loader, 
-			   (const unsigned char*) data, 
+			   buf, 
 			   size, NULL);
+  free (buf);
   in = gdk_pixbuf_loader_get_pixbuf (loader);
   gdk_pixbuf_loader_close (loader, NULL);
-  if (in == NULL)
+  if (NULL == in)
     {
       g_object_unref (loader);
-      return 0;
+      return;
     }
   g_object_ref (in);
   g_object_unref (loader);
   height = gdk_pixbuf_get_height (in);
   width = gdk_pixbuf_get_width (in);
   snprintf (format, 
-	    sizeof(format),
+	    sizeof (format),
 	    "%ux%u",
 	    (unsigned int) width, 
 	    (unsigned int) height);
-  if (0 != proc (proc_cls,
-		 "thumbnailgtk",
-		 EXTRACTOR_METATYPE_IMAGE_DIMENSIONS,
-		 EXTRACTOR_METAFORMAT_UTF8,
-		 "text/plain",
-		 format,
-		 strlen (format) + 1))
+  if (0 != ec->proc (ec->cls,
+		     "thumbnailgtk",
+		     EXTRACTOR_METATYPE_IMAGE_DIMENSIONS,
+		     EXTRACTOR_METAFORMAT_UTF8,
+		     "text/plain",
+		     format,
+		     strlen (format) + 1))
     {
       g_object_unref (in);
-      return 1;
+      return;
     }
   if ((height <= THUMBSIZE) && (width <= THUMBSIZE))
     {
       g_object_unref (in);
-      return 0;
+      return;
     }
   if (height > THUMBSIZE)
     {
@@ -118,45 +157,79 @@ EXTRACTOR_thumbnailgtk_extract (const char *data,
       height = height * THUMBSIZE / width;
       width = THUMBSIZE;
     }
-  if ( (height == 0) || (width == 0) )
+  if ( (0 == height) || (0 == width) )
     {
       g_object_unref (in);
-      return 0;
+      return;
     }
-  out = gdk_pixbuf_scale_simple (in, width, height, GDK_INTERP_BILINEAR);
+  out = gdk_pixbuf_scale_simple (in, width, height,
+				 GDK_INTERP_BILINEAR);
   g_object_unref (in);
   thumb = NULL;
   length = 0;
-  if (out == NULL)
-    return 0;
-  if (!gdk_pixbuf_save_to_buffer (out, &thumb, &length, "png", NULL, 
-				  "compression", "9", NULL))
+  if (NULL == out)
+    return;
+  if (! gdk_pixbuf_save_to_buffer (out, &thumb, 
+				   &length, 
+				   "png", NULL, 
+				   "compression", "9", 
+				   NULL))
     {
       g_object_unref (out);
-      return 0;
+      return;
     }
   g_object_unref (out);
-  if (thumb == NULL)
-    return 0;
-  ret = proc (proc_cls,
-	      "thumbnailgtk",
-	      EXTRACTOR_METATYPE_THUMBNAIL,
-	      EXTRACTOR_METAFORMAT_BINARY,
-	      "image/png",
-	      thumb, length);  
+  if (NULL == thumb)
+    return;
+  ec->proc (ec->cls,
+	    "thumbnailgtk",
+	    EXTRACTOR_METATYPE_THUMBNAIL,
+	    EXTRACTOR_METAFORMAT_BINARY,
+	    "image/png",
+	    thumb, length);  
   free (thumb);
-  return ret;
 }
 
-int 
-EXTRACTOR_thumbnail_extract (const char *data,
-			     size_t size,
-			     EXTRACTOR_MetaDataProcessor proc,
-			     void *proc_cls,
-			     const char *options)
+
+/**
+ * This plugin sometimes is installed under the alias 'thumbnail'.
+ * So we need to provide a second entry method.
+ *
+ * @param ec extraction context
+ */
+void
+EXTRACTOR_thumbnail_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
-  return EXTRACTOR_thumbnailgtk_extract (data, size, proc, proc_cls, options);
+  EXTRACTOR_thumbnailgtk_extract_method (ec);
 }
 
+
+/**
+ * Initialize glib and load magic file.
+ */
+void __attribute__ ((constructor)) 
+thumbnailgtk_gobject_init ()
+{
+  g_type_init ();
+  magic = magic_open (MAGIC_MIME_TYPE);
+  if (0 != magic_load (magic, NULL))
+    {
+      /* FIXME: how to deal with errors? */
+    }
+}
+
+
+/**
+ * Destructor for the library, cleans up.
+ */
+void __attribute__ ((destructor)) 
+thumbnailgtk_ltdl_fini () 
+{
+  if (NULL != magic)
+    {
+      magic_close (magic);
+      magic = NULL;
+    }
+}
 
 /* end of thumbnailgtk_extractor.c */

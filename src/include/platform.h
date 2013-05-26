@@ -63,7 +63,9 @@
  #include <winsock2.h>
 #endif
 #include <locale.h>
+#if HAVE_ICONV_H
 #include <iconv.h>
+#endif
 #include <langinfo.h>
 
 #ifndef SIZE_MAX
@@ -73,6 +75,12 @@
 #if DARWIN
 #include <mach-o/dyld.h>
 #include <mach-o/ldsyms.h>
+#endif
+
+#if !WINDOWS
+#define ABORT() abort()
+#else
+#define ABORT() DebugBreak ()
 #endif
 
 #endif

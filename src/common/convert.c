@@ -4,7 +4,7 @@
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      libextractor is distributed in the hope that it will be useful, but
@@ -26,13 +26,21 @@
  * Convert the len characters long character sequence
  * given in input that is in the given charset
  * to UTF-8.
+ *
+ * @param input string to convert
+ * @param len number of bytes in input
+ * @param charset input character set
+ * @return the converted string (0-terminated), NULL on error
  * @return the converted string (0-terminated),
  *  if conversion fails, a copy of the orignal
  *  string is returned.
  */
 char *
-EXTRACTOR_common_convert_to_utf8 (const char *input, size_t len, const char *charset)
+EXTRACTOR_common_convert_to_utf8 (const char *input, 
+				  size_t len, 
+				  const char *charset)
 {
+#if HAVE_ICONV
   size_t tmpSize;
   size_t finSize;
   char *tmp;
@@ -77,6 +85,14 @@ EXTRACTOR_common_convert_to_utf8 (const char *input, size_t len, const char *cha
   free (tmp);
   iconv_close (cd);
   return ret;
+#else
+  char *ret;
+
+  ret = malloc (len + 1);
+  memcpy (ret, input, len);
+  ret[len] = '\0';
+  return ret;
+#endif
 }
 
 /* end of convert.c */

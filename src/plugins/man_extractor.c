@@ -1,10 +1,10 @@
 /*
      This file is part of libextractor.
-     (C) 2002, 2003, 2004, 2009 Vidyut Samanta and Christian Grothoff
+     (C) 2002, 2003, 2004, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      libextractor is distributed in the hope that it will be useful, but
@@ -17,49 +17,66 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
  */
-
+/**
+ * @file plugins/man_extractor.c
+ * @brief plugin to support man pages
+ * @author Christian Grothoff
+ */
 #include "platform.h"
 #include "extractor.h"
 #include <ctype.h>
 
+
+/**
+ * Create string from first 'n' characters of 'str'.  See 'strndup'.
+ *
+ * @param str input string
+ * @param n desired output length (plus 0-termination)
+ * @return copy of first 'n' bytes from 'str' plus 0-terminator, NULL on error
+ */
 static char *
 stndup (const char *str, size_t n)
 {
   char *tmp;
-  tmp = malloc (n + 1);
-  if (tmp == NULL)
+
+  if (NULL == (tmp = malloc (n + 1)))
     return NULL;
   tmp[n] = '\0';
   memcpy (tmp, str, n);
   return tmp;
 }
 
+
+/**
+ * Give a metadata item to LE.  Removes double-quotes and
+ * makes sure we don't pass empty strings or NULL pointers.
+ *
+ * @param type metadata type to use
+ * @param keyword metdata value; freed in the process
+ * @param proc function to call with meta data
+ * @param proc_cls closure for 'proc'
+ * @return 0 to continue extracting, 1 if we are done
+ */
 static int
-addKeyword (enum EXTRACTOR_MetaType type,
-            char *keyword, 
-	    EXTRACTOR_MetaDataProcessor proc,
-	    void *proc_cls)
+add_keyword (enum EXTRACTOR_MetaType type,
+	     char *keyword, 
+	     EXTRACTOR_MetaDataProcessor proc,
+	     void *proc_cls)
 {
   int ret;
-  if (keyword == NULL)
+  char *value;
+  
+  if (NULL == keyword)
     return 0;
-  if (strlen (keyword) == 0)
+  if ( (keyword[0] == '\"') && 
+       (keyword[strlen (keyword) - 1] == '\"') )
     {
-      free (keyword);
-      return 0;
-    }
-  if ((keyword[0] == '\"') && (keyword[strlen (keyword) - 1] == '\"'))
-    {
-      char *tmp;
-
       keyword[strlen (keyword) - 1] = '\0';
-      tmp = strdup (&keyword[1]);
-      free (keyword);
-      if (tmp == NULL)
-	return 0;
-      keyword = tmp;
+      value = &keyword[1];
     }
-  if (strlen (keyword) == 0)
+  else
+    value = keyword;
+  if (0 == strlen (value))
     {
       free (keyword);
       return 0;
@@ -69,27 +86,40 @@ addKeyword (enum EXTRACTOR_MetaType type,
 	      type,
 	      EXTRACTOR_METAFORMAT_UTF8,
 	      "text/plain",
-	      keyword,
-	      strlen (keyword)+1);
+	      value,
+	      strlen (value)+1);
   free (keyword);
   return ret;
 }
 
+
+/**
+ * Find the end of the current token (which may be quoted).
+ *
+ * @param end beginning of the current token, updated to its end; set to size + 1 if the token does not end properly
+ * @param buf input buffer with the characters
+ * @param size number of bytes in buf
+ */
 static void
-NEXT (size_t * end, const char *buf, const size_t size)
+find_end_of_token (size_t *end,
+		   const char *buf, 
+		   const size_t size)
 {
   int quot;
 
   quot = 0;
-  while ((*end < size) && (((quot & 1) != 0) || ((buf[*end] != ' '))))
+  while ( (*end < size) &&
+	  ( (0 != (quot & 1)) ||
+	    ((' ' != buf[*end])) ) )
     {
-      if (buf[*end] == '\"')
+      if ('\"' == buf[*end])
         quot++;
       (*end)++;
     }
-  if ((quot & 1) == 1)
+  if (1 == (quot & 1))
     (*end) = size + 1;
 }
+
 
 /**
  * How many bytes do we actually try to scan? (from the beginning
@@ -97,136 +127,166 @@ NEXT (size_t * end, const char *buf, const size_t size)
  */
 #define MAX_READ (16 * 1024)
 
-#define ADD(t,s) do { if (0 != addKeyword (t, s, proc, proc_cls)) return 1; } while (0)
 
-int 
-EXTRACTOR_man_extract (const char *buf,
-		       size_t size,
-		       EXTRACTOR_MetaDataProcessor proc,
-		       void *proc_cls,
-		       const char *options)
+/**
+ * Add a keyword to LE.
+ * 
+ * @param t type to use
+ * @param s keyword to give to LE
+ */
+#define ADD(t,s) do { if (0 != add_keyword (t, s, ec->proc, ec->cls)) return; } while (0)
+
+
+/**
+ * Main entry method for the man page extraction plugin.  
+ *
+ * @param ec extraction context provided to the plugin
+ */
+void
+EXTRACTOR_man_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
-  int pos;
-  size_t xsize;
   const size_t xlen = strlen (".TH ");
-
-  if (size > MAX_READ)
-    size = MAX_READ;
+  size_t pos;
+  size_t xsize;
+  size_t end;
+  void *data;
+  ssize_t size;
+  char *buf;
+  
+  if (0 >= (size = ec->read (ec->cls, &data, MAX_READ)))
+    return;
+  buf = data;
   pos = 0;
   if (size < xlen)
-    return 0;
-  while ((pos < size - xlen) &&
-         ((0 != strncmp (".TH ",
-                         &buf[pos],
-                         xlen)) || ((pos != 0) && (buf[pos - 1] != '\n'))))
+    return;
+  /* find actual beginning of the man page (.TH);
+     abort if we find non-printable characters */
+  while ( (pos < size - xlen) &&
+	  ( (0 != strncmp (".TH ",
+			   &buf[pos],
+			   xlen)) || 
+	    ( (0 != pos) && 
+	      (buf[pos - 1] != '\n') ) ) )
     {
-      if (!isgraph ((unsigned char) buf[pos]) && 
-	  !isspace ((unsigned char) buf[pos]))
-        return 0;
+      if ( (! isgraph ((unsigned char) buf[pos])) && 
+	   (! isspace ((unsigned char) buf[pos])) )
+        return;
       pos++;
     }
+  if (0 != strncmp (".TH ", &buf[pos], xlen))
+    return;
+
+  /* find end of ".TH"-line */
   xsize = pos;
-  while ((xsize < size) && (buf[xsize] != '\n'))
+  while ( (xsize < size) && ('\n' != buf[xsize]) )
     xsize++;
+  /* limit processing to ".TH" line */
   size = xsize;
 
-  if (0 == strncmp (".TH ", &buf[pos], xlen))
-    {
-      size_t end;
+  /* skip over ".TH" */
+  pos += xlen;
 
-      pos += xlen;
-      end = pos;
-      NEXT (&end, buf, size);
-      if (end > size)
-        return 0;
-      if (end - pos > 0)
-        {
-          ADD (EXTRACTOR_METATYPE_TITLE, stndup (&buf[pos], end - pos));
-          pos = end + 1;
-        }
-      if (pos >= size)
-        return 0;
-      end = pos;
-      NEXT (&end, buf, size);
-      if (end > size)
-        return 0;
-      if (buf[pos] == '\"')
-        pos++;
-      if ((end - pos >= 1) && (end - pos <= 4))
-        {
-          switch (buf[pos])
-            {
-            case '1':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-		   strdup (_("Commands")));
-              break;
-            case '2':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("System calls")));
-              break;
-            case '3':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("Library calls")));
-              break;
-            case '4':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("Special files")));
-              break;
-            case '5':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("File formats and conventions")));
-              break;
-            case '6':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("Games")));
-              break;
-            case '7':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("Conventions and miscellaneous")));
-              break;
-            case '8':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("System management commands")));
-              break;
-            case '9':
-              ADD (EXTRACTOR_METATYPE_SECTION,
-                                 strdup (_("Kernel routines")));
-              break;
-            }
-          pos = end + 1;
-        }
-      end = pos;
-      NEXT (&end, buf, size);
-      if (end > size)
-        return 0;
-      if (end - pos > 0)
-        {
-          ADD (EXTRACTOR_METATYPE_MODIFICATION_DATE, stndup (&buf[pos], end - pos));
-          pos = end + 1;
-        }
-      end = pos;
-      NEXT (&end, buf, size);
-      if (end > size)
-        return 0;
-      if (end - pos > 0)
-        {
-          ADD (EXTRACTOR_METATYPE_SOURCE,
-	       stndup (&buf[pos], end - pos));
-          pos = end + 1;
-        }
-      end = pos;
-      NEXT (&end, buf, size);
-      if (end > size)
-        return 0;
-      if (end - pos > 0)
-        {
-          ADD (EXTRACTOR_METATYPE_BOOK_TITLE,
-	       stndup (&buf[pos], end - pos));
-          pos = end + 1;
-        }
+  /* first token is the title */
+  end = pos;
+  find_end_of_token (&end, buf, size);
+  if (end > size)
+    return;
+  if (end > pos)
+    {
+      ADD (EXTRACTOR_METATYPE_TITLE, stndup (&buf[pos], end - pos));
+      pos = end + 1;
+    }
+  if (pos >= size)
+    return;
+  
+  /* next token is the section */
+  end = pos;
+  find_end_of_token (&end, buf, size);
+  if (end > size)
+    return;
+  if ('\"' == buf[pos])
+    pos++;
+  if ((end - pos >= 1) && (end - pos <= 4))
+    {
+      switch (buf[pos])
+	{
+	case '1':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("Commands")));
+	  break;
+	case '2':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("System calls")));
+	  break;
+	case '3':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("Library calls")));
+	  break;
+	case '4':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("Special files")));
+	  break;
+	case '5':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("File formats and conventions")));
+	  break;
+	case '6':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("Games")));
+	  break;
+	case '7':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("Conventions and miscellaneous")));
+	  break;
+	case '8':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("System management commands")));
+	  break;
+	case '9':
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       strdup (_("Kernel routines")));
+	  break;
+	default:
+	  ADD (EXTRACTOR_METATYPE_SECTION,
+	       stndup (&buf[pos], 1));
+	}
+      pos = end + 1;
+    }
+  end = pos;
+
+  /* next token is the modification date */
+  find_end_of_token (&end, buf, size);
+  if (end > size)
+    return;  
+  if (end > pos)
+    {
+      ADD (EXTRACTOR_METATYPE_MODIFICATION_DATE, stndup (&buf[pos], end - pos));
+      pos = end + 1;
     }
 
-  return 0;
+  /* next token is the source of the man page */
+  end = pos;
+  find_end_of_token (&end, buf, size);
+  if (end > size)
+    return;
+  if (end > pos)
+    {
+      ADD (EXTRACTOR_METATYPE_SOURCE,
+	   stndup (&buf[pos], end - pos));
+      pos = end + 1;
+    }
+
+  /* last token is the title of the book the man page belongs to */
+  end = pos;
+  find_end_of_token (&end, buf, size);
+  if (end > size)
+    return;
+  if (end > pos)
+    {
+      ADD (EXTRACTOR_METATYPE_BOOK_TITLE,
+	   stndup (&buf[pos], end - pos));
+      pos = end + 1;
+    }
 }
 
 /* end of man_extractor.c */

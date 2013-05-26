@@ -1,10 +1,10 @@
 /*
      This file is part of libextractor.
-     (C) 2002, 2003, 2009 Vidyut Samanta and Christian Grothoff
+     (C) 2002, 2003, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      libextractor is distributed in the hope that it will be useful, but
@@ -17,88 +17,64 @@
      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
      Boston, MA 02111-1307, USA.
  */
-
+/**
+ * @file plugins/ps_extractor.c
+ * @brief plugin to support PostScript files
+ * @author Christian Grothoff
+ */
 #include "platform.h"
 #include "extractor.h"
 
 
-static char *
-readline (const char *data, size_t size, size_t pos)
+/**
+ * Maximum length of a single line in the PostScript file we're
+ * willing to look at.  While the body of the file can have longer
+ * lines, this should be a sane limit for the lines in the header with
+ * the meta data.
+ */
+#define MAX_LINE (1024)
+
+/**
+ * Header of a PostScript file.
+ */
+#define PS_HEADER "%!PS-Adobe"
+
+
+/**
+ * Pair with prefix in the PS header and corresponding LE type.
+ */
+struct Matches
 {
-  size_t end;
-  char *res;
-
-  while ((pos < size) &&
-         ((data[pos] == (char) 0x0d) || (data[pos] == (char) 0x0a)))
-    pos++;
-
-  if (pos >= size)
-    return NULL;                /* end of file */
-  end = pos;
-  while ((end < size) &&
-         (data[end] != (char) 0x0d) && (data[end] != (char) 0x0a))
-    end++;
-  res = malloc (end - pos + 1);
-  if (res == NULL)
-    return NULL;
-  memcpy (res, &data[pos], end - pos);
-  res[end - pos] = '\0';
-
-  return res;
-}
-
-
-static int
-testmeta (char *line,
-          const char *match,
-          enum EXTRACTOR_MetaType type, 
-	  EXTRACTOR_MetaDataProcessor proc,
-	  void *proc_cls)
-{
-  char *key;
-
-  if ( (strncmp (line, match, strlen (match)) == 0) &&
-       (strlen (line) > strlen (match)) )
-    {
-      if ((line[strlen (line) - 1] == ')') && (line[strlen (match)] == '('))
-        {
-          key = &line[strlen (match) + 1];
-          key[strlen (key) - 1] = '\0'; /* remove ")" */
-        }
-      else
-        {
-          key = &line[strlen (match)];
-        }
-      if (0 != proc (proc_cls,
-		     "ps",
-		     type,
-		     EXTRACTOR_METAFORMAT_UTF8,
-		     "text/plain",
-		     key,
-		     strlen (key)+1))
-	return 1;
-    }
-  return 0;
-}
-
-typedef struct
-{
+  /**
+   * PS header prefix.
+   */
   const char *prefix;
+  
+  /**
+   * Corresponding LE type.
+   */
   enum EXTRACTOR_MetaType type;
-} Matches;
+};
 
-static Matches tests[] = {
-  {"%%Title: ", EXTRACTOR_METATYPE_TITLE},
-  {"%%Author: ", EXTRACTOR_METATYPE_AUTHOR_NAME},
-  {"%%Version: ", EXTRACTOR_METATYPE_REVISION_NUMBER},
-  {"%%Creator: ", EXTRACTOR_METATYPE_CREATED_BY_SOFTWARE},
-  {"%%CreationDate: ", EXTRACTOR_METATYPE_CREATION_DATE},
-  {"%%Pages: ", EXTRACTOR_METATYPE_PAGE_COUNT},
-  {"%%Orientation: ", EXTRACTOR_METATYPE_PAGE_ORIENTATION},
-  {"%%DocumentPaperSizes: ", EXTRACTOR_METATYPE_PAPER_SIZE},
-  {"%%PageOrder: ", EXTRACTOR_METATYPE_PAGE_ORDER},
-  {"%%LanguageLevel: ", EXTRACTOR_METATYPE_FORMAT_VERSION},
-  {"%%Magnification: ", EXTRACTOR_METATYPE_MAGNIFICATION},
+
+/**
+ * Map of PS prefixes to LE types.
+ */
+static struct Matches tests[] = {
+  { "%%Title: ", EXTRACTOR_METATYPE_TITLE },
+  { "% Subject: ", EXTRACTOR_METATYPE_SUBJECT },
+  { "%%Author: ", EXTRACTOR_METATYPE_AUTHOR_NAME },
+  { "% From: ", EXTRACTOR_METATYPE_AUTHOR_NAME },
+  { "%%Version: ", EXTRACTOR_METATYPE_REVISION_NUMBER },
+  { "%%Creator: ", EXTRACTOR_METATYPE_CREATED_BY_SOFTWARE },
+  { "%%CreationDate: ", EXTRACTOR_METATYPE_CREATION_DATE },
+  { "% Date: ", EXTRACTOR_METATYPE_UNKNOWN_DATE },
+  { "%%Pages: ", EXTRACTOR_METATYPE_PAGE_COUNT },
+  { "%%Orientation: ", EXTRACTOR_METATYPE_PAGE_ORIENTATION },
+  { "%%DocumentPaperSizes: ", EXTRACTOR_METATYPE_PAPER_SIZE },
+  { "%%PageOrder: ", EXTRACTOR_METATYPE_PAGE_ORDER },
+  { "%%LanguageLevel: ", EXTRACTOR_METATYPE_FORMAT_VERSION },
+  { "%%Magnification: ", EXTRACTOR_METATYPE_MAGNIFICATION },
 
   /* Also widely used but not supported since they
      probably make no sense:
@@ -108,90 +84,134 @@ static Matches tests[] = {
      "%%DocumentProcSets: ",
      "%%DocumentData: ", */
 
-  {NULL, 0}
+  { NULL, 0 }
 };
 
-#define PS_HEADER "%!PS-Adobe"
 
-/* mimetype = application/postscript */
-int 
-EXTRACTOR_ps_extract (const char *data,
-		      size_t size,
-		      EXTRACTOR_MetaDataProcessor proc,
-		      void *proc_cls,
-		      const char *options)
+/**
+ * Read a single ('\n'-terminated) line of input.
+ *
+ * @param ec context for IO
+ * @return NULL on end-of-file (or if next line exceeds limit)
+ */
+static char *
+readline (struct EXTRACTOR_ExtractContext *ec)
 {
-  size_t pos;
+  int64_t pos;
+  ssize_t ret;
+  char *res;
+  void *data;
+  const char *cdata;
+  const char *eol;
+
+  pos = ec->seek (ec->cls, 0, SEEK_CUR);
+  if (0 >= (ret = ec->read (ec->cls, &data, MAX_LINE)))
+    return NULL; 
+  cdata = data;
+  if (NULL == (eol = memchr (cdata, '\n', ret)))
+    return NULL; /* no end-of-line found */
+  if (NULL == (res = malloc (eol - cdata + 1)))
+    return NULL;
+  memcpy (res, cdata, eol - cdata);
+  res[eol - cdata] = '\0';
+  ec->seek (ec->cls, pos + eol - cdata + 1, SEEK_SET);
+  return res;
+}
+
+
+/**
+ * Main entry method for the 'application/postscript' extraction plugin.  
+ *
+ * @param ec extraction context provided to the plugin
+ */
+void
+EXTRACTOR_ps_extract_method (struct EXTRACTOR_ExtractContext *ec)
+{
+  unsigned int i;
   char *line;
-  int i;
-  int lastLine;
-  int ret;
+  char *next;
+  char *acc;
+  const char *match;
 
-  pos = strlen (PS_HEADER);
-  if ( (size < pos) ||
-       (0 != strncmp (PS_HEADER,
-		      data,
-		      pos)) )
-    return 0;
-  ret = 0;
-
-  if (0 != proc (proc_cls,
-		 "ps",
-		 EXTRACTOR_METATYPE_MIMETYPE,
-		 EXTRACTOR_METAFORMAT_UTF8,
-		 "text/plain",
-		 "application/postscript",
-		 strlen ("application/postscript")+1))
-    return 1;
-  /* skip rest of first line */
-  while ((pos < size) && (data[pos] != '\n'))
-    pos++;
-
-  lastLine = -1;
-  line = NULL;
-  /* while Windows-PostScript does not seem to (always?) put
-     "%%EndComments", this should allow us to not read through most of
-     the file for all the sane applications... For Windows-generated
-     PS files, we will bail out at the end of the file. */
-  while ( (line == NULL) ||
-	  (0 != strncmp ("%%EndComments", line, strlen ("%%EndComments"))) )
+  if (NULL == (line = readline (ec)))
+    return;
+  if ( (strlen (line) < strlen (PS_HEADER)) ||
+       (0 != memcmp (PS_HEADER,
+		     line,
+		     strlen (PS_HEADER))) )
     {
-      if (line != NULL)
-	free (line);
-      line = readline (data, size, pos);
-      if (line == NULL)
-        break;
-      i = 0;
-      while (tests[i].prefix != NULL)
-        {
-          ret = testmeta (line, tests[i].prefix, tests[i].type, proc, proc_cls);
-	  if (ret != 0)
-	    break;
-          i++;
-        }
-      if (ret != 0)
-	break;
-
-      /* %%+ continues previous meta-data type... */
-      if ( (lastLine != -1) && (0 == strncmp (line, "%%+ ", strlen ("%%+ "))))
-        {
-          ret = testmeta (line, "%%+ ", tests[lastLine].type, proc, proc_cls);
-        }
-      else
-        {
-          /* update "previous" type */
-          if (tests[i].prefix == NULL)
-            lastLine = -1;
-          else
-            lastLine = i;
-        }
-      if (pos + strlen (line) + 1 <= pos)
-	break; /* overflow */
-      pos += strlen (line) + 1; /* skip newline, too; guarantee progress! */      
+      free (line);
+      return;
     }
-  if (line != NULL)
-    free (line);
-  return ret;
+  free (line);
+  if (0 != ec->proc (ec->cls,
+		     "ps",
+		     EXTRACTOR_METATYPE_MIMETYPE,
+		     EXTRACTOR_METAFORMAT_UTF8,
+		     "text/plain",
+		     "application/postscript",
+		     strlen ("application/postscript") + 1))
+    return;
+  
+  line = NULL;
+  next = readline (ec);
+  while ( (NULL != next) &&
+	  ('%' == next[0]) )
+    {
+      line = next;
+      next = readline (ec);
+      for (i = 0; NULL != tests[i].prefix; i++)
+        {
+	  match = tests[i].prefix;
+	  if ( (strlen (line) < strlen (match)) ||
+	       (0 != strncmp (line, match, strlen (match))) )
+	    continue;
+	  /* %%+ continues previous meta-data type... */
+	  while ( (NULL != next) &&
+		  (0 == strncmp (next, "%%+", strlen ("%%+"))) )
+	    {
+	      if (NULL == (acc = malloc (strlen (line) + strlen (next) - 1)))		
+		break;			      
+	      strcpy (acc, line);
+	      strcat (acc, " ");
+	      strcat (acc, next + 3);
+	      free (line);
+	      line = acc;
+	      free (next);
+	      next = readline (ec);
+	    }
+	  if ( (line[strlen (line) - 1] == ')') && 
+	       (line[strlen (match)] == '(') )
+	    {
+	      acc = &line[strlen (match) + 1];
+	      acc[strlen (acc) - 1] = '\0'; /* remove ")" */
+	    }
+	  else
+	    {
+	      acc = &line[strlen (match)];
+	    }
+	  while (isspace ((unsigned int) acc[0]))
+	    acc++;
+	  if ( (strlen (acc) > 0) &&
+	       (0 != ec->proc (ec->cls,
+			       "ps",
+			       tests[i].type,
+			       EXTRACTOR_METAFORMAT_UTF8,
+			       "text/plain",
+			       acc,
+			       strlen (acc) + 1)) )
+	    {
+	      free (line);
+	      if (NULL != next)
+		free (next);
+	      return;
+	    }
+	  break;
+	}
+      free (line);
+    }
+  if (NULL != next)
+    free (next);
 }
 
 /* end of ps_extractor.c */

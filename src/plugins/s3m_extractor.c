@@ -1,68 +1,108 @@
 /*
- * This file is part of libextractor.
- * (C) 2008 Toni Ruottu
- *
- * libextractor is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2, or (at your
- * option) any later version.
- *
- * libextractor is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with libextractor; see the file COPYING.  If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
- *
- */
+     This file is part of libextractor.
+     (C) 2002, 2003, 2004, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
+     libextractor is free software; you can redistribute it and/or modify
+     it under the terms of the GNU General Public License as published
+     by the Free Software Foundation; either version 3, or (at your
+     option) any later version.
+
+     libextractor is distributed in the hope that it will be useful, but
+     WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     General Public License for more details.
+
+     You should have received a copy of the GNU General Public License
+     along with libextractor; see the file COPYING.  If not, write to the
+     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+     Boston, MA 02111-1307, USA.
+ */
+/**
+ * @file plugins/s3m_extractor.c
+ * @brief plugin to support Scream Tracker (S3M) files
+ * @author Toni Ruottu
+ * @author Christian Grothoff
+ */
 #include "platform.h"
 #include "extractor.h"
-#include "convert.h"
+#include "le_architecture.h"
 
-#define HEADER_SIZE  0x70
 
-struct header
+LE_NETWORK_STRUCT_BEGIN
+struct S3MHeader
 {
-  char title[28];
-  char something[16];
-  char magicid[4];
+  char song_name[28];
+  uint8_t byte_1A;
+  uint8_t file_type; /* 0x10 == ST3 module */
+  uint8_t unknown1[2];
+  uint16_t number_of_orders LE_PACKED; /* should be even */
+  uint16_t number_of_instruments LE_PACKED;
+  uint16_t number_of_patterns LE_PACKED;
+  uint16_t flags LE_PACKED;
+  uint16_t created_with_version LE_PACKED;
+  uint16_t file_format_info LE_PACKED;
+  char SCRM[4];
+  uint8_t global_volume;
+  uint8_t initial_speed;
+  uint8_t initial_tempo;
+  uint8_t master_volume;
+  uint8_t ultra_click_removal;
+  uint8_t default_channel_positions;
+  uint8_t unknown2[8];
+  uint16_t special LE_PACKED;
+  uint8_t channel_settings[32];
 };
+LE_NETWORK_STRUCT_END
 
-#define ADD(s,t) do { if (0 != proc (proc_cls, "s3m", t, EXTRACTOR_METAFORMAT_UTF8, "text/plain", s, strlen(s)+1)) return 1; } while (0)
 
-
-/* "extract" keyword from a Scream Tracker 3 Module
+/**
+ * Give meta data to LE 'proc' callback using the given LE type and value.
  *
- * "Scream Tracker 3.01 BETA File Formats And Mixing Info"
- * was used, while this piece of software was originally
- * written.
- *
+ * @param t LE meta data type
+ * @param s meta data to add
  */
-int 
-EXTRACTOR_s3m_extract (const unsigned char *data,
-		       size_t size,
-		       EXTRACTOR_MetaDataProcessor proc,
-		       void *proc_cls,
-		       const char *options)
+#define ADD(s, t) do { if (0 != ec->proc (ec->cls, "s3m", t, EXTRACTOR_METAFORMAT_UTF8, "text/plain", s, strlen (s) + 1)) return; } while (0)
+
+
+/**
+ * Extractor based upon Scream Tracker 3.20 spec at http://16-bits.org/s3m/
+ *
+ * Looks like the format was defined by the software implementation,
+ * and that implementation was for little-endian platform, which means
+ * that the format is little-endian.
+ *
+ * @param ec extraction context
+ */
+void
+EXTRACTOR_s3m_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
-  char title[29];
-  const struct header *head;
+  void *data;
+  struct S3MHeader header;
+  char song_name_NT[29];
 
-  /* Check header size */
-
-  if (size < HEADER_SIZE)    
-    return 0;    
-  head = (const struct header *) data;
-  if (memcmp (head->magicid, "SCRM", 4))
-    return 0;
+  if (sizeof (header) >
+      ec->read (ec->cls,
+		&data,
+		sizeof (header)))
+    return;
+  memcpy (&header, data, sizeof (header));
+  if ( (0x1A != header.byte_1A) ||
+       (0 != memcmp (header.SCRM, "SCRM", 4)) )
+    return;
+  header.number_of_orders = LE_le16toh (header.number_of_orders);
+  header.number_of_instruments = LE_le16toh (header.number_of_instruments);
+  header.number_of_patterns = LE_le16toh (header.number_of_patterns);
+  header.flags = LE_le16toh (header.flags);
+  header.created_with_version = LE_le16toh (header.created_with_version);
+  header.file_format_info = LE_le16toh (header.file_format_info);
+  header.special = LE_le16toh (header.special);
+  memcpy (song_name_NT, header.song_name, 28);
+  song_name_NT[28] = '\0';
   ADD ("audio/x-s3m", EXTRACTOR_METATYPE_MIMETYPE);
-
-  memcpy (&title, head->title, 28);
-  title[28] = '\0';
-  ADD (title, EXTRACTOR_METATYPE_TITLE);
-  return 0;
+  ADD (song_name_NT, EXTRACTOR_METATYPE_TITLE);
+  /* TODO: turn other header data into useful metadata (i.e. RESOURCE_TYPE).
+   * Also, disabled instruments can be (and are) used to carry user-defined text.
+   */
 }
+
+/* end of s3m_extractor.c */
