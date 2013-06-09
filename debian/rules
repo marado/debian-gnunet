@@ -15,7 +15,9 @@ override_dh_auto_install:
 
 	# Removing useless files
 	rm -f debian/tmp/usr/lib/*/*.la
+	rm -f debian/tmp/usr/lib/*/*.a
 	rm -f debian/tmp/usr/lib/*/libextractor/*.la
+	rm -f debian/tmp/usr/lib/*/libextractor/*.a
 	rm -f debian/tmp/usr/share/info/dir*
 
 override_dh_install:
