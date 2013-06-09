@@ -15,7 +15,6 @@ Vcs-browser: http://anonscm.debian.org/gitweb/?p=collab-maint/libextractor.git
 Homepage: http://www.gnu.org/software/libextractor/
 
 Package: libextractor3
-Section: libs
 Architecture: any
 Pre-Depends: multiarch-support
 Depends: ${misc:Depends}, ${shlibs:Depends}
