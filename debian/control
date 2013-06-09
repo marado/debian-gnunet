@@ -10,7 +10,7 @@ Build-Depends:
  libmpeg2-4-dev, libmp4v2-dev, librpm-dev, libsmf-dev, libtidy-dev,
  libtiff4-dev, libvorbis-dev, libogg-dev, zlib1g-dev
 Standards-Version: 3.9.3
-Vcs-Git: git://anonscm.debian.org/git/git/collab-maint/libextractor.git
+Vcs-Git: git://anonscm.debian.org/collab-maint/libextractor.git
 Vcs-browser: http://anonscm.debian.org/gitweb/?p=collab-maint/libextractor.git
 Homepage: http://www.gnu.org/software/libextractor/
 
