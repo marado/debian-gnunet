@@ -26,5 +26,3 @@ override_dh_install:
 override_dh_strip:
 	dh_strip --dbg-package=libextractor-dbg
 
-override_dh_builddeb:
-	dh_builddeb -- -Zgzip -z9
