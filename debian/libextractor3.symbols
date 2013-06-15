@@ -53,41 +53,7 @@ libextractor_dvi.so libextractor3 #MINVER#
  EXTRACTOR_dvi_extract_method@Base 1:1.0.1
 libextractor_exiv2.so libextractor3 #MINVER#
  EXTRACTOR_exiv2_extract_method@Base 1:1.0.1
- _ZN11ExtractorIO4getbEv@Base 1:1.0.1
- _ZN11ExtractorIO4mmapEb@Base 1:1.0.1
- _ZN11ExtractorIO4openEv@Base 1:1.0.1
- _ZN11ExtractorIO4putbEh@Base 1:1.0.1
- _ZN11ExtractorIO4readEPhl@Base 1:1.0.1
- _ZN11ExtractorIO4readEl@Base 1:1.0.1
- _ZN11ExtractorIO4seekElN5Exiv27BasicIo8PositionE@Base 1:1.0.1
- _ZN11ExtractorIO5closeEv@Base 1:1.0.1
- _ZN11ExtractorIO5writeEPKhl@Base 1:1.0.1
- _ZN11ExtractorIO5writeERN5Exiv27BasicIoE@Base 1:1.0.1
- _ZN11ExtractorIO6munmapEv@Base 1:1.0.1
- _ZN11ExtractorIO8transferERN5Exiv27BasicIoE@Base 1:1.0.1
- _ZN11ExtractorIOD0Ev@Base 1:1.0.1
- _ZN11ExtractorIOD1Ev@Base 1:1.0.1
- _ZN11ExtractorIOD2Ev@Base 1:1.0.1
- _ZN5Exiv28toStringINS_9ExifdatumEEESsRKT_@Base 1:1.0.1
- _ZN5Exiv28toStringISsEESsRKT_@Base 1:1.0.1
- _ZNK11ExtractorIO3eofEv@Base 1:1.0.1
- _ZNK11ExtractorIO4pathEv@Base 1:1.0.1
- _ZNK11ExtractorIO4sizeEv@Base 1:1.0.1
- _ZNK11ExtractorIO4tellEv@Base 1:1.0.1
- _ZNK11ExtractorIO5errorEv@Base 1:1.0.1
- _ZNK11ExtractorIO6isopenEv@Base 1:1.0.1
- _ZNK11ExtractorIO9temporaryEv@Base 1:1.0.1
- _ZNSsC1IPcEET_S1_RKSaIcE@Base 1:1.0.1
- _ZNSsC2IPcEET_S1_RKSaIcE@Base 1:1.0.1
- _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEED0Ev@Base 1:1.0.1
- _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEED1Ev@Base 1:1.0.1
- _ZNSt15basic_stringbufIcSt11char_traitsIcESaIcEED2Ev@Base 1:1.0.1
- _ZTI11ExtractorIO@Base 1:1.0.1
- _ZTIN5Exiv210BasicErrorIcEE@Base 1:1.0.1
- _ZTS11ExtractorIO@Base 1:1.0.1
- _ZTSN5Exiv210BasicErrorIcEE@Base 1:1.0.1
- _ZTV11ExtractorIO@Base 1:1.0.1
- _ZTVN5Exiv210BasicErrorIcEE@Base 1:1.0.1
+ (regex|optional)"^_" 1:1.0.1
 libextractor_flac.so libextractor3 #MINVER#
  EXTRACTOR_flac_extract_method@Base 1:1.0.1
 libextractor_gif.so libextractor3 #MINVER#
