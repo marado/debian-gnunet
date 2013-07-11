@@ -1,3 +1,23 @@
+libextractor (1:1.0.1-1) unstable; urgency=low
+
+  * Imported Upstream version 1.0.1 (Closes: #690095).
+  * Move the git repository to collab-maint.
+  * Remove the underscore_in_plugin_path patch, included upstream.
+  * debian/control: Update build dependencies according to README.
+  * debian/rules: remove override_dh_configure to enable all plugins.
+  * Merge libextractor and libextractor-plugins. Keeping them separated is
+    difficult to maintain and does not worth it.
+  * debian/rules: remove .a files.
+  * debian/rules: remove useless override_dh_builddeb.
+  * debian/control: remove duplicate section field.
+  * Add a symbols file for libextractor3.
+  * Remove useless debian/source/options.
+  * Standards version 3.9.4.
+  * Fix manpage whatis entry.
+  * debian/copyright: the licence is now GPL-3+, update years.
+
+ -- Bertrand Marc <beberking@gmail.com>  Sun, 23 Jun 2013 15:43:51 +0200
+
 libextractor (1:0.6.3-5) unstable; urgency=low
 
   * debian/control: add Vcs-Git and Vcs-browser fields.
