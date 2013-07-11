@@ -1,18 +1,19 @@
-# Irish translations for libextractor
-# Copyright (C) 2005 Free Software Foundation, Inc.
+# Polish translation for libextractor.
+# Copyright (C) 2012 Free Software Foundation, Inc.
 # This file is distributed under the same license as the libextractor package.
-# Kevin Patrick Scannell <scannell@SLU.EDU>, 2005, 2006, 2007, 2008.
+# Jakub Bogusz <qboosh@pld-linux.org>, 2012.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: libextractor 0.5.20\n"
+"Project-Id-Version: libextractor 1.0.0-pre1\n"
 "Report-Msgid-Bugs-To: libextractor@gnu.org\n"
 "POT-Creation-Date: 2013-06-29 21:26+0200\n"
-"PO-Revision-Date: 2008-03-21 20:46-0700\n"
-"Last-Translator: Kevin Scannell <kscanne@gmail.com>\n"
-"Language-Team: Irish <gaeilge-gnulinux@lists.sourceforge.net>\n"
-"Language: ga\n"
+"PO-Revision-Date: 2012-12-01 15:45+0100\n"
+"Last-Translator: Jakub Bogusz <qboosh@pld-linux.org>\n"
+"Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: src/main/extract.c:132
@@ -22,7 +23,7 @@ msgid ""
 "%s\n"
 "\n"
 msgstr ""
-"Úsáid: %s\n"
+"SkÅ‚adnia: %s\n"
 "%s\n"
 "\n"
 
@@ -31,399 +32,381 @@ msgstr ""
 msgid ""
 "Arguments mandatory for long options are also mandatory for short options.\n"
 msgstr ""
-"Is riachtanach le rogha ghearr aon argóint atá riachtanach leis an rogha "
-"fhada.\n"
+"Argumenty obowiÄ…zkowe dla opcji dÅ‚ugich sÄ… obowiÄ…zkowe takÅ¼e dla opcji "
+"krÃ³tkich.\n"
 
 #: src/main/extract.c:217
 msgid "print output in bibtex format"
-msgstr "priontáil aschur i bhformáid bibtex"
+msgstr "wyjÅ›cie w formacie bibtex"
 
 #: src/main/extract.c:219
 msgid "produce grep-friendly output (all results on one line per file)"
 msgstr ""
-"aschur is féidir próiseáil le grep (gach toradh ar líne amháin sa chomhad)"
+"wyjÅ›cie przyjazne dla grepa (wszystkie wyniki w jednej linii dla pliku)"
 
 #: src/main/extract.c:221
 msgid "print this help"
-msgstr "taispeáin an chabhair seo"
+msgstr "wyÅ›wietlenie tego opisu"
 
 #: src/main/extract.c:223
 msgid "run plugins in-process (simplifies debugging)"
-msgstr ""
+msgstr "uruchamianie wtyczek wewnÄ…trz procesu (uÅ‚atwia diagnostykÄ™)"
 
 #: src/main/extract.c:225
 msgid "read data from file into memory and extract from memory"
-msgstr ""
+msgstr "odczyt danych z pliku do pamiÄ™ci i tworzenie wyciÄ…gÃ³w z pamiÄ™ci"
 
 #: src/main/extract.c:227
 msgid "load an extractor plugin named LIBRARY"
-msgstr "luchtaigh breiseán asbhainteora darb ainm LEABHARLANN"
+msgstr "odczyt wtyczki wyciÄ…gu o nazwie BIBLIOTEKA"
 
 #: src/main/extract.c:229
 msgid "list all keyword types"
-msgstr "taispeáin gach cineál lorgfhocail"
+msgstr "wypisanie sÅ‚Ã³w kluczowych wszystkich typÃ³w"
 
 #: src/main/extract.c:231
 msgid "do not use the default set of extractor plugins"
-msgstr "ná húsáid na breiseáin asbhainteora réamhshocraithe"
+msgstr "bez domyÅ›lnego zestawu wtyczek wyciÄ…gÃ³w"
 
 #: src/main/extract.c:233
 msgid "print only keywords of the given TYPE (use -L to get a list)"
-msgstr ""
-"ná taispeáin ach lorgfhocail den CHINEÁL tugtha (úsáid -L chun liosta a "
-"fháil)"
+msgstr "wypisanie sÅ‚Ã³w kluczowych tylko podanego TYPU (-L poda listÄ™)"
 
 #: src/main/extract.c:235
 msgid "print the version number"
-msgstr "taispeáin an leagan"
+msgstr "wypisanie numeru wersji"
 
 #: src/main/extract.c:237
 msgid "be verbose"
-msgstr "bí foclach"
+msgstr "tryb szczegÃ³Å‚owy"
 
 #: src/main/extract.c:239
 msgid "do not print keywords of the given TYPE"
-msgstr "ná taispeáin lorgfhocail den CHINEÁL tugtha"
+msgstr "bez wypisywania sÅ‚Ã³w kluczowych podanego TYPU"
 
 #: src/main/extract.c:242
 msgid "extract [OPTIONS] [FILENAME]*"
-msgstr "extract [ROGHANNA] [COMHADAINM]*"
+msgstr "extract [OPCJE] [NAZWA_PLIKU]*"
 
 #: src/main/extract.c:243
 msgid "Extract metadata from files."
-msgstr "Bain meiteashonraí as comhaid."
+msgstr "WyciÄ…ganie metadanych z plikÃ³w."
 
 #: src/main/extract.c:288
-#, fuzzy, c-format
+#, c-format
 msgid "Found by `%s' plugin:\n"
-msgstr "Theip ar luchtú an bhreiseáin `%s': %s\n"
+msgstr "Znalezione przez wtyczkÄ™ `%s':\n"
 
 #: src/main/extract.c:291 src/main/extract.c:378
 #: src/main/extractor_metatypes.c:145 src/main/extractor_print.c:86
 #: src/main/extractor_print.c:96
 msgid "unknown"
-msgstr "anaithnid"
+msgstr "nieznany"
 
 #: src/main/extract.c:296
 #, c-format
 msgid "%s - (unknown, %u bytes)\n"
-msgstr ""
+msgstr "%s - (nieznany, bajtÃ³w: %u)\n"
 
 #: src/main/extract.c:325
-#, fuzzy, c-format
+#, c-format
 msgid "%s - (binary, %u bytes)\n"
-msgstr "%s - (dénártha)\n"
+msgstr "%s - (binarny, bajtÃ³w: %u)\n"
 
 #: src/main/extract.c:800 src/main/extract.c:812
 msgid ""
 "Illegal combination of options, cannot combine multiple styles of printing.\n"
 msgstr ""
+"Niedozwolona kombinacja opcji, nie moÅ¼na Å‚Ä…czyÄ‡ wielu styli wypisywania.\n"
 
 #: src/main/extract.c:845
 #, c-format
 msgid "You must specify an argument for the `%s' option (option ignored).\n"
-msgstr ""
-"Ní mór duit argóint a thabhairt i ndiaidh na rogha `%s' (á ligean thart).\n"
+msgstr "Opcja `%s' wymaga argumentu (zignorowano opcjÄ™).\n"
 
 #: src/main/extract.c:914
 msgid "Use --help to get a list of options.\n"
-msgstr "Bain úsáid as '--help' le haghaidh níos mó roghanna.\n"
+msgstr "Opcja --help pozwala uzyskaÄ‡ listÄ™ opcji.\n"
 
 #: src/main/extract.c:955
 #, fuzzy
 msgid "% BiBTeX file\n"
-msgstr "%% Comhad BiBTeX\n"
+msgstr "%% plik BiBTeX\n"
 
 #: src/main/extract.c:963
 #, c-format
 msgid "Keywords for file %s:\n"
-msgstr "Lorgfhocail do chomhad %s:\n"
+msgstr "SÅ‚owa kluczowe dla pliku %s:\n"
 
 #: src/main/extractor.c:672
 #, c-format
 msgid "Initialization of plugin mechanism failed: %s!\n"
-msgstr "Theip ar thúsú meicníocht na mbreiseán: %s!\n"
+msgstr "Inicjalizacja mechanizmu wtyczek nie powiodÅ‚a siÄ™: %s!\n"
 
 #: src/main/extractor_metatypes.c:46
 msgid "reserved"
-msgstr ""
+msgstr "zarezerwowane"
 
 #: src/main/extractor_metatypes.c:47
 msgid "reserved value, do not use"
-msgstr ""
+msgstr "wartoÅ›Ä‡ zarezerwowana, nie uÅ¼ywaÄ‡"
 
 #: src/main/extractor_metatypes.c:48
 msgid "mimetype"
-msgstr "Cineál MIME"
+msgstr "typ mime"
 
 #: src/main/extractor_metatypes.c:49
-#, fuzzy
 msgid "mime type"
-msgstr "Cineál MIME"
+msgstr "typ mime"
 
 #: src/main/extractor_metatypes.c:50
-#, fuzzy
 msgid "embedded filename"
-msgstr "comhadainm"
+msgstr "osadzona nazwa pliku"
 
 #: src/main/extractor_metatypes.c:51
 msgid "filename that was embedded (not necessarily the current filename)"
-msgstr ""
+msgstr "osadzona nazwa pliku (niekoniecznie bieÅ¼Ä…ca nazwa pliku)"
 
 #: src/main/extractor_metatypes.c:52
 msgid "comment"
-msgstr "nóta tráchta"
+msgstr "komentarz"
 
 #: src/main/extractor_metatypes.c:53
 msgid "comment about the content"
-msgstr ""
+msgstr "komentarz dotyczÄ…cy treÅ›ci"
 
 #: src/main/extractor_metatypes.c:54
 msgid "title"
-msgstr "teideal"
+msgstr "tytuÅ‚"
 
 #: src/main/extractor_metatypes.c:55
 msgid "title of the work"
-msgstr ""
+msgstr "tytuÅ‚ pracy"
 
 #: src/main/extractor_metatypes.c:57
 msgid "book title"
-msgstr "teideal an leabhair"
+msgstr "tytuÅ‚ ksiÄ…Å¼ki"
 
 #: src/main/extractor_metatypes.c:58
 msgid "title of the book containing the work"
-msgstr ""
+msgstr "tytuÅ‚ ksiÄ…Å¼ki zawierajÄ…cej pracÄ™"
 
 #: src/main/extractor_metatypes.c:59
-#, fuzzy
 msgid "book edition"
-msgstr "teideal an leabhair"
+msgstr "wydanie ksiÄ…Å¼ki"
 
 #: src/main/extractor_metatypes.c:60
 msgid "edition of the book (or book containing the work)"
-msgstr ""
+msgstr "wydanie ksiÄ…Å¼ki (lub ksiÄ…Å¼ki zawierajÄ…cej pracÄ™)"
 
 #: src/main/extractor_metatypes.c:61
-#, fuzzy
 msgid "book chapter"
-msgstr "caibidil"
+msgstr "rozdziaÅ‚ ksiÄ…Å¼ki"
 
 #: src/main/extractor_metatypes.c:62
-#, fuzzy
 msgid "chapter number"
-msgstr "uimhir an riain"
+msgstr "numer rozdziaÅ‚u"
 
 #: src/main/extractor_metatypes.c:63
-#, fuzzy
 msgid "journal name"
-msgstr "ainm iomlán"
+msgstr "nazwa periodyku"
 
 #: src/main/extractor_metatypes.c:64
 msgid "journal or magazine the work was published in"
-msgstr ""
+msgstr "periodyk lub magazyn, w ktÃ³rym zostaÅ‚a opublikowana praca"
 
 #: src/main/extractor_metatypes.c:65
 msgid "journal volume"
-msgstr ""
+msgstr "tom periodyku"
 
 #: src/main/extractor_metatypes.c:66
 msgid "volume of a journal or multi-volume book"
-msgstr ""
+msgstr "tom periodyku lub ksiÄ…Å¼ki wielotomowej"
 
 #: src/main/extractor_metatypes.c:68
-#, fuzzy
 msgid "journal number"
-msgstr "uimhir an riain"
+msgstr "numer periodyku"
 
 #: src/main/extractor_metatypes.c:69
 msgid "number of a journal, magazine or tech-report"
-msgstr ""
+msgstr "numer periodyku, magazynu albo raportu"
 
 #: src/main/extractor_metatypes.c:70
 msgid "page count"
-msgstr "líon na leathanach"
+msgstr "liczba stron"
 
 #: src/main/extractor_metatypes.c:71
 msgid "total number of pages of the work"
-msgstr ""
+msgstr "caÅ‚kowita liczba stron pracy"
 
 #: src/main/extractor_metatypes.c:72
-#, fuzzy
 msgid "page range"
-msgstr "ord na leathanach"
+msgstr "zakres stron"
 
 #: src/main/extractor_metatypes.c:73
 msgid "page numbers of the publication in the respective journal or book"
-msgstr ""
+msgstr "numery stron publikacji w odpowiednim periodyku lub ksiÄ…Å¼ce"
 
 #: src/main/extractor_metatypes.c:74
-#, fuzzy
 msgid "author name"
-msgstr "údar"
+msgstr "nazwisko autora"
 
 #: src/main/extractor_metatypes.c:75
 msgid "name of the author(s)"
-msgstr ""
+msgstr "nazwisko autora/autorÃ³w"
 
 #: src/main/extractor_metatypes.c:76
-#, fuzzy
 msgid "author email"
-msgstr "údar"
+msgstr "e-mail autora"
 
 #: src/main/extractor_metatypes.c:77
 msgid "e-mail of the author(s)"
-msgstr ""
+msgstr "adres e-mail autora/autorÃ³w"
 
 #: src/main/extractor_metatypes.c:79
-#, fuzzy
 msgid "author institution"
-msgstr "treoshuíomh"
+msgstr "instytucja autora"
 
 #: src/main/extractor_metatypes.c:80
 msgid "institution the author worked for"
-msgstr ""
+msgstr "instytucja, dla ktÃ³rej pracowaÅ‚ autor"
 
 #: src/main/extractor_metatypes.c:81
 msgid "publisher"
-msgstr "foilsitheoir"
+msgstr "wydawca"
 
 #: src/main/extractor_metatypes.c:82
-#, fuzzy
 msgid "name of the publisher"
-msgstr "foilsitheoir"
+msgstr "nazwa wydawcy"
 
 #: src/main/extractor_metatypes.c:83
-#, fuzzy
 msgid "publisher's address"
-msgstr "foilsitheoir"
+msgstr "adres wydawcy"
 
 #: src/main/extractor_metatypes.c:84
 msgid "Address of the publisher (often only the city)"
-msgstr ""
+msgstr "adres wydawcy (czÄ™sto tylko miasto)"
 
 #: src/main/extractor_metatypes.c:85
 msgid "publishing institution"
-msgstr ""
+msgstr "instytucja wydawcza"
 
 #: src/main/extractor_metatypes.c:86
 msgid ""
 "institution that was involved in the publishing, but not necessarily the "
 "publisher"
-msgstr ""
+msgstr "instytucja zaangaÅ¼owana w publikacjÄ™, ale niekoniecznie wydawca"
 
 #: src/main/extractor_metatypes.c:87
-#, fuzzy
 msgid "publication series"
-msgstr "dáta foilsithe"
+msgstr "seria publikacji"
 
 #: src/main/extractor_metatypes.c:88
 msgid "series of books the book was published in"
-msgstr ""
+msgstr "seria ksiÄ…Å¼ek, w ktÃ³rej zostaÅ‚a wydana ksiÄ…Å¼ka"
 
 #: src/main/extractor_metatypes.c:90
-#, fuzzy
 msgid "publication type"
-msgstr "dáta foilsithe"
+msgstr "rodzaj publikacji"
 
 #: src/main/extractor_metatypes.c:91
 msgid "type of the tech-report"
-msgstr ""
+msgstr "rodzaj raportu"
 
 #: src/main/extractor_metatypes.c:92
-#, fuzzy
 msgid "publication year"
-msgstr "dáta foilsithe"
+msgstr "rok opublikowania"
 
 #: src/main/extractor_metatypes.c:93
 msgid "year of publication (or, if unpublished, the year of creation)"
 msgstr ""
+"rok opublikowania (lub powstania, jeÅ›li praca nie zostaÅ‚a opublikowana)"
 
 #: src/main/extractor_metatypes.c:94
-#, fuzzy
 msgid "publication month"
-msgstr "dáta foilsithe"
+msgstr "miesiÄ…c opublikowania"
 
 #: src/main/extractor_metatypes.c:95
 msgid "month of publication (or, if unpublished, the month of creation)"
 msgstr ""
+"miesiÄ…c opublikowania (lub powstania, jeÅ›li praca nie zostaÅ‚a opublikowana)"
 
 #: src/main/extractor_metatypes.c:96
-#, fuzzy
 msgid "publication day"
-msgstr "dáta foilsithe"
+msgstr "dzieÅ„ opublikowania"
 
 #: src/main/extractor_metatypes.c:97
 msgid ""
 "day of publication (or, if unpublished, the day of creation), relative to "
 "the given month"
 msgstr ""
+"dzieÅ„ opublikowania (lub powstania, jeÅ›li praca nie zostaÅ‚a opublikowana) w "
+"miesiÄ…cu"
 
 #: src/main/extractor_metatypes.c:98
 msgid "publication date"
-msgstr "dáta foilsithe"
+msgstr "data opublikowania"
 
 #: src/main/extractor_metatypes.c:99
 msgid "date of publication (or, if unpublished, the date of creation)"
 msgstr ""
+"data opublikowania (lub powstania, jeÅ›li praca nie zostaÅ‚a opublikowana)"
 
 #: src/main/extractor_metatypes.c:101
 msgid "bibtex eprint"
-msgstr ""
+msgstr "eprint bibtexowy"
 
 #: src/main/extractor_metatypes.c:102
 msgid "specification of an electronic publication"
-msgstr ""
+msgstr "specyfikacja publikacji elektronicznej"
 
 #: src/main/extractor_metatypes.c:103
-#, fuzzy
 msgid "bibtex entry type"
-msgstr "cineál an ábhair"
+msgstr "rodzaj wpisu bibtex"
 
 #: src/main/extractor_metatypes.c:104
 msgid "type of the publication for bibTeX bibliographies"
-msgstr ""
+msgstr "rodzaj publikacji do bibliografii bibTeXowych"
 
 #: src/main/extractor_metatypes.c:105
 msgid "language"
-msgstr "teanga"
+msgstr "jÄ™zyk"
 
 #: src/main/extractor_metatypes.c:106
 msgid "language the work uses"
-msgstr ""
+msgstr "jÄ™zyk uÅ¼yty w pracy"
 
 #: src/main/extractor_metatypes.c:107
-#, fuzzy
 msgid "creation time"
-msgstr "dáta a cruthaíodh"
+msgstr "czas powstania"
 
 #: src/main/extractor_metatypes.c:108
 msgid "time and date of creation"
-msgstr ""
+msgstr "czas i data powstania"
 
 #: src/main/extractor_metatypes.c:109
 msgid "URL"
-msgstr ""
+msgstr "URL"
 
 #: src/main/extractor_metatypes.c:110
 msgid "universal resource location (where the work is made available)"
-msgstr ""
+msgstr "odnoÅ›nik URL do zasobu (miejsca udostÄ™pnienia pracy)"
 
 #: src/main/extractor_metatypes.c:112
 msgid "URI"
-msgstr ""
+msgstr "URI"
 
 #: src/main/extractor_metatypes.c:113
-#, fuzzy
 msgid "universal resource identifier"
-msgstr "aitheantóir-acmhainne"
+msgstr "identyfikator URI zasobu"
 
 #: src/main/extractor_metatypes.c:114
 msgid "international standard recording code"
-msgstr "cód caighdeánach idirnáisiúnta taifeadta"
+msgstr "miÄ™dzynarodowy standardowy kod nagrania"
 
 #: src/main/extractor_metatypes.c:115
 msgid "ISRC number identifying the work"
-msgstr ""
+msgstr "numer ISRC identyfikujÄ…cy pracÄ™"
 
 #: src/main/extractor_metatypes.c:116
 msgid "MD4"
@@ -431,7 +414,7 @@ msgstr "MD4"
 
 #: src/main/extractor_metatypes.c:117
 msgid "MD4 hash"
-msgstr ""
+msgstr "skrÃ³t MD4"
 
 #: src/main/extractor_metatypes.c:118
 msgid "MD5"
@@ -439,1289 +422,1235 @@ msgstr "MD5"
 
 #: src/main/extractor_metatypes.c:119
 msgid "MD5 hash"
-msgstr ""
+msgstr "skrÃ³t MD5"
 
 #: src/main/extractor_metatypes.c:120
 msgid "SHA-0"
 msgstr "SHA-0"
 
 #: src/main/extractor_metatypes.c:121
-#, fuzzy
 msgid "SHA-0 hash"
-msgstr "SHA-0"
+msgstr "skrÃ³t SHA-0"
 
 #: src/main/extractor_metatypes.c:123
 msgid "SHA-1"
 msgstr "SHA-1"
 
 #: src/main/extractor_metatypes.c:124
-#, fuzzy
 msgid "SHA-1 hash"
-msgstr "SHA-1"
+msgstr "skrÃ³t SHA-1"
 
 #: src/main/extractor_metatypes.c:125
 msgid "RipeMD160"
 msgstr "RipeMD160"
 
 #: src/main/extractor_metatypes.c:126
-#, fuzzy
 msgid "RipeMD150 hash"
-msgstr "RipeMD160"
+msgstr "skrÃ³t RipeMD160"
 
 #: src/main/extractor_metatypes.c:127 src/main/extractor_metatypes.c:128
 msgid "GPS latitude ref"
-msgstr ""
+msgstr "szerokoÅ›Ä‡ wg GPS"
 
 #: src/main/extractor_metatypes.c:129 src/main/extractor_metatypes.c:130
 msgid "GPS latitude"
-msgstr ""
+msgstr "szerokoÅ›Ä‡ geograficzna wg GPS"
 
 #: src/main/extractor_metatypes.c:131 src/main/extractor_metatypes.c:132
 msgid "GPS longitude ref"
-msgstr ""
+msgstr "dÅ‚ugoÅ›Ä‡ GPS"
 
 #: src/main/extractor_metatypes.c:134 src/main/extractor_metatypes.c:135
 msgid "GPS longitude"
-msgstr ""
+msgstr "dÅ‚ugoÅ›Ä‡ geograficzna wg GPS"
 
 #: src/main/extractor_metatypes.c:136
 msgid "city"
-msgstr ""
+msgstr "miasto"
 
 #: src/main/extractor_metatypes.c:137
 msgid "name of the city where the document originated"
-msgstr ""
+msgstr "nazwa miasta, z ktÃ³rego pochodzi dokument"
 
 #: src/main/extractor_metatypes.c:138
-#, fuzzy
 msgid "sublocation"
-msgstr "suíomh"
+msgstr "dzielnica"
 
 #: src/main/extractor_metatypes.c:139
 msgid "more specific location of the geographic origin"
-msgstr ""
+msgstr "dokÅ‚adniejsze miejsce pochodzenia geograficznego"
 
 #: src/main/extractor_metatypes.c:140
-#, fuzzy
 msgid "country"
-msgstr "Ceolta Tuaithe"
+msgstr "kraj"
 
 #: src/main/extractor_metatypes.c:141
 msgid "name of the country where the document originated"
-msgstr ""
+msgstr "nazwa kraju, z ktÃ³rego pochodzi dokument"
 
 #: src/main/extractor_metatypes.c:142
-#, fuzzy
 msgid "country code"
-msgstr "Ceolta Tuaithe"
+msgstr "kod kraju"
 
 #: src/main/extractor_metatypes.c:143
 msgid "ISO 2-letter country code for the country of origin"
-msgstr ""
+msgstr "2-literowy kod ISO kraju pochodzenia"
 
 #: src/main/extractor_metatypes.c:146
 msgid "specifics are not known"
-msgstr ""
+msgstr "szczegÃ³Å‚y nieznane"
 
 #: src/main/extractor_metatypes.c:147 src/main/extractor_metatypes.c:148
 msgid "description"
-msgstr "cur síos"
+msgstr "opis"
 
 #: src/main/extractor_metatypes.c:149
 msgid "copyright"
-msgstr "cóipcheart"
+msgstr "prawa autorskie"
 
 #: src/main/extractor_metatypes.c:150
 msgid "Name of the entity holding the copyright"
-msgstr ""
+msgstr "Nazwa podmiotu, do ktÃ³rego naleÅ¼Ä… prawa autorskie"
 
 #: src/main/extractor_metatypes.c:151
-#, fuzzy
 msgid "rights"
-msgstr "cóipcheart"
+msgstr "prawa"
 
 #: src/main/extractor_metatypes.c:152
-#, fuzzy
 msgid "information about rights"
-msgstr "eolas"
+msgstr "informacje o prawach"
 
 #: src/main/extractor_metatypes.c:153 src/main/extractor_metatypes.c:154
 msgid "keywords"
-msgstr "lorgfhocail"
+msgstr "sÅ‚owa kluczowe"
 
 #: src/main/extractor_metatypes.c:156 src/main/extractor_metatypes.c:157
 msgid "abstract"
-msgstr ""
+msgstr "abstrakt"
 
 #: src/main/extractor_metatypes.c:158 src/main/extractor_metatypes.c:159
 msgid "summary"
-msgstr "achoimre"
+msgstr "streszczenie"
 
 #: src/main/extractor_metatypes.c:160
 msgid "subject"
-msgstr "ábhar"
+msgstr "przedmiot"
 
 #: src/main/extractor_metatypes.c:161
-#, fuzzy
 msgid "subject matter"
-msgstr "ábhar"
+msgstr "przedmiot tematu"
 
 #: src/main/extractor_metatypes.c:162 src/main/extractor_metatypes.c:195
 msgid "creator"
-msgstr "cruthaitheoir"
+msgstr "twÃ³rca"
 
 #: src/main/extractor_metatypes.c:163
 msgid "name of the person who created the document"
-msgstr ""
+msgstr "nazwisko osoby, ktÃ³ra stworzyÅ‚a dokument"
 
 #: src/main/extractor_metatypes.c:164
 msgid "format"
-msgstr "formáid"
+msgstr "format"
 
 #: src/main/extractor_metatypes.c:165
 msgid "name of the document format"
-msgstr ""
+msgstr "nazwa formatu dokumentu"
 
 #: src/main/extractor_metatypes.c:167
 msgid "format version"
-msgstr "leagan na formáide"
+msgstr "wersja formatu"
 
 #: src/main/extractor_metatypes.c:168
 msgid "version of the document format"
-msgstr ""
+msgstr "wersja formatu dokumentu"
 
 #: src/main/extractor_metatypes.c:169
 msgid "created by software"
-msgstr "cruthaithe ag bogearraí"
+msgstr "program tworzÄ…cy"
 
 #: src/main/extractor_metatypes.c:170
 msgid "name of the software that created the document"
-msgstr ""
+msgstr "nazwa programu, ktÃ³ry utworzyÅ‚ dokument"
 
 #: src/main/extractor_metatypes.c:171
-#, fuzzy
 msgid "unknown date"
-msgstr "anaithnid"
+msgstr "nieznana data"
 
 #: src/main/extractor_metatypes.c:172
 msgid ""
 "ambiguous date (could specify creation time, modification time or access "
 "time)"
 msgstr ""
+"data bez okreÅ›lonego znaczenia (czas utworzenia, modyfikacji lub dostÄ™pu)"
 
 #: src/main/extractor_metatypes.c:173
 msgid "creation date"
-msgstr "dáta a cruthaíodh"
+msgstr "data utworzenia"
 
 #: src/main/extractor_metatypes.c:174
 msgid "date the document was created"
-msgstr ""
+msgstr "data utworzenia dokumentu"
 
 #: src/main/extractor_metatypes.c:175
 msgid "modification date"
-msgstr "dáta mionathraithe"
+msgstr "data modyfikacji"
 
 #: src/main/extractor_metatypes.c:176
 msgid "date the document was modified"
-msgstr ""
+msgstr "data modyfikacji dokumentu"
 
 #: src/main/extractor_metatypes.c:178
 msgid "last printed"
-msgstr "priontáilte"
+msgstr "ostatni wydruk"
 
 #: src/main/extractor_metatypes.c:179
 msgid "date the document was last printed"
-msgstr ""
+msgstr "data ostatniego wydruku dokumentu"
 
 #: src/main/extractor_metatypes.c:180
 msgid "last saved by"
-msgstr "sábháilte is déanaí ag"
+msgstr "ostatni zapis przez"
 
 #: src/main/extractor_metatypes.c:181
 msgid "name of the user who saved the document last"
-msgstr ""
+msgstr "nazwa uÅ¼ytkownika, ktÃ³ry ostatni zapisaÅ‚ dokument"
 
 #: src/main/extractor_metatypes.c:182
 msgid "total editing time"
-msgstr "am iomlán eagair"
+msgstr "caÅ‚kowity czas edycji"
 
 #: src/main/extractor_metatypes.c:183
 msgid "time spent editing the document"
-msgstr ""
+msgstr "czas poÅ›wiÄ™cony na edycjÄ™ dokumentu"
 
 #: src/main/extractor_metatypes.c:184
 msgid "editing cycles"
-msgstr "timthriallta eagarthóireachta"
+msgstr "cykle edycyjne"
 
 #: src/main/extractor_metatypes.c:185
-#, fuzzy
 msgid "number of editing cycles"
-msgstr "timthriallta eagarthóireachta"
+msgstr "liczba cykli edycyjnych"
 
 #: src/main/extractor_metatypes.c:186
 msgid "modified by software"
-msgstr "mionathraithe ag bogearraí"
+msgstr "program modyfikujÄ…cy"
 
 #: src/main/extractor_metatypes.c:187
 msgid "name of software making modifications"
-msgstr ""
+msgstr "nazwa programu wykonujÄ…cego modyfikacje"
 
 #: src/main/extractor_metatypes.c:189
 msgid "revision history"
-msgstr "stair leasaithe"
+msgstr "historia wersji"
 
 #: src/main/extractor_metatypes.c:190
 msgid "information about the revision history"
-msgstr ""
+msgstr "informacja o historii wersji"
 
 #: src/main/extractor_metatypes.c:191
-#, fuzzy
 msgid "embedded file size"
-msgstr "méid comhaid"
+msgstr "osadzony rozmiar pliku"
 
 #: src/main/extractor_metatypes.c:192
 msgid "size of the contents of the container as embedded in the file"
-msgstr ""
+msgstr "rozmiar treÅ›ci w kontenerze osadzonym w pliku"
 
 #: src/main/extractor_metatypes.c:193
-#, fuzzy
 msgid "file type"
-msgstr "Cineál MIME"
+msgstr "rodzaj pliku"
 
 #: src/main/extractor_metatypes.c:194
 msgid "standard Macintosh Finder file type information"
-msgstr ""
+msgstr "standardowa informacja o rodzaju pliku wg Macintosh Findera"
 
 #: src/main/extractor_metatypes.c:196
 msgid "standard Macintosh Finder file creator information"
-msgstr ""
+msgstr "standardowa informacja o twÃ³rcy pliku wg Macintosh Findera"
 
 #: src/main/extractor_metatypes.c:197
-#, fuzzy
 msgid "package name"
-msgstr "pacáisteoir"
+msgstr "nazwa pakietu"
 
 #: src/main/extractor_metatypes.c:198
 msgid "unique identifier for the package"
-msgstr ""
+msgstr "unikalny identyfikator pakietu"
 
 #: src/main/extractor_metatypes.c:200
-#, fuzzy
 msgid "package version"
-msgstr "pacáisteoir"
+msgstr "wersja pakietu"
 
 #: src/main/extractor_metatypes.c:201
 msgid "version of the software and its package"
-msgstr ""
+msgstr "wersja programu i jego pakietu"
 
 #: src/main/extractor_metatypes.c:202
-#, fuzzy
 msgid "section"
-msgstr "cur síos"
+msgstr "sekcja"
 
 #: src/main/extractor_metatypes.c:203
 msgid "category the software package belongs to"
-msgstr ""
+msgstr "kategoria, do ktÃ³rej naleÅ¼y pakiet oprogramowania"
 
 #: src/main/extractor_metatypes.c:204
-#, fuzzy
 msgid "upload priority"
-msgstr "tosaíocht"
+msgstr "priorytet wdrozenia"
 
 #: src/main/extractor_metatypes.c:205
 msgid "priority for promoting the release to production"
-msgstr ""
+msgstr "priorytet przesÅ‚ania wydania na produkcjÄ™"
 
 #: src/main/extractor_metatypes.c:206
-#, fuzzy
 msgid "dependencies"
-msgstr "spleáchas"
+msgstr "zaleÅ¼noÅ›ci"
 
 #: src/main/extractor_metatypes.c:207
 msgid "packages this package depends upon"
-msgstr ""
+msgstr "pakiety, od ktÃ³rych zaleÅ¼y ten pakiet"
 
 #: src/main/extractor_metatypes.c:208
-#, fuzzy
 msgid "conflicting packages"
-msgstr "coinbhleachtaí"
+msgstr "pakiety w konflikcie"
 
 #: src/main/extractor_metatypes.c:209
 msgid "packages that cannot be installed with this package"
-msgstr ""
+msgstr "pakiety, ktÃ³re nie mogÄ… byÄ‡ zainstalowane rÃ³wnoczeÅ›nie z tym pakietem"
 
 #: src/main/extractor_metatypes.c:211
-#, fuzzy
 msgid "replaced packages"
-msgstr "ionadaíonn"
+msgstr "pakiety zastÄ™powane"
 
 #: src/main/extractor_metatypes.c:212
 msgid "packages made obsolete by this package"
-msgstr ""
+msgstr "pakiety wyÅ‚Ä…czane z uÅ¼ycia przez ten pakiet"
 
 #: src/main/extractor_metatypes.c:213
 msgid "provides"
-msgstr "soláthraíonn"
+msgstr "dostarczane wÅ‚aÅ›ciwoÅ›ci"
 
 #: src/main/extractor_metatypes.c:214
 msgid "functionality provided by this package"
-msgstr ""
+msgstr "funkcjonalnoÅ›Ä‡ dostarczana przez ten pakiet"
 
 #: src/main/extractor_metatypes.c:215
-#, fuzzy
 msgid "recommendations"
-msgstr "nóta tráchta"
+msgstr "rekomendacje"
 
 #: src/main/extractor_metatypes.c:216
 msgid "packages recommended for installation in conjunction with this package"
-msgstr ""
+msgstr "pakiety rekomendowane do instalacji w poÅ‚Ä…czeniu z tym pakietem"
 
 #: src/main/extractor_metatypes.c:217
 msgid "suggestions"
-msgstr ""
+msgstr "sugestie"
 
 #: src/main/extractor_metatypes.c:218
 msgid "packages suggested for installation in conjunction with this package"
-msgstr ""
+msgstr "pakiety sugerowane do instalacji w poÅ‚Ä…czeniu z tym pakietem"
 
 #: src/main/extractor_metatypes.c:219
 msgid "maintainer"
-msgstr ""
+msgstr "utrzymujÄ…cy"
 
 #: src/main/extractor_metatypes.c:220
 msgid "name of the maintainer"
-msgstr ""
+msgstr "nazwisko utrzymujÄ…cego"
 
 #: src/main/extractor_metatypes.c:222
-#, fuzzy
 msgid "installed size"
-msgstr "méid comhaid"
+msgstr "rozmiar po instalacji"
 
 #: src/main/extractor_metatypes.c:223
 msgid "space consumption after installation"
-msgstr ""
+msgstr "miejsce zajmowane przez pakiet po instalacji"
 
 #: src/main/extractor_metatypes.c:224 src/main/extractor_metatypes.c:304
 msgid "source"
-msgstr "foinse"
+msgstr "ÅºrÃ³dÅ‚o"
 
 #: src/main/extractor_metatypes.c:225
 msgid "original source code"
-msgstr ""
+msgstr "oryginalny kod ÅºrÃ³dÅ‚owy"
 
 #: src/main/extractor_metatypes.c:226
 msgid "is essential"
-msgstr ""
+msgstr "jest waÅ¼ny"
 
 #: src/main/extractor_metatypes.c:227
 msgid "package is marked as essential"
-msgstr ""
+msgstr "pakiet jest oznaczony jako waÅ¼ny"
 
 #: src/main/extractor_metatypes.c:228
 msgid "target architecture"
-msgstr ""
+msgstr "architektura docelowa"
 
 #: src/main/extractor_metatypes.c:229
 msgid "hardware architecture the contents can be used for"
-msgstr ""
+msgstr "architektura sprzÄ™tu, dla ktÃ³rego moÅ¼e byÄ‡ uÅ¼yty pakiet"
 
 #: src/main/extractor_metatypes.c:230
-#, fuzzy
 msgid "pre-dependency"
-msgstr "spleáchas"
+msgstr "wczesna zaleÅ¼noÅ›Ä‡"
 
 #: src/main/extractor_metatypes.c:231
 msgid "dependency that must be satisfied before installation"
-msgstr ""
+msgstr "zaleÅ¼noÅ›Ä‡, ktÃ³ra musi byÄ‡ speÅ‚niona przed instalacjÄ…"
 
 #: src/main/extractor_metatypes.c:233
 msgid "license"
-msgstr "ceadúnas"
+msgstr "licencja"
 
 #: src/main/extractor_metatypes.c:234
 msgid "applicable copyright license"
-msgstr ""
+msgstr "stosowana licencja"
 
 #: src/main/extractor_metatypes.c:235
 msgid "distribution"
-msgstr "dáileadh"
+msgstr "dystrybucja"
 
 #: src/main/extractor_metatypes.c:236
 msgid "distribution the package is a part of"
-msgstr ""
+msgstr "dystrybucja, ktÃ³rej czÄ™Å›ciÄ… jest pakiet"
 
 #: src/main/extractor_metatypes.c:237
-#, fuzzy
 msgid "build host"
-msgstr "óstríomhaire-tógála"
+msgstr "host budowania"
 
 #: src/main/extractor_metatypes.c:238
 msgid "machine the package was build on"
-msgstr ""
+msgstr "maszyna, na ktÃ³rej pakiet zostaÅ‚ zbudowany"
 
 #: src/main/extractor_metatypes.c:239
 msgid "vendor"
-msgstr "díoltóir"
+msgstr "dostawca"
 
 #: src/main/extractor_metatypes.c:240
 msgid "name of the software vendor"
-msgstr ""
+msgstr "nazwa dostawcy oprogramowania"
 
 #: src/main/extractor_metatypes.c:241
-#, fuzzy
 msgid "target operating system"
-msgstr "córas oibriúcháin"
+msgstr "docelowy system operacyjny"
 
 #: src/main/extractor_metatypes.c:242
 msgid "operating system for which this package was made"
-msgstr ""
+msgstr "system operacyjny, dla ktÃ³rego pakiet zostaÅ‚ zrobiony"
 
 #: src/main/extractor_metatypes.c:244
-#, fuzzy
 msgid "software version"
-msgstr "bogearraí"
+msgstr "wersja oprogramowania"
 
 #: src/main/extractor_metatypes.c:245
 msgid "version of the software contained in the file"
-msgstr ""
+msgstr "wersja oprogramowania zawartego w pliku"
 
 #: src/main/extractor_metatypes.c:246
 msgid "target platform"
-msgstr ""
+msgstr "platforma docelowa"
 
 #: src/main/extractor_metatypes.c:247
 msgid ""
 "name of the architecture, operating system and distribution this package is "
 "for"
 msgstr ""
+"nazwa architektury, systemu operacyjnego i dystrybucji, dla ktÃ³rej jest ten "
+"pakiet"
 
 #: src/main/extractor_metatypes.c:248
-#, fuzzy
 msgid "resource type"
-msgstr "cineál-acmhainne"
+msgstr "rodzaj zasobu"
 
 #: src/main/extractor_metatypes.c:249
 msgid ""
 "categorization of the nature of the resource that is more specific than the "
 "file format"
-msgstr ""
+msgstr "kategoryzacja charakteru zasobu bardziej konkretna od formatu pliku"
 
 #: src/main/extractor_metatypes.c:250
 msgid "library search path"
-msgstr ""
+msgstr "Å›cieÅ¼ka poszukiwaÅ„ bibliotek"
 
 #: src/main/extractor_metatypes.c:251
 msgid ""
 "path in the file system to be considered when looking for required libraries"
 msgstr ""
+"Å›cieÅ¼ka w systemie plikÃ³w, ktÃ³ra ma byÄ‡ uwzglÄ™dniana przy szukaniu "
+"wymaganych bibliotek"
 
 #: src/main/extractor_metatypes.c:252
-#, fuzzy
 msgid "library dependency"
-msgstr "spleáchas crua-earraí"
+msgstr "zaleÅ¼noÅ›Ä‡ od biblioteki"
 
 #: src/main/extractor_metatypes.c:253
 msgid "name of a library that this file depends on"
-msgstr ""
+msgstr "nazwa biblioteki, od ktÃ³rej zaleÅ¼y ten plik"
 
 #: src/main/extractor_metatypes.c:255 src/main/extractor_metatypes.c:256
 msgid "camera make"
-msgstr "déantús an cheamara"
+msgstr "marka aparatu"
 
 #: src/main/extractor_metatypes.c:257 src/main/extractor_metatypes.c:258
 msgid "camera model"
-msgstr "déanamh an cheamara"
+msgstr "model aparatu"
 
 #: src/main/extractor_metatypes.c:259 src/main/extractor_metatypes.c:260
 msgid "exposure"
-msgstr "nochtadh"
+msgstr "ekspozycja"
 
 #: src/main/extractor_metatypes.c:261 src/main/extractor_metatypes.c:262
 msgid "aperture"
-msgstr "cró"
+msgstr "przysÅ‚ona"
 
 #: src/main/extractor_metatypes.c:263 src/main/extractor_metatypes.c:264
 msgid "exposure bias"
-msgstr "laofacht nochta"
+msgstr "odchylenie ekspozycji"
 
 #: src/main/extractor_metatypes.c:266 src/main/extractor_metatypes.c:267
 msgid "flash"
-msgstr "splanc"
+msgstr "flesz"
 
 #: src/main/extractor_metatypes.c:268 src/main/extractor_metatypes.c:269
 msgid "flash bias"
-msgstr "laofacht splaince"
+msgstr "odchylenie flesza"
 
 #: src/main/extractor_metatypes.c:270 src/main/extractor_metatypes.c:271
 msgid "focal length"
-msgstr "fad fócais"
+msgstr "dÅ‚ugoÅ›Ä‡ ogniskowej"
 
 #: src/main/extractor_metatypes.c:272 src/main/extractor_metatypes.c:273
-#, fuzzy
 msgid "focal length 35mm"
-msgstr "fad fócais"
+msgstr "ogniskowa 35mm"
 
 #: src/main/extractor_metatypes.c:274 src/main/extractor_metatypes.c:275
 msgid "iso speed"
-msgstr "luas ISO"
+msgstr "czuÅ‚oÅ›Ä‡ ISO"
 
 #: src/main/extractor_metatypes.c:277 src/main/extractor_metatypes.c:278
 msgid "exposure mode"
-msgstr "mód nochta"
+msgstr "tryb ekspozycji"
 
 #: src/main/extractor_metatypes.c:279 src/main/extractor_metatypes.c:280
 msgid "metering mode"
-msgstr "mód méadrála"
+msgstr "tryb pomiaru"
 
 #: src/main/extractor_metatypes.c:281 src/main/extractor_metatypes.c:282
 msgid "macro mode"
-msgstr "mód macra"
+msgstr "tryb makro"
 
 #: src/main/extractor_metatypes.c:283 src/main/extractor_metatypes.c:284
 msgid "image quality"
-msgstr "cáilíocht íomhá"
+msgstr "jakoÅ›Ä‡ obrazu"
 
 #: src/main/extractor_metatypes.c:285 src/main/extractor_metatypes.c:286
 msgid "white balance"
-msgstr "cothromaíocht bhán"
+msgstr "balans bieli"
 
 #: src/main/extractor_metatypes.c:288 src/main/extractor_metatypes.c:289
 msgid "orientation"
-msgstr "treoshuíomh"
+msgstr "orientacja"
 
 #: src/main/extractor_metatypes.c:290 src/main/extractor_metatypes.c:291
 msgid "magnification"
-msgstr "formhéadú"
+msgstr "powiÄ™kszenie"
 
 #: src/main/extractor_metatypes.c:292
-#, fuzzy
 msgid "image dimensions"
-msgstr "treoshuíomh an leathanaigh"
+msgstr "wymiary obrazu"
 
 #: src/main/extractor_metatypes.c:293
 msgid "size of the image in pixels (width times height)"
-msgstr ""
+msgstr "rozmiar obrazu w pikselach (szerokoÅ›Ä‡ razy wysokoÅ›Ä‡)"
 
 #: src/main/extractor_metatypes.c:294 src/main/extractor_metatypes.c:295
-#, fuzzy
 msgid "produced by software"
-msgstr "mionathraithe ag bogearraí"
+msgstr "oprogramowanie tworzÄ…ce"
 
 #: src/main/extractor_metatypes.c:299
-#, fuzzy
 msgid "thumbnail"
-msgstr "mionsamhlacha"
+msgstr "miniaturka"
 
 #: src/main/extractor_metatypes.c:300
 msgid "smaller version of the image for previewing"
-msgstr ""
+msgstr "mniejsza wersja obrazu do podglÄ…du"
 
 #: src/main/extractor_metatypes.c:302
-#, fuzzy
 msgid "image resolution"
-msgstr "taifeach"
+msgstr "rozdzielczoÅ›Ä‡ obrazu"
 
 #: src/main/extractor_metatypes.c:303
-#, fuzzy
 msgid "resolution in dots per inch"
-msgstr "%u×%u poncanna san orlach"
+msgstr "rozdzielczoÅ›Ä‡ w punktach na cal"
 
 #: src/main/extractor_metatypes.c:305
 msgid "Originating entity"
-msgstr ""
+msgstr "przedmiot poczÄ…tkowy"
 
 #: src/main/extractor_metatypes.c:306
 msgid "character set"
-msgstr "tacar carachtar"
+msgstr "zestaw znakÃ³w"
 
 #: src/main/extractor_metatypes.c:307
-#, fuzzy
 msgid "character encoding used"
-msgstr "líon na gcarachtar"
+msgstr "uÅ¼yte kodowanie znakÃ³w"
 
 #: src/main/extractor_metatypes.c:308
 msgid "line count"
-msgstr "líon na línte"
+msgstr "liczba linii"
 
 #: src/main/extractor_metatypes.c:309
 msgid "number of lines"
-msgstr ""
+msgstr "liczba linii"
 
 #: src/main/extractor_metatypes.c:310
 msgid "paragraph count"
-msgstr "líon na n-alt"
+msgstr "liczba akapitÃ³w"
 
 #: src/main/extractor_metatypes.c:311
 msgid "number of paragraphs"
-msgstr ""
+msgstr "liczba akapitÃ³w"
 
 #: src/main/extractor_metatypes.c:313
 msgid "word count"
-msgstr "líon na bhfocal"
+msgstr "liczba sÅ‚Ã³w"
 
 #: src/main/extractor_metatypes.c:314
 msgid "number of words"
-msgstr ""
+msgstr "liczba sÅ‚Ã³w"
 
 #: src/main/extractor_metatypes.c:315
 msgid "character count"
-msgstr "líon na gcarachtar"
+msgstr "liczba znakÃ³w"
 
 #: src/main/extractor_metatypes.c:316
-#, fuzzy
 msgid "number of characters"
-msgstr "tacar carachtar"
+msgstr "liczba znakÃ³w"
 
 #: src/main/extractor_metatypes.c:317 src/main/extractor_metatypes.c:318
 msgid "page orientation"
-msgstr "treoshuíomh an leathanaigh"
+msgstr "orientacja strony"
 
 #: src/main/extractor_metatypes.c:319 src/main/extractor_metatypes.c:320
 msgid "paper size"
-msgstr "páipéarmhéid"
+msgstr "rozmiar papieru"
 
 #: src/main/extractor_metatypes.c:321
 msgid "template"
-msgstr "teimpléad"
+msgstr "szablon"
 
 #: src/main/extractor_metatypes.c:322
 msgid "template the document uses or is based on"
-msgstr ""
+msgstr "szablon wykorzystywany przez dokument"
 
 #: src/main/extractor_metatypes.c:324 src/main/extractor_metatypes.c:325
 msgid "company"
-msgstr "comhlacht"
+msgstr "firma"
 
 #: src/main/extractor_metatypes.c:326 src/main/extractor_metatypes.c:327
 msgid "manager"
-msgstr "bainisteoir"
+msgstr "zarzÄ…dca"
 
 #: src/main/extractor_metatypes.c:328 src/main/extractor_metatypes.c:329
-#, fuzzy
 msgid "revision number"
-msgstr "taispeáin an leagan"
+msgstr "numer rewizji"
 
 #: src/main/extractor_metatypes.c:330
 msgid "duration"
-msgstr "achar"
+msgstr "czas trwania"
 
 #: src/main/extractor_metatypes.c:331
 msgid "play time for the medium"
-msgstr ""
+msgstr "czas odtwarzania noÅ›nika"
 
 #: src/main/extractor_metatypes.c:332
 msgid "album"
-msgstr "albam"
+msgstr "album"
 
 #: src/main/extractor_metatypes.c:333
 msgid "name of the album"
-msgstr ""
+msgstr "nazwa albumu"
 
 #: src/main/extractor_metatypes.c:335
 msgid "artist"
-msgstr "ealaíontóir"
+msgstr "artysta"
 
 #: src/main/extractor_metatypes.c:336
 msgid "name of the artist or band"
-msgstr ""
+msgstr "nazwisko/nazwa artysty lub zespoÅ‚u"
 
 #: src/main/extractor_metatypes.c:337 src/main/extractor_metatypes.c:338
 msgid "genre"
-msgstr "seánra"
+msgstr "gatunek"
 
 #: src/main/extractor_metatypes.c:339
 msgid "track number"
-msgstr "uimhir an riain"
+msgstr "numer Å›cieÅ¼ki"
 
 #: src/main/extractor_metatypes.c:340
 msgid "original number of the track on the distribution medium"
-msgstr ""
+msgstr "oryginalny numer Å›cieÅ¼ki na noÅ›niku dystrybucyjnym"
 
 #: src/main/extractor_metatypes.c:341
-#, fuzzy
 msgid "disk number"
-msgstr "uimhir an diosca"
+msgstr "numer pÅ‚yty"
 
 #: src/main/extractor_metatypes.c:342
 msgid "number of the disk in a multi-disk (or volume) distribution"
-msgstr ""
+msgstr "numer dysku w wydaniu wielopÅ‚ytowym (lub wielowoluminowym)"
 
 #: src/main/extractor_metatypes.c:343
 msgid "performer"
-msgstr ""
+msgstr "wykonawca"
 
 #: src/main/extractor_metatypes.c:344
 msgid ""
 "The artist(s) who performed the work (conductor, orchestra, soloists, actor, "
 "etc.)"
 msgstr ""
+"artysta/artyÅ›ci wykonujÄ…cy utwory (dyrygent, orkiestra, soliÅ›ci, aktor itp.)"
 
 #: src/main/extractor_metatypes.c:346
 msgid "contact"
-msgstr "teagmháil"
+msgstr "kontakt"
 
 #: src/main/extractor_metatypes.c:347
 msgid "Contact information for the creator or distributor"
-msgstr ""
+msgstr "informacje kontaktowe do twÃ³rcy lub dystrybutora"
 
 #: src/main/extractor_metatypes.c:348
-#, fuzzy
 msgid "song version"
-msgstr "leagan"
+msgstr "wersja utworu"
 
 #: src/main/extractor_metatypes.c:349
 msgid "name of the version of the song (i.e. remix information)"
-msgstr ""
+msgstr "nazwa wersji utworu (np. informacje o remiksie)"
 
 #: src/main/extractor_metatypes.c:350
-#, fuzzy
 msgid "picture"
-msgstr "cró"
+msgstr "grafika"
 
 #: src/main/extractor_metatypes.c:351
 msgid "associated misc. picture"
-msgstr ""
+msgstr "dowolna powiÄ…zana grafika"
 
 #: src/main/extractor_metatypes.c:352
 msgid "cover picture"
-msgstr ""
+msgstr "obraz okÅ‚adki"
 
 #: src/main/extractor_metatypes.c:353
 msgid "picture of the cover of the distribution medium"
-msgstr ""
+msgstr "obraz okÅ‚adki noÅ›nika dystrybucyjnego"
 
 #: src/main/extractor_metatypes.c:354
-#, fuzzy
 msgid "contributor picture"
-msgstr "cuiditheoir"
+msgstr "zdjÄ™cie wspÃ³Å‚pracownika"
 
 #: src/main/extractor_metatypes.c:355
 msgid "picture of one of the contributors"
-msgstr ""
+msgstr "zdjÄ™cie jednego ze wspÃ³Å‚pracownikÃ³w"
 
 #: src/main/extractor_metatypes.c:357
 msgid "event picture"
-msgstr ""
+msgstr "zdjÄ™cie wydarzenia"
 
 #: src/main/extractor_metatypes.c:358
 msgid "picture of an associated event"
-msgstr ""
+msgstr "zdjÄ™cie powiÄ…zanego wydarzenia"
 
 #: src/main/extractor_metatypes.c:359
 msgid "logo"
-msgstr ""
+msgstr "logo"
 
 #: src/main/extractor_metatypes.c:360
 msgid "logo of an associated organization"
-msgstr ""
+msgstr "logo powiÄ…zanej organizacji"
 
 #: src/main/extractor_metatypes.c:361
-#, fuzzy
 msgid "broadcast television system"
-msgstr "córas teilifíse"
+msgstr "system transmisji telewizyjnej"
 
 #: src/main/extractor_metatypes.c:362
 msgid "name of the television system for which the data is coded"
-msgstr ""
+msgstr "nazwa systemu telewizji, dla ktÃ³rego zostaÅ‚y zakodowane dane"
 
 #: src/main/extractor_metatypes.c:363
-#, fuzzy
 msgid "source device"
-msgstr "foinse"
+msgstr "urzÄ…dzenie ÅºrÃ³dÅ‚owe"
 
 #: src/main/extractor_metatypes.c:364
 msgid "device used to create the object"
-msgstr ""
+msgstr "urzÄ…dzenie uÅ¼yte przy tworzeniu obiektu"
 
 #: src/main/extractor_metatypes.c:365
 msgid "disclaimer"
-msgstr "séanadh"
+msgstr "zastrzeÅ¼enia"
 
 #: src/main/extractor_metatypes.c:366
-#, fuzzy
 msgid "legal disclaimer"
-msgstr "séanadh"
+msgstr "zastrzeÅ¼enia prawne"
 
 #: src/main/extractor_metatypes.c:368
 msgid "warning"
-msgstr "rabhadh"
+msgstr "ostrzeÅ¼enie"
 
 #: src/main/extractor_metatypes.c:369
 msgid "warning about the nature of the content"
-msgstr ""
+msgstr "ostrzeÅ¼enie o charakterze treÅ›ci"
 
 #: src/main/extractor_metatypes.c:370
 msgid "page order"
-msgstr "ord na leathanach"
+msgstr "kolejnoÅ›Ä‡ stron"
 
 #: src/main/extractor_metatypes.c:371
 msgid "order of the pages"
-msgstr ""
+msgstr "kolejnoÅ›Ä‡ stron"
 
 #: src/main/extractor_metatypes.c:372
 msgid "writer"
-msgstr ""
+msgstr "pisarz"
 
 #: src/main/extractor_metatypes.c:373
-#, fuzzy
 msgid "contributing writer"
-msgstr "cuiditheoir"
+msgstr "pisarz wspÃ³Å‚pracujÄ…cy"
 
 #: src/main/extractor_metatypes.c:374 src/main/extractor_metatypes.c:375
 msgid "product version"
-msgstr "leagan an táirge"
+msgstr "wersja produktu"
 
 #: src/main/extractor_metatypes.c:376
 msgid "contributor"
-msgstr "cuiditheoir"
+msgstr "wspÃ³Å‚pracownik"
 
 #: src/main/extractor_metatypes.c:377
-#, fuzzy
 msgid "name of a contributor"
-msgstr "cuiditheoir"
+msgstr "nazwisko wspÃ³Å‚pracownika"
 
 #: src/main/extractor_metatypes.c:379
-#, fuzzy
 msgid "movie director"
-msgstr "stiúrthóir"
+msgstr "reÅ¼yser filmu"
 
 #: src/main/extractor_metatypes.c:380
 msgid "name of the director"
-msgstr ""
+msgstr "nazwisko reÅ¼ysera"
 
 #: src/main/extractor_metatypes.c:381
 msgid "network"
-msgstr ""
+msgstr "sieÄ‡"
 
 #: src/main/extractor_metatypes.c:382
 msgid "name of the broadcasting network or station"
-msgstr ""
+msgstr "nazwa sieci lub stacji transmitujÄ…cej"
 
 #: src/main/extractor_metatypes.c:383
 msgid "show"
-msgstr ""
+msgstr "przedstawienie"
 
 #: src/main/extractor_metatypes.c:384
 msgid "name of the show"
-msgstr ""
+msgstr "nazwa przedstawienia"
 
 #: src/main/extractor_metatypes.c:385
-#, fuzzy
 msgid "chapter name"
-msgstr "caibidil"
+msgstr "nazwa rozdziaÅ‚u"
 
 #: src/main/extractor_metatypes.c:386
 msgid "name of the chapter"
-msgstr ""
+msgstr "nazwa rozdziaÅ‚u"
 
 #: src/main/extractor_metatypes.c:387
 msgid "song count"
-msgstr "líon na n-amhrán"
+msgstr "liczba utworÃ³w"
 
 #: src/main/extractor_metatypes.c:388
 msgid "number of songs"
-msgstr ""
+msgstr "liczba utworÃ³w"
 
 #: src/main/extractor_metatypes.c:390
 msgid "starting song"
-msgstr "amhrán tosaigh"
+msgstr "utwÃ³r poczÄ…tkowy"
 
 #: src/main/extractor_metatypes.c:391
 msgid "number of the first song to play"
-msgstr ""
+msgstr "numer pierwszego utworu do odtwarzania"
 
 #: src/main/extractor_metatypes.c:392
 msgid "play counter"
-msgstr "áiritheoir seinnte"
+msgstr "liczba odtworzeÅ„"
 
 #: src/main/extractor_metatypes.c:393
 msgid "number of times the media has been played"
-msgstr ""
+msgstr "liczba razy, ktÃ³re noÅ›nik byÅ‚ odtwarzany"
 
 #: src/main/extractor_metatypes.c:394
 msgid "conductor"
-msgstr "stiúrthóir"
+msgstr "dyrygent"
 
 #: src/main/extractor_metatypes.c:395
-#, fuzzy
 msgid "name of the conductor"
-msgstr "stiúrthóir"
+msgstr "nazwisko dyrygenta"
 
 #: src/main/extractor_metatypes.c:396
-#, fuzzy
 msgid "interpretation"
-msgstr "léirmhínitheoir"
+msgstr "interpretacja"
 
 #: src/main/extractor_metatypes.c:397
 msgid ""
 "information about the people behind interpretations of an existing piece"
 msgstr ""
+"informacje o osobach odpowiedzialnych za interpretacje istniejÄ…cego utworu"
 
 #: src/main/extractor_metatypes.c:398
 msgid "composer"
-msgstr ""
+msgstr "kompozytor"
 
 #: src/main/extractor_metatypes.c:399
 msgid "name of the composer"
-msgstr ""
+msgstr "nazwisko kompozytora"
 
 #: src/main/extractor_metatypes.c:401 src/main/extractor_metatypes.c:402
 msgid "beats per minute"
-msgstr ""
+msgstr "uderzeÅ„ na minutÄ™"
 
 #: src/main/extractor_metatypes.c:403
 msgid "encoded by"
-msgstr "ionchódaithe ag"
+msgstr "kodujÄ…cy"
 
 #: src/main/extractor_metatypes.c:404
 msgid "name of person or organization that encoded the file"
-msgstr ""
+msgstr "nazwisko/nazwa osoby lub organizacji, ktÃ³ra zakodowaÅ‚a plik"
 
 #: src/main/extractor_metatypes.c:405
 msgid "original title"
-msgstr ""
+msgstr "tytuÅ‚ oryginalny"
 
 #: src/main/extractor_metatypes.c:406
 msgid "title of the original work"
-msgstr ""
+msgstr "tytuÅ‚ oryginalnego dzieÅ‚a"
 
 #: src/main/extractor_metatypes.c:407
 msgid "original artist"
-msgstr ""
+msgstr "artysta oryginalny"
 
 #: src/main/extractor_metatypes.c:408
 msgid "name of the original artist"
-msgstr ""
+msgstr "nazwisko oryginalnego artysty"
 
 #: src/main/extractor_metatypes.c:409
 msgid "original writer"
-msgstr ""
+msgstr "pisarz oryginalny"
 
 #: src/main/extractor_metatypes.c:410
 msgid "name of the original lyricist or writer"
-msgstr ""
+msgstr "nazwisko oryginalnego poety lub pisarza"
 
 #: src/main/extractor_metatypes.c:412
 msgid "original release year"
-msgstr ""
+msgstr "oryginalny rok wydania"
 
 #: src/main/extractor_metatypes.c:413
 msgid "year of the original release"
-msgstr ""
+msgstr "rok oryginalnego wydania"
 
 #: src/main/extractor_metatypes.c:414
 msgid "original performer"
-msgstr ""
+msgstr "wykonawca oryginalny"
 
 #: src/main/extractor_metatypes.c:415
 msgid "name of the original performer"
-msgstr ""
+msgstr "nazwa oryginalnego wykonawcy"
 
 #: src/main/extractor_metatypes.c:416
 msgid "lyrics"
-msgstr "liricí"
+msgstr "tekst"
 
 #: src/main/extractor_metatypes.c:417
 msgid "lyrics of the song or text description of vocal activities"
-msgstr ""
+msgstr "tekst utworu lub tekstowy opis dotyczÄ…cy wokalu"
 
 #: src/main/extractor_metatypes.c:418
-#, fuzzy
 msgid "popularity"
-msgstr "méadar éilimh"
+msgstr "popularnoÅ›Ä‡"
 
 #: src/main/extractor_metatypes.c:419
 msgid "information about the file's popularity"
-msgstr ""
+msgstr "informacje o popularnoÅ›ci pliku"
 
 #: src/main/extractor_metatypes.c:420
-#, fuzzy
 msgid "licensee"
-msgstr "ceadúnas"
+msgstr "licencjobiorca"
 
 #: src/main/extractor_metatypes.c:421
 msgid "name of the owner or licensee of the file"
-msgstr ""
+msgstr "nazwisko/nazwa wÅ‚aÅ›ciciela lub licencjobiorcy pliku"
 
 #: src/main/extractor_metatypes.c:423
-#, fuzzy
 msgid "musician credit list"
-msgstr "admhálacha na gceoltóirí"
+msgstr "lista podziÄ™kowaÅ„ dla muzykÃ³w"
 
 #: src/main/extractor_metatypes.c:424
 msgid "names of contributing musicians"
-msgstr ""
+msgstr "nazwiska muzykÃ³w wspÃ³Å‚pracujÄ…cych"
 
 #: src/main/extractor_metatypes.c:425
 msgid "mood"
-msgstr "fonn"
+msgstr "nastrÃ³j"
 
 #: src/main/extractor_metatypes.c:426
 msgid "keywords reflecting the mood of the piece"
-msgstr ""
+msgstr "sÅ‚owa kluczowe odzwierciedlajÄ…ce nastrÃ³j utworu"
 
 #: src/main/extractor_metatypes.c:427
-#, fuzzy
 msgid "subtitle"
-msgstr "teideal"
+msgstr "podtytuÅ‚"
 
 #: src/main/extractor_metatypes.c:428
 msgid "subtitle of this part"
-msgstr ""
+msgstr "podtytuÅ‚ tej czÄ™Å›ci"
 
 #: src/main/extractor_metatypes.c:429
-#, fuzzy
 msgid "display type"
-msgstr "cineál an mheáin"
+msgstr "rodzaj ekranu"
 
 #: src/main/extractor_metatypes.c:430
 msgid "what rendering method should be used to display this item"
-msgstr ""
+msgstr "metoda renderowania, jaka powinna byÄ‡ uÅ¼yta do wyÅ›wietlania"
 
 #: src/main/extractor_metatypes.c:431
-#, fuzzy
 msgid "full data"
-msgstr "ainm iomlán"
+msgstr "peÅ‚ne dane"
 
 #: src/main/extractor_metatypes.c:432
 msgid ""
 "entry that contains the full, original binary data (not really meta data)"
-msgstr ""
+msgstr "wpis zawierajÄ…cy peÅ‚ne, oryginalne dane binarne (nie metadane)"
 
 #: src/main/extractor_metatypes.c:434
-#, fuzzy
 msgid "rating"
-msgstr "Laidineach"
+msgstr "ocena"
 
 #: src/main/extractor_metatypes.c:435
 msgid "rating of the content"
-msgstr ""
+msgstr "ocena treÅ›ci"
 
 #: src/main/extractor_metatypes.c:436 src/main/extractor_metatypes.c:437
 msgid "organization"
-msgstr "eagras"
+msgstr "organizacja"
 
 #: src/main/extractor_metatypes.c:438 src/main/extractor_metatypes.c:439
 msgid "ripper"
-msgstr "sracaire"
+msgstr "kopiujÄ…cy"
 
 #: src/main/extractor_metatypes.c:440 src/main/extractor_metatypes.c:441
 msgid "producer"
-msgstr "táirgeoir"
+msgstr "producent"
 
 #: src/main/extractor_metatypes.c:442
 msgid "group"
-msgstr "grúpa"
+msgstr "grupa"
 
 #: src/main/extractor_metatypes.c:443
 msgid "name of the group or band"
-msgstr ""
+msgstr "nazwa grupy lub zespoÅ‚u"
 
 #: src/main/extractor_metatypes.c:445
-#, fuzzy
 msgid "original filename"
-msgstr "comhadainm"
+msgstr "oryginalna nazwa pliku"
 
 #: src/main/extractor_metatypes.c:446
 msgid "name of the original file (reserved for GNUnet)"
-msgstr ""
+msgstr "nazwa oryginalnego pliku (zarezerwowane dla GNUneta)"
 
 #: src/main/extractor_metatypes.c:447
-#, fuzzy
 msgid "disc count"
-msgstr "líon na bhfocal"
+msgstr "liczba pÅ‚yt"
 
 #: src/main/extractor_metatypes.c:448
 msgid "count of discs inside collection this disc belongs to"
-msgstr ""
+msgstr "liczba pÅ‚yt w zestawie, do ktÃ³rego naleÅ¼y ta pÅ‚yta"
 
 #: src/main/extractor_metatypes.c:449
 msgid "codec"
-msgstr ""
+msgstr "kodek"
 
 #: src/main/extractor_metatypes.c:450
 msgid "codec the data is stored in"
-msgstr ""
+msgstr "kodek, przy uÅ¼yciu ktÃ³rego zostaÅ‚y zapisane dane"
 
 #: src/main/extractor_metatypes.c:451
 msgid "video codec"
-msgstr ""
+msgstr "kodek obrazu"
 
 #: src/main/extractor_metatypes.c:452
 msgid "codec the video data is stored in"
-msgstr ""
+msgstr "kodek, przy uÅ¼yciu ktÃ³rego zostaÅ‚y zapisane dane wideo"
 
 #: src/main/extractor_metatypes.c:453
 msgid "audio codec"
-msgstr ""
+msgstr "kodek dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:454
 msgid "codec the audio data is stored in"
-msgstr ""
+msgstr "kodek, przy uÅ¼yciu ktÃ³rego zostaÅ‚y zapisane dane dÅºwiÄ™kowe"
 
 #: src/main/extractor_metatypes.c:456
 msgid "subtitle codec"
-msgstr ""
+msgstr "kodek napisÃ³w"
 
 #: src/main/extractor_metatypes.c:457
 msgid "codec/format the subtitle data is stored in"
-msgstr ""
+msgstr "kodek/format, w jakim zostaÅ‚y zapisane napisy"
 
 #: src/main/extractor_metatypes.c:458
 msgid "container format"
-msgstr ""
+msgstr "format kontenera"
 
 #: src/main/extractor_metatypes.c:459
 msgid "container format the data is stored in"
-msgstr ""
+msgstr "format kontenera, w ktÃ³rym zostaÅ‚y zapisane dane"
 
 #: src/main/extractor_metatypes.c:460
 msgid "bitrate"
-msgstr ""
+msgstr "prÄ™dkoÅ›Ä‡ transmisji"
 
 #: src/main/extractor_metatypes.c:461
 msgid "exact or average bitrate in bits/s"
-msgstr ""
+msgstr "dokÅ‚adna lub Å›rednia prÄ™dkoÅ›Ä‡ transmisji w bitach na sekundÄ™"
 
 #: src/main/extractor_metatypes.c:462
 msgid "nominal bitrate"
-msgstr ""
+msgstr "nominalna prÄ™dkoÅ›Ä‡ transmisji"
 
 #: src/main/extractor_metatypes.c:463
 msgid ""
 "nominal bitrate in bits/s. The actual bitrate might be different from this "
 "target bitrate."
 msgstr ""
+"nominalna prÄ™dkoÅ›Ä‡ transmisji w bitach na sekundÄ™; faktyczna prÄ™dkoÅ›Ä‡ moÅ¼e "
+"siÄ™ rÃ³Å¼niÄ‡ od tej docelowej"
 
 #: src/main/extractor_metatypes.c:464
 msgid "minimum bitrate"
-msgstr ""
+msgstr "minimalna prÄ™dkoÅ›Ä‡ transmisji"
 
 #: src/main/extractor_metatypes.c:465
 msgid "minimum bitrate in bits/s"
-msgstr ""
+msgstr "minimalna prÄ™dkoÅ›Ä‡ transmisji w bitach na sekundÄ™"
 
 #: src/main/extractor_metatypes.c:467
 msgid "maximum bitrate"
-msgstr ""
+msgstr "maksymalna prÄ™dkoÅ›Ä‡ transmisji"
 
 #: src/main/extractor_metatypes.c:468
 msgid "maximum bitrate in bits/s"
-msgstr ""
+msgstr "maksymalna prÄ™dkoÅ›Ä‡ transmisji w bitach na sekundÄ™"
 
 #: src/main/extractor_metatypes.c:469
-#, fuzzy
 msgid "serial"
-msgstr "Tionsclaíoch"
+msgstr "numer seryjny"
 
 #: src/main/extractor_metatypes.c:470
 msgid "serial number of track"
-msgstr ""
+msgstr "numer seryjny Å›cieÅ¼ki"
 
 #: src/main/extractor_metatypes.c:471
-#, fuzzy
 msgid "encoder"
-msgstr "ionchódaithe ag"
+msgstr "koder"
 
 #: src/main/extractor_metatypes.c:472
 msgid "encoder used to encode this stream"
-msgstr ""
+msgstr "program kodujÄ…cy uÅ¼yty do zakodowania tego strumienia"
 
 #: src/main/extractor_metatypes.c:473
-#, fuzzy
 msgid "encoder version"
-msgstr "leagan na formáide"
+msgstr "wersja kodera"
 
 #: src/main/extractor_metatypes.c:474
 msgid "version of the encoder used to encode this stream"
-msgstr ""
+msgstr "wersja programu kodujÄ…cego uÅ¼ytego do zakodowania tego strumienia"
 
 #: src/main/extractor_metatypes.c:475
-#, fuzzy
 msgid "track gain"
-msgstr "uimhir an riain"
+msgstr "wzmocnienie Å›cieÅ¼ki"
 
 #: src/main/extractor_metatypes.c:476
 msgid "track gain in db"
-msgstr ""
+msgstr "wzmocnienie Å›cieÅ¼ki w db"
 
 #: src/main/extractor_metatypes.c:478
-#, fuzzy
 msgid "track peak"
-msgstr "uimhir an riain"
+msgstr "poziom szczytowy Å›cieÅ¼ki"
 
 #: src/main/extractor_metatypes.c:479
 msgid "peak of the track"
-msgstr ""
+msgstr "poziom szczytowy Å›cieÅ¼ki"
 
 #: src/main/extractor_metatypes.c:480
-#, fuzzy
 msgid "album gain"
-msgstr "albam"
+msgstr "wzmocnienie albumu"
 
 #: src/main/extractor_metatypes.c:481
 msgid "album gain in db"
-msgstr ""
+msgstr "wzmocnienie albumu w db"
 
 #: src/main/extractor_metatypes.c:482
-#, fuzzy
 msgid "album peak"
-msgstr "albam"
+msgstr "poziom szczytowy albumu"
 
 #: src/main/extractor_metatypes.c:483
 msgid "peak of the album"
-msgstr ""
+msgstr "poziom szczytowy albumu"
 
 #: src/main/extractor_metatypes.c:484
 msgid "reference level"
-msgstr ""
+msgstr "poziom odniesienia"
 
 #: src/main/extractor_metatypes.c:485
 msgid "reference level of track and album gain values"
-msgstr ""
+msgstr "poziom odniesienia"
 
 #: src/main/extractor_metatypes.c:486
-#, fuzzy
 msgid "location name"
-msgstr "suíomh"
+msgstr "nazwa miejsca"
 
 #: src/main/extractor_metatypes.c:487
 msgid ""
 "human readable descriptive location of where the media has been recorded or "
 "produced"
 msgstr ""
+"czytelny dla czÅ‚owieka opis miejsca, gdzie wykonano lub wyprodukowano "
+"nagranie"
 
 #: src/main/extractor_metatypes.c:489
-#, fuzzy
 msgid "location elevation"
-msgstr "suíomh"
+msgstr "wysokoÅ›Ä‡ miejsca"
 
 #: src/main/extractor_metatypes.c:490
 msgid ""
 "geo elevation of where the media has been recorded or produced in meters "
 "according to WGS84 (zero is average sea level)"
 msgstr ""
+"wysokoÅ›Ä‡ geograficzna miejsca, gdzie wykonano lub wyprodukowano nagranie w "
+"metrach zgodnie z WGS84 (zero to Å›redni poziom morza)"
 
 #: src/main/extractor_metatypes.c:491
 msgid "location horizontal error"
-msgstr ""
+msgstr "bÅ‚Ä…d lokalizacji poziomej miejsca"
 
 #: src/main/extractor_metatypes.c:492
 msgid "represents the expected error on the horizontal positioning in meters"
-msgstr ""
+msgstr "spodziewany bÅ‚Ä…d lokalizacji poziomej w metrach"
 
 #: src/main/extractor_metatypes.c:493
 msgid "location movement speed"
-msgstr ""
+msgstr "szybkoÅ›Ä‡ ruchu miejsca"
 
 #: src/main/extractor_metatypes.c:494
 msgid ""
 "speed of the capturing device when performing the capture. Represented in m/s"
 msgstr ""
+"szybkoÅ›Ä‡ ruchu urzÄ…dzenia nagrywajÄ…cego podczas nagrania, wyraÅ¼ona w m/s"
 
 #: src/main/extractor_metatypes.c:495
 msgid "location movement direction"
-msgstr ""
+msgstr "kierunek ruchu miejsca"
 
 #: src/main/extractor_metatypes.c:496
 msgid ""
@@ -1729,10 +1658,13 @@ msgid ""
 "media. It is represented as degrees in floating point representation, 0 "
 "means the geographic north, and increases clockwise"
 msgstr ""
+"kierunek ruchu urzÄ…dzenia nagrywajÄ…cego podczas nagrania; wyraÅ¼ony w "
+"stopniach w reprezentacji zmiennoprzecinkowej, 0 oznacza pÃ³Å‚noc geograficznÄ… "
+"i roÅ›nie zgodnie z ruchem wskazÃ³wek zegara"
 
 #: src/main/extractor_metatypes.c:497
 msgid "location capture direction"
-msgstr ""
+msgstr "kierunek wykonywania nagrania"
 
 #: src/main/extractor_metatypes.c:498
 msgid ""
@@ -1740,1099 +1672,377 @@ msgid ""
 "is represented as degrees in floating point representation, 0 means the "
 "geographic north, and increases clockwise"
 msgstr ""
+"kierunek skierowania urzÄ…dzenia nagrywajÄ…cego podczas nagrania; wyraÅ¼ony w "
+"stopniach w reprezentacji zmiennoprzecinkowej, 0 oznacza pÃ³Å‚noc geograficznÄ… "
+"i roÅ›nie zgodnie z ruchem wskazÃ³wek zegara"
 
 #: src/main/extractor_metatypes.c:500
-#, fuzzy
 msgid "show episode number"
-msgstr "uimhir an diosca"
+msgstr "numer epizodu przedstawienia"
 
 #: src/main/extractor_metatypes.c:501
 msgid "number of the episode within a season/show"
-msgstr ""
+msgstr "numer epizodu w sezonie/przedstawieniu"
 
 #: src/main/extractor_metatypes.c:502
-#, fuzzy
 msgid "show season number"
-msgstr "taispeáin an leagan"
+msgstr "numer sezonu przestawienia"
 
 #: src/main/extractor_metatypes.c:503
 msgid "number of the season of a show/series"
-msgstr ""
+msgstr "numer sezonu przestawienia/serialu"
 
 #: src/main/extractor_metatypes.c:504
 #, fuzzy
 msgid "grouping"
-msgstr "grúpa"
+msgstr "grupowanie"
 
 #: src/main/extractor_metatypes.c:505
 msgid ""
 "groups together media that are related and spans multiple tracks. An example "
 "are multiple pieces of a concerto"
 msgstr ""
+"grupowanie utworÃ³w powiÄ…zanych ze sobÄ…, zajmujÄ…cych wiele Å›cieÅ¼ek - np. "
+"wielu fragmentÃ³w koncertu"
 
 #: src/main/extractor_metatypes.c:506
 msgid "device manufacturer"
-msgstr ""
+msgstr "producent urzÄ…dzenia"
 
 #: src/main/extractor_metatypes.c:507
 msgid "manufacturer of the device used to create the media"
-msgstr ""
+msgstr "producent urzÄ…dzenia wykorzystanego do wykonania nagrania"
 
 #: src/main/extractor_metatypes.c:508
-#, fuzzy
 msgid "device model"
-msgstr "déanamh an cheamara"
+msgstr "model urzÄ…dzenia"
 
 #: src/main/extractor_metatypes.c:509
 msgid "model of the device used to create the media"
-msgstr ""
+msgstr "model urzÄ…dzenia wykorzystanego do wykonania nagrania"
 
 #: src/main/extractor_metatypes.c:511
-#, fuzzy
 msgid "audio language"
-msgstr "teanga"
+msgstr "jÄ™zyk dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:512
 msgid "language of the audio track"
-msgstr ""
+msgstr "jÄ™zyk Å›cieÅ¼ki dÅºwiÄ™kowej"
 
 #: src/main/extractor_metatypes.c:513
 msgid "channels"
-msgstr ""
+msgstr "liczba kanaÅ‚Ã³w"
 
 #: src/main/extractor_metatypes.c:514
 msgid "number of audio channels"
-msgstr ""
+msgstr "liczba kanaÅ‚Ã³w dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:515
 msgid "sample rate"
-msgstr ""
+msgstr "czÄ™stotliwoÅ›Ä‡ prÃ³bkowania"
 
 #: src/main/extractor_metatypes.c:516
 msgid "sample rate of the audio track"
-msgstr ""
+msgstr "czÄ™stotliwoÅ›Ä‡ prÃ³bkowania Å›cieÅ¼ki dÅºwiÄ™kowej"
 
 #: src/main/extractor_metatypes.c:517
 msgid "audio depth"
-msgstr ""
+msgstr "gÅ‚Ä™bia dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:518
 msgid "number of bits per audio sample"
-msgstr ""
+msgstr "liczba bitÃ³w na prÃ³bkÄ™ dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:519
 msgid "audio bitrate"
-msgstr ""
+msgstr "prÄ™dkosÄ‡ transmisji dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:520
 msgid "bitrate of the audio track"
-msgstr ""
+msgstr "prÄ™dkoÅ›Ä‡ transmisji Å›cieÅ¼ki dÅºwiÄ™kowej"
 
 #: src/main/extractor_metatypes.c:522 src/main/extractor_metatypes.c:523
 msgid "maximum audio bitrate"
-msgstr ""
+msgstr "maksymalna prÄ™dkoÅ›Ä‡ transmisji dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:524
 msgid "video dimensions"
-msgstr ""
+msgstr "wymiary obrazu"
 
 #: src/main/extractor_metatypes.c:525
 msgid "width and height of the video track (WxH)"
-msgstr ""
+msgstr "szerokoÅ›c i wysokoÅ›Ä‡ Å›cieÅ¼ki obrazu (szer. x wys.)"
 
 #: src/main/extractor_metatypes.c:526
 msgid "video depth"
-msgstr ""
+msgstr "gÅ‚Ä™bia obrazu"
 
 #: src/main/extractor_metatypes.c:527
 msgid "numbers of bits per pixel"
-msgstr ""
+msgstr "liczba bitÃ³w na piksel"
 
 #: src/main/extractor_metatypes.c:528
 msgid "frame rate"
-msgstr ""
+msgstr "czÄ™stotliwoÅ›Ä‡ odÅ›wieÅ¼ania"
 
 #: src/main/extractor_metatypes.c:529
 msgid "number of frames per second (as D/N or floating point)"
-msgstr ""
+msgstr "liczba klatek na sekundÄ™ (jako M/L lub zmiennoprzecinkowa)"
 
 #: src/main/extractor_metatypes.c:530
 msgid "pixel aspect ratio"
-msgstr ""
+msgstr "proporcje piksela"
 
 #: src/main/extractor_metatypes.c:531
 msgid "pixel aspect ratio (as D/N)"
-msgstr ""
+msgstr "proporcje piksela (jako M/L)"
 
 #: src/main/extractor_metatypes.c:533 src/main/extractor_metatypes.c:534
 msgid "video bitrate"
-msgstr ""
+msgstr "prÄ™dkoÅ›Ä‡ transmisji obrazu"
 
 #: src/main/extractor_metatypes.c:535 src/main/extractor_metatypes.c:536
 msgid "maximum video bitrate"
-msgstr ""
+msgstr "maksymalna prÄ™dkoÅ›Ä‡ transmisji obrazu"
 
 #: src/main/extractor_metatypes.c:537
-#, fuzzy
 msgid "subtitle language"
-msgstr "teanga"
+msgstr "jÄ™zyk napisÃ³w"
 
 #: src/main/extractor_metatypes.c:538
 msgid "language of the subtitle track"
-msgstr ""
+msgstr "jÄ™zyk Å›cieÅ¼ki napisÃ³w"
 
 #: src/main/extractor_metatypes.c:539
-#, fuzzy
 msgid "video language"
-msgstr "teanga"
+msgstr "jÄ™zyk obrazu"
 
 #: src/main/extractor_metatypes.c:540
 msgid "language of the video track"
-msgstr ""
+msgstr "jÄ™zyk Å›cieÅ¼ki wideo"
 
 #: src/main/extractor_metatypes.c:541
 msgid "table of contents"
-msgstr ""
+msgstr "spis treÅ›ci"
 
 #: src/main/extractor_metatypes.c:542
 msgid "chapters, contents or bookmarks (in xml format)"
-msgstr ""
+msgstr "rozdziaÅ‚y, treÅ›Ä‡ lub zakÅ‚adki (w formacie XML)"
 
 #: src/main/extractor_metatypes.c:544
-#, fuzzy
 msgid "video duration"
-msgstr "achar"
+msgstr "czas trwania filmu"
 
 #: src/main/extractor_metatypes.c:545
 msgid "duration of a video stream"
-msgstr ""
+msgstr "czas trwania strumienia wideo"
 
 #: src/main/extractor_metatypes.c:546
-#, fuzzy
 msgid "audio duration"
-msgstr "achar"
+msgstr "czas trwania dÅºwiÄ™ku"
 
 #: src/main/extractor_metatypes.c:547
 msgid "duration of an audio stream"
-msgstr ""
+msgstr "czas trwania strumienia dÅºwiÄ™kowego"
 
 #: src/main/extractor_metatypes.c:548
-#, fuzzy
 msgid "subtitle duration"
-msgstr "achar"
+msgstr "czas trwania napisÃ³w"
 
 #: src/main/extractor_metatypes.c:549
 msgid "duration of a subtitle stream"
-msgstr ""
+msgstr "czas trwania strumienia napisÃ³w"
 
 #: src/main/extractor_metatypes.c:551 src/main/extractor_metatypes.c:552
 msgid "last"
-msgstr ""
+msgstr "koniec"
 
 #: src/main/getopt.c:684
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
-msgstr "%s: Tá an rogha `%s' débhríoch\n"
+msgstr "%s: opcja `%s' jest niejednoznaczna\n"
 
 #: src/main/getopt.c:709
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
-msgstr "%s: ní cheadaítear argóint i ndiaidh na rogha `--%s'\n"
+msgstr "%s: opcja `--%s' nie moÅ¼e mieÄ‡ argumentÃ³w\n"
 
 #: src/main/getopt.c:715
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
-msgstr "%s: ní cheadaítear argóint i ndiaidh na rogha `%c%s'\n"
+msgstr "%s: opcja `%c%s' nie moÅ¼e mieÄ‡ argumentÃ³w\n"
 
 #: src/main/getopt.c:732 src/main/getopt.c:903
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
-msgstr "%s: tá argóint de dhíth i ndiaidh na rogha `%s'\n"
+msgstr "%s: opcja `%s' musi mieÄ‡ argument\n"
 
 #: src/main/getopt.c:761
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
-msgstr "%s: rogha anaithnid `--%s'\n"
+msgstr "%s: nieznana opcja `--%s'\n"
 
 #: src/main/getopt.c:765
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
-msgstr "%s: rogha anaithnid `%c%s'\n"
+msgstr "%s: nieznana opcja `%c%s'\n"
 
 #: src/main/getopt.c:791
 #, c-format
 msgid "%s: illegal option -- %c\n"
-msgstr "%s: rogha neamhcheadaithe -- %c\n"
+msgstr "%s: niewÅ‚aÅ›ciwa opcja -- %c\n"
 
 #: src/main/getopt.c:793
 #, c-format
 msgid "%s: invalid option -- %c\n"
-msgstr "%s: rogha neamhbhailí -- %c\n"
+msgstr "%s: bÅ‚Ä™dna opcja -- %c\n"
 
 #: src/main/getopt.c:822 src/main/getopt.c:952
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
-msgstr "%s: tá argóint de dhíth i ndiaidh na rogha -- %c\n"
+msgstr "%s: opcja musi mieÄ‡ argument -- %c\n"
 
 #: src/main/getopt.c:870
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
-msgstr "%s: Tá an rogha `-W %s' débhríoch\n"
+msgstr "%s: opcja `-W %s' jest niejednoznaczna\n"
 
 #: src/main/getopt.c:888
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
-msgstr "%s: ní cheadaítear argóint i ndiaidh na rogha `-W %s'\n"
+msgstr "%s: opcja `-W %s' nie moÅ¼e mieÄ‡ argumentÃ³w\n"
 
 #: src/plugins/flac_extractor.c:322
 #, c-format
 msgid "%u Hz, %u channels"
-msgstr ""
+msgstr "%u Hz, kanaÅ‚Ã³w: %u"
 
 #: src/plugins/man_extractor.c:215
 msgid "Commands"
-msgstr "Orduithe"
+msgstr "Polecenia"
 
 #: src/plugins/man_extractor.c:219
 msgid "System calls"
-msgstr "Glaonna ar an chóras"
+msgstr "WywoÅ‚ania systemowe"
 
 #: src/plugins/man_extractor.c:223
 msgid "Library calls"
-msgstr "Glaonna ar leabharlanna"
+msgstr "Funkcje biblioteczne"
 
 #: src/plugins/man_extractor.c:227
 msgid "Special files"
-msgstr "Comhaid speisialta"
+msgstr "Pliki specjalne"
 
 #: src/plugins/man_extractor.c:231
 msgid "File formats and conventions"
-msgstr "Formáidí comhaid agus coinbhinsiúin"
+msgstr "Formaty i konwencje plikÃ³w"
 
 #: src/plugins/man_extractor.c:235
 msgid "Games"
-msgstr "Cluichí"
+msgstr "Gry"
 
 #: src/plugins/man_extractor.c:239
 msgid "Conventions and miscellaneous"
-msgstr "Coinbhinsiúin agus rudaí eile"
+msgstr "Konwencje i inne"
 
 #: src/plugins/man_extractor.c:243
 msgid "System management commands"
-msgstr "Orduithe bainisteoireacht an chórais"
+msgstr "Polecenia zarzÄ…dzania systemem"
 
 #: src/plugins/man_extractor.c:247
 msgid "Kernel routines"
-msgstr "Feidhmeanna eithne"
+msgstr "Funkcje jÄ…dra"
 
 #: src/plugins/ole2_extractor.c:387
 msgid "No Proofing"
-msgstr "Gan Phrofadh"
+msgstr "Bez korekty"
 
 #: src/plugins/ole2_extractor.c:395
 msgid "Traditional Chinese"
-msgstr "Sínis Traidisiúnta"
+msgstr "chiÅ„ski tradycyjny"
 
 #: src/plugins/ole2_extractor.c:397
 msgid "Simplified Chinese"
-msgstr "Sínis Simplithe"
+msgstr "chiÅ„ski uproszczony"
 
 #: src/plugins/ole2_extractor.c:405
 msgid "Swiss German"
-msgstr "Gearmáinis Eilvéiseach"
+msgstr "niemiecki szwajcarski"
 
 #: src/plugins/ole2_extractor.c:409
 msgid "U.S. English"
-msgstr "Béarla S.A.M."
+msgstr "angielski amerykaÅ„ski"
 
 #: src/plugins/ole2_extractor.c:411
 msgid "U.K. English"
-msgstr "Béarla Sasanach"
+msgstr "angielski brytyjski"
 
 #: src/plugins/ole2_extractor.c:413
 msgid "Australian English"
-msgstr "Béarla Astrálach"
+msgstr "angielski australijski"
 
 #: src/plugins/ole2_extractor.c:415
 msgid "Castilian Spanish"
-msgstr "Spáinnis Chaistíleach"
+msgstr "hiszpaÅ„ski kastylijski"
 
 #: src/plugins/ole2_extractor.c:417
 msgid "Mexican Spanish"
-msgstr "Spáinnis Mheicsiceach"
+msgstr "hiszpaÅ„ski meksykaÅ„ski"
 
 #: src/plugins/ole2_extractor.c:423
 msgid "Belgian French"
-msgstr "Fraincis Bheilgeach"
+msgstr "francuski belgijski"
 
 #: src/plugins/ole2_extractor.c:425
 msgid "Canadian French"
-msgstr "Fraincis Cheanadach"
+msgstr "francuski kanadyjski"
 
 #: src/plugins/ole2_extractor.c:427
 msgid "Swiss French"
-msgstr "Fraincis Eilvéiseach"
+msgstr "francuski szwajcarski"
 
 #: src/plugins/ole2_extractor.c:437
 msgid "Swiss Italian"
-msgstr "Iodáilis Eilvéiseach"
+msgstr "wÅ‚oski szwajcarski"
 
 #: src/plugins/ole2_extractor.c:445
 msgid "Belgian Dutch"
-msgstr "Ollainnis Bheilgeach"
+msgstr "holenderski belgijski"
 
 #: src/plugins/ole2_extractor.c:447
 msgid "Norwegian Bokmal"
-msgstr "Ioruais Bokmål"
+msgstr "norweski bokmaal"
 
 #: src/plugins/ole2_extractor.c:457
 msgid "Rhaeto-Romanic"
-msgstr "Raeta-Rómáinsis"
+msgstr "retoromaÅ„ski"
 
 #: src/plugins/ole2_extractor.c:463
 msgid "Croato-Serbian (Latin)"
-msgstr "Seirbea-Chróitis (Laidineach)"
+msgstr "chorwackoserbski (Å‚aciÅ„ski)"
 
 #: src/plugins/ole2_extractor.c:465
 msgid "Serbo-Croatian (Cyrillic)"
-msgstr "Seirbea-Chróitis (Coireallach)"
+msgstr "serbsko-chorwacki (cyrylicki)"
 
 #: src/plugins/ole2_extractor.c:493
 msgid "Farsi"
-msgstr "Fairsis"
+msgstr "perski"
 
 #: src/plugins/ole2_extractor.c:578
-#, fuzzy, c-format
+#, c-format
 msgid "Revision #%u: Author `%s' worked on `%s'"
-msgstr "Leasú #%u: D'oibrigh údar '%s' ar '%s'"
+msgstr "Rewizja #%u: Autor `%s' pracowaÅ‚ nad `%s'"
 
 #: src/plugins/riff_extractor.c:145
 #, c-format
 msgid "codec: %s, %u fps, %u ms"
-msgstr "codec: %s, %u fss, %u ms"
+msgstr "kodek: %s, %u fps, %u ms"
 
 #: src/plugins/wav_extractor.c:120
 msgid "mono"
-msgstr "mona"
+msgstr "mono"
 
 #: src/plugins/wav_extractor.c:120
 msgid "stereo"
-msgstr "steirió"
-
-#~ msgid "do not remove any duplicates"
-#~ msgstr "ná bain macasamhla amach"
-
-#~ msgid ""
-#~ "use the generic plaintext extractor for the language with the 2-letter "
-#~ "language code LANG"
-#~ msgstr ""
-#~ "úsáid an t-asbhainteoir ginearálta téacs le haghaidh na teanga leis an "
-#~ "chód LANG de réir ISO-639-1"
-
-#~ msgid "remove duplicates only if types match"
-#~ msgstr "bain macasamhla amach má mheaitseálann na cineálacha"
-
-#~ msgid "use the filename as a keyword (loads filename-extractor plugin)"
-#~ msgstr ""
-#~ "úsáid an comhadainm mar lorgfhocal (luchtófar breiseán asbhainteora na "
-#~ "gcomhadainmneacha)"
-
-#~ msgid "compute hash using the given ALGORITHM (currently sha1 or md5)"
-#~ msgstr "úsáid an tALGARTAM haiseála tugtha (sha1 nó md5 faoi láthair)"
-
-#~ msgid "remove duplicates even if keyword types do not match"
-#~ msgstr ""
-#~ "bain macasamhla amach, fiú mura meaitseálann na cineálacha lorgfhocail"
-
-#~ msgid "use keyword splitting (loads split-extractor plugin)"
-#~ msgstr ""
-#~ "úsáid scoilteadh lorgfhocal (luchtófar an breiseán asbhainteora scoilte)"
-
-#~ msgid "INVALID TYPE - %s\n"
-#~ msgstr "CINEÁL NEAMHBHAILÍ - %s\n"
-
-#~ msgid "date"
-#~ msgstr "dáta"
-
-#~ msgid "relation"
-#~ msgstr "gaol"
-
-#~ msgid "coverage"
-#~ msgstr "clúdach"
-
-#~ msgid "translated"
-#~ msgstr "aistrithe"
-
-#~ msgid "used fonts"
-#~ msgstr "clófhoirne úsáidte"
-
-#~ msgid "created for"
-#~ msgstr "cruthaithe ar son"
-
-#~ msgid "release"
-#~ msgstr "scaoileadh"
-
-#~ msgid "size"
-#~ msgstr "méid"
-
-#~ msgid "category"
-#~ msgstr "catagóir"
-
-#~ msgid "owner"
-#~ msgstr "úinéir"
-
-#~ msgid "binary thumbnail data"
-#~ msgstr "sonraí dénártha mionsamhla"
-
-#~ msgid "focal length (35mm equivalent)"
-#~ msgstr "fad fócais (35mm coibhéiseach)"
-
-#~ msgid "split"
-#~ msgstr "roinn"
-
-#~ msgid "security"
-#~ msgstr "slándáil"
-
-#~ msgid "lower case conversion"
-#~ msgstr "tiontú go cás íochtair"
-
-#~ msgid "generator"
-#~ msgstr "gineadóir"
-
-#~ msgid "scale"
-#~ msgstr "scála"
-
-#~ msgid "year"
-#~ msgstr "bliain"
-
-#~ msgid "link"
-#~ msgstr "nasc"
-
-#~ msgid "music CD identifier"
-#~ msgstr "aitheantas dlúthdhiosca ceoil"
-
-#~ msgid "time"
-#~ msgstr "am"
-
-#~ msgid ""
-#~ "Resolving symbol `%s' in library `%s' failed, so I tried `%s', but that "
-#~ "failed also.  Errors are: `%s' and `%s'.\n"
-#~ msgstr ""
-#~ "Níorbh fhéidir siombail `%s' a réiteach i leabharlann `%s'.  Dá bhrí sin, "
-#~ "bhain mé triail as `%s', ach theip ar an cheann sin freisin.  Na "
-#~ "hearráidí: `%s' agus `%s'.\n"
-
-#~ msgid "Unloading plugin `%s' failed!\n"
-#~ msgstr "Theip ar dhíluchtú an bhreiseáin `%s'!\n"
-
-#~ msgid "GB"
-#~ msgstr "GB"
-
-#~ msgid "MB"
-#~ msgstr "MB"
-
-#~ msgid "KB"
-#~ msgstr "kB"
-
-#~ msgid "Bytes"
-#~ msgstr "Beart"
-
-#~ msgid "%ux%u dots per cm"
-#~ msgstr "%u×%u poncanna sa cm"
-
-#~ msgid "%ux%u dots per inch?"
-#~ msgstr "%u×%u poncanna san orlach?"
-
-#~ msgid "Blues"
-#~ msgstr "Gormacha"
-
-#~ msgid "Classic Rock"
-#~ msgstr "Rac Clasaiceach"
-
-#~ msgid "Dance"
-#~ msgstr "Damhsa"
-
-#~ msgid "Disco"
-#~ msgstr "Dioscó"
-
-#~ msgid "Funk"
-#~ msgstr "Func"
-
-#~ msgid "Grunge"
-#~ msgstr "Gruinse"
-
-#~ msgid "Hip-Hop"
-#~ msgstr "Hip-Hap"
-
-#~ msgid "Jazz"
-#~ msgstr "Snagcheol"
-
-#~ msgid "Metal"
-#~ msgstr "Miotal"
-
-#~ msgid "New Age"
-#~ msgstr "Nua-Aoiseach"
-
-#~ msgid "Oldies"
-#~ msgstr "Seancheol"
-
-#~ msgid "Other"
-#~ msgstr "Eile"
-
-#~ msgid "Pop"
-#~ msgstr "Popcheol"
-
-#~ msgid "R&B"
-#~ msgstr "Rithim & Gormacha"
-
-#~ msgid "Rap"
-#~ msgstr "Rapcheol"
-
-#~ msgid "Reggae"
-#~ msgstr "Reggae"
-
-#~ msgid "Rock"
-#~ msgstr "Rac-Cheol"
-
-#~ msgid "Techno"
-#~ msgstr "Teicneo"
-
-#~ msgid "Alternative"
-#~ msgstr "Malartach"
-
-#~ msgid "Ska"
-#~ msgstr "Ska"
-
-#~ msgid "Death Metal"
-#~ msgstr "Básmhiotal"
-
-#~ msgid "Pranks"
-#~ msgstr "Cleasa"
-
-#~ msgid "Soundtrack"
-#~ msgstr "Fuaimrian"
-
-#~ msgid "Euro-Techno"
-#~ msgstr "Eora-Teicneo"
-
-#~ msgid "Ambient"
-#~ msgstr "Timpeallach"
-
-#~ msgid "Trip-Hop"
-#~ msgstr "Truip-Hap"
-
-#~ msgid "Vocal"
-#~ msgstr "Guthach"
-
-#~ msgid "Jazz+Funk"
-#~ msgstr "Snagcheol+Func"
-
-#~ msgid "Fusion"
-#~ msgstr "Comhleá"
-
-#~ msgid "Trance"
-#~ msgstr "Támhnéal"
-
-#~ msgid "Classical"
-#~ msgstr "Clasaiceach"
-
-#~ msgid "Instrumental"
-#~ msgstr "Ionstraimeach"
-
-#~ msgid "Acid"
-#~ msgstr "Aigéad"
-
-#~ msgid "House"
-#~ msgstr "Teach"
-
-#~ msgid "Game"
-#~ msgstr "Cluiche"
-
-#~ msgid "Sound Clip"
-#~ msgstr "Gearrthóg Fhuaime"
-
-#~ msgid "Gospel"
-#~ msgstr "Ceol Gaspal"
-
-#~ msgid "Noise"
-#~ msgstr "Torann"
-
-#~ msgid "Alt. Rock"
-#~ msgstr "Rac-Cheol Mal."
-
-#~ msgid "Bass"
-#~ msgstr "Dord"
-
-#~ msgid "Soul"
-#~ msgstr "Anamcheol"
-
-#~ msgid "Punk"
-#~ msgstr "Punc"
-
-#~ msgid "Space"
-#~ msgstr "Spás"
-
-#~ msgid "Meditative"
-#~ msgstr "Machnamhach"
-
-#~ msgid "Instrumental Pop"
-#~ msgstr "Popcheol Ionstraimeach"
-
-#~ msgid "Instrumental Rock"
-#~ msgstr "Rac Ionstraimeach"
-
-#~ msgid "Ethnic"
-#~ msgstr "Eitneach"
-
-#~ msgid "Gothic"
-#~ msgstr "Gotach"
-
-#~ msgid "Darkwave"
-#~ msgstr "An Tonn Dhubh"
-
-#~ msgid "Techno-Industrial"
-#~ msgstr "Teicneo-Tionsclaíoch"
-
-#~ msgid "Electronic"
-#~ msgstr "Leictreonach"
-
-#~ msgid "Pop-Folk"
-#~ msgstr "Popcheol Tíre"
-
-#~ msgid "Eurodance"
-#~ msgstr "Eoradamhsa"
-
-#~ msgid "Dream"
-#~ msgstr "Aisling"
-
-#~ msgid "Southern Rock"
-#~ msgstr "Rac Deisceartach"
-
-#~ msgid "Comedy"
-#~ msgstr "Coiméide"
-
-#~ msgid "Cult"
-#~ msgstr "Cultas"
-
-#~ msgid "Gangsta Rap"
-#~ msgstr "Rapcheol Gangstaeir"
-
-#~ msgid "Top 40"
-#~ msgstr "Cnagshingilí"
-
-#~ msgid "Christian Rap"
-#~ msgstr "Rapcheol Críostaí"
-
-#~ msgid "Pop/Funk"
-#~ msgstr "Popcheol/Func"
-
-#~ msgid "Jungle"
-#~ msgstr "Dufair"
-
-#~ msgid "Native American"
-#~ msgstr "Indiach-Mheiriceánach"
-
-#~ msgid "Cabaret"
-#~ msgstr "Cabaret"
-
-#~ msgid "New Wave"
-#~ msgstr "Tonn Nua"
-
-#~ msgid "Psychedelic"
-#~ msgstr "Sícideileach"
-
-#~ msgid "Rave"
-#~ msgstr "Réibhcheol"
-
-#~ msgid "Showtunes"
-#~ msgstr "Seóthiúineanna"
-
-#~ msgid "Trailer"
-#~ msgstr "Tréiléar"
-
-#~ msgid "Lo-Fi"
-#~ msgstr "Ísle-Dílse"
-
-#~ msgid "Tribal"
-#~ msgstr "Treibheach"
-
-#~ msgid "Acid Punk"
-#~ msgstr "Punc Aigéadach"
-
-#~ msgid "Acid Jazz"
-#~ msgstr "Snagcheol Aigéadach"
-
-#~ msgid "Polka"
-#~ msgstr "Polca"
-
-#~ msgid "Retro"
-#~ msgstr "Aischeol"
-
-#~ msgid "Musical"
-#~ msgstr "Ceolra"
-
-#~ msgid "Rock & Roll"
-#~ msgstr "Rac Is Roll"
-
-#~ msgid "Hard Rock"
-#~ msgstr "Rac-Cheol Crua"
-
-#~ msgid "Folk"
-#~ msgstr "Ceol na nDaoine"
-
-#~ msgid "Folk/Rock"
-#~ msgstr "Ceol Tíre/Rac-Cheol"
-
-#~ msgid "National Folk"
-#~ msgstr "Ceol an Náisiúin"
-
-#~ msgid "Swing"
-#~ msgstr "Luasc-Cheol"
-
-#~ msgid "Fast-Fusion"
-#~ msgstr "Comhleá Tapa"
-
-#~ msgid "Bebob"
-#~ msgstr "Bap"
-
-#~ msgid "Revival"
-#~ msgstr "Athbheochan"
-
-#~ msgid "Celtic"
-#~ msgstr "Ceilteach"
-
-#~ msgid "Bluegrass"
-#~ msgstr "Bluegrass"
-
-#~ msgid "Avantgarde"
-#~ msgstr "Avant garde"
-
-#~ msgid "Gothic Rock"
-#~ msgstr "Rac Gotach"
-
-#~ msgid "Progressive Rock"
-#~ msgstr "Rac Forásach"
-
-#~ msgid "Psychedelic Rock"
-#~ msgstr "Rac Sícideileach"
-
-#~ msgid "Symphonic Rock"
-#~ msgstr "Rac Siansach"
-
-#~ msgid "Slow Rock"
-#~ msgstr "Rac-Cheol Mall"
-
-#~ msgid "Big Band"
-#~ msgstr "Banna Mór"
-
-#~ msgid "Chorus"
-#~ msgstr "Cór"
-
-#~ msgid "Easy Listening"
-#~ msgstr "Récheol"
-
-#~ msgid "Acoustic"
-#~ msgstr "Fuaimiúil"
-
-#~ msgid "Humour"
-#~ msgstr "Greann"
-
-#~ msgid "Speech"
-#~ msgstr "Caint"
-
-#~ msgid "Chanson"
-#~ msgstr "Chanson"
-
-#~ msgid "Opera"
-#~ msgstr "Ceoldráma"
-
-#~ msgid "Chamber Music"
-#~ msgstr "Ceol Aireagail"
-
-#~ msgid "Sonata"
-#~ msgstr "Sonáid"
-
-#~ msgid "Symphony"
-#~ msgstr "Siansa"
-
-#~ msgid "Booty Bass"
-#~ msgstr "Dord Búití"
-
-#~ msgid "Primus"
-#~ msgstr "Primus"
-
-#~ msgid "Porn Groove"
-#~ msgstr "PornGrúibh"
-
-#~ msgid "Satire"
-#~ msgstr "Aoir"
-
-#~ msgid "Slow Jam"
-#~ msgstr "Seam Mall"
-
-#~ msgid "Club"
-#~ msgstr "Club"
-
-#~ msgid "Tango"
-#~ msgstr "Tangó"
-
-#~ msgid "Samba"
-#~ msgstr "Samba"
-
-#~ msgid "Folklore"
-#~ msgstr "Béaloideas"
-
-#~ msgid "Ballad"
-#~ msgstr "Bailéad"
-
-#~ msgid "Power Ballad"
-#~ msgstr "Bailéad Cumhachta"
-
-#~ msgid "Rhythmic Soul"
-#~ msgstr "Anamcheol Rithimeach"
-
-#~ msgid "Freestyle"
-#~ msgstr "Saorstíl"
-
-#~ msgid "Duet"
-#~ msgstr "Díséad"
-
-#~ msgid "Punk Rock"
-#~ msgstr "Punc-Rac"
-
-#~ msgid "Drum Solo"
-#~ msgstr "Aonréad Druma"
-
-#~ msgid "A Cappella"
-#~ msgstr "A Cappella"
-
-#~ msgid "Euro-House"
-#~ msgstr "Eora-Teach"
-
-#~ msgid "Dance Hall"
-#~ msgstr "Halla Damhsa"
-
-#~ msgid "Goa"
-#~ msgstr "Goa"
-
-#~ msgid "Drum & Bass"
-#~ msgstr "Druma & Dord"
-
-#~ msgid "Club-House"
-#~ msgstr "Clubtheach"
-
-#~ msgid "Hardcore"
-#~ msgstr "Fíorchrua"
-
-#~ msgid "Terror"
-#~ msgstr "Uafás"
-
-#~ msgid "Indie"
-#~ msgstr "Neamhspleách"
-
-#~ msgid "BritPop"
-#~ msgstr "BriotPhop"
-
-#~ msgid "Negerpunk"
-#~ msgstr "Negerpunk"
-
-#~ msgid "Polsk Punk"
-#~ msgstr "Punc Polannach"
-
-#~ msgid "Beat"
-#~ msgstr "Buille"
-
-#~ msgid "Christian Gangsta Rap"
-#~ msgstr "Rapcheol Críostaí Gangstaeir"
-
-#~ msgid "Heavy Metal"
-#~ msgstr "Ceol Trom-Mhiotalach"
-
-#~ msgid "Black Metal"
-#~ msgstr "Miotal Dubh"
-
-#~ msgid "Crossover"
-#~ msgstr "Trasach"
-
-#~ msgid "Contemporary Christian"
-#~ msgstr "Críostaí Comhaimseartha"
-
-#~ msgid "Christian Rock"
-#~ msgstr "Rac-Cheol Críostaí"
-
-#~ msgid "Merengue"
-#~ msgstr "Meireang"
-
-#~ msgid "Salsa"
-#~ msgstr "Salsa"
-
-#~ msgid "Thrash Metal"
-#~ msgstr "Miotal Traiseála"
-
-# no "é"
-#~ msgid "Anime"
-#~ msgstr "Anime"
-
-#~ msgid "JPop"
-#~ msgstr "JPap"
-
-#~ msgid "Synthpop"
-#~ msgstr "Popcheol sintéiseach"
-
-#~ msgid "(variable bps)"
-#~ msgstr "(bss athraitheach)"
-
-#~ msgid ""
-#~ "Please provide the name of the language you are building\n"
-#~ "a dictionary for.  For example:\n"
-#~ msgstr ""
-#~ "Tabhair uait ainm na teanga ina bhfuil tú ag tógáil foclóra.\n"
-#~ "Mar shampla:\n"
-
-#~ msgid "Error opening file `%s': %s\n"
-#~ msgstr "Earráid agus comhad `%s' á oscailt: %s\n"
-
-#~ msgid ""
-#~ "Error allocating: %s\n"
-#~ "."
-#~ msgstr ""
-#~ "Earráid le linn dáilte: %s\n"
-#~ "."
-
-#~ msgid "Increase ALLOCSIZE (in %s).\n"
-#~ msgstr "Méadaigh ALLOCSIZE (i %s).\n"
-
-#~ msgid "Source RPM %d.%d"
-#~ msgstr "RPM Foinse %d.%d"
-
-#~ msgid "Binary RPM %d.%d"
-#~ msgstr "RPM Dénártha %d.%d"
-
-#~ msgid "os"
-#~ msgstr "córas"
-
-#~ msgid "Arabic"
-#~ msgstr "Araibis"
-
-#~ msgid "Bulgarian"
-#~ msgstr "Bulgáiris"
-
-#~ msgid "Catalan"
-#~ msgstr "Catalóinis"
-
-#~ msgid "Czech"
-#~ msgstr "Seicis"
-
-#~ msgid "Danish"
-#~ msgstr "Danmhairgis"
-
-#~ msgid "German"
-#~ msgstr "Gearmáinis"
-
-#~ msgid "Greek"
-#~ msgstr "Gréigis"
-
-#~ msgid "Finnish"
-#~ msgstr "Fionlainnis"
-
-#~ msgid "French"
-#~ msgstr "Fraincis"
-
-#~ msgid "Hebrew"
-#~ msgstr "Eabhrais"
-
-#~ msgid "Hungarian"
-#~ msgstr "Ungáiris"
-
-#~ msgid "Icelandic"
-#~ msgstr "Íoslainnis"
-
-#~ msgid "Italian"
-#~ msgstr "Iodáilis"
-
-#~ msgid "Japanese"
-#~ msgstr "Seapáinis"
-
-#~ msgid "Korean"
-#~ msgstr "Cóiréis"
-
-#~ msgid "Dutch"
-#~ msgstr "Ollainnis"
-
-#~ msgid "Norwegian - Nynorsk"
-#~ msgstr "Ioruais - Nynorsk"
-
-#~ msgid "Polish"
-#~ msgstr "Polainnis"
-
-#~ msgid "Brazilian Portuguese"
-#~ msgstr "Portaingéilis na Brasaíle"
-
-#~ msgid "Portuguese"
-#~ msgstr "Portaingéilis"
-
-#~ msgid "Romanian"
-#~ msgstr "Rómáinis"
-
-#~ msgid "Russian"
-#~ msgstr "Rúisis"
-
-#~ msgid "Slovak"
-#~ msgstr "Slóvaicis"
-
-#~ msgid "Albanian"
-#~ msgstr "Albáinis"
-
-#~ msgid "Swedish"
-#~ msgstr "Sualainnis"
-
-#~ msgid "Thai"
-#~ msgstr "Téalainnis"
-
-#~ msgid "Turkish"
-#~ msgstr "Tuircis"
-
-#~ msgid "Urdu"
-#~ msgstr "Urdais"
-
-#~ msgid "Bahasa"
-#~ msgstr "Indinéisis"
-
-#~ msgid "Ukrainian"
-#~ msgstr "Úcráinis"
-
-#~ msgid "Byelorussian"
-#~ msgstr "Bealarúisis"
-
-#~ msgid "Slovenian"
-#~ msgstr "Slóivéinis"
-
-#~ msgid "Estonian"
-#~ msgstr "Eastóinis"
-
-#~ msgid "Latvian"
-#~ msgstr "Laitvis"
-
-#~ msgid "Lithuanian"
-#~ msgstr "Liotuáinis"
-
-#~ msgid "Basque"
-#~ msgstr "Bascais"
-
-#~ msgid "Macedonian"
-#~ msgstr "Macadóinis"
-
-#~ msgid "Afrikaans"
-#~ msgstr "Afracáinis"
-
-#~ msgid "Malaysian"
-#~ msgstr "Malaeis"
-
-#~ msgid "%s (Build %s)"
-#~ msgstr "%s (Tógáil %s)"
-
-#~ msgid "Please provide a list of klp files as arguments.\n"
-#~ msgstr "Tabhair uait liosta de chomhaid klp mar argóintí, le do thoil.\n"
-
-#~ msgid "Fatal: could not allocate (%s at %s:%d).\n"
-#~ msgstr "Earráid mharfach: níorbh fhéidir dáileadh (%s ag %s:%d).\n"
+msgstr "stereo"

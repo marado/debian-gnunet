@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT([libextractor], [1.0.1], [bug-libextractor@gnu.org])
+AC_INIT([libextractor], [1.1], [bug-libextractor@gnu.org])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AH_TOP([#define _GNU_SOURCE  1])
@@ -9,7 +9,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_SYSTEM
 
 LIB_VERSION_CURRENT=4
-LIB_VERSION_REVISION=1
+LIB_VERSION_REVISION=2
 LIB_VERSION_AGE=1
 AC_SUBST(LIB_VERSION_CURRENT)
 AC_SUBST(LIB_VERSION_REVISION)
@@ -29,12 +29,12 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_CANONICAL_HOST
-AC_LIBLTDL_CONVENIENCE
 AC_PROG_LIBTOOL
 # save LIBS, libtool does a AC_SEARCH_LIBS(dlopen, dl), but plugins
 # need not have -ldl added
 LIBSOLD=$LIBS
 LT_INIT([disable-static dlopen win32-dll])
+LT_CONFIG_LTDL_DIR([libltdl])
 LTDL_INIT
 AC_SUBST(LTDLINCL)
 AC_SUBST(LIBLTDL)
@@ -107,15 +107,9 @@ mingw*)
      AC_DEFINE_UNQUOTED(MINGW,1,[This is a MinGW system])
      AC_DEFINE_UNQUOTED(WINDOWS,1,[This is a Windows system])
      AC_CHECK_LIB(intl, gettext)
-     mingw32_ws2=yes
-     mingw64_ws2=yes
-     AC_CHECK_LIB(ws2_32, _head_libws2_32_a,,mingw32_ws2=no)
-     AC_CHECK_LIB(ws2_32, __imp_socket,,mingw64_ws2=no)
-     if test "x$mingw32_ws2" = "xno" -a "x$mingw64_ws2" = "xno"; then
-       AC_MSG_ERROR([libextractor requires Winsock2])
-     fi
      # Sufficiently new Windows XP
      CFLAGS="-D__MSVCRT_VERSION__=0x0601 $CFLAGS"
+     CPPFLAGS="-DFTRUNCATE_DEFINED=1 $CPPFLAGS"
 
     AC_MSG_CHECKING(for PlibC)
     plibc=0
@@ -369,13 +363,20 @@ AC_CHECK_LIB(magic, magic_open,
    AM_CONDITIONAL(HAVE_MAGIC, false))],
   AM_CONDITIONAL(HAVE_MAGIC, false))
 
-AC_MSG_CHECKING(for tidyInitSource -ltidy)
-SAVED_LDFLAGS=$LDFLAGS
-AC_CHECK_LIB(tidy, tidyInitSource,
-  [AC_CHECK_HEADERS([tidy/tidy.h],
-   AM_CONDITIONAL(HAVE_TIDY, true),
-   AM_CONDITIONAL(HAVE_TIDY, false))],
-  AM_CONDITIONAL(HAVE_TIDY, false))
+AC_MSG_CHECKING(for tidyInitSource in -ltidy)
+AC_LANG_PUSH(C++)
+SAVED_LIBS=$LIBS
+LIBS="$LIBS -ltidy"
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[#include <tidy/tidy.h>]],
+    [[ Bool b = tidyInitSource (NULL, NULL, NULL, NULL, NULL); ]])],
+  [AC_MSG_RESULT(yes)
+   AM_CONDITIONAL(HAVE_TIDY, true)
+   AC_DEFINE(HAVE_TIDY,1,[Have tidyInitSource in libtidy])],
+  [AC_MSG_RESULT(no)
+   AM_CONDITIONAL(HAVE_TIDY, false)])
+LIBS=$SAVED_LIBS
+AC_LANG_POP(C++)
 
 # restore LIBS
 LIBS=$LIBSOLD
@@ -414,6 +415,80 @@ AC_FUNC_ERROR_AT_LINE
 AC_SEARCH_LIBS(dlopen, dl)
 AC_SEARCH_LIBS(shm_open, rt)
 AC_CHECK_FUNCS([mkstemp strndup munmap strcasecmp strdup strncasecmp memmove memset strtoul floor getcwd pow setenv sqrt strchr strcspn strrchr strnlen strndup ftruncate shm_open shm_unlink lseek64])
+
+
+dnl This is kind of tedious, but simple and straightforward
+sockets=no
+AC_MSG_CHECKING(for sockets)
+AC_LANG_PUSH(C)
+SAVED_LIBS="$LIBS"
+SOCKET_LIBS=
+AC_LINK_IFELSE(
+  [
+    AC_LANG_PROGRAM(
+      [[#include <sys/socket.h>]],
+      [[int s = socket (AF_INET, SOCK_STREAM, 6);]]
+    )
+  ],
+  [
+    sockets=yes
+  ],
+  [
+    LIBS="$SAVED_LIBS -lsocket"
+    AC_LINK_IFELSE(
+      [
+        AC_LANG_PROGRAM(
+          [[#include <sys/socket.h>]],
+          [[int s = socket (AF_INET, SOCK_STREAM, 6);]]
+        )
+      ],
+      [
+        sockets=yes
+        SOCKET_LIBS="-lsocket"
+      ],
+      [
+        AC_LINK_IFELSE(
+          [
+            AC_LANG_PROGRAM(
+              [[#include <winsock2.h>]],
+              [[int s = socket (AF_INET, SOCK_STREAM, 6);]]
+            )
+          ],
+          [
+            sockets=yes
+          ],
+          [
+            LIBS="$SAVED_LIBS -lws2_32"
+            AC_LINK_IFELSE(
+              [
+                AC_LANG_PROGRAM(
+                  [[#include <winsock2.h>]],
+                  [[int s = socket (AF_INET, SOCK_STREAM, 6);]]
+                )
+              ],
+              [
+                sockets=yes
+                SOCKET_LIBS="-lws2_32"
+              ],
+              [
+                sockets=no
+              ]
+            )
+          ]
+        )
+      ]
+    )
+  ]
+)
+LIBS="$SAVED_LIBS $SOCKET_LIBS"
+AC_LANG_POP(C)
+AC_MSG_RESULT([$sockets])
+if test "x$sockets" = "xno"
+then
+  AC_MSG_ERROR([libextractor requires some kind of socket library])
+fi
+AC_SUBST([SOCKET_LIBS],[$SOCKET_LIBS])
+
 LE_LIB_LIBS=$LIBS
 LIBS=$LIBSOLD
 
@@ -437,7 +512,8 @@ AC_ARG_ENABLE(glib,
         ;;
    *)   AC_MSG_RESULT(allowed)
         ;;
-   esac])
+   esac],
+  AC_MSG_RESULT(allowed))
 
 if test x$without_glib != xtrue
 then
@@ -457,10 +533,10 @@ else
 fi
 
 # smf requires glib.h
-CFLAGS_OLD=$CFLAGS
-CPPFLAGS_OLD=$CPPFLAGS
-export CFLAGS="$CFLAGS $GLIB_CFLAGS"
-export CPPFLAGS="$CPPFLAGS $GLIB_CFLAGS"
+CFLAGS_OLD="$CFLAGS"
+CPPFLAGS_OLD="$CPPFLAGS"
+CFLAGS="$CFLAGS $GLIB_CFLAGS"
+CPPFLAGS="$CPPFLAGS $GLIB_CFLAGS"
 
 AC_CHECK_LIB(smf, smf_load_from_memory,
         [AC_CHECK_HEADERS([smf.h],
@@ -468,13 +544,13 @@ AC_CHECK_LIB(smf, smf_load_from_memory,
            AC_DEFINE(HAVE_MPEG2,1,[Have libsmf]),
          AM_CONDITIONAL(HAVE_SMF, false))],
          AM_CONDITIONAL(HAVE_SMF, false))
-export CFLAGS=$CFLAGS_OLD
-export CPPFLAGS=$CPPFLAGS_OLD
+CFLAGS="$CFLAGS_OLD"
+CPPFLAGS="$CPPFLAGS_OLD"
 
 # check for gtk >= 2.6.0
 AC_MSG_CHECKING(for gtk)
 check_for_3=3.0.0
-check_for_2=false
+check_for_2=2.6.0
 AC_ARG_WITH(gtk_version,
    [  --with-gtk-version=VERSION    version number of gtk to use (>=3.0.0 by default)],
    [AC_MSG_RESULT([$with_gtk_version])
@@ -562,7 +638,8 @@ if test x$ffmpeg_enabled = x1
 then
   ffmpeg_enabled=0
   AC_CHECK_LIB(swscale, sws_getContext,
-    ffmpeg_enabled=1)
+    AC_CHECK_LIB(avcodec, avcodec_alloc_context3,
+      ffmpeg_enabled=1))
   AC_CHECK_HEADERS([libavutil/avutil.h ffmpeg/avutil.h libavformat/avformat.h ffmpeg/avformat.h libavcodec/avcodec.h ffmpeg/avcodec.h libswscale/swscale.h ffmpeg/swscale.h])
 fi
 AM_CONDITIONAL(HAVE_FFMPEG, test x$ffmpeg_enabled != x0)

@@ -28,6 +28,7 @@
 #include "extractor_datasource.h"
 #include "extractor_logging.h"
 #include "extractor_plugin_main.h"
+#include "extractor_plugins.h"
 #include "extractor_ipc.h"
 #include <dirent.h>
 #include <sys/types.h>
@@ -291,6 +292,7 @@ EXTRACTOR_IPC_channel_create_ (struct EXTRACTOR_PluginList *plugin,
   if (0 != pipe (p1))
     {
       LOG_STRERROR ("pipe");
+      free (channel->mdata);
       free (channel);
       return NULL;
     }
@@ -299,6 +301,7 @@ EXTRACTOR_IPC_channel_create_ (struct EXTRACTOR_PluginList *plugin,
       LOG_STRERROR ("pipe");
       (void) close (p1[0]);
       (void) close (p1[1]);
+      free (channel->mdata);
       free (channel);
       return NULL;
     }
@@ -310,6 +313,7 @@ EXTRACTOR_IPC_channel_create_ (struct EXTRACTOR_PluginList *plugin,
       (void) close (p1[1]);
       (void) close (p2[0]);
       (void) close (p2[1]);
+      free (channel->mdata);
       free (channel);
       return NULL;
     }
@@ -317,6 +321,8 @@ EXTRACTOR_IPC_channel_create_ (struct EXTRACTOR_PluginList *plugin,
     {
       (void) close (p1[1]);
       (void) close (p2[0]);
+      free (channel->mdata);
+      free (channel);
       EXTRACTOR_plugin_main_ (plugin, p1[0], p2[1]);
       _exit (0);
     }
@@ -372,6 +378,8 @@ EXTRACTOR_IPC_channel_destroy_ (struct EXTRACTOR_Channel *channel)
     LOG_STRERROR ("close");
   if (0 != close (channel->cpipe_in))
     LOG_STRERROR ("close");
+  if (NULL != channel->plugin)
+    channel->plugin->channel = NULL;
   free (channel->mdata);
   free (channel);
 }
@@ -457,7 +465,7 @@ EXTRACTOR_IPC_channel_recv_ (struct EXTRACTOR_Channel **channels,
     }
   tv.tv_sec = 0;
   tv.tv_usec = 100000; /* 100 ms */
-  if (-1 == select (max + 1, &to_check, NULL, NULL, &tv))
+  if (0 >= select (max + 1, &to_check, NULL, NULL, &tv))
     {
       /* an error or timeout -> something's wrong or all plugins hung up */
       if (EINTR != errno)
@@ -509,10 +517,10 @@ EXTRACTOR_IPC_channel_recv_ (struct EXTRACTOR_Channel **channels,
 	}
       else
 	{
+	  channel->size = channel->size + iret - ret;
 	  memmove (channel->mdata,
 		   &channel->mdata[ret],
-		   channel->size + iret - ret);
-	  channel->size = channel->size + iret - ret;
+		   channel->size);
 	}
     }
   return 1;

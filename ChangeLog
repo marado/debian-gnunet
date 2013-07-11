@@ -1,3 +1,23 @@
+Sat Jun 29 21:28:39 CEST 2013
+	Releasing GNU libextractor 1.1. -CG
+
+Tue Jun 25 14:24:00 CEST 2013
+	Fixing bug where LE could hang due to failure to process all
+	received data from the plugin. -CG
+
+Sun Dec  2 08:31:17 CET 2012
+	Added Polish translation. -CG
+
+Thu Oct 11 15:51:06 CEST 2012
+	Fixing test for ffmpeg to not accept ancient ffmpeg library. -CG
+
+Thu Oct 11 09:19:42 CEST 2012
+	Fixing archive-plugin crash on ".lnk" files (#2586). -bratao
+
+Tue Oct  9 22:28:50 CEST 2012
+	Fixing use-after-free in plugin IPC if plugin crashes
+	while no seek is pending. -CG
+
 Sat Oct  6 15:24:20 CEST 2012
 	Fixing installation path discovery on Darwin (#2562).
 	Releasing GNU libextractor 1.0.1. -CG

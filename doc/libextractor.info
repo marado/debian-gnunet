@@ -1,8 +1,8 @@
 This is libextractor.info, produced by makeinfo version 4.13 from
 libextractor.texi.
 
-This manual is for GNU libextractor (version 1.0.1, 8 September 2012),
-a library for metadata extraction.
+This manual is for GNU libextractor (version 1.1, 9 October 2012), a
+library for metadata extraction.
 
    Copyright (C) 2007, 2010, 2012 Christian Grothoff
 
@@ -24,8 +24,8 @@ File: libextractor.info,  Node: Top,  Next: Introduction,  Up: (dir)
 The GNU libextractor Reference Manual
 *************************************
 
-This manual is for GNU libextractor (version 1.0.1, 8 September 2012),
-a library for metadata extraction.
+This manual is for GNU libextractor (version 1.1, 9 October 2012), a
+library for metadata extraction.
 
    Copyright (C) 2007, 2010, 2012 Christian Grothoff
 
@@ -420,6 +420,13 @@ languages are described in chapter *Note Language bindings::.  The API
 for writing new plugins is described in chapter *Note Writing new
 Plugins::.
 
+   Note that it is possible for GNU libextractor to encounter a
+`SIGPIPE' during its execution.  GNU libextractor -- as it is a library
+and as such should not interfere with your main application -- does NOT
+install a signal handler for `SIGPIPE'.  You thus need to install a
+signal handler (or at least tell your system to ignore `SIGPIPE') if you
+want to avoid unexpected problems during calls to GNU libextractor.  
+
 
 File: libextractor.info,  Node: Extracting meta data,  Next: Language bindings,  Prev: Generalities,  Up: Top
 
@@ -630,7 +637,7 @@ File: libextractor.info,  Node: Extracting,  Prev: Meta formats,  Up: Extracting
      corrupt files as input.  Note however, that running GNU
      libextractor on a corrupt file system (or incorrectly mmaped
      files) can result in the operating system sending a SIGBUS (bus
-     error) to the process.  While GNU libextractor runs plugins
+     error) to the process.  As GNU libextractor typically runs plugins
      out-of-process, it first maps the file into memory and then
      attempts to decompress it.  During decompression it is possible to
      encounter a SIGBUS.   GNU libextractor will _not_ attempt to catch
@@ -1486,6 +1493,7 @@ Index
 * reentrant:                             Plugin management.    (line  6)
 * Ruby:                                  Language bindings.    (line  6)
 * SIGBUS:                                Extracting.           (line 56)
+* SIGPIPE:                               Generalities.         (line 81)
 * struct EXTRACTOR_PluginList:           Plugin management.    (line 32)
 * thread-safety <1>:                     Utility functions.    (line  6)
 * thread-safety <2>:                     Extracting.           (line 43)
@@ -1499,25 +1507,25 @@ Index
 
 
 Tag Table:
-Node: Top788
-Node: Introduction2392
-Ref: Introduction-Footnote-14539
-Node: Preparation4604
-Node: Generalities12220
-Node: Extracting meta data15034
-Node: Plugin management15746
-Node: Meta types19399
-Node: Meta formats20814
-Node: Extracting22207
-Node: Language bindings25384
-Node: Utility functions27281
-Node: Utility Constants27605
-Node: Meta data printing28224
-Node: Existing Plugins28765
-Node: Writing new Plugins29805
-Node: Internal utility functions32429
-Node: Reporting bugs34775
-Node: GNU Free Documentation License35147
-Node: Index60321
+Node: Top784
+Node: Introduction2384
+Ref: Introduction-Footnote-14531
+Node: Preparation4596
+Node: Generalities12212
+Node: Extracting meta data15446
+Node: Plugin management16158
+Node: Meta types19811
+Node: Meta formats21226
+Node: Extracting22619
+Node: Language bindings25803
+Node: Utility functions27700
+Node: Utility Constants28024
+Node: Meta data printing28643
+Node: Existing Plugins29184
+Node: Writing new Plugins30224
+Node: Internal utility functions32848
+Node: Reporting bugs35194
+Node: GNU Free Documentation License35566
+Node: Index60740
 
 End Tag Table
