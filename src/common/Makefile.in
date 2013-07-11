@@ -104,8 +104,12 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libextractor_common_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libextractor_common_la_OBJECTS = unzip.lo convert.lo
+libextractor_common_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am__libextractor_common_la_SOURCES_DIST = le_architecture.h unzip.c \
+	unzip.h convert.c convert.h
+@HAVE_ZLIB_TRUE@am__objects_1 = unzip.lo
+am_libextractor_common_la_OBJECTS = $(am__objects_1) convert.lo
 libextractor_common_la_OBJECTS = $(am_libextractor_common_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -141,7 +145,7 @@ AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libextractor_common_la_SOURCES)
-DIST_SOURCES = $(libextractor_common_la_SOURCES)
+DIST_SOURCES = $(am__libextractor_common_la_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -171,6 +175,7 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -248,6 +253,7 @@ LT_CONFIG_H = @LT_CONFIG_H@
 LT_DLLOADERS = @LT_DLLOADERS@
 LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
+MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
@@ -276,6 +282,7 @@ RPLUGINDIR = @RPLUGINDIR@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SOCKET_LIBS = @SOCKET_LIBS@
 STRIP = @STRIP@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -286,6 +293,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -319,7 +327,6 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
-lt_ECHO = @lt_ECHO@
 ltdl_LIBOBJS = @ltdl_LIBOBJS@
 ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
@@ -346,6 +353,10 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = -I$(top_srcdir)/src/include
+@USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
+@USE_COVERAGE_TRUE@XLIB = -lgcov
+@HAVE_ZLIB_TRUE@zlib = -lz
+@HAVE_ZLIB_TRUE@LINK_UNZIP = unzip.c unzip.h
 lib_LTLIBRARIES = \
   libextractor_common.la
 
@@ -354,11 +365,11 @@ libextractor_common_la_LDFLAGS = \
   -version-info 1:0:0
 
 libextractor_common_la_LIBADD = \
-  $(LTLIBICONV) -lz
+  $(LTLIBICONV) $(zlib)
 
 libextractor_common_la_SOURCES = \
   le_architecture.h \
-  unzip.c unzip.h \
+  $(LINK_UNZIP) \
   convert.c convert.h 
 
 all: all-am

@@ -112,10 +112,8 @@ TEST_GSF=test_ole2
 endif
 
 if HAVE_GSTREAMER
-if HAVE_EXPERIMENTAL
 PLUGIN_GSTREAMER=libextractor_gstreamer.la
 TEST_GSTREAMER=test_gstreamer
-endif
 endif
 
 if HAVE_JPEG
@@ -156,7 +154,11 @@ TEST_OGG=test_ogg
 endif
 
 if HAVE_ZLIB
-PLUGIN_ZLIB=libextractor_deb.la
+PLUGIN_ZLIB= \
+ libextractor_deb.la \
+ libextractor_odf.la \
+ libextractor_png.la \
+ libextractor_zip.la
 TEST_ZLIB=test_deb
 endif
 
@@ -167,15 +169,12 @@ plugin_LTLIBRARIES = \
   libextractor_man.la \
   libextractor_nsf.la \
   libextractor_nsfe.la \
-  libextractor_odf.la \
-  libextractor_png.la \
   libextractor_ps.la \
   libextractor_riff.la \
   libextractor_s3m.la \
   libextractor_sid.la \
   libextractor_wav.la \
   libextractor_xm.la \
-  libextractor_zip.la \
   $(PLUGIN_ARCHIVE) \
   $(PLUGIN_EXIV2) \
   $(PLUGIN_FFMPEG) \
@@ -278,7 +277,7 @@ libextractor_dvi_la_SOURCES = \
 libextractor_dvi_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_dvi_la_LIBADD = \
- $(XLIB) 
+ $(XLIB) $(SOCKET_LIBS)
 
 test_dvi_SOURCES = \
   test_dvi.c
@@ -330,7 +329,7 @@ libextractor_gstreamer_la_SOURCES = \
 libextractor_gstreamer_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_gstreamer_la_LIBADD = \
-  $(GSTREAMER_LIBS) $(GSTREAMER_PBUTILS_LIBS) $(GSTREAMER_TAG_LIBS) $(GSTREAMER_APP_LIBS) $(XLIB)
+  $(GSTREAMER_LIBS) $(GSTREAMER_PBUTILS_LIBS) $(GSTREAMER_TAG_LIBS) $(GSTREAMER_APP_LIBS) $(XLIB) -lpthread
 libextractor_gstreamer_la_CFLAGS = \
   $(GSTREAMER_CFLAGS) $(GSTREAMER_PBUTILS_CFLAGS) $(GSTREAMER_TAG_CFLAGS) $(GSTREAMER_APP_CFALGS) 
 
@@ -520,7 +519,7 @@ libextractor_png_la_SOURCES = \
 libextractor_png_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_png_la_LIBADD = \
-  $(top_builddir)/src/common/libextractor_common.la $(XLIB) -lz
+  $(top_builddir)/src/common/libextractor_common.la $(XLIB) -lz  $(SOCKET_LIBS)
 
 test_png_SOURCES = \
   test_png.c

@@ -212,9 +212,6 @@
 /* Define to 1 if you have the <libswscale/swscale.h> header file. */
 #undef HAVE_LIBSWSCALE_SWSCALE_H
 
-/* Define to 1 if you have the `ws2_32' library (-lws2_32). */
-#undef HAVE_LIBWS2_32
-
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
@@ -377,8 +374,8 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
-/* Define to 1 if you have the <tidy/tidy.h> header file. */
-#undef HAVE_TIDY_TIDY_H
+/* Have tidyInitSource in libtidy */
+#undef HAVE_TIDY
 
 /* Have libtiff */
 #undef HAVE_TIFF
@@ -521,6 +518,11 @@
 
 /* This is a Windows system */
 #undef WINDOWS
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
+#endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
