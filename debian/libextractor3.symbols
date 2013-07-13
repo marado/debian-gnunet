@@ -58,6 +58,8 @@ libextractor_flac.so libextractor3 #MINVER#
  EXTRACTOR_flac_extract_method@Base 1:1.0.1
 libextractor_gif.so libextractor3 #MINVER#
  EXTRACTOR_gif_extract_method@Base 1:1.0.1
+libextractor_gstreamer.so libextractor3 #MINVER#
+ EXTRACTOR_gstreamer_extract_method@Base 1:1.0.1
 libextractor_it.so libextractor3 #MINVER#
  EXTRACTOR_it_extract_method@Base 1:1.0.1
 libextractor_jpeg.so libextractor3 #MINVER#
