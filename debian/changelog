@@ -1,6 +1,6 @@
-libextractor (1:1.0.1-1) unstable; urgency=low
+libextractor (1:1.1-1) unstable; urgency=low
 
-  * Imported Upstream version 1.0.1 (Closes: #690095).
+  * Imported Upstream version 1.1 (Closes: #690095).
   * Move the git repository to collab-maint.
   * Remove the underscore_in_plugin_path patch, included upstream.
   * debian/control: Update build dependencies according to README.
@@ -13,10 +13,9 @@ libextractor (1:1.0.1-1) unstable; urgency=low
   * Add a symbols file for libextractor3.
   * Remove useless debian/source/options.
   * Standards version 3.9.4.
-  * Fix manpage whatis entry.
   * debian/copyright: the licence is now GPL-3+, update years.
 
- -- Bertrand Marc <beberking@gmail.com>  Sun, 23 Jun 2013 15:43:51 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Sat, 13 Jul 2013 11:19:57 +0200
 
 libextractor (1:0.6.3-5) unstable; urgency=low
 
