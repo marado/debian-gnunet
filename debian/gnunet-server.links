@@ -8,7 +8,6 @@
 /usr/share/man/man1/gnunet-helpers.1 /usr/share/man/man1/gnunet-helper-nat-client.1
 /usr/share/man/man1/gnunet-helpers.1 /usr/share/man/man1/gnunet-helper-nat-server.1
 /usr/share/man/man1/gnunet-helpers.1 /usr/share/man/man1/gnunet-helper-transport-wlan.1
-/usr/share/man/man1/gnunet-helpers.1 /usr/share/man/man1/gnunet-helper-transport-wlan-dummy.1
 /usr/share/man/man1/gnunet-helpers.1 /usr/share/man/man1/gnunet-helper-vpn.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-service-arm.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-service-ats.1
@@ -30,6 +29,4 @@
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/mockup-service.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-transport-certificate-creation.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-dht-monitor.1
-/usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-gns-fcfsd.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-gns-import.1
-/usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-gns-proxy.1
