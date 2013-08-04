@@ -32,10 +32,12 @@ usr/lib/libgnunetgns_common.so.0*
 usr/lib/libgnunethello.so.*
 usr/lib/libgnunetlockmanager.so.0*
 usr/lib/libgnunetmesh.so.*
+usr/lib/libgnunetmysql.so.*
 usr/lib/libgnunetnamestore.so.*
 usr/lib/libgnunetnat.so.*
 usr/lib/libgnunetnse.so.*
 usr/lib/libgnunetpeerinfo.so.*
+usr/lib/libgnunetpostgres.so.*
 usr/lib/libgnunetregex.so.*
 usr/lib/libgnunetregexblock.so.*
 usr/lib/libgnunetstream.so.*

@@ -1,7 +1,5 @@
 usr/lib/libgnunetdatastore.so.*
 usr/lib/libgnunetfs.so.*
-usr/lib/libgnunetmysql.so.*
-usr/lib/libgnunetpostgres.so.*
 usr/lib/libgnunetstatistics.so.*
 usr/lib/libgnunetutil.so.*
 usr/share/locale/*/LC_MESSAGES/gnunet.mo
