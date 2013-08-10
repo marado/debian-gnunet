@@ -5,7 +5,7 @@ Source: https://gnunet.org/
 
 Files: *
 Copyright:
- (C) 2001-2010 Christian Grothoff <christian@grothoff.org>
+ (C) 2001-2013 Christian Grothoff <christian@grothoff.org>
  (C) 2005-2008 Nils Durner <durner@gnunet.org>
  (C) Michael John Wensley <michael@wensley.org.uk>
 License: GPL-3+
@@ -17,7 +17,7 @@ License: MIT/X11
 
 Files: debian/*
 Copyright: 
- (C) 2012 Bertrand Marc <beberking@gmail.com>
+ (C) 2012-2013 Bertrand Marc <beberking@gmail.com>
  (C) 2007-2012 Daniel Baumann <daniel.baumann@progress-technologies.net>
 License: GPL-3+
 
