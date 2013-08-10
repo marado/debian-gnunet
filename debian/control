@@ -10,7 +10,7 @@ Build-Depends:
  libsqlite3-dev (>=3.0), libpq-dev (>=8.3), guile-1.8-dev, libglpk-dev (>=4.32),
  libgnutls-dev (>=2.12.0), libglib2.0-dev (>=2.6), libgtop2-dev
 Build-Conflicts: autoconf2.13, automake1.4
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Vcs-Git: git://anonscm.debian.org/collab-maint/gnunet.git
 Vcs-browser: http://anonscm.debian.org/gitweb/?p=collab-maint/gnunet.git
 Homepage: http://www.gnunet.org/
