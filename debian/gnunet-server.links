@@ -26,7 +26,6 @@
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-service-statistics.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-service-transport.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-service-vpn.1
-/usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/mockup-service.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-transport-certificate-creation.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-dht-monitor.1
 /usr/share/man/man1/gnunet-services.1 /usr/share/man/man1/gnunet-gns-import.1
