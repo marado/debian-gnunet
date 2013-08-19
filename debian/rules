@@ -2,11 +2,13 @@
 
 SHELL := sh -e
 
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
 %:
 	dh ${@} --with autoreconf
 
 override_dh_auto_configure:
-	dh_auto_configure -- --disable-rpath --enable-guile --enable-ipv6 --with-microhttpd=yes --with-nssdir=yes $(shell dpkg-buildflags --export=configure)
+	dh_auto_configure -- --disable-rpath --enable-guile --enable-ipv6 --with-microhttpd=yes --with-nssdir=/lib/$(DEB_HOST_MULTIARCH) $(shell dpkg-buildflags --export=configure)
 
 override_dh_auto_test:
 	# Disabling test suite, incomplete
@@ -26,8 +28,9 @@ override_dh_auto_install:
 		debian/tmp/usr/bin/gnunet-gns-import
 	
 	# Removing useless files
-	rm -f debian/tmp/usr/lib/*.la debian/tmp/usr/lib/gnunet/*.la \
-		debian/tmp/lib/*.la \
+	rm -f debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/*.la \
+		debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/*.la \
+		debian/tmp/lib/$(DEB_HOST_MULTIARCH)/*.la \
 		debian/tmp/usr/share/doc/gnunet/COPYING \
 		debian/tmp/usr/bin/gnunet-service-template \
 		debian/tmp/usr/bin/gnunet-template \
