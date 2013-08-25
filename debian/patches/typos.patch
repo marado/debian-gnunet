@@ -1,0 +1,155 @@
+--- a/doc/man/gnunet-ats.1
++++ b/doc/man/gnunet-ats.1
+@@ -34,13 +34,13 @@
+ Use LOGLEVEL for logging.  Valid values are DEBUG, INFO, WARNING and ERROR.
+ .B
+ .IP "\-m, \-\-monitor"
+-Monitor changes to the bandwidth assignments continously
++Monitor changes to the bandwidth assignments continuously
+ .B
+ .IP "\-n, \-\-numeric"
+ Do not resolve IP addresses to hostnames
+ .B
+ .IP "\-k, \-\-preference=E"
+-Set preference values, -i, -k and -t required
++Set preference values, \-i, \-k and \-t required
+ .B
+ .IP "\-q, \-\-quotas"
+ Print quotas for all network types
+--- a/doc/man/gnunet-gns-fcfsd.1
++++ b/doc/man/gnunet-gns-fcfsd.1
+@@ -11,7 +11,7 @@
+ .SH DESCRIPTION
+ Most users will not want to run an FCFS\-zone and thus will not need this program.
+ 
+-\fBgnunet\-gns-fcfsd\fP runs a web server where users can register names to be mapped to their GADS zone.  Names are made available on a First Come First Served basis (hence fcfs).  Registered names do not expire.  The HTTP server is run on the port that is specified in the configuration file in section "[fcfsd]" under the name "HTTPPORT".  The key of the zone in which the names are registered must be specified under the name "ZONEKEY" in the same section.  It is possible to manage gnunet\-gns\-fcfsd using gnunet\-(service\-arm) by starting the daemon using "gnunet\-arm -i fcfsd" or by adding "fcfds" to the "DEFAULTSERVICES" option.
++\fBgnunet\-gns-fcfsd\fP runs a web server where users can register names to be mapped to their GADS zone.  Names are made available on a First Come First Served basis (hence fcfs).  Registered names do not expire.  The HTTP server is run on the port that is specified in the configuration file in section "[fcfsd]" under the name "HTTPPORT".  The key of the zone in which the names are registered must be specified under the name "ZONEKEY" in the same section.  It is possible to manage gnunet\-gns\-fcfsd using gnunet\-(service\-arm) by starting the daemon using "gnunet\-arm \-i fcfsd" or by adding "fcfds" to the "DEFAULTSERVICES" option.
+ 
+ An FCFS\-zone is run at http://gnunet.org/fcfs/.  The respective zone key can be imported into an individual user's zone using "gnunet-gns-import.sh".  GADS users are encouraged to register their zone with the gnunet.org FCFS authority.
+ 
+--- a/po/de.po
++++ b/po/de.po
+@@ -9607,7 +9607,7 @@
+ #~ msgstr "Netzwerkgerät:"
+ 
+ #~ msgid ""
+-#~ "You can limit GNUnet's ressource usage here.\n"
++#~ "You can limit GNUnet's resource usage here.\n"
+ #~ "\n"
+ #~ "\"Bandwidth limitation\" is how much data may be sent per second. If you "
+ #~ "have a flatrate you can set it to the maximum speed of your internet "
+--- a/po/es.po
++++ b/po/es.po
+@@ -9049,7 +9049,7 @@
+ #~ msgstr "Interfaz de red:"
+ 
+ #~ msgid ""
+-#~ "You can limit GNUnet's ressource usage here.\n"
++#~ "You can limit GNUnet's resource usage here.\n"
+ #~ "\n"
+ #~ "\"Bandwidth limitation\" is how much data may be sent per second. If you "
+ #~ "have a flatrate you can set it to the maximum speed of your internet "
+--- a/src/ats/gnunet-service-ats_addresses.c
++++ b/src/ats/gnunet-service-ats_addresses.c
+@@ -63,7 +63,7 @@
+ 
+ 
+ /**
+- * Available ressource assignment modes
++ * Available resource assignment modes
+  */
+ enum ATS_Mode
+ {
+@@ -79,7 +79,7 @@
+   /*
+    * MLP mode:
+    *
+-   * Solve ressource assignment as an optimization problem
++   * Solve resource assignment as an optimization problem
+    * Uses an mixed integer programming solver
+    */
+   MODE_MLP
+@@ -1120,7 +1120,7 @@
+   /* Figure out configured solution method */
+   if (GNUNET_SYSERR == GNUNET_CONFIGURATION_get_value_string (cfg, "ats", "MODE", &mode_str))
+   {
+-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "No ressource assignment method configured, using simplistic approch\n");
++      GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "No resource assignment method configured, using simplistic approch\n");
+       ah->ats_mode = MODE_SIMPLISTIC;
+   }
+   else
+@@ -1141,7 +1141,7 @@
+       }
+       else
+       {
+-          GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Invalid ressource assignment method `%s' configured, using simplistic approch\n", mode_str);
++          GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Invalid resource assignment method `%s' configured, using simplistic approch\n", mode_str);
+           ah->ats_mode = MODE_SIMPLISTIC;
+       }
+       GNUNET_free (mode_str);
+--- a/src/ats/gnunet-service-ats_addresses_mlp.c
++++ b/src/ats/gnunet-service-ats_addresses_mlp.c
+@@ -407,8 +407,8 @@
+    * #rows: 1
+    * #indices: |n_addresses|
+    *
+-   * c 5) maximum ressource consumption
+-   * #rows: |ressources|
++   * c 5) maximum resource consumption
++   * #rows: |resources|
+    * #indices: |n_addresses|
+    *
+    * c 10) obey network specific quota
+@@ -416,7 +416,7 @@
+    * #indices: |n_addresses|
+    *
+    * Sum for feasibility constraints:
+-   * #rows: 3 * |n_addresses| +  |ressources| + |peers| + 1
++   * #rows: 3 * |n_addresses| +  |resources| + |peers| + 1
+    * #indices: 7 * |n_addresses|
+    *
+    * optimality constraints:
+--- a/src/ats/gnunet-service-ats_addresses_mlp.h
++++ b/src/ats/gnunet-service-ats_addresses_mlp.h
+@@ -251,16 +251,16 @@
+   unsigned long long quota_out[GNUNET_ATS_NetworkTypeCount];
+   unsigned long long quota_in[GNUNET_ATS_NetworkTypeCount];
+ 
+-  /* ATS ressource costs
++  /* ATS resource costs
+    *
+    * array with GNUNET_ATS_QualityPropertiesCount elements
+    * contains mapping to GNUNET_ATS_Property*/
+   int rc[GNUNET_ATS_QualityPropertiesCount];
+ 
+-  /* column index ressource costs  */
++  /* column index resource costs  */
+   int c_rc[GNUNET_ATS_QualityPropertiesCount];
+ 
+-  /* ressource costs coefficients*/
++  /* resource costs coefficients*/
+   double co_RC[GNUNET_ATS_QualityPropertiesCount];
+ 
+   /* number of quality metrics */
+--- a/src/ats/gnunet-service-ats_addresses_simplistic.c
++++ b/src/ats/gnunet-service-ats_addresses_simplistic.c
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @file ats/gnunet-service-ats_addresses_simplistic.h
+- * @brief ats simplistic ressource assignment
++ * @brief ats simplistic resource assignment
+  * @author Matthias Wachs
+  * @author Christian Grothoff
+  */
+--- a/src/ats/gnunet-service-ats_addresses_simplistic.h
++++ b/src/ats/gnunet-service-ats_addresses_simplistic.h
+@@ -20,7 +20,7 @@
+ 
+ /**
+  * @file ats/gnunet-service-ats_addresses_simplistic.h
+- * @brief ats simplistic ressource assignment
++ * @brief ats simplistic resource assignment
+  * @author Matthias Wachs
+  * @author Christian Grothoff
+  */

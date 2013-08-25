@@ -1,0 +1,7 @@
+--- a/src/gns/gnunet-gns-proxy-setup-ca
++++ b/src/gns/gnunet-gns-proxy-setup-ca
+@@ -1,3 +1,4 @@
++#!/bin/sh
+ echo "Generating CA"
+ 
+ openssl req -new -x509 -days 3650 -extensions v3_ca -keyout gnscakey.pem -out gnscacert.pem -subj "/C=DE/ST=Bavaria/L=Munich/O=GADS/OU=GNUnet/CN=GADS Proxy CA/emailAddress=bounce@gnunet.org" -passout pass:"GNUnet Naming System"
