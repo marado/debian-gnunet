@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision$
+ * @version $Revision: 151 $
  */
 
 #ifndef _PLIBC_H_
@@ -71,7 +71,7 @@ extern "C" {
 #define Li2Double(x) ((double)((x).HighPart) * 4.294967296E9 + \
   (double)((x).LowPart))
 #ifndef __MINGW64_VERSION_MAJOR
-struct stat64
+struct _stati64
 {
     _dev_t st_dev;
     _ino_t st_ino;
@@ -81,9 +81,9 @@ struct stat64
     short st_gid;
     _dev_t st_rdev;
     __int64 st_size;
-    __time64_t st_atime;
-    __time64_t st_mtime;
-    __time64_t st_ctime;
+    time_t st_atime;
+    time_t st_mtime;
+    time_t st_ctime;
 };
 #endif
 typedef unsigned int sa_family_t;
@@ -114,6 +114,10 @@ enum
   _SC_PAGESIZE = 30,
   _SC_PAGE_SIZE = 30
 };
+
+#if !defined(EACCESS)
+#  define EACCESS EACCES
+#endif
 
 /* Thanks to the Cygwin project */
 #if !defined(ENOCSI)
@@ -360,7 +364,7 @@ enum
 /* Make sure it's the same as WSATIMEDOUT */
 #  define ETIMEDOUT 138		/* Connection timed out */
 #endif
-#if !defined(EWOULDBLOCK) || EWOULBLOCK == 140
+#if !defined(EWOULDBLOCK) || EWOULDBLOCK == 140
 #  undef EWOULDBLOCK /* MinGW-w64 defines it as 140, but we want it as EAGAIN */
 #  define EWOULDBLOCK EAGAIN	/* Operation would block */
 #endif
@@ -521,9 +525,6 @@ int inet_pton4(const char *src, u_char *dst, int pton);
 #if USE_IPV6
 int inet_pton6(const char *src, u_char *dst);
 #endif
-#if !defined(FTRUNCATE_DEFINED)
-int truncate(const char *fname, int distance);
-#endif
 int statfs(const char *path, struct statfs *buf);
 const char *hstrerror(int err);
 int mkstemp(char *tmplate);
@@ -557,10 +558,9 @@ int _win_close(int fd);
 int _win_creat(const char *path, mode_t mode);
 char *_win_ctime(const time_t *clock);
 char *_win_ctime_r(const time_t *clock, char *buf);
-int _win_fstat(int handle, struct _stat *buffer);
-off_t _win_lseek(int fildes, off_t offset, int whence);
+int _win_fstat(int handle, struct stat *buffer);
 int _win_ftruncate(int fildes, off_t length);
-void _win_gettimeofday(struct timeval *tp, void *tzp);
+int _win_truncate(const char *fname, int distance);
 int _win_kill(pid_t pid, int sig);
 int _win_pipe(int *phandles);
 intptr_t _win_mkfifo(const char *path, mode_t mode);
@@ -572,8 +572,8 @@ long _win_random(void);
 void _win_srandom(unsigned int seed);
 int _win_remove(const char *path);
 int _win_rename(const char *oldname, const char *newname);
-int _win_stat(const char *path, struct _stat *buffer);
-int _win_stat64(const char *path, struct stat64 *buffer);
+int _win_stat(const char *path, struct stat *buffer);
+int _win_stati64(const char *path, struct _stati64 *buffer);
 long _win_sysconf(int name);
 int _win_unlink(const char *filename);
 int _win_write(int fildes, const void *buf, size_t nbyte);
@@ -585,53 +585,10 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
                 unsigned long long offset);
 int _win_msync(void *start, size_t length, int flags);
 int _win_munmap(void *start, size_t length);
-int _win_lstat(const char *path, struct _stat *buf);
-int _win_lstat64(const char *path, struct stat64 *buf);
+int _win_lstat(const char *path, struct stat *buf);
+int _win_lstati64(const char *path, struct _stati64 *buf);
 int _win_readlink(const char *path, char *buf, size_t bufsize);
 int _win_accept(int s, struct sockaddr *addr, int *addrlen);
-
-int _win_printf(const char *format,...);
-int _win_wprintf(const wchar_t *format, ...);
-
-int _win_fprintf(FILE *f,const char *format,...);
-int _win_fwprintf(FILE *f,const wchar_t *format, ...);
-
-int _win_vprintf(const char *format, va_list ap);
-int _win_vfwprintf(FILE *stream, const wchar_t *format, va_list arg_ptr);
-
-int _win_vfprintf(FILE *stream, const char *format, va_list arg_ptr);
-int _win_vwprintf(const wchar_t *format, va_list ap);
-
-int _win_vsprintf(char *dest,const char *format, va_list arg_ptr);
-int _win_vswprintf(wchar_t *dest, const wchar_t *format, va_list arg_ptr);
-
-int _win_vsnprintf(char* str, size_t size, const char *format, va_list arg_ptr);
-int _win_vsnwprintf(wchar_t* wstr, size_t size, const wchar_t *format, va_list arg_ptr);
-
-int _win_snprintf(char *str,size_t size,const char *format,...);
-int _win_snwprintf(wchar_t *str, size_t size, const wchar_t *format, ...);
-
-int _win_sprintf(char *dest,const char *format,...);
-int _win_swprintf(wchar_t *dest, const wchar_t *format, ...);
-
-int _win_vsscanf(const char* str, const char* format, va_list arg_ptr);
-int _win_vswscanf(const wchar_t* wstr, const wchar_t* format, va_list arg_ptr);
-
-int _win_sscanf(const char *str, const char *format, ...);
-int _win_swscanf(const wchar_t *wstr, const wchar_t *format, ...);
-
-int _win_vfscanf(FILE *stream, const char *format, va_list arg_ptr);
-int _win_vfwscanf(FILE *stream, const wchar_t *format, va_list arg_ptr);
-
-int _win_vscanf(const char *format, va_list arg_ptr);
-int _win_vwscanf(const wchar_t *format, va_list arg_ptr);
-
-int _win_scanf(const char *format, ...);
-int _win_wscanf(const wchar_t *format, ...);
-
-int _win_fscanf(FILE *stream, const char *format, ...);
-int _win_fwscanf(FILE *stream, const wchar_t *format, ...);
-
 
 pid_t _win_waitpid(pid_t pid, int *stat_loc, int options);
 int _win_bind(int s, const struct sockaddr *name, int namelen);
@@ -655,21 +612,20 @@ int _win_setsockopt(int s, int level, int optname, const void *optval,
                     int optlen);
 int _win_shutdown(int s, int how);
 int _win_socket(int af, int type, int protocol);
+int _win_socketpair(int af, int type, int protocol, int socket_vector[2]);
 struct hostent *_win_gethostbyaddr(const char *addr, int len, int type);
 struct hostent *_win_gethostbyname(const char *name);
 struct hostent *gethostbyname2(const char *name, int af);
 char *_win_strerror(int errnum);
 int IsWinNT();
 char *index(const char *s, int c);
+char *_win_strtok_r (char *ptr, const char *sep, char **end);
 
 #if !HAVE_STRNDUP
 char *strndup (const char *s, size_t n);
 #endif
 #if !HAVE_STRNLEN && (!defined(__MINGW64_VERSION_MAJOR) || !defined(_INC_STRING))
 size_t strnlen (const char *str, size_t maxlen);
-#endif
-#if !HAVE_STRTOK_R && !defined(WIN_PTHREADS_H) /* winpthreads defines strtok_r() */
-char *strtok_r (char *ptr, const char *sep, char **end);
 #endif
 char *stpcpy(char *dest, const char *src);
 char *strcasestr(const char *haystack_start, const char *needle_start);
@@ -682,6 +638,9 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
 #endif
 #ifndef wcsncasecmp
 #define wcsncasecmp(a, b, c) wcsnicmp(a, b, c)
+#endif
+#ifndef strtok_r /* winpthreads defines it in pthread.h */
+#define strtok_r _win_strtok_r
 #endif
 #endif /* WINDOWS */
 
@@ -702,6 +661,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define FOPEN(f, m) fopen(f, m)
  #define FCLOSE(f) fclose(f)
  #define FTRUNCATE(f, l) ftruncate(f, l)
+ #define TRUNCATE(f, l) truncate(f, l)
  #define OPENDIR(d) opendir(d)
  #define CLOSEDIR(d) closedir(d)
  #define READDIR(d) readdir(d)
@@ -766,6 +726,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define SETSOCKOPT(s, l, o, v, n) setsockopt(s, l, o, v, n)
  #define SHUTDOWN(s, h) shutdown(s, h)
  #define SOCKET(a, t, p) socket(a, t, p)
+ #define SOCKETPAIR(a, t, p, v) socketpair(a, t, p, v)
  #define GETHOSTBYADDR(a, l, t) gethostbyaddr(a, l, t)
  #define GETHOSTBYNAME(n) gethostbyname(n)
  #define GETTIMEOFDAY(t, n) gettimeofday(t, n)
@@ -784,6 +745,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define TDESTROY(r, f) tdestroy(r, f)
  #define LFIND(k, b, n, s, c) lfind(k, b, n, s, c)
  #define LSEARCH(k, b, n, s, c) lsearch(k, b, n, s, c)
+ #define STRUCT_STAT64 struct stat64
 #else
  #define DIR_SEPARATOR '\\'
  #define DIR_SEPARATOR_STR "\\"
@@ -800,6 +762,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define FOPEN(f, m) _win_fopen(f, m)
  #define FCLOSE(f) _win_fclose(f)
  #define FTRUNCATE(f, l) _win_ftruncate(f, l)
+ #define TRUNCATE(f, l) _win_truncate(f, l)
  #define OPENDIR(d) _win_opendir(d)
  #define CLOSEDIR(d) _win_closedir(d)
  #define READDIR(d) _win_readdir(d)
@@ -807,7 +770,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define CHDIR(d) _win_chdir(d)
  #define CLOSE(f) _win_close(f)
  #define PLIBC_KILL(p, s) _win_kill(p, s)
- #define LSEEK(f, o, w) _win_lseek(f, o, w)
+ #define LSEEK(f, o, w) lseek(f, o, w)
  #define FSTAT(h, b) _win_fstat(h, b)
  #define RMDIR(f) _win_rmdir(f)
  #define ACCESS(p, m) _win_access(p, m)
@@ -818,7 +781,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define REMOVE(p) _win_remove(p)
  #define RENAME(o, n) _win_rename(o, n)
  #define STAT(p, b) _win_stat(p, b)
- #define STAT64(p, b) _win_stat64(p, b)
+ #define STAT64(p, b) _win_stati64(p, b)
  #define SYSCONF(n) _win_sysconf(n)
  #define UNLINK(f) _win_unlink(f)
  #define WRITE(f, b, n) _win_write(f, b, n)
@@ -833,21 +796,21 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define STRERROR(i) _win_strerror(i)
  #define READLINK(p, b, s) _win_readlink(p, b, s)
  #define LSTAT(p, b) _win_lstat(p, b)
- #define LSTAT64(p, b) _win_lstat64(p, b)
- #define PRINTF(f, ...) _win_printf(f , __VA_ARGS__)
- #define FPRINTF(fil, fmt, ...) _win_fprintf(fil, fmt, __VA_ARGS__)
- #define VPRINTF(f, a) _win_vprintf(f, a)
- #define VFPRINTF(s, f, a) _win_vfprintf(s, f, a)
- #define VSPRINTF(d, f, a) _win_vsprintf(d, f, a)
- #define VSNPRINTF(str, size, fmt, a) _win_vsnprintf(str, size, fmt, a)
- #define _REAL_SNPRINTF(str, size, fmt, ...) _win_snprintf(str, size, fmt, __VA_ARGS__)
- #define SPRINTF(d, f, ...) _win_sprintf(d, f, __VA_ARGS__)
- #define VSSCANF(s, f, a) _win_vsscanf(s, f, a)
- #define SSCANF(s, f, ...) _win_sscanf(s, f, __VA_ARGS__)
- #define VFSCANF(s, f, a) _win_vfscanf(s, f, a)
- #define VSCANF(f, a) _win_vscanf(f, a)
- #define SCANF(f, ...) _win_scanf(f, __VA_ARGS__)
- #define FSCANF(s, f, ...) _win_fscanf(s, f, __VA_ARGS__)
+ #define LSTAT64(p, b) _win_lstati64(p, b)
+ #define PRINTF printf
+ #define FPRINTF fprintf
+ #define VPRINTF(f, a) vprintf(f, a)
+ #define VFPRINTF(s, f, a) vfprintf(s, f, a)
+ #define VSPRINTF(d, f, a) vsprintf(d, f, a)
+ #define VSNPRINTF(str, size, fmt, a) vsnprintf(str, size, fmt, a)
+ #define _REAL_SNPRINTF snprintf
+ #define SPRINTF sprintf
+ #define VSSCANF(s, f, a) vsscanf(s, f, a)
+ #define SSCANF sscanf
+ #define VFSCANF(s, f, a) vfscanf(s, f, a)
+ #define VSCANF(f, a) vscanf(f, a)
+ #define SCANF scanf
+ #define FSCANF fscanf
  #define WAITPID(p, s, o) _win_waitpid(p, s, o)
  #define ACCEPT(s, a, l) _win_accept(s, a, l)
  #define BIND(s, n, l) _win_bind(s, n, l)
@@ -864,9 +827,10 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define SETSOCKOPT(s, l, o, v, n) _win_setsockopt(s, l, o, v, n)
  #define SHUTDOWN(s, h) _win_shutdown(s, h)
  #define SOCKET(a, t, p) _win_socket(a, t, p)
+ #define SOCKETPAIR(a, t, p, v) _win_socketpair(a, t, p, v)
  #define GETHOSTBYADDR(a, l, t) _win_gethostbyaddr(a, l, t)
  #define GETHOSTBYNAME(n) _win_gethostbyname(n)
- #define GETTIMEOFDAY(t, n) _win_gettimeofday(t, n)
+ #define GETTIMEOFDAY(t, n) gettimeofday(t, n)
  #define INSQUE(e, p) _win_insque(e, p)
  #define REMQUE(e) _win_remque(e)
  #define HSEARCH(i, a) _win_hsearch(i, a)
@@ -882,6 +846,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define TDESTROY(r, f) _win_tdestroy(r, f)
  #define LFIND(k, b, n, s, c) _win_lfind(k, b, n, s, c)
  #define LSEARCH(k, b, n, s, c) _win_lsearch(k, b, n, s, c)
+ #define STRUCT_STAT64 struct _stati64
 #endif
 
 /* search.h */
