@@ -1,3 +1,9 @@
+libextractor (1:1.2-1) unstable; urgency=low
+
+  * Imported Upstream version 1.2
+
+ -- Bertrand Marc <beberking@gmail.com>  Mon, 28 Oct 2013 11:53:20 +0100
+
 libextractor (1:1.1-1) unstable; urgency=low
 
   * Imported Upstream version 1.1 (Closes: #690095).
