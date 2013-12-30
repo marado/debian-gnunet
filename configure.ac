@@ -1,6 +1,6 @@
 # Process this file with autoconf to produce a configure script.
 AC_PREREQ(2.61)
-AC_INIT([libextractor], [1.2], [bug-libextractor@gnu.org])
+AC_INIT([libextractor], [1.3], [bug-libextractor@gnu.org])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AH_TOP([#define _GNU_SOURCE  1])
@@ -35,6 +35,8 @@ AC_PROG_LIBTOOL
 LIBSOLD=$LIBS
 LT_INIT([disable-static dlopen win32-dll])
 AC_SUBST(MKDIR_P)
+
+AC_CHECK_DECLS([_stati64])
 
 case "$target_os" in
 *linux-gnu)
@@ -88,7 +90,7 @@ darwin*)
      AM_CONDITIONAL(HAVE_GNU_LD, false)
      AM_CONDITIONAL(SOMEBSD, false)
      AM_CONDITIONAL(WINDOWS, false)
-     CFLAGS="-no-cpp-precomp -fno-common $CFLAGS"
+     CFLAGS="-fno-common $CFLAGS"
      LIBEXT=.so
      ;;
 cygwin*)
@@ -609,7 +611,7 @@ then
   AM_PATH_GTK_3_0([$check_for_3],without_gtk=false,without_gtk=true)
 fi
 
-if test "x$without_gtk" == "xfalse" -a "x$check_for_2" != "xfalse"
+if test "x$without_gtk" == "xtrue" -a "x$check_for_2" != "xfalse"
 then
   AM_PATH_GTK_2_0([$check_for_2],without_gtk=false,without_gtk=true)
 fi
@@ -654,6 +656,7 @@ AC_CHECK_PROG([HAVE_ZZUF],[zzuf], 1, 0)
 AM_CONDITIONAL(HAVE_ZZUF, test 0 != $HAVE_ZZUF)
 
 AC_MSG_CHECKING([whether to enable the FFmpeg thumbnail extractor])
+new_ffmpeg=0
 AC_ARG_ENABLE(ffmpeg,
  [AC_HELP_STRING([--enable-ffmpeg],[Enable FFmpeg support])
   AC_HELP_STRING([--disable-ffmpeg],[Disable FFmpeg support])],
@@ -670,12 +673,19 @@ AC_ARG_ENABLE(ffmpeg,
 if test x$ffmpeg_enabled = x1
 then
   ffmpeg_enabled=0
+  new_ffmpeg=0
+  AC_CHECK_HEADERS([libavutil/avutil.h libavformat/avformat.h libavcodec/avcodec.h libavutil/frame.h],
+    AC_CHECK_HEADERS([libavresample/avresample.h],
+      AC_CHECK_LIB(avutil, av_audio_fifo_alloc,
+        new_ffmpeg=1)))
+  
   AC_CHECK_LIB(swscale, sws_getContext,
     AC_CHECK_LIB(avcodec, avcodec_alloc_context3,
       ffmpeg_enabled=1))
   AC_CHECK_HEADERS([libavutil/avutil.h ffmpeg/avutil.h libavformat/avformat.h ffmpeg/avformat.h libavcodec/avcodec.h ffmpeg/avcodec.h libswscale/swscale.h ffmpeg/swscale.h])
 fi
 AM_CONDITIONAL(HAVE_FFMPEG, test x$ffmpeg_enabled != x0)
+AM_CONDITIONAL(HAVE_FFMPEG_NEW, test x$new_ffmpeg != x0)
 
 
 LE_INTLINCL=""
@@ -797,6 +807,11 @@ fi
 if test "x$ffmpeg_enabled" = "x0"
 then
  AC_MSG_NOTICE([NOTICE: FFmpeg thumbnailer plugin disabled])
+fi
+
+if test "x$new_ffmpeg" = "x0"
+then
+ AC_MSG_NOTICE([NOTICE: FFmpeg/opus audio preview plugin disabled, It needs libav >= 10, or a FFmpeg with --enable-libavresample])
 fi
 
 if test "x$without_gtk" = "xtrue"

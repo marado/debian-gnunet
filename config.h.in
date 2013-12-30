@@ -42,6 +42,10 @@
    */
 #undef HAVE_DCGETTEXT
 
+/* Define to 1 if you have the declaration of `_stati64', and to 0 if you
+   don't. */
+#undef HAVE_DECL__STATI64
+
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
 #undef HAVE_DIRENT_H
@@ -133,8 +137,14 @@
 /* Define to 1 if you have the <libavformat/avformat.h> header file. */
 #undef HAVE_LIBAVFORMAT_AVFORMAT_H
 
+/* Define to 1 if you have the <libavresample/avresample.h> header file. */
+#undef HAVE_LIBAVRESAMPLE_AVRESAMPLE_H
+
 /* Define to 1 if you have the <libavutil/avutil.h> header file. */
 #undef HAVE_LIBAVUTIL_AVUTIL_H
+
+/* Define to 1 if you have the <libavutil/frame.h> header file. */
+#undef HAVE_LIBAVUTIL_FRAME_H
 
 /* Have libbz2 */
 #undef HAVE_LIBBZ2
@@ -347,6 +357,9 @@
 
 /* This is a MinGW system */
 #undef MINGW
+
+/* Define to 1 if your C compiler doesn't accept -c and -o together. */
+#undef NO_MINUS_C_MINUS_O
 
 /* Some strange OS */
 #undef OTHEROS

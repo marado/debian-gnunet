@@ -695,6 +695,7 @@ EXTRACTOR_IPC_channel_recv_ (struct EXTRACTOR_Channel **channels,
   unsigned int c;
   char *ndata;
   HANDLE events[MAXIMUM_WAIT_OBJECTS];
+  int closed_channel;
 
   c = 0;
   for (i = 0; i < num_channels; i++)
@@ -725,11 +726,31 @@ EXTRACTOR_IPC_channel_recv_ (struct EXTRACTOR_Channel **channels,
   if (c == 0)
     return 1; /* nothing left to do! */
 
-  ms = 10000;
+  ms = 500;
   first_ready = WaitForMultipleObjects (c, events, FALSE, ms);
   if (first_ready == WAIT_TIMEOUT || first_ready == WAIT_FAILED)
   {
     /* an error or timeout -> something's wrong or all plugins hung up */
+    closed_channel = 0;
+    for (i = 0; i < num_channels; i++)
+    {
+      struct EXTRACTOR_Channel *channel = channels[i];
+      if (NULL == channel)
+        continue;
+      if (-1 == channel->plugin->seek_request)
+      {
+        /* plugin blocked for too long, kill the channel */
+        LOG ("Channel blocked, closing channel to %s\n",
+             channel->plugin->libname);
+        channel->plugin->channel = NULL;
+        channel->plugin->round_finished = 1;
+        EXTRACTOR_IPC_channel_destroy_ (channel);
+        channels[i] = NULL;
+        closed_channel = 1;
+      }
+    }
+    if (1 == closed_channel)
+      return 1;
     LOG_STRERROR ("WaitForMultipleObjects");
     return -1;
   }
