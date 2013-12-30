@@ -1,3 +1,15 @@
+libextractor (1:1.3-1) unstable; urgency=medium
+
+  * Make uscan check the archive signature:
+    + add the upstream key to debian/upstream-signing-key.pgp.
+    + add the binary key to debian/source/include-binaries.
+    + add pgpsigurlmangle to debian/watch.
+  * Imported Upstream version 1.3.
+  * Standards version 3.9.5:
+    + remove dependency on dpkg (>= 1.15.4) | install-info.
+
+ -- Bertrand Marc <beberking@gmail.com>  Mon, 30 Dec 2013 16:13:06 +0100
+
 libextractor (1:1.2-1) unstable; urgency=low
 
   * Imported Upstream version 1.2
