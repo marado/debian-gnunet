@@ -72,6 +72,11 @@ PLUGIN_FFMPEG=libextractor_thumbnailffmpeg.la
 TEST_FFMPEG=test_thumbnailffmpeg
 endif
 
+if HAVE_FFMPEG_NEW
+PLUGIN_PREVIEWOPUS=libextractor_previewopus.la
+TEST_PREVIEWOPUS=test_previewopus
+endif
+
 if HAVE_GTK
 # Gtk-thumbnailer requires MAGIC and GTK
 PLUGIN_GTK=libextractor_thumbnailgtk.la
@@ -153,6 +158,7 @@ PLUGIN_OGG=libextractor_ogg.la
 TEST_OGG=test_ogg
 endif
 
+
 if HAVE_ZLIB
 PLUGIN_ZLIB= \
  libextractor_deb.la \
@@ -190,6 +196,7 @@ plugin_LTLIBRARIES = \
   $(PLUGIN_MP4) \
   $(PLUGIN_MPEG) \
   $(PLUGIN_OGG) \
+  $(PLUGIN_PREVIEWOPUS) \
   $(PLUGIN_RPM) \
   $(PLUGIN_TIFF) \
   $(PLUGIN_ZLIB) 
@@ -216,6 +223,7 @@ check_PROGRAMS = \
   $(TEST_ARCHIVE) \
   $(TEST_EXIV2) \
   $(TEST_FFMPEG) \
+  $(TEST_PREVIEWOPUS) \
   $(TEST_FLAC) \
   $(TEST_GIF) \
   $(TEST_GSF) \
@@ -620,7 +628,19 @@ test_thumbnailgtk_SOURCES = \
 test_thumbnailgtk_LDADD = \
   $(top_builddir)/src/plugins/libtest.la
 
+libextractor_previewopus_la_SOURCES = \
+  previewopus_extractor.c
+libextractor_previewopus_la_LDFLAGS = \
+  $(PLUGINFLAGS)
+libextractor_previewopus_la_LIBADD = \
+  -lavutil -lavformat -lavcodec -lswscale -lavresample  -lmagic $(XLIB)
+  
+test_previewopus_SOURCES = \
+  test_previewopus.c
+test_previewopus_LDADD = \
+  $(top_builddir)/src/plugins/libtest.la
 
+  
 libextractor_tiff_la_SOURCES = \
   tiff_extractor.c
 libextractor_tiff_la_LDFLAGS = \
