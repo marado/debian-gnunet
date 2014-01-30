@@ -12,7 +12,7 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="GNUnet"
 NAME=gnunet-server
-DAEMON=/usr/bin/gnunet-service-arm
+DAEMON=/usr/lib/@DEB_HOST_MULTIARCH@/gnunet/libexec/gnunet-service-arm
 LOGFILE=/var/log/gnunetd/gnunetd.log
 DAEMON_ARGS="-c /etc/gnunet.conf -d -l $LOGFILE"
 SCRIPTNAME=/etc/init.d/$NAME
