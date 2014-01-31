@@ -1,3 +1,50 @@
+gnunet (0.9.5a-1) unstable; urgency=medium
+
+  [ Bertrand Marc ]
+  * Imported Upstream version 0.9.5a
+  * Drop dependency on gettext for gnunet-client and gnunet-server as it is not
+    necessary, thanks to Ivan Shmakov.
+  * Fix build on kfreebsd, thanks to Christoph Egger.
+  * gnunet-server.postinst: check the existence of a binary before changing its
+    permissions.
+  * Drop patch to configure the nssdir, included upstream.
+  * Drop patch to support GNU Hurd, included upstream.
+  * Drop patch to fix alignment on Sparc, included upstream.
+  * Update debian/*.install.* and debian/*.docs to match the new tree.
+  * debian/control: use canonical URI in Vcs-git and Vcs-browser fields.
+  * Build depend on gnutls, glib and gtop.
+  * debian/rules: add gns nss to configure.
+  * debian/copyright: update years.
+  * Rewrite gnunet-server.init based on /etc/init.d/skeleton and make
+    gnunet-server depend on lsb-base to use LSB logging.
+  * Use debhelper v9 and update paths accordingly.
+  * Make the binaries aware of paths with the multiarch tuple, patch picked
+    upstream.
+  * Fix a few typos to make lintian happy.
+  * Make uscan check the archive signature:
+    + add the upstream key to debian/upstream-signing-key.pgp.
+    + add the binary key to debian/source/include-binaries.
+    + add pgpsigurlmangle to debian/watch.
+  * Remove manpages for services and helpers, they are not in PATH anymore.
+  * Remove manpages for binaries which are not built anymore.
+  * Generate debian/gnunet-server.init from debian/rules as the path to the
+    daemon now depends on $(DEB_HOST_MULTIARCH).
+  * Standards version 3.9.5: no changes needed.
+  * Add manpages for gnunet-testing-run-service, gnunet-mesh, gnunet-gns-import
+    and gnunet-transport-certificate-creation.
+  * Links the gnunet-gns-proxy manpage to gnunet-gns-proxy-setup-ca.
+  * Make gnunet-server recommend openssl and libnss3-tools, they are used by
+    gnunet-gns-proxy-setup-ca and gnunet-transport-certificate-creation.
+
+  [ Daniel Dehennin ]
+  * RDBMS libraries are used only by “gnunet-server” package.
+  * Remove obsolete manpage links.
+
+  [ David Barksdale ]
+  * Update the default hostlist severs.
+
+ -- Bertrand Marc <beberking@gmail.com>  Fri, 31 Jan 2014 13:55:51 +0100
+
 gnunet (0.9.3-7) unstable; urgency=low
 
   * Revert previous changes and go back to 0.9.3-5 to target wheezy.
