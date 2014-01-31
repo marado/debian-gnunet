@@ -76,6 +76,7 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends:
  ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version}),
  adduser, netbase, lsb-base
+Recommends: openssl, libnss3-tools
 Suggests: miniupnpc
 Breaks: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
 Replaces: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
