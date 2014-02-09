@@ -38,7 +38,8 @@ gnunet (0.9.5a-1) unstable; urgency=medium
   * Do not build-depend on guile-1.8-dev anymore and remove --enable-guile from
     configure, GNU Guile is not used at build time. Make gnunet-client depend on
     guile-2.0 as gnunet-download-manager uses it.
-
+  * Do not suggest libextractor-plugins anymore, these were merged into
+    libextractor.
 
   [ Daniel Dehennin ]
   * RDBMS libraries are used only by “gnunet-server” package.
@@ -47,7 +48,7 @@ gnunet (0.9.5a-1) unstable; urgency=medium
   [ David Barksdale ]
   * Update the default hostlist severs.
 
- -- Bertrand Marc <beberking@gmail.com>  Fri, 31 Jan 2014 13:55:51 +0100
+ -- Bertrand Marc <beberking@gmail.com>  Sun, 09 Feb 2014 16:24:17 +0100
 
 gnunet (0.9.3-7) unstable; urgency=low
 

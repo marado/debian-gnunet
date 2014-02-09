@@ -32,7 +32,7 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
  ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version})
-Suggests: gnunet-server, libextractor-plugins, guile-2.0
+Suggests: gnunet-server, guile-2.0
 Description: secure, trust-based peer-to-peer framework (client)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
  link-to-link messages in the network are confidential and authenticated. The
