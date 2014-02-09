@@ -1,6 +1,6 @@
 Author: Christian Grothoff <christian@grothoff.org>
 Description: find binaries in /usr/lib/MULTIARCH at runtime
-Origin: upstream, commit: 32119
+Origin: upstream, commit: 32119,32146
 --- a/src/util/os_installation.c
 +++ b/src/util/os_installation.c
 @@ -1,6 +1,6 @@
@@ -56,7 +56,7 @@ Origin: upstream, commit: 32119
    /* in case this was a directory named foo-bin, remove "foo-" */
    while ((n > 1) && (execpath[n - 1] == DIR_SEPARATOR))
      execpath[--n] = '\0';
-@@ -529,29 +542,48 @@
+@@ -529,29 +542,50 @@
      {
        dirname =
            DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR "gnunet" DIR_SEPARATOR_STR;
@@ -66,10 +66,12 @@ Origin: upstream, commit: 32119
 -	    GNUNET_DISK_directory_test (tmp, GNUNET_YES)) &&
 -	   (4 == sizeof (void *)) )
 +      GNUNET_asprintf (&tmp,
-+                       "%s%s%s",
++                       "%s%s%s%s%s",
 +                       execpath,
-+                       dirname,
-+                       (NULL != multiarch) ? multiarch : "");
++                       DIR_SEPARATOR_STR "lib" ,
++                       (NULL != multiarch) ? DIR_SEPARATOR_STR : "",
++                       (NULL != multiarch) ? multiarch : "",
++                       DIR_SEPARATOR_STR "gnunet" DIR_SEPARATOR_STR);
 +      if (GNUNET_YES ==
 +          GNUNET_DISK_directory_test (tmp, GNUNET_YES))
 +      {
@@ -118,7 +120,7 @@ Origin: upstream, commit: 32119
      break;
    case GNUNET_OS_IPK_DATADIR:
      dirname =
-@@ -574,42 +606,63 @@
+@@ -574,42 +608,63 @@
      if (isbasedir)
      {
        dirname =
