@@ -7,7 +7,7 @@ Build-Depends:
  automake (>=1.11.1), libextractor-dev (>=1:0.6.3), libmicrohttpd-dev (>=0.9.18),
  libgcrypt11-dev (>=1.2), libcurl4-gnutls-dev (>=7.21.3),
  libunistring-dev  (>=0.9.2), libltdl-dev (>=2.2), libmysqlclient-dev (>=5.1),
- libsqlite3-dev (>=3.0), libpq-dev (>=8.3), guile-1.8-dev, libglpk-dev (>=4.32),
+ libsqlite3-dev (>=3.0), libpq-dev (>=8.3), libglpk-dev (>=4.32),
  libgnutls-dev (>=2.12.0), libglib2.0-dev (>=2.6), libgtop2-dev
 Build-Conflicts: autoconf2.13, automake1.4
 Standards-Version: 3.9.5
@@ -32,7 +32,7 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
  ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version})
-Suggests: gnunet-server, libextractor-plugins
+Suggests: gnunet-server, libextractor-plugins, guile-2.0
 Description: secure, trust-based peer-to-peer framework (client)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
  link-to-link messages in the network are confidential and authenticated. The

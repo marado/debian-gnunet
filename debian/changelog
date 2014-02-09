@@ -35,6 +35,10 @@ gnunet (0.9.5a-1) unstable; urgency=medium
   * Links the gnunet-gns-proxy manpage to gnunet-gns-proxy-setup-ca.
   * Make gnunet-server recommend openssl and libnss3-tools, they are used by
     gnunet-gns-proxy-setup-ca and gnunet-transport-certificate-creation.
+  * Do not build-depend on guile-1.8-dev anymore and remove --enable-guile from
+    configure, GNU Guile is not used at build time. Make gnunet-client depend on
+    guile-2.0 as gnunet-download-manager uses it.
+
 
   [ Daniel Dehennin ]
   * RDBMS libraries are used only by “gnunet-server” package.
