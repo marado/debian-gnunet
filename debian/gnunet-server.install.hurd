@@ -60,4 +60,3 @@ usr/share/man/man1/gnunet-transport.1
 usr/share/man/man1/gnunet-vpn.1
 usr/share/man/man5/gnunet.conf.5
 debian/man/* usr/share/man/man1/
-usr/share/doc/gnunet/README

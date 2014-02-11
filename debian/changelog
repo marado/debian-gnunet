@@ -1,3 +1,10 @@
+gnunet (0.9.5a-2) unstable; urgency=medium
+
+  * Do not install /usr/share/doc/gnunet/README in gnunet-server
+    (Closes: #738600).
+
+ -- Bertrand Marc <beberking@gmail.com>  Tue, 11 Feb 2014 19:50:54 +0100
+
 gnunet (0.9.5a-1) unstable; urgency=medium
 
   [ Bertrand Marc ]
