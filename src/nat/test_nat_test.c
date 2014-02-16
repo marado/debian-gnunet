@@ -26,7 +26,6 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_common.h"
 #include "gnunet_util_lib.h"
 #include "gnunet_nat_lib.h"
 
@@ -92,7 +91,7 @@ main (int argc, char *const argv[])
                     "WARNING",
                     NULL);
 
-  nat_res = GNUNET_OS_check_helper_binary ("gnunet-nat-server");
+  nat_res = GNUNET_OS_check_helper_binary ("gnunet-nat-server", GNUNET_NO, NULL);
   if (GNUNET_SYSERR == nat_res)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
@@ -108,7 +107,7 @@ main (int argc, char *const argv[])
   GNUNET_assert (NULL != gns);
   GNUNET_PROGRAM_run (3, argv_prog, "test-nat-test", "nohelp", options, &run,
                       NULL);
-  GNUNET_break (0 == GNUNET_OS_process_kill (gns, SIGTERM));
+  GNUNET_break (0 == GNUNET_OS_process_kill (gns, GNUNET_TERM_SIG));
   GNUNET_break (GNUNET_OK == GNUNET_OS_process_wait (gns));
   GNUNET_OS_process_destroy (gns);
   if (0 != ret)

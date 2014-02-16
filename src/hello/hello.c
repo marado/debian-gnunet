@@ -40,26 +40,26 @@ GNUNET_NETWORK_STRUCT_BEGIN
  * 1) transport-name (0-terminated)
  * 2) address-length (uint16_t, network byte order; possibly
  *    unaligned!)
- * 3) address expiration (GNUNET_TIME_AbsoluteNBO); possibly
+ * 3) address expiration (`struct GNUNET_TIME_AbsoluteNBO`); possibly
  *    unaligned!)
  * 4) address (address-length bytes; possibly unaligned!)
  */
 struct GNUNET_HELLO_Message
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_HELLO.
+   * Type will be #GNUNET_MESSAGE_TYPE_HELLO.
    */
   struct GNUNET_MessageHeader header;
 
   /**
-   * Always zero (for alignment).
+   * Use in F2F mode: Do not gossip this HELLO message
    */
-  uint32_t reserved GNUNET_PACKED;
+  uint32_t friend_only GNUNET_PACKED;
 
   /**
    * The public key of the peer.
    */
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded publicKey;
+  struct GNUNET_CRYPTO_EddsaPublicKey publicKey;
 
 };
 GNUNET_NETWORK_STRUCT_END
@@ -93,7 +93,7 @@ struct GNUNET_HELLO_ParseUriContext
   const char *pos;
 
   /**
-   * Set to GNUNET_SYSERR to indicate parse errors.
+   * Set to #GNUNET_SYSERR to indicate parse errors.
    */
   int ret;
 
@@ -104,13 +104,28 @@ struct GNUNET_HELLO_ParseUriContext
 };
 
 
+/** Return HELLO type
+ *
+ * @param h HELLO Message to test
+ * @return #GNUNET_YES or #GNUNET_NO
+ */
+int
+GNUNET_HELLO_is_friend_only (const struct GNUNET_HELLO_Message *h)
+{
+  if (GNUNET_YES == ntohl(h->friend_only))
+  	return GNUNET_YES;
+  return GNUNET_NO;
+}
+
+
+
 /**
  * Copy the given address information into
  * the given buffer using the format of HELLOs.
  *
  * @param address the address
- * @param expiration expiration for the address
- * @param target where to copy the address
+ * @param expiration expiration for the @a address
+ * @param target where to copy the @a address
  * @param max maximum number of bytes to copy to target
  * @return number of bytes copied, 0 if
  *         the target buffer was not big enough.
@@ -150,7 +165,9 @@ GNUNET_HELLO_add_address (const struct GNUNET_HELLO_Address *address,
  * @return size of the entry, or 0 if max is not large enough
  */
 static size_t
-get_hello_address_size (const char *buf, size_t max, uint16_t * ralen)
+get_hello_address_size (const char *buf,
+			size_t max,
+			uint16_t *ralen)
 {
   const char *pos;
   uint16_t alen;
@@ -166,7 +183,7 @@ get_hello_address_size (const char *buf, size_t max, uint16_t * ralen)
     pos++;
     slen++;
   }
-  if (left == 0)
+  if (0 == left)
   {
     /* 0-termination not found */
     GNUNET_break_op (0);
@@ -201,10 +218,10 @@ get_hello_address_size (const char *buf, size_t max, uint16_t * ralen)
  * @return the hello message
  */
 struct GNUNET_HELLO_Message *
-GNUNET_HELLO_create (const struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
-                     *publicKey,
+GNUNET_HELLO_create (const struct GNUNET_CRYPTO_EddsaPublicKey *publicKey,
                      GNUNET_HELLO_GenerateAddressListCallback addrgen,
-                     void *addrgen_cls)
+                     void *addrgen_cls,
+                     int friend_only)
 {
   char buffer[GNUNET_SERVER_MAX_MESSAGE_SIZE - 1 - 256 -
               sizeof (struct GNUNET_HELLO_Message)];
@@ -212,6 +229,9 @@ GNUNET_HELLO_create (const struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
   size_t used;
   size_t ret;
   struct GNUNET_HELLO_Message *hello;
+
+  GNUNET_assert (NULL != publicKey);
+  GNUNET_assert ((GNUNET_YES == friend_only) || (GNUNET_NO == friend_only));
 
   max = sizeof (buffer);
   used = 0;
@@ -226,8 +246,10 @@ GNUNET_HELLO_create (const struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
   hello = GNUNET_malloc (sizeof (struct GNUNET_HELLO_Message) + used);
   hello->header.type = htons (GNUNET_MESSAGE_TYPE_HELLO);
   hello->header.size = htons (sizeof (struct GNUNET_HELLO_Message) + used);
+  hello->friend_only = htonl (friend_only);
+
   memcpy (&hello->publicKey, publicKey,
-          sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded));
+          sizeof (struct GNUNET_CRYPTO_EddsaPublicKey));
   memcpy (&hello[1], buffer, used);
   return hello;
 }
@@ -240,7 +262,8 @@ GNUNET_HELLO_create (const struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
  * @param return_modified if a modified copy should be returned,
  *         otherwise NULL will be returned
  * @param it iterator to call on each address
- * @param it_cls closure for it
+ * @param it_cls closure for @a it
+ * @return modified HELLO message
  */
 struct GNUNET_HELLO_Message *
 GNUNET_HELLO_iterate_addresses (const struct GNUNET_HELLO_Message *msg,
@@ -273,13 +296,11 @@ GNUNET_HELLO_iterate_addresses (const struct GNUNET_HELLO_Message *msg,
   insize = msize - sizeof (struct GNUNET_HELLO_Message);
   wpos = 0;
   woff = (ret != NULL) ? (char *) &ret[1] : NULL;
-  GNUNET_CRYPTO_hash (&msg->publicKey,
-                      sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded),
-                      &address.peer.hashPubKey);
+  address.peer.public_key = msg->publicKey;
   while (insize > 0)
   {
     esize = get_hello_address_size (inptr, insize, &alen);
-    if (esize == 0)
+    if (0 == esize)
     {
       GNUNET_break (0);
       GNUNET_free_non_null (ret);
@@ -361,8 +382,8 @@ copy_latest (void *cls, const struct GNUNET_HELLO_Address *address,
   ec.found = GNUNET_NO;
   GNUNET_HELLO_iterate_addresses (mc->other, GNUNET_NO, &get_match_exp, &ec);
   if ((ec.found == GNUNET_NO) ||
-      (ec.expiration.abs_value < expiration.abs_value) ||
-      ((ec.expiration.abs_value == expiration.abs_value) &&
+      (ec.expiration.abs_value_us < expiration.abs_value_us) ||
+      ((ec.expiration.abs_value_us == expiration.abs_value_us) &&
        (mc->take_equal == GNUNET_YES)))
   {
     mc->ret +=
@@ -408,8 +429,14 @@ GNUNET_HELLO_merge (const struct GNUNET_HELLO_Message *h1,
                     const struct GNUNET_HELLO_Message *h2)
 {
   struct MergeContext mc = { h1, h2, NULL, NULL, 0, 0, 0 };
+  int friend_only;
 
-  return GNUNET_HELLO_create (&h1->publicKey, &merge_addr, &mc);
+  if (h1->friend_only != h2->friend_only)
+  	friend_only = GNUNET_YES; /* One of the HELLOs is friend only */
+  else
+  	friend_only = ntohl (h1->friend_only); /* Both HELLO's have the same type */
+
+	return GNUNET_HELLO_create (&h1->publicKey, &merge_addr, &mc, friend_only);
 }
 
 
@@ -438,8 +465,8 @@ delta_match (void *cls, const struct GNUNET_HELLO_Address *address,
   GNUNET_HELLO_iterate_addresses (dc->old_hello, GNUNET_NO, &get_match_exp,
                                   &ec);
   if ((ec.found == GNUNET_YES) &&
-      ((ec.expiration.abs_value > expiration.abs_value) ||
-       (ec.expiration.abs_value >= dc->expiration_limit.abs_value)))
+      ((ec.expiration.abs_value_us > expiration.abs_value_us) ||
+       (ec.expiration.abs_value_us >= dc->expiration_limit.abs_value_us)))
     return GNUNET_YES;          /* skip */
   ret = dc->it (dc->it_cls, address, expiration);
   return ret;
@@ -503,7 +530,7 @@ GNUNET_HELLO_size (const struct GNUNET_HELLO_Message *hello)
  */
 int
 GNUNET_HELLO_get_key (const struct GNUNET_HELLO_Message *hello,
-                      struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded *publicKey)
+                      struct GNUNET_CRYPTO_EddsaPublicKey *publicKey)
 {
   uint16_t ret = ntohs (hello->header.size);
 
@@ -520,7 +547,7 @@ GNUNET_HELLO_get_key (const struct GNUNET_HELLO_Message *hello,
  *
  * @param hello the hello message
  * @param peer where to store the peer's identity
- * @return GNUNET_SYSERR if the HELLO was malformed
+ * @return #GNUNET_SYSERR if the HELLO was malformed
  */
 int
 GNUNET_HELLO_get_id (const struct GNUNET_HELLO_Message *hello,
@@ -531,9 +558,7 @@ GNUNET_HELLO_get_id (const struct GNUNET_HELLO_Message *hello,
   if ((ret < sizeof (struct GNUNET_HELLO_Message)) ||
       (ntohs (hello->header.type) != GNUNET_MESSAGE_TYPE_HELLO))
     return GNUNET_SYSERR;
-  GNUNET_CRYPTO_hash (&hello->publicKey,
-                      sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded),
-                      &peer->hashPubKey);
+  peer->public_key = hello->publicKey;
   return GNUNET_OK;
 }
 
@@ -582,12 +607,12 @@ find_other_matching (void *cls, const struct GNUNET_HELLO_Address *address,
 {
   struct EqualsContext *ec = cls;
 
-  if (expiration.abs_value < ec->expiration_limit.abs_value)
+  if (expiration.abs_value_us < ec->expiration_limit.abs_value_us)
     return GNUNET_YES;
   if (0 == GNUNET_HELLO_address_cmp (address, ec->address))
   {
     ec->found = GNUNET_YES;
-    if (expiration.abs_value < ec->expiration.abs_value)
+    if (expiration.abs_value_us < ec->expiration.abs_value_us)
       ec->result = GNUNET_TIME_absolute_min (expiration, ec->result);
     return GNUNET_SYSERR;
   }
@@ -601,7 +626,7 @@ find_matching (void *cls, const struct GNUNET_HELLO_Address *address,
 {
   struct EqualsContext *ec = cls;
 
-  if (expiration.abs_value < ec->expiration_limit.abs_value)
+  if (expiration.abs_value_us < ec->expiration_limit.abs_value_us)
     return GNUNET_YES;
   ec->address = address;
   ec->expiration = expiration;
@@ -639,15 +664,18 @@ GNUNET_HELLO_equals (const struct GNUNET_HELLO_Message *h1,
 {
   struct EqualsContext ec;
 
+  if (h1->header.type != h2->header.type)
+  	return GNUNET_TIME_UNIT_ZERO_ABS;
+
   if (0 !=
       memcmp (&h1->publicKey, &h2->publicKey,
-              sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded)))
+              sizeof (struct GNUNET_CRYPTO_EddsaPublicKey)))
     return GNUNET_TIME_UNIT_ZERO_ABS;
   ec.expiration_limit = now;
   ec.result = GNUNET_TIME_UNIT_FOREVER_ABS;
   ec.h2 = h2;
   GNUNET_HELLO_iterate_addresses (h1, GNUNET_NO, &find_matching, &ec);
-  if (ec.result.abs_value == GNUNET_TIME_UNIT_ZERO.rel_value)
+  if (ec.result.abs_value_us == GNUNET_TIME_UNIT_ZERO.rel_value_us)
     return ec.result;
   ec.h2 = h1;
   GNUNET_HELLO_iterate_addresses (h2, GNUNET_NO, &find_matching, &ec);
@@ -677,7 +705,7 @@ GNUNET_HELLO_get_last_expiration (const struct GNUNET_HELLO_Message *msg)
 {
   struct GNUNET_TIME_Absolute ret;
 
-  ret.abs_value = 0;
+  ret.abs_value_us = 0;
   GNUNET_HELLO_iterate_addresses (msg, GNUNET_NO, &find_min_expire, &ret);
   return ret;
 }
@@ -688,9 +716,9 @@ GNUNET_HELLO_get_last_expiration (const struct GNUNET_HELLO_Message *msg)
  * maybe differenciated into additional subcategories if applicable.
  * This module only deals with hello identifiers (MODULE = "hello").
  * <p>
- * 
+ *
  * The concrete URI format is:
- * 
+ *
  * "gnunet://hello/PEER[!YYYYMMDDHHMMSS!<TYPE>!<ADDRESS>]...".
  * These URIs can be used to add a peer record to peerinfo service.
  * PEER is the string representation of peer's public key.
@@ -698,29 +726,29 @@ GNUNET_HELLO_get_last_expiration (const struct GNUNET_HELLO_Message *msg)
  * TYPE is a transport type.
  * ADDRESS is the address, its format depends upon the transport type.
  * The concrete transport types and corresponding address formats are:
- * 
+ *
  * <ul><li>
- * 
+ *
  * <TCP|UDP>!IPADDRESS
  * IPVDDRESS is either IPV4 .-delimited address in form of XXX.XXX.XXX.XXX:PPPPP
  * or IPV6 :-delimited address, but with '(' and ')' instead of '[' and ']' (RFC2396 advises against using square brackets in URIs):
  * (XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX:XXXX):PPPPP
  * PPPPP is the port number. May be 0.
- * 
+ *
  * </li><li>
- * 
+ *
  * [add SMTP, HTTP and other addresses here]
- * 
+ *
  * </li></ul>
- * 
+ *
  * The encoding for hexadecimal values is defined in the crypto_hash.c
  * module in the gnunetutil library and discussed there.
- * 
+ *
  * Examples:
- * 
+ *
  * gnunet://hello/0430205UC7D56PTQK8NV05776671CNN44FK4TL6D0GQ35OMF8MEN4RNMKA5UF6AL3DQO8B1SC5AQF50SQ2MABIRU4HC8H2HAJKJ59JL1JVRJAK308F9GASRFLMGUBB5TQ5AKR94AS5T3MDG8B9O1EMPRKB0HVCG7T6QPP4CDJ913LAEHVJ2DI1TOBB15Q1JIT5ARBOD12U4SIGRFDV3Q7T66G4TBVSJJ90UQF1BG29TGJJKLGEIMSPHHKO544D6EALQ4F2K0416311JC22GVAD48R616I7VK03K7MP7N0RS2MBV1TE9JV8CK1LSQMR7KCDRTLDA6917UGA67DHTGHERIACCGQ54TGSR48RMSGS9BA5HLMOKASFC1I6V4TT09TUGCU8GNDHQF0JF3H7LPV59UL5I38QID040G000!20120302010059!TCP!192.168.0.1:2086!TCP!64.23.8.174:0
  * gnunet://hello/0430205UC7D56PTQK8NV05776671CNN44FK4TL6D0GQ35OMF8MEN4RNMKA5UF6AL3DQO8B1SC5AQF50SQ2MABIRU4HC8H2HAJKJ59JL1JVRJAK308F9GASRFLMGUBB5TQ5AKR94AS5T3MDG8B9O1EMPRKB0HVCG7T6QPP4CDJ913LAEHVJ2DI1TOBB15Q1JIT5ARBOD12U4SIGRFDV3Q7T66G4TBVSJJ90UQF1BG29TGJJKLGEIMSPHHKO544D6EALQ4F2K0416311JC22GVAD48R616I7VK03K7MP7N0RS2MBV1TE9JV8CK1LSQMR7KCDRTLDA6917UGA67DHTGHERIACCGQ54TGSR48RMSGS9BA5HLMOKASFC1I6V4TT09TUGCU8GNDHQF0JF3H7LPV59UL5I38QID040G000!20120302010059!TCP!(2001:db8:85a3:8d3:1319:8a2e:370:7348):2086
- * 
+ *
  * <p>
  */
 
@@ -780,7 +808,10 @@ add_address_to_uri (void *cls, const struct GNUNET_HELLO_Address *address,
   const char *addr;
   char *uri_addr;
   char *ret;
+  char *addr_dup;
+  char *pos;
   char tbuf[16] = "";
+  char *client_str = "_client";
   struct tm *t;
   time_t seconds;
 
@@ -798,12 +829,19 @@ add_address_to_uri (void *cls, const struct GNUNET_HELLO_Address *address,
     return GNUNET_OK;
   }
   addr = papi->address_to_string (papi->cls, address->address, address->address_length);
+
   if ( (addr == NULL) || (strlen(addr) == 0) )
     return GNUNET_OK;
+
+  addr_dup = GNUNET_strdup (addr);
+  if (NULL != (pos = strstr (addr_dup, "_server")))
+  	memcpy (pos, client_str, strlen(client_str)); /* Replace all server addresses with client addresses */
+
    /* For URIs we use '(' and ')' instead of '[' and ']' as brackets are reserved
       characters in URIs */
-  uri_addr = map_characters (addr, "[]", "()");
-  seconds = expiration.abs_value / 1000;
+  uri_addr = map_characters (addr_dup, "[]", "()");
+  GNUNET_free (addr_dup);
+  seconds = expiration.abs_value_us / 1000LL / 1000LL;
   t = gmtime (&seconds);
 
   GNUNET_asprintf (&ret,
@@ -833,10 +871,11 @@ GNUNET_HELLO_compose_uri (const struct GNUNET_HELLO_Message *hello,
   struct GNUNET_HELLO_ComposeUriContext ctx;
   ctx.plugins_find = plugins_find;
 
-  char *pkey = GNUNET_CRYPTO_rsa_public_key_to_string (&(hello->publicKey));
+  char *pkey = GNUNET_CRYPTO_eddsa_public_key_to_string (&(hello->publicKey));
+
   GNUNET_asprintf (&(ctx.uri),
                    "%s%s",
-                   GNUNET_HELLO_URI_PREFIX,
+                   (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)) ? GNUNET_FRIEND_HELLO_URI_PREFIX : GNUNET_HELLO_URI_PREFIX,
                    pkey);
   GNUNET_free (pkey);
 
@@ -915,7 +954,7 @@ add_address_to_hello (void *cls, size_t max, void *buffer)
       GNUNET_break (0);
       return 0;
     }
-    expire.abs_value = expiration_seconds * 1000;
+    expire.abs_value_us = expiration_seconds * 1000LL * 1000LL;
   }
   if ('!' != tname[0])
   {
@@ -1005,19 +1044,31 @@ add_address_to_hello (void *cls, size_t max, void *buffer)
  */
 int
 GNUNET_HELLO_parse_uri (const char *uri,
-                        struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded *pubkey,
+                        struct GNUNET_CRYPTO_EddsaPublicKey *pubkey,
                         struct GNUNET_HELLO_Message **hello,
                         GNUNET_HELLO_TransportPluginsFind plugins_find)
 {
   const char *pks;
   const char *exc;
+  int friend_only;
   struct GNUNET_HELLO_ParseUriContext ctx;
 
-  if (0 != strncmp (uri,
+  if (0 == strncmp (uri,
 		    GNUNET_HELLO_URI_PREFIX,
 		    strlen (GNUNET_HELLO_URI_PREFIX)))
-    return GNUNET_SYSERR;
-  pks = &uri[strlen (GNUNET_HELLO_URI_PREFIX)];
+  {
+  		pks = &uri[strlen (GNUNET_HELLO_URI_PREFIX)];
+  		friend_only = GNUNET_NO;
+  }
+  else if (0 == strncmp (uri,
+	    GNUNET_FRIEND_HELLO_URI_PREFIX,
+	    strlen (GNUNET_FRIEND_HELLO_URI_PREFIX)))
+  {
+  	pks = &uri[strlen (GNUNET_FRIEND_HELLO_URI_PREFIX)];
+  	friend_only = GNUNET_YES;
+  }
+  else
+  	return GNUNET_SYSERR;
   exc = strstr (pks, "!");
 
   if (GNUNET_OK !=
@@ -1030,7 +1081,7 @@ GNUNET_HELLO_parse_uri (const char *uri,
   ctx.pos = exc;
   ctx.ret = GNUNET_OK;
   ctx.plugins_find = plugins_find;
-  *hello = GNUNET_HELLO_create (pubkey, &add_address_to_hello, &ctx);
+  *hello = GNUNET_HELLO_create (pubkey, &add_address_to_hello, &ctx, friend_only);
 
   return ctx.ret;
 }

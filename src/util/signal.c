@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -25,14 +25,18 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_signal_lib.h"
+#include "gnunet_util_lib.h"
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
 
 
 struct GNUNET_SIGNAL_Context
 {
+
+  struct GNUNET_SIGNAL_Context *next;
+
+  struct GNUNET_SIGNAL_Context *prev;
+
   int sig;
 
   GNUNET_SIGNAL_Handler method;
@@ -41,6 +45,11 @@ struct GNUNET_SIGNAL_Context
   struct sigaction oldsig;
 #endif
 };
+
+static struct GNUNET_SIGNAL_Context *sc_head;
+
+static struct GNUNET_SIGNAL_Context *sc_tail;
+
 
 #ifdef WINDOWS
 GNUNET_SIGNAL_Handler w32_sigchld_handler = NULL;
@@ -55,7 +64,7 @@ GNUNET_SIGNAL_handler_install (int signum, GNUNET_SIGNAL_Handler handler)
   struct sigaction sig;
 #endif
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_SIGNAL_Context));
+  ret = GNUNET_new (struct GNUNET_SIGNAL_Context);
   ret->sig = signum;
   ret->method = handler;
 #ifndef MINGW
@@ -82,6 +91,7 @@ GNUNET_SIGNAL_handler_install (int signum, GNUNET_SIGNAL_Handler handler)
     }
   }
 #endif
+  GNUNET_CONTAINER_DLL_insert_tail (sc_head, sc_tail, ret);
   return ret;
 }
 
@@ -94,5 +104,29 @@ GNUNET_SIGNAL_handler_uninstall (struct GNUNET_SIGNAL_Context *ctx)
   sigemptyset (&sig.sa_mask);
   sigaction (ctx->sig, &ctx->oldsig, &sig);
 #endif
+  GNUNET_CONTAINER_DLL_remove (sc_head, sc_tail, ctx);
   GNUNET_free (ctx);
+}
+
+
+/**
+ * Raise the given signal by calling the installed signal handlers.  This will
+ * not use the @em raise() system call but only calls the handlers registered
+ * through GNUNET_SIGNAL_handler_install().
+ *
+ * @param sig the signal to raise
+ */
+void
+GNUNET_SIGNAL_raise (const int sig)
+{
+  struct GNUNET_SIGNAL_Context *ctx;
+
+  for (ctx = sc_head; NULL != ctx; ctx = ctx->next)
+  {
+    if (sig != ctx->sig)
+      continue;
+    if (NULL == ctx->method)
+      continue;
+    ctx->method ();
+  }
 }

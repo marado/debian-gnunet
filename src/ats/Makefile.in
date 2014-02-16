@@ -55,36 +55,20 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 libexec_PROGRAMS = gnunet-service-ats$(EXEEXT)
-check_PROGRAMS = test_ats_api_scheduling_init$(EXEEXT) \
-	test_ats_api_scheduling_add_address$(EXEEXT) \
-	test_ats_api_scheduling_add_session$(EXEEXT) \
-	test_ats_api_scheduling_min_bw$(EXEEXT) \
-	test_ats_api_scheduling_check_min_bw_alt$(EXEEXT) \
-	test_ats_api_scheduling_update_address$(EXEEXT) \
-	test_ats_api_scheduling_destroy_address$(EXEEXT) \
-	test_ats_api_scheduling_destroy_session$(EXEEXT) \
-	test_ats_api_scheduling_destroy_inbound_connection$(EXEEXT) \
-	test_ats_api_scheduling_block_and_reset$(EXEEXT) \
-	test_ats_simplistic$(EXEEXT) \
-	test_ats_simplistic_switch_networks$(EXEEXT) \
-	test_ats_simplistic_change_preference$(EXEEXT) \
-	test_ats_simplistic_pref_aging$(EXEEXT) \
-	test_ats_api_performance$(EXEEXT)
+check_PROGRAMS = $(am__EXEEXT_8)
 subdir = src/ats
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/ats.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -120,55 +104,172 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libexecdir)" \
-	"$(DESTDIR)$(pkgcfgdir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" \
+	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgcfgdir)"
+LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
+am__libgnunet_plugin_ats_mlp_la_SOURCES_DIST = plugin_ats_mlp.c
+@HAVE_LIBGLPK_TRUE@am_libgnunet_plugin_ats_mlp_la_OBJECTS =  \
+@HAVE_LIBGLPK_TRUE@	plugin_ats_mlp.lo
+libgnunet_plugin_ats_mlp_la_OBJECTS =  \
+	$(am_libgnunet_plugin_ats_mlp_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+libgnunet_plugin_ats_mlp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libgnunet_plugin_ats_mlp_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+@HAVE_LIBGLPK_TRUE@am_libgnunet_plugin_ats_mlp_la_rpath = -rpath \
+@HAVE_LIBGLPK_TRUE@	$(plugindir)
 am__DEPENDENCIES_1 =
+am_libgnunet_plugin_ats_proportional_la_OBJECTS =  \
+	plugin_ats_proportional.lo
+libgnunet_plugin_ats_proportional_la_OBJECTS =  \
+	$(am_libgnunet_plugin_ats_proportional_la_OBJECTS)
+libgnunet_plugin_ats_proportional_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_ats_proportional_la_LDFLAGS) $(LDFLAGS) -o \
+	$@
+am_libgnunet_plugin_ats_ril_la_OBJECTS = plugin_ats_ril.lo
+libgnunet_plugin_ats_ril_la_OBJECTS =  \
+	$(am_libgnunet_plugin_ats_ril_la_OBJECTS)
+libgnunet_plugin_ats_ril_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libgnunet_plugin_ats_ril_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 libgnunetats_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_libgnunetats_la_OBJECTS = ats_api_scheduling.lo \
 	ats_api_performance.lo
 libgnunetats_la_OBJECTS = $(am_libgnunetats_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
 libgnunetats_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetats_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_1 =  \
+@HAVE_LIBGLPK_TRUE@	test_ats_solver_add_address_mlp$(EXEEXT)
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_2 = test_ats_solver_add_address_and_request_mlp$(EXEEXT)
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_3 = test_ats_solver_request_and_add_address_mlp$(EXEEXT)
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_4 = test_ats_solver_request_and_delete_address_mlp$(EXEEXT)
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_5 = test_ats_solver_alternative_after_delete_address_mlp$(EXEEXT)
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_6 =  \
+@HAVE_LIBGLPK_TRUE@	test_ats_solver_preferences_mlp$(EXEEXT)
+@HAVE_LIBGLPK_TRUE@am__EXEEXT_7 = perf_ats_solver_mlp$(EXEEXT)
+@HAVE_TESTING_TRUE@am__EXEEXT_8 =  \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_init$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_add_address$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_add_address_duplicate$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_add_address_inbound$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_destroy_address$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_destroy_address_twice$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_add_session$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_scheduling_destroy_session$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_performance_list_all_addresses$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_performance_list_peer_addresses$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_performance_list_all_addresses_active$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_performance_monitor$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_api_performance_monitor_initial_callback$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_add_address_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_add_address_and_request_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_request_and_add_address_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_request_and_delete_address_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_alternative_after_delete_address_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_preferences_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_preferences_ril$(EXEEXT) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_3) $(am__EXEEXT_4) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_5) $(am__EXEEXT_6) \
+@HAVE_TESTING_TRUE@	test_ats_solver_add_address_ril$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_add_address_and_request_ril$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_request_and_add_address_ril$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_request_and_delete_address_ril$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_solver_alternative_after_delete_address_ril$(EXEEXT) \
+@HAVE_TESTING_TRUE@	perf_ats_solver_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_7) \
+@HAVE_TESTING_TRUE@	perf_ats_solver_ril$(EXEEXT)
 PROGRAMS = $(libexec_PROGRAMS)
-am__gnunet_service_ats_SOURCES_DIST = gnunet-service-ats.c \
-	gnunet-service-ats.h gnunet-service-ats_addresses.c \
-	gnunet-service-ats_addresses.h \
-	gnunet-service-ats_addresses_simplistic.c \
-	gnunet-service-ats_addresses_simplistic.h \
-	gnunet-service-ats_addresses_mlp.c \
-	gnunet-service-ats_addresses_mlp.h \
-	gnunet-service-ats_performance.c \
-	gnunet-service-ats_performance.h \
-	gnunet-service-ats_scheduling.c \
-	gnunet-service-ats_scheduling.h \
-	gnunet-service-ats_reservations.c \
-	gnunet-service-ats_reservations.h
-@HAVE_LIBGLPK_TRUE@am__objects_1 =  \
-@HAVE_LIBGLPK_TRUE@	gnunet-service-ats_addresses_mlp.$(OBJEXT)
 am_gnunet_service_ats_OBJECTS = gnunet-service-ats.$(OBJEXT) \
 	gnunet-service-ats_addresses.$(OBJEXT) \
-	gnunet-service-ats_addresses_simplistic.$(OBJEXT) \
-	$(am__objects_1) gnunet-service-ats_performance.$(OBJEXT) \
+	gnunet-service-ats_normalization.$(OBJEXT) \
+	gnunet-service-ats_performance.$(OBJEXT) \
 	gnunet-service-ats_scheduling.$(OBJEXT) \
 	gnunet-service-ats_reservations.$(OBJEXT)
 gnunet_service_ats_OBJECTS = $(am_gnunet_service_ats_OBJECTS)
-am_test_ats_api_performance_OBJECTS =  \
-	test_ats_api_performance.$(OBJEXT)
-test_ats_api_performance_OBJECTS =  \
-	$(am_test_ats_api_performance_OBJECTS)
-test_ats_api_performance_DEPENDENCIES =  \
+am_perf_ats_solver_mlp_OBJECTS = perf_ats_solver.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT) \
+	gnunet-service-ats_normalization.$(OBJEXT)
+perf_ats_solver_mlp_OBJECTS = $(am_perf_ats_solver_mlp_OBJECTS)
+perf_ats_solver_mlp_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+	$(top_builddir)/src/ats/libgnunetats.la
+am_perf_ats_solver_proportional_OBJECTS = perf_ats_solver.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT) \
+	gnunet-service-ats_normalization.$(OBJEXT)
+perf_ats_solver_proportional_OBJECTS =  \
+	$(am_perf_ats_solver_proportional_OBJECTS)
+perf_ats_solver_proportional_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+	$(top_builddir)/src/ats/libgnunetats.la
+am_perf_ats_solver_ril_OBJECTS = perf_ats_solver.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT) \
+	gnunet-service-ats_normalization.$(OBJEXT)
+perf_ats_solver_ril_OBJECTS = $(am_perf_ats_solver_ril_OBJECTS)
+perf_ats_solver_ril_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+	$(top_builddir)/src/ats/libgnunetats.la
+am_test_ats_api_performance_list_all_addresses_OBJECTS =  \
+	test_ats_api_performance_list_all_addresses.$(OBJEXT)
+test_ats_api_performance_list_all_addresses_OBJECTS =  \
+	$(am_test_ats_api_performance_list_all_addresses_OBJECTS)
+test_ats_api_performance_list_all_addresses_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/ats/libgnunetats.la
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_performance_list_all_addresses_active_OBJECTS =  \
+	test_ats_api_performance_list_all_addresses_active.$(OBJEXT)
+test_ats_api_performance_list_all_addresses_active_OBJECTS = $(am_test_ats_api_performance_list_all_addresses_active_OBJECTS)
+test_ats_api_performance_list_all_addresses_active_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_performance_list_peer_addresses_OBJECTS =  \
+	test_ats_api_performance_list_peer_addresses.$(OBJEXT)
+test_ats_api_performance_list_peer_addresses_OBJECTS =  \
+	$(am_test_ats_api_performance_list_peer_addresses_OBJECTS)
+test_ats_api_performance_list_peer_addresses_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_performance_monitor_OBJECTS =  \
+	test_ats_api_performance_monitor.$(OBJEXT)
+test_ats_api_performance_monitor_OBJECTS =  \
+	$(am_test_ats_api_performance_monitor_OBJECTS)
+test_ats_api_performance_monitor_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_performance_monitor_initial_callback_OBJECTS =  \
+	test_ats_api_performance_monitor_initial_callback.$(OBJEXT)
+test_ats_api_performance_monitor_initial_callback_OBJECTS = $(am_test_ats_api_performance_monitor_initial_callback_OBJECTS)
+test_ats_api_performance_monitor_initial_callback_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 am_test_ats_api_scheduling_add_address_OBJECTS =  \
 	test_ats_api_scheduling_add_address.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
@@ -177,7 +278,28 @@ test_ats_api_scheduling_add_address_OBJECTS =  \
 test_ats_api_scheduling_add_address_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_scheduling_add_address_duplicate_OBJECTS =  \
+	test_ats_api_scheduling_add_address_duplicate.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_api_scheduling_add_address_duplicate_OBJECTS =  \
+	$(am_test_ats_api_scheduling_add_address_duplicate_OBJECTS)
+test_ats_api_scheduling_add_address_duplicate_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_scheduling_add_address_inbound_OBJECTS =  \
+	test_ats_api_scheduling_add_address_inbound.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_api_scheduling_add_address_inbound_OBJECTS =  \
+	$(am_test_ats_api_scheduling_add_address_inbound_OBJECTS)
+test_ats_api_scheduling_add_address_inbound_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 am_test_ats_api_scheduling_add_session_OBJECTS =  \
 	test_ats_api_scheduling_add_session.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
@@ -186,25 +308,8 @@ test_ats_api_scheduling_add_session_OBJECTS =  \
 test_ats_api_scheduling_add_session_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_api_scheduling_block_and_reset_OBJECTS =  \
-	test_ats_api_scheduling_block_and_reset.$(OBJEXT) \
-	test_ats_api_common.$(OBJEXT)
-test_ats_api_scheduling_block_and_reset_OBJECTS =  \
-	$(am_test_ats_api_scheduling_block_and_reset_OBJECTS)
-test_ats_api_scheduling_block_and_reset_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_api_scheduling_check_min_bw_alt_OBJECTS =  \
-	test_ats_api_scheduling_check_min_bw_alt.$(OBJEXT) \
-	test_ats_api_common.$(OBJEXT)
-test_ats_api_scheduling_check_min_bw_alt_OBJECTS =  \
-	$(am_test_ats_api_scheduling_check_min_bw_alt_OBJECTS)
-test_ats_api_scheduling_check_min_bw_alt_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 am_test_ats_api_scheduling_destroy_address_OBJECTS =  \
 	test_ats_api_scheduling_destroy_address.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
@@ -213,15 +318,18 @@ test_ats_api_scheduling_destroy_address_OBJECTS =  \
 test_ats_api_scheduling_destroy_address_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_api_scheduling_destroy_inbound_connection_OBJECTS =  \
-	test_ats_api_scheduling_destroy_inbound_connection.$(OBJEXT) \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_api_scheduling_destroy_address_twice_OBJECTS =  \
+	test_ats_api_scheduling_destroy_address_twice.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
-test_ats_api_scheduling_destroy_inbound_connection_OBJECTS = $(am_test_ats_api_scheduling_destroy_inbound_connection_OBJECTS)
-test_ats_api_scheduling_destroy_inbound_connection_DEPENDENCIES =  \
+test_ats_api_scheduling_destroy_address_twice_OBJECTS =  \
+	$(am_test_ats_api_scheduling_destroy_address_twice_OBJECTS)
+test_ats_api_scheduling_destroy_address_twice_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 am_test_ats_api_scheduling_destroy_session_OBJECTS =  \
 	test_ats_api_scheduling_destroy_session.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
@@ -230,7 +338,8 @@ test_ats_api_scheduling_destroy_session_OBJECTS =  \
 test_ats_api_scheduling_destroy_session_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 am_test_ats_api_scheduling_init_OBJECTS =  \
 	test_ats_api_scheduling_init.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
@@ -239,60 +348,214 @@ test_ats_api_scheduling_init_OBJECTS =  \
 test_ats_api_scheduling_init_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_api_scheduling_min_bw_OBJECTS =  \
-	test_ats_api_scheduling_min_bw.$(OBJEXT) \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am__test_ats_solver_add_address_and_request_mlp_SOURCES_DIST =  \
+	test_ats_solver_add_address_and_request.c \
+	test_ats_api_common.c test_ats_api_common.h
+@HAVE_LIBGLPK_TRUE@am_test_ats_solver_add_address_and_request_mlp_OBJECTS = test_ats_solver_add_address_and_request.$(OBJEXT) \
+@HAVE_LIBGLPK_TRUE@	test_ats_api_common.$(OBJEXT)
+test_ats_solver_add_address_and_request_mlp_OBJECTS =  \
+	$(am_test_ats_solver_add_address_and_request_mlp_OBJECTS)
+@HAVE_LIBGLPK_TRUE@test_ats_solver_add_address_and_request_mlp_DEPENDENCIES =  \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_add_address_and_request_proportional_OBJECTS =  \
+	test_ats_solver_add_address_and_request.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
-test_ats_api_scheduling_min_bw_OBJECTS =  \
-	$(am_test_ats_api_scheduling_min_bw_OBJECTS)
-test_ats_api_scheduling_min_bw_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_api_scheduling_update_address_OBJECTS =  \
-	test_ats_api_scheduling_update_address.$(OBJEXT) \
-	test_ats_api_common.$(OBJEXT)
-test_ats_api_scheduling_update_address_OBJECTS =  \
-	$(am_test_ats_api_scheduling_update_address_OBJECTS)
-test_ats_api_scheduling_update_address_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_simplistic_OBJECTS = test_ats_simplistic.$(OBJEXT) \
-	test_ats_api_common.$(OBJEXT)
-test_ats_simplistic_OBJECTS = $(am_test_ats_simplistic_OBJECTS)
-test_ats_simplistic_DEPENDENCIES =  \
+test_ats_solver_add_address_and_request_proportional_OBJECTS = $(am_test_ats_solver_add_address_and_request_proportional_OBJECTS)
+test_ats_solver_add_address_and_request_proportional_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_simplistic_change_preference_OBJECTS =  \
-	test_ats_simplistic_change_preference.$(OBJEXT) \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_add_address_and_request_ril_OBJECTS =  \
+	test_ats_solver_add_address_and_request.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
-test_ats_simplistic_change_preference_OBJECTS =  \
-	$(am_test_ats_simplistic_change_preference_OBJECTS)
-test_ats_simplistic_change_preference_DEPENDENCIES =  \
+test_ats_solver_add_address_and_request_ril_OBJECTS =  \
+	$(am_test_ats_solver_add_address_and_request_ril_OBJECTS)
+test_ats_solver_add_address_and_request_ril_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_simplistic_pref_aging_OBJECTS =  \
-	test_ats_simplistic_pref_aging.$(OBJEXT) \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am__test_ats_solver_add_address_mlp_SOURCES_DIST =  \
+	test_ats_solver_add_address.c test_ats_api_common.c \
+	test_ats_api_common.h
+@HAVE_LIBGLPK_TRUE@am_test_ats_solver_add_address_mlp_OBJECTS =  \
+@HAVE_LIBGLPK_TRUE@	test_ats_solver_add_address.$(OBJEXT) \
+@HAVE_LIBGLPK_TRUE@	test_ats_api_common.$(OBJEXT)
+test_ats_solver_add_address_mlp_OBJECTS =  \
+	$(am_test_ats_solver_add_address_mlp_OBJECTS)
+@HAVE_LIBGLPK_TRUE@test_ats_solver_add_address_mlp_DEPENDENCIES =  \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_add_address_proportional_OBJECTS =  \
+	test_ats_solver_add_address.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
-test_ats_simplistic_pref_aging_OBJECTS =  \
-	$(am_test_ats_simplistic_pref_aging_OBJECTS)
-test_ats_simplistic_pref_aging_DEPENDENCIES =  \
+test_ats_solver_add_address_proportional_OBJECTS =  \
+	$(am_test_ats_solver_add_address_proportional_OBJECTS)
+test_ats_solver_add_address_proportional_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
-am_test_ats_simplistic_switch_networks_OBJECTS =  \
-	test_ats_simplistic_switch_networks.$(OBJEXT) \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_add_address_ril_OBJECTS =  \
+	test_ats_solver_add_address.$(OBJEXT) \
 	test_ats_api_common.$(OBJEXT)
-test_ats_simplistic_switch_networks_OBJECTS =  \
-	$(am_test_ats_simplistic_switch_networks_OBJECTS)
-test_ats_simplistic_switch_networks_DEPENDENCIES =  \
+test_ats_solver_add_address_ril_OBJECTS =  \
+	$(am_test_ats_solver_add_address_ril_OBJECTS)
+test_ats_solver_add_address_ril_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/ats/libgnunetats.la
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am__test_ats_solver_alternative_after_delete_address_mlp_SOURCES_DIST =  \
+	test_ats_solver_alternative_after_delete_address.c \
+	test_ats_api_common.c test_ats_api_common.h
+@HAVE_LIBGLPK_TRUE@am_test_ats_solver_alternative_after_delete_address_mlp_OBJECTS = test_ats_solver_alternative_after_delete_address.$(OBJEXT) \
+@HAVE_LIBGLPK_TRUE@	test_ats_api_common.$(OBJEXT)
+test_ats_solver_alternative_after_delete_address_mlp_OBJECTS = $(am_test_ats_solver_alternative_after_delete_address_mlp_OBJECTS)
+@HAVE_LIBGLPK_TRUE@test_ats_solver_alternative_after_delete_address_mlp_DEPENDENCIES =  \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_alternative_after_delete_address_proportional_OBJECTS =  \
+	test_ats_solver_alternative_after_delete_address.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_alternative_after_delete_address_proportional_OBJECTS = $(am_test_ats_solver_alternative_after_delete_address_proportional_OBJECTS)
+test_ats_solver_alternative_after_delete_address_proportional_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_alternative_after_delete_address_ril_OBJECTS =  \
+	test_ats_solver_alternative_after_delete_address.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_alternative_after_delete_address_ril_OBJECTS = $(am_test_ats_solver_alternative_after_delete_address_ril_OBJECTS)
+test_ats_solver_alternative_after_delete_address_ril_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am__test_ats_solver_preferences_mlp_SOURCES_DIST =  \
+	test_ats_solver_preferences.c test_ats_api_common.c \
+	test_ats_api_common.h
+@HAVE_LIBGLPK_TRUE@am_test_ats_solver_preferences_mlp_OBJECTS =  \
+@HAVE_LIBGLPK_TRUE@	test_ats_solver_preferences.$(OBJEXT) \
+@HAVE_LIBGLPK_TRUE@	test_ats_api_common.$(OBJEXT)
+test_ats_solver_preferences_mlp_OBJECTS =  \
+	$(am_test_ats_solver_preferences_mlp_OBJECTS)
+@HAVE_LIBGLPK_TRUE@test_ats_solver_preferences_mlp_DEPENDENCIES =  \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_preferences_proportional_OBJECTS =  \
+	test_ats_solver_preferences.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_preferences_proportional_OBJECTS =  \
+	$(am_test_ats_solver_preferences_proportional_OBJECTS)
+test_ats_solver_preferences_proportional_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_preferences_ril_OBJECTS =  \
+	test_ats_solver_preferences.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_preferences_ril_OBJECTS =  \
+	$(am_test_ats_solver_preferences_ril_OBJECTS)
+test_ats_solver_preferences_ril_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am__test_ats_solver_request_and_add_address_mlp_SOURCES_DIST =  \
+	test_ats_solver_request_and_add_address.c \
+	test_ats_api_common.c test_ats_api_common.h
+@HAVE_LIBGLPK_TRUE@am_test_ats_solver_request_and_add_address_mlp_OBJECTS = test_ats_solver_request_and_add_address.$(OBJEXT) \
+@HAVE_LIBGLPK_TRUE@	test_ats_api_common.$(OBJEXT)
+test_ats_solver_request_and_add_address_mlp_OBJECTS =  \
+	$(am_test_ats_solver_request_and_add_address_mlp_OBJECTS)
+@HAVE_LIBGLPK_TRUE@test_ats_solver_request_and_add_address_mlp_DEPENDENCIES =  \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_request_and_add_address_proportional_OBJECTS =  \
+	test_ats_solver_request_and_add_address.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_request_and_add_address_proportional_OBJECTS = $(am_test_ats_solver_request_and_add_address_proportional_OBJECTS)
+test_ats_solver_request_and_add_address_proportional_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_request_and_add_address_ril_OBJECTS =  \
+	test_ats_solver_request_and_add_address.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_request_and_add_address_ril_OBJECTS =  \
+	$(am_test_ats_solver_request_and_add_address_ril_OBJECTS)
+test_ats_solver_request_and_add_address_ril_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am__test_ats_solver_request_and_delete_address_mlp_SOURCES_DIST =  \
+	test_ats_solver_request_and_delete_address.c \
+	test_ats_api_common.c test_ats_api_common.h
+@HAVE_LIBGLPK_TRUE@am_test_ats_solver_request_and_delete_address_mlp_OBJECTS = test_ats_solver_request_and_delete_address.$(OBJEXT) \
+@HAVE_LIBGLPK_TRUE@	test_ats_api_common.$(OBJEXT)
+test_ats_solver_request_and_delete_address_mlp_OBJECTS =  \
+	$(am_test_ats_solver_request_and_delete_address_mlp_OBJECTS)
+@HAVE_LIBGLPK_TRUE@test_ats_solver_request_and_delete_address_mlp_DEPENDENCIES =  \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_request_and_delete_address_proportional_OBJECTS =  \
+	test_ats_solver_request_and_delete_address.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_request_and_delete_address_proportional_OBJECTS = $(am_test_ats_solver_request_and_delete_address_proportional_OBJECTS)
+test_ats_solver_request_and_delete_address_proportional_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+am_test_ats_solver_request_and_delete_address_ril_OBJECTS =  \
+	test_ats_solver_request_and_delete_address.$(OBJEXT) \
+	test_ats_api_common.$(OBJEXT)
+test_ats_solver_request_and_delete_address_ril_OBJECTS =  \
+	$(am_test_ats_solver_request_and_delete_address_ril_OBJECTS)
+test_ats_solver_request_and_delete_address_ril_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -319,39 +582,82 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libgnunetats_la_SOURCES) $(gnunet_service_ats_SOURCES) \
-	$(test_ats_api_performance_SOURCES) \
+SOURCES = $(libgnunet_plugin_ats_mlp_la_SOURCES) \
+	$(libgnunet_plugin_ats_proportional_la_SOURCES) \
+	$(libgnunet_plugin_ats_ril_la_SOURCES) \
+	$(libgnunetats_la_SOURCES) $(gnunet_service_ats_SOURCES) \
+	$(perf_ats_solver_mlp_SOURCES) \
+	$(perf_ats_solver_proportional_SOURCES) \
+	$(perf_ats_solver_ril_SOURCES) \
+	$(test_ats_api_performance_list_all_addresses_SOURCES) \
+	$(test_ats_api_performance_list_all_addresses_active_SOURCES) \
+	$(test_ats_api_performance_list_peer_addresses_SOURCES) \
+	$(test_ats_api_performance_monitor_SOURCES) \
+	$(test_ats_api_performance_monitor_initial_callback_SOURCES) \
 	$(test_ats_api_scheduling_add_address_SOURCES) \
+	$(test_ats_api_scheduling_add_address_duplicate_SOURCES) \
+	$(test_ats_api_scheduling_add_address_inbound_SOURCES) \
 	$(test_ats_api_scheduling_add_session_SOURCES) \
-	$(test_ats_api_scheduling_block_and_reset_SOURCES) \
-	$(test_ats_api_scheduling_check_min_bw_alt_SOURCES) \
 	$(test_ats_api_scheduling_destroy_address_SOURCES) \
-	$(test_ats_api_scheduling_destroy_inbound_connection_SOURCES) \
+	$(test_ats_api_scheduling_destroy_address_twice_SOURCES) \
 	$(test_ats_api_scheduling_destroy_session_SOURCES) \
 	$(test_ats_api_scheduling_init_SOURCES) \
-	$(test_ats_api_scheduling_min_bw_SOURCES) \
-	$(test_ats_api_scheduling_update_address_SOURCES) \
-	$(test_ats_simplistic_SOURCES) \
-	$(test_ats_simplistic_change_preference_SOURCES) \
-	$(test_ats_simplistic_pref_aging_SOURCES) \
-	$(test_ats_simplistic_switch_networks_SOURCES)
-DIST_SOURCES = $(libgnunetats_la_SOURCES) \
-	$(am__gnunet_service_ats_SOURCES_DIST) \
-	$(test_ats_api_performance_SOURCES) \
+	$(test_ats_solver_add_address_and_request_mlp_SOURCES) \
+	$(test_ats_solver_add_address_and_request_proportional_SOURCES) \
+	$(test_ats_solver_add_address_and_request_ril_SOURCES) \
+	$(test_ats_solver_add_address_mlp_SOURCES) \
+	$(test_ats_solver_add_address_proportional_SOURCES) \
+	$(test_ats_solver_add_address_ril_SOURCES) \
+	$(test_ats_solver_alternative_after_delete_address_mlp_SOURCES) \
+	$(test_ats_solver_alternative_after_delete_address_proportional_SOURCES) \
+	$(test_ats_solver_alternative_after_delete_address_ril_SOURCES) \
+	$(test_ats_solver_preferences_mlp_SOURCES) \
+	$(test_ats_solver_preferences_proportional_SOURCES) \
+	$(test_ats_solver_preferences_ril_SOURCES) \
+	$(test_ats_solver_request_and_add_address_mlp_SOURCES) \
+	$(test_ats_solver_request_and_add_address_proportional_SOURCES) \
+	$(test_ats_solver_request_and_add_address_ril_SOURCES) \
+	$(test_ats_solver_request_and_delete_address_mlp_SOURCES) \
+	$(test_ats_solver_request_and_delete_address_proportional_SOURCES) \
+	$(test_ats_solver_request_and_delete_address_ril_SOURCES)
+DIST_SOURCES = $(am__libgnunet_plugin_ats_mlp_la_SOURCES_DIST) \
+	$(libgnunet_plugin_ats_proportional_la_SOURCES) \
+	$(libgnunet_plugin_ats_ril_la_SOURCES) \
+	$(libgnunetats_la_SOURCES) $(gnunet_service_ats_SOURCES) \
+	$(perf_ats_solver_mlp_SOURCES) \
+	$(perf_ats_solver_proportional_SOURCES) \
+	$(perf_ats_solver_ril_SOURCES) \
+	$(test_ats_api_performance_list_all_addresses_SOURCES) \
+	$(test_ats_api_performance_list_all_addresses_active_SOURCES) \
+	$(test_ats_api_performance_list_peer_addresses_SOURCES) \
+	$(test_ats_api_performance_monitor_SOURCES) \
+	$(test_ats_api_performance_monitor_initial_callback_SOURCES) \
 	$(test_ats_api_scheduling_add_address_SOURCES) \
+	$(test_ats_api_scheduling_add_address_duplicate_SOURCES) \
+	$(test_ats_api_scheduling_add_address_inbound_SOURCES) \
 	$(test_ats_api_scheduling_add_session_SOURCES) \
-	$(test_ats_api_scheduling_block_and_reset_SOURCES) \
-	$(test_ats_api_scheduling_check_min_bw_alt_SOURCES) \
 	$(test_ats_api_scheduling_destroy_address_SOURCES) \
-	$(test_ats_api_scheduling_destroy_inbound_connection_SOURCES) \
+	$(test_ats_api_scheduling_destroy_address_twice_SOURCES) \
 	$(test_ats_api_scheduling_destroy_session_SOURCES) \
 	$(test_ats_api_scheduling_init_SOURCES) \
-	$(test_ats_api_scheduling_min_bw_SOURCES) \
-	$(test_ats_api_scheduling_update_address_SOURCES) \
-	$(test_ats_simplistic_SOURCES) \
-	$(test_ats_simplistic_change_preference_SOURCES) \
-	$(test_ats_simplistic_pref_aging_SOURCES) \
-	$(test_ats_simplistic_switch_networks_SOURCES)
+	$(am__test_ats_solver_add_address_and_request_mlp_SOURCES_DIST) \
+	$(test_ats_solver_add_address_and_request_proportional_SOURCES) \
+	$(test_ats_solver_add_address_and_request_ril_SOURCES) \
+	$(am__test_ats_solver_add_address_mlp_SOURCES_DIST) \
+	$(test_ats_solver_add_address_proportional_SOURCES) \
+	$(test_ats_solver_add_address_ril_SOURCES) \
+	$(am__test_ats_solver_alternative_after_delete_address_mlp_SOURCES_DIST) \
+	$(test_ats_solver_alternative_after_delete_address_proportional_SOURCES) \
+	$(test_ats_solver_alternative_after_delete_address_ril_SOURCES) \
+	$(am__test_ats_solver_preferences_mlp_SOURCES_DIST) \
+	$(test_ats_solver_preferences_proportional_SOURCES) \
+	$(test_ats_solver_preferences_ril_SOURCES) \
+	$(am__test_ats_solver_request_and_add_address_mlp_SOURCES_DIST) \
+	$(test_ats_solver_request_and_add_address_proportional_SOURCES) \
+	$(test_ats_solver_request_and_add_address_ril_SOURCES) \
+	$(am__test_ats_solver_request_and_delete_address_mlp_SOURCES_DIST) \
+	$(test_ats_solver_request_and_delete_address_proportional_SOURCES) \
+	$(test_ats_solver_request_and_delete_address_ril_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -367,11 +673,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -398,24 +704,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -426,20 +724,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -447,16 +738,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -484,7 +769,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -506,12 +790,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -553,8 +840,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -569,9 +854,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -581,36 +864,90 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
+plugindir = $(libdir)/gnunet
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   ats.conf
 
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
+@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = -fprofile-arcs -ftest-coverage
 @HAVE_LIBGLPK_TRUE@GN_LIBGLPK = -lglpk
-@HAVE_LIBGLPK_TRUE@GN_MLP_SRC = gnunet-service-ats_addresses_mlp.c gnunet-service-ats_addresses_mlp.h
-@HAVE_LIBGLPK_TRUE@GN_MLP_TEST = test_ats_mlp 
-@HAVE_LIBGLPK_TRUE@GN_MLP_TEST_AVG = test_ats_mlp_averaging
+@HAVE_LIBGLPK_TRUE@GN_MLP_LIB = libgnunet_plugin_ats_mlp.la
 @HAVE_LIBGLPK_TRUE@GN_MLP_PERF = perf_ats_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_ADD_ADDRESS = test_ats_solver_add_address_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_ADD_REQUEST_ADDRESS = test_ats_solver_add_address_and_request_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_REQUEST_ADD_ADDRESS = test_ats_solver_request_and_add_address_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_REQUEST_DELETE_ADDRESS = test_ats_solver_request_and_delete_address_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_PREFERENCES_ADDRESS = test_ats_solver_preferences_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_ALTERNATIVE_DELETE_ADDRESS = test_ats_solver_alternative_after_delete_address_mlp
+@HAVE_LIBGLPK_TRUE@GN_MLP_SOLVER_PERF = perf_ats_solver_mlp
 lib_LTLIBRARIES = libgnunetats.la
+plugin_LTLIBRARIES = \
+  libgnunet_plugin_ats_proportional.la \
+  $(GN_MLP_LIB) \
+  libgnunet_plugin_ats_ril.la
+
 libgnunetats_la_SOURCES = \
   ats_api_scheduling.c \
-  ats_api_performance.c 
+  ats_api_performance.c
 
 libgnunetats_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL)
 
 libgnunetats_la_LDFLAGS = \
- $(GN_LIB_LDFLAGS) \
+  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
   -version-info 4:0:0
+
+libgnunet_plugin_ats_proportional_la_SOURCES = \
+  plugin_ats_proportional.c
+
+libgnunet_plugin_ats_proportional_la_LIBADD = \
+  libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
+
+libgnunet_plugin_ats_proportional_la_DEPENDENCIES = \
+  libgnunetats.la
+
+libgnunet_plugin_ats_proportional_la_LDFLAGS = \
+  $(GN_PLUGIN_LDFLAGS)
+
+@HAVE_LIBGLPK_TRUE@libgnunet_plugin_ats_mlp_la_SOURCES = \
+@HAVE_LIBGLPK_TRUE@  plugin_ats_mlp.c
+
+@HAVE_LIBGLPK_TRUE@libgnunet_plugin_ats_mlp_la_LIBADD = \
+@HAVE_LIBGLPK_TRUE@  libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la
+
+@HAVE_LIBGLPK_TRUE@libgnunet_plugin_ats_mlp_la_LDFLAGS = \
+@HAVE_LIBGLPK_TRUE@  $(GN_PLUGIN_LDFLAGS) $(GN_LIBGLPK)
+
+@HAVE_LIBGLPK_TRUE@libgnunet_plugin_ats_mlp_la_DEPENDENCIES = \
+@HAVE_LIBGLPK_TRUE@  libgnunetats.la
+
+libgnunet_plugin_ats_ril_la_SOURCES = \
+  plugin_ats_ril.c
+
+libgnunet_plugin_ats_ril_la_LIBADD = \
+  libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
+
+libgnunet_plugin_ats_ril_la_LDFLAGS = \
+  $(GN_PLUGIN_LDFLAGS)
+
+libgnunet_plugin_ats_ril_la_DEPENDENCIES = \
+  libgnunetats.la
 
 gnunet_service_ats_SOURCES = \
  gnunet-service-ats.c gnunet-service-ats.h\
  gnunet-service-ats_addresses.c gnunet-service-ats_addresses.h \
- gnunet-service-ats_addresses_simplistic.c gnunet-service-ats_addresses_simplistic.h \
- $(GN_MLP_SRC) \
+ gnunet-service-ats_normalization.c gnunet-service-ats_normalization.h \
  gnunet-service-ats_performance.c gnunet-service-ats_performance.h \
  gnunet-service-ats_scheduling.c gnunet-service-ats_scheduling.h \
  gnunet-service-ats_reservations.c gnunet-service-ats_reservations.h
@@ -619,18 +956,50 @@ gnunet_service_ats_LDADD = \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetats.la \
-  $(GN_LIBGLPK) \
   $(GN_LIBINTL)
 
 gnunet_service_ats_DEPENDENCIES = \
   libgnunetats.la
 
-# $(GN_MLP_TEST) \
-# $(GN_MLP_TEST_AVG) \
-# $(GN_MLP_PERF)
-# test_ats_api_scheduling_get_type
-# test_ats_api_bandwidth_consumption
+@HAVE_TESTING_TRUE@TESTING_TESTS = \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_init \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_add_address \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_add_address_duplicate \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_add_address_inbound \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_destroy_address \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_destroy_address_twice \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_add_session \
+@HAVE_TESTING_TRUE@ test_ats_api_scheduling_destroy_session \
+@HAVE_TESTING_TRUE@ test_ats_api_performance_list_all_addresses \
+@HAVE_TESTING_TRUE@ test_ats_api_performance_list_peer_addresses \
+@HAVE_TESTING_TRUE@ test_ats_api_performance_list_all_addresses_active \
+@HAVE_TESTING_TRUE@ test_ats_api_performance_monitor \
+@HAVE_TESTING_TRUE@ test_ats_api_performance_monitor_initial_callback \
+@HAVE_TESTING_TRUE@ test_ats_solver_add_address_proportional \
+@HAVE_TESTING_TRUE@ test_ats_solver_add_address_and_request_proportional \
+@HAVE_TESTING_TRUE@ test_ats_solver_request_and_add_address_proportional \
+@HAVE_TESTING_TRUE@ test_ats_solver_request_and_delete_address_proportional \
+@HAVE_TESTING_TRUE@ test_ats_solver_alternative_after_delete_address_proportional \
+@HAVE_TESTING_TRUE@ test_ats_solver_preferences_proportional \
+@HAVE_TESTING_TRUE@ test_ats_solver_preferences_ril \
+@HAVE_TESTING_TRUE@ $(GN_MLP_ADD_ADDRESS) \
+@HAVE_TESTING_TRUE@ $(GN_MLP_ADD_REQUEST_ADDRESS) \
+@HAVE_TESTING_TRUE@ $(GN_MLP_REQUEST_ADD_ADDRESS) \
+@HAVE_TESTING_TRUE@ $(GN_MLP_REQUEST_DELETE_ADDRESS) \
+@HAVE_TESTING_TRUE@ $(GN_MLP_ALTERNATIVE_DELETE_ADDRESS) \
+@HAVE_TESTING_TRUE@ $(GN_MLP_PREFERENCES_ADDRESS) \
+@HAVE_TESTING_TRUE@ test_ats_solver_add_address_ril \
+@HAVE_TESTING_TRUE@ test_ats_solver_add_address_and_request_ril \
+@HAVE_TESTING_TRUE@ test_ats_solver_request_and_add_address_ril \
+@HAVE_TESTING_TRUE@ test_ats_solver_request_and_delete_address_ril \
+@HAVE_TESTING_TRUE@ test_ats_solver_alternative_after_delete_address_ril \
+@HAVE_TESTING_TRUE@ perf_ats_solver_proportional \
+@HAVE_TESTING_TRUE@ $(GN_MLP_SOLVER_PERF) \
+@HAVE_TESTING_TRUE@ perf_ats_solver_ril
+
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
+
+# scheduling API tests
 test_ats_api_scheduling_init_SOURCES = \
  test_ats_api_scheduling_init.c \
  test_ats_api_common.c test_ats_api_common.h
@@ -638,7 +1007,8 @@ test_ats_api_scheduling_init_SOURCES = \
 test_ats_api_scheduling_init_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
 
 test_ats_api_scheduling_add_address_SOURCES = \
  test_ats_api_scheduling_add_address.c \
@@ -647,7 +1017,48 @@ test_ats_api_scheduling_add_address_SOURCES = \
 test_ats_api_scheduling_add_address_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_api_scheduling_add_address_inbound_SOURCES = \
+ test_ats_api_scheduling_add_address_inbound.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_api_scheduling_add_address_inbound_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_api_scheduling_add_address_duplicate_SOURCES = \
+ test_ats_api_scheduling_add_address_duplicate.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_api_scheduling_add_address_duplicate_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_api_scheduling_destroy_address_SOURCES = \
+ test_ats_api_scheduling_destroy_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_api_scheduling_destroy_address_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_api_scheduling_destroy_address_twice_SOURCES = \
+ test_ats_api_scheduling_destroy_address_twice.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_api_scheduling_destroy_address_twice_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
 
 test_ats_api_scheduling_add_session_SOURCES = \
  test_ats_api_scheduling_add_session.c test_ats_api_common.c
@@ -655,39 +1066,8 @@ test_ats_api_scheduling_add_session_SOURCES = \
 test_ats_api_scheduling_add_session_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
-
-test_ats_api_scheduling_min_bw_SOURCES = \
- test_ats_api_scheduling_min_bw.c test_ats_api_common.c
-
-test_ats_api_scheduling_min_bw_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
-
-test_ats_api_scheduling_check_min_bw_alt_SOURCES = \
- test_ats_api_scheduling_check_min_bw_alt.c test_ats_api_common.c
-
-test_ats_api_scheduling_check_min_bw_alt_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
-
-test_ats_api_scheduling_update_address_SOURCES = \
- test_ats_api_scheduling_update_address.c test_ats_api_common.c
-
-test_ats_api_scheduling_update_address_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
-
-test_ats_api_scheduling_destroy_address_SOURCES = \
- test_ats_api_scheduling_destroy_address.c test_ats_api_common.c
-
-test_ats_api_scheduling_destroy_address_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
 
 test_ats_api_scheduling_destroy_session_SOURCES = \
  test_ats_api_scheduling_destroy_session.c test_ats_api_common.c
@@ -695,100 +1075,322 @@ test_ats_api_scheduling_destroy_session_SOURCES = \
 test_ats_api_scheduling_destroy_session_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la
+  $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la
 
-test_ats_api_scheduling_destroy_inbound_connection_SOURCES = \
- test_ats_api_scheduling_destroy_inbound_connection.c test_ats_api_common.c
 
-test_ats_api_scheduling_destroy_inbound_connection_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la
+# performance API tests
+test_ats_api_performance_list_all_addresses_SOURCES = \
+ test_ats_api_performance_list_all_addresses.c
 
-test_ats_api_scheduling_block_and_reset_SOURCES = \
- test_ats_api_scheduling_block_and_reset.c test_ats_api_common.c
-
-test_ats_api_scheduling_block_and_reset_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la
-
-test_ats_api_performance_SOURCES = \
- test_ats_api_performance.c
-
-test_ats_api_performance_LDADD = \
+test_ats_api_performance_list_all_addresses_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/ats/libgnunetats.la    
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 
-test_ats_simplistic_SOURCES = \
- test_ats_simplistic.c test_ats_api_common.c
+test_ats_api_performance_list_peer_addresses_SOURCES = \
+ test_ats_api_performance_list_peer_addresses.c
 
-test_ats_simplistic_LDADD = \
+test_ats_api_performance_list_peer_addresses_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/ats/libgnunetats.la    
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 
-test_ats_simplistic_switch_networks_SOURCES = \
- test_ats_simplistic_switch_networks.c test_ats_api_common.c
+test_ats_api_performance_list_all_addresses_active_SOURCES = \
+ test_ats_api_performance_list_all_addresses_active.c
 
-test_ats_simplistic_switch_networks_LDADD = \
+test_ats_api_performance_list_all_addresses_active_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 
-test_ats_simplistic_change_preference_SOURCES = \
- test_ats_simplistic_change_preference.c test_ats_api_common.c
+test_ats_api_performance_monitor_SOURCES = \
+ test_ats_api_performance_monitor.c
 
-test_ats_simplistic_change_preference_LDADD = \
+test_ats_api_performance_monitor_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 
-test_ats_simplistic_pref_aging_SOURCES = \
- test_ats_simplistic_pref_aging.c test_ats_api_common.c
+test_ats_api_performance_monitor_initial_callback_SOURCES = \
+ test_ats_api_performance_monitor_initial_callback.c
 
-test_ats_simplistic_pref_aging_LDADD = \
+test_ats_api_performance_monitor_initial_callback_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/ats/libgnunetats.la  
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
 
 
-#test_ats_mlp_SOURCES = \
-# $(GN_MLP_SRC) \
-# test_ats_mlp.c
-#test_ats_mlp_LDADD = \
-#  $(GN_LIBGLPK) \
-#  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/statistics/libgnunetstatistics.la
+# solver tests
+test_ats_solver_add_address_proportional_SOURCES = \
+ test_ats_solver_add_address.c \
+ test_ats_api_common.c test_ats_api_common.h
 
-#test_ats_mlp_averaging_SOURCES = \
-# $(GN_MLP_SRC) \
-# test_ats_mlp_averaging.c
-#test_ats_mlp_averaging_LDADD = \
-#  $(GN_LIBGLPK) \
-#  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/statistics/libgnunetstatistics.la
+test_ats_solver_add_address_proportional_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_add_address_mlp_SOURCES = \
+@HAVE_LIBGLPK_TRUE@ test_ats_solver_add_address.c \
+@HAVE_LIBGLPK_TRUE@ test_ats_api_common.c test_ats_api_common.h
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_add_address_mlp_LDADD = \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_add_address_ril_SOURCES = \
+ test_ats_solver_add_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_add_address_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_add_address_and_request_proportional_SOURCES = \
+ test_ats_solver_add_address_and_request.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_add_address_and_request_proportional_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_add_address_and_request_mlp_SOURCES = \
+@HAVE_LIBGLPK_TRUE@ test_ats_solver_add_address_and_request.c \
+@HAVE_LIBGLPK_TRUE@ test_ats_api_common.c test_ats_api_common.h
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_add_address_and_request_mlp_LDADD = \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_add_address_and_request_ril_SOURCES = \
+ test_ats_solver_add_address_and_request.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_add_address_and_request_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_request_and_add_address_proportional_SOURCES = \
+ test_ats_solver_request_and_add_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_request_and_add_address_proportional_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_request_and_add_address_mlp_SOURCES = \
+@HAVE_LIBGLPK_TRUE@ test_ats_solver_request_and_add_address.c \
+@HAVE_LIBGLPK_TRUE@ test_ats_api_common.c test_ats_api_common.h
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_request_and_add_address_mlp_LDADD = \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_request_and_add_address_ril_SOURCES = \
+ test_ats_solver_request_and_add_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_request_and_add_address_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_request_and_delete_address_proportional_SOURCES = \
+ test_ats_solver_request_and_delete_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_request_and_delete_address_proportional_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_request_and_delete_address_mlp_SOURCES = \
+@HAVE_LIBGLPK_TRUE@ test_ats_solver_request_and_delete_address.c \
+@HAVE_LIBGLPK_TRUE@ test_ats_api_common.c test_ats_api_common.h
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_request_and_delete_address_mlp_LDADD = \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_request_and_delete_address_ril_SOURCES = \
+ test_ats_solver_request_and_delete_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_request_and_delete_address_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_alternative_after_delete_address_proportional_SOURCES = \
+ test_ats_solver_alternative_after_delete_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_alternative_after_delete_address_proportional_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_preferences_proportional_SOURCES = \
+ test_ats_solver_preferences.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_preferences_proportional_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_alternative_after_delete_address_mlp_SOURCES = \
+@HAVE_LIBGLPK_TRUE@ test_ats_solver_alternative_after_delete_address.c \
+@HAVE_LIBGLPK_TRUE@ test_ats_api_common.c test_ats_api_common.h
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_alternative_after_delete_address_mlp_LDADD = \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_preferences_mlp_SOURCES = \
+@HAVE_LIBGLPK_TRUE@ test_ats_solver_preferences.c \
+@HAVE_LIBGLPK_TRUE@ test_ats_api_common.c test_ats_api_common.h
+
+@HAVE_LIBGLPK_TRUE@test_ats_solver_preferences_mlp_LDADD = \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_LIBGLPK_TRUE@  $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_LIBGLPK_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_alternative_after_delete_address_ril_SOURCES = \
+ test_ats_solver_alternative_after_delete_address.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_alternative_after_delete_address_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
 
 #perf_ats_mlp_SOURCES = \
-# $(GN_MLP_SRC) \
-# perf_ats_mlp.c
+#  $(GN_MLP_SRC) perf_ats_mlp.c test_ats_api_common.c gnunet-service-ats_normalization.c
 #perf_ats_mlp_LDADD = \
 #  $(GN_LIBGLPK) \
 #  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/statistics/libgnunetstatistics.la
+#  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+#  $(top_builddir)/src/ats/libgnunetats.la
+perf_ats_solver_mlp_SOURCES = \
+  perf_ats_solver.c test_ats_api_common.c gnunet-service-ats_normalization.c
 
-#test_ats_api_bandwidth_consumption_SOURCES = \
-# test_ats_api_bandwidth_consumption.c
-#test_ats_api_bandwidth_consumption_LDADD = \
-#  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/testing/libgnunettesting.la \
-#  $(top_builddir)/src/ats/libgnunetats.la  
+perf_ats_solver_mlp_LDADD = \
+  $(GN_LIBGLPK) \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/ats/libgnunetats.la
+
+perf_ats_solver_proportional_SOURCES = \
+  perf_ats_solver.c test_ats_api_common.c gnunet-service-ats_normalization.c
+
+perf_ats_solver_proportional_LDADD = \
+  $(GN_LIBGLPK) \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/ats/libgnunetats.la
+
+perf_ats_solver_ril_SOURCES = \
+  perf_ats_solver.c test_ats_api_common.c gnunet-service-ats_normalization.c
+
+perf_ats_solver_ril_LDADD = \
+  $(GN_LIBGLPK) \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/ats/libgnunetats.la
+
+test_ats_solver_preferences_ril_SOURCES = \
+ test_ats_solver_preferences.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_preferences_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
+test_ats_solver_convergence_ril_SOURCES = \
+ test_ats_solver_convergence.c \
+ test_ats_api_common.c test_ats_api_common.h
+
+test_ats_solver_convergence_ril_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la
+
 EXTRA_DIST = \
   ats.h \
-  test_ats_api.conf
+  plugin_ats_proportional.h \
+  plugin_ats_mlp.h \
+  plugin_ats_ril.h \
+  test_ats_api.conf \
+  test_ats_mlp.conf \
+  test_ats_solver_default.conf \
+  test_ats_solver_proportional.conf \
+  test_ats_solver_mlp.conf \
+  test_ats_solver_ril.conf \
+  perf_ats_solver_mlp.conf \
+  perf_ats_solver_proportional.conf \
+  perf_ats_solver_ril.conf \
+  perf_ats_solver.conf
 
 all: all-am
 
@@ -858,6 +1460,44 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
+install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(plugindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(plugindir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(plugindir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(plugindir)"; \
+	}
+
+uninstall-pluginLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(plugindir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(plugindir)/$$f"; \
+	done
+
+clean-pluginLTLIBRARIES:
+	-test -z "$(plugin_LTLIBRARIES)" || rm -f $(plugin_LTLIBRARIES)
+	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+libgnunet_plugin_ats_mlp.la: $(libgnunet_plugin_ats_mlp_la_OBJECTS) $(libgnunet_plugin_ats_mlp_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats_mlp_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_ats_mlp_la_LINK) $(am_libgnunet_plugin_ats_mlp_la_rpath) $(libgnunet_plugin_ats_mlp_la_OBJECTS) $(libgnunet_plugin_ats_mlp_la_LIBADD) $(LIBS)
+libgnunet_plugin_ats_proportional.la: $(libgnunet_plugin_ats_proportional_la_OBJECTS) $(libgnunet_plugin_ats_proportional_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats_proportional_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_ats_proportional_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_ats_proportional_la_OBJECTS) $(libgnunet_plugin_ats_proportional_la_LIBADD) $(LIBS)
+libgnunet_plugin_ats_ril.la: $(libgnunet_plugin_ats_ril_la_OBJECTS) $(libgnunet_plugin_ats_ril_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats_ril_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_ats_ril_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_ats_ril_la_OBJECTS) $(libgnunet_plugin_ats_ril_la_LIBADD) $(LIBS)
 libgnunetats.la: $(libgnunetats_la_OBJECTS) $(libgnunetats_la_DEPENDENCIES) $(EXTRA_libgnunetats_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetats_la_LINK) -rpath $(libdir) $(libgnunetats_la_OBJECTS) $(libgnunetats_la_LIBADD) $(LIBS)
 
@@ -918,51 +1558,108 @@ clean-libexecPROGRAMS:
 gnunet-service-ats$(EXEEXT): $(gnunet_service_ats_OBJECTS) $(gnunet_service_ats_DEPENDENCIES) $(EXTRA_gnunet_service_ats_DEPENDENCIES) 
 	@rm -f gnunet-service-ats$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_ats_OBJECTS) $(gnunet_service_ats_LDADD) $(LIBS)
-test_ats_api_performance$(EXEEXT): $(test_ats_api_performance_OBJECTS) $(test_ats_api_performance_DEPENDENCIES) $(EXTRA_test_ats_api_performance_DEPENDENCIES) 
-	@rm -f test_ats_api_performance$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_performance_OBJECTS) $(test_ats_api_performance_LDADD) $(LIBS)
+perf_ats_solver_mlp$(EXEEXT): $(perf_ats_solver_mlp_OBJECTS) $(perf_ats_solver_mlp_DEPENDENCIES) $(EXTRA_perf_ats_solver_mlp_DEPENDENCIES) 
+	@rm -f perf_ats_solver_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(perf_ats_solver_mlp_OBJECTS) $(perf_ats_solver_mlp_LDADD) $(LIBS)
+perf_ats_solver_proportional$(EXEEXT): $(perf_ats_solver_proportional_OBJECTS) $(perf_ats_solver_proportional_DEPENDENCIES) $(EXTRA_perf_ats_solver_proportional_DEPENDENCIES) 
+	@rm -f perf_ats_solver_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(perf_ats_solver_proportional_OBJECTS) $(perf_ats_solver_proportional_LDADD) $(LIBS)
+perf_ats_solver_ril$(EXEEXT): $(perf_ats_solver_ril_OBJECTS) $(perf_ats_solver_ril_DEPENDENCIES) $(EXTRA_perf_ats_solver_ril_DEPENDENCIES) 
+	@rm -f perf_ats_solver_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(perf_ats_solver_ril_OBJECTS) $(perf_ats_solver_ril_LDADD) $(LIBS)
+test_ats_api_performance_list_all_addresses$(EXEEXT): $(test_ats_api_performance_list_all_addresses_OBJECTS) $(test_ats_api_performance_list_all_addresses_DEPENDENCIES) $(EXTRA_test_ats_api_performance_list_all_addresses_DEPENDENCIES) 
+	@rm -f test_ats_api_performance_list_all_addresses$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_performance_list_all_addresses_OBJECTS) $(test_ats_api_performance_list_all_addresses_LDADD) $(LIBS)
+test_ats_api_performance_list_all_addresses_active$(EXEEXT): $(test_ats_api_performance_list_all_addresses_active_OBJECTS) $(test_ats_api_performance_list_all_addresses_active_DEPENDENCIES) $(EXTRA_test_ats_api_performance_list_all_addresses_active_DEPENDENCIES) 
+	@rm -f test_ats_api_performance_list_all_addresses_active$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_performance_list_all_addresses_active_OBJECTS) $(test_ats_api_performance_list_all_addresses_active_LDADD) $(LIBS)
+test_ats_api_performance_list_peer_addresses$(EXEEXT): $(test_ats_api_performance_list_peer_addresses_OBJECTS) $(test_ats_api_performance_list_peer_addresses_DEPENDENCIES) $(EXTRA_test_ats_api_performance_list_peer_addresses_DEPENDENCIES) 
+	@rm -f test_ats_api_performance_list_peer_addresses$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_performance_list_peer_addresses_OBJECTS) $(test_ats_api_performance_list_peer_addresses_LDADD) $(LIBS)
+test_ats_api_performance_monitor$(EXEEXT): $(test_ats_api_performance_monitor_OBJECTS) $(test_ats_api_performance_monitor_DEPENDENCIES) $(EXTRA_test_ats_api_performance_monitor_DEPENDENCIES) 
+	@rm -f test_ats_api_performance_monitor$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_performance_monitor_OBJECTS) $(test_ats_api_performance_monitor_LDADD) $(LIBS)
+test_ats_api_performance_monitor_initial_callback$(EXEEXT): $(test_ats_api_performance_monitor_initial_callback_OBJECTS) $(test_ats_api_performance_monitor_initial_callback_DEPENDENCIES) $(EXTRA_test_ats_api_performance_monitor_initial_callback_DEPENDENCIES) 
+	@rm -f test_ats_api_performance_monitor_initial_callback$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_performance_monitor_initial_callback_OBJECTS) $(test_ats_api_performance_monitor_initial_callback_LDADD) $(LIBS)
 test_ats_api_scheduling_add_address$(EXEEXT): $(test_ats_api_scheduling_add_address_OBJECTS) $(test_ats_api_scheduling_add_address_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_add_address_DEPENDENCIES) 
 	@rm -f test_ats_api_scheduling_add_address$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_add_address_OBJECTS) $(test_ats_api_scheduling_add_address_LDADD) $(LIBS)
+test_ats_api_scheduling_add_address_duplicate$(EXEEXT): $(test_ats_api_scheduling_add_address_duplicate_OBJECTS) $(test_ats_api_scheduling_add_address_duplicate_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_add_address_duplicate_DEPENDENCIES) 
+	@rm -f test_ats_api_scheduling_add_address_duplicate$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_add_address_duplicate_OBJECTS) $(test_ats_api_scheduling_add_address_duplicate_LDADD) $(LIBS)
+test_ats_api_scheduling_add_address_inbound$(EXEEXT): $(test_ats_api_scheduling_add_address_inbound_OBJECTS) $(test_ats_api_scheduling_add_address_inbound_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_add_address_inbound_DEPENDENCIES) 
+	@rm -f test_ats_api_scheduling_add_address_inbound$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_add_address_inbound_OBJECTS) $(test_ats_api_scheduling_add_address_inbound_LDADD) $(LIBS)
 test_ats_api_scheduling_add_session$(EXEEXT): $(test_ats_api_scheduling_add_session_OBJECTS) $(test_ats_api_scheduling_add_session_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_add_session_DEPENDENCIES) 
 	@rm -f test_ats_api_scheduling_add_session$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_add_session_OBJECTS) $(test_ats_api_scheduling_add_session_LDADD) $(LIBS)
-test_ats_api_scheduling_block_and_reset$(EXEEXT): $(test_ats_api_scheduling_block_and_reset_OBJECTS) $(test_ats_api_scheduling_block_and_reset_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_block_and_reset_DEPENDENCIES) 
-	@rm -f test_ats_api_scheduling_block_and_reset$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_block_and_reset_OBJECTS) $(test_ats_api_scheduling_block_and_reset_LDADD) $(LIBS)
-test_ats_api_scheduling_check_min_bw_alt$(EXEEXT): $(test_ats_api_scheduling_check_min_bw_alt_OBJECTS) $(test_ats_api_scheduling_check_min_bw_alt_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_check_min_bw_alt_DEPENDENCIES) 
-	@rm -f test_ats_api_scheduling_check_min_bw_alt$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_check_min_bw_alt_OBJECTS) $(test_ats_api_scheduling_check_min_bw_alt_LDADD) $(LIBS)
 test_ats_api_scheduling_destroy_address$(EXEEXT): $(test_ats_api_scheduling_destroy_address_OBJECTS) $(test_ats_api_scheduling_destroy_address_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_destroy_address_DEPENDENCIES) 
 	@rm -f test_ats_api_scheduling_destroy_address$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_destroy_address_OBJECTS) $(test_ats_api_scheduling_destroy_address_LDADD) $(LIBS)
-test_ats_api_scheduling_destroy_inbound_connection$(EXEEXT): $(test_ats_api_scheduling_destroy_inbound_connection_OBJECTS) $(test_ats_api_scheduling_destroy_inbound_connection_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_destroy_inbound_connection_DEPENDENCIES) 
-	@rm -f test_ats_api_scheduling_destroy_inbound_connection$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_destroy_inbound_connection_OBJECTS) $(test_ats_api_scheduling_destroy_inbound_connection_LDADD) $(LIBS)
+test_ats_api_scheduling_destroy_address_twice$(EXEEXT): $(test_ats_api_scheduling_destroy_address_twice_OBJECTS) $(test_ats_api_scheduling_destroy_address_twice_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_destroy_address_twice_DEPENDENCIES) 
+	@rm -f test_ats_api_scheduling_destroy_address_twice$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_destroy_address_twice_OBJECTS) $(test_ats_api_scheduling_destroy_address_twice_LDADD) $(LIBS)
 test_ats_api_scheduling_destroy_session$(EXEEXT): $(test_ats_api_scheduling_destroy_session_OBJECTS) $(test_ats_api_scheduling_destroy_session_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_destroy_session_DEPENDENCIES) 
 	@rm -f test_ats_api_scheduling_destroy_session$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_destroy_session_OBJECTS) $(test_ats_api_scheduling_destroy_session_LDADD) $(LIBS)
 test_ats_api_scheduling_init$(EXEEXT): $(test_ats_api_scheduling_init_OBJECTS) $(test_ats_api_scheduling_init_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_init_DEPENDENCIES) 
 	@rm -f test_ats_api_scheduling_init$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_init_OBJECTS) $(test_ats_api_scheduling_init_LDADD) $(LIBS)
-test_ats_api_scheduling_min_bw$(EXEEXT): $(test_ats_api_scheduling_min_bw_OBJECTS) $(test_ats_api_scheduling_min_bw_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_min_bw_DEPENDENCIES) 
-	@rm -f test_ats_api_scheduling_min_bw$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_min_bw_OBJECTS) $(test_ats_api_scheduling_min_bw_LDADD) $(LIBS)
-test_ats_api_scheduling_update_address$(EXEEXT): $(test_ats_api_scheduling_update_address_OBJECTS) $(test_ats_api_scheduling_update_address_DEPENDENCIES) $(EXTRA_test_ats_api_scheduling_update_address_DEPENDENCIES) 
-	@rm -f test_ats_api_scheduling_update_address$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_scheduling_update_address_OBJECTS) $(test_ats_api_scheduling_update_address_LDADD) $(LIBS)
-test_ats_simplistic$(EXEEXT): $(test_ats_simplistic_OBJECTS) $(test_ats_simplistic_DEPENDENCIES) $(EXTRA_test_ats_simplistic_DEPENDENCIES) 
-	@rm -f test_ats_simplistic$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_simplistic_OBJECTS) $(test_ats_simplistic_LDADD) $(LIBS)
-test_ats_simplistic_change_preference$(EXEEXT): $(test_ats_simplistic_change_preference_OBJECTS) $(test_ats_simplistic_change_preference_DEPENDENCIES) $(EXTRA_test_ats_simplistic_change_preference_DEPENDENCIES) 
-	@rm -f test_ats_simplistic_change_preference$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_simplistic_change_preference_OBJECTS) $(test_ats_simplistic_change_preference_LDADD) $(LIBS)
-test_ats_simplistic_pref_aging$(EXEEXT): $(test_ats_simplistic_pref_aging_OBJECTS) $(test_ats_simplistic_pref_aging_DEPENDENCIES) $(EXTRA_test_ats_simplistic_pref_aging_DEPENDENCIES) 
-	@rm -f test_ats_simplistic_pref_aging$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_simplistic_pref_aging_OBJECTS) $(test_ats_simplistic_pref_aging_LDADD) $(LIBS)
-test_ats_simplistic_switch_networks$(EXEEXT): $(test_ats_simplistic_switch_networks_OBJECTS) $(test_ats_simplistic_switch_networks_DEPENDENCIES) $(EXTRA_test_ats_simplistic_switch_networks_DEPENDENCIES) 
-	@rm -f test_ats_simplistic_switch_networks$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_simplistic_switch_networks_OBJECTS) $(test_ats_simplistic_switch_networks_LDADD) $(LIBS)
+test_ats_solver_add_address_and_request_mlp$(EXEEXT): $(test_ats_solver_add_address_and_request_mlp_OBJECTS) $(test_ats_solver_add_address_and_request_mlp_DEPENDENCIES) $(EXTRA_test_ats_solver_add_address_and_request_mlp_DEPENDENCIES) 
+	@rm -f test_ats_solver_add_address_and_request_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_add_address_and_request_mlp_OBJECTS) $(test_ats_solver_add_address_and_request_mlp_LDADD) $(LIBS)
+test_ats_solver_add_address_and_request_proportional$(EXEEXT): $(test_ats_solver_add_address_and_request_proportional_OBJECTS) $(test_ats_solver_add_address_and_request_proportional_DEPENDENCIES) $(EXTRA_test_ats_solver_add_address_and_request_proportional_DEPENDENCIES) 
+	@rm -f test_ats_solver_add_address_and_request_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_add_address_and_request_proportional_OBJECTS) $(test_ats_solver_add_address_and_request_proportional_LDADD) $(LIBS)
+test_ats_solver_add_address_and_request_ril$(EXEEXT): $(test_ats_solver_add_address_and_request_ril_OBJECTS) $(test_ats_solver_add_address_and_request_ril_DEPENDENCIES) $(EXTRA_test_ats_solver_add_address_and_request_ril_DEPENDENCIES) 
+	@rm -f test_ats_solver_add_address_and_request_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_add_address_and_request_ril_OBJECTS) $(test_ats_solver_add_address_and_request_ril_LDADD) $(LIBS)
+test_ats_solver_add_address_mlp$(EXEEXT): $(test_ats_solver_add_address_mlp_OBJECTS) $(test_ats_solver_add_address_mlp_DEPENDENCIES) $(EXTRA_test_ats_solver_add_address_mlp_DEPENDENCIES) 
+	@rm -f test_ats_solver_add_address_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_add_address_mlp_OBJECTS) $(test_ats_solver_add_address_mlp_LDADD) $(LIBS)
+test_ats_solver_add_address_proportional$(EXEEXT): $(test_ats_solver_add_address_proportional_OBJECTS) $(test_ats_solver_add_address_proportional_DEPENDENCIES) $(EXTRA_test_ats_solver_add_address_proportional_DEPENDENCIES) 
+	@rm -f test_ats_solver_add_address_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_add_address_proportional_OBJECTS) $(test_ats_solver_add_address_proportional_LDADD) $(LIBS)
+test_ats_solver_add_address_ril$(EXEEXT): $(test_ats_solver_add_address_ril_OBJECTS) $(test_ats_solver_add_address_ril_DEPENDENCIES) $(EXTRA_test_ats_solver_add_address_ril_DEPENDENCIES) 
+	@rm -f test_ats_solver_add_address_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_add_address_ril_OBJECTS) $(test_ats_solver_add_address_ril_LDADD) $(LIBS)
+test_ats_solver_alternative_after_delete_address_mlp$(EXEEXT): $(test_ats_solver_alternative_after_delete_address_mlp_OBJECTS) $(test_ats_solver_alternative_after_delete_address_mlp_DEPENDENCIES) $(EXTRA_test_ats_solver_alternative_after_delete_address_mlp_DEPENDENCIES) 
+	@rm -f test_ats_solver_alternative_after_delete_address_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_alternative_after_delete_address_mlp_OBJECTS) $(test_ats_solver_alternative_after_delete_address_mlp_LDADD) $(LIBS)
+test_ats_solver_alternative_after_delete_address_proportional$(EXEEXT): $(test_ats_solver_alternative_after_delete_address_proportional_OBJECTS) $(test_ats_solver_alternative_after_delete_address_proportional_DEPENDENCIES) $(EXTRA_test_ats_solver_alternative_after_delete_address_proportional_DEPENDENCIES) 
+	@rm -f test_ats_solver_alternative_after_delete_address_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_alternative_after_delete_address_proportional_OBJECTS) $(test_ats_solver_alternative_after_delete_address_proportional_LDADD) $(LIBS)
+test_ats_solver_alternative_after_delete_address_ril$(EXEEXT): $(test_ats_solver_alternative_after_delete_address_ril_OBJECTS) $(test_ats_solver_alternative_after_delete_address_ril_DEPENDENCIES) $(EXTRA_test_ats_solver_alternative_after_delete_address_ril_DEPENDENCIES) 
+	@rm -f test_ats_solver_alternative_after_delete_address_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_alternative_after_delete_address_ril_OBJECTS) $(test_ats_solver_alternative_after_delete_address_ril_LDADD) $(LIBS)
+test_ats_solver_preferences_mlp$(EXEEXT): $(test_ats_solver_preferences_mlp_OBJECTS) $(test_ats_solver_preferences_mlp_DEPENDENCIES) $(EXTRA_test_ats_solver_preferences_mlp_DEPENDENCIES) 
+	@rm -f test_ats_solver_preferences_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_preferences_mlp_OBJECTS) $(test_ats_solver_preferences_mlp_LDADD) $(LIBS)
+test_ats_solver_preferences_proportional$(EXEEXT): $(test_ats_solver_preferences_proportional_OBJECTS) $(test_ats_solver_preferences_proportional_DEPENDENCIES) $(EXTRA_test_ats_solver_preferences_proportional_DEPENDENCIES) 
+	@rm -f test_ats_solver_preferences_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_preferences_proportional_OBJECTS) $(test_ats_solver_preferences_proportional_LDADD) $(LIBS)
+test_ats_solver_preferences_ril$(EXEEXT): $(test_ats_solver_preferences_ril_OBJECTS) $(test_ats_solver_preferences_ril_DEPENDENCIES) $(EXTRA_test_ats_solver_preferences_ril_DEPENDENCIES) 
+	@rm -f test_ats_solver_preferences_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_preferences_ril_OBJECTS) $(test_ats_solver_preferences_ril_LDADD) $(LIBS)
+test_ats_solver_request_and_add_address_mlp$(EXEEXT): $(test_ats_solver_request_and_add_address_mlp_OBJECTS) $(test_ats_solver_request_and_add_address_mlp_DEPENDENCIES) $(EXTRA_test_ats_solver_request_and_add_address_mlp_DEPENDENCIES) 
+	@rm -f test_ats_solver_request_and_add_address_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_request_and_add_address_mlp_OBJECTS) $(test_ats_solver_request_and_add_address_mlp_LDADD) $(LIBS)
+test_ats_solver_request_and_add_address_proportional$(EXEEXT): $(test_ats_solver_request_and_add_address_proportional_OBJECTS) $(test_ats_solver_request_and_add_address_proportional_DEPENDENCIES) $(EXTRA_test_ats_solver_request_and_add_address_proportional_DEPENDENCIES) 
+	@rm -f test_ats_solver_request_and_add_address_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_request_and_add_address_proportional_OBJECTS) $(test_ats_solver_request_and_add_address_proportional_LDADD) $(LIBS)
+test_ats_solver_request_and_add_address_ril$(EXEEXT): $(test_ats_solver_request_and_add_address_ril_OBJECTS) $(test_ats_solver_request_and_add_address_ril_DEPENDENCIES) $(EXTRA_test_ats_solver_request_and_add_address_ril_DEPENDENCIES) 
+	@rm -f test_ats_solver_request_and_add_address_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_request_and_add_address_ril_OBJECTS) $(test_ats_solver_request_and_add_address_ril_LDADD) $(LIBS)
+test_ats_solver_request_and_delete_address_mlp$(EXEEXT): $(test_ats_solver_request_and_delete_address_mlp_OBJECTS) $(test_ats_solver_request_and_delete_address_mlp_DEPENDENCIES) $(EXTRA_test_ats_solver_request_and_delete_address_mlp_DEPENDENCIES) 
+	@rm -f test_ats_solver_request_and_delete_address_mlp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_request_and_delete_address_mlp_OBJECTS) $(test_ats_solver_request_and_delete_address_mlp_LDADD) $(LIBS)
+test_ats_solver_request_and_delete_address_proportional$(EXEEXT): $(test_ats_solver_request_and_delete_address_proportional_OBJECTS) $(test_ats_solver_request_and_delete_address_proportional_DEPENDENCIES) $(EXTRA_test_ats_solver_request_and_delete_address_proportional_DEPENDENCIES) 
+	@rm -f test_ats_solver_request_and_delete_address_proportional$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_request_and_delete_address_proportional_OBJECTS) $(test_ats_solver_request_and_delete_address_proportional_LDADD) $(LIBS)
+test_ats_solver_request_and_delete_address_ril$(EXEEXT): $(test_ats_solver_request_and_delete_address_ril_OBJECTS) $(test_ats_solver_request_and_delete_address_ril_DEPENDENCIES) $(EXTRA_test_ats_solver_request_and_delete_address_ril_DEPENDENCIES) 
+	@rm -f test_ats_solver_request_and_delete_address_ril$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_ats_solver_request_and_delete_address_ril_OBJECTS) $(test_ats_solver_request_and_delete_address_ril_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -974,27 +1671,34 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api_scheduling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_addresses.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_addresses_mlp.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_addresses_simplistic.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_normalization.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_performance.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_reservations.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_scheduling.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_ats_solver.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats_mlp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats_proportional.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats_ril.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_common.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_performance.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_performance_list_all_addresses.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_performance_list_all_addresses_active.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_performance_list_peer_addresses.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_performance_monitor.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_performance_monitor_initial_callback.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_add_address.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_add_address_duplicate.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_add_address_inbound.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_add_session.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_block_and_reset.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_check_min_bw_alt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_destroy_address.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_destroy_inbound_connection.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_destroy_address_twice.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_destroy_session.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_init.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_min_bw.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api_scheduling_update_address.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_simplistic.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_simplistic_change_preference.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_simplistic_pref_aging.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_simplistic_switch_networks.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_solver_add_address.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_solver_add_address_and_request.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_solver_alternative_after_delete_address.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_solver_preferences.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_solver_request_and_add_address.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_solver_request_and_delete_address.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1225,7 +1929,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgcfgdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgcfgdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1261,7 +1965,8 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
-	clean-libexecPROGRAMS clean-libtool mostlyclean-am
+	clean-libexecPROGRAMS clean-libtool clean-pluginLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -1281,7 +1986,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pkgcfgDATA
+install-data-am: install-pkgcfgDATA install-pluginLTLIBRARIES
 
 install-dvi: install-dvi-am
 
@@ -1328,26 +2033,27 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
-	uninstall-pkgcfgDATA
+	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
 	clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
-	clean-libexecPROGRAMS clean-libtool ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
-	install-pdf install-pdf-am install-pkgcfgDATA install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA
+	clean-libexecPROGRAMS clean-libtool clean-pluginLTLIBRARIES \
+	ctags distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-libexecPROGRAMS \
+	install-man install-pdf install-pdf-am install-pkgcfgDATA \
+	install-pluginLTLIBRARIES install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
+	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

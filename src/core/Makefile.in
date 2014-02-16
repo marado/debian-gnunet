@@ -61,22 +61,20 @@ check_PROGRAMS = test_core_api_start_only$(EXEEXT) \
 	test_core_quota_compliance_symmetric$(EXEEXT) \
 	test_core_quota_compliance_asymmetric_send_limited$(EXEEXT) \
 	test_core_quota_compliance_asymmetric_recv_limited$(EXEEXT) \
-	test_core_api_send_to_self$(EXEEXT)
+	$(am__EXEEXT_1)
 subdir = src/core
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/core.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -119,8 +117,7 @@ am__DEPENDENCIES_1 =
 libgnunetcore_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_libgnunetcore_la_OBJECTS = core_api.lo core_api_iterate_peers.lo \
-	core_api_is_connected.lo
+am_libgnunetcore_la_OBJECTS = core_api.lo core_api_iterate_peers.lo
 libgnunetcore_la_OBJECTS = $(am_libgnunetcore_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -129,6 +126,8 @@ libgnunetcore_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetcore_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
+@HAVE_TESTING_TRUE@am__EXEEXT_1 = test_core_api_send_to_self$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_core_api_mq$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
 am_gnunet_core_OBJECTS = gnunet-core.$(OBJEXT)
 gnunet_core_OBJECTS = $(am_gnunet_core_OBJECTS)
@@ -140,16 +139,21 @@ am_gnunet_service_core_OBJECTS = gnunet-service-core.$(OBJEXT) \
 	gnunet-service-core_typemap.$(OBJEXT)
 gnunet_service_core_OBJECTS = $(am_gnunet_service_core_OBJECTS)
 gnunet_service_core_DEPENDENCIES =  \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_core_api_OBJECTS = test_core_api.$(OBJEXT)
 test_core_api_OBJECTS = $(am_test_core_api_OBJECTS)
 test_core_api_DEPENDENCIES =  \
 	$(top_builddir)/src/core/libgnunetcore.la \
+	$(top_builddir)/src/transport/libgnunettransport.la \
+	$(top_builddir)/src/util/libgnunetutil.la
+am_test_core_api_mq_OBJECTS = test_core_api_mq.$(OBJEXT)
+test_core_api_mq_OBJECTS = $(am_test_core_api_mq_OBJECTS)
+test_core_api_mq_DEPENDENCIES =  \
+	$(top_builddir)/src/core/libgnunetcore.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_core_api_reliability_OBJECTS =  \
@@ -230,6 +234,7 @@ am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libgnunetcore_la_SOURCES) $(gnunet_core_SOURCES) \
 	$(gnunet_service_core_SOURCES) $(test_core_api_SOURCES) \
+	$(test_core_api_mq_SOURCES) \
 	$(test_core_api_reliability_SOURCES) \
 	$(test_core_api_send_to_self_SOURCES) \
 	$(test_core_api_start_only_SOURCES) \
@@ -238,6 +243,7 @@ SOURCES = $(libgnunetcore_la_SOURCES) $(gnunet_core_SOURCES) \
 	$(test_core_quota_compliance_symmetric_SOURCES)
 DIST_SOURCES = $(libgnunetcore_la_SOURCES) $(gnunet_core_SOURCES) \
 	$(gnunet_service_core_SOURCES) $(test_core_api_SOURCES) \
+	$(test_core_api_mq_SOURCES) \
 	$(test_core_api_reliability_SOURCES) \
 	$(test_core_api_send_to_self_SOURCES) \
 	$(test_core_api_start_only_SOURCES) \
@@ -259,11 +265,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -290,24 +296,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -318,20 +316,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -339,16 +330,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -376,7 +361,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -398,12 +382,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -445,8 +432,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -461,9 +446,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -473,7 +456,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   core.conf
@@ -486,8 +469,7 @@ lib_LTLIBRARIES = \
 
 libgnunetcore_la_SOURCES = \
   core_api.c core.h \
-  core_api_iterate_peers.c \
-  core_api_is_connected.c 
+  core_api_iterate_peers.c
 
 libgnunetcore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -506,12 +488,10 @@ gnunet_service_core_SOURCES = \
  gnunet-service-core_typemap.c gnunet-service-core_typemap.h
 
 gnunet_service_core_LDADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL) -lz
+  $(GN_LIBINTL) $(Z_LIBS)
 
 gnunet_core_SOURCES = \
  gnunet-core.c         
@@ -523,6 +503,7 @@ gnunet_core_LDADD = \
 gnunet_core_DEPENDENCIES = \
   libgnunetcore.la
 
+@HAVE_TESTING_TRUE@TESTING_TESTS = test_core_api_send_to_self test_core_api_mq
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
 test_core_api_SOURCES = \
  test_core_api.c
@@ -544,6 +525,15 @@ test_core_api_send_to_self_SOURCES = \
  test_core_api_send_to_self.c
 
 test_core_api_send_to_self_LDADD = \
+ $(top_builddir)/src/core/libgnunetcore.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ $(top_builddir)/src/transport/libgnunettransport.la \
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_core_api_mq_SOURCES = \
+ test_core_api_mq.c
+
+test_core_api_mq_LDADD = \
  $(top_builddir)/src/core/libgnunetcore.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/transport/libgnunettransport.la \
@@ -777,6 +767,9 @@ gnunet-service-core$(EXEEXT): $(gnunet_service_core_OBJECTS) $(gnunet_service_co
 test_core_api$(EXEEXT): $(test_core_api_OBJECTS) $(test_core_api_DEPENDENCIES) $(EXTRA_test_core_api_DEPENDENCIES) 
 	@rm -f test_core_api$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_core_api_OBJECTS) $(test_core_api_LDADD) $(LIBS)
+test_core_api_mq$(EXEEXT): $(test_core_api_mq_OBJECTS) $(test_core_api_mq_DEPENDENCIES) $(EXTRA_test_core_api_mq_DEPENDENCIES) 
+	@rm -f test_core_api_mq$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_core_api_mq_OBJECTS) $(test_core_api_mq_LDADD) $(LIBS)
 test_core_api_reliability$(EXEEXT): $(test_core_api_reliability_OBJECTS) $(test_core_api_reliability_DEPENDENCIES) $(EXTRA_test_core_api_reliability_DEPENDENCIES) 
 	@rm -f test_core_api_reliability$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_core_api_reliability_OBJECTS) $(test_core_api_reliability_LDADD) $(LIBS)
@@ -803,7 +796,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core_api.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core_api_is_connected.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/core_api_iterate_peers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-core.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-core.Po@am__quote@
@@ -813,6 +805,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-core_sessions.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-core_typemap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_core_api.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_core_api_mq.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_core_api_reliability.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_core_api_send_to_self.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_core_api_start_only.Po@am__quote@

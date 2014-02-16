@@ -35,8 +35,7 @@ extern "C"
 #endif
 #endif
 
-#include "gnunet_common.h"
-#include "gnunet_crypto_lib.h"
+#include "gnunet_util_lib.h"
 
 
 /**
@@ -44,6 +43,10 @@ extern "C"
  */
 #define GNUNET_HELLO_URI_PREFIX "gnunet://hello/"
 
+/**
+ * Prefix that every FRIEND HELLO URI must start with.
+ */
+#define GNUNET_FRIEND_HELLO_URI_PREFIX "gnunet://friend-hello/"
 
 /**
  * An address for communicating with a peer.  We frequently
@@ -142,6 +145,15 @@ GNUNET_HELLO_address_get_size (const struct GNUNET_HELLO_Address *address);
 struct GNUNET_HELLO_Message;
 
 
+/** Return HELLO type
+ *
+ * @param h HELLO Message to test
+ * @return GNUNET_YES or GNUNET_NO
+ */
+int
+GNUNET_HELLO_is_friend_only (const struct GNUNET_HELLO_Message *h);
+
+
 /**
  * Copy the given address information into
  * the given buffer using the format of HELLOs.
@@ -180,13 +192,16 @@ typedef size_t (*GNUNET_HELLO_GenerateAddressListCallback) (void *cls,
  * expiration time and an iterator that spews the
  * transport addresses.
  *
+ * If friend only is set to GNUNET_YES we create a FRIEND_HELLO which will
+ * not be gossiped to other peers
+ *
  * @return the hello message
  */
 struct GNUNET_HELLO_Message *
-GNUNET_HELLO_create (const struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
-                     *publicKey,
+GNUNET_HELLO_create (const struct GNUNET_CRYPTO_EddsaPublicKey *publicKey,
                      GNUNET_HELLO_GenerateAddressListCallback addrgen,
-                     void *addrgen_cls);
+                     void *addrgen_cls,
+                     int friend_only);
 
 
 /**
@@ -310,8 +325,7 @@ GNUNET_HELLO_iterate_new_addresses (const struct GNUNET_HELLO_Message
  */
 int
 GNUNET_HELLO_get_key (const struct GNUNET_HELLO_Message *hello,
-                      struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
-                      *publicKey);
+                      struct GNUNET_CRYPTO_EddsaPublicKey *publicKey);
 
 
 /**
@@ -364,7 +378,7 @@ GNUNET_HELLO_compose_uri (const struct GNUNET_HELLO_Message *hello,
  */
 int
 GNUNET_HELLO_parse_uri (const char *uri,
-                        struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded *pubkey,
+                        struct GNUNET_CRYPTO_EddsaPublicKey *pubkey,
                         struct GNUNET_HELLO_Message **hello,
                         GNUNET_HELLO_TransportPluginsFind plugins_find);
 

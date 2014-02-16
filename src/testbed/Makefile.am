@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
   WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
@@ -7,15 +7,6 @@ endif
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
-endif
-
-if WITH_LL
-  CC = mpcc
-  ll_noinst_binaries = \
-    ll-master \
-    ll-monitor 
-  ll_binaries = \
-    gnunet-mpi-test
 endif
 
 libexecdir= $(pkglibdir)/libexec/
@@ -27,20 +18,23 @@ pkgcfg_DATA = \
 
 libexec_PROGRAMS = \
   gnunet-service-testbed \
-  gnunet-helper-testbed
+  gnunet-helper-testbed \
+  gnunet-service-testbed-logger \
+  gnunet-daemon-testbed-blacklist
 
 bin_PROGRAMS = \
-  $(ll_binaries)
-
-noinst_PROGRAMS = \
-  gnunet-testbed-profiler \
-  $(ll_noinst_binaries)
+  gnunet-testbed-profiler
 
 gnunet_service_testbed_SOURCES = \
-  gnunet-service-testbed.c \
-  gnunet-service-testbed.h \
+  gnunet-service-testbed.c gnunet-service-testbed.h \
+  gnunet-service-testbed_links.c gnunet-service-testbed_links.h \
+  gnunet-service-testbed_peers.c \
   gnunet-service-testbed_cache.c \
-  gnunet-service-testbed_oc.c
+  gnunet-service-testbed_oc.c \
+  gnunet-service-testbed_cpustatus.c \
+  gnunet-service-testbed_meminfo.c gnunet-service-testbed_meminfo.h \
+  gnunet-service-testbed_barriers.c gnunet-service-testbed_barriers.h \
+  gnunet-service-testbed_connectionpool.c gnunet-service-testbed_connectionpool.h
 gnunet_service_testbed_LDADD = $(XLIB) \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/core/libgnunetcore.la \
@@ -48,13 +42,24 @@ gnunet_service_testbed_LDADD = $(XLIB) \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la \
- $(LTLIBINTL) -lz
+ $(top_builddir)/src/arm/libgnunetarm.la \
+ $(LTLIBINTL) $(Z_LIBS)
 gnunet_service_testbed_DEPENDENCIES = \
-  libgnunettestbed.la
+ libgnunettestbed.la
+
+gnunet_service_testbed_logger_SOURCES = \
+  gnunet-service-testbed-logger.c
+gnunet_service_testbed_logger_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+gnunet_service_testbed_logger_DEPENDENCIES = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 gnunet_testbed_profiler_SOURCES = \
   gnunet-testbed-profiler.c
 gnunet_testbed_profiler_LDADD = $(XLIB) \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/testbed/libgnunettestbed.la
+gnunet_testbed_profiler_DEPENDENCIES = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
@@ -64,28 +69,23 @@ gnunet_helper_testbed_LDADD = $(XLIB) \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  libgnunettestbed.la \
- $(LTLIBINTL) -lz
+ $(LTLIBINTL) $(Z_LIBS)
 gnunet_helper_testbed_DEPENDENCIES = \
   gnunet-service-testbed.$(OBJEXT) \
   libgnunettestbed.la
 
-ll_master_SOURCES = \
-  ll_master.c
-ll_master_LDADD = $(XLIB) \
+gnunet_daemon_testbed_blacklist_SOURCES = gnunet-daemon-testbed-blacklist.c
+gnunet_daemon_testbed_blacklist_LDADD = $(XLIB) \
+ $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL) -lz -lllapi
-
-ll_monitor_SOURCES = \
-  ll_monitor.c
-ll_monitor_LDADD = $(XLIB) \
- $(LTLIBINTL) -lz -lllapi
-
-gnunet_mpi_test_SOURCES = gnunet_mpi_test.c
-gnunet_mpi_test_LDADD = \
+ $(LTLIBINTL)
+gnunet_daemon_testbed_blacklist_DEPENDENCIES = \
+ $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 lib_LTLIBRARIES = \
-  libgnunettestbed.la
+  libgnunettestbed.la \
+  libgnunettestbedlogger.la
 
 libgnunettestbed_la_SOURCES = \
   testbed_api.c testbed_api.h testbed.h \
@@ -96,7 +96,9 @@ libgnunettestbed_la_SOURCES = \
   testbed_api_statistics.c \
   testbed_api_testbed.c \
   testbed_api_test.c \
-  testbed_api_topology.c testbed_api_topology.h
+  testbed_api_topology.c testbed_api_topology.h \
+  testbed_api_sd.c testbed_api_sd.h \
+  testbed_api_barriers.c testbed_api_barriers.h
 libgnunettestbed_la_LIBADD = $(XLIB) \
  $(top_builddir)/src/core/libgnunetcore.la \
  $(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -110,16 +112,30 @@ libgnunettestbed_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS) \
  -version-info 0:0:0
 
+libgnunettestbedlogger_la_SOURCES = \
+  testbed_logger_api.c
+libgnunettestbedlogger_la_LIBADD = $(XLIB) \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LTLIBINTL)
+libgnunettestbedlogger_la_LDFLAGS = \
+ $(GN_LIB_LDFLAGS) \
+ -version-info 0:0:0
+
 check_PROGRAMS = \
   test_testbed_api_hosts \
+  test_testbed_logger_api \
+  test_gnunet_helper_testbed \
   test_testbed_api_controllerlink \
   test_testbed_api_2peers_1controller \
   test_testbed_api_3peers_3controllers \
   test_testbed_api \
+  test_testbed_api_sd \
   test_testbed_api_operations \
   test_testbed_api_testbed_run \
   test_testbed_api_test \
-  test_gnunet_helper_testbed \
+  test_testbed_api_test_timeout \
+  test_testbed_api_peer_reconfiguration \
+  test_testbed_api_peers_manage_services \
   test_testbed_api_topology \
   test_testbed_api_topology_clique \
   test_testbed_api_testbed_run_topologyrandom \
@@ -130,30 +146,41 @@ check_PROGRAMS = \
   test_testbed_api_testbed_run_topology2dtorus \
   test_testbed_api_testbed_run_topologysmallworld \
   test_testbed_api_testbed_run_topologyfromfile \
-  test_testbed_api_testbed_run_topologyscalefree
+  test_testbed_api_testbed_run_topologyscalefree \
+  test_testbed_api_testbed_run_waitforever \
+  test_testbed_api_statistics \
+  gnunet-service-test-barriers \
+  test_testbed_api_barriers
 
 if ENABLE_TEST_RUN
  TESTS = \
   test_testbed_api \
-  test_testbed_api_hosts \
-  test_testbed_api_2peers_1controller \
-  test_testbed_api_3peers_3controllers \
+  test_testbed_logger_api \
+  test_testbed_api_sd \
   test_testbed_api_operations \
+  test_testbed_api_hosts \
   test_gnunet_helper_testbed \
+  test_testbed_api_2peers_1controller \
   test_testbed_api_controllerlink \
+  test_testbed_api_3peers_3controllers \
   test_testbed_api_testbed_run \
   test_testbed_api_test \
+  test_testbed_api_test_timeout \
+  test_testbed_api_statistics \
+  test_testbed_api_peer_reconfiguration \
+  test_testbed_api_peers_manage_services \
   test_testbed_api_topology \
   test_testbed_api_topology_clique \
   test_testbed_api_testbed_run_topologyrandom \
   test_testbed_api_testbed_run_topologyline \
   test_testbed_api_testbed_run_topologyclique \
   test_testbed_api_testbed_run_topologyring \
-  test_testbed_api_testbed_run_topologysmallworldring \
   test_testbed_api_testbed_run_topology2dtorus \
   test_testbed_api_testbed_run_topologysmallworld \
+  test_testbed_api_testbed_run_topologysmallworldring \
   test_testbed_api_testbed_run_topologyfromfile \
-  test_testbed_api_testbed_run_topologyscalefree
+  test_testbed_api_testbed_run_topologyscalefree \
+  test_testbed_api_barriers
 endif
 
 test_testbed_api_hosts_SOURCES = \
@@ -167,7 +194,20 @@ test_testbed_api_SOURCES = \
 test_testbed_api_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/dht/libgnunetdht.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
+ libgnunettestbed.la
+
+test_testbed_logger_api_SOURCES = \
+ test_testbed_logger_api.c
+test_testbed_logger_api_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettestbedlogger.la
+
+test_testbed_api_sd_SOURCES = \
+ test_testbed_api_sd.c
+test_testbed_api_sd_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
 test_testbed_api_2peers_1controller_SOURCES = \
@@ -208,6 +248,12 @@ test_testbed_api_test_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
+test_testbed_api_test_timeout_SOURCES = \
+ test_testbed_api_test_timeout.c
+test_testbed_api_test_timeout_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
 test_testbed_api_topology_SOURCES = \
  test_testbed_api_topology.c
 test_testbed_api_topology_LDADD = \
@@ -225,7 +271,7 @@ test_gnunet_helper_testbed_SOURCES = \
 test_gnunet_helper_testbed_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la \
- -lz
+ $(Z_LIBS)
 
 test_testbed_api_testbed_run_topologyrandom_SOURCES = \
  test_testbed_api_testbed_run.c
@@ -281,8 +327,51 @@ test_testbed_api_testbed_run_topologyscalefree_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
+test_testbed_api_testbed_run_waitforever_SOURCES = \
+ test_testbed_api_testbed_run.c
+test_testbed_api_testbed_run_waitforever_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_statistics_SOURCES = \
+ test_testbed_api_statistics.c
+test_testbed_api_statistics_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_peers_manage_services_SOURCES = \
+ test_testbed_api_peers_manage_services.c
+test_testbed_api_peers_manage_services_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_peer_reconfiguration_SOURCES = \
+ test_testbed_api_peer_reconfiguration.c
+test_testbed_api_peer_reconfiguration_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_barriers_SOURCES = \
+ test_testbed_api_barriers.c \
+ test_testbed_api_barriers.h
+test_testbed_api_barriers_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+test_testbed_api_barriers_DEPENDENCIES = \
+ gnunet-service-test-barriers
+
+gnunet_service_test_barriers_SOURCES = \
+  gnunet-service-test-barriers.c \
+  test_testbed_api_barriers.h
+gnunet_service_test_barriers_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
 EXTRA_DIST = \
   test_testbed_api.conf \
+  test_testbed_api_test_timeout.conf \
+  test_testbed_api_template.conf \
+  test_testbed_logger_api.conf \
   test_testbed_api_testbed_run_topologyring.conf \
   test_testbed_api_testbed_run_topologyclique.conf \
   test_testbed_api_testbed_run_topologyline.conf \
@@ -292,6 +381,7 @@ EXTRA_DIST = \
   test_testbed_api_testbed_run_topologysmallworld.conf \
   test_testbed_api_testbed_run_topologyfromfile.conf \
   test_testbed_api_testbed_run_topologyscalefree.conf \
+  test_testbed_api_barriers.conf.in \
   overlay_topology.txt \
   sample_hosts.txt \
   sample.job

@@ -60,16 +60,14 @@ DIST_COMMON = $(dist_pkgcfg_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -78,12 +76,15 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/gnunet_config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_MHD_TRUE@@LINUX_TRUE@am__EXEEXT_1 =  \
-@HAVE_MHD_TRUE@@LINUX_TRUE@	test_gnunet_vpn-4_to_6$(EXEEXT) \
-@HAVE_MHD_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
-@HAVE_MHD_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
-@HAVE_MHD_TRUE@@LINUX_TRUE@	test_gnunet_vpn-4_over$(EXEEXT) \
-@HAVE_MHD_TRUE@@LINUX_TRUE@	test_gns_vpn$(EXEEXT)
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@am__EXEEXT_1 = test_gnunet_vpn-4_to_6$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-4_over$(EXEEXT)
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@am__EXEEXT_1 = test_gnunet_vpn-4_to_6$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-4_over$(EXEEXT) \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gns_vpn$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgcfgdir)"
 PROGRAMS = $(libexec_PROGRAMS)
 am_gnunet_daemon_pt_OBJECTS = gnunet-daemon-pt.$(OBJEXT)
@@ -92,11 +93,11 @@ am__DEPENDENCIES_1 =
 gnunet_daemon_pt_DEPENDENCIES =  \
 	$(top_builddir)/src/vpn/libgnunetvpn.la \
 	$(top_builddir)/src/mesh/libgnunetmesh.la \
+	$(top_builddir)/src/dht/libgnunetdht.la \
 	$(top_builddir)/src/dns/libgnunetdns.la \
 	$(top_builddir)/src/dns/libgnunetdnsparser.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/mesh/libgnunetmesh.la \
 	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -105,6 +106,7 @@ am_test_gns_vpn_OBJECTS = test_gns_vpn-test_gns_vpn.$(OBJEXT)
 test_gns_vpn_OBJECTS = $(am_test_gns_vpn_OBJECTS)
 test_gns_vpn_DEPENDENCIES =  \
 	$(top_builddir)/src/namestore/libgnunetnamestore.la \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_gnunet_vpn_4_over_OBJECTS =  \
@@ -213,11 +215,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -244,24 +246,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -272,20 +266,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -293,16 +280,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -330,7 +311,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -352,12 +332,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -399,8 +382,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -415,9 +396,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -427,7 +406,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 pkgcfgdir = $(pkgdatadir)/config.d/
@@ -436,24 +415,30 @@ dist_pkgcfg_DATA = \
   pt.conf
 
 gnunet_daemon_pt_SOURCES = \
- gnunet-daemon-pt.c 
+ gnunet-daemon-pt.c
 
 gnunet_daemon_pt_LDADD = \
   $(top_builddir)/src/vpn/libgnunetvpn.la \
   $(top_builddir)/src/mesh/libgnunetmesh.la \
+  $(top_builddir)/src/dht/libgnunetdht.la \
   $(top_builddir)/src/dns/libgnunetdns.la \
   $(top_builddir)/src/dns/libgnunetdnsparser.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/mesh/libgnunetmesh.la \
   $(GN_LIBINTL)
 
-@HAVE_MHD_TRUE@@LINUX_TRUE@VPN_TEST = \
-@HAVE_MHD_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_to_6 \
-@HAVE_MHD_TRUE@@LINUX_TRUE@ test_gnunet_vpn-6_to_4 \
-@HAVE_MHD_TRUE@@LINUX_TRUE@ test_gnunet_vpn-6_over \
-@HAVE_MHD_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_over \
-@HAVE_MHD_TRUE@@LINUX_TRUE@ test_gns_vpn
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@VPN_TEST = \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_to_6 \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-6_to_4 \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-6_over \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_over \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gns_vpn
+
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@VPN_TEST = \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-4_to_6 \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-6_to_4 \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-6_over \
+@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-4_over
 
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
 EXTRA_DIST = \
@@ -463,57 +448,58 @@ EXTRA_DIST = \
 test_gns_vpn_SOURCES = \
  test_gns_vpn.c
 
-test_gns_vpn_LDADD = -lmicrohttpd @LIBCURL@ \
+test_gns_vpn_LDADD = -lmicrohttpd @LIBGNURL@ \
  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+ $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 test_gns_vpn_CPPFLAGS = \
- @LIBCURL_CPPFLAGS@
+ @LIBGNURL_CPPFLAGS@ $(AM_CPPFLAGS)
 
 test_gnunet_vpn_4_over_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_4_over_LDADD = -lmicrohttpd @LIBCURL@ \
+test_gnunet_vpn_4_over_LDADD = -lmicrohttpd @LIBGNURL@ \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_gnunet_vpn_4_over_CPPFLAGS = \
- @LIBCURL_CPPFLAGS@
+ @LIBGNURL_CPPFLAGS@ $(AM_CPPFLAGS)
 
 test_gnunet_vpn_6_over_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_6_over_LDADD = -lmicrohttpd @LIBCURL@ \
+test_gnunet_vpn_6_over_LDADD = -lmicrohttpd @LIBGNURL@ \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_gnunet_vpn_6_over_CPPFLAGS = \
- @LIBCURL_CPPFLAGS@
+ @LIBGNURL_CPPFLAGS@ $(AM_CPPFLAGS)
 
 test_gnunet_vpn_4_to_6_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_4_to_6_LDADD = -lmicrohttpd @LIBCURL@ \
+test_gnunet_vpn_4_to_6_LDADD = -lmicrohttpd @LIBGNURL@ \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_gnunet_vpn_4_to_6_CPPFLAGS = \
- @LIBCURL_CPPFLAGS@
+ @LIBGNURL_CPPFLAGS@ $(AM_CPPFLAGS)
 
 test_gnunet_vpn_6_to_4_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_6_to_4_LDADD = -lmicrohttpd @LIBCURL@ \
+test_gnunet_vpn_6_to_4_LDADD = -lmicrohttpd @LIBGNURL@ \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_gnunet_vpn_6_to_4_CPPFLAGS = \
- @LIBCURL_CPPFLAGS@
+ @LIBGNURL_CPPFLAGS@ $(AM_CPPFLAGS)
 
 all: all-am
 

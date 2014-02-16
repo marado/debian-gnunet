@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006, 2008, 2009 Christian Grothoff (and other contributing authors)
+     (C) 2005-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -29,7 +29,7 @@
 #include "gnunet_fs_service.h"
 
 
-static struct GNUNET_HashCode nsid;
+static struct GNUNET_CRYPTO_EcdsaPublicKey nsid;
 
 static struct GNUNET_FS_Uri *sks_expect_uri;
 
@@ -68,15 +68,10 @@ abort_ksk_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 static void
 abort_sks_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
-  struct GNUNET_FS_Namespace *ns;
-
   if (sks_search == NULL)
     return;
   GNUNET_FS_search_stop (sks_search);
   sks_search = NULL;
-  ns = GNUNET_FS_namespace_create (fs, "testNamespace");
-  GNUNET_assert (NULL != ns);
-  GNUNET_assert (GNUNET_OK == GNUNET_FS_namespace_delete (ns, GNUNET_YES));
   if (ksk_search == NULL)
   {
     GNUNET_FS_stop (fs);
@@ -89,6 +84,7 @@ abort_sks_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 static void
 do_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
+  err = 1;
   FPRINTF (stderr, "%s",  "Operation timed out\n");
   kill_task = GNUNET_SCHEDULER_NO_TASK;
   abort_sks_search_task (NULL, tc);
@@ -172,7 +168,8 @@ publish_cont (void *cls, const struct GNUNET_FS_Uri *ksk_uri, const char *emsg)
   char *msg;
   struct GNUNET_FS_Uri *sks_uri;
   char sbuf[1024];
-  struct GNUNET_CRYPTO_HashAsciiEncoded enc;
+  char buf[1024];
+  char *ret;
 
   if (NULL != emsg)
   {
@@ -181,8 +178,10 @@ publish_cont (void *cls, const struct GNUNET_FS_Uri *ksk_uri, const char *emsg)
     GNUNET_FS_stop (fs);
     return;
   }
-  GNUNET_CRYPTO_hash_to_enc (&nsid, &enc);
-  GNUNET_snprintf (sbuf, sizeof (sbuf), "gnunet://fs/sks/%s/this", &enc);
+  ret = GNUNET_STRINGS_data_to_string (&nsid, sizeof (nsid), buf, sizeof (buf));
+  GNUNET_assert (NULL != ret);
+  ret[0] = '\0';
+  GNUNET_snprintf (sbuf, sizeof (sbuf), "gnunet://fs/sks/%s/this", buf);
   sks_uri = GNUNET_FS_uri_parse (sbuf, &msg);
   if (NULL == sks_uri)
   {
@@ -238,7 +237,7 @@ static void
 adv_cont (void *cls, const struct GNUNET_FS_Uri *uri, const char *emsg)
 {
   struct GNUNET_CONTAINER_MetaData *meta;
-  struct GNUNET_FS_Namespace *ns;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey *ns;
   struct GNUNET_FS_BlockOptions bo;
 
   if (NULL != emsg)
@@ -248,56 +247,32 @@ adv_cont (void *cls, const struct GNUNET_FS_Uri *uri, const char *emsg)
     GNUNET_FS_stop (fs);
     return;
   }
-  ns = GNUNET_FS_namespace_create (fs, "testNamespace");
-  GNUNET_assert (NULL != ns);
+  ns = GNUNET_CRYPTO_ecdsa_key_create ();
   meta = GNUNET_CONTAINER_meta_data_create ();
-  GNUNET_assert (NULL == emsg);
   sks_expect_uri = GNUNET_FS_uri_dup (uri);
   bo.content_priority = 1;
   bo.anonymity_level = 1;
   bo.replication_level = 0;
   bo.expiration_time =
       GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES);
-  GNUNET_FS_publish_sks (fs, ns, "this", "next", meta, uri,     /* FIXME: this is non-sense (use CHK URI!?) */
+  GNUNET_CRYPTO_ecdsa_key_get_public (ns, &nsid);
+  GNUNET_FS_publish_sks (fs, ns, "this", "next", meta, uri,
                          &bo, GNUNET_FS_PUBLISH_OPTION_NONE, &sks_cont, NULL);
   GNUNET_CONTAINER_meta_data_destroy (meta);
-  GNUNET_FS_namespace_delete (ns, GNUNET_NO);
-}
-
-
-static void
-ns_iterator (void *cls, const char *name, const struct GNUNET_HashCode * id)
-{
-  int *ok = cls;
-
-  if (0 != strcmp (name, "testNamespace"))
-    return;
-  *ok = GNUNET_YES;
-  nsid = *id;
+  GNUNET_free (ns);
 }
 
 
 static void
 testNamespace ()
 {
-  struct GNUNET_FS_Namespace *ns;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey *ns;
   struct GNUNET_FS_BlockOptions bo;
   struct GNUNET_CONTAINER_MetaData *meta;
   struct GNUNET_FS_Uri *ksk_uri;
-  int ok;
+  struct GNUNET_FS_Uri *sks_uri;
 
-  ns = GNUNET_FS_namespace_create (fs, "testNamespace");
-  GNUNET_assert (NULL != ns);
-  ok = GNUNET_NO;
-  GNUNET_FS_namespace_list (fs, &ns_iterator, &ok);
-  if (GNUNET_NO == ok)
-  {
-    FPRINTF (stderr, "%s",  "namespace_list failed to find namespace!\n");
-    GNUNET_FS_namespace_delete (ns, GNUNET_YES);
-    GNUNET_FS_stop (fs);
-    err = 1;
-    return;
-  }
+  ns = GNUNET_CRYPTO_ecdsa_key_create ();
   meta = GNUNET_CONTAINER_meta_data_create ();
   ksk_uri = GNUNET_FS_uri_parse ("gnunet://fs/ksk/testnsa", NULL);
   bo.content_priority = 1;
@@ -305,19 +280,23 @@ testNamespace ()
   bo.replication_level = 0;
   bo.expiration_time =
       GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES);
-  GNUNET_FS_namespace_advertise (fs, ksk_uri, ns, meta, &bo, "root", &adv_cont,
-                                 NULL);
+  sks_uri = GNUNET_FS_uri_sks_create (&nsid, "root");
+  GNUNET_FS_publish_ksk (fs,
+			 ksk_uri, meta, sks_uri,
+			 &bo, GNUNET_FS_PUBLISH_OPTION_NONE,
+			 &adv_cont, NULL);
+  GNUNET_FS_uri_destroy (sks_uri);
   kill_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES, &do_timeout,
                                     NULL);
   GNUNET_FS_uri_destroy (ksk_uri);
-  GNUNET_FS_namespace_delete (ns, GNUNET_NO);
   GNUNET_CONTAINER_meta_data_destroy (meta);
+  GNUNET_free (ns);
 }
 
 
 static void
-run (void *cls, 
+run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {

@@ -26,11 +26,10 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-
 /**
- * Global return value.
+ * Handler exit code
  */
-static int ret = 1;
+static long unsigned int exit_code = 1;
 
 /**
  * Helper process we started.
@@ -54,15 +53,10 @@ static void
 maint_child_death (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   enum GNUNET_OS_ProcessStatusType type;
-  unsigned long code;
-
-  if ( (GNUNET_OK ==
-	GNUNET_OS_process_status (p, &type, &code)) &&
-       (type == GNUNET_OS_PROCESS_EXITED) &&
-       (0 == code) )
-    ret = 0;
-  else
-    GNUNET_break (0 == GNUNET_OS_process_kill (p, SIGTERM));
+  if ( (GNUNET_OK !=
+	GNUNET_OS_process_status (p, &type, &exit_code)) ||
+       (type != GNUNET_OS_PROCESS_EXITED) )
+    GNUNET_break (0 == GNUNET_OS_process_kill (p, GNUNET_TERM_SIG));
   GNUNET_OS_process_destroy (p);
 }
 
@@ -117,12 +111,12 @@ run (void *cls, char *const *args, const char *cfgfile,
   rt = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
 				       GNUNET_DISK_pipe_handle (sigpipe,
 								GNUNET_DISK_PIPE_END_READ),
-				       &maint_child_death, NULL);   
+				       &maint_child_death, NULL);
   p = GNUNET_OS_start_process (GNUNET_NO, 0,
 			       NULL, NULL,
 			       program,
 			       program,
-			       args[0], 
+			       args[0],
 			       NULL);
   GNUNET_free (program);
   if (NULL == p)
@@ -176,9 +170,9 @@ main (int argc, char *const *argv)
   GNUNET_SIGNAL_handler_uninstall (shc_chld);
   shc_chld = NULL;
   GNUNET_DISK_pipe_close (sigpipe);
-  sigpipe = NULL; 
+  sigpipe = NULL;
   GNUNET_free ((void *) argv);
-  return (GNUNET_OK == ret) ? 0 : 1;
+  return ((GNUNET_OK == ret) && (0 == exit_code)) ? 0 : 1;
 }
 
 /* end of gnunet-uri.c */

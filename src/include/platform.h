@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -48,13 +48,16 @@
 #include <sys/types.h>
 #endif
 
+/**
+ * These may be expensive, but good for debugging...
+ */
 #define ALLOW_EXTRA_CHECKS GNUNET_YES
 
 /**
  * For strptime (glibc2 needs this).
  */
 #ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE
+#define _XOPEN_SOURCE 499
 #endif
 
 #ifndef _REENTRANT
@@ -86,7 +89,9 @@
 #if HAVE_NETINET_IN_SYSTM_H
 #include <netinet/in_systm.h>
 #endif
+#if HAVE_NETINET_IP_H
 #include <netinet/ip.h>         /* superset of previous */
+#endif
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <pwd.h>
@@ -263,5 +268,10 @@ atoll (const char *nptr);
 #define FDTYPE int
 #define SOCKTYPE int
 #endif
+
+/**
+ * The termination signal
+ */
+#define GNUNET_TERM_SIG SIGTERM
 
 #endif

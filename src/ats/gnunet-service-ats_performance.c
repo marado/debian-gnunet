@@ -31,7 +31,6 @@
 #include "gnunet-service-ats_reservations.h"
 #include "ats.h"
 
-
 /**
  * We keep clients that are interested in performance in a linked list.
  */
@@ -125,11 +124,12 @@ void
 GAS_performance_remove_client (struct GNUNET_SERVER_Client *client)
 {
   struct PerformanceClient *pc;
+
   pc = find_client (client);
   if (NULL == pc)
     return;
   GNUNET_CONTAINER_DLL_remove (pc_head, pc_tail, pc);
-  GNUNET_SERVER_client_drop (client);
+  GAS_addresses_preference_client_disconnect (GSA_addresses, client);
   GNUNET_free (pc);
 }
 
@@ -153,7 +153,7 @@ GAS_performance_notify_client (struct PerformanceClient *pc,
                                const struct GNUNET_PeerIdentity *peer,
                                const char *plugin_name,
                                const void *plugin_addr, size_t plugin_addr_len,
-                               const int active,
+                               int active,
                                const struct GNUNET_ATS_Information *atsi,
                                uint32_t atsi_count,
                                struct GNUNET_BANDWIDTH_Value32NBO
@@ -216,9 +216,9 @@ GAS_performance_notify_client (struct PerformanceClient *pc,
  */
 void
 GAS_performance_notify_all_clients (const struct GNUNET_PeerIdentity *peer,
-                                const char *plugin_name,
-                                const void *plugin_addr, size_t plugin_addr_len,
-                                const int active,
+                                    const char *plugin_name,
+                                    const void *plugin_addr, size_t plugin_addr_len,
+                                    int active,
                                 const struct GNUNET_ATS_Information *atsi,
                                 uint32_t atsi_count,
                                 struct GNUNET_BANDWIDTH_Value32NBO
@@ -260,18 +260,17 @@ peerinfo_it (void *cls,
   if (NULL == id)
     return;
 
-  if (GNUNET_NO == active)
-    return;
-
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Callback for peer `%s' plugin `%s' BW out %llu, BW in %llu \n",
+              "Callback for peer `%s' plugin `%s' BW out %u, BW in %u \n",
               GNUNET_i2s (id),
               plugin_name,
-              ntohl (bandwidth_out.value__),
-              ntohl (bandwidth_in.value__));
+              (unsigned int) ntohl (bandwidth_out.value__),
+              (unsigned int) ntohl (bandwidth_in.value__));
   GAS_performance_notify_client(pc,
                                 id,
-                                plugin_name, plugin_addr, plugin_addr_len,
+                                plugin_name,
+                                plugin_addr,
+                                plugin_addr_len,
                                 active,
                                 atsi, atsi_count,
                                 bandwidth_out, bandwidth_in);
@@ -309,16 +308,20 @@ GAS_performance_add_client (struct GNUNET_SERVER_Client *client,
   struct PerformanceClient *pc;
   GNUNET_break (NULL == find_client (client));
 
-  pc = GNUNET_malloc (sizeof (struct PerformanceClient));
+  pc = GNUNET_new (struct PerformanceClient);
   pc->client = client;
   pc->flag = flag;
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Adding performance client %s PIC\n",
+      (flag == START_FLAG_PERFORMANCE_WITH_PIC) ? "with" : "without");
+
   GNUNET_SERVER_notification_context_add (nc, client);
-  GNUNET_SERVER_client_keep (client);
   GNUNET_CONTAINER_DLL_insert (pc_head, pc_tail, pc);
 
   /* Send information about clients */
   GAS_addresses_iterate_peers (GSA_addresses, &peer_it, pc);
 }
+
 
 static void transmit_req_addr (struct AddressIteration *ai,
     const struct GNUNET_PeerIdentity *id,
@@ -332,7 +335,6 @@ static void transmit_req_addr (struct AddressIteration *ai,
     struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in)
 
 {
-
   struct GNUNET_ATS_Information *atsp;
   struct PeerInformationMessage *msg;
   char *addrp;
@@ -403,7 +405,7 @@ req_addr_peerinfo_it (void *cls,
       return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Callback for  %s peer `%s' plugin `%s' BW out %u, BW in %u \n",
+              "Callback for  %s peer `%s' plugin `%s' BW out %u, BW in %u\n",
               (active == GNUNET_YES) ? "ACTIVE" : "INACTIVE",
               GNUNET_i2s (id),
               plugin_name,
@@ -414,20 +416,20 @@ req_addr_peerinfo_it (void *cls,
   if ((GNUNET_YES == ai->all) || (GNUNET_YES == active))
   {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Sending result for  %s peer `%s' plugin `%s' BW out %u, BW in %u \n",
+                  "Sending result for  %s peer `%s' plugin `%s' BW out %u, BW in %u\n",
                   (active == GNUNET_YES) ? "ACTIVE" : "INACTIVE",
                   GNUNET_i2s (id),
                   plugin_name,
                   (unsigned int) ntohl (bandwidth_out.value__),
                   (unsigned int) ntohl (bandwidth_in.value__));
     transmit_req_addr (cls,
-        id,
-        plugin_name,
-        plugin_addr, plugin_addr_len,
-        active,
-        atsi,
-        atsi_count,
-        bandwidth_out, bandwidth_in);
+                       id,
+                       plugin_name,
+                       plugin_addr, plugin_addr_len,
+                       active,
+                       atsi,
+                       atsi_count,
+                       bandwidth_out, bandwidth_in);
   }
 }
 
@@ -453,6 +455,7 @@ req_addr_peer_it (void *cls,
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peer iteration done\n");
   }
 }
+
 
 /**
  * Handle 'address list request' messages from clients.
@@ -502,6 +505,57 @@ GAS_handle_request_address_list (void *cls, struct GNUNET_SERVER_Client *client,
 }
 
 
+void
+GAS_handle_performance_update (struct GNUNET_PeerIdentity *peer,
+															 const char *plugin_name,
+															 const void *plugin_addr,
+															 size_t plugin_addr_len,
+															 const int active,
+															 struct GNUNET_ATS_Information *ats,
+															 uint32_t ats_count,
+															 struct GNUNET_BANDWIDTH_Value32NBO
+															 bandwidth_out,
+															 struct GNUNET_BANDWIDTH_Value32NBO
+															 bandwidth_in)
+{
+/* Notify here */
+	GAS_performance_notify_all_clients (peer,
+																			plugin_name,
+																			plugin_addr, plugin_addr_len,
+																			active,
+																			ats, ats_count,
+																			bandwidth_out, bandwidth_in);
+
+#if 0
+	struct PerformanceClient *cur;
+	struct PerformanceMonitorClient *curm;
+	struct MonitorResponseMessage *mrm;
+	size_t msglen;
+
+	msglen = sizeof (struct MonitorResponseMessage) +
+					 ats_count * sizeof (struct GNUNET_ATS_Information);
+	mrm = GNUNET_malloc (msglen);
+
+	mrm->header.type = htons (GNUNET_MESSAGE_TYPE_ATS_MONITOR_RESPONSE);
+	mrm->header.size = htons (msglen);
+	mrm->ats_count = htonl (ats_count);
+	mrm->peer = *peer;
+	memcpy (&mrm[1], ats, ats_count * sizeof (struct GNUNET_ATS_Information));
+
+	for (cur = pc_head; NULL != cur; cur = cur->next)
+		for (curm = cur->pm_head; NULL != curm; curm = curm->next)
+		{
+				/* Notify client about update */
+				mrm->id = htonl (curm->id);
+			  GNUNET_SERVER_notification_context_unicast (nc,
+			  		cur->client,
+			  		(struct GNUNET_MessageHeader *) mrm,
+			  		GNUNET_YES);
+		}
+	GNUNET_free (mrm);
+#endif
+}
+
 
 /**
  * Handle 'reservation request' messages from clients.
@@ -531,7 +585,7 @@ GAS_handle_reservation_request (void *cls, struct GNUNET_SERVER_Client *client,
               "RESERVATION_REQUEST");
   amount = (int32_t) ntohl (msg->amount);
   res_delay = GAS_reservations_reserve (&msg->peer, amount);
-  if (res_delay.rel_value > 0)
+  if (res_delay.rel_value_us > 0)
     amount = 0;
   result.header.size = htons (sizeof (struct ReservationResultMessage));
   result.header.type = htons (GNUNET_MESSAGE_TYPE_ATS_RESERVATION_RESULT);
@@ -587,7 +641,7 @@ GAS_handle_preference_change (void *cls,
                             1, GNUNET_NO);
   pi = (const struct PreferenceInformation *) &msg[1];
   for (i = 0; i < nump; i++)
-    GAS_addresses_change_preference (GSA_addresses,
+    GAS_addresses_preference_change (GSA_addresses,
                                      client,
                                      &msg->peer,
                                      (enum GNUNET_ATS_PreferenceKind)
@@ -595,6 +649,59 @@ GAS_handle_preference_change (void *cls,
                                      pi[i].preference_value);
   GNUNET_SERVER_receive_done (client, GNUNET_OK);
 }
+
+
+/**
+ * Handle 'preference feedback' messages from clients.
+ *
+ * @param cls unused, NULL
+ * @param client client that sent the request
+ * @param message the request message
+ */
+void
+GAS_handle_preference_feedback (void *cls,
+                              struct GNUNET_SERVER_Client *client,
+                              const struct GNUNET_MessageHeader *message)
+{
+  const struct FeedbackPreferenceMessage *msg;
+  const struct PreferenceInformation *pi;
+  uint16_t msize;
+  uint32_t nump;
+  uint32_t i;
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received `%s' message\n",
+              "PREFERENCE_FEEDBACK");
+  msize = ntohs (message->size);
+  if (msize < sizeof (struct FeedbackPreferenceMessage))
+  {
+    GNUNET_break (0);
+    GNUNET_SERVER_receive_done (client, GNUNET_SYSERR);
+    return;
+  }
+  msg = (const struct FeedbackPreferenceMessage *) message;
+  nump = ntohl (msg->num_feedback);
+  if (msize !=
+      sizeof (struct FeedbackPreferenceMessage) +
+      nump * sizeof (struct PreferenceInformation))
+  {
+    GNUNET_break (0);
+    GNUNET_SERVER_receive_done (client, GNUNET_SYSERR);
+    return;
+  }
+  GNUNET_STATISTICS_update (GSA_stats, "# preference feedbacks requests processed",
+                            1, GNUNET_NO);
+  pi = (const struct PreferenceInformation *) &msg[1];
+  for (i = 0; i < nump; i++)
+    GAS_addresses_preference_feedback (GSA_addresses,
+                                     client,
+                                     &msg->peer,
+                                     GNUNET_TIME_relative_ntoh(msg->scope),
+                                     (enum GNUNET_ATS_PreferenceKind)
+                                     ntohl (pi[i].preference_kind),
+                                     pi[i].preference_value);
+  GNUNET_SERVER_receive_done (client, GNUNET_OK);
+}
+
 
 
 /**

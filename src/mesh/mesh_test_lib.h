@@ -68,21 +68,21 @@ typedef void (*GNUNET_MESH_TEST_AppMain) (void *cls,
  * @param num_peers Number of peers to start.
  * @param tmain Main function to run once the testbed is ready.
  * @param tmain_cls Closure for 'tmain'.
- * @param new_tunnel Handler for incoming tunnels.
+ * @param new_channel Handler for incoming tunnels.
  * @param cleaner Cleaner for destroyed incoming tunnels.
  * @param handlers Message handlers.
- * @param stypes Application types.
+ * @param ports Ports the peers offer.
  */
-void 
+void
 GNUNET_MESH_TEST_run (const char *testname,
                       const char *cfgname,
                       unsigned int num_peers,
                       GNUNET_MESH_TEST_AppMain tmain,
                       void *tmain_cls,
-                      GNUNET_MESH_InboundTunnelNotificationHandler new_tunnel,
-                      GNUNET_MESH_TunnelEndHandler cleaner,
+                      GNUNET_MESH_InboundChannelNotificationHandler new_channel,
+                      GNUNET_MESH_ChannelEndHandler cleaner,
                       struct GNUNET_MESH_MessageHandler* handlers,
-                      const GNUNET_MESH_ApplicationType* stypes);
+                      const uint32_t* ports);
 
 
 /**

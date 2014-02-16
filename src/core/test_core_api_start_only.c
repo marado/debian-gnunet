@@ -23,7 +23,6 @@
  *        connects to the core service and shuts down again
  */
 #include "platform.h"
-#include "gnunet_common.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_core_service.h"
 #include "gnunet_getopt_lib.h"
@@ -60,9 +59,7 @@ static int ok;
 
 
 static void
-connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
 }
 
@@ -75,9 +72,7 @@ disconnect_notify (void *cls, const struct GNUNET_PeerIdentity *peer)
 
 static int
 inbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+                const struct GNUNET_MessageHeader *message)
 {
   return GNUNET_OK;
 }
@@ -85,9 +80,7 @@ inbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
 
 static int
 outbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
-                 const struct GNUNET_MessageHeader *message,
-                 const struct GNUNET_ATS_Information *atsi,
-                 unsigned int atsi_count)
+                 const struct GNUNET_MessageHeader *message)
 {
   return GNUNET_OK;
 }
@@ -110,14 +103,12 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-init_notify (void *cls, struct GNUNET_CORE_Handle *server,
+init_notify (void *cls,
              const struct GNUNET_PeerIdentity *my_identity)
 {
   struct PeerContext *p = cls;
 
-  GNUNET_assert (server != NULL);
-  GNUNET_assert (p->ch == server);
-  if (cls == &p1)
+  if (p == &p1)
   {
     /* connect p2 */
     p2.ch =
@@ -127,7 +118,7 @@ init_notify (void *cls, struct GNUNET_CORE_Handle *server,
   }
   else
   {
-    GNUNET_assert (cls == &p2);
+    GNUNET_assert (p == &p2);
     GNUNET_SCHEDULER_cancel (timeout_task_id);
     GNUNET_SCHEDULER_add_now (&shutdown_task, NULL);
   }
@@ -193,7 +184,7 @@ static void
 stop_arm (struct PeerContext *p)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Stopping peer\n");
-  if (0 != GNUNET_OS_process_kill (p->arm_proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (p->arm_proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
   if (GNUNET_OS_process_wait (p->arm_proc) != GNUNET_OK)
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");

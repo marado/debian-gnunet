@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010, 2012 Christian Grothoff (and other contributing authors)
+     (C) 2009, 2010, 2012, 2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -21,7 +21,7 @@
 /**
  * @file fs/fs_publish_ksk.c
  * @brief publish a URI under a keyword in GNUnet
- * @see https://gnunet.org/encoding
+ * @see https://gnunet.org/encoding and #2564
  * @author Krista Bennett
  * @author Christian Grothoff
  */
@@ -33,13 +33,7 @@
 #include "gnunet_fs_service.h"
 #include "fs_api.h"
 #include "fs_tree.h"
-
-
-/**
- * Maximum legal size for a kblock.
- */
-#define MAX_KBLOCK_SIZE (60 * 1024)
-
+#include "fs_publish_ublock.h"
 
 /**
  * Context for the KSK publication.
@@ -53,33 +47,29 @@ struct GNUNET_FS_PublishKskContext
   struct GNUNET_FS_Uri *ksk_uri;
 
   /**
+   * URI to publish.
+   */
+  struct GNUNET_FS_Uri *uri;
+
+  /**
+   * Metadata to use.
+   */
+  struct GNUNET_CONTAINER_MetaData *meta;
+
+  /**
    * Global FS context.
    */
   struct GNUNET_FS_Handle *h;
 
   /**
-   * The master block that we are sending
-   * (in plaintext), has "mdsize+slen" more
-   * bytes than the struct would suggest.
+   * UBlock publishing operation that is active.
    */
-  struct KBlock *kb;
+  struct GNUNET_FS_PublishUblockContext *uc;
 
   /**
-   * Buffer of the same size as "kb" for
-   * the encrypted version.
-   */
-  struct KBlock *cpy;
-
-  /**
-   * Handle to the datastore, NULL if we are just
-   * simulating.
+   * Handle to the datastore, NULL if we are just simulating.
    */
   struct GNUNET_DATASTORE_Handle *dsh;
-
-  /**
-   * Handle to datastore PUT request.
-   */
-  struct GNUNET_DATASTORE_QueueEntry *qre;
 
   /**
    * Current task.
@@ -102,14 +92,9 @@ struct GNUNET_FS_PublishKskContext
   struct GNUNET_FS_BlockOptions bo;
 
   /**
-   * Size of the serialized metadata.
+   * Options to use.
    */
-  ssize_t mdsize;
-
-  /**
-   * Size of the (CHK) URI as a string.
-   */
-  size_t slen;
+  enum GNUNET_FS_PublishOptions options;
 
   /**
    * Keyword that we are currently processing.
@@ -128,7 +113,8 @@ struct GNUNET_FS_PublishKskContext
  * @param tc unused
  */
 static void
-publish_ksk_cont (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc);
+publish_ksk_cont (void *cls,
+		  const struct GNUNET_SCHEDULER_TaskContext *tc);
 
 
 /**
@@ -136,21 +122,18 @@ publish_ksk_cont (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc);
  * the result from the PUT request.
  *
  * @param cls closure of type "struct GNUNET_FS_PublishKskContext*"
- * @param success GNUNET_OK on success
- * @param min_expiration minimum expiration time required for content to be stored
  * @param msg error message (or NULL)
  */
 static void
-kb_put_cont (void *cls, int success, 
-	     struct GNUNET_TIME_Absolute min_expiration,
+kb_put_cont (void *cls,
 	     const char *msg)
 {
   struct GNUNET_FS_PublishKskContext *pkc = cls;
 
-  pkc->qre = NULL;
-  if (GNUNET_OK != success)
+  pkc->uc = NULL;
+  if (NULL != msg)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, 
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		"KBlock PUT operation failed: %s\n", msg);
     pkc->cont (pkc->cont_cls, NULL, msg);
     GNUNET_FS_publish_ksk_cancel (pkc);
@@ -172,14 +155,10 @@ publish_ksk_cont (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_FS_PublishKskContext *pkc = cls;
   const char *keyword;
-  struct GNUNET_HashCode key;
-  struct GNUNET_HashCode query;
-  struct GNUNET_CRYPTO_AesSessionKey skey;
-  struct GNUNET_CRYPTO_AesInitializationVector iv;
-  struct GNUNET_CRYPTO_RsaPrivateKey *pk;
 
   pkc->ksk_task = GNUNET_SCHEDULER_NO_TASK;
-  if ((pkc->i == pkc->ksk_uri->data.ksk.keywordCount) || (NULL == pkc->dsh))
+  if ( (pkc->i == pkc->ksk_uri->data.ksk.keywordCount) ||
+       (NULL == pkc->dsh) )
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "KSK PUT operation complete\n");
     pkc->cont (pkc->cont_cls, pkc->ksk_uri, NULL);
@@ -187,32 +166,16 @@ publish_ksk_cont (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     return;
   }
   keyword = pkc->ksk_uri->data.ksk.keywords[pkc->i++];
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Publishing under keyword `%s'\n",
-              &keyword[1]);
-  /* first character of keyword indicates if it is
-   * mandatory or not -- ignore for hashing */
-  GNUNET_CRYPTO_hash (&keyword[1], strlen (&keyword[1]), &key);
-  GNUNET_CRYPTO_hash_to_aes_key (&key, &skey, &iv);
-  GNUNET_CRYPTO_aes_encrypt (&pkc->kb[1], pkc->slen + pkc->mdsize, &skey, &iv,
-                             &pkc->cpy[1]);
-  pk = GNUNET_CRYPTO_rsa_key_create_from_hash (&key);
-  GNUNET_assert (NULL != pk);
-  GNUNET_CRYPTO_rsa_key_get_public (pk, &pkc->cpy->keyspace);
-  GNUNET_CRYPTO_hash (&pkc->cpy->keyspace,
-                      sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded),
-                      &query);
-  GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CRYPTO_rsa_sign (pk, &pkc->cpy->purpose,
-                                         &pkc->cpy->signature));
-  GNUNET_CRYPTO_rsa_key_free (pk);
-  pkc->qre =
-      GNUNET_DATASTORE_put (pkc->dsh, 0, &query,
-                            pkc->mdsize + sizeof (struct KBlock) + pkc->slen,
-                            pkc->cpy, GNUNET_BLOCK_TYPE_FS_KBLOCK,
-                            pkc->bo.content_priority, pkc->bo.anonymity_level,
-                            pkc->bo.replication_level, pkc->bo.expiration_time,
-                            -2, 1, GNUNET_CONSTANTS_SERVICE_TIMEOUT,
-                            &kb_put_cont, pkc);
+  pkc->uc = GNUNET_FS_publish_ublock_ (pkc->h,
+				       pkc->dsh,
+				       keyword + 1 /* skip '+' */,
+				       NULL,
+				       GNUNET_CRYPTO_ecdsa_key_get_anonymous (),
+				       pkc->meta,
+				       pkc->uri,
+				       &pkc->bo,
+				       pkc->options,
+				       &kb_put_cont, pkc);
 }
 
 
@@ -239,17 +202,15 @@ GNUNET_FS_publish_ksk (struct GNUNET_FS_Handle *h,
                        GNUNET_FS_PublishContinuation cont, void *cont_cls)
 {
   struct GNUNET_FS_PublishKskContext *pkc;
-  char *uris;
-  size_t size;
-  char *kbe;
-  char *sptr;
 
   GNUNET_assert (NULL != uri);
-  pkc = GNUNET_malloc (sizeof (struct GNUNET_FS_PublishKskContext));
+  pkc = GNUNET_new (struct GNUNET_FS_PublishKskContext);
   pkc->h = h;
   pkc->bo = *bo;
+  pkc->options = options;
   pkc->cont = cont;
   pkc->cont_cls = cont_cls;
+  pkc->meta = GNUNET_CONTAINER_meta_data_duplicate (meta);
   if (0 == (options & GNUNET_FS_PUBLISH_OPTION_SIMULATE_ONLY))
   {
     pkc->dsh = GNUNET_DATASTORE_connect (h->cfg);
@@ -260,49 +221,7 @@ GNUNET_FS_publish_ksk (struct GNUNET_FS_Handle *h,
       return NULL;
     }
   }
-  if (meta == NULL)
-    pkc->mdsize = 0;
-  else
-    pkc->mdsize = GNUNET_CONTAINER_meta_data_get_serialized_size (meta);
-  GNUNET_assert (pkc->mdsize >= 0);
-  uris = GNUNET_FS_uri_to_string (uri);
-  pkc->slen = strlen (uris) + 1;
-  size = pkc->mdsize + sizeof (struct KBlock) + pkc->slen;
-  if (size > MAX_KBLOCK_SIZE)
-  {
-    size = MAX_KBLOCK_SIZE;
-    pkc->mdsize = size - sizeof (struct KBlock) - pkc->slen;
-  }
-  pkc->kb = GNUNET_malloc (size);
-  kbe = (char *) &pkc->kb[1];
-  memcpy (kbe, uris, pkc->slen);
-  GNUNET_free (uris);
-  sptr = &kbe[pkc->slen];
-  if (meta != NULL)
-    pkc->mdsize =
-        GNUNET_CONTAINER_meta_data_serialize (meta, &sptr, pkc->mdsize,
-                                              GNUNET_CONTAINER_META_DATA_SERIALIZE_PART);
-  if (-1 == pkc->mdsize)
-  {
-    GNUNET_break (0);
-    GNUNET_free (pkc->kb);
-    if (pkc->dsh != NULL)
-    {
-      GNUNET_DATASTORE_disconnect (pkc->dsh, GNUNET_NO);
-      pkc->dsh = NULL;
-    }
-    GNUNET_free (pkc);
-    cont (cont_cls, NULL, _("Internal error."));
-    return NULL;
-  }
-  size = sizeof (struct KBlock) + pkc->slen + pkc->mdsize;
-
-  pkc->cpy = GNUNET_malloc (size);
-  pkc->cpy->purpose.size =
-      htonl (sizeof (struct GNUNET_CRYPTO_RsaSignaturePurpose) +
-             sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded) +
-             pkc->mdsize + pkc->slen);
-  pkc->cpy->purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_FS_KBLOCK);
+  pkc->uri = GNUNET_FS_uri_dup (uri);
   pkc->ksk_uri = GNUNET_FS_uri_dup (ksk_uri);
   pkc->ksk_task = GNUNET_SCHEDULER_add_now (&publish_ksk_cont, pkc);
   return pkc;
@@ -322,19 +241,19 @@ GNUNET_FS_publish_ksk_cancel (struct GNUNET_FS_PublishKskContext *pkc)
     GNUNET_SCHEDULER_cancel (pkc->ksk_task);
     pkc->ksk_task = GNUNET_SCHEDULER_NO_TASK;
   }
-  if (NULL != pkc->qre)
+  if (NULL != pkc->uc)
   {
-    GNUNET_DATASTORE_cancel (pkc->qre);
-    pkc->qre = NULL;
+    GNUNET_FS_publish_ublock_cancel_ (pkc->uc);
+    pkc->uc = NULL;
   }
   if (NULL != pkc->dsh)
   {
     GNUNET_DATASTORE_disconnect (pkc->dsh, GNUNET_NO);
     pkc->dsh = NULL;
   }
-  GNUNET_free (pkc->cpy);
-  GNUNET_free (pkc->kb);
+  GNUNET_CONTAINER_meta_data_destroy (pkc->meta);
   GNUNET_FS_uri_destroy (pkc->ksk_uri);
+  GNUNET_FS_uri_destroy (pkc->uri);
   GNUNET_free (pkc);
 }
 

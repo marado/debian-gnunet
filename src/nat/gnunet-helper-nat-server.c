@@ -65,6 +65,11 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/in.h>
 
+/* The following constant is missing from FreeBSD 9.2 */
+#ifndef ICMP_TIME_EXCEEDED
+#define ICMP_TIME_EXCEEDED 11
+#endif
+
 /**
  * Should we print some debug output?
  */
@@ -602,7 +607,7 @@ main (int argc, char *const *argv)
   }
 
   /* select failed (internal error or OS out of resources) */
-  global_ret = 11; 
+  global_ret = 11;
 error_exit:
   if (-1 != icmpsock)
     (void) close (icmpsock);

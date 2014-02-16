@@ -22,12 +22,8 @@
  * @brief test for interrupt message processing in server_mst.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
 #include "gnunet_protocols.h"
-#include "gnunet_client_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 static struct GNUNET_SERVER_MessageStreamTokenizer * mst;
 
@@ -54,8 +50,8 @@ main (int argc, char *argv[])
   msg[0].size = htons (sizeof (msg));
   msg[0].type = htons (sizeof (GNUNET_MESSAGE_TYPE_DUMMY));
   mst = GNUNET_SERVER_mst_create(mst_cb, NULL);
-  GNUNET_SERVER_mst_receive (mst, &id,  
-			     (const char *) &msg, 2 * sizeof (msg), 
+  GNUNET_SERVER_mst_receive (mst, &id,
+			     (const char *) &msg, 2 * sizeof (msg),
 			     GNUNET_NO, GNUNET_NO);
   /* If we reach this line, it did not crash */
   return 0;

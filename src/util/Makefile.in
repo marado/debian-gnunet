@@ -17,6 +17,7 @@
 
 
 
+
 VPATH = @srcdir@
 am__make_dryrun = \
   { \
@@ -54,38 +55,40 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-noinst_PROGRAMS = gnunet-config-diff$(EXEEXT) $(am__EXEEXT_3) \
+noinst_PROGRAMS = gnunet-config-diff$(EXEEXT) $(am__EXEEXT_4) \
 	test_common_logging_dummy$(EXEEXT)
 libexec_PROGRAMS = gnunet-service-resolver$(EXEEXT)
 bin_PROGRAMS = gnunet-resolver$(EXEEXT) gnunet-config$(EXEEXT) \
-	gnunet-ecc$(EXEEXT) gnunet-rsa$(EXEEXT) gnunet-uri$(EXEEXT)
+	$(am__EXEEXT_1) gnunet-uri$(EXEEXT)
 check_PROGRAMS = test_bio$(EXEEXT) test_client$(EXEEXT) \
 	test_common_allocation$(EXEEXT) test_common_endian$(EXEEXT) \
 	test_common_logging$(EXEEXT) test_configuration$(EXEEXT) \
 	test_container_bloomfilter$(EXEEXT) \
 	test_container_meta_data$(EXEEXT) \
 	test_container_multihashmap$(EXEEXT) \
+	test_container_multihashmap32$(EXEEXT) \
+	test_container_multipeermap$(EXEEXT) \
 	test_container_heap$(EXEEXT) test_container_slist$(EXEEXT) \
-	test_crypto_aes$(EXEEXT) test_crypto_aes_weak$(EXEEXT) \
-	test_crypto_crc$(EXEEXT) test_crypto_ecc$(EXEEXT) \
-	test_crypto_hash$(EXEEXT) test_crypto_hkdf$(EXEEXT) \
-	test_crypto_ksk$(EXEEXT) test_crypto_random$(EXEEXT) \
-	test_crypto_rsa$(EXEEXT) test_disk$(EXEEXT) \
-	test_getopt$(EXEEXT) test_connection$(EXEEXT) \
-	test_connection_addressing$(EXEEXT) \
+	test_crypto_symmetric$(EXEEXT) test_crypto_crc$(EXEEXT) \
+	test_crypto_ecdsa$(EXEEXT) test_crypto_eddsa$(EXEEXT) \
+	test_crypto_ecdhe$(EXEEXT) test_crypto_hash$(EXEEXT) \
+	test_crypto_hkdf$(EXEEXT) test_crypto_random$(EXEEXT) \
+	test_disk$(EXEEXT) test_getopt$(EXEEXT) \
+	test_connection$(EXEEXT) test_connection_addressing$(EXEEXT) \
 	test_connection_receive_cancel$(EXEEXT) \
 	test_connection_timeout$(EXEEXT) \
 	test_connection_timeout_no_connect$(EXEEXT) \
-	test_connection_transmit_cancel$(EXEEXT) \
-	test_os_network$(EXEEXT) test_os_priority$(EXEEXT) \
+	test_connection_transmit_cancel$(EXEEXT) test_mq$(EXEEXT) \
+	test_mq_client$(EXEEXT) test_os_network$(EXEEXT) \
 	test_peer$(EXEEXT) test_plugin$(EXEEXT) test_program$(EXEEXT) \
-	test_pseudonym$(EXEEXT) test_resolver_api$(EXEEXT) \
-	test_scheduler$(EXEEXT) test_scheduler_delay$(EXEEXT) \
+	test_resolver_api$(EXEEXT) test_scheduler$(EXEEXT) \
+	test_scheduler_delay$(EXEEXT) \
 	test_server_mst_interrupt$(EXEEXT) test_server$(EXEEXT) \
 	test_server_disconnect$(EXEEXT) \
-	test_server_with_client$(EXEEXT) $(am__EXEEXT_1) \
-	test_service$(EXEEXT) test_strings$(EXEEXT) test_time$(EXEEXT) \
-	test_speedup$(EXEEXT) $(am__EXEEXT_2) \
+	test_server_with_client$(EXEEXT) $(am__EXEEXT_2) \
+	test_service$(EXEEXT) test_strings$(EXEEXT) \
+	test_strings_to_data$(EXEEXT) test_time$(EXEEXT) \
+	test_speedup$(EXEEXT) $(am__EXEEXT_3) \
 	test_os_start_process$(EXEEXT) \
 	test_common_logging_runtime_loglevels$(EXEEXT)
 subdir = src/util
@@ -93,16 +96,14 @@ DIST_COMMON = $(dist_pkgcfg_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/resolver.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -140,7 +141,8 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" \
 	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
-	"$(DESTDIR)$(pkgcfgdir)" "$(DESTDIR)$(pkgcfgdir)"
+	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgcfgdir)" \
+	"$(DESTDIR)$(pkgcfgdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES) \
 	$(plugin_LTLIBRARIES)
 libgnunet_plugin_test_la_LIBADD =
@@ -157,19 +159,20 @@ libgnunet_plugin_test_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am__DEPENDENCIES_1 =
 libgnunetutil_la_DEPENDENCIES = $(WINLIB) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunetutil_la_OBJECTS = bandwidth.lo bio.lo client.lo \
 	common_allocation.lo common_endian.lo common_logging.lo \
 	configuration.lo connection.lo container_bloomfilter.lo \
 	container_heap.lo container_meta_data.lo \
-	container_multihashmap.lo container_slist.lo crypto_aes.lo \
-	crypto_crc.lo crypto_ecc.lo crypto_hash.lo crypto_hkdf.lo \
-	crypto_kdf.lo crypto_ksk.lo crypto_random.lo crypto_rsa.lo \
-	disk.lo getopt.lo getopt_helpers.lo helper.lo load.lo \
-	network.lo os_installation.lo os_network.lo os_priority.lo \
-	peer.lo plugin.lo program.lo pseudonym.lo resolver_api.lo \
-	scheduler.lo server.lo server_mst.lo server_nc.lo server_tc.lo \
-	service.lo signal.lo strings.lo time.lo speedup.lo
+	container_multihashmap.lo container_multipeermap.lo \
+	container_multihashmap32.lo container_slist.lo \
+	crypto_symmetric.lo crypto_crc.lo crypto_ecc.lo crypto_hash.lo \
+	crypto_hkdf.lo crypto_kdf.lo crypto_random.lo disk.lo \
+	getopt.lo getopt_helpers.lo helper.lo load.lo mq.lo network.lo \
+	os_installation.lo os_network.lo os_priority.lo peer.lo \
+	plugin.lo program.lo resolver_api.lo scheduler.lo server.lo \
+	server_mst.lo server_nc.lo server_tc.lo service.lo signal.lo \
+	strings.lo time.lo speedup.lo
 libgnunetutil_la_OBJECTS = $(am_libgnunetutil_la_OBJECTS)
 libgnunetutil_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -184,10 +187,12 @@ libgnunetutilwin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetutilwin_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 @MINGW_TRUE@am_libgnunetutilwin_la_rpath =
-@MINGW_FALSE@am__EXEEXT_1 = test_server_with_client_unix$(EXEEXT)
-@HAVE_BENCHMARKS_TRUE@am__EXEEXT_2 = perf_crypto_hash$(EXEEXT) \
+@HAVE_TESTING_TRUE@am__EXEEXT_1 = gnunet-ecc$(EXEEXT)
+@MINGW_FALSE@am__EXEEXT_2 = test_server_with_client_unix$(EXEEXT)
+@HAVE_BENCHMARKS_TRUE@am__EXEEXT_3 = perf_crypto_hash$(EXEEXT) \
+@HAVE_BENCHMARKS_TRUE@	perf_crypto_symmetric$(EXEEXT) \
 @HAVE_BENCHMARKS_TRUE@	perf_malloc$(EXEEXT)
-@MINGW_TRUE@am__EXEEXT_3 = w32cat$(EXEEXT)
+@MINGW_TRUE@am__EXEEXT_4 = w32cat$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS) $(noinst_PROGRAMS)
 am_gnunet_config_OBJECTS = gnunet-config.$(OBJEXT)
 gnunet_config_OBJECTS = $(am_gnunet_config_OBJECTS)
@@ -197,8 +202,6 @@ am_gnunet_ecc_OBJECTS = gnunet-ecc.$(OBJEXT)
 gnunet_ecc_OBJECTS = $(am_gnunet_ecc_OBJECTS)
 am_gnunet_resolver_OBJECTS = gnunet-resolver.$(OBJEXT)
 gnunet_resolver_OBJECTS = $(am_gnunet_resolver_OBJECTS)
-am_gnunet_rsa_OBJECTS = gnunet-rsa.$(OBJEXT)
-gnunet_rsa_OBJECTS = $(am_gnunet_rsa_OBJECTS)
 am_gnunet_service_resolver_OBJECTS =  \
 	gnunet-service-resolver.$(OBJEXT)
 gnunet_service_resolver_OBJECTS =  \
@@ -208,6 +211,10 @@ gnunet_uri_OBJECTS = $(am_gnunet_uri_OBJECTS)
 am_perf_crypto_hash_OBJECTS = perf_crypto_hash.$(OBJEXT)
 perf_crypto_hash_OBJECTS = $(am_perf_crypto_hash_OBJECTS)
 perf_crypto_hash_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la
+am_perf_crypto_symmetric_OBJECTS = perf_crypto_symmetric.$(OBJEXT)
+perf_crypto_symmetric_OBJECTS = $(am_perf_crypto_symmetric_OBJECTS)
+perf_crypto_symmetric_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_perf_malloc_OBJECTS = perf_malloc.$(OBJEXT)
 perf_malloc_OBJECTS = $(am_perf_malloc_OBJECTS)
@@ -300,27 +307,41 @@ test_container_multihashmap_OBJECTS =  \
 	$(am_test_container_multihashmap_OBJECTS)
 test_container_multihashmap_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
+am_test_container_multihashmap32_OBJECTS =  \
+	test_container_multihashmap32.$(OBJEXT)
+test_container_multihashmap32_OBJECTS =  \
+	$(am_test_container_multihashmap32_OBJECTS)
+test_container_multihashmap32_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la
+am_test_container_multipeermap_OBJECTS =  \
+	test_container_multipeermap.$(OBJEXT)
+test_container_multipeermap_OBJECTS =  \
+	$(am_test_container_multipeermap_OBJECTS)
+test_container_multipeermap_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la
 am_test_container_slist_OBJECTS = test_container_slist.$(OBJEXT)
 test_container_slist_OBJECTS = $(am_test_container_slist_OBJECTS)
 test_container_slist_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_crypto_aes_OBJECTS = test_crypto_aes.$(OBJEXT)
-test_crypto_aes_OBJECTS = $(am_test_crypto_aes_OBJECTS)
-test_crypto_aes_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
-am_test_crypto_aes_weak_OBJECTS = test_crypto_aes_weak.$(OBJEXT)
-test_crypto_aes_weak_OBJECTS = $(am_test_crypto_aes_weak_OBJECTS)
-test_crypto_aes_weak_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
 am_test_crypto_crc_OBJECTS = test_crypto_crc.$(OBJEXT)
 test_crypto_crc_OBJECTS = $(am_test_crypto_crc_OBJECTS)
 test_crypto_crc_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_crypto_ecc_OBJECTS = test_crypto_ecc.$(OBJEXT)
-test_crypto_ecc_OBJECTS = $(am_test_crypto_ecc_OBJECTS)
-test_crypto_ecc_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
+am_test_crypto_ecdhe_OBJECTS = test_crypto_ecdhe.$(OBJEXT)
+test_crypto_ecdhe_OBJECTS = $(am_test_crypto_ecdhe_OBJECTS)
+test_crypto_ecdhe_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_test_crypto_ecdsa_OBJECTS = test_crypto_ecdsa.$(OBJEXT)
+test_crypto_ecdsa_OBJECTS = $(am_test_crypto_ecdsa_OBJECTS)
+test_crypto_ecdsa_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_test_crypto_eddsa_OBJECTS = test_crypto_eddsa.$(OBJEXT)
+test_crypto_eddsa_OBJECTS = $(am_test_crypto_eddsa_OBJECTS)
+test_crypto_eddsa_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
 am_test_crypto_hash_OBJECTS = test_crypto_hash.$(OBJEXT)
 test_crypto_hash_OBJECTS = $(am_test_crypto_hash_OBJECTS)
 test_crypto_hash_DEPENDENCIES =  \
@@ -329,17 +350,13 @@ am_test_crypto_hkdf_OBJECTS = test_crypto_hkdf.$(OBJEXT)
 test_crypto_hkdf_OBJECTS = $(am_test_crypto_hkdf_OBJECTS)
 test_crypto_hkdf_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_crypto_ksk_OBJECTS = test_crypto_ksk.$(OBJEXT)
-test_crypto_ksk_OBJECTS = $(am_test_crypto_ksk_OBJECTS)
-test_crypto_ksk_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
 am_test_crypto_random_OBJECTS = test_crypto_random.$(OBJEXT)
 test_crypto_random_OBJECTS = $(am_test_crypto_random_OBJECTS)
 test_crypto_random_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_crypto_rsa_OBJECTS = test_crypto_rsa.$(OBJEXT)
-test_crypto_rsa_OBJECTS = $(am_test_crypto_rsa_OBJECTS)
-test_crypto_rsa_DEPENDENCIES =  \
+am_test_crypto_symmetric_OBJECTS = test_crypto_symmetric.$(OBJEXT)
+test_crypto_symmetric_OBJECTS = $(am_test_crypto_symmetric_OBJECTS)
+test_crypto_symmetric_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_disk_OBJECTS = test_disk.$(OBJEXT)
 test_disk_OBJECTS = $(am_test_disk_OBJECTS)
@@ -347,13 +364,16 @@ test_disk_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
 am_test_getopt_OBJECTS = test_getopt.$(OBJEXT)
 test_getopt_OBJECTS = $(am_test_getopt_OBJECTS)
 test_getopt_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
+am_test_mq_OBJECTS = test_mq.$(OBJEXT)
+test_mq_OBJECTS = $(am_test_mq_OBJECTS)
+test_mq_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
+am_test_mq_client_OBJECTS = test_mq_client.$(OBJEXT)
+test_mq_client_OBJECTS = $(am_test_mq_client_OBJECTS)
+test_mq_client_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la
 am_test_os_network_OBJECTS = test_os_network.$(OBJEXT)
 test_os_network_OBJECTS = $(am_test_os_network_OBJECTS)
 test_os_network_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
-am_test_os_priority_OBJECTS = test_os_priority.$(OBJEXT)
-test_os_priority_OBJECTS = $(am_test_os_priority_OBJECTS)
-test_os_priority_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_os_start_process_OBJECTS = test_os_start_process.$(OBJEXT)
 test_os_start_process_OBJECTS = $(am_test_os_start_process_OBJECTS)
@@ -366,10 +386,6 @@ test_plugin_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
 am_test_program_OBJECTS = test_program.$(OBJEXT)
 test_program_OBJECTS = $(am_test_program_OBJECTS)
 test_program_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
-am_test_pseudonym_OBJECTS = test_pseudonym.$(OBJEXT)
-test_pseudonym_OBJECTS = $(am_test_pseudonym_OBJECTS)
-test_pseudonym_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
 am_test_resolver_api_OBJECTS = test_resolver_api.$(OBJEXT)
 test_resolver_api_OBJECTS = $(am_test_resolver_api_OBJECTS)
 test_resolver_api_DEPENDENCIES =  \
@@ -416,12 +432,17 @@ test_speedup_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
 am_test_strings_OBJECTS = test_strings.$(OBJEXT)
 test_strings_OBJECTS = $(am_test_strings_OBJECTS)
 test_strings_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
+am_test_strings_to_data_OBJECTS = test_strings_to_data.$(OBJEXT)
+test_strings_to_data_OBJECTS = $(am_test_strings_to_data_OBJECTS)
+test_strings_to_data_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la
 am_test_time_OBJECTS = test_time.$(OBJEXT)
 test_time_OBJECTS = $(am_test_time_OBJECTS)
 test_time_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la
 am_w32cat_OBJECTS = w32cat.$(OBJEXT)
 w32cat_OBJECTS = $(am_w32cat_OBJECTS)
 w32cat_LDADD = $(LDADD)
+SCRIPTS = $(bin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -452,8 +473,8 @@ SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(libgnunetutil_la_SOURCES) $(libgnunetutilwin_la_SOURCES) \
 	$(gnunet_config_SOURCES) $(gnunet_config_diff_SOURCES) \
 	$(gnunet_ecc_SOURCES) $(gnunet_resolver_SOURCES) \
-	$(gnunet_rsa_SOURCES) $(gnunet_service_resolver_SOURCES) \
-	$(gnunet_uri_SOURCES) $(perf_crypto_hash_SOURCES) \
+	$(gnunet_service_resolver_SOURCES) $(gnunet_uri_SOURCES) \
+	$(perf_crypto_hash_SOURCES) $(perf_crypto_symmetric_SOURCES) \
 	$(perf_malloc_SOURCES) $(test_bio_SOURCES) \
 	$(test_client_SOURCES) $(test_common_allocation_SOURCES) \
 	$(test_common_endian_SOURCES) $(test_common_logging_SOURCES) \
@@ -469,30 +490,33 @@ SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(test_container_heap_SOURCES) \
 	$(test_container_meta_data_SOURCES) \
 	$(test_container_multihashmap_SOURCES) \
-	$(test_container_slist_SOURCES) $(test_crypto_aes_SOURCES) \
-	$(test_crypto_aes_weak_SOURCES) $(test_crypto_crc_SOURCES) \
-	$(test_crypto_ecc_SOURCES) $(test_crypto_hash_SOURCES) \
-	$(test_crypto_hkdf_SOURCES) $(test_crypto_ksk_SOURCES) \
-	$(test_crypto_random_SOURCES) $(test_crypto_rsa_SOURCES) \
-	$(test_disk_SOURCES) $(test_getopt_SOURCES) \
-	$(test_os_network_SOURCES) $(test_os_priority_SOURCES) \
+	$(test_container_multihashmap32_SOURCES) \
+	$(test_container_multipeermap_SOURCES) \
+	$(test_container_slist_SOURCES) $(test_crypto_crc_SOURCES) \
+	$(test_crypto_ecdhe_SOURCES) $(test_crypto_ecdsa_SOURCES) \
+	$(test_crypto_eddsa_SOURCES) $(test_crypto_hash_SOURCES) \
+	$(test_crypto_hkdf_SOURCES) $(test_crypto_random_SOURCES) \
+	$(test_crypto_symmetric_SOURCES) $(test_disk_SOURCES) \
+	$(test_getopt_SOURCES) $(test_mq_SOURCES) \
+	$(test_mq_client_SOURCES) $(test_os_network_SOURCES) \
 	$(test_os_start_process_SOURCES) $(test_peer_SOURCES) \
 	$(test_plugin_SOURCES) $(test_program_SOURCES) \
-	$(test_pseudonym_SOURCES) $(test_resolver_api_SOURCES) \
-	$(test_scheduler_SOURCES) $(test_scheduler_delay_SOURCES) \
-	$(test_server_SOURCES) $(test_server_disconnect_SOURCES) \
+	$(test_resolver_api_SOURCES) $(test_scheduler_SOURCES) \
+	$(test_scheduler_delay_SOURCES) $(test_server_SOURCES) \
+	$(test_server_disconnect_SOURCES) \
 	$(test_server_mst_interrupt_SOURCES) \
 	$(test_server_with_client_SOURCES) \
 	$(test_server_with_client_unix_SOURCES) \
 	$(test_service_SOURCES) $(test_speedup_SOURCES) \
-	$(test_strings_SOURCES) $(test_time_SOURCES) $(w32cat_SOURCES)
+	$(test_strings_SOURCES) $(test_strings_to_data_SOURCES) \
+	$(test_time_SOURCES) $(w32cat_SOURCES)
 DIST_SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(libgnunetutil_la_SOURCES) \
 	$(am__libgnunetutilwin_la_SOURCES_DIST) \
 	$(gnunet_config_SOURCES) $(gnunet_config_diff_SOURCES) \
 	$(gnunet_ecc_SOURCES) $(gnunet_resolver_SOURCES) \
-	$(gnunet_rsa_SOURCES) $(gnunet_service_resolver_SOURCES) \
-	$(gnunet_uri_SOURCES) $(perf_crypto_hash_SOURCES) \
+	$(gnunet_service_resolver_SOURCES) $(gnunet_uri_SOURCES) \
+	$(perf_crypto_hash_SOURCES) $(perf_crypto_symmetric_SOURCES) \
 	$(perf_malloc_SOURCES) $(test_bio_SOURCES) \
 	$(test_client_SOURCES) $(test_common_allocation_SOURCES) \
 	$(test_common_endian_SOURCES) $(test_common_logging_SOURCES) \
@@ -508,23 +532,26 @@ DIST_SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(test_container_heap_SOURCES) \
 	$(test_container_meta_data_SOURCES) \
 	$(test_container_multihashmap_SOURCES) \
-	$(test_container_slist_SOURCES) $(test_crypto_aes_SOURCES) \
-	$(test_crypto_aes_weak_SOURCES) $(test_crypto_crc_SOURCES) \
-	$(test_crypto_ecc_SOURCES) $(test_crypto_hash_SOURCES) \
-	$(test_crypto_hkdf_SOURCES) $(test_crypto_ksk_SOURCES) \
-	$(test_crypto_random_SOURCES) $(test_crypto_rsa_SOURCES) \
-	$(test_disk_SOURCES) $(test_getopt_SOURCES) \
-	$(test_os_network_SOURCES) $(test_os_priority_SOURCES) \
+	$(test_container_multihashmap32_SOURCES) \
+	$(test_container_multipeermap_SOURCES) \
+	$(test_container_slist_SOURCES) $(test_crypto_crc_SOURCES) \
+	$(test_crypto_ecdhe_SOURCES) $(test_crypto_ecdsa_SOURCES) \
+	$(test_crypto_eddsa_SOURCES) $(test_crypto_hash_SOURCES) \
+	$(test_crypto_hkdf_SOURCES) $(test_crypto_random_SOURCES) \
+	$(test_crypto_symmetric_SOURCES) $(test_disk_SOURCES) \
+	$(test_getopt_SOURCES) $(test_mq_SOURCES) \
+	$(test_mq_client_SOURCES) $(test_os_network_SOURCES) \
 	$(test_os_start_process_SOURCES) $(test_peer_SOURCES) \
 	$(test_plugin_SOURCES) $(test_program_SOURCES) \
-	$(test_pseudonym_SOURCES) $(test_resolver_api_SOURCES) \
-	$(test_scheduler_SOURCES) $(test_scheduler_delay_SOURCES) \
-	$(test_server_SOURCES) $(test_server_disconnect_SOURCES) \
+	$(test_resolver_api_SOURCES) $(test_scheduler_SOURCES) \
+	$(test_scheduler_delay_SOURCES) $(test_server_SOURCES) \
+	$(test_server_disconnect_SOURCES) \
 	$(test_server_mst_interrupt_SOURCES) \
 	$(test_server_with_client_SOURCES) \
 	$(test_server_with_client_unix_SOURCES) \
 	$(test_service_SOURCES) $(test_speedup_SOURCES) \
-	$(test_strings_SOURCES) $(test_time_SOURCES) $(w32cat_SOURCES)
+	$(test_strings_SOURCES) $(test_strings_to_data_SOURCES) \
+	$(test_time_SOURCES) $(w32cat_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -540,11 +567,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -571,24 +598,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -599,20 +618,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -620,16 +632,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -657,7 +663,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -679,12 +684,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -726,8 +734,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -742,9 +748,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -754,11 +758,11 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include -I$(top_builddir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include -I$(top_builddir)/src/include
 plugindir = $(libdir)/gnunet
 pkgcfgdir = $(pkgdatadir)/config.d/
 dist_pkgcfg_DATA = \
-  util.conf 
+  util.conf
 
 pkgcfg_DATA = \
   resolver.conf
@@ -771,7 +775,7 @@ pkgcfg_DATA = \
 @MINGW_TRUE@  winproc.c
 
 @MINGW_TRUE@libgnunetutilwin_la_LDFLAGS = \
-@MINGW_TRUE@  -no-undefined -Wl,--export-all-symbols 
+@MINGW_TRUE@  -no-undefined -Wl,--export-all-symbols
 
 @MINGW_TRUE@libgnunetutilwin_la_LIBADD = \
 @MINGW_TRUE@  -lshell32 -liconv -lstdc++ \
@@ -787,7 +791,7 @@ gnunet_config_diff_SOURCES = \
  gnunet-config-diff.c
 
 gnunet_config_diff_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 gnunet_config_diff_DEPENDENCIES = \
  libgnunetutil.la
@@ -815,22 +819,23 @@ libgnunetutil_la_SOURCES = \
   container_heap.c \
   container_meta_data.c \
   container_multihashmap.c \
+  container_multipeermap.c \
+  container_multihashmap32.c \
   container_slist.c \
-  crypto_aes.c \
+  crypto_symmetric.c \
   crypto_crc.c \
   crypto_ecc.c \
   crypto_hash.c \
   crypto_hkdf.c \
   crypto_kdf.c \
-  crypto_ksk.c \
   crypto_random.c \
-  crypto_rsa.c \
   disk.c \
   disk.h \
   getopt.c \
   getopt_helpers.c \
   helper.c \
   load.c \
+  mq.c \
   network.c \
   os_installation.c \
   os_network.c \
@@ -838,7 +843,6 @@ libgnunetutil_la_SOURCES = \
   peer.c \
   plugin.c \
   program.c \
-  pseudonym.c \
   resolver_api.c resolver.h \
   scheduler.c \
   server.c \
@@ -856,14 +860,19 @@ libgnunetutil_la_LIBADD = \
   $(LIBGCRYPT_LIBS) \
   $(LTLIBICONV) \
   $(LTLIBINTL) \
-  -lltdl -lz -lunistring $(XLIB) 
+  -lltdl $(Z_LIBS) -lunistring $(XLIB)
 
 libgnunetutil_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
   -version-info 11:0:2
 
+@HAVE_TESTING_TRUE@GNUNET_ECC = gnunet-ecc
+bin_SCRIPTS = \
+ gnunet-qr
+
+do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 gnunet_service_resolver_SOURCES = \
- gnunet-service-resolver.c         
+ gnunet-service-resolver.c
 
 gnunet_service_resolver_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -873,7 +882,7 @@ gnunet_service_resolver_DEPENDENCIES = \
   libgnunetutil.la
 
 gnunet_resolver_SOURCES = \
- gnunet-resolver.c         
+ gnunet-resolver.c
 
 gnunet_resolver_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -882,18 +891,8 @@ gnunet_resolver_LDADD = \
 gnunet_resolver_DEPENDENCIES = \
   libgnunetutil.la
 
-gnunet_rsa_SOURCES = \
- gnunet-rsa.c         
-
-gnunet_rsa_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL) -lgcrypt
-
-gnunet_rsa_DEPENDENCIES = \
-  libgnunetutil.la
-
 gnunet_ecc_SOURCES = \
- gnunet-ecc.c         
+ gnunet-ecc.c
 
 gnunet_ecc_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -903,7 +902,7 @@ gnunet_ecc_DEPENDENCIES = \
   libgnunetutil.la
 
 gnunet_config_SOURCES = \
- gnunet-config.c         
+ gnunet-config.c
 
 gnunet_config_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -913,7 +912,7 @@ gnunet_config_DEPENDENCIES = \
   libgnunetutil.la
 
 gnunet_uri_SOURCES = \
- gnunet-uri.c         
+ gnunet-uri.c
 
 gnunet_uri_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -933,6 +932,7 @@ libgnunet_plugin_test_la_LDFLAGS = \
 
 @HAVE_BENCHMARKS_TRUE@BENCHMARKS = \
 @HAVE_BENCHMARKS_TRUE@  perf_crypto_hash \
+@HAVE_BENCHMARKS_TRUE@  perf_crypto_symmetric \
 @HAVE_BENCHMARKS_TRUE@  perf_malloc
 
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
@@ -955,25 +955,25 @@ test_client_SOURCES = \
  test_client.c
 
 test_client_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_common_allocation_SOURCES = \
  test_common_allocation.c
 
 test_common_allocation_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_common_endian_SOURCES = \
  test_common_endian.c
 
 test_common_endian_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_common_logging_SOURCES = \
  test_common_logging.c
 
 test_common_logging_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_common_logging_runtime_loglevels_SOURCES = \
  test_common_logging_runtime_loglevels.c
@@ -985,13 +985,13 @@ test_configuration_SOURCES = \
  test_configuration.c
 
 test_configuration_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_container_bloomfilter_SOURCES = \
  test_container_bloomfilter.c
 
 test_container_bloomfilter_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_container_meta_data_SOURCES = \
  test_container_meta_data.c
@@ -1003,250 +1003,270 @@ test_container_multihashmap_SOURCES = \
  test_container_multihashmap.c
 
 test_container_multihashmap_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_container_multihashmap32_SOURCES = \
+ test_container_multihashmap32.c
+
+test_container_multihashmap32_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_container_multipeermap_SOURCES = \
+ test_container_multipeermap.c
+
+test_container_multipeermap_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_container_heap_SOURCES = \
  test_container_heap.c
 
 test_container_heap_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la   
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_container_slist_SOURCES = \
  test_container_slist.c
 
 test_container_slist_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
-test_crypto_aes_SOURCES = \
- test_crypto_aes.c
+test_crypto_symmetric_SOURCES = \
+ test_crypto_symmetric.c
 
-test_crypto_aes_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
-
-test_crypto_aes_weak_SOURCES = \
- test_crypto_aes_weak.c
-
-test_crypto_aes_weak_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  \
- $(LIBGCRYPT_LIBS)
+test_crypto_symmetric_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_crypto_crc_SOURCES = \
  test_crypto_crc.c
 
 test_crypto_crc_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
-test_crypto_ecc_SOURCES = \
- test_crypto_ecc.c
+test_crypto_ecdsa_SOURCES = \
+ test_crypto_ecdsa.c
 
-test_crypto_ecc_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+test_crypto_ecdsa_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LIBGCRYPT_LIBS)
+
+test_crypto_eddsa_SOURCES = \
+ test_crypto_eddsa.c
+
+test_crypto_eddsa_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LIBGCRYPT_LIBS)
+
+test_crypto_ecdhe_SOURCES = \
+ test_crypto_ecdhe.c
+
+test_crypto_ecdhe_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LIBGCRYPT_LIBS)
 
 test_crypto_hash_SOURCES = \
  test_crypto_hash.c
 
 test_crypto_hash_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_crypto_hkdf_SOURCES = \
  test_crypto_hkdf.c
 
 test_crypto_hkdf_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
-
-test_crypto_ksk_SOURCES = \
- test_crypto_ksk.c
-
-test_crypto_ksk_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_crypto_random_SOURCES = \
  test_crypto_random.c
 
 test_crypto_random_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
-
-test_crypto_rsa_SOURCES = \
- test_crypto_rsa.c
-
-test_crypto_rsa_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_disk_SOURCES = \
  test_disk.c
 
 test_disk_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_getopt_SOURCES = \
  test_getopt.c
 
 test_getopt_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_connection_SOURCES = \
  test_connection.c
 
 test_connection_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_connection_addressing_SOURCES = \
  test_connection_addressing.c
 
 test_connection_addressing_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_connection_receive_cancel_SOURCES = \
  test_connection_receive_cancel.c
 
 test_connection_receive_cancel_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_connection_timeout_SOURCES = \
  test_connection_timeout.c
 
 test_connection_timeout_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_connection_timeout_no_connect_SOURCES = \
  test_connection_timeout_no_connect.c
 
 test_connection_timeout_no_connect_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_connection_transmit_cancel_SOURCES = \
  test_connection_transmit_cancel.c
 
 test_connection_transmit_cancel_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_mq_SOURCES = \
+ test_mq.c
+
+test_mq_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_mq_client_SOURCES = \
+ test_mq_client.c
+
+test_mq_client_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_os_network_SOURCES = \
  test_os_network.c
 
 test_os_network_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
-
-test_os_priority_SOURCES = \
- test_os_priority.c
-
-test_os_priority_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_peer_SOURCES = \
  test_peer.c
 
 test_peer_LDADD = \
-$(top_builddir)/src/util/libgnunetutil.la
+$(top_builddir)/src/util/libgnunetutil.la -lgcrypt
 
 test_plugin_SOURCES = \
  test_plugin.c
 
 test_plugin_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_program_SOURCES = \
  test_program.c
 
 test_program_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
-
-test_pseudonym_SOURCES = \
- test_pseudonym.c
-
-test_pseudonym_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_resolver_api_SOURCES = \
  test_resolver_api.c
 
 test_resolver_api_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la  
+  $(top_builddir)/src/util/libgnunetutil.la
 
 test_scheduler_SOURCES = \
  test_scheduler.c
 
 test_scheduler_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_scheduler_delay_SOURCES = \
  test_scheduler_delay.c
 
 test_scheduler_delay_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_server_mst_interrupt_SOURCES = \
  test_server_mst_interrupt.c
 
 test_server_mst_interrupt_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_server_SOURCES = \
  test_server.c
 
 test_server_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_server_disconnect_SOURCES = \
  test_server_disconnect.c
 
 test_server_disconnect_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_server_with_client_SOURCES = \
  test_server_with_client.c
 
 test_server_with_client_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_server_with_client_unix_SOURCES = \
  test_server_with_client_unix.c
 
 test_server_with_client_unix_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_service_SOURCES = \
  test_service.c
 
 test_service_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_strings_SOURCES = \
  test_strings.c
 
 test_strings_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_strings_to_data_SOURCES = \
+ test_strings_to_data.c
+
+test_strings_to_data_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_time_SOURCES = \
  test_time.c
 
 test_time_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_speedup_SOURCES = \
  test_speedup.c
 
 test_speedup_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 perf_crypto_hash_SOURCES = \
  perf_crypto_hash.c
 
 perf_crypto_hash_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
+
+perf_crypto_symmetric_SOURCES = \
+ perf_crypto_symmetric.c
+
+perf_crypto_symmetric_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 perf_malloc_SOURCES = \
  perf_malloc.c
 
 perf_malloc_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la  
+ $(top_builddir)/src/util/libgnunetutil.la
 
 EXTRA_DIST = \
   test_configuration_data.conf \
   test_program_data.conf \
-  test_pseudonym_data.conf \
   test_resolver_api_data.conf \
   test_service_data.conf \
-  test_speedup_data.conf
+  test_speedup_data.conf \
+  gnunet-qr.py.in
 
 all: all-am
 
@@ -1485,9 +1505,6 @@ gnunet-ecc$(EXEEXT): $(gnunet_ecc_OBJECTS) $(gnunet_ecc_DEPENDENCIES) $(EXTRA_gn
 gnunet-resolver$(EXEEXT): $(gnunet_resolver_OBJECTS) $(gnunet_resolver_DEPENDENCIES) $(EXTRA_gnunet_resolver_DEPENDENCIES) 
 	@rm -f gnunet-resolver$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_resolver_OBJECTS) $(gnunet_resolver_LDADD) $(LIBS)
-gnunet-rsa$(EXEEXT): $(gnunet_rsa_OBJECTS) $(gnunet_rsa_DEPENDENCIES) $(EXTRA_gnunet_rsa_DEPENDENCIES) 
-	@rm -f gnunet-rsa$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_rsa_OBJECTS) $(gnunet_rsa_LDADD) $(LIBS)
 gnunet-service-resolver$(EXEEXT): $(gnunet_service_resolver_OBJECTS) $(gnunet_service_resolver_DEPENDENCIES) $(EXTRA_gnunet_service_resolver_DEPENDENCIES) 
 	@rm -f gnunet-service-resolver$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_resolver_OBJECTS) $(gnunet_service_resolver_LDADD) $(LIBS)
@@ -1497,6 +1514,9 @@ gnunet-uri$(EXEEXT): $(gnunet_uri_OBJECTS) $(gnunet_uri_DEPENDENCIES) $(EXTRA_gn
 perf_crypto_hash$(EXEEXT): $(perf_crypto_hash_OBJECTS) $(perf_crypto_hash_DEPENDENCIES) $(EXTRA_perf_crypto_hash_DEPENDENCIES) 
 	@rm -f perf_crypto_hash$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(perf_crypto_hash_OBJECTS) $(perf_crypto_hash_LDADD) $(LIBS)
+perf_crypto_symmetric$(EXEEXT): $(perf_crypto_symmetric_OBJECTS) $(perf_crypto_symmetric_DEPENDENCIES) $(EXTRA_perf_crypto_symmetric_DEPENDENCIES) 
+	@rm -f perf_crypto_symmetric$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(perf_crypto_symmetric_OBJECTS) $(perf_crypto_symmetric_LDADD) $(LIBS)
 perf_malloc$(EXEEXT): $(perf_malloc_OBJECTS) $(perf_malloc_DEPENDENCIES) $(EXTRA_perf_malloc_DEPENDENCIES) 
 	@rm -f perf_malloc$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(perf_malloc_OBJECTS) $(perf_malloc_LDADD) $(LIBS)
@@ -1554,48 +1574,54 @@ test_container_meta_data$(EXEEXT): $(test_container_meta_data_OBJECTS) $(test_co
 test_container_multihashmap$(EXEEXT): $(test_container_multihashmap_OBJECTS) $(test_container_multihashmap_DEPENDENCIES) $(EXTRA_test_container_multihashmap_DEPENDENCIES) 
 	@rm -f test_container_multihashmap$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_container_multihashmap_OBJECTS) $(test_container_multihashmap_LDADD) $(LIBS)
+test_container_multihashmap32$(EXEEXT): $(test_container_multihashmap32_OBJECTS) $(test_container_multihashmap32_DEPENDENCIES) $(EXTRA_test_container_multihashmap32_DEPENDENCIES) 
+	@rm -f test_container_multihashmap32$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_container_multihashmap32_OBJECTS) $(test_container_multihashmap32_LDADD) $(LIBS)
+test_container_multipeermap$(EXEEXT): $(test_container_multipeermap_OBJECTS) $(test_container_multipeermap_DEPENDENCIES) $(EXTRA_test_container_multipeermap_DEPENDENCIES) 
+	@rm -f test_container_multipeermap$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_container_multipeermap_OBJECTS) $(test_container_multipeermap_LDADD) $(LIBS)
 test_container_slist$(EXEEXT): $(test_container_slist_OBJECTS) $(test_container_slist_DEPENDENCIES) $(EXTRA_test_container_slist_DEPENDENCIES) 
 	@rm -f test_container_slist$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_container_slist_OBJECTS) $(test_container_slist_LDADD) $(LIBS)
-test_crypto_aes$(EXEEXT): $(test_crypto_aes_OBJECTS) $(test_crypto_aes_DEPENDENCIES) $(EXTRA_test_crypto_aes_DEPENDENCIES) 
-	@rm -f test_crypto_aes$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_crypto_aes_OBJECTS) $(test_crypto_aes_LDADD) $(LIBS)
-test_crypto_aes_weak$(EXEEXT): $(test_crypto_aes_weak_OBJECTS) $(test_crypto_aes_weak_DEPENDENCIES) $(EXTRA_test_crypto_aes_weak_DEPENDENCIES) 
-	@rm -f test_crypto_aes_weak$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_crypto_aes_weak_OBJECTS) $(test_crypto_aes_weak_LDADD) $(LIBS)
 test_crypto_crc$(EXEEXT): $(test_crypto_crc_OBJECTS) $(test_crypto_crc_DEPENDENCIES) $(EXTRA_test_crypto_crc_DEPENDENCIES) 
 	@rm -f test_crypto_crc$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_crypto_crc_OBJECTS) $(test_crypto_crc_LDADD) $(LIBS)
-test_crypto_ecc$(EXEEXT): $(test_crypto_ecc_OBJECTS) $(test_crypto_ecc_DEPENDENCIES) $(EXTRA_test_crypto_ecc_DEPENDENCIES) 
-	@rm -f test_crypto_ecc$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_crypto_ecc_OBJECTS) $(test_crypto_ecc_LDADD) $(LIBS)
+test_crypto_ecdhe$(EXEEXT): $(test_crypto_ecdhe_OBJECTS) $(test_crypto_ecdhe_DEPENDENCIES) $(EXTRA_test_crypto_ecdhe_DEPENDENCIES) 
+	@rm -f test_crypto_ecdhe$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_crypto_ecdhe_OBJECTS) $(test_crypto_ecdhe_LDADD) $(LIBS)
+test_crypto_ecdsa$(EXEEXT): $(test_crypto_ecdsa_OBJECTS) $(test_crypto_ecdsa_DEPENDENCIES) $(EXTRA_test_crypto_ecdsa_DEPENDENCIES) 
+	@rm -f test_crypto_ecdsa$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_crypto_ecdsa_OBJECTS) $(test_crypto_ecdsa_LDADD) $(LIBS)
+test_crypto_eddsa$(EXEEXT): $(test_crypto_eddsa_OBJECTS) $(test_crypto_eddsa_DEPENDENCIES) $(EXTRA_test_crypto_eddsa_DEPENDENCIES) 
+	@rm -f test_crypto_eddsa$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_crypto_eddsa_OBJECTS) $(test_crypto_eddsa_LDADD) $(LIBS)
 test_crypto_hash$(EXEEXT): $(test_crypto_hash_OBJECTS) $(test_crypto_hash_DEPENDENCIES) $(EXTRA_test_crypto_hash_DEPENDENCIES) 
 	@rm -f test_crypto_hash$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_crypto_hash_OBJECTS) $(test_crypto_hash_LDADD) $(LIBS)
 test_crypto_hkdf$(EXEEXT): $(test_crypto_hkdf_OBJECTS) $(test_crypto_hkdf_DEPENDENCIES) $(EXTRA_test_crypto_hkdf_DEPENDENCIES) 
 	@rm -f test_crypto_hkdf$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_crypto_hkdf_OBJECTS) $(test_crypto_hkdf_LDADD) $(LIBS)
-test_crypto_ksk$(EXEEXT): $(test_crypto_ksk_OBJECTS) $(test_crypto_ksk_DEPENDENCIES) $(EXTRA_test_crypto_ksk_DEPENDENCIES) 
-	@rm -f test_crypto_ksk$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_crypto_ksk_OBJECTS) $(test_crypto_ksk_LDADD) $(LIBS)
 test_crypto_random$(EXEEXT): $(test_crypto_random_OBJECTS) $(test_crypto_random_DEPENDENCIES) $(EXTRA_test_crypto_random_DEPENDENCIES) 
 	@rm -f test_crypto_random$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_crypto_random_OBJECTS) $(test_crypto_random_LDADD) $(LIBS)
-test_crypto_rsa$(EXEEXT): $(test_crypto_rsa_OBJECTS) $(test_crypto_rsa_DEPENDENCIES) $(EXTRA_test_crypto_rsa_DEPENDENCIES) 
-	@rm -f test_crypto_rsa$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_crypto_rsa_OBJECTS) $(test_crypto_rsa_LDADD) $(LIBS)
+test_crypto_symmetric$(EXEEXT): $(test_crypto_symmetric_OBJECTS) $(test_crypto_symmetric_DEPENDENCIES) $(EXTRA_test_crypto_symmetric_DEPENDENCIES) 
+	@rm -f test_crypto_symmetric$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_crypto_symmetric_OBJECTS) $(test_crypto_symmetric_LDADD) $(LIBS)
 test_disk$(EXEEXT): $(test_disk_OBJECTS) $(test_disk_DEPENDENCIES) $(EXTRA_test_disk_DEPENDENCIES) 
 	@rm -f test_disk$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_disk_OBJECTS) $(test_disk_LDADD) $(LIBS)
 test_getopt$(EXEEXT): $(test_getopt_OBJECTS) $(test_getopt_DEPENDENCIES) $(EXTRA_test_getopt_DEPENDENCIES) 
 	@rm -f test_getopt$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_getopt_OBJECTS) $(test_getopt_LDADD) $(LIBS)
+test_mq$(EXEEXT): $(test_mq_OBJECTS) $(test_mq_DEPENDENCIES) $(EXTRA_test_mq_DEPENDENCIES) 
+	@rm -f test_mq$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mq_OBJECTS) $(test_mq_LDADD) $(LIBS)
+test_mq_client$(EXEEXT): $(test_mq_client_OBJECTS) $(test_mq_client_DEPENDENCIES) $(EXTRA_test_mq_client_DEPENDENCIES) 
+	@rm -f test_mq_client$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mq_client_OBJECTS) $(test_mq_client_LDADD) $(LIBS)
 test_os_network$(EXEEXT): $(test_os_network_OBJECTS) $(test_os_network_DEPENDENCIES) $(EXTRA_test_os_network_DEPENDENCIES) 
 	@rm -f test_os_network$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_os_network_OBJECTS) $(test_os_network_LDADD) $(LIBS)
-test_os_priority$(EXEEXT): $(test_os_priority_OBJECTS) $(test_os_priority_DEPENDENCIES) $(EXTRA_test_os_priority_DEPENDENCIES) 
-	@rm -f test_os_priority$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_os_priority_OBJECTS) $(test_os_priority_LDADD) $(LIBS)
 test_os_start_process$(EXEEXT): $(test_os_start_process_OBJECTS) $(test_os_start_process_DEPENDENCIES) $(EXTRA_test_os_start_process_DEPENDENCIES) 
 	@rm -f test_os_start_process$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_os_start_process_OBJECTS) $(test_os_start_process_LDADD) $(LIBS)
@@ -1608,9 +1634,6 @@ test_plugin$(EXEEXT): $(test_plugin_OBJECTS) $(test_plugin_DEPENDENCIES) $(EXTRA
 test_program$(EXEEXT): $(test_program_OBJECTS) $(test_program_DEPENDENCIES) $(EXTRA_test_program_DEPENDENCIES) 
 	@rm -f test_program$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_program_OBJECTS) $(test_program_LDADD) $(LIBS)
-test_pseudonym$(EXEEXT): $(test_pseudonym_OBJECTS) $(test_pseudonym_DEPENDENCIES) $(EXTRA_test_pseudonym_DEPENDENCIES) 
-	@rm -f test_pseudonym$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_pseudonym_OBJECTS) $(test_pseudonym_LDADD) $(LIBS)
 test_resolver_api$(EXEEXT): $(test_resolver_api_OBJECTS) $(test_resolver_api_DEPENDENCIES) $(EXTRA_test_resolver_api_DEPENDENCIES) 
 	@rm -f test_resolver_api$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_resolver_api_OBJECTS) $(test_resolver_api_LDADD) $(LIBS)
@@ -1644,12 +1667,50 @@ test_speedup$(EXEEXT): $(test_speedup_OBJECTS) $(test_speedup_DEPENDENCIES) $(EX
 test_strings$(EXEEXT): $(test_strings_OBJECTS) $(test_strings_DEPENDENCIES) $(EXTRA_test_strings_DEPENDENCIES) 
 	@rm -f test_strings$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_strings_OBJECTS) $(test_strings_LDADD) $(LIBS)
+test_strings_to_data$(EXEEXT): $(test_strings_to_data_OBJECTS) $(test_strings_to_data_DEPENDENCIES) $(EXTRA_test_strings_to_data_DEPENDENCIES) 
+	@rm -f test_strings_to_data$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_strings_to_data_OBJECTS) $(test_strings_to_data_LDADD) $(LIBS)
 test_time$(EXEEXT): $(test_time_OBJECTS) $(test_time_DEPENDENCIES) $(EXTRA_test_time_DEPENDENCIES) 
 	@rm -f test_time$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_time_OBJECTS) $(test_time_LDADD) $(LIBS)
 w32cat$(EXEEXT): $(w32cat_OBJECTS) $(w32cat_DEPENDENCIES) $(EXTRA_w32cat_DEPENDENCIES) 
 	@rm -f w32cat$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(w32cat_OBJECTS) $(w32cat_LDADD) $(LIBS)
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(bindir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n' \
+	    -e 'h;s|.*|.|' \
+	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
+	      if (++n[d] == $(am__install_max)) { \
+		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
+	    else { print "f", d "/" $$4, $$1 } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	     test -z "$$files" || { \
+	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
+	     } \
+	; done
+
+uninstall-binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || exit 0; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	       sed -e 's,.*/,,;$(transform)'`; \
+	dir='$(DESTDIR)$(bindir)'; $(am__uninstall_files_from_dir)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1669,16 +1730,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/container_heap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/container_meta_data.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/container_multihashmap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/container_multihashmap32.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/container_multipeermap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/container_slist.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_aes.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_crc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_ecc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_hash.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_hkdf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_kdf.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_ksk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_random.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_rsa.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_symmetric.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/disk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt_helpers.Plo@am__quote@
@@ -1686,21 +1747,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-config.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-ecc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-resolver.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-rsa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-resolver.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-uri.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/helper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/load.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mq.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/network.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os_installation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os_network.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os_priority.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/peer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_crypto_hash.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_crypto_symmetric.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_malloc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/program.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pseudonym.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resolver_api.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/scheduler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/server.Plo@am__quote@
@@ -1729,26 +1790,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_container_heap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_container_meta_data.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_container_multihashmap.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_container_multihashmap32.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_container_multipeermap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_container_slist.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_aes.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_aes_weak.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_crc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_ecc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_ecdhe.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_ecdsa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_eddsa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_hash.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_hkdf.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_ksk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_random.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_rsa.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_crypto_symmetric.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_disk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_getopt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mq.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mq_client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_os_network.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_os_priority.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_os_start_process.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_peer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_plugin.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_plugin_plug.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_program.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_pseudonym.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_resolver_api.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_scheduler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_scheduler_delay.Po@am__quote@
@@ -1760,6 +1822,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_speedup.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_strings.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_strings_to_data.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_time.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32cat.Po@am__quote@
@@ -2014,11 +2077,11 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(DATA)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgcfgdir)" "$(DESTDIR)$(pkgcfgdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgcfgdir)" "$(DESTDIR)$(pkgcfgdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -2083,8 +2146,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-libLTLIBRARIES \
-	install-libexecPROGRAMS
+install-exec-am: install-binPROGRAMS install-binSCRIPTS \
+	install-libLTLIBRARIES install-libexecPROGRAMS
 
 install-html: install-html-am
 
@@ -2124,9 +2187,10 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-dist_pkgcfgDATA \
-	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
-	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
+uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-dist_pkgcfgDATA uninstall-libLTLIBRARIES \
+	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
+	uninstall-pluginLTLIBRARIES
 
 .MAKE: check-am install-am install-strip
 
@@ -2137,20 +2201,26 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_pkgcfgDATA \
 	clean-pluginLTLIBRARIES ctags distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am \
-	install-dist_pkgcfgDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
-	install-pkgcfgDATA install-pluginLTLIBRARIES install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-dist_pkgcfgDATA \
-	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
-	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
+	install-binPROGRAMS install-binSCRIPTS install-data \
+	install-data-am install-dist_pkgcfgDATA install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
+	install-pdf install-pdf-am install-pkgcfgDATA \
+	install-pluginLTLIBRARIES install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-dist_pkgcfgDATA uninstall-libLTLIBRARIES \
+	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
+	uninstall-pluginLTLIBRARIES
 
+
+gnunet-qr: gnunet-qr.py.in Makefile
+	$(do_subst) < gnunet-qr.py.in > gnunet-qr
+	chmod +x gnunet-qr
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

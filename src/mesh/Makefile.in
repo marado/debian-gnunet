@@ -55,56 +55,30 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-libexec_PROGRAMS = gnunet-service-mesh$(EXEEXT) \
-	gnunet-service-mesh-new$(EXEEXT)
+libexec_PROGRAMS = gnunet-service-mesh$(EXEEXT)
 bin_PROGRAMS = gnunet-mesh$(EXEEXT)
-check_PROGRAMS = test_mesh_api$(EXEEXT) test_mesh_tree_api$(EXEEXT) \
-	test_mesh_local_1$(EXEEXT) test_mesh_local_2$(EXEEXT) \
-	test_mesh_local_traffic_fwd$(EXEEXT) \
-	test_mesh_local_traffic_bck$(EXEEXT) \
-	test_mesh_local_traffic_both$(EXEEXT) \
-	test_mesh_2dtorus$(EXEEXT) test_mesh_regex$(EXEEXT) \
-	test_mesh_small_unicast$(EXEEXT) \
-	test_mesh_small_multicast$(EXEEXT) \
-	test_mesh_small_signal$(EXEEXT) test_mesh_small_speed$(EXEEXT) \
-	test_mesh_small_speed_nobuf$(EXEEXT) \
-	test_mesh_small_speed_min$(EXEEXT) \
-	test_mesh_small_speed_backwards$(EXEEXT) \
-	test_mesh_small_speed_nobuf_backwards$(EXEEXT) \
-	test_mesh_small_speed_min_backwards$(EXEEXT) \
-	test_mesh_small_speed_ack$(EXEEXT)
-@ENABLE_TEST_RUN_TRUE@TESTS = test_mesh_api$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_tree_api$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_local_1$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_local_2$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_local_traffic_fwd$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_local_traffic_bck$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_local_traffic_both$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_2dtorus$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_regex$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_unicast$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_multicast$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_signal$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_speed$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_speed_min$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_speed_nobuf$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_speed_backwards$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_mesh_small_speed_min_backwards$(EXEEXT)
+@HAVE_TESTING_TRUE@check_PROGRAMS = test_mesh_single$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_local$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_forward$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_signal$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_speed$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_speed_ack$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_speed_backwards$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_speed_reliable$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_mesh_small_speed_reliable_backwards$(EXEEXT)
 subdir = src/mesh
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/mesh.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -179,49 +153,27 @@ PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
 am_gnunet_mesh_OBJECTS = gnunet-mesh.$(OBJEXT)
 gnunet_mesh_OBJECTS = $(am_gnunet_mesh_OBJECTS)
 am_gnunet_service_mesh_OBJECTS =  \
-	gnunet_service_mesh-gnunet-service-mesh.$(OBJEXT) \
-	gnunet_service_mesh-mesh_tunnel_tree.$(OBJEXT) \
-	gnunet_service_mesh-mesh_common.$(OBJEXT)
+	gnunet_service_mesh-gnunet-service-mesh_tunnel.$(OBJEXT) \
+	gnunet_service_mesh-gnunet-service-mesh_connection.$(OBJEXT) \
+	gnunet_service_mesh-gnunet-service-mesh_channel.$(OBJEXT) \
+	gnunet_service_mesh-gnunet-service-mesh_local.$(OBJEXT) \
+	gnunet_service_mesh-gnunet-service-mesh_peer.$(OBJEXT) \
+	gnunet_service_mesh-gnunet-service-mesh_dht.$(OBJEXT) \
+	gnunet_service_mesh-mesh_path.$(OBJEXT) \
+	gnunet_service_mesh-mesh_common.$(OBJEXT) \
+	gnunet_service_mesh-gnunet-service-mesh.$(OBJEXT)
 gnunet_service_mesh_OBJECTS = $(am_gnunet_service_mesh_OBJECTS)
 gnunet_service_mesh_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(gnunet_service_mesh_CFLAGS) $(CFLAGS) \
 	$(gnunet_service_mesh_LDFLAGS) $(LDFLAGS) -o $@
-am_gnunet_service_mesh_new_OBJECTS =  \
-	gnunet_service_mesh_new-gnunet-service-mesh-new.$(OBJEXT) \
-	gnunet_service_mesh_new-mesh_tunnel_tree.$(OBJEXT) \
-	gnunet_service_mesh_new-mesh_common.$(OBJEXT)
-gnunet_service_mesh_new_OBJECTS =  \
-	$(am_gnunet_service_mesh_new_OBJECTS)
-gnunet_service_mesh_new_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) \
-	$(gnunet_service_mesh_new_LDFLAGS) $(LDFLAGS) -o $@
-am_test_mesh_2dtorus_OBJECTS = test_mesh_2dtorus.$(OBJEXT)
-test_mesh_2dtorus_OBJECTS = $(am_test_mesh_2dtorus_OBJECTS)
-am_test_mesh_api_OBJECTS = test_mesh_api.$(OBJEXT)
-test_mesh_api_OBJECTS = $(am_test_mesh_api_OBJECTS)
-am_test_mesh_local_1_OBJECTS = test_mesh_local_1.$(OBJEXT)
-test_mesh_local_1_OBJECTS = $(am_test_mesh_local_1_OBJECTS)
-am_test_mesh_local_2_OBJECTS = test_mesh_local_2.$(OBJEXT)
-test_mesh_local_2_OBJECTS = $(am_test_mesh_local_2_OBJECTS)
-am_test_mesh_local_traffic_bck_OBJECTS =  \
-	test_mesh_local_traffic.$(OBJEXT)
-test_mesh_local_traffic_bck_OBJECTS =  \
-	$(am_test_mesh_local_traffic_bck_OBJECTS)
-am_test_mesh_local_traffic_both_OBJECTS =  \
-	test_mesh_local_traffic.$(OBJEXT)
-test_mesh_local_traffic_both_OBJECTS =  \
-	$(am_test_mesh_local_traffic_both_OBJECTS)
-am_test_mesh_local_traffic_fwd_OBJECTS =  \
-	test_mesh_local_traffic.$(OBJEXT)
-test_mesh_local_traffic_fwd_OBJECTS =  \
-	$(am_test_mesh_local_traffic_fwd_OBJECTS)
-am_test_mesh_regex_OBJECTS = test_mesh_regex.$(OBJEXT)
-test_mesh_regex_OBJECTS = $(am_test_mesh_regex_OBJECTS)
-am_test_mesh_small_multicast_OBJECTS = test_mesh_small.$(OBJEXT)
-test_mesh_small_multicast_OBJECTS =  \
-	$(am_test_mesh_small_multicast_OBJECTS)
+am_test_mesh_local_OBJECTS = test_mesh_local.$(OBJEXT)
+test_mesh_local_OBJECTS = $(am_test_mesh_local_OBJECTS)
+am_test_mesh_single_OBJECTS = test_mesh_single.$(OBJEXT)
+test_mesh_single_OBJECTS = $(am_test_mesh_single_OBJECTS)
+am_test_mesh_small_forward_OBJECTS = test_mesh_small.$(OBJEXT)
+test_mesh_small_forward_OBJECTS =  \
+	$(am_test_mesh_small_forward_OBJECTS)
 am_test_mesh_small_signal_OBJECTS = test_mesh_small.$(OBJEXT)
 test_mesh_small_signal_OBJECTS = $(am_test_mesh_small_signal_OBJECTS)
 am_test_mesh_small_speed_OBJECTS = test_mesh_small.$(OBJEXT)
@@ -233,25 +185,13 @@ am_test_mesh_small_speed_backwards_OBJECTS =  \
 	test_mesh_small.$(OBJEXT)
 test_mesh_small_speed_backwards_OBJECTS =  \
 	$(am_test_mesh_small_speed_backwards_OBJECTS)
-am_test_mesh_small_speed_min_OBJECTS = test_mesh_small.$(OBJEXT)
-test_mesh_small_speed_min_OBJECTS =  \
-	$(am_test_mesh_small_speed_min_OBJECTS)
-am_test_mesh_small_speed_min_backwards_OBJECTS =  \
+am_test_mesh_small_speed_reliable_OBJECTS = test_mesh_small.$(OBJEXT)
+test_mesh_small_speed_reliable_OBJECTS =  \
+	$(am_test_mesh_small_speed_reliable_OBJECTS)
+am_test_mesh_small_speed_reliable_backwards_OBJECTS =  \
 	test_mesh_small.$(OBJEXT)
-test_mesh_small_speed_min_backwards_OBJECTS =  \
-	$(am_test_mesh_small_speed_min_backwards_OBJECTS)
-am_test_mesh_small_speed_nobuf_OBJECTS = test_mesh_small.$(OBJEXT)
-test_mesh_small_speed_nobuf_OBJECTS =  \
-	$(am_test_mesh_small_speed_nobuf_OBJECTS)
-am_test_mesh_small_speed_nobuf_backwards_OBJECTS =  \
-	test_mesh_small.$(OBJEXT)
-test_mesh_small_speed_nobuf_backwards_OBJECTS =  \
-	$(am_test_mesh_small_speed_nobuf_backwards_OBJECTS)
-am_test_mesh_small_unicast_OBJECTS = test_mesh_small.$(OBJEXT)
-test_mesh_small_unicast_OBJECTS =  \
-	$(am_test_mesh_small_unicast_OBJECTS)
-am_test_mesh_tree_api_OBJECTS = test_mesh_tree_api.$(OBJEXT)
-test_mesh_tree_api_OBJECTS = $(am_test_mesh_tree_api_OBJECTS)
+test_mesh_small_speed_reliable_backwards_OBJECTS =  \
+	$(am_test_mesh_small_speed_reliable_backwards_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -278,47 +218,25 @@ am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libgnunetmeshtest_a_SOURCES) \
 	$(libgnunet_plugin_block_mesh_la_SOURCES) \
 	$(libgnunetmesh_la_SOURCES) $(gnunet_mesh_SOURCES) \
-	$(gnunet_service_mesh_SOURCES) \
-	$(gnunet_service_mesh_new_SOURCES) \
-	$(test_mesh_2dtorus_SOURCES) $(test_mesh_api_SOURCES) \
-	$(test_mesh_local_1_SOURCES) $(test_mesh_local_2_SOURCES) \
-	$(test_mesh_local_traffic_bck_SOURCES) \
-	$(test_mesh_local_traffic_both_SOURCES) \
-	$(test_mesh_local_traffic_fwd_SOURCES) \
-	$(test_mesh_regex_SOURCES) \
-	$(test_mesh_small_multicast_SOURCES) \
+	$(gnunet_service_mesh_SOURCES) $(test_mesh_local_SOURCES) \
+	$(test_mesh_single_SOURCES) $(test_mesh_small_forward_SOURCES) \
 	$(test_mesh_small_signal_SOURCES) \
 	$(test_mesh_small_speed_SOURCES) \
 	$(test_mesh_small_speed_ack_SOURCES) \
 	$(test_mesh_small_speed_backwards_SOURCES) \
-	$(test_mesh_small_speed_min_SOURCES) \
-	$(test_mesh_small_speed_min_backwards_SOURCES) \
-	$(test_mesh_small_speed_nobuf_SOURCES) \
-	$(test_mesh_small_speed_nobuf_backwards_SOURCES) \
-	$(test_mesh_small_unicast_SOURCES) \
-	$(test_mesh_tree_api_SOURCES)
+	$(test_mesh_small_speed_reliable_SOURCES) \
+	$(test_mesh_small_speed_reliable_backwards_SOURCES)
 DIST_SOURCES = $(libgnunetmeshtest_a_SOURCES) \
 	$(libgnunet_plugin_block_mesh_la_SOURCES) \
 	$(libgnunetmesh_la_SOURCES) $(gnunet_mesh_SOURCES) \
-	$(gnunet_service_mesh_SOURCES) \
-	$(gnunet_service_mesh_new_SOURCES) \
-	$(test_mesh_2dtorus_SOURCES) $(test_mesh_api_SOURCES) \
-	$(test_mesh_local_1_SOURCES) $(test_mesh_local_2_SOURCES) \
-	$(test_mesh_local_traffic_bck_SOURCES) \
-	$(test_mesh_local_traffic_both_SOURCES) \
-	$(test_mesh_local_traffic_fwd_SOURCES) \
-	$(test_mesh_regex_SOURCES) \
-	$(test_mesh_small_multicast_SOURCES) \
+	$(gnunet_service_mesh_SOURCES) $(test_mesh_local_SOURCES) \
+	$(test_mesh_single_SOURCES) $(test_mesh_small_forward_SOURCES) \
 	$(test_mesh_small_signal_SOURCES) \
 	$(test_mesh_small_speed_SOURCES) \
 	$(test_mesh_small_speed_ack_SOURCES) \
 	$(test_mesh_small_speed_backwards_SOURCES) \
-	$(test_mesh_small_speed_min_SOURCES) \
-	$(test_mesh_small_speed_min_backwards_SOURCES) \
-	$(test_mesh_small_speed_nobuf_SOURCES) \
-	$(test_mesh_small_speed_nobuf_backwards_SOURCES) \
-	$(test_mesh_small_unicast_SOURCES) \
-	$(test_mesh_tree_api_SOURCES)
+	$(test_mesh_small_speed_reliable_SOURCES) \
+	$(test_mesh_small_speed_reliable_backwards_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -334,11 +252,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -365,24 +283,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -393,20 +303,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -414,16 +317,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -451,7 +348,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -473,12 +369,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -520,8 +419,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -536,9 +433,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -548,7 +443,7 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
@@ -559,7 +454,7 @@ pkgcfg_DATA = \
 plugindir = $(libdir)/gnunet
 AM_CLFAGS = -g
 lib_LTLIBRARIES = \
-  libgnunetmesh.la
+  libgnunetmesh.la $(EXP_LIB)
 
 plugin_LTLIBRARIES = \
  libgnunet_plugin_block_mesh.la
@@ -588,33 +483,10 @@ libgnunetmesh_la_LIBADD = \
 
 libgnunetmesh_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
-  -version-info 2:1:1
+  -version-info 4:0:0
 
-gnunet_service_mesh_SOURCES = \
- gnunet-service-mesh.c \
- mesh_tunnel_tree.c mesh_tunnel_tree.h \
- mesh_common.c
-
-gnunet_service_mesh_CFLAGS = $(AM_CFLAGS)
-gnunet_service_mesh_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/dht/libgnunetdht.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/block/libgnunetblock.la \
-  $(top_builddir)/src/regex/libgnunetregex.la
-
-gnunet_service_mesh_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/dht/libgnunetdht.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/block/libgnunetblock.la \
-  $(top_builddir)/src/regex/libgnunetregex.la
-
-@LINUX_TRUE@gnunet_service_mesh_LDFLAGS = -lrt
 gnunet_mesh_SOURCES = \
- gnunet-mesh.c         
+  gnunet-mesh.c
 
 gnunet_mesh_LDADD = \
   $(top_builddir)/src/mesh/libgnunetmesh.la \
@@ -623,30 +495,34 @@ gnunet_mesh_LDADD = \
 gnunet_mesh_DEPENDENCIES = \
   libgnunetmesh.la
 
-gnunet_service_mesh_new_SOURCES = \
- gnunet-service-mesh-new.c \
- mesh_tunnel_tree.c \
- mesh_common.c
+gnunet_service_mesh_SOURCES = \
+ gnunet-service-mesh_tunnel.c gnunet-service-mesh_tunnel.h \
+ gnunet-service-mesh_connection.c gnunet-service-mesh_connection.h \
+ gnunet-service-mesh_channel.c gnunet-service-mesh_channel.h \
+ gnunet-service-mesh_local.c gnunet-service-mesh_local.h \
+ gnunet-service-mesh_peer.c gnunet-service-mesh_peer.h \
+ gnunet-service-mesh_dht.c gnunet-service-mesh_dht.h \
+ mesh_path.c mesh_path.h \
+ mesh_common.c \
+ gnunet-service-mesh.c
 
-gnunet_service_mesh_new_CFLAGS = $(AM_CFLAGS)
-gnunet_service_mesh_new_LDADD = \
+gnunet_service_mesh_CFLAGS = $(AM_CFLAGS)
+gnunet_service_mesh_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/dht/libgnunetdht.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/block/libgnunetblock.la \
-  $(top_builddir)/src/regex/libgnunetregex.la
+  $(top_builddir)/src/block/libgnunetblock.la
 
-gnunet_service_mesh_new_DEPENDENCIES = \
+gnunet_service_mesh_DEPENDENCIES = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/dht/libgnunetdht.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/block/libgnunetblock.la \
-  $(top_builddir)/src/regex/libgnunetregex.la
+  $(top_builddir)/src/block/libgnunetblock.la
 
-@LINUX_TRUE@gnunet_service_mesh_new_LDFLAGS = -lrt
-noinst_LIBRARIES = libgnunetmeshtest.a
+@LINUX_TRUE@gnunet_service_mesh_LDFLAGS = -lrt
+@HAVE_TESTING_TRUE@noinst_LIBRARIES = libgnunetmeshtest.a $(noinst_LIB_EXP)
 libgnunetmeshtest_a_SOURCES = \
   mesh_test_lib.c mesh_test_lib.h
 
@@ -658,159 +534,79 @@ libgnunetmeshtest_a_LIBADD = \
 libgnunetmeshtest_a_DEPENDENCIES = \
   libgnunetmesh.la
 
-test_mesh_api_SOURCES = \
- test_mesh_api.c
-
-test_mesh_api_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/mesh/libgnunetmesh.la
-
-test_mesh_api_DEPENDENCIES = \
-  libgnunetmesh.la \
-   $(top_builddir)/src/util/libgnunetutil.la
-
-test_mesh_tree_api_SOURCES = \
- test_mesh_tree_api.c
-
-test_mesh_tree_api_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/dht/libgnunetdht.la
-
-test_mesh_tree_api_DEPENDENCIES = \
-  libgnunetmesh.la \
-  $(top_builddir)/src/dht/libgnunetdht.la
-
-test_mesh_local_1_SOURCES = \
- test_mesh_local_1.c
-
-test_mesh_local_1_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/mesh/libgnunetmesh.la
-
-test_mesh_local_1_DEPENDENCIES = \
-  libgnunetmesh.la
-
-test_mesh_local_2_SOURCES = \
- test_mesh_local_2.c
-
-test_mesh_local_2_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/mesh/libgnunetmesh.la
-
-test_mesh_local_2_DEPENDENCIES = \
-  libgnunetmesh.la
-
-test_mesh_local_traffic_fwd_SOURCES = \
- test_mesh_local_traffic.c
-
-test_mesh_local_traffic_fwd_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/mesh/libgnunetmesh.la
-
-test_mesh_local_traffic_fwd_DEPENDENCIES = \
-  libgnunetmesh.la
-
-test_mesh_local_traffic_bck_SOURCES = \
- test_mesh_local_traffic.c
-
-test_mesh_local_traffic_bck_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/mesh/libgnunetmesh.la
-
-test_mesh_local_traffic_bck_DEPENDENCIES = \
-  libgnunetmesh.la
-
-test_mesh_local_traffic_both_SOURCES = \
- test_mesh_local_traffic.c
-
-test_mesh_local_traffic_both_LDADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/mesh/libgnunetmesh.la
-
-test_mesh_local_traffic_both_DEPENDENCIES = \
-  libgnunetmesh.la
-
 ld_mesh_test_lib = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/mesh/libgnunetmeshtest.a \
   $(top_builddir)/src/mesh/libgnunetmesh.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/testbed/libgnunettestbed.la
 
 dep_mesh_test_lib = \
-  libgnunetmeshtest.a \
-  libgnunetmesh.la
+  libgnunetmesh.la \
+  libgnunetmeshtest.a
 
-test_mesh_2dtorus_SOURCES = \
- test_mesh_2dtorus.c
+test_mesh_single_SOURCES = \
+  test_mesh_single.c
 
-test_mesh_2dtorus_LDADD = $(ld_mesh_test_lib)
-test_mesh_2dtorus_DEPENDENCIES = $(dep_mesh_test_lib)
-test_mesh_regex_SOURCES = \
- test_mesh_regex.c
+test_mesh_single_LDADD = $(ld_mesh_test_lib)
+test_mesh_single_DEPENDENCIES = $(dep_mesh_test_lib)
+test_mesh_local_SOURCES = \
+  test_mesh_local.c
 
-test_mesh_regex_LDADD = $(ld_mesh_test_lib)
-test_mesh_regex_DEPENDENCIES = $(dep_mesh_test_lib)
-test_mesh_small_unicast_SOURCES = \
- test_mesh_small.c
+test_mesh_local_LDADD = $(ld_mesh_test_lib)
+test_mesh_local_DEPENDENCIES = $(dep_mesh_test_lib)
+test_mesh_small_forward_SOURCES = \
+  test_mesh_small.c
 
-test_mesh_small_unicast_LDADD = $(ld_mesh_test_lib)
-test_mesh_small_unicast_DEPENDENCIES = $(dep_mesh_test_lib)
-test_mesh_small_multicast_SOURCES = \
- test_mesh_small.c
-
-test_mesh_small_multicast_LDADD = $(ld_mesh_test_lib)
-test_mesh_small_multicast_DEPENDENCIES = $(dep_mesh_test_lib)
+test_mesh_small_forward_LDADD = $(ld_mesh_test_lib)
+test_mesh_small_forward_DEPENDENCIES = $(dep_mesh_test_lib)
 test_mesh_small_signal_SOURCES = \
- test_mesh_small.c
+  test_mesh_small.c
 
 test_mesh_small_signal_LDADD = $(ld_mesh_test_lib)
 test_mesh_small_signal_DEPENDENCIES = $(dep_mesh_test_lib)
-test_mesh_small_speed_ack_SOURCES = \
- test_mesh_small.c
-
-test_mesh_small_speed_ack_LDADD = $(ld_mesh_test_lib)
-test_mesh_small_speed_ack_DEPENDENCIES = $(dep_mesh_test_lib)
 test_mesh_small_speed_SOURCES = \
- test_mesh_small.c
+  test_mesh_small.c
 
 test_mesh_small_speed_LDADD = $(ld_mesh_test_lib)
 test_mesh_small_speed_DEPENDENCIES = $(dep_mesh_test_lib)
-test_mesh_small_speed_min_SOURCES = \
- test_mesh_small.c
+test_mesh_small_speed_ack_SOURCES = \
+  test_mesh_small.c
 
-test_mesh_small_speed_min_LDADD = $(ld_mesh_test_lib)
-test_mesh_small_speed_min_DEPENDENCIES = $(dep_mesh_test_lib)
+test_mesh_small_speed_ack_LDADD = $(ld_mesh_test_lib)
+test_mesh_small_speed_ack_DEPENDENCIES = $(dep_mesh_test_lib)
 test_mesh_small_speed_nobuf_SOURCES = \
- test_mesh_small.c
+  test_mesh_small.c
 
 test_mesh_small_speed_nobuf_LDADD = $(ld_mesh_test_lib)
 test_mesh_small_speed_nobuf_DEPENDENCIES = $(dep_mesh_test_lib)
 test_mesh_small_speed_backwards_SOURCES = \
- test_mesh_small.c
+  test_mesh_small.c
 
 test_mesh_small_speed_backwards_LDADD = $(ld_mesh_test_lib)
 test_mesh_small_speed_backwards_DEPENDENCIES = $(dep_mesh_test_lib)
-test_mesh_small_speed_min_backwards_SOURCES = \
- test_mesh_small.c
-
-test_mesh_small_speed_min_backwards_LDADD = $(ld_mesh_test_lib)
-test_mesh_small_speed_min_backwards_DEPENDENCIES = $(dep_mesh_test_lib)
 test_mesh_small_speed_nobuf_backwards_SOURCES = \
- test_mesh_small.c
+  test_mesh_small.c
 
 test_mesh_small_speed_nobuf_backwards_LDADD = $(ld_mesh_test_lib)
 test_mesh_small_speed_nobuf_backwards_DEPENDENCIES = $(dep_mesh_test_lib)
+test_mesh_small_speed_reliable_SOURCES = \
+  test_mesh_small.c
+
+test_mesh_small_speed_reliable_LDADD = $(ld_mesh_test_lib)
+test_mesh_small_speed_reliable_DEPENDENCIES = $(dep_mesh_test_lib)
+test_mesh_small_speed_reliable_backwards_SOURCES = \
+  test_mesh_small.c
+
+test_mesh_small_speed_reliable_backwards_LDADD = $(ld_mesh_test_lib)
+test_mesh_small_speed_reliable_backwards_DEPENDENCIES = $(dep_mesh_test_lib)
+@ENABLE_TEST_RUN_TRUE@TESTS = \
+@ENABLE_TEST_RUN_TRUE@ $(check_PROGRAMS)
+
 EXTRA_DIST = \
   mesh.h mesh_protocol.h \
   test_mesh.conf \
-  test_mesh_2dtorus.conf \
-  test_mesh_small.conf
+  test_mesh_drop.conf
 
 all: all-am
 
@@ -1030,36 +826,15 @@ gnunet-mesh$(EXEEXT): $(gnunet_mesh_OBJECTS) $(gnunet_mesh_DEPENDENCIES) $(EXTRA
 gnunet-service-mesh$(EXEEXT): $(gnunet_service_mesh_OBJECTS) $(gnunet_service_mesh_DEPENDENCIES) $(EXTRA_gnunet_service_mesh_DEPENDENCIES) 
 	@rm -f gnunet-service-mesh$(EXEEXT)
 	$(AM_V_CCLD)$(gnunet_service_mesh_LINK) $(gnunet_service_mesh_OBJECTS) $(gnunet_service_mesh_LDADD) $(LIBS)
-gnunet-service-mesh-new$(EXEEXT): $(gnunet_service_mesh_new_OBJECTS) $(gnunet_service_mesh_new_DEPENDENCIES) $(EXTRA_gnunet_service_mesh_new_DEPENDENCIES) 
-	@rm -f gnunet-service-mesh-new$(EXEEXT)
-	$(AM_V_CCLD)$(gnunet_service_mesh_new_LINK) $(gnunet_service_mesh_new_OBJECTS) $(gnunet_service_mesh_new_LDADD) $(LIBS)
-test_mesh_2dtorus$(EXEEXT): $(test_mesh_2dtorus_OBJECTS) $(test_mesh_2dtorus_DEPENDENCIES) $(EXTRA_test_mesh_2dtorus_DEPENDENCIES) 
-	@rm -f test_mesh_2dtorus$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_2dtorus_OBJECTS) $(test_mesh_2dtorus_LDADD) $(LIBS)
-test_mesh_api$(EXEEXT): $(test_mesh_api_OBJECTS) $(test_mesh_api_DEPENDENCIES) $(EXTRA_test_mesh_api_DEPENDENCIES) 
-	@rm -f test_mesh_api$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_api_OBJECTS) $(test_mesh_api_LDADD) $(LIBS)
-test_mesh_local_1$(EXEEXT): $(test_mesh_local_1_OBJECTS) $(test_mesh_local_1_DEPENDENCIES) $(EXTRA_test_mesh_local_1_DEPENDENCIES) 
-	@rm -f test_mesh_local_1$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_local_1_OBJECTS) $(test_mesh_local_1_LDADD) $(LIBS)
-test_mesh_local_2$(EXEEXT): $(test_mesh_local_2_OBJECTS) $(test_mesh_local_2_DEPENDENCIES) $(EXTRA_test_mesh_local_2_DEPENDENCIES) 
-	@rm -f test_mesh_local_2$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_local_2_OBJECTS) $(test_mesh_local_2_LDADD) $(LIBS)
-test_mesh_local_traffic_bck$(EXEEXT): $(test_mesh_local_traffic_bck_OBJECTS) $(test_mesh_local_traffic_bck_DEPENDENCIES) $(EXTRA_test_mesh_local_traffic_bck_DEPENDENCIES) 
-	@rm -f test_mesh_local_traffic_bck$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_local_traffic_bck_OBJECTS) $(test_mesh_local_traffic_bck_LDADD) $(LIBS)
-test_mesh_local_traffic_both$(EXEEXT): $(test_mesh_local_traffic_both_OBJECTS) $(test_mesh_local_traffic_both_DEPENDENCIES) $(EXTRA_test_mesh_local_traffic_both_DEPENDENCIES) 
-	@rm -f test_mesh_local_traffic_both$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_local_traffic_both_OBJECTS) $(test_mesh_local_traffic_both_LDADD) $(LIBS)
-test_mesh_local_traffic_fwd$(EXEEXT): $(test_mesh_local_traffic_fwd_OBJECTS) $(test_mesh_local_traffic_fwd_DEPENDENCIES) $(EXTRA_test_mesh_local_traffic_fwd_DEPENDENCIES) 
-	@rm -f test_mesh_local_traffic_fwd$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_local_traffic_fwd_OBJECTS) $(test_mesh_local_traffic_fwd_LDADD) $(LIBS)
-test_mesh_regex$(EXEEXT): $(test_mesh_regex_OBJECTS) $(test_mesh_regex_DEPENDENCIES) $(EXTRA_test_mesh_regex_DEPENDENCIES) 
-	@rm -f test_mesh_regex$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_regex_OBJECTS) $(test_mesh_regex_LDADD) $(LIBS)
-test_mesh_small_multicast$(EXEEXT): $(test_mesh_small_multicast_OBJECTS) $(test_mesh_small_multicast_DEPENDENCIES) $(EXTRA_test_mesh_small_multicast_DEPENDENCIES) 
-	@rm -f test_mesh_small_multicast$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_small_multicast_OBJECTS) $(test_mesh_small_multicast_LDADD) $(LIBS)
+test_mesh_local$(EXEEXT): $(test_mesh_local_OBJECTS) $(test_mesh_local_DEPENDENCIES) $(EXTRA_test_mesh_local_DEPENDENCIES) 
+	@rm -f test_mesh_local$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mesh_local_OBJECTS) $(test_mesh_local_LDADD) $(LIBS)
+test_mesh_single$(EXEEXT): $(test_mesh_single_OBJECTS) $(test_mesh_single_DEPENDENCIES) $(EXTRA_test_mesh_single_DEPENDENCIES) 
+	@rm -f test_mesh_single$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mesh_single_OBJECTS) $(test_mesh_single_LDADD) $(LIBS)
+test_mesh_small_forward$(EXEEXT): $(test_mesh_small_forward_OBJECTS) $(test_mesh_small_forward_DEPENDENCIES) $(EXTRA_test_mesh_small_forward_DEPENDENCIES) 
+	@rm -f test_mesh_small_forward$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mesh_small_forward_OBJECTS) $(test_mesh_small_forward_LDADD) $(LIBS)
 test_mesh_small_signal$(EXEEXT): $(test_mesh_small_signal_OBJECTS) $(test_mesh_small_signal_DEPENDENCIES) $(EXTRA_test_mesh_small_signal_DEPENDENCIES) 
 	@rm -f test_mesh_small_signal$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_mesh_small_signal_OBJECTS) $(test_mesh_small_signal_LDADD) $(LIBS)
@@ -1072,24 +847,12 @@ test_mesh_small_speed_ack$(EXEEXT): $(test_mesh_small_speed_ack_OBJECTS) $(test_
 test_mesh_small_speed_backwards$(EXEEXT): $(test_mesh_small_speed_backwards_OBJECTS) $(test_mesh_small_speed_backwards_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_backwards_DEPENDENCIES) 
 	@rm -f test_mesh_small_speed_backwards$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_backwards_OBJECTS) $(test_mesh_small_speed_backwards_LDADD) $(LIBS)
-test_mesh_small_speed_min$(EXEEXT): $(test_mesh_small_speed_min_OBJECTS) $(test_mesh_small_speed_min_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_min_DEPENDENCIES) 
-	@rm -f test_mesh_small_speed_min$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_min_OBJECTS) $(test_mesh_small_speed_min_LDADD) $(LIBS)
-test_mesh_small_speed_min_backwards$(EXEEXT): $(test_mesh_small_speed_min_backwards_OBJECTS) $(test_mesh_small_speed_min_backwards_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_min_backwards_DEPENDENCIES) 
-	@rm -f test_mesh_small_speed_min_backwards$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_min_backwards_OBJECTS) $(test_mesh_small_speed_min_backwards_LDADD) $(LIBS)
-test_mesh_small_speed_nobuf$(EXEEXT): $(test_mesh_small_speed_nobuf_OBJECTS) $(test_mesh_small_speed_nobuf_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_nobuf_DEPENDENCIES) 
-	@rm -f test_mesh_small_speed_nobuf$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_nobuf_OBJECTS) $(test_mesh_small_speed_nobuf_LDADD) $(LIBS)
-test_mesh_small_speed_nobuf_backwards$(EXEEXT): $(test_mesh_small_speed_nobuf_backwards_OBJECTS) $(test_mesh_small_speed_nobuf_backwards_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_nobuf_backwards_DEPENDENCIES) 
-	@rm -f test_mesh_small_speed_nobuf_backwards$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_nobuf_backwards_OBJECTS) $(test_mesh_small_speed_nobuf_backwards_LDADD) $(LIBS)
-test_mesh_small_unicast$(EXEEXT): $(test_mesh_small_unicast_OBJECTS) $(test_mesh_small_unicast_DEPENDENCIES) $(EXTRA_test_mesh_small_unicast_DEPENDENCIES) 
-	@rm -f test_mesh_small_unicast$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_small_unicast_OBJECTS) $(test_mesh_small_unicast_LDADD) $(LIBS)
-test_mesh_tree_api$(EXEEXT): $(test_mesh_tree_api_OBJECTS) $(test_mesh_tree_api_DEPENDENCIES) $(EXTRA_test_mesh_tree_api_DEPENDENCIES) 
-	@rm -f test_mesh_tree_api$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_mesh_tree_api_OBJECTS) $(test_mesh_tree_api_LDADD) $(LIBS)
+test_mesh_small_speed_reliable$(EXEEXT): $(test_mesh_small_speed_reliable_OBJECTS) $(test_mesh_small_speed_reliable_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_reliable_DEPENDENCIES) 
+	@rm -f test_mesh_small_speed_reliable$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_reliable_OBJECTS) $(test_mesh_small_speed_reliable_LDADD) $(LIBS)
+test_mesh_small_speed_reliable_backwards$(EXEEXT): $(test_mesh_small_speed_reliable_backwards_OBJECTS) $(test_mesh_small_speed_reliable_backwards_DEPENDENCIES) $(EXTRA_test_mesh_small_speed_reliable_backwards_DEPENDENCIES) 
+	@rm -f test_mesh_small_speed_reliable_backwards$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_mesh_small_speed_reliable_backwards_OBJECTS) $(test_mesh_small_speed_reliable_backwards_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1099,23 +862,21 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-mesh.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-mesh_common.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh_new-mesh_common.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_mesh-mesh_path.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mesh_api.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mesh_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mesh_test_lib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_block_mesh.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_2dtorus.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_api.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_local_1.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_local_2.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_local_traffic.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_regex.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_local.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_single.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_small.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mesh_tree_api.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1138,33 +899,103 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-gnunet_service_mesh-gnunet-service-mesh.o: gnunet-service-mesh.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh.o `test -f 'gnunet-service-mesh.c' || echo '$(srcdir)/'`gnunet-service-mesh.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh.c' object='gnunet_service_mesh-gnunet-service-mesh.o' libtool=no @AMDEPBACKSLASH@
+gnunet_service_mesh-gnunet-service-mesh_tunnel.o: gnunet-service-mesh_tunnel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_tunnel.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_tunnel.o `test -f 'gnunet-service-mesh_tunnel.c' || echo '$(srcdir)/'`gnunet-service-mesh_tunnel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_tunnel.c' object='gnunet_service_mesh-gnunet-service-mesh_tunnel.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh.o `test -f 'gnunet-service-mesh.c' || echo '$(srcdir)/'`gnunet-service-mesh.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_tunnel.o `test -f 'gnunet-service-mesh_tunnel.c' || echo '$(srcdir)/'`gnunet-service-mesh_tunnel.c
 
-gnunet_service_mesh-gnunet-service-mesh.obj: gnunet-service-mesh.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh.obj `if test -f 'gnunet-service-mesh.c'; then $(CYGPATH_W) 'gnunet-service-mesh.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh.c' object='gnunet_service_mesh-gnunet-service-mesh.obj' libtool=no @AMDEPBACKSLASH@
+gnunet_service_mesh-gnunet-service-mesh_tunnel.obj: gnunet-service-mesh_tunnel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_tunnel.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_tunnel.obj `if test -f 'gnunet-service-mesh_tunnel.c'; then $(CYGPATH_W) 'gnunet-service-mesh_tunnel.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_tunnel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_tunnel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_tunnel.c' object='gnunet_service_mesh-gnunet-service-mesh_tunnel.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh.obj `if test -f 'gnunet-service-mesh.c'; then $(CYGPATH_W) 'gnunet-service-mesh.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_tunnel.obj `if test -f 'gnunet-service-mesh_tunnel.c'; then $(CYGPATH_W) 'gnunet-service-mesh_tunnel.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_tunnel.c'; fi`
 
-gnunet_service_mesh-mesh_tunnel_tree.o: mesh_tunnel_tree.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-mesh_tunnel_tree.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Tpo -c -o gnunet_service_mesh-mesh_tunnel_tree.o `test -f 'mesh_tunnel_tree.c' || echo '$(srcdir)/'`mesh_tunnel_tree.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Tpo $(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_tunnel_tree.c' object='gnunet_service_mesh-mesh_tunnel_tree.o' libtool=no @AMDEPBACKSLASH@
+gnunet_service_mesh-gnunet-service-mesh_connection.o: gnunet-service-mesh_connection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_connection.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_connection.o `test -f 'gnunet-service-mesh_connection.c' || echo '$(srcdir)/'`gnunet-service-mesh_connection.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_connection.c' object='gnunet_service_mesh-gnunet-service-mesh_connection.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-mesh_tunnel_tree.o `test -f 'mesh_tunnel_tree.c' || echo '$(srcdir)/'`mesh_tunnel_tree.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_connection.o `test -f 'gnunet-service-mesh_connection.c' || echo '$(srcdir)/'`gnunet-service-mesh_connection.c
 
-gnunet_service_mesh-mesh_tunnel_tree.obj: mesh_tunnel_tree.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-mesh_tunnel_tree.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Tpo -c -o gnunet_service_mesh-mesh_tunnel_tree.obj `if test -f 'mesh_tunnel_tree.c'; then $(CYGPATH_W) 'mesh_tunnel_tree.c'; else $(CYGPATH_W) '$(srcdir)/mesh_tunnel_tree.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Tpo $(DEPDIR)/gnunet_service_mesh-mesh_tunnel_tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_tunnel_tree.c' object='gnunet_service_mesh-mesh_tunnel_tree.obj' libtool=no @AMDEPBACKSLASH@
+gnunet_service_mesh-gnunet-service-mesh_connection.obj: gnunet-service-mesh_connection.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_connection.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_connection.obj `if test -f 'gnunet-service-mesh_connection.c'; then $(CYGPATH_W) 'gnunet-service-mesh_connection.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_connection.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_connection.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_connection.c' object='gnunet_service_mesh-gnunet-service-mesh_connection.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-mesh_tunnel_tree.obj `if test -f 'mesh_tunnel_tree.c'; then $(CYGPATH_W) 'mesh_tunnel_tree.c'; else $(CYGPATH_W) '$(srcdir)/mesh_tunnel_tree.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_connection.obj `if test -f 'gnunet-service-mesh_connection.c'; then $(CYGPATH_W) 'gnunet-service-mesh_connection.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_connection.c'; fi`
+
+gnunet_service_mesh-gnunet-service-mesh_channel.o: gnunet-service-mesh_channel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_channel.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_channel.o `test -f 'gnunet-service-mesh_channel.c' || echo '$(srcdir)/'`gnunet-service-mesh_channel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_channel.c' object='gnunet_service_mesh-gnunet-service-mesh_channel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_channel.o `test -f 'gnunet-service-mesh_channel.c' || echo '$(srcdir)/'`gnunet-service-mesh_channel.c
+
+gnunet_service_mesh-gnunet-service-mesh_channel.obj: gnunet-service-mesh_channel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_channel.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_channel.obj `if test -f 'gnunet-service-mesh_channel.c'; then $(CYGPATH_W) 'gnunet-service-mesh_channel.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_channel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_channel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_channel.c' object='gnunet_service_mesh-gnunet-service-mesh_channel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_channel.obj `if test -f 'gnunet-service-mesh_channel.c'; then $(CYGPATH_W) 'gnunet-service-mesh_channel.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_channel.c'; fi`
+
+gnunet_service_mesh-gnunet-service-mesh_local.o: gnunet-service-mesh_local.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_local.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_local.o `test -f 'gnunet-service-mesh_local.c' || echo '$(srcdir)/'`gnunet-service-mesh_local.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_local.c' object='gnunet_service_mesh-gnunet-service-mesh_local.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_local.o `test -f 'gnunet-service-mesh_local.c' || echo '$(srcdir)/'`gnunet-service-mesh_local.c
+
+gnunet_service_mesh-gnunet-service-mesh_local.obj: gnunet-service-mesh_local.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_local.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_local.obj `if test -f 'gnunet-service-mesh_local.c'; then $(CYGPATH_W) 'gnunet-service-mesh_local.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_local.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_local.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_local.c' object='gnunet_service_mesh-gnunet-service-mesh_local.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_local.obj `if test -f 'gnunet-service-mesh_local.c'; then $(CYGPATH_W) 'gnunet-service-mesh_local.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_local.c'; fi`
+
+gnunet_service_mesh-gnunet-service-mesh_peer.o: gnunet-service-mesh_peer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_peer.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_peer.o `test -f 'gnunet-service-mesh_peer.c' || echo '$(srcdir)/'`gnunet-service-mesh_peer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_peer.c' object='gnunet_service_mesh-gnunet-service-mesh_peer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_peer.o `test -f 'gnunet-service-mesh_peer.c' || echo '$(srcdir)/'`gnunet-service-mesh_peer.c
+
+gnunet_service_mesh-gnunet-service-mesh_peer.obj: gnunet-service-mesh_peer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_peer.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_peer.obj `if test -f 'gnunet-service-mesh_peer.c'; then $(CYGPATH_W) 'gnunet-service-mesh_peer.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_peer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_peer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_peer.c' object='gnunet_service_mesh-gnunet-service-mesh_peer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_peer.obj `if test -f 'gnunet-service-mesh_peer.c'; then $(CYGPATH_W) 'gnunet-service-mesh_peer.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_peer.c'; fi`
+
+gnunet_service_mesh-gnunet-service-mesh_dht.o: gnunet-service-mesh_dht.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_dht.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_dht.o `test -f 'gnunet-service-mesh_dht.c' || echo '$(srcdir)/'`gnunet-service-mesh_dht.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_dht.c' object='gnunet_service_mesh-gnunet-service-mesh_dht.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_dht.o `test -f 'gnunet-service-mesh_dht.c' || echo '$(srcdir)/'`gnunet-service-mesh_dht.c
+
+gnunet_service_mesh-gnunet-service-mesh_dht.obj: gnunet-service-mesh_dht.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh_dht.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh_dht.obj `if test -f 'gnunet-service-mesh_dht.c'; then $(CYGPATH_W) 'gnunet-service-mesh_dht.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_dht.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh_dht.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh_dht.c' object='gnunet_service_mesh-gnunet-service-mesh_dht.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh_dht.obj `if test -f 'gnunet-service-mesh_dht.c'; then $(CYGPATH_W) 'gnunet-service-mesh_dht.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh_dht.c'; fi`
+
+gnunet_service_mesh-mesh_path.o: mesh_path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-mesh_path.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-mesh_path.Tpo -c -o gnunet_service_mesh-mesh_path.o `test -f 'mesh_path.c' || echo '$(srcdir)/'`mesh_path.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-mesh_path.Tpo $(DEPDIR)/gnunet_service_mesh-mesh_path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_path.c' object='gnunet_service_mesh-mesh_path.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-mesh_path.o `test -f 'mesh_path.c' || echo '$(srcdir)/'`mesh_path.c
+
+gnunet_service_mesh-mesh_path.obj: mesh_path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-mesh_path.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-mesh_path.Tpo -c -o gnunet_service_mesh-mesh_path.obj `if test -f 'mesh_path.c'; then $(CYGPATH_W) 'mesh_path.c'; else $(CYGPATH_W) '$(srcdir)/mesh_path.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-mesh_path.Tpo $(DEPDIR)/gnunet_service_mesh-mesh_path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_path.c' object='gnunet_service_mesh-mesh_path.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-mesh_path.obj `if test -f 'mesh_path.c'; then $(CYGPATH_W) 'mesh_path.c'; else $(CYGPATH_W) '$(srcdir)/mesh_path.c'; fi`
 
 gnunet_service_mesh-mesh_common.o: mesh_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-mesh_common.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-mesh_common.Tpo -c -o gnunet_service_mesh-mesh_common.o `test -f 'mesh_common.c' || echo '$(srcdir)/'`mesh_common.c
@@ -1180,47 +1011,19 @@ gnunet_service_mesh-mesh_common.obj: mesh_common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-mesh_common.obj `if test -f 'mesh_common.c'; then $(CYGPATH_W) 'mesh_common.c'; else $(CYGPATH_W) '$(srcdir)/mesh_common.c'; fi`
 
-gnunet_service_mesh_new-gnunet-service-mesh-new.o: gnunet-service-mesh-new.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh_new-gnunet-service-mesh-new.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Tpo -c -o gnunet_service_mesh_new-gnunet-service-mesh-new.o `test -f 'gnunet-service-mesh-new.c' || echo '$(srcdir)/'`gnunet-service-mesh-new.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Tpo $(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh-new.c' object='gnunet_service_mesh_new-gnunet-service-mesh-new.o' libtool=no @AMDEPBACKSLASH@
+gnunet_service_mesh-gnunet-service-mesh.o: gnunet-service-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh.o `test -f 'gnunet-service-mesh.c' || echo '$(srcdir)/'`gnunet-service-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh.c' object='gnunet_service_mesh-gnunet-service-mesh.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh_new-gnunet-service-mesh-new.o `test -f 'gnunet-service-mesh-new.c' || echo '$(srcdir)/'`gnunet-service-mesh-new.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh.o `test -f 'gnunet-service-mesh.c' || echo '$(srcdir)/'`gnunet-service-mesh.c
 
-gnunet_service_mesh_new-gnunet-service-mesh-new.obj: gnunet-service-mesh-new.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh_new-gnunet-service-mesh-new.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Tpo -c -o gnunet_service_mesh_new-gnunet-service-mesh-new.obj `if test -f 'gnunet-service-mesh-new.c'; then $(CYGPATH_W) 'gnunet-service-mesh-new.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh-new.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Tpo $(DEPDIR)/gnunet_service_mesh_new-gnunet-service-mesh-new.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh-new.c' object='gnunet_service_mesh_new-gnunet-service-mesh-new.obj' libtool=no @AMDEPBACKSLASH@
+gnunet_service_mesh-gnunet-service-mesh.obj: gnunet-service-mesh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh-gnunet-service-mesh.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo -c -o gnunet_service_mesh-gnunet-service-mesh.obj `if test -f 'gnunet-service-mesh.c'; then $(CYGPATH_W) 'gnunet-service-mesh.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Tpo $(DEPDIR)/gnunet_service_mesh-gnunet-service-mesh.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-mesh.c' object='gnunet_service_mesh-gnunet-service-mesh.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh_new-gnunet-service-mesh-new.obj `if test -f 'gnunet-service-mesh-new.c'; then $(CYGPATH_W) 'gnunet-service-mesh-new.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh-new.c'; fi`
-
-gnunet_service_mesh_new-mesh_tunnel_tree.o: mesh_tunnel_tree.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh_new-mesh_tunnel_tree.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Tpo -c -o gnunet_service_mesh_new-mesh_tunnel_tree.o `test -f 'mesh_tunnel_tree.c' || echo '$(srcdir)/'`mesh_tunnel_tree.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Tpo $(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_tunnel_tree.c' object='gnunet_service_mesh_new-mesh_tunnel_tree.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh_new-mesh_tunnel_tree.o `test -f 'mesh_tunnel_tree.c' || echo '$(srcdir)/'`mesh_tunnel_tree.c
-
-gnunet_service_mesh_new-mesh_tunnel_tree.obj: mesh_tunnel_tree.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh_new-mesh_tunnel_tree.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Tpo -c -o gnunet_service_mesh_new-mesh_tunnel_tree.obj `if test -f 'mesh_tunnel_tree.c'; then $(CYGPATH_W) 'mesh_tunnel_tree.c'; else $(CYGPATH_W) '$(srcdir)/mesh_tunnel_tree.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Tpo $(DEPDIR)/gnunet_service_mesh_new-mesh_tunnel_tree.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_tunnel_tree.c' object='gnunet_service_mesh_new-mesh_tunnel_tree.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh_new-mesh_tunnel_tree.obj `if test -f 'mesh_tunnel_tree.c'; then $(CYGPATH_W) 'mesh_tunnel_tree.c'; else $(CYGPATH_W) '$(srcdir)/mesh_tunnel_tree.c'; fi`
-
-gnunet_service_mesh_new-mesh_common.o: mesh_common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh_new-mesh_common.o -MD -MP -MF $(DEPDIR)/gnunet_service_mesh_new-mesh_common.Tpo -c -o gnunet_service_mesh_new-mesh_common.o `test -f 'mesh_common.c' || echo '$(srcdir)/'`mesh_common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh_new-mesh_common.Tpo $(DEPDIR)/gnunet_service_mesh_new-mesh_common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_common.c' object='gnunet_service_mesh_new-mesh_common.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh_new-mesh_common.o `test -f 'mesh_common.c' || echo '$(srcdir)/'`mesh_common.c
-
-gnunet_service_mesh_new-mesh_common.obj: mesh_common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -MT gnunet_service_mesh_new-mesh_common.obj -MD -MP -MF $(DEPDIR)/gnunet_service_mesh_new-mesh_common.Tpo -c -o gnunet_service_mesh_new-mesh_common.obj `if test -f 'mesh_common.c'; then $(CYGPATH_W) 'mesh_common.c'; else $(CYGPATH_W) '$(srcdir)/mesh_common.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_mesh_new-mesh_common.Tpo $(DEPDIR)/gnunet_service_mesh_new-mesh_common.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='mesh_common.c' object='gnunet_service_mesh_new-mesh_common.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_new_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh_new-mesh_common.obj `if test -f 'mesh_common.c'; then $(CYGPATH_W) 'mesh_common.c'; else $(CYGPATH_W) '$(srcdir)/mesh_common.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_mesh_CFLAGS) $(CFLAGS) -c -o gnunet_service_mesh-gnunet-service-mesh.obj `if test -f 'gnunet-service-mesh.c'; then $(CYGPATH_W) 'gnunet-service-mesh.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-mesh.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

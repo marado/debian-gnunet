@@ -55,23 +55,28 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 libexec_PROGRAMS = gnunet-service-nse$(EXEEXT)
-noinst_PROGRAMS = gnunet-nse-profiler$(EXEEXT)
-check_PROGRAMS = test_nse_api$(EXEEXT) $(am__EXEEXT_1)
+@HAVE_TESTING_TRUE@noinst_PROGRAMS = gnunet-nse-profiler$(EXEEXT)
+@ENABLE_NSE_HISTOGRAM_TRUE@am__append_1 = \
+@ENABLE_NSE_HISTOGRAM_TRUE@    $(top_builddir)/src/testbed/libgnunettestbedlogger.la
+
+@ENABLE_NSE_HISTOGRAM_TRUE@am__append_2 = \
+@ENABLE_NSE_HISTOGRAM_TRUE@    $(top_builddir)/src/testbed/libgnunettestbedlogger.la
+
+@HAVE_TESTING_TRUE@check_PROGRAMS = test_nse_api$(EXEEXT) \
+@HAVE_TESTING_TRUE@	perf_kdf$(EXEEXT) $(am__EXEEXT_1)
 subdir = src/nse
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/nse.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -129,6 +134,10 @@ am_gnunet_nse_profiler_OBJECTS = gnunet-nse-profiler.$(OBJEXT)
 gnunet_nse_profiler_OBJECTS = $(am_gnunet_nse_profiler_OBJECTS)
 am_gnunet_service_nse_OBJECTS = gnunet-service-nse.$(OBJEXT)
 gnunet_service_nse_OBJECTS = $(am_gnunet_service_nse_OBJECTS)
+am_perf_kdf_OBJECTS = perf_kdf.$(OBJEXT)
+perf_kdf_OBJECTS = $(am_perf_kdf_OBJECTS)
+perf_kdf_DEPENDENCIES = $(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
 am_test_nse_api_OBJECTS = test_nse_api.$(OBJEXT)
 test_nse_api_OBJECTS = $(am_test_nse_api_OBJECTS)
 test_nse_api_DEPENDENCIES = $(top_builddir)/src/nse/libgnunetnse.la \
@@ -167,11 +176,12 @@ AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libgnunetnse_la_SOURCES) $(gnunet_nse_profiler_SOURCES) \
-	$(gnunet_service_nse_SOURCES) $(test_nse_api_SOURCES) \
-	$(test_nse_multipeer_SOURCES)
+	$(gnunet_service_nse_SOURCES) $(perf_kdf_SOURCES) \
+	$(test_nse_api_SOURCES) $(test_nse_multipeer_SOURCES)
 DIST_SOURCES = $(libgnunetnse_la_SOURCES) \
 	$(gnunet_nse_profiler_SOURCES) $(gnunet_service_nse_SOURCES) \
-	$(test_nse_api_SOURCES) $(test_nse_multipeer_SOURCES)
+	$(perf_kdf_SOURCES) $(test_nse_api_SOURCES) \
+	$(test_nse_multipeer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -187,11 +197,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -218,24 +228,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -246,20 +248,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -267,16 +262,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -304,7 +293,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -326,12 +314,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -373,8 +364,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -389,9 +378,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -401,8 +388,8 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
+@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 pkgcfgdir = $(pkgdatadir)/config.d/
@@ -432,31 +419,26 @@ gnunet_nse_profiler_LDADD = -lm \
   $(GN_LIBINTL)
 
 gnunet_nse_profiler_DEPENDENCIES = \
-  libgnunetnse.la				 
+  libgnunetnse.la
 
 gnunet_service_nse_SOURCES = \
- gnunet-service-nse.c         
+ gnunet-service-nse.c
 
-gnunet_service_nse_LDADD = \
-  $(top_builddir)/src/nse/libgnunetnse.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  -lm \
-  $(GN_LIBINTL)
-
-gnunet_service_nse_DEPENDENCIES = \
-  libgnunetnse.la				 
-
+gnunet_service_nse_LDADD = $(top_builddir)/src/nse/libgnunetnse.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/core/libgnunetcore.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+	$(LIBGCRYPT_LIBS) -lm -lgcrypt $(GN_LIBINTL) $(am__append_1)
+gnunet_service_nse_DEPENDENCIES = libgnunetnse.la $(am__append_2)
 @HAVE_BENCHMARKS_TRUE@MULTIPEER_TEST = test_nse_multipeer
-@ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS) 
+@ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
 test_nse_api_SOURCES = \
  test_nse_api.c
 
 test_nse_api_LDADD = \
   $(top_builddir)/src/nse/libgnunetnse.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la
 
 test_nse_multipeer_SOURCES = \
  test_nse_multipeer.c
@@ -466,6 +448,14 @@ test_nse_multipeer_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   -lm
+
+perf_kdf_SOURCES = \
+ perf_kdf.c
+
+perf_kdf_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LIBGCRYPT_LIBS) \
+  -lgcrypt
 
 EXTRA_DIST = \
   test_nse.conf \
@@ -611,6 +601,9 @@ gnunet-nse-profiler$(EXEEXT): $(gnunet_nse_profiler_OBJECTS) $(gnunet_nse_profil
 gnunet-service-nse$(EXEEXT): $(gnunet_service_nse_OBJECTS) $(gnunet_service_nse_DEPENDENCIES) $(EXTRA_gnunet_service_nse_DEPENDENCIES) 
 	@rm -f gnunet-service-nse$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_nse_OBJECTS) $(gnunet_service_nse_LDADD) $(LIBS)
+perf_kdf$(EXEEXT): $(perf_kdf_OBJECTS) $(perf_kdf_DEPENDENCIES) $(EXTRA_perf_kdf_DEPENDENCIES) 
+	@rm -f perf_kdf$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(perf_kdf_OBJECTS) $(perf_kdf_LDADD) $(LIBS)
 test_nse_api$(EXEEXT): $(test_nse_api_OBJECTS) $(test_nse_api_DEPENDENCIES) $(EXTRA_test_nse_api_DEPENDENCIES) 
 	@rm -f test_nse_api$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_nse_api_OBJECTS) $(test_nse_api_LDADD) $(LIBS)
@@ -627,6 +620,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-nse-profiler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-nse.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/nse_api.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_kdf.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_nse_api.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_nse_multipeer.Po@am__quote@
 

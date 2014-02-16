@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 pkgcfgdir= $(pkgdatadir)/config.d/
 
@@ -22,8 +22,7 @@ lib_LTLIBRARIES = \
 
 libgnunetcore_la_SOURCES = \
   core_api.c core.h \
-  core_api_iterate_peers.c \
-  core_api_is_connected.c 
+  core_api_iterate_peers.c
 libgnunetcore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
@@ -46,12 +45,10 @@ gnunet_service_core_SOURCES = \
  gnunet-service-core_sessions.c gnunet-service-core_sessions.h \
  gnunet-service-core_typemap.c gnunet-service-core_typemap.h
 gnunet_service_core_LDADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL) -lz
+  $(GN_LIBINTL) $(Z_LIBS)
 
 
 gnunet_core_SOURCES = \
@@ -62,6 +59,10 @@ gnunet_core_LDADD = \
 gnunet_core_DEPENDENCIES = \
   libgnunetcore.la
 
+if HAVE_TESTING
+  TESTING_TESTS = test_core_api_send_to_self test_core_api_mq
+endif
+
 check_PROGRAMS = \
  test_core_api_start_only \
  test_core_api \
@@ -69,7 +70,7 @@ check_PROGRAMS = \
  test_core_quota_compliance_symmetric \
  test_core_quota_compliance_asymmetric_send_limited \
  test_core_quota_compliance_asymmetric_recv_limited \
- test_core_api_send_to_self
+ $(TESTING_TESTS)
 
 if ENABLE_TEST_RUN
 TESTS = $(check_PROGRAMS)
@@ -92,6 +93,14 @@ test_core_api_reliability_LDADD = \
 test_core_api_send_to_self_SOURCES = \
  test_core_api_send_to_self.c
 test_core_api_send_to_self_LDADD = \
+ $(top_builddir)/src/core/libgnunetcore.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ $(top_builddir)/src/transport/libgnunettransport.la \
+ $(top_builddir)/src/util/libgnunetutil.la
+
+test_core_api_mq_SOURCES = \
+ test_core_api_mq.c
+test_core_api_mq_LDADD = \
  $(top_builddir)/src/core/libgnunetcore.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/transport/libgnunettransport.la \

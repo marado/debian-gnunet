@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -24,17 +24,10 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_crypto_lib.h"
-#include "gnunet_directories.h"
-#include "gnunet_disk_lib.h"
-#include "gnunet_getopt_lib.h"
-#include "gnunet_os_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_protocols.h"
+#include "gnunet_constants.h"
 #include "gnunet_resolver_service.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_service_lib.h"
 
 #if HAVE_MALLINFO
 #include <malloc.h>
@@ -52,315 +45,19 @@
 /* ******************* access control ******************** */
 
 /**
- * @brief IPV4 network in CIDR notation.
+ * Start task that may speed up our system clock artificially
+ *
+ * @param cfg configuration to use
+ * @return GNUNET_OK on success, GNUNET_SYSERR if the speedup was not configured
  */
-struct IPv4NetworkSet
-{
-  /**
-   * IPv4 address.
-   */
-  struct in_addr network;
-
-  /**
-   * IPv4 netmask.
-   */
-  struct in_addr netmask;
-};
-
-/**
-
- * @brief network in CIDR notation for IPV6.
- */
-struct IPv6NetworkSet
-{
-  /**
-   * IPv6 address.
-   */
-  struct in6_addr network;
-
-  /**
-   * IPv6 netmask.
-   */
-  struct in6_addr netmask;
-};
-
-
 int
 GNUNET_SPEEDUP_start_ (const struct GNUNET_CONFIGURATION_Handle *cfg);
 
-int
+/**
+ * Stop tasks that modify clock behavior.
+ */
+void
 GNUNET_SPEEDUP_stop_ (void);
-
-
-/**
- * Parse a network specification. The argument specifies
- * a list of networks. The format is
- * <tt>[network/netmask;]*</tt> (no whitespace, must be terminated
- * with a semicolon). The network must be given in dotted-decimal
- * notation. The netmask can be given in CIDR notation (/16) or
- * in dotted-decimal (/255.255.0.0).
- * 
- * @param routeList a string specifying the forbidden networks
- * @return the converted list, NULL if the synatx is flawed
- */
-static struct IPv4NetworkSet *
-parse_ipv4_specification (const char *routeList)
-{
-  unsigned int count;
-  unsigned int i;
-  unsigned int j;
-  unsigned int len;
-  int cnt;
-  unsigned int pos;
-  unsigned int temps[8];
-  int slash;
-  struct IPv4NetworkSet *result;
-
-  if (NULL == routeList)
-    return NULL;
-  len = strlen (routeList);
-  if (0 == len)
-    return NULL;
-  count = 0;
-  for (i = 0; i < len; i++)
-    if (routeList[i] == ';')
-      count++;
-  result = GNUNET_malloc (sizeof (struct IPv4NetworkSet) * (count + 1));
-  i = 0;
-  pos = 0;
-  while (i < count)
-  {
-    cnt =
-        SSCANF (&routeList[pos], "%u.%u.%u.%u/%u.%u.%u.%u;", &temps[0],
-                &temps[1], &temps[2], &temps[3], &temps[4], &temps[5],
-                &temps[6], &temps[7]);
-    if (8 == cnt)
-    {
-      for (j = 0; j < 8; j++)
-        if (temps[j] > 0xFF)
-        {
-          LOG (GNUNET_ERROR_TYPE_ERROR, _("Invalid format for IP: `%s'\n"),
-               &routeList[pos]);
-          GNUNET_free (result);
-          return NULL;
-        }
-      result[i].network.s_addr =
-          htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
-                 temps[3]);
-      result[i].netmask.s_addr =
-          htonl ((temps[4] << 24) + (temps[5] << 16) + (temps[6] << 8) +
-                 temps[7]);
-      while (routeList[pos] != ';')
-        pos++;
-      pos++;
-      i++;
-      continue;
-    }
-    /* try second notation */
-    cnt =
-        SSCANF (&routeList[pos], "%u.%u.%u.%u/%u;", &temps[0], &temps[1],
-                &temps[2], &temps[3], &slash);
-    if (5 == cnt)
-    {
-      for (j = 0; j < 4; j++)
-        if (temps[j] > 0xFF)
-        {
-          LOG (GNUNET_ERROR_TYPE_ERROR, _("Invalid format for IP: `%s'\n"),
-               &routeList[pos]);
-          GNUNET_free (result);
-          return NULL;
-        }
-      result[i].network.s_addr =
-          htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
-                 temps[3]);
-      if ((slash <= 32) && (slash >= 0))
-      {
-        result[i].netmask.s_addr = 0;
-        while (slash > 0)
-        {
-          result[i].netmask.s_addr =
-              (result[i].netmask.s_addr >> 1) + 0x80000000;
-          slash--;
-        }
-        result[i].netmask.s_addr = htonl (result[i].netmask.s_addr);
-        while (';' != routeList[pos])
-          pos++;
-        pos++;
-        i++;
-        continue;
-      }
-      else
-      {
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
-             slash);
-        GNUNET_free (result);
-        return NULL;            /* error */
-      }
-    }
-    /* try third notation */
-    slash = 32;
-    cnt =
-        SSCANF (&routeList[pos], "%u.%u.%u.%u;", &temps[0], &temps[1],
-                &temps[2], &temps[3]);
-    if (4 == cnt)
-    {
-      for (j = 0; j < 4; j++)
-        if (temps[j] > 0xFF)
-        {
-          LOG (GNUNET_ERROR_TYPE_ERROR, _("Invalid format for IP: `%s'\n"),
-               &routeList[pos]);
-          GNUNET_free (result);
-          return NULL;
-        }
-      result[i].network.s_addr =
-          htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
-                 temps[3]);
-      result[i].netmask.s_addr = 0;
-      while (slash > 0)
-      {
-        result[i].netmask.s_addr = (result[i].netmask.s_addr >> 1) + 0x80000000;
-        slash--;
-      }
-      result[i].netmask.s_addr = htonl (result[i].netmask.s_addr);
-      while (routeList[pos] != ';')
-        pos++;
-      pos++;
-      i++;
-      continue;
-    }
-    LOG (GNUNET_ERROR_TYPE_ERROR, _("Invalid format for IP: `%s'\n"),
-         &routeList[pos]);
-    GNUNET_free (result);
-    return NULL;                /* error */
-  }
-  if (pos < strlen (routeList))
-  {
-    LOG (GNUNET_ERROR_TYPE_ERROR, _("Invalid format for IP: `%s'\n"),
-         &routeList[pos]);
-    GNUNET_free (result);
-    return NULL;                /* oops */
-  }
-  return result;                /* ok */
-}
-
-
-/**
- * Parse a network specification. The argument specifies
- * a list of networks. The format is
- * <tt>[network/netmask;]*</tt> (no whitespace, must be terminated
- * with a semicolon). The network must be given in colon-hex
- * notation.  The netmask must be given in CIDR notation (/16) or
- * can be omitted to specify a single host.
- * 
- * @param routeListX a string specifying the forbidden networks
- * @return the converted list, NULL if the synatx is flawed
- */
-static struct IPv6NetworkSet *
-parse_ipv6_specification (const char *routeListX)
-{
-  unsigned int count;
-  unsigned int i;
-  unsigned int len;
-  unsigned int pos;
-  int start;
-  int slash;
-  int ret;
-  char *routeList;
-  struct IPv6NetworkSet *result;
-  unsigned int bits;
-  unsigned int off;
-  int save;
-
-  if (NULL == routeListX)
-    return NULL;
-  len = strlen (routeListX);
-  if (0 == len)
-    return NULL;
-  routeList = GNUNET_strdup (routeListX);
-  count = 0;
-  for (i = 0; i < len; i++)
-    if (';' == routeList[i])
-      count++;
-  if (';' != routeList[len - 1])
-  {
-    LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Invalid network notation (does not end with ';': `%s')\n"),
-         routeList);
-    GNUNET_free (routeList);
-    return NULL;
-  }
-
-  result = GNUNET_malloc (sizeof (struct IPv6NetworkSet) * (count + 1));
-  i = 0;
-  pos = 0;
-  while (i < count)
-  {
-    start = pos;
-    while (';' != routeList[pos])
-      pos++;
-    slash = pos;
-    while ((slash >= start) && (routeList[slash] != '/'))
-      slash--;
-    if (slash < start)
-    {
-      memset (&result[i].netmask, 0xFF, sizeof (struct in6_addr));
-      slash = pos;
-    }
-    else
-    {
-      routeList[pos] = '\0';
-      ret = inet_pton (AF_INET6, &routeList[slash + 1], &result[i].netmask);
-      if (ret <= 0)
-      {
-        save = errno;
-        if ((1 != SSCANF (&routeList[slash + 1], "%u", &bits)) || (bits >= 128))
-        {
-          if (0 == ret)
-            LOG (GNUNET_ERROR_TYPE_ERROR, _("Wrong format `%s' for netmask\n"),
-                 &routeList[slash + 1]);
-          else
-          {
-            errno = save;
-            LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR, "inet_pton");
-          }
-          GNUNET_free (result);
-          GNUNET_free (routeList);
-          return NULL;
-        }
-        off = 0;
-        while (bits > 8)
-        {
-          result[i].netmask.s6_addr[off++] = 0xFF;
-          bits -= 8;
-        }
-        while (bits > 0)
-        {
-          result[i].netmask.s6_addr[off] =
-              (result[i].netmask.s6_addr[off] >> 1) + 0x80;
-          bits--;
-        }
-      }
-    }
-    routeList[slash] = '\0';
-    ret = inet_pton (AF_INET6, &routeList[start], &result[i].network);
-    if (ret <= 0)
-    {
-      if (0 == ret)
-        LOG (GNUNET_ERROR_TYPE_ERROR, _("Wrong format `%s' for network\n"),
-             &routeList[slash + 1]);
-      else
-        LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR, "inet_pton");
-      GNUNET_free (result);
-      GNUNET_free (routeList);
-      return NULL;
-    }
-    pos++;
-    i++;
-  }
-  GNUNET_free (routeList);
-  return result;
-}
 
 
 /**
@@ -368,10 +65,11 @@ parse_ipv6_specification (const char *routeListX)
  *
  * @param list a list of networks
  * @param add the IP to check (in network byte order)
- * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
+ * @return #GNUNET_NO if the IP is not in the list, #GNUNET_YES if it it is
  */
 static int
-check_ipv4_listed (const struct IPv4NetworkSet *list, const struct in_addr *add)
+check_ipv4_listed (const struct GNUNET_STRINGS_IPv4NetworkPolicy *list,
+                   const struct in_addr *add)
 {
   unsigned int i;
 
@@ -394,10 +92,11 @@ check_ipv4_listed (const struct IPv4NetworkSet *list, const struct in_addr *add)
  *
  * @param list a list of networks
  * @param ip the IP to check (in network byte order)
- * @return GNUNET_NO if the IP is not in the list, GNUNET_YES if it it is
+ * @return #GNUNET_NO if the IP is not in the list, #GNUNET_YES if it it is
  */
 static int
-check_ipv6_listed (const struct IPv6NetworkSet *list, const struct in6_addr *ip)
+check_ipv6_listed (const struct GNUNET_STRINGS_IPv6NetworkPolicy *list,
+                   const struct in6_addr *ip)
 {
   unsigned int i;
   unsigned int j;
@@ -465,24 +164,24 @@ struct GNUNET_SERVICE_Context
   /**
    * IPv4 addresses that are not allowed to connect.
    */
-  struct IPv4NetworkSet *v4_denied;
+  struct GNUNET_STRINGS_IPv4NetworkPolicy *v4_denied;
 
   /**
    * IPv6 addresses that are not allowed to connect.
    */
-  struct IPv6NetworkSet *v6_denied;
+  struct GNUNET_STRINGS_IPv6NetworkPolicy *v6_denied;
 
   /**
    * IPv4 addresses that are allowed to connect (if not
    * set, all are allowed).
    */
-  struct IPv4NetworkSet *v4_allowed;
+  struct GNUNET_STRINGS_IPv4NetworkPolicy *v4_allowed;
 
   /**
    * IPv6 addresses that are allowed to connect (if not
    * set, all are allowed).
    */
-  struct IPv6NetworkSet *v6_allowed;
+  struct GNUNET_STRINGS_IPv6NetworkPolicy *v6_allowed;
 
   /**
    * My (default) message handlers.  Adjusted copy
@@ -530,17 +229,17 @@ struct GNUNET_SERVICE_Context
 
   /**
    * Do we require a matching UID for UNIX domain socket connections?
-   * GNUNET_NO means that the UID does not have to match (however,
-   * "match_gid" may still impose other access control checks).
+   * #GNUNET_NO means that the UID does not have to match (however,
+   * @e match_gid may still impose other access control checks).
    */
   int match_uid;
 
   /**
    * Do we require a matching GID for UNIX domain socket connections?
-   * Ignored if "match_uid" is GNUNET_YES.  Note that this is about
+   * Ignored if @e match_uid is #GNUNET_YES.  Note that this is about
    * checking that the client's UID is in our group OR that the
-   * client's GID is our GID.  If both "match_gid" and "match_uid" are
-   * "GNUNET_NO", all users on the local system have access.
+   * client's GID is our GID.  If both "match_gid" and @e match_uid are
+   * #GNUNET_NO, all users on the local system have access.
    */
   int match_gid;
 
@@ -624,7 +323,7 @@ static const struct GNUNET_SERVER_MessageHandler defhandlers[] = {
  * @param uc credentials, if available, otherwise NULL
  * @param addr address
  * @param addrlen length of address
- * @return GNUNET_YES to allow, GNUNET_NO to deny, GNUNET_SYSERR
+ * @return #GNUNET_YES to allow, #GNUNET_NO to deny, #GNUNET_SYSERR
  *   for unknown address family (will be denied).
  */
 static int
@@ -656,56 +355,7 @@ check_access (void *cls, const struct GNUNET_CONNECTION_Credentials *uc,
     break;
 #ifndef WINDOWS
   case AF_UNIX:
-    ret = GNUNET_OK;            /* always OK for now */
-    if (GNUNET_YES == sctx->match_uid) 
-    {
-      /* UID match required */
-      ret = (NULL != uc) && ( (0 == uc->uid) || (uc->uid == geteuid ()) );
-    }
-    else if ( (GNUNET_YES == sctx->match_gid) &&
-	      ( (NULL == uc) || 
-		( (0 != uc->uid) &&
-		  (uc->uid != geteuid ()) ) ) )
-    {
-      /* group match required and UID does not match */
-      if (NULL == uc) 
-      {
-	/* no credentials, group match not possible */
-	ret = GNUNET_NO;
-      }
-      else
-      {
-	struct group *grp;
-	unsigned int i;
-
-	if (uc->gid != getegid())
-	{
-	  /* default group did not match, but maybe the user is in our group, let's check */
-	  grp = getgrgid (getegid ());
-	  if (NULL == grp)
-	  {
-	    GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "getgrgid");
-	    return GNUNET_NO;
-	  }
-	  ret = GNUNET_NO;
-	  for (i=0; NULL != grp->gr_mem[i]; i++)
-	  {
-	    struct passwd *nam = getpwnam (grp->gr_mem[i]);
-	    if (NULL == nam)
-	      continue; /* name in group that is not in user DB !? */
-	    if (nam->pw_uid == uc->uid)
-	    {
-	      /* yes, uid is in our group, allow! */
-	      ret = GNUNET_YES;
-	      break;
-	    }
-	  }
-	}
-      }
-    }
-    if (GNUNET_NO == ret)
-      LOG (GNUNET_ERROR_TYPE_WARNING, _("Access denied to UID %d / GID %d\n"),
-           (NULL == uc) ? -1 : uc->uid, (NULL == uc) ? -1 : uc->gid);
+    ret = GNUNET_OK;            /* controlled using file-system ACL now */
     break;
 #endif
   default:
@@ -716,7 +366,7 @@ check_access (void *cls, const struct GNUNET_CONNECTION_Credentials *uc,
   if (GNUNET_OK != ret)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-         _("Access from `%s' denied to service `%s'\n"), 
+         _("Access from `%s' denied to service `%s'\n"),
 	 GNUNET_a2s (addr, addrlen),
          sctx->service_name);
   }
@@ -748,27 +398,27 @@ get_pid_file_name (struct GNUNET_SERVICE_Context *sctx)
  * Parse an IPv4 access control list.
  *
  * @param ret location where to write the ACL (set)
- * @param sctx service context to use to get the configuration 
+ * @param sctx service context to use to get the configuration
  * @param option name of the ACL option to parse
- * @return GNUNET_SYSERR on parse error, GNUNET_OK on success (including 
+ * @return #GNUNET_SYSERR on parse error, #GNUNET_OK on success (including
  *         no ACL configured)
  */
 static int
-process_acl4 (struct IPv4NetworkSet **ret, struct GNUNET_SERVICE_Context *sctx,
+process_acl4 (struct GNUNET_STRINGS_IPv4NetworkPolicy **ret, struct GNUNET_SERVICE_Context *sctx,
               const char *option)
 {
   char *opt;
 
   if (!GNUNET_CONFIGURATION_have_value (sctx->cfg, sctx->service_name, option))
   {
-    *ret = NULL;    
+    *ret = NULL;
     return GNUNET_OK;
   }
   GNUNET_break (GNUNET_OK ==
                 GNUNET_CONFIGURATION_get_value_string (sctx->cfg,
                                                        sctx->service_name,
                                                        option, &opt));
-  if (NULL == (*ret = parse_ipv4_specification (opt)))
+  if (NULL == (*ret = GNUNET_STRINGS_parse_ipv4_policy (opt)))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          _("Could not parse IPv4 network specification `%s' for `%s:%s'\n"),
@@ -785,13 +435,13 @@ process_acl4 (struct IPv4NetworkSet **ret, struct GNUNET_SERVICE_Context *sctx,
  * Parse an IPv6 access control list.
  *
  * @param ret location where to write the ACL (set)
- * @param sctx service context to use to get the configuration 
+ * @param sctx service context to use to get the configuration
  * @param option name of the ACL option to parse
- * @return GNUNET_SYSERR on parse error, GNUNET_OK on success (including 
+ * @return #GNUNET_SYSERR on parse error, #GNUNET_OK on success (including
  *         no ACL configured)
  */
 static int
-process_acl6 (struct IPv6NetworkSet **ret, struct GNUNET_SERVICE_Context *sctx,
+process_acl6 (struct GNUNET_STRINGS_IPv6NetworkPolicy **ret, struct GNUNET_SERVICE_Context *sctx,
               const char *option)
 {
   char *opt;
@@ -805,7 +455,7 @@ process_acl6 (struct IPv6NetworkSet **ret, struct GNUNET_SERVICE_Context *sctx,
                 GNUNET_CONFIGURATION_get_value_string (sctx->cfg,
                                                        sctx->service_name,
                                                        option, &opt));
-  if (NULL == (*ret = parse_ipv6_specification (opt)))
+  if (NULL == (*ret = GNUNET_STRINGS_parse_ipv6_policy (opt)))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          _("Could not parse IPv6 network specification `%s' for `%s:%s'\n"),
@@ -832,24 +482,15 @@ add_unixpath (struct sockaddr **saddrs, socklen_t * saddrlens,
 {
 #ifdef AF_UNIX
   struct sockaddr_un *un;
-  size_t slen;
 
-  un = GNUNET_malloc (sizeof (struct sockaddr_un));
+  un = GNUNET_new (struct sockaddr_un);
   un->sun_family = AF_UNIX;
-  slen = strlen (unixpath) + 1;
-  if (slen >= sizeof (un->sun_path))
-    slen = sizeof (un->sun_path) - 1;
-  memcpy (un->sun_path, unixpath, slen);
-  un->sun_path[slen] = '\0';
-  slen = sizeof (struct sockaddr_un);
-#if LINUX
-  un->sun_path[0] = '\0';
-#endif
+  strncpy (un->sun_path, unixpath, sizeof (un->sun_path) - 1);
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  un->sun_len = (u_char) slen;
+  un->sun_len = (u_char) sizeof (struct sockaddr_un);
 #endif
   *saddrs = (struct sockaddr *) un;
-  *saddrlens = slen;
+  *saddrlens = sizeof (struct sockaddr_un);
 #else
   /* this function should never be called
    * unless AF_UNIX is defined! */
@@ -871,11 +512,11 @@ add_unixpath (struct sockaddr **saddrs, socklen_t * saddrlens,
  *              of the respective 'struct sockaddr' struct in the 'addrs'
  *              array (on success)
  * @return number of addresses found on success,
- *              GNUNET_SYSERR if the configuration
+ *              #GNUNET_SYSERR if the configuration
  *              did not specify reasonable finding information or
  *              if it specified a hostname that could not be resolved;
- *              GNUNET_NO if the number of addresses configured is
- *              zero (in this case, '*addrs' and '*addr_lens' will be
+ *              #GNUNET_NO if the number of addresses configured is
+ *              zero (in this case, `*addrs` and `*addr_lens` will be
  *              set to NULL).
  */
 int
@@ -971,7 +612,7 @@ GNUNET_SERVICE_get_server_addresses (const char *service_name,
   if ((GNUNET_YES ==
        GNUNET_CONFIGURATION_have_value (cfg, service_name, "UNIXPATH")) &&
       (GNUNET_OK ==
-       GNUNET_CONFIGURATION_get_value_string (cfg, service_name, "UNIXPATH",
+       GNUNET_CONFIGURATION_get_value_filename (cfg, service_name, "UNIXPATH",
                                               &unixpath)) &&
       (0 < strlen (unixpath)))
   {
@@ -986,8 +627,12 @@ GNUNET_SERVICE_get_server_addresses (const char *service_name,
       unixpath = GNUNET_NETWORK_shorten_unixpath (unixpath);
       LOG (GNUNET_ERROR_TYPE_INFO,
 	   _("Using `%s' instead\n"), unixpath);
-
     }
+    if (GNUNET_OK !=
+	GNUNET_DISK_directory_create_for_file (unixpath))
+      GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
+				"mkdir",
+				unixpath);
   }
   if (NULL != unixpath)
   {
@@ -1003,8 +648,7 @@ GNUNET_SERVICE_get_server_addresses (const char *service_name,
         return GNUNET_SYSERR;
       }
       LOG (GNUNET_ERROR_TYPE_INFO,
-           _
-           ("Disabling UNIX domain socket support for service `%s', failed to create UNIX domain socket: %s\n"),
+           _("Disabling UNIX domain socket support for service `%s', failed to create UNIX domain socket: %s\n"),
            service_name, STRERROR (errno));
       GNUNET_free (unixpath);
       unixpath = NULL;
@@ -1020,8 +664,7 @@ GNUNET_SERVICE_get_server_addresses (const char *service_name,
   if ((0 == port) && (NULL == unixpath))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _
-         ("Have neither PORT nor UNIXPATH for service `%s', but one is required\n"),
+         _("Have neither PORT nor UNIXPATH for service `%s', but one is required\n"),
          service_name);
     GNUNET_free_non_null (hostname);
     return GNUNET_SYSERR;
@@ -1188,8 +831,8 @@ GNUNET_SERVICE_get_server_addresses (const char *service_name,
  * Read listen sockets from the parent process (ARM).
  *
  * @param sctx service context to initialize
- * @return GNUNET_YES if ok, GNUNET_NO if not ok (must bind yourself),
- * and GNUNET_SYSERR on error.
+ * @return #GNUNET_YES if ok, #GNUNET_NO if not ok (must bind yourself),
+ * and #GNUNET_SYSERR on error.
  */
 static int
 receive_sockets_from_parent (struct GNUNET_SERVICE_Context *sctx)
@@ -1283,7 +926,7 @@ receive_sockets_from_parent (struct GNUNET_SERVICE_Context *sctx)
  * - REJECT_FROM6 (disallow allow connections from specified IPv6 subnets)
  *
  * @param sctx service context to initialize
- * @return GNUNET_OK if configuration succeeded
+ * @return #GNUNET_OK if configuration succeeded
  */
 static int
 setup_service (struct GNUNET_SERVICE_Context *sctx)
@@ -1292,8 +935,6 @@ setup_service (struct GNUNET_SERVICE_Context *sctx)
   int tolerant;
 
 #ifndef MINGW
-  const char *lpid;
-  unsigned int pid;
   const char *nfds;
   unsigned int cnt;
   int flags;
@@ -1334,9 +975,7 @@ setup_service (struct GNUNET_SERVICE_Context *sctx)
 
 #ifndef MINGW
   errno = 0;
-  if ((NULL != (lpid = getenv ("LISTEN_PID"))) &&
-      (1 == SSCANF (lpid, "%u", &pid)) && (getpid () == (pid_t) pid) &&
-      (NULL != (nfds = getenv ("LISTEN_FDS"))) &&
+  if ((NULL != (nfds = getenv ("LISTEN_FDS"))) &&
       (1 == SSCANF (nfds, "%u", &cnt)) && (cnt > 0) && (cnt < FD_SETSIZE) &&
       (cnt + 4 < FD_SETSIZE))
   {
@@ -1361,7 +1000,6 @@ setup_service (struct GNUNET_SERVICE_Context *sctx)
         break;
       }
     }
-    unsetenv ("LISTEN_PID");
     unsetenv ("LISTEN_FDS");
   }
 #else
@@ -1412,12 +1050,13 @@ get_user_name (struct GNUNET_SERVICE_Context *sctx)
   return un;
 }
 
+
 /**
  * Write PID file.
  *
  * @param sctx service context
  * @param pid PID to write (should be equal to 'getpid()'
- * @return  GNUNET_OK on success (including no work to be done)
+ * @return  #GNUNET_OK on success (including no work to be done)
  */
 static int
 write_pid_file (struct GNUNET_SERVICE_Context *sctx, pid_t pid)
@@ -1440,7 +1079,7 @@ write_pid_file (struct GNUNET_SERVICE_Context *sctx, pid_t pid)
   {
     /* we get to create a directory -- and claim it
      * as ours! */
-    GNUNET_DISK_directory_create (rdir);
+    (void) GNUNET_DISK_directory_create (rdir);
     if ((NULL != user) && (0 < strlen (user)))
       GNUNET_DISK_file_change_owner (rdir, user);
   }
@@ -1475,7 +1114,7 @@ write_pid_file (struct GNUNET_SERVICE_Context *sctx, pid_t pid)
 /**
  * Task run during shutdown.  Stops the server/service.
  *
- * @param cls the 'struct GNUNET_SERVICE_Context'
+ * @param cls the `struct GNUNET_SERVICE_Context`
  * @param tc unused
  */
 static void
@@ -1506,35 +1145,42 @@ service_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
   if (0 != (GNUNET_SCHEDULER_REASON_SHUTDOWN & tc->reason))
     return;
+  (void) GNUNET_SPEEDUP_start_ (sctx->cfg);
   GNUNET_RESOLVER_connect (sctx->cfg);
   if (NULL != sctx->lsocks)
-    sctx->server =
-        GNUNET_SERVER_create_with_sockets (&check_access, sctx, sctx->lsocks,
+    sctx->server
+      = GNUNET_SERVER_create_with_sockets (&check_access, sctx, sctx->lsocks,
                                            sctx->timeout, sctx->require_found);
   else
-    sctx->server =
-        GNUNET_SERVER_create (&check_access, sctx, sctx->addrs, sctx->addrlens,
+    sctx->server
+      = GNUNET_SERVER_create (&check_access, sctx, sctx->addrs, sctx->addrlens,
                               sctx->timeout, sctx->require_found);
   if (NULL == sctx->server)
   {
     if (NULL != sctx->addrs)
-    {
-      i = 0;
-      while (NULL != sctx->addrs[i])
-      {
-        LOG (GNUNET_ERROR_TYPE_INFO, _("Failed to start `%s' at `%s'\n"),
+      for (i = 0; NULL != sctx->addrs[i]; i++)
+        LOG (GNUNET_ERROR_TYPE_INFO,
+             _("Failed to start `%s' at `%s'\n"),
              sctx->service_name, GNUNET_a2s (sctx->addrs[i], sctx->addrlens[i]));
-        i++;
-      }
-    }
     sctx->ret = GNUNET_SYSERR;
     return;
   }
+#ifndef WINDOWS
+  if (NULL != sctx->addrs)
+    for (i = 0; NULL != sctx->addrs[i]; i++)
+      if (AF_UNIX == sctx->addrs[i]->sa_family)
+        GNUNET_DISK_fix_permissions (((const struct sockaddr_un *)sctx->addrs[i])->sun_path,
+                                     sctx->match_uid,
+                                     sctx->match_gid);
+#endif
+
+
   if (0 == (sctx->options & GNUNET_SERVICE_OPTION_MANUAL_SHUTDOWN))
   {
     /* install a task that will kill the server
      * process if the scheduler ever gets a shutdown signal */
-    sctx->shutdown_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
+    sctx->shutdown_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
+                                                        &shutdown_task,
 							sctx);
   }
   sctx->my_handlers = GNUNET_malloc (sizeof (defhandlers));
@@ -1568,7 +1214,7 @@ service_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Detach from terminal.
  *
  * @param sctx service context
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 static int
 detach_terminal (struct GNUNET_SERVICE_Context *sctx)
@@ -1649,7 +1295,7 @@ detach_terminal (struct GNUNET_SERVICE_Context *sctx)
  * Set user ID.
  *
  * @param sctx service context
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 static int
 set_user_id (struct GNUNET_SERVICE_Context *sctx)
@@ -1719,13 +1365,15 @@ pid_file_delete (struct GNUNET_SERVICE_Context *sctx)
  * @param service_name our service name
  * @param options service options
  * @param task main task of the service
- * @param task_cls closure for task
- * @return GNUNET_SYSERR on error, GNUNET_OK
+ * @param task_cls closure for @a task
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK
  *         if we shutdown nicely
  */
 int
-GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
-                    enum GNUNET_SERVICE_Options options, GNUNET_SERVICE_Main task,
+GNUNET_SERVICE_run (int argc, char *const *argv,
+                    const char *service_name,
+                    enum GNUNET_SERVICE_Options options,
+                    GNUNET_SERVICE_Main task,
                     void *task_cls)
 {
 #define HANDLE_ERROR do { GNUNET_break (0); goto shutdown; } while (0)
@@ -1733,6 +1381,7 @@ GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
   int err;
   int ret;
   char *cfg_fn;
+  char *opt_cfg_fn;
   char *loglev;
   char *logfile;
   int do_daemonize;
@@ -1742,9 +1391,10 @@ GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
   long long clock_offset;
   struct GNUNET_SERVICE_Context sctx;
   struct GNUNET_CONFIGURATION_Handle *cfg;
+  const char *xdg;
 
   struct GNUNET_GETOPT_CommandLineOption service_options[] = {
-    GNUNET_GETOPT_OPTION_CFG_FILE (&cfg_fn),
+    GNUNET_GETOPT_OPTION_CFG_FILE (&opt_cfg_fn),
     {'d', "daemonize", NULL,
      gettext_noop ("do daemonize (detach from terminal)"), 0,
      GNUNET_GETOPT_set_one, &do_daemonize},
@@ -1758,7 +1408,16 @@ GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
   do_daemonize = 0;
   logfile = NULL;
   loglev = NULL;
-  cfg_fn = GNUNET_strdup (GNUNET_DEFAULT_USER_CONFIG_FILE);
+  opt_cfg_fn = NULL;
+  xdg = getenv ("XDG_CONFIG_HOME");
+  if (NULL != xdg)
+    GNUNET_asprintf (&cfg_fn,
+                     "%s%s%s",
+                     xdg,
+                     DIR_SEPARATOR_STR,
+                     "gnunet.conf");
+  else
+    cfg_fn = GNUNET_strdup (GNUNET_DEFAULT_USER_CONFIG_FILE);
   memset (&sctx, 0, sizeof (sctx));
   sctx.options = options;
   sctx.ready_confirm_fd = -1;
@@ -1780,16 +1439,30 @@ GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
   }
   if (GNUNET_OK != GNUNET_log_setup (service_name, loglev, logfile))
     HANDLE_ERROR;
-  if (GNUNET_YES ==
-      GNUNET_DISK_file_test (cfg_fn))
-    (void) GNUNET_CONFIGURATION_load (cfg, cfg_fn);
+  if (NULL == opt_cfg_fn)
+    opt_cfg_fn = GNUNET_strdup (cfg_fn);
+  if (GNUNET_YES == GNUNET_DISK_file_test (opt_cfg_fn))
+  {
+    if (GNUNET_SYSERR == GNUNET_CONFIGURATION_load (cfg, opt_cfg_fn))
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Malformed configuration file `%s', exit ...\n"),
+                  opt_cfg_fn);
+      goto shutdown;
+    }
+  }
   else
   {
-    (void) GNUNET_CONFIGURATION_load (cfg, NULL);
-    if (0 != strcmp (cfg_fn, GNUNET_DEFAULT_USER_CONFIG_FILE))
+    if (GNUNET_SYSERR == GNUNET_CONFIGURATION_load (cfg, NULL))
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Malformed configuration, exit ...\n"));
+      goto shutdown;
+    }
+    if (0 != strcmp (opt_cfg_fn, cfg_fn))
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		  _("Could not access configuration file `%s'\n"),
-		  cfg_fn);
+		  opt_cfg_fn);
   }
   if (GNUNET_OK != setup_service (&sctx))
     goto shutdown;
@@ -1798,7 +1471,9 @@ GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
   if (GNUNET_OK != set_user_id (&sctx))
     goto shutdown;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Service `%s' runs with configuration from `%s'\n", service_name, cfg_fn);
+       "Service `%s' runs with configuration from `%s'\n",
+       service_name,
+       opt_cfg_fn);
   if ((GNUNET_OK ==
        GNUNET_CONFIGURATION_get_value_number (sctx.cfg, "TESTING",
                                               "SKEW_OFFSET", &skew_offset)) &&
@@ -1813,7 +1488,6 @@ GNUNET_SERVICE_run (int argc, char *const *argv, const char *service_name,
   /* actually run service */
   err = 0;
   GNUNET_SCHEDULER_run (&service_task, &sctx);
-  GNUNET_SPEEDUP_start_ (cfg);
   /* shutdown */
   if ((1 == do_daemonize) && (NULL != sctx.server))
     pid_file_delete (&sctx);
@@ -1829,7 +1503,7 @@ shutdown:
 #if HAVE_MALLINFO
   {
     char *counter;
-    
+
     if ( (GNUNET_YES ==
 	  GNUNET_CONFIGURATION_have_value (sctx.cfg, service_name,
 					   "GAUGER_HEAP")) &&
@@ -1839,11 +1513,11 @@ shutdown:
 						 &counter)) )
     {
       struct mallinfo mi;
-      
+
       mi = mallinfo ();
       GAUGER (service_name, counter, mi.usmblks, "blocks");
       GNUNET_free (counter);
-    }     
+    }
   }
 #endif
   GNUNET_SPEEDUP_stop_ ();
@@ -1857,6 +1531,7 @@ shutdown:
   GNUNET_free_non_null (logfile);
   GNUNET_free_non_null (loglev);
   GNUNET_free (cfg_fn);
+  GNUNET_free_non_null (opt_cfg_fn);
   GNUNET_free_non_null (sctx.v4_denied);
   GNUNET_free_non_null (sctx.v6_denied);
   GNUNET_free_non_null (sctx.v4_allowed);
@@ -1883,7 +1558,7 @@ GNUNET_SERVICE_start (const char *service_name,
   int i;
   struct GNUNET_SERVICE_Context *sctx;
 
-  sctx = GNUNET_malloc (sizeof (struct GNUNET_SERVICE_Context));
+  sctx = GNUNET_new (struct GNUNET_SERVICE_Context);
   sctx->ready_confirm_fd = -1;  /* no daemonizing */
   sctx->ret = GNUNET_OK;
   sctx->timeout = GNUNET_TIME_UNIT_FOREVER_REL;
@@ -1911,6 +1586,14 @@ GNUNET_SERVICE_start (const char *service_name,
     GNUNET_SERVICE_stop (sctx);
     return NULL;
   }
+#ifndef WINDOWS
+  if (NULL != sctx->addrs)
+    for (i = 0; NULL != sctx->addrs[i]; i++)
+      if (AF_UNIX == sctx->addrs[i]->sa_family)
+        GNUNET_DISK_fix_permissions (((const struct sockaddr_un *)sctx->addrs[i])->sun_path,
+                                     sctx->match_uid,
+                                     sctx->match_gid);
+#endif
   sctx->my_handlers = GNUNET_malloc (sizeof (defhandlers));
   memcpy (sctx->my_handlers, defhandlers, sizeof (defhandlers));
   i = 0;
@@ -1948,7 +1631,7 @@ GNUNET_SERVICE_stop (struct GNUNET_SERVICE_Context *sctx)
 #if HAVE_MALLINFO
   {
     char *counter;
-    
+
     if ( (GNUNET_YES ==
 	  GNUNET_CONFIGURATION_have_value (sctx->cfg, sctx->service_name,
 					   "GAUGER_HEAP")) &&
@@ -1958,11 +1641,11 @@ GNUNET_SERVICE_stop (struct GNUNET_SERVICE_Context *sctx)
 						 &counter)) )
     {
       struct mallinfo mi;
-      
+
       mi = mallinfo ();
       GAUGER (sctx->service_name, counter, mi.usmblks, "blocks");
       GNUNET_free (counter);
-    }     
+    }
   }
 #endif
   if (GNUNET_SCHEDULER_NO_TASK != sctx->shutdown_task)

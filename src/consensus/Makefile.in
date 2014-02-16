@@ -54,26 +54,27 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = gnunet-consensus$(EXEEXT) \
-	gnunet-consensus-start-peers$(EXEEXT) \
-	gnunet-consensus-ibf$(EXEEXT)
-libexec_PROGRAMS = gnunet-service-consensus$(EXEEXT)
+bin_PROGRAMS = gnunet-consensus-profiler$(EXEEXT)
+libexec_PROGRAMS = gnunet-service-consensus$(EXEEXT) $(am__EXEEXT_1)
+
+# FIXME: add option "configure --with-evil"?
+@HAVE_EXPERIMENTAL_TRUE@am__append_1 = \
+@HAVE_EXPERIMENTAL_TRUE@ gnunet-service-evil-consensus
+
 check_PROGRAMS = test_consensus_api$(EXEEXT)
 subdir = src/consensus
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/consensus.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -125,29 +126,23 @@ libgnunetconsensus_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetconsensus_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@HAVE_EXPERIMENTAL_TRUE@am__EXEEXT_1 = gnunet-service-evil-consensus$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
-am_gnunet_consensus_OBJECTS = gnunet-consensus.$(OBJEXT)
-gnunet_consensus_OBJECTS = $(am_gnunet_consensus_OBJECTS)
-am_gnunet_consensus_ibf_OBJECTS = gnunet-consensus-ibf.$(OBJEXT) \
-	ibf.$(OBJEXT)
-gnunet_consensus_ibf_OBJECTS = $(am_gnunet_consensus_ibf_OBJECTS)
-gnunet_consensus_ibf_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_gnunet_consensus_start_peers_OBJECTS =  \
-	gnunet-consensus-start-peers.$(OBJEXT)
-gnunet_consensus_start_peers_OBJECTS =  \
-	$(am_gnunet_consensus_start_peers_OBJECTS)
+am_gnunet_consensus_profiler_OBJECTS =  \
+	gnunet-consensus-profiler.$(OBJEXT)
+gnunet_consensus_profiler_OBJECTS =  \
+	$(am_gnunet_consensus_profiler_OBJECTS)
 am_gnunet_service_consensus_OBJECTS =  \
-	gnunet-service-consensus.$(OBJEXT) ibf.$(OBJEXT)
+	gnunet-service-consensus.$(OBJEXT)
 gnunet_service_consensus_OBJECTS =  \
 	$(am_gnunet_service_consensus_OBJECTS)
-gnunet_service_consensus_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/core/libgnunetcore.la \
-	$(top_builddir)/src/stream/libgnunetstream.la \
-	$(top_builddir)/src/mesh/libgnunetmesh.la \
-	$(am__DEPENDENCIES_1)
+am_gnunet_service_evil_consensus_OBJECTS = gnunet_service_evil_consensus-gnunet-service-consensus.$(OBJEXT)
+gnunet_service_evil_consensus_OBJECTS =  \
+	$(am_gnunet_service_evil_consensus_OBJECTS)
+gnunet_service_evil_consensus_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(gnunet_service_evil_consensus_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_consensus_api_OBJECTS = test_consensus_api.$(OBJEXT)
 test_consensus_api_OBJECTS = $(am_test_consensus_api_OBJECTS)
 test_consensus_api_DEPENDENCIES =  \
@@ -180,15 +175,15 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libgnunetconsensus_la_SOURCES) $(gnunet_consensus_SOURCES) \
-	$(gnunet_consensus_ibf_SOURCES) \
-	$(gnunet_consensus_start_peers_SOURCES) \
+SOURCES = $(libgnunetconsensus_la_SOURCES) \
+	$(gnunet_consensus_profiler_SOURCES) \
 	$(gnunet_service_consensus_SOURCES) \
+	$(gnunet_service_evil_consensus_SOURCES) \
 	$(test_consensus_api_SOURCES)
 DIST_SOURCES = $(libgnunetconsensus_la_SOURCES) \
-	$(gnunet_consensus_SOURCES) $(gnunet_consensus_ibf_SOURCES) \
-	$(gnunet_consensus_start_peers_SOURCES) \
+	$(gnunet_consensus_profiler_SOURCES) \
 	$(gnunet_service_consensus_SOURCES) \
+	$(gnunet_service_evil_consensus_SOURCES) \
 	$(test_consensus_api_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -205,11 +200,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -236,24 +231,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -264,20 +251,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -285,16 +265,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -322,7 +296,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -344,12 +317,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -391,8 +367,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -407,9 +381,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -419,61 +391,59 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   consensus.conf
 
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
+@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = -fprofile-arcs -ftest-coverage
 lib_LTLIBRARIES = \
   libgnunetconsensus.la
 
-gnunet_consensus_SOURCES = \
- gnunet-consensus.c
+gnunet_consensus_profiler_SOURCES = \
+ gnunet-consensus-profiler.c
 
-gnunet_consensus_LDADD = \
+gnunet_consensus_profiler_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/consensus/libgnunetconsensus.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   $(GN_LIBINTL)
 
-gnunet_consensus_DEPENDENCIES = \
+gnunet_consensus_profiler_DEPENDENCIES = \
   libgnunetconsensus.la
-
-gnunet_consensus_start_peers_SOURCES = \
- gnunet-consensus-start-peers.c
-
-gnunet_consensus_start_peers_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/consensus/libgnunetconsensus.la \
-  $(GN_LIBINTL)
-
-gnunet_consensus_start_peers_DEPENDENCIES = \
-  libgnunetconsensus.la
-
-gnunet_consensus_ibf_SOURCES = \
- gnunet-consensus-ibf.c \
- ibf.c
-
-gnunet_consensus_ibf_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL)
 
 gnunet_service_consensus_SOURCES = \
- gnunet-service-consensus.c \
- ibf.c
+ gnunet-service-consensus.c
 
 gnunet_service_consensus_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/stream/libgnunetstream.la \
   $(top_builddir)/src/mesh/libgnunetmesh.la \
+  $(top_builddir)/src/set/libgnunetset.la \
   $(GN_LIBINTL)
 
+gnunet_service_consensus_DEPENDENCIES = \
+  $(top_builddir)/src/set/libgnunetset.la
+
+gnunet_service_evil_consensus_SOURCES = \
+ gnunet-service-consensus.c \
+ consensus_protocol.h
+
+gnunet_service_evil_consensus_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/core/libgnunetcore.la \
+  $(top_builddir)/src/mesh/libgnunetmesh.la \
+  $(top_builddir)/src/set/libgnunetset.la \
+  $(GN_LIBINTL)
+
+gnunet_service_evil_consensus_DEPENDENCIES = \
+  $(top_builddir)/src/set/libgnunetset.la
+
+gnunet_service_evil_consensus_CFLAGS = -DEVIL
 libgnunetconsensus_la_SOURCES = \
-  consensus_api.c
+  consensus_api.c \
+  consensus.h
 
 libgnunetconsensus_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -665,18 +635,15 @@ clean-libexecPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-gnunet-consensus$(EXEEXT): $(gnunet_consensus_OBJECTS) $(gnunet_consensus_DEPENDENCIES) $(EXTRA_gnunet_consensus_DEPENDENCIES) 
-	@rm -f gnunet-consensus$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_consensus_OBJECTS) $(gnunet_consensus_LDADD) $(LIBS)
-gnunet-consensus-ibf$(EXEEXT): $(gnunet_consensus_ibf_OBJECTS) $(gnunet_consensus_ibf_DEPENDENCIES) $(EXTRA_gnunet_consensus_ibf_DEPENDENCIES) 
-	@rm -f gnunet-consensus-ibf$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_consensus_ibf_OBJECTS) $(gnunet_consensus_ibf_LDADD) $(LIBS)
-gnunet-consensus-start-peers$(EXEEXT): $(gnunet_consensus_start_peers_OBJECTS) $(gnunet_consensus_start_peers_DEPENDENCIES) $(EXTRA_gnunet_consensus_start_peers_DEPENDENCIES) 
-	@rm -f gnunet-consensus-start-peers$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_consensus_start_peers_OBJECTS) $(gnunet_consensus_start_peers_LDADD) $(LIBS)
+gnunet-consensus-profiler$(EXEEXT): $(gnunet_consensus_profiler_OBJECTS) $(gnunet_consensus_profiler_DEPENDENCIES) $(EXTRA_gnunet_consensus_profiler_DEPENDENCIES) 
+	@rm -f gnunet-consensus-profiler$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnunet_consensus_profiler_OBJECTS) $(gnunet_consensus_profiler_LDADD) $(LIBS)
 gnunet-service-consensus$(EXEEXT): $(gnunet_service_consensus_OBJECTS) $(gnunet_service_consensus_DEPENDENCIES) $(EXTRA_gnunet_service_consensus_DEPENDENCIES) 
 	@rm -f gnunet-service-consensus$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_consensus_OBJECTS) $(gnunet_service_consensus_LDADD) $(LIBS)
+gnunet-service-evil-consensus$(EXEEXT): $(gnunet_service_evil_consensus_OBJECTS) $(gnunet_service_evil_consensus_DEPENDENCIES) $(EXTRA_gnunet_service_evil_consensus_DEPENDENCIES) 
+	@rm -f gnunet-service-evil-consensus$(EXEEXT)
+	$(AM_V_CCLD)$(gnunet_service_evil_consensus_LINK) $(gnunet_service_evil_consensus_OBJECTS) $(gnunet_service_evil_consensus_LDADD) $(LIBS)
 test_consensus_api$(EXEEXT): $(test_consensus_api_OBJECTS) $(test_consensus_api_DEPENDENCIES) $(EXTRA_test_consensus_api_DEPENDENCIES) 
 	@rm -f test_consensus_api$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_consensus_api_OBJECTS) $(test_consensus_api_LDADD) $(LIBS)
@@ -688,11 +655,9 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/consensus_api.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-consensus-ibf.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-consensus-start-peers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-consensus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-consensus-profiler.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-consensus.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ibf.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_consensus_api.Po@am__quote@
 
 .c.o:
@@ -715,6 +680,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+gnunet_service_evil_consensus-gnunet-service-consensus.o: gnunet-service-consensus.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_evil_consensus_CFLAGS) $(CFLAGS) -MT gnunet_service_evil_consensus-gnunet-service-consensus.o -MD -MP -MF $(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Tpo -c -o gnunet_service_evil_consensus-gnunet-service-consensus.o `test -f 'gnunet-service-consensus.c' || echo '$(srcdir)/'`gnunet-service-consensus.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Tpo $(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-consensus.c' object='gnunet_service_evil_consensus-gnunet-service-consensus.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_evil_consensus_CFLAGS) $(CFLAGS) -c -o gnunet_service_evil_consensus-gnunet-service-consensus.o `test -f 'gnunet-service-consensus.c' || echo '$(srcdir)/'`gnunet-service-consensus.c
+
+gnunet_service_evil_consensus-gnunet-service-consensus.obj: gnunet-service-consensus.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_evil_consensus_CFLAGS) $(CFLAGS) -MT gnunet_service_evil_consensus-gnunet-service-consensus.obj -MD -MP -MF $(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Tpo -c -o gnunet_service_evil_consensus-gnunet-service-consensus.obj `if test -f 'gnunet-service-consensus.c'; then $(CYGPATH_W) 'gnunet-service-consensus.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-consensus.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Tpo $(DEPDIR)/gnunet_service_evil_consensus-gnunet-service-consensus.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-service-consensus.c' object='gnunet_service_evil_consensus-gnunet-service-consensus.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_service_evil_consensus_CFLAGS) $(CFLAGS) -c -o gnunet_service_evil_consensus-gnunet-service-consensus.obj `if test -f 'gnunet-service-consensus.c'; then $(CYGPATH_W) 'gnunet-service-consensus.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-service-consensus.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -25,6 +25,7 @@
  */
 
 #include "platform.h"
+#include "gnunet_crypto_lib.h"
 #include "gnunet_common.h"
 
 
@@ -146,7 +147,8 @@ GNInitWinEnv ()
   plibc_initialized ();
   plibc_set_panic_proc (plibc_panic);
   ret = plibc_init_utf8 ("GNU", PACKAGE, 1);
-
+  plibc_set_stat_size_size (sizeof (((struct stat *) 0)->st_size));
+  plibc_set_stat_time_size (sizeof (((struct stat *) 0)->st_mtime));
   /* don't load other DLLs twice */
   if (hNTDLL)
     return ret;

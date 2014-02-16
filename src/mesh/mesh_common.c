@@ -26,51 +26,52 @@
 
 #include "mesh.h"
 
-
 /**
- * Check if one pid is bigger than other, accounting for overflow.
+ * @brief Translate a fwd variable into a string representation, for logging.
  *
- * @param bigger Argument that should be bigger.
- * @param smaller Argument that should be smaller.
+ * @param fwd Is FWD? (#GNUNET_YES or #GNUNET_NO)
  *
- * @return True if bigger (arg1) has a higher value than smaller (arg 2).
+ * @return String representing FWD or BCK.
  */
-int
-GMC_is_pid_bigger (uint32_t bigger, uint32_t smaller)
+char *
+GM_f2s (int fwd)
 {
-    return (GNUNET_YES == PID_OVERFLOW(smaller, bigger) ||
-            (bigger > smaller && GNUNET_NO == PID_OVERFLOW(bigger, smaller)));
+  if (GNUNET_YES == fwd)
+  {
+    return "FWD";
+  }
+  else if (GNUNET_NO == fwd)
+  {
+    return "BCK";
+  }
+  else
+  {
+    GNUNET_break (0);
+    return "";
+  }
 }
 
-/**
- * Get the higher ACK value out of two values, taking in account overflow.
- *
- * @param a First ACK value.
- * @param b Second ACK value.
- *
- * @return Highest ACK value from the two.
- */
-uint32_t
-GMC_max_pid (uint32_t a, uint32_t b)
+int
+GM_is_pid_bigger (uint32_t bigger, uint32_t smaller)
 {
-  if (GMC_is_pid_bigger(a, b))
+    return (GNUNET_YES == PID_OVERFLOW (smaller, bigger) ||
+            (bigger > smaller && GNUNET_NO == PID_OVERFLOW (bigger, smaller)));
+}
+
+
+uint32_t
+GM_max_pid (uint32_t a, uint32_t b)
+{
+  if (GM_is_pid_bigger(a, b))
     return a;
   return b;
 }
 
 
-/**
- * Get the lower ACK value out of two values, taking in account overflow.
- *
- * @param a First ACK value.
- * @param b Second ACK value.
- *
- * @return Lowest ACK value from the two.
- */
 uint32_t
-GMC_min_pid (uint32_t a, uint32_t b)
+GM_min_pid (uint32_t a, uint32_t b)
 {
-  if (GMC_is_pid_bigger(a, b))
+  if (GM_is_pid_bigger(a, b))
     return b;
   return a;
 }
@@ -78,7 +79,7 @@ GMC_min_pid (uint32_t a, uint32_t b)
 
 #if !defined(GNUNET_CULL_LOGGING)
 const char *
-GNUNET_MESH_DEBUG_M2S (uint16_t m)
+GM_m2s (uint16_t m)
 {
   static char buf[32];
   switch (m)
@@ -86,17 +87,17 @@ GNUNET_MESH_DEBUG_M2S (uint16_t m)
       /**
        * Request the creation of a path
        */
-    case 256: return "GNUNET_MESSAGE_TYPE_MESH_PATH_CREATE";
+    case 256: return "GNUNET_MESSAGE_TYPE_MESH_CONNECTION_CREATE";
 
       /**
        * Request the modification of an existing path
        */
-    case 257: return "GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGE";
+    case 257: return "GNUNET_MESSAGE_TYPE_MESH_CONNECTION_ACK";
 
       /**
        * Notify that a connection of a path is no longer valid
        */
-    case 258: return "GNUNET_MESSAGE_TYPE_MESH_PATH_BROKEN";
+    case 258: return "GNUNET_MESSAGE_TYPE_MESH_CONNECTION_BROKEN";
 
       /**
        * At some point, the route will spontaneously change
@@ -104,51 +105,56 @@ GNUNET_MESH_DEBUG_M2S (uint16_t m)
     case 259: return "GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGED";
 
       /**
-       * Transport data in the mesh (origin->end) unicast
+       * Transport payload data.
        */
-    case 260: return "GNUNET_MESSAGE_TYPE_MESH_UNICAST";
+    case 260: return "GNUNET_MESSAGE_TYPE_MESH_DATA";
+
+    /**
+     * Confirm receipt of payload data.
+     */
+    case 261: return "GNUNET_MESSAGE_TYPE_MESH_DATA_ACK";
 
       /**
-       * Transport data to all peers in a tunnel
+       * Key exchange encapsulation.
        */
-    case 261: return "GNUNET_MESSAGE_TYPE_MESH_MULTICAST";
+    case 262: return "GNUNET_MESSAGE_TYPE_MESH_KX";
 
       /**
-       * Transport data back in the mesh (end->origin)
+       * New ephemeral key.
        */
-    case 262: return "GNUNET_MESSAGE_TYPE_MESH_TO_ORIGIN";
+    case 263: return "GNUNET_MESSAGE_TYPE_MESH_KX_EPHEMERAL";
 
       /**
-       * Send origin an ACK that the path is complete
+       * Challenge to test peer's session key.
        */
-    case 263: return "GNUNET_MESSAGE_TYPE_MESH_PATH_ACK";
+    case 264: return "GNUNET_MESSAGE_TYPE_MESH_KX_PING";
 
       /**
-       * Avoid path timeouts
+       * Answer to session key challenge.
        */
-    case 264: return "GNUNET_MESSAGE_TYPE_MESH_PATH_KEEPALIVE";
+    case 265: return "GNUNET_MESSAGE_TYPE_MESH_KX_PONG";
 
       /**
        * Request the destuction of a path
        */
-    case 265: return "GNUNET_MESSAGE_TYPE_MESH_PATH_DESTROY";
-
-      /**
-       * Request the destruction of a whole tunnel
-       */
-    case 266: return "GNUNET_MESSAGE_TYPE_MESH_TUNNEL_DESTROY";
+    case 266: return "GNUNET_MESSAGE_TYPE_MESH_CONNECTION_DESTROY";
 
       /**
        * ACK for a data packet.
        */
-    case 267: return "GNUNET_MESSAGE_TYPE_MESH_ACK";
+    case 268: return "GNUNET_MESSAGE_TYPE_MESH_ACK";
 
       /**
        * POLL for ACK.
        */
-    case 268: return "GNUNET_MESSAGE_TYPE_MESH_POLL";
+    case 269: return "GNUNET_MESSAGE_TYPE_MESH_POLL";
 
       /**
+       * Announce origin is still alive.
+       */
+    case 270: return "GNUNET_MESSAGE_TYPE_MESH_KEEPALIVE";
+
+    /**
        * Connect to the mesh service, specifying subscriptions
        */
     case 272: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_CONNECT";
@@ -156,67 +162,32 @@ GNUNET_MESH_DEBUG_M2S (uint16_t m)
       /**
        * Ask the mesh service to create a new tunnel
        */
-    case 273: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_CREATE";
+    case 273: return "GNUNET_MESSAGE_TYPE_MESH_CHANNEL_CREATE";
 
       /**
        * Ask the mesh service to destroy a tunnel
        */
-    case 274: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_DESTROY";
+    case 274: return "GNUNET_MESSAGE_TYPE_MESH_CHANNEL_DESTROY";
 
       /**
-       * Ask the mesh service to add a peer to an existing tunnel
+       * Confirm the creation of a channel.
        */
-    case 275: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD";
+    case 275: return "GNUNET_MESSAGE_TYPE_MESH_CHANNEL_ACK";
 
       /**
-       * Ask the mesh service to remove a peer from a tunnel
+       * Confirm the creation of a channel.
        */
-    case 276: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_DEL";
+    case 276: return "GNUNET_MESSAGE_TYPE_MESH_CHANNEL_NACK";
 
       /**
-       * Ask the mesh service to add a peer offering a service to an existing tunnel
+       * Encrypted payload.
        */
-    case 277: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD_BY_TYPE";
+    case 280: return "GNUNET_MESSAGE_TYPE_MESH_ENCRYPTED";
 
       /**
-       * Ask the mesh service to add a peer described by a service string
+       * Local payload traffic
        */
-    case 278: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_ANNOUNCE_REGEX";
-
-      /**
-       * Ask the mesh service to add a peer described by a service string
-       */
-    case 279: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD_BY_STRING";
-
-      /**
-       * Ask the mesh service to add a peer to the blacklist of an existing tunnel
-       */
-    case 280: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_BLACKLIST";
-
-      /**
-       * Ask the mesh service to remove a peer from the blacklist of a tunnel
-       */
-    case 281: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_UNBLACKLIST";
-
-      /**
-       * Set tunnel speed to slowest peer
-       */
-    case 282: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_MIN";
-
-      /**
-       * Set tunnel speed to fastest peer
-       */
-    case 283: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_MAX";
-
-      /**
-       * Set tunnel buffering on.
-       */
-    case 284: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_BUFFER";
-
-      /**
-       * Set tunnel buffering off.
-       */
-    case 285: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_NOBUFFER";
+    case 285: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_DATA";
 
       /**
        * Local ACK for data.
@@ -226,12 +197,7 @@ GNUNET_MESH_DEBUG_M2S (uint16_t m)
       /**
        * Local monitoring of service.
        */
-    case 287: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_MONITOR";
-
-      /**
-       * Local monitoring of service of a specific tunnel.
-       */
-    case 288: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_MONITOR_TUNNEL";
+    case 287: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_NACK";
 
       /**
        * 640kb should be enough for everybody
@@ -243,7 +209,7 @@ GNUNET_MESH_DEBUG_M2S (uint16_t m)
 }
 #else
 const char *
-GNUNET_MESH_DEBUG_M2S (uint16_t m)
+GM_m2s (uint16_t m)
 {
   return "";
 }

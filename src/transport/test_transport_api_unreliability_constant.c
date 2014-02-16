@@ -122,16 +122,15 @@ static void
 end ()
 {
   unsigned long long delta;
-
   char *value_name;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Stopping peers\n");
 
-  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value;
-  FPRINTF (stderr, "\nThroughput was %llu kb/s\n",
-           total_bytes * 1000 / 1024 / delta);
+  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us / (1000 * 1000);
+  FPRINTF (stderr, "\nThroughput was %llu kb/s total_bytes\n",
+           (total_bytes / 1024) / delta);
   GNUNET_asprintf (&value_name, "unreliable_%s", test_plugin);
-  GAUGER ("TRANSPORT", value_name, (int) (total_bytes * 1000 / 1024 / delta),
+  GAUGER ("TRANSPORT", value_name, (int) (total_bytes / 1024 / delta),
           "kb/s");
   GNUNET_free (value_name);
 
@@ -206,8 +205,7 @@ get_size (unsigned int iter)
 
 static void
 notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+                const struct GNUNET_MessageHeader *message)
 {
   static int n;
 
@@ -360,11 +358,10 @@ notify_ready (void *cls, size_t size, void *buf)
 
 
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peer `%4s' connected to us (%p)!\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Peer `%4s' connected to us (%p)!\n",
               GNUNET_i2s (peer), cls);
 }
 
@@ -372,7 +369,7 @@ notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
 static void
 notify_disconnect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peer `%4s' disconnected (%p)!\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Peer `%4s' disconnected (%p)!\n",
               GNUNET_i2s (peer), cls);
   if (th != NULL)
     GNUNET_TRANSPORT_notify_transmit_ready_cancel (th);
@@ -393,7 +390,7 @@ testing_connect_cb (struct PeerContext *p1, struct PeerContext *p2, void *cls)
 {
   char *p1_c = GNUNET_strdup (GNUNET_i2s (&p1->id));
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peers connected: %s <-> %s\n", p1_c,
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Peers connected: %s <-> %s\n", p1_c,
               GNUNET_i2s (&p2->id));
   GNUNET_free (p1_c);
 
@@ -409,7 +406,7 @@ start_cb (struct PeerContext *p, void *cls)
 
   started++;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peer %u (`%s') started\n", p->no,
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Peer %u (`%s') started\n", p->no,
               GNUNET_i2s (&p->id));
 
   if (started != 2)

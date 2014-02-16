@@ -28,8 +28,6 @@
 #include "gnunet_testing_lib.h"
 
 
-#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
-
 static int ok;
 
 /**
@@ -73,6 +71,7 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
   if (NULL == (ret = GNUNET_PLUGIN_load (libname, (void*) cfg)))
   {
     FPRINTF (stderr, "Failed to load plugin `%s'!\n", plugin_name);
+    GNUNET_free (libname);
     return NULL;
   }
   GNUNET_free (libname);
@@ -80,34 +79,18 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
 }
 
 
-/**
- * Function called by for each matching record.
- *
- * @param cls closure
- * @param zone_key public key of the zone
- * @param expire when does the corresponding block in the DHT expire (until
- *               when should we never do a DHT lookup for the same name again)?
- * @param name name that is being mapped (at most 255 characters long)
- * @param rd_count number of entries in 'rd' array
- * @param rd array of records with data to store
- * @param signature signature of the record block, NULL if signature is unavailable (i.e. 
- *        because the user queried for a particular record type only)
- */
-static void 
+static void
 test_record (void *cls,
-	     const struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded *zone_key,
-	     struct GNUNET_TIME_Absolute expire,
-	     const char *name,
-	     unsigned int rd_count,
-	     const struct GNUNET_NAMESTORE_RecordData *rd,
-	     const struct GNUNET_CRYPTO_RsaSignature *signature)
+						 const struct GNUNET_CRYPTO_EcdsaPrivateKey *private_key,
+						 const char *label,
+						 unsigned int rd_count,
+						 const struct GNUNET_GNSRECORD_Data *rd)
 {
   int *idp = cls;
   int id = *idp;
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded tzone_key;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey tzone_private_key;
   char tname[64];
   unsigned int trd_count = 1 + (id % 1024);
-  struct GNUNET_CRYPTO_RsaSignature tsignature;
   unsigned int i;
 
   GNUNET_snprintf (tname, sizeof (tname),
@@ -117,56 +100,49 @@ test_record (void *cls,
     GNUNET_assert (rd[i].data_size == id % 10);
     GNUNET_assert (0 == memcmp ("Hello World", rd[i].data, id % 10));
     GNUNET_assert (rd[i].record_type == 1 + (id % 13));
-    GNUNET_assert (rd[i].flags == (id  % 7));
+    GNUNET_assert (rd[i].flags == 0);
   }
-  memset (&tzone_key, (id % 241), sizeof (tzone_key));
-  memset (&tsignature, (id % 243), sizeof (tsignature));
-  GNUNET_assert (0 == strcmp (name, tname));
-  GNUNET_assert (0 == memcmp (&tzone_key, zone_key, sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded)));
-  GNUNET_assert (0 == memcmp (&tsignature, signature, sizeof (struct GNUNET_CRYPTO_RsaSignature)));
+  memset (&tzone_private_key, (id % 241), sizeof (tzone_private_key));
+  GNUNET_assert (0 == strcmp (label, tname));
+  GNUNET_assert (0 == memcmp (&tzone_private_key, private_key, sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey)));
 }
 
 
 static void
 get_record (struct GNUNET_NAMESTORE_PluginFunctions *nsp, int id)
 {
-  GNUNET_assert (1 == nsp->iterate_records (nsp->cls,
-					    NULL, NULL, 0,
-					    &test_record, &id));
+  GNUNET_assert (GNUNET_OK == nsp->iterate_records (nsp->cls,
+					    NULL, 0, &test_record, &id));
 }
 
 
 static void
 put_record (struct GNUNET_NAMESTORE_PluginFunctions *nsp, int id)
 {
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded zone_key;
-  struct GNUNET_TIME_Absolute expire;
-  char name[64];
+  struct GNUNET_CRYPTO_EcdsaPrivateKey zone_private_key;
+  char label[64];
   unsigned int rd_count = 1 + (id % 1024);
-  struct GNUNET_NAMESTORE_RecordData rd[rd_count];
-  struct GNUNET_CRYPTO_RsaSignature signature;
+  struct GNUNET_GNSRECORD_Data rd[rd_count];
+  struct GNUNET_CRYPTO_EcdsaSignature signature;
   unsigned int i;
 
-  GNUNET_snprintf (name, sizeof (name),
+  GNUNET_snprintf (label, sizeof (label),
 		   "a%u", (unsigned int ) id);
-  expire = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES);
   for (i=0;i<rd_count;i++)
   {
     rd[i].data = "Hello World";
     rd[i].data_size = id % 10;
-    rd[i].expiration_time = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES).abs_value;
+    rd[i].expiration_time = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES).abs_value_us;
     rd[i].record_type = 1 + (id % 13);
-    rd[i].flags = (id  % 7);    
+    rd[i].flags = 0;
   }
-  memset (&zone_key, (id % 241), sizeof (zone_key));
+  memset (&zone_private_key, (id % 241), sizeof (zone_private_key));
   memset (&signature, (id % 243), sizeof (signature));
-  GNUNET_assert (GNUNET_OK == nsp->put_records (nsp->cls,
-						&zone_key,
-						expire,
-						name,
+  GNUNET_assert (GNUNET_OK == nsp->store_records (nsp->cls,
+						&zone_private_key,
+						label,
 						rd_count,
-						rd,
-						&signature));
+						rd));
 }
 
 
@@ -174,25 +150,20 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-  struct GNUNET_NAMESTORE_PluginFunctions *nsp;  
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded zone_key;
-  struct GNUNET_CRYPTO_ShortHashCode zone;
-  
+  struct GNUNET_NAMESTORE_PluginFunctions *nsp;
+
   ok = 0;
   nsp = load_plugin (cfg);
   if (NULL == nsp)
   {
     FPRINTF (stderr,
-             "%s", 
+             "%s",
 	     "Failed to initialize namestore.  Database likely not setup, skipping test.\n");
     return;
   }
   put_record (nsp, 1);
   get_record (nsp, 1);
 
-  memset (&zone_key, 1, sizeof (zone_key));
-  GNUNET_CRYPTO_short_hash (&zone_key, sizeof (zone_key), &zone);
-  nsp->delete_zone (nsp->cls, &zone);
   unload_plugin (nsp);
 }
 

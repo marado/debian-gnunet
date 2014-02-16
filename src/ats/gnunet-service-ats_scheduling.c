@@ -147,8 +147,9 @@ GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "ATS sends quota for peer `%s': (in/out) %u/%u\n",
-              GNUNET_i2s (peer), ntohl (bandwidth_in.value__),
-              ntohl (bandwidth_out.value__));
+              GNUNET_i2s (peer),
+              (unsigned int) ntohl (bandwidth_in.value__),
+              (unsigned int) ntohl (bandwidth_out.value__));
 
   GNUNET_SERVER_notification_context_unicast (nc, my_client, &msg->header,
                                               GNUNET_YES);
@@ -487,6 +488,7 @@ GAS_handle_address_destroyed (void *cls, struct GNUNET_SERVER_Client *client,
 void
 GAS_scheduling_init (struct GNUNET_SERVER_Handle *server, struct GAS_Addresses_Handle *ah)
 {
+  GNUNET_assert (NULL != ah);
   address_handle = ah;
   nc = GNUNET_SERVER_notification_context_create (server, 128);
 }

@@ -24,11 +24,7 @@
  *       client_get_address and receive_done (resume processing)
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_client_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 #define MY_TYPE 128
 
@@ -134,19 +130,14 @@ task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct sockaddr_un un;
   const char *unixpath = "/tmp/testsock";
-  size_t slen = strlen (unixpath);
   struct sockaddr *sap[2];
   socklen_t slens[2];
 
   memset (&un, 0, sizeof (un));
   un.sun_family = AF_UNIX;
-  memcpy (un.sun_path, unixpath, slen);
-  un.sun_path[slen] = '\0';
+  strncpy(un.sun_path, unixpath, sizeof (un.sun_path) - 1);
 #if HAVE_SOCKADDR_IN_SIN_LEN
   un.sun_len = (u_char) sizeof (un);
-#endif
-#if LINUX
-  un.sun_path[0] = '\0';
 #endif
 
   sap[0] = (struct sockaddr *) &un;

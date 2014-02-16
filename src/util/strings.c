@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006 Christian Grothoff (and other contributing authors)
+     (C) 2005-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -29,8 +29,7 @@
 #if HAVE_ICONV
 #include <iconv.h>
 #endif
-#include "gnunet_common.h"
-#include "gnunet_strings_lib.h"
+#include "gnunet_util_lib.h"
 #include <unicase.h>
 #include <unistr.h>
 #include <uniconv.h>
@@ -198,7 +197,7 @@ struct ConversionTable
  * @param input input string to parse
  * @param table table with the conversion of unit names to numbers
  * @param output where to store the result
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 static int
 convert_with_table (const char *input,
@@ -216,21 +215,33 @@ convert_with_table (const char *input,
   in = GNUNET_strdup (input);
   for (tok = strtok (in, " "); tok != NULL; tok = strtok (NULL, " "))
   {
-    i = 0;
-    while ((table[i].name != NULL) && (0 != strcasecmp (table[i].name, tok)))
-      i++;
-    if (table[i].name != NULL)
-      last *= table[i].value;
-    else
+    do
     {
-      ret += last;
-      last = 0;
-      if (1 != SSCANF (tok, "%llu", &last))
+      i = 0;
+      while ((table[i].name != NULL) && (0 != strcasecmp (table[i].name, tok)))
+        i++;
+      if (table[i].name != NULL)
       {
-        GNUNET_free (in);
-        return GNUNET_SYSERR;   /* expected number */
+        last *= table[i].value;
+        break; /* next tok */
       }
-    }
+      else
+      {
+        char *endptr;
+        ret += last;
+        errno = 0;
+        last = strtoull (tok, &endptr, 10);
+        if ((0 != errno) || (endptr == tok))
+        {
+          GNUNET_free (in);
+          return GNUNET_SYSERR;   /* expected number */
+        }
+        if ('\0' == endptr[0])
+          break; /* next tok */
+        else
+          tok = endptr; /* and re-check (handles times like "10s") */
+      }
+    } while (GNUNET_YES);
   }
   ret += last;
   *output = ret;
@@ -244,7 +255,7 @@ convert_with_table (const char *input,
  *
  * @param fancy_size human readable string (i.e. 1 MB)
  * @param size set to the size in bytes
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
 GNUNET_STRINGS_fancy_size_to_bytes (const char *fancy_size,
@@ -280,7 +291,7 @@ GNUNET_STRINGS_fancy_size_to_bytes (const char *fancy_size,
  *
  * @param fancy_time human readable string (i.e. 1 minute)
  * @param rtime set to the relative time
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
 GNUNET_STRINGS_fancy_time_to_relative (const char *fancy_time,
@@ -288,18 +299,21 @@ GNUNET_STRINGS_fancy_time_to_relative (const char *fancy_time,
 {
   static const struct ConversionTable table[] =
   {
-    { "ms", 1},
-    { "s", 1000},
-    { "\"", 1000},
-    { "m", 60 * 1000},
-    { "min", 60 * 1000},
-    { "minutes", 60 * 1000},
-    { "'", 60 * 1000},
-    { "h", 60 * 60 * 1000},
-    { "d", 24 * 60 * 60 * 1000},
-    { "day", 24 * 60 * 60 * 1000},
-    { "days", 24 * 60 * 60 * 1000},
-    { "a", 31536000000LL /* year */ },
+    { "us", 1},
+    { "ms", 1000 },
+    { "s", 1000 * 1000LL },
+    { "\"", 1000  * 1000LL },
+    { "m", 60 * 1000  * 1000LL},
+    { "min", 60 * 1000  * 1000LL},
+    { "minutes", 60 * 1000  * 1000LL},
+    { "'", 60 * 1000  * 1000LL},
+    { "h", 60 * 60 * 1000  * 1000LL},
+    { "d", 24 * 60 * 60 * 1000LL * 1000LL},
+    { "day", 24 * 60 * 60 * 1000LL * 1000LL},
+    { "days", 24 * 60 * 60 * 1000LL * 1000LL},
+    { "week", 7 * 24 * 60 * 60 * 1000LL * 1000LL},
+    { "weeks", 7 * 24 * 60 * 60 * 1000LL * 1000LL},
+    { "a", 31536000000000LL /* year */ },
     { NULL, 0}
   };
   int ret;
@@ -313,18 +327,19 @@ GNUNET_STRINGS_fancy_time_to_relative (const char *fancy_time,
   ret = convert_with_table (fancy_time,
 			    table,
 			    &val);
-  rtime->rel_value = (uint64_t) val;
+  rtime->rel_value_us = (uint64_t) val;
   return ret;
 }
 
 
 /**
  * Convert a given fancy human-readable time to our internal
- * representation.
+ * representation. The human-readable time is expected to be
+ * in local time, whereas the returned value will be in UTC.
  *
  * @param fancy_time human readable string (i.e. %Y-%m-%d %H:%M:%S)
  * @param atime set to the absolute time
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
 GNUNET_STRINGS_fancy_time_to_absolute (const char *fancy_time,
@@ -332,6 +347,9 @@ GNUNET_STRINGS_fancy_time_to_absolute (const char *fancy_time,
 {
   struct tm tv;
   time_t t;
+#if HAVE_TM_GMTOFF
+  struct tm *tp;
+#endif
 
   if (0 == strcasecmp ("end of time", fancy_time))
   {
@@ -351,9 +369,22 @@ GNUNET_STRINGS_fancy_time_to_absolute (const char *fancy_time,
        (NULL == strptime (fancy_time, "%Y", &tv)) )
     return GNUNET_SYSERR;
   t = mktime (&tv);
-  atime->abs_value = (uint64_t) ((uint64_t) t * 1000LL);
-#if LINUX
-  atime->abs_value -= 1000LL * timezone;
+  atime->abs_value_us = (uint64_t) ((uint64_t) t * 1000LL * 1000LL);
+#if HAVE_TM_GMTOFF
+  tp = localtime (&t);
+  atime->abs_value_us += 1000LL * 1000LL * tp->tm_gmtoff;
+#elif defined LINUX
+  atime->abs_value_us -= 1000LL * 1000LL * timezone;
+#elif defined WINDOWS
+  {
+    DWORD tzv;
+    TIME_ZONE_INFORMATION tzi;
+    tzv = GetTimeZoneInformation (&tzi);
+    if (TIME_ZONE_ID_INVALID != tzv)
+    {
+      atime->abs_value_us -= 1000LL * 1000LL * tzi.Bias * 60LL;
+    }
+  }
 #endif
   return GNUNET_OK;
 }
@@ -363,12 +394,20 @@ GNUNET_STRINGS_fancy_time_to_absolute (const char *fancy_time,
  * Convert the len characters long character sequence
  * given in input that is in the given input charset
  * to a string in given output charset.
+ *
+ * @param input input string
+ * @param len number of bytes in @a input
+ * @param input_charset character set used for @a input
+ * @param output_charset desired character set for the return value
  * @return the converted string (0-terminated),
  *  if conversion fails, a copy of the orignal
  *  string is returned.
  */
 char *
-GNUNET_STRINGS_conv (const char *input, size_t len, const char *input_charset, const char *output_charset)
+GNUNET_STRINGS_conv (const char *input,
+		     size_t len,
+		     const char *input_charset,
+		     const char *output_charset)
 {
   char *ret;
   uint8_t *u8_string;
@@ -376,10 +415,10 @@ GNUNET_STRINGS_conv (const char *input, size_t len, const char *input_charset, c
   size_t u8_string_length;
   size_t encoded_string_length;
 
-  u8_string = u8_conv_from_encoding (input_charset, 
-				     iconveh_error, 
-				     input, len, 
-				     NULL, NULL, 
+  u8_string = u8_conv_from_encoding (input_charset,
+				     iconveh_error,
+				     input, len,
+				     NULL, NULL,
 				     &u8_string_length);
   if (NULL == u8_string)
   {
@@ -394,9 +433,9 @@ GNUNET_STRINGS_conv (const char *input, size_t len, const char *input_charset, c
     free (u8_string);
     return ret;
   }
-  encoded_string = u8_conv_to_encoding (output_charset, iconveh_error, 
-					u8_string, u8_string_length, 
-					NULL, NULL, 
+  encoded_string = u8_conv_to_encoding (output_charset, iconveh_error,
+					u8_string, u8_string_length,
+					NULL, NULL,
 					&encoded_string_length);
   free (u8_string);
   if (NULL == encoded_string)
@@ -423,12 +462,18 @@ GNUNET_STRINGS_conv (const char *input, size_t len, const char *input_charset, c
  * Convert the len characters long character sequence
  * given in input that is in the given charset
  * to UTF-8.
+ *
+ * @param input the input string (not necessarily 0-terminated)
+ * @param len the number of bytes in the @a input
+ * @param charset character set to convert from
  * @return the converted string (0-terminated),
  *  if conversion fails, a copy of the orignal
  *  string is returned.
  */
 char *
-GNUNET_STRINGS_to_utf8 (const char *input, size_t len, const char *charset)
+GNUNET_STRINGS_to_utf8 (const char *input,
+                        size_t len,
+                        const char *charset)
 {
   return GNUNET_STRINGS_conv (input, len, charset, "UTF-8");
 }
@@ -438,56 +483,63 @@ GNUNET_STRINGS_to_utf8 (const char *input, size_t len, const char *charset)
  * Convert the len bytes-long UTF-8 string
  * given in input to the given charset.
  *
+ * @param input the input string (not necessarily 0-terminated)
+ * @param len the number of bytes in the @a input
+ * @param charset character set to convert to
  * @return the converted string (0-terminated),
  *  if conversion fails, a copy of the orignal
  *  string is returned.
  */
 char *
-GNUNET_STRINGS_from_utf8 (const char *input, size_t len, const char *charset)
+GNUNET_STRINGS_from_utf8 (const char *input,
+                          size_t len,
+                          const char *charset)
 {
   return GNUNET_STRINGS_conv (input, len, "UTF-8", charset);
 }
 
 
 /**
- * Convert the utf-8 input string to lowercase
- * Output needs to be allocated appropriately
+ * Convert the utf-8 input string to lowercase.
+ * Output needs to be allocated appropriately.
  *
  * @param input input string
  * @param output output buffer
  */
 void
-GNUNET_STRINGS_utf8_tolower(const char* input, char** output)
+GNUNET_STRINGS_utf8_tolower (const char *input,
+                             char *output)
 {
   uint8_t *tmp_in;
   size_t len;
 
   tmp_in = u8_tolower ((uint8_t*)input, strlen ((char *) input),
                        NULL, UNINORM_NFD, NULL, &len);
-  memcpy(*output, tmp_in, len);
-  (*output)[len] = '\0';
+  memcpy(output, tmp_in, len);
+  output[len] = '\0';
   free(tmp_in);
 }
 
 
 /**
- * Convert the utf-8 input string to uppercase
- * Output needs to be allocated appropriately
+ * Convert the utf-8 input string to uppercase.
+ * Output needs to be allocated appropriately.
  *
  * @param input input string
  * @param output output buffer
  */
 void
-GNUNET_STRINGS_utf8_toupper(const char* input, char** output)
+GNUNET_STRINGS_utf8_toupper(const char *input,
+                            char *output)
 {
   uint8_t *tmp_in;
   size_t len;
 
   tmp_in = u8_toupper ((uint8_t*)input, strlen ((char *) input),
                        NULL, UNINORM_NFD, NULL, &len);
-  memcpy(*output, tmp_in, len);
-  (*output)[len] = '\0';
-  free(tmp_in);
+  memcpy (output, tmp_in, len);
+  output[len] = '\0';
+  free (tmp_in);
 }
 
 
@@ -622,41 +674,48 @@ GNUNET_STRINGS_relative_time_to_string (struct GNUNET_TIME_Relative delta,
 					int do_round)
 {
   static char buf[128];
-  const char *unit = _( /* time unit */ "ms");
-  uint64_t dval = delta.rel_value;
+  const char *unit = _( /* time unit */ "µs");
+  uint64_t dval = delta.rel_value_us;
 
-  if (GNUNET_TIME_UNIT_FOREVER_REL.rel_value == delta.rel_value)
+  if (GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us == delta.rel_value_us)
     return _("forever");
-  if (0 == delta.rel_value)
+  if (0 == delta.rel_value_us)
     return _("0 ms");
-  if ( ( (GNUNET_YES == do_round) && 
-	 (dval > 5 * 1000) ) || 
+  if ( ( (GNUNET_YES == do_round) &&
+	 (dval > 5 * 1000) ) ||
        (0 == (dval % 1000) ))
   {
     dval = dval / 1000;
-    unit = _( /* time unit */ "s");
+    unit = _( /* time unit */ "ms");
     if ( ( (GNUNET_YES == do_round) &&
-	   (dval > 5 * 60) ) ||
-	 (0 == (dval % 60) ) )
+	   (dval > 5 * 1000) ) ||
+	 (0 == (dval % 1000) ))
     {
-      dval = dval / 60;
-      unit = _( /* time unit */ "m");
+      dval = dval / 1000;
+      unit = _( /* time unit */ "s");
       if ( ( (GNUNET_YES == do_round) &&
-	     (dval > 5 * 60) ) || 
-	   (0 == (dval % 60) ))
+	     (dval > 5 * 60) ) ||
+	   (0 == (dval % 60) ) )
       {
-        dval = dval / 60;
-        unit = _( /* time unit */ "h");
-        if ( ( (GNUNET_YES == do_round) &&
-	       (dval > 5 * 24) ) ||
-	     (0 == (dval % 24)) )
+	dval = dval / 60;
+	unit = _( /* time unit */ "m");
+	if ( ( (GNUNET_YES == do_round) &&
+	       (dval > 5 * 60) ) ||
+	     (0 == (dval % 60) ))
 	{
-          dval = dval / 24;
-	  if (1 == dval)
-	    unit = _( /* time unit */ "day");
-	  else
-	    unit = _( /* time unit */ "days");
-        }
+	  dval = dval / 60;
+	  unit = _( /* time unit */ "h");
+	  if ( ( (GNUNET_YES == do_round) &&
+		 (dval > 5 * 24) ) ||
+	       (0 == (dval % 24)) )
+	  {
+	    dval = dval / 24;
+	    if (1 == dval)
+	      unit = _( /* time unit */ "day");
+	    else
+	      unit = _( /* time unit */ "days");
+	  }
+	}
       }
     }
   }
@@ -667,12 +726,13 @@ GNUNET_STRINGS_relative_time_to_string (struct GNUNET_TIME_Relative delta,
 
 
 /**
- * "asctime", except for GNUnet time.
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
+ * "asctime", except for GNUnet time.  Converts a GNUnet internal
+ * absolute time (which is in UTC) to a string in local time.
+ * Note that the returned value will be overwritten if this function
+ * is called again.
  *
- * @param t time to convert
- * @return absolute time in human-readable format
+ * @param t the absolute time to convert
+ * @return timestamp in human-readable form in local time
  */
 const char *
 GNUNET_STRINGS_absolute_time_to_string (struct GNUNET_TIME_Absolute t)
@@ -681,11 +741,38 @@ GNUNET_STRINGS_absolute_time_to_string (struct GNUNET_TIME_Absolute t)
   time_t tt;
   struct tm *tp;
 
-  if (t.abs_value == GNUNET_TIME_UNIT_FOREVER_ABS.abs_value)
+  if (t.abs_value_us == GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us)
     return _("end of time");
-  tt = t.abs_value / 1000;
+  tt = t.abs_value_us / 1000LL / 1000LL;
   tp = gmtime (&tt);
+  /* This is hacky, but i don't know a way to detect libc character encoding.
+   * Just expect utf8 from glibc these days.
+   * As for msvcrt, use the wide variant, which always returns utf16
+   * (otherwise we'd have to detect current codepage or use W32API character
+   * set conversion routines to convert to UTF8).
+   */
+#ifndef WINDOWS
   strftime (buf, sizeof (buf), "%a %b %d %H:%M:%S %Y", tp);
+#else
+  {
+    static wchar_t wbuf[255];
+    uint8_t *conved;
+    size_t ssize;
+
+    wcsftime (wbuf, sizeof (wbuf) / sizeof (wchar_t),
+        L"%a %b %d %H:%M:%S %Y", tp);
+
+    ssize = sizeof (buf);
+    conved = u16_to_u8 (wbuf, sizeof (wbuf) / sizeof (wchar_t),
+        (uint8_t *) buf, &ssize);
+    if (conved != (uint8_t *) buf)
+    {
+      strncpy (buf, (char *) conved, sizeof (buf));
+      buf[255 - 1] = '\0';
+      free (conved);
+    }
+  }
+#endif
   return buf;
 }
 
@@ -726,6 +813,8 @@ getValue__ (unsigned char a)
     return a - '0';
   if ((a >= 'A') && (a <= 'V'))
     return (a - 'A' + 10);
+  if ((a >= 'a') && (a <= 'v'))
+    return (a - 'a' + 10);
   return -1;
 }
 
@@ -734,7 +823,7 @@ getValue__ (unsigned char a)
  * Convert binary data to ASCII encoding.  The ASCII encoding is rather
  * GNUnet specific.  It was chosen such that it only uses characters
  * in [0-9A-V], can be produced without complex arithmetics and uses a
- * small number of characters.  
+ * small number of characters.
  * Does not append 0-terminator, but returns a pointer to the place where
  * it should be placed, if needed.
  *
@@ -746,19 +835,21 @@ getValue__ (unsigned char a)
  * @return pointer to the next byte in 'out' or NULL on error.
  */
 char *
-GNUNET_STRINGS_data_to_string (const unsigned char *data, size_t size, char *out, size_t out_size)
+GNUNET_STRINGS_data_to_string (const void *data, size_t size, char *out, size_t out_size)
 {
   /**
-   * 32 characters for encoding 
+   * 32 characters for encoding
    */
   static char *encTable__ = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
   unsigned int wpos;
   unsigned int rpos;
   unsigned int bits;
   unsigned int vbit;
+  const unsigned char *udata;
 
   GNUNET_assert (data != NULL);
   GNUNET_assert (out != NULL);
+  udata = data;
   if (out_size < (((size*8) + ((size*8) % 5)) % 5))
   {
     GNUNET_break (0);
@@ -772,7 +863,7 @@ GNUNET_STRINGS_data_to_string (const unsigned char *data, size_t size, char *out
   {
     if ((rpos < size) && (vbit < 5))
     {
-      bits = (bits << 8) | data[rpos++];   /* eat 8 more bits */
+      bits = (bits << 8) | udata[rpos++];   /* eat 8 more bits */
       vbit += 8;
     }
     if (vbit < 5)
@@ -789,12 +880,9 @@ GNUNET_STRINGS_data_to_string (const unsigned char *data, size_t size, char *out
     out[wpos++] = encTable__[(bits >> (vbit - 5)) & 31];
     vbit -= 5;
   }
-  if (wpos != out_size)
-  {
-    GNUNET_break (0);
-    return NULL;
-  }
   GNUNET_assert (vbit == 0);
+  if (wpos < out_size)
+    out[wpos] = '\0';
   return &out[wpos];
 }
 
@@ -804,14 +892,14 @@ GNUNET_STRINGS_data_to_string (const unsigned char *data, size_t size, char *out
  * out_size must match exactly the size of the data before it was encoded.
  *
  * @param enc the encoding
- * @param enclen number of characters in 'enc' (without 0-terminator, which can be missing)
+ * @param enclen number of characters in @a enc (without 0-terminator, which can be missing)
  * @param out location where to store the decoded data
- * @param out_size sizeof the output buffer
- * @return GNUNET_OK on success, GNUNET_SYSERR if result has the wrong encoding
+ * @param out_size size of the output buffer @a out
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if result has the wrong encoding
  */
 int
 GNUNET_STRINGS_string_to_data (const char *enc, size_t enclen,
-                              unsigned char *out, size_t out_size)
+			       void *out, size_t out_size)
 {
   unsigned int rpos;
   unsigned int wpos;
@@ -819,41 +907,55 @@ GNUNET_STRINGS_string_to_data (const char *enc, size_t enclen,
   unsigned int vbit;
   int ret;
   int shift;
-  int encoded_len = out_size * 8;
-  if (encoded_len % 5 > 0)
+  unsigned char *uout;
+  unsigned int encoded_len = out_size * 8;
+
+  if (0 == enclen)
+  {
+    if (0 == out_size)
+      return GNUNET_OK;
+    return GNUNET_SYSERR;
+  }
+  uout = out;
+  wpos = out_size;
+  rpos = enclen;
+  if ((encoded_len % 5) > 0)
   {
     vbit = encoded_len % 5; /* padding! */
     shift = 5 - vbit;
+    bits = (ret = getValue__ (enc[--rpos])) >> (5 - (encoded_len % 5));
   }
   else
   {
-    vbit = 0;
+    vbit = 5;
     shift = 0;
+    bits = (ret = getValue__ (enc[--rpos]));
   }
   if ((encoded_len + shift) / 5 != enclen)
     return GNUNET_SYSERR;
-
-  wpos = out_size;
-  rpos = enclen;
-  bits = (ret = getValue__ (enc[--rpos])) >> (5 - encoded_len % 5);
   if (-1 == ret)
     return GNUNET_SYSERR;
   while (wpos > 0)
   {
-    GNUNET_assert (rpos > 0);
+    if (0 == rpos)
+    {
+      GNUNET_break (0);
+      return GNUNET_SYSERR;
+    }
     bits = ((ret = getValue__ (enc[--rpos])) << vbit) | bits;
     if (-1 == ret)
       return GNUNET_SYSERR;
     vbit += 5;
     if (vbit >= 8)
     {
-      out[--wpos] = (unsigned char) bits;
+      uout[--wpos] = (unsigned char) bits;
       bits >>= 8;
       vbit -= 8;
     }
   }
-  GNUNET_assert (rpos == 0);
-  GNUNET_assert (vbit == 0);
+  if ( (0 != rpos) ||
+       (0 != vbit) )
+    return GNUNET_SYSERR;
   return GNUNET_OK;
 }
 
@@ -930,22 +1032,24 @@ GNUNET_STRINGS_parse_uri (const char *path, char **scheme_part,
 
 
 /**
- * Check whether 'filename' is absolute or not, and if it's an URI
+ * Check whether @a filename is absolute or not, and if it's an URI
  *
  * @param filename filename to check
- * @param can_be_uri GNUNET_YES to check for being URI, GNUNET_NO - to
+ * @param can_be_uri #GNUNET_YES to check for being URI, #GNUNET_NO - to
  *        assume it's not URI
- * @param r_is_uri a pointer to an int that is set to GNUNET_YES if 'filename'
- *        is URI and to GNUNET_NO otherwise. Can be NULL. If 'can_be_uri' is
- *        not GNUNET_YES, *r_is_uri is set to GNUNET_NO.
+ * @param r_is_uri a pointer to an int that is set to #GNUNET_YES if @a filename
+ *        is URI and to #GNUNET_NO otherwise. Can be NULL. If @a can_be_uri is
+ *        not #GNUNET_YES, `* r_is_uri` is set to #GNUNET_NO.
  * @param r_uri_scheme a pointer to a char * that is set to a pointer to URI scheme.
  *        The string is allocated by the function, and should be freed with
- *        GNUNET_free (). Can be NULL.
- * @return GNUNET_YES if 'filename' is absolute, GNUNET_NO otherwise.
+ *        GNUNET_free(). Can be NULL.
+ * @return #GNUNET_YES if @a filename is absolute, #GNUNET_NO otherwise.
  */
 int
-GNUNET_STRINGS_path_is_absolute (const char *filename, int can_be_uri,
-    int *r_is_uri, char **r_uri_scheme)
+GNUNET_STRINGS_path_is_absolute (const char *filename,
+                                 int can_be_uri,
+                                 int *r_is_uri,
+                                 char **r_uri_scheme)
 {
 #if WINDOWS
   size_t len;
@@ -1004,12 +1108,12 @@ GNUNET_STRINGS_path_is_absolute (const char *filename, int can_be_uri,
 
 
 /**
- * Perform 'checks' on 'filename'
- * 
+ * Perform @a checks on @a filename.
+ *
  * @param filename file to check
  * @param checks checks to perform
- * @return GNUNET_YES if all checks pass, GNUNET_NO if at least one of them
- *         fails, GNUNET_SYSERR when a check can't be performed
+ * @return #GNUNET_YES if all checks pass, #GNUNET_NO if at least one of them
+ *         fails, #GNUNET_SYSERR when a check can't be performed
  */
 int
 GNUNET_STRINGS_check_filename (const char *filename,
@@ -1046,16 +1150,17 @@ GNUNET_STRINGS_check_filename (const char *filename,
 /**
  * Tries to convert 'zt_addr' string to an IPv6 address.
  * The string is expected to have the format "[ABCD::01]:80".
- * 
+ *
  * @param zt_addr 0-terminated string. May be mangled by the function.
- * @param addrlen length of zt_addr (not counting 0-terminator).
+ * @param addrlen length of @a zt_addr (not counting 0-terminator).
  * @param r_buf a buffer to fill. Initially gets filled with zeroes,
  *        then its sin6_port, sin6_family and sin6_addr are set appropriately.
- * @return GNUNET_OK if conversion succeded. GNUNET_SYSERR otherwise, in which
- *         case the contents of r_buf are undefined.
+ * @return #GNUNET_OK if conversion succeded.
+ *         #GNUNET_SYSERR otherwise, in which
+ *         case the contents of @a r_buf are undefined.
  */
 int
-GNUNET_STRINGS_to_address_ipv6 (const char *zt_addr, 
+GNUNET_STRINGS_to_address_ipv6 (const char *zt_addr,
 				uint16_t addrlen,
 				struct sockaddr_in6 *r_buf)
 {
@@ -1065,7 +1170,7 @@ GNUNET_STRINGS_to_address_ipv6 (const char *zt_addr,
   unsigned int port;
 
   if (addrlen < 6)
-    return GNUNET_SYSERR;  
+    return GNUNET_SYSERR;
   memcpy (zbuf, zt_addr, addrlen);
   if ('[' != zbuf[0])
   {
@@ -1117,12 +1222,13 @@ GNUNET_STRINGS_to_address_ipv6 (const char *zt_addr,
 /**
  * Tries to convert 'zt_addr' string to an IPv4 address.
  * The string is expected to have the format "1.2.3.4:80".
- * 
+ *
  * @param zt_addr 0-terminated string. May be mangled by the function.
- * @param addrlen length of zt_addr (not counting 0-terminator).
+ * @param addrlen length of @a zt_addr (not counting 0-terminator).
  * @param r_buf a buffer to fill.
- * @return GNUNET_OK if conversion succeded. GNUNET_SYSERR otherwise, in which case
- *         the contents of r_buf are undefined.
+ * @return #GNUNET_OK if conversion succeded.
+ *         #GNUNET_SYSERR otherwise, in which case
+ *         the contents of @a r_buf are undefined.
  */
 int
 GNUNET_STRINGS_to_address_ipv4 (const char *zt_addr, uint16_t addrlen,
@@ -1154,33 +1260,38 @@ GNUNET_STRINGS_to_address_ipv4 (const char *zt_addr, uint16_t addrlen,
 
 
 /**
- * Tries to convert 'addr' string to an IP (v4 or v6) address.
+ * Tries to convert @a addr string to an IP (v4 or v6) address.
  * Will automatically decide whether to treat 'addr' as v4 or v6 address.
- * 
+ *
  * @param addr a string, may not be 0-terminated.
- * @param addrlen number of bytes in addr (if addr is 0-terminated,
+ * @param addrlen number of bytes in @a addr (if addr is 0-terminated,
  *        0-terminator should not be counted towards addrlen).
  * @param r_buf a buffer to fill.
- * @return GNUNET_OK if conversion succeded. GNUNET_SYSERR otherwise, in which
+ * @return #GNUNET_OK if conversion succeded. GNUNET_SYSERR otherwise, in which
  *         case the contents of r_buf are undefined.
  */
 int
-GNUNET_STRINGS_to_address_ip (const char *addr, 
+GNUNET_STRINGS_to_address_ip (const char *addr,
 			      uint16_t addrlen,
 			      struct sockaddr_storage *r_buf)
 {
   if (addr[0] == '[')
-    return GNUNET_STRINGS_to_address_ipv6 (addr, addrlen, (struct sockaddr_in6 *) r_buf);
-  return GNUNET_STRINGS_to_address_ipv4 (addr, addrlen, (struct sockaddr_in *) r_buf);
+    return GNUNET_STRINGS_to_address_ipv6 (addr,
+                                           addrlen,
+                                           (struct sockaddr_in6 *) r_buf);
+  return GNUNET_STRINGS_to_address_ipv4 (addr,
+                                         addrlen,
+                                         (struct sockaddr_in *) r_buf);
 }
 
 
 /**
  * Makes a copy of argv that consists of a single memory chunk that can be
- * freed with a single call to GNUNET_free ();
+ * freed with a single call to GNUNET_free();
  */
 static char *const *
-_make_continuous_arg_copy (int argc, char *const *argv)
+_make_continuous_arg_copy (int argc,
+                           char *const *argv)
 {
   size_t argvsize = 0;
   int i;
@@ -1207,13 +1318,13 @@ _make_continuous_arg_copy (int argc, char *const *argv)
  * other than W32.
  * Returned argv has u8argv[u8argc] == NULL.
  * Returned argv is a single memory block, and can be freed with a single
- *   GNUNET_free () call.
+ *   GNUNET_free() call.
  *
  * @param argc argc (as given by main())
  * @param argv argv (as given by main())
  * @param u8argc a location to store new argc in (though it's th same as argc)
  * @param u8argv a location to store new argv in
- * @return GNUNET_OK on success, GNUNET_SYSERR on failure
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure
  */
 int
 GNUNET_STRINGS_get_utf8_args (int argc, char *const *argv, int *u8argc, char *const **u8argv)
@@ -1239,7 +1350,7 @@ GNUNET_STRINGS_get_utf8_args (int argc, char *const *argv, int *u8argc, char *co
     size_t strl;
     /* Hopefully it will allocate us NUL-terminated strings... */
     split_u8argv[i] = (char *) u16_to_u8 (wargv[i], wcslen (wargv[i]) + 1, NULL, &strl);
-    if (split_u8argv == NULL)
+    if (NULL == split_u8argv[i])
     {
       int j;
       for (j = 0; j < i; j++)
@@ -1264,5 +1375,547 @@ GNUNET_STRINGS_get_utf8_args (int argc, char *const *argv, int *u8argc, char *co
   return GNUNET_OK;
 #endif
 }
+
+
+/**
+ * Parse the given port policy.  The format is
+ * "[!]SPORT[-DPORT]".
+ *
+ * @param port_policy string to parse
+ * @param pp policy to fill in
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if the
+ *         @a port_policy is malformed
+ */
+static int
+parse_port_policy (const char *port_policy,
+                   struct GNUNET_STRINGS_PortPolicy *pp)
+{
+  const char *pos;
+  int s;
+  int e;
+  char eol[2];
+
+  pos = port_policy;
+  if ('!' == *pos)
+  {
+    pp->negate_portrange = GNUNET_YES;
+    pos++;
+  }
+  if (2 == sscanf (pos,
+                   "%u-%u%1s",
+                   &s, &e, eol))
+  {
+    if ( (0 == s) ||
+         (s > 0xFFFF) ||
+         (e < s) ||
+         (e > 0xFFFF) )
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  _("Port not in range\n"));
+      return GNUNET_SYSERR;
+    }
+    pp->start_port = (uint16_t) s;
+    pp->end_port = (uint16_t) e;
+    return GNUNET_OK;
+  }
+  if (1 == sscanf (pos,
+                   "%u%1s",
+                   &s,
+                   eol))
+  {
+    if ( (0 == s) ||
+         (s > 0xFFFF) )
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  _("Port not in range\n"));
+      return GNUNET_SYSERR;
+    }
+
+    pp->start_port = (uint16_t) s;
+    pp->end_port = (uint16_t) s;
+    return GNUNET_OK;
+  }
+  GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+              _("Malformed port policy `%s'\n"),
+              port_policy);
+  return GNUNET_SYSERR;
+}
+
+
+/**
+ * Parse an IPv4 network policy. The argument specifies a list of
+ * subnets. The format is
+ * <tt>(network[/netmask][:SPORT[-DPORT]];)*</tt> (no whitespace, must
+ * be terminated with a semicolon). The network must be given in
+ * dotted-decimal notation. The netmask can be given in CIDR notation
+ * (/16) or in dotted-decimal (/255.255.0.0).
+ *
+ * @param routeListX a string specifying the IPv4 subnets
+ * @return the converted list, terminated with all zeros;
+ *         NULL if the synatx is flawed
+ */
+struct GNUNET_STRINGS_IPv4NetworkPolicy *
+GNUNET_STRINGS_parse_ipv4_policy (const char *routeListX)
+{
+  unsigned int count;
+  unsigned int i;
+  unsigned int j;
+  unsigned int len;
+  int cnt;
+  unsigned int pos;
+  unsigned int temps[8];
+  int slash;
+  struct GNUNET_STRINGS_IPv4NetworkPolicy *result;
+  int colon;
+  int end;
+  char *routeList;
+
+  if (NULL == routeListX)
+    return NULL;
+  len = strlen (routeListX);
+  if (0 == len)
+    return NULL;
+  routeList = GNUNET_strdup (routeListX);
+  count = 0;
+  for (i = 0; i < len; i++)
+    if (routeList[i] == ';')
+      count++;
+  result = GNUNET_malloc (sizeof (struct GNUNET_STRINGS_IPv4NetworkPolicy) * (count + 1));
+  i = 0;
+  pos = 0;
+  while (i < count)
+  {
+    for (colon = pos; ':' != routeList[colon]; colon++)
+      if ( (';' == routeList[colon]) ||
+           ('\0' == routeList[colon]) )
+        break;
+    for (end = colon; ';' != routeList[end]; end++)
+      if ('\0' == routeList[end])
+        break;
+    if ('\0' == routeList[end])
+      break;
+    routeList[end] = '\0';
+    if (':' == routeList[colon])
+    {
+      routeList[colon] = '\0';
+      if (GNUNET_OK != parse_port_policy (&routeList[colon + 1],
+                                          &result[i].pp))
+        break;
+    }
+    cnt =
+        SSCANF (&routeList[pos],
+                "%u.%u.%u.%u/%u.%u.%u.%u",
+                &temps[0],
+                &temps[1],
+                &temps[2],
+                &temps[3],
+                &temps[4],
+                &temps[5],
+                &temps[6],
+                &temps[7]);
+    if (8 == cnt)
+    {
+      for (j = 0; j < 8; j++)
+        if (temps[j] > 0xFF)
+        {
+          LOG (GNUNET_ERROR_TYPE_WARNING,
+               _("Invalid format for IP: `%s'\n"),
+               &routeList[pos]);
+          GNUNET_free (result);
+          GNUNET_free (routeList);
+          return NULL;
+        }
+      result[i].network.s_addr =
+          htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
+                 temps[3]);
+      result[i].netmask.s_addr =
+          htonl ((temps[4] << 24) + (temps[5] << 16) + (temps[6] << 8) +
+                 temps[7]);
+      pos = end + 1;
+      i++;
+      continue;
+    }
+    /* try second notation */
+    cnt =
+        SSCANF (&routeList[pos],
+                "%u.%u.%u.%u/%u",
+                &temps[0],
+                &temps[1],
+                &temps[2],
+                &temps[3],
+                &slash);
+    if (5 == cnt)
+    {
+      for (j = 0; j < 4; j++)
+        if (temps[j] > 0xFF)
+        {
+          LOG (GNUNET_ERROR_TYPE_WARNING,
+               _("Invalid format for IP: `%s'\n"),
+               &routeList[pos]);
+          GNUNET_free (result);
+          GNUNET_free (routeList);
+          return NULL;
+        }
+      result[i].network.s_addr =
+          htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
+                 temps[3]);
+      if ((slash <= 32) && (slash >= 0))
+      {
+        result[i].netmask.s_addr = 0;
+        while (slash > 0)
+        {
+          result[i].netmask.s_addr =
+              (result[i].netmask.s_addr >> 1) + 0x80000000;
+          slash--;
+        }
+        result[i].netmask.s_addr = htonl (result[i].netmask.s_addr);
+        pos = end + 1;
+        i++;
+        continue;
+      }
+      else
+      {
+        LOG (GNUNET_ERROR_TYPE_WARNING,
+             _("Invalid network notation ('/%d' is not legal in IPv4 CIDR)."),
+             slash);
+        GNUNET_free (result);
+          GNUNET_free (routeList);
+        return NULL;            /* error */
+      }
+    }
+    /* try third notation */
+    slash = 32;
+    cnt =
+        SSCANF (&routeList[pos],
+                "%u.%u.%u.%u",
+                &temps[0],
+                &temps[1],
+                &temps[2],
+                &temps[3]);
+    if (4 == cnt)
+    {
+      for (j = 0; j < 4; j++)
+        if (temps[j] > 0xFF)
+        {
+          LOG (GNUNET_ERROR_TYPE_WARNING,
+               _("Invalid format for IP: `%s'\n"),
+               &routeList[pos]);
+          GNUNET_free (result);
+          GNUNET_free (routeList);
+          return NULL;
+        }
+      result[i].network.s_addr =
+          htonl ((temps[0] << 24) + (temps[1] << 16) + (temps[2] << 8) +
+                 temps[3]);
+      result[i].netmask.s_addr = 0;
+      while (slash > 0)
+      {
+        result[i].netmask.s_addr = (result[i].netmask.s_addr >> 1) + 0x80000000;
+        slash--;
+      }
+      result[i].netmask.s_addr = htonl (result[i].netmask.s_addr);
+      pos = end + 1;
+      i++;
+      continue;
+    }
+    LOG (GNUNET_ERROR_TYPE_WARNING,
+         _("Invalid format for IP: `%s'\n"),
+         &routeList[pos]);
+    GNUNET_free (result);
+    GNUNET_free (routeList);
+    return NULL;                /* error */
+  }
+  if (pos < strlen (routeList))
+  {
+    LOG (GNUNET_ERROR_TYPE_WARNING,
+         _("Invalid format: `%s'\n"),
+         &routeListX[pos]);
+    GNUNET_free (result);
+    GNUNET_free (routeList);
+    return NULL;                /* oops */
+  }
+  GNUNET_free (routeList);
+  return result;                /* ok */
+}
+
+
+/**
+ * Parse an IPv6 network policy. The argument specifies a list of
+ * subnets. The format is <tt>(network[/netmask[:SPORT[-DPORT]]];)*</tt>
+ * (no whitespace, must be terminated with a semicolon). The network
+ * must be given in colon-hex notation.  The netmask must be given in
+ * CIDR notation (/16) or can be omitted to specify a single host.
+ * Note that the netmask is mandatory if ports are specified.
+ *
+ * @param routeListX a string specifying the policy
+ * @return the converted list, 0-terminated, NULL if the synatx is flawed
+ */
+struct GNUNET_STRINGS_IPv6NetworkPolicy *
+GNUNET_STRINGS_parse_ipv6_policy (const char *routeListX)
+{
+  unsigned int count;
+  unsigned int i;
+  unsigned int len;
+  unsigned int pos;
+  int start;
+  int slash;
+  int ret;
+  char *routeList;
+  struct GNUNET_STRINGS_IPv6NetworkPolicy *result;
+  unsigned int bits;
+  unsigned int off;
+  int save;
+  int colon;
+
+  if (NULL == routeListX)
+    return NULL;
+  len = strlen (routeListX);
+  if (0 == len)
+    return NULL;
+  routeList = GNUNET_strdup (routeListX);
+  count = 0;
+  for (i = 0; i < len; i++)
+    if (';' == routeList[i])
+      count++;
+  if (';' != routeList[len - 1])
+  {
+    LOG (GNUNET_ERROR_TYPE_WARNING,
+         _("Invalid network notation (does not end with ';': `%s')\n"),
+         routeList);
+    GNUNET_free (routeList);
+    return NULL;
+  }
+
+  result = GNUNET_malloc (sizeof (struct GNUNET_STRINGS_IPv6NetworkPolicy) * (count + 1));
+  i = 0;
+  pos = 0;
+  while (i < count)
+  {
+    start = pos;
+    while (';' != routeList[pos])
+      pos++;
+    slash = pos;
+    while ((slash >= start) && (routeList[slash] != '/'))
+      slash--;
+
+    if (slash < start)
+    {
+      memset (&result[i].netmask,
+              0xFF,
+              sizeof (struct in6_addr));
+      slash = pos;
+    }
+    else
+    {
+      routeList[pos] = '\0';
+      for (colon = pos; ':' != routeList[colon]; colon--)
+        if ('/' == routeList[colon])
+          break;
+      if (':' == routeList[colon])
+      {
+        routeList[colon] = '\0';
+        if (GNUNET_OK != parse_port_policy (&routeList[colon + 1],
+                                            &result[i].pp))
+        {
+          GNUNET_free (result);
+          GNUNET_free (routeList);
+          return NULL;
+        }
+      }
+      ret = inet_pton (AF_INET6, &routeList[slash + 1], &result[i].netmask);
+      if (ret <= 0)
+      {
+        save = errno;
+        if ((1 != SSCANF (&routeList[slash + 1], "%u", &bits)) || (bits > 128))
+        {
+          if (0 == ret)
+            LOG (GNUNET_ERROR_TYPE_WARNING,
+                 _("Wrong format `%s' for netmask\n"),
+                 &routeList[slash + 1]);
+          else
+          {
+            errno = save;
+            LOG_STRERROR (GNUNET_ERROR_TYPE_WARNING, "inet_pton");
+          }
+          GNUNET_free (result);
+          GNUNET_free (routeList);
+          return NULL;
+        }
+        off = 0;
+        while (bits > 8)
+        {
+          result[i].netmask.s6_addr[off++] = 0xFF;
+          bits -= 8;
+        }
+        while (bits > 0)
+        {
+          result[i].netmask.s6_addr[off] =
+              (result[i].netmask.s6_addr[off] >> 1) + 0x80;
+          bits--;
+        }
+      }
+    }
+    routeList[slash] = '\0';
+    ret = inet_pton (AF_INET6, &routeList[start], &result[i].network);
+    if (ret <= 0)
+    {
+      if (0 == ret)
+        LOG (GNUNET_ERROR_TYPE_WARNING,
+             _("Wrong format `%s' for network\n"),
+             &routeList[slash + 1]);
+      else
+        LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR,
+                      "inet_pton");
+      GNUNET_free (result);
+      GNUNET_free (routeList);
+      return NULL;
+    }
+    pos++;
+    i++;
+  }
+  GNUNET_free (routeList);
+  return result;
+}
+
+
+
+/** ******************** Base64 encoding ***********/
+
+#define FILLCHAR '='
+static char *cvt =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ" "abcdefghijklmnopqrstuvwxyz" "0123456789+/";
+
+
+/**
+ * Encode into Base64.
+ *
+ * @param data the data to encode
+ * @param len the length of the input
+ * @param output where to write the output (*output should be NULL,
+ *   is allocated)
+ * @return the size of the output
+ */
+size_t
+GNUNET_STRINGS_base64_encode (const char *data,
+                              size_t len,
+                              char **output)
+{
+  size_t i;
+  char c;
+  size_t ret;
+  char *opt;
+
+  ret = 0;
+  opt = GNUNET_malloc (2 + (len * 4 / 3) + 8);
+  *output = opt;
+  for (i = 0; i < len; ++i)
+  {
+    c = (data[i] >> 2) & 0x3f;
+    opt[ret++] = cvt[(int) c];
+    c = (data[i] << 4) & 0x3f;
+    if (++i < len)
+      c |= (data[i] >> 4) & 0x0f;
+    opt[ret++] = cvt[(int) c];
+    if (i < len)
+    {
+      c = (data[i] << 2) & 0x3f;
+      if (++i < len)
+        c |= (data[i] >> 6) & 0x03;
+      opt[ret++] = cvt[(int) c];
+    }
+    else
+    {
+      ++i;
+      opt[ret++] = FILLCHAR;
+    }
+    if (i < len)
+    {
+      c = data[i] & 0x3f;
+      opt[ret++] = cvt[(int) c];
+    }
+    else
+    {
+      opt[ret++] = FILLCHAR;
+    }
+  }
+  opt[ret++] = FILLCHAR;
+  return ret;
+}
+
+#define cvtfind(a)( (((a) >= 'A')&&((a) <= 'Z'))? (a)-'A'\
+                   :(((a)>='a')&&((a)<='z')) ? (a)-'a'+26\
+                   :(((a)>='0')&&((a)<='9')) ? (a)-'0'+52\
+  	   :((a) == '+') ? 62\
+  	   :((a) == '/') ? 63 : -1)
+
+
+/**
+ * Decode from Base64.
+ *
+ * @param data the data to encode
+ * @param len the length of the input
+ * @param output where to write the output (*output should be NULL,
+ *   is allocated)
+ * @return the size of the output
+ */
+size_t
+GNUNET_STRINGS_base64_decode (const char *data,
+                              size_t len, char **output)
+{
+  size_t i;
+  char c;
+  char c1;
+  size_t ret = 0;
+
+#define CHECK_CRLF  while (data[i] == '\r' || data[i] == '\n') {\
+  			GNUNET_log(GNUNET_ERROR_TYPE_DEBUG | GNUNET_ERROR_TYPE_BULK, "ignoring CR/LF\n"); \
+  			i++; \
+  			if (i >= len) goto END;  \
+  		}
+
+  *output = GNUNET_malloc ((len * 3 / 4) + 8);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "base64_decode decoding len=%d\n",
+              (int) len);
+  for (i = 0; i < len; ++i)
+  {
+    CHECK_CRLF;
+    if (FILLCHAR == data[i])
+      break;
+    c = (char) cvtfind (data[i]);
+    ++i;
+    CHECK_CRLF;
+    c1 = (char) cvtfind (data[i]);
+    c = (c << 2) | ((c1 >> 4) & 0x3);
+    (*output)[ret++] = c;
+    if (++i < len)
+    {
+      CHECK_CRLF;
+      c = data[i];
+      if (FILLCHAR == c)
+        break;
+      c = (char) cvtfind (c);
+      c1 = ((c1 << 4) & 0xf0) | ((c >> 2) & 0xf);
+      (*output)[ret++] = c1;
+    }
+    if (++i < len)
+    {
+      CHECK_CRLF;
+      c1 = data[i];
+      if (FILLCHAR == c1)
+        break;
+
+      c1 = (char) cvtfind (c1);
+      c = ((c << 6) & 0xc0) | c1;
+      (*output)[ret++] = c;
+    }
+  }
+END:
+  return ret;
+}
+
+
+
+
 
 /* end of strings.c */

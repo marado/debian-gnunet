@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2006, 2008, 2009 Christian Grothoff (and other contributing authors)
+     (C) 2006-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -21,22 +21,18 @@
 /**
  * @file util/common_logging.c
  * @brief error handling API
- *
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_crypto_lib.h"
-#include "gnunet_strings_lib.h"
-#include "gnunet_time_lib.h"
-
+#include "gnunet_util_lib.h"
 #include <regex.h>
+
 
 /**
  * After how many milliseconds do we always print
  * that "message X was repeated N times"?  Use 12h.
  */
-#define BULK_DELAY_THRESHOLD (12 * 60 * 60 * 1000)
+#define BULK_DELAY_THRESHOLD (12 * 60 * 60 * 1000LL * 1000LL)
 
 /**
  * After how many repetitions do we always print
@@ -298,7 +294,7 @@ GNUNET_abort ()
  * Rotate logs, deleting the oldest log.
  *
  * @param new_name new name to add to the rotation
- */ 
+ */
 static void
 log_rotate (const char *new_name)
 {
@@ -317,7 +313,7 @@ log_rotate (const char *new_name)
     GNUNET_free (discard);
   }
   rotation[rotation_off % ROTATION_KEEP] = GNUNET_strdup (new_name);
-  rotation_off++;  
+  rotation_off++;
 }
 
 
@@ -325,19 +321,19 @@ log_rotate (const char *new_name)
  * Setup the log file.
  *
  * @param tm timestamp for which we should setup logging
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 static int
 setup_log_file (const struct tm *tm)
 {
-  static char last_fn[PATH_MAX + 1];  
+  static char last_fn[PATH_MAX + 1];
   char fn[PATH_MAX + 1];
   int dirwarn;
   int altlog_fd;
   int dup_return;
   FILE *altlog;
   char *leftsquare;
-  
+
   if (NULL == log_file_name)
     return GNUNET_SYSERR;
   if (0 == strftime (fn, sizeof (fn), log_file_name, tm))
@@ -396,7 +392,7 @@ setup_log_file (const struct tm *tm)
                   fn);
     return GNUNET_SYSERR;
   }
-  GNUNET_stderr = altlog; 
+  GNUNET_stderr = altlog;
   return GNUNET_OK;
 }
 
@@ -665,10 +661,12 @@ parse_all_definitions ()
  * @param comp default component to use
  * @param loglevel what types of messages should be logged
  * @param logfile which file to write log messages to (can be NULL)
- * @return GNUNET_OK on success
+ * @return #GNUNET_OK on success
  */
 int
-GNUNET_log_setup (const char *comp, const char *loglevel, const char *logfile)
+GNUNET_log_setup (const char *comp,
+		  const char *loglevel,
+		  const char *logfile)
 {
   const char *env_logfile;
   const struct tm *tm;
@@ -705,14 +703,14 @@ GNUNET_log_setup (const char *comp, const char *loglevel, const char *logfile)
  * Add a custom logger.
  *
  * @param logger log function
- * @param logger_cls closure for logger
+ * @param logger_cls closure for @a logger
  */
 void
 GNUNET_logger_add (GNUNET_Logger logger, void *logger_cls)
 {
   struct CustomLogger *entry;
 
-  entry = GNUNET_malloc (sizeof (struct CustomLogger));
+  entry = GNUNET_new (struct CustomLogger);
   entry->logger = logger;
   entry->logger_cls = logger_cls;
   entry->next = loggers;
@@ -724,7 +722,7 @@ GNUNET_logger_add (GNUNET_Logger logger, void *logger_cls)
  * Remove a custom logger.
  *
  * @param logger log function
- * @param logger_cls closure for logger
+ * @param logger_cls closure for @a logger
  */
 void
 GNUNET_logger_remove (GNUNET_Logger logger, void *logger_cls)
@@ -734,14 +732,14 @@ GNUNET_logger_remove (GNUNET_Logger logger, void *logger_cls)
 
   prev = NULL;
   pos = loggers;
-  while ((pos != NULL) &&
+  while ((NULL != pos) &&
          ((pos->logger != logger) || (pos->logger_cls != logger_cls)))
   {
     prev = pos;
     pos = pos->next;
   }
-  GNUNET_assert (pos != NULL);
-  if (prev == NULL)
+  GNUNET_assert (NULL != pos);
+  if (NULL == prev)
     loggers = pos->next;
   else
     prev->next = pos->next;
@@ -800,7 +798,7 @@ flush_bulk (const char *datestr)
   char *last;
   const char *ft;
 
-  if ((last_bulk_time.abs_value == 0) || (last_bulk_repeat == 0))
+  if ((0 == last_bulk_time.abs_value_us) || (0 == last_bulk_repeat))
     return;
   rev = 0;
   last = memchr (last_bulk, '\0', BULK_TRACK_SIZE);
@@ -830,10 +828,11 @@ flush_bulk (const char *datestr)
  * Ignore the next n calls to the log function.
  *
  * @param n number of log calls to ignore (could be negative)
- * @param check_reset GNUNET_YES to assert that the log skip counter is currently zero
+ * @param check_reset #GNUNET_YES to assert that the log skip counter is currently zero
  */
 void
-GNUNET_log_skip (int n, int check_reset)
+GNUNET_log_skip (int n,
+		 int check_reset)
 {
   int ok;
 
@@ -850,6 +849,7 @@ GNUNET_log_skip (int n, int check_reset)
   }
 }
 
+
 /**
  * Get the number of log calls that are going to be skipped
  *
@@ -861,6 +861,7 @@ GNUNET_get_log_skip ()
   return skip_log;
 }
 
+
 /**
  * Output a log message using the default mechanism.
  *
@@ -870,7 +871,9 @@ GNUNET_get_log_skip ()
  * @param va arguments to the format string "message"
  */
 static void
-mylog (enum GNUNET_ErrorType kind, const char *comp, const char *message,
+mylog (enum GNUNET_ErrorType kind,
+       const char *comp,
+       const char *message,
        va_list va)
 {
   char date[DATE_STR_SIZE];
@@ -886,11 +889,14 @@ mylog (enum GNUNET_ErrorType kind, const char *comp, const char *message,
   memset (date, 0, DATE_STR_SIZE);
   {
     char buf[size];
+    long long offset;
 #ifdef WINDOWS
     LARGE_INTEGER pc;
     time_t timetmp;
 
+    offset = GNUNET_TIME_get_offset ();
     time (&timetmp);
+    timetmp += offset / 1000;
     tmptr = localtime (&timetmp);
     pc.QuadPart = 0;
     QueryPerformanceCounter (&pc);
@@ -909,6 +915,30 @@ mylog (enum GNUNET_ErrorType kind, const char *comp, const char *message,
     struct timeval timeofday;
 
     gettimeofday (&timeofday, NULL);
+    offset = GNUNET_TIME_get_offset ();
+    if (offset > 0)
+    {
+      timeofday.tv_sec += offset / 1000LL;
+      timeofday.tv_usec += (offset % 1000LL) * 1000LL;
+      if (timeofday.tv_usec > 1000000LL)
+      {
+	timeofday.tv_usec -= 1000000LL;
+	timeofday.tv_sec++;
+      }
+    }
+    else
+    {
+      timeofday.tv_sec += offset / 1000LL;
+      if (timeofday.tv_usec > - (offset % 1000LL) * 1000LL)
+      {
+	timeofday.tv_usec += (offset % 1000LL) * 1000LL;
+      }
+      else
+      {
+	timeofday.tv_usec += 1000000LL + (offset % 1000LL) * 1000LL;
+	timeofday.tv_sec--;
+      }
+    }
     tmptr = localtime (&timeofday.tv_sec);
     if (NULL == tmptr)
     {
@@ -919,17 +949,18 @@ mylog (enum GNUNET_ErrorType kind, const char *comp, const char *message,
       strftime (date2, DATE_STR_SIZE, "%b %d %H:%M:%S-%%06u", tmptr);
       snprintf (date, sizeof (date), date2, timeofday.tv_usec);
     }
-#endif  
+#endif
     VSNPRINTF (buf, size, message, va);
     if (NULL != tmptr)
       (void) setup_log_file (tmptr);
     if ((0 != (kind & GNUNET_ERROR_TYPE_BULK)) &&
-        (last_bulk_time.abs_value != 0) &&
+        (0 != last_bulk_time.abs_value_us) &&
         (0 == strncmp (buf, last_bulk, sizeof (last_bulk))))
     {
       last_bulk_repeat++;
-      if ((GNUNET_TIME_absolute_get_duration (last_bulk_time).rel_value >
-           BULK_DELAY_THRESHOLD) || (last_bulk_repeat > BULK_REPEAT_THRESHOLD))
+      if ( (GNUNET_TIME_absolute_get_duration (last_bulk_time).rel_value_us >
+	    BULK_DELAY_THRESHOLD) ||
+	   (last_bulk_repeat > BULK_REPEAT_THRESHOLD) )
         flush_bulk (date);
       return;
     }
@@ -952,7 +983,8 @@ mylog (enum GNUNET_ErrorType kind, const char *comp, const char *message,
  * @param ... arguments for format string
  */
 void
-GNUNET_log_nocheck (enum GNUNET_ErrorType kind, const char *message, ...)
+GNUNET_log_nocheck (enum GNUNET_ErrorType kind,
+		    const char *message, ...)
 {
   va_list va;
 
@@ -1012,43 +1044,6 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind)
 
 
 /**
- * Convert a short hash to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
- *
- * @param hc the short hash code
- * @return string form; will be overwritten by next call to GNUNET_h2s.
- */
-const char *
-GNUNET_short_h2s (const struct GNUNET_CRYPTO_ShortHashCode * hc)
-{
-  static struct GNUNET_CRYPTO_ShortHashAsciiEncoded ret;
-
-  GNUNET_CRYPTO_short_hash_to_enc (hc, &ret);
-  ret.short_encoding[8] = '\0';
-  return (const char *) ret.short_encoding;
-}
-
-
-/**
- * Convert a short hash to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
- *
- * @param hc the short hash code
- * @return string form; will be overwritten by next call to GNUNET_h2s_full.
- */
-const char *
-GNUNET_short_h2s_full (const struct GNUNET_CRYPTO_ShortHashCode * hc)
-{
-  static struct GNUNET_CRYPTO_ShortHashAsciiEncoded ret;
-
-  GNUNET_CRYPTO_short_hash_to_enc (hc, &ret);
-  ret.short_encoding[sizeof (ret) - 1] = '\0';
-  return (const char *) ret.short_encoding;
-}
-
-/**
  * Convert a hash to a string (for printing debug messages).
  * This is one of the very few calls in the entire API that is
  * NOT reentrant!
@@ -1093,16 +1088,19 @@ GNUNET_h2s_full (const struct GNUNET_HashCode * hc)
  *
  * @param pid the peer identity
  * @return string form of the pid; will be overwritten by next
- *         call to GNUNET_i2s.
+ *         call to #GNUNET_i2s.
  */
 const char *
 GNUNET_i2s (const struct GNUNET_PeerIdentity *pid)
 {
-  static struct GNUNET_CRYPTO_HashAsciiEncoded ret;
+  static char buf[256];
+  char *ret;
 
-  GNUNET_CRYPTO_hash_to_enc (&pid->hashPubKey, &ret);
-  ret.encoding[4] = '\0';
-  return (const char *) ret.encoding;
+  ret = GNUNET_CRYPTO_eddsa_public_key_to_string (&pid->public_key);
+  strcpy (buf, ret);
+  GNUNET_free (ret);
+  buf[4] = '\0';
+  return buf;
 }
 
 
@@ -1113,15 +1111,18 @@ GNUNET_i2s (const struct GNUNET_PeerIdentity *pid)
  *
  * @param pid the peer identity
  * @return string form of the pid; will be overwritten by next
- *         call to GNUNET_i2s.
+ *         call to #GNUNET_i2s_full.
  */
 const char *
 GNUNET_i2s_full (const struct GNUNET_PeerIdentity *pid)
 {
-  static struct GNUNET_CRYPTO_HashAsciiEncoded ret;
+  static char buf[256];
+  char *ret;
 
-  GNUNET_CRYPTO_hash_to_enc (&pid->hashPubKey, &ret);
-  return (const char *) ret.encoding;
+  ret = GNUNET_CRYPTO_eddsa_public_key_to_string (&pid->public_key);
+  strcpy (buf, ret);
+  GNUNET_free (ret);
+  return buf;
 }
 
 
@@ -1131,9 +1132,9 @@ GNUNET_i2s_full (const struct GNUNET_PeerIdentity *pid)
  * in the entire API that is NOT reentrant!
  *
  * @param addr the address
- * @param addrlen the length of the address
+ * @param addrlen the length of the address in @a addr
  * @return nicely formatted string for the address
- *  will be overwritten by next call to GNUNET_a2s.
+ *  will be overwritten by next call to #GNUNET_a2s.
  */
 const char *
 GNUNET_a2s (const struct sockaddr *addr, socklen_t addrlen)
@@ -1177,9 +1178,10 @@ GNUNET_a2s (const struct sockaddr *addr, socklen_t addrlen)
       return "<unbound UNIX client>";
     un = (const struct sockaddr_un *) addr;
     off = 0;
-    if (un->sun_path[0] == '\0')
+    if ('\0' == un->sun_path[0])
       off++;
-    snprintf (buf, sizeof (buf), "%s%.*s", (off == 1) ? "@" : "",
+    memset (buf, 0, sizeof (buf));
+    snprintf (buf, sizeof (buf) - 1, "%s%.*s", (off == 1) ? "@" : "",
               (int) (addrlen - sizeof (sa_family_t) - 1 - off),
               &un->sun_path[off]);
     return buf;
@@ -1197,7 +1199,7 @@ GNUNET_a2s (const struct sockaddr *addr, socklen_t addrlen)
  * @param option name of missing option
  */
 void
-GNUNET_log_config_missing (enum GNUNET_ErrorType kind, 
+GNUNET_log_config_missing (enum GNUNET_ErrorType kind,
 			   const char *section,
 			   const char *option)
 {
@@ -1217,7 +1219,7 @@ GNUNET_log_config_missing (enum GNUNET_ErrorType kind,
  * @param required what is required that is invalid about the option
  */
 void
-GNUNET_log_config_invalid (enum GNUNET_ErrorType kind, 
+GNUNET_log_config_invalid (enum GNUNET_ErrorType kind,
 			   const char *section,
 			   const char *option,
 			   const char *required)
@@ -1231,7 +1233,8 @@ GNUNET_log_config_invalid (enum GNUNET_ErrorType kind,
 /**
  * Initializer
  */
-void __attribute__ ((constructor)) GNUNET_util_cl_init ()
+void __attribute__ ((constructor))
+GNUNET_util_cl_init ()
 {
   GNUNET_stderr = stderr;
 #ifdef MINGW
@@ -1247,7 +1250,8 @@ void __attribute__ ((constructor)) GNUNET_util_cl_init ()
 /**
  * Destructor
  */
-void __attribute__ ((destructor)) GNUNET_util_cl_fini ()
+void __attribute__ ((destructor))
+GNUNET_util_cl_fini ()
 {
 #if WINDOWS
   DeleteCriticalSection (&output_message_cs);

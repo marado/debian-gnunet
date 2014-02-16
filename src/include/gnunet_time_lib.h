@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     (C) 2001-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -21,8 +21,9 @@
 /**
  * @file include/gnunet_time_lib.h
  * @brief functions related to time
- *
  * @author Christian Grothoff
+ * @defgroup time Time and time calculations
+ * @{
  */
 
 #ifndef GNUNET_TIME_LIB_H
@@ -39,18 +40,18 @@ extern "C"
 #include "gnunet_common.h"
 
 /**
- * Time for absolute times used by GNUnet, in milliseconds.
+ * Time for absolute times used by GNUnet, in microseconds.
  */
 struct GNUNET_TIME_Absolute
 {
   /**
    * The actual value.
    */
-  uint64_t abs_value;
+  uint64_t abs_value_us;
 };
 
 /**
- * Time for relative time used by GNUnet, in milliseconds.
+ * Time for relative time used by GNUnet, in microseconds.
  * Always positive, so we can only refer to future time.
  */
 struct GNUNET_TIME_Relative
@@ -58,32 +59,32 @@ struct GNUNET_TIME_Relative
   /**
    * The actual value.
    */
-  uint64_t rel_value;
+  uint64_t rel_value_us;
 };
 
 GNUNET_NETWORK_STRUCT_BEGIN
 
 /**
- * Time for relative time used by GNUnet, in milliseconds and in network byte order.
+ * Time for relative time used by GNUnet, in microseconds and in network byte order.
  */
 struct GNUNET_TIME_RelativeNBO
 {
   /**
    * The actual value (in network byte order).
    */
-  uint64_t rel_value__ GNUNET_PACKED;
+  uint64_t rel_value_us__ GNUNET_PACKED;
 };
 
 
 /**
- * Time for absolute time used by GNUnet, in milliseconds and in network byte order.
+ * Time for absolute time used by GNUnet, in microseconds and in network byte order.
  */
 struct GNUNET_TIME_AbsoluteNBO
 {
   /**
    * The actual value (in network byte order).
    */
-  uint64_t abs_value__ GNUNET_PACKED;
+  uint64_t abs_value_us__ GNUNET_PACKED;
 };
 GNUNET_NETWORK_STRUCT_END
 
@@ -98,9 +99,14 @@ GNUNET_NETWORK_STRUCT_END
 #define GNUNET_TIME_UNIT_ZERO_ABS GNUNET_TIME_absolute_get_zero_()
 
 /**
- * One millisecond, our basic time unit.
+ * One microsecond, our basic time unit.
  */
-#define GNUNET_TIME_UNIT_MILLISECONDS GNUNET_TIME_relative_get_unit_()
+#define GNUNET_TIME_UNIT_MICROSECONDS GNUNET_TIME_relative_get_unit_()
+
+/**
+ * One millisecond.
+ */
+#define GNUNET_TIME_UNIT_MILLISECONDS GNUNET_TIME_relative_get_millisecond_()
 
 /**
  * One second.
@@ -158,8 +164,8 @@ GNUNET_NETWORK_STRUCT_END
 
 
 /**
- * Perform our standard exponential back-off calculation, starting at 1mst
- * and then going by a factor of 2 up unto a maximum of 1s.
+ * Perform our standard exponential back-off calculation, starting at 1 ms
+ * and then going by a factor of 2 up unto a maximum of 15 m.
  *
  * @param r current backoff time, initially zero
  */
@@ -181,10 +187,17 @@ GNUNET_TIME_absolute_get_zero_ (void);
 
 
 /**
- * Return relative time of 1ms.
+ * Return relative time of 1 microsecond.
  */
 struct GNUNET_TIME_Relative
 GNUNET_TIME_relative_get_unit_ (void);
+
+
+/**
+ * Return relative time of 1ms.
+ */
+struct GNUNET_TIME_Relative
+GNUNET_TIME_relative_get_millisecond_ (void);
 
 
 /**
@@ -465,12 +478,51 @@ void
 GNUNET_TIME_set_offset (long long offset);
 
 
+/**
+ * Get the timestamp offset for this instance.
+ *
+ * @return the offset we currently skew the locale time by
+ */
+long long
+GNUNET_TIME_get_offset (void);
+
+
+/**
+ * Return the current year (i.e. '2011').
+ */
+unsigned int
+GNUNET_TIME_get_current_year (void);
+
+
+/**
+ * Convert a year to an expiration time of January 1st of that year.
+ *
+ * @param year a year (after 1970, please ;-)).
+ * @return absolute time for January 1st of that year.
+ */
+struct GNUNET_TIME_Absolute
+GNUNET_TIME_year_to_time (unsigned int year);
+
+
+/**
+ * Convert an expiration time to the respective year (rounds)
+ *
+ * @param at absolute time
+ * @return year a year (after 1970), 0 on error
+ */
+unsigned int
+GNUNET_TIME_time_to_year (struct GNUNET_TIME_Absolute at);
+
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */ /* end of group time */
+
 
 /* ifndef GNUNET_TIME_LIB_H */
 #endif

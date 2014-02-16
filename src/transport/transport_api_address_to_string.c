@@ -18,12 +18,10 @@
      Boston, MA 02111-1307, USA.
 */
 #include "platform.h"
-#include "gnunet_client_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_hello_lib.h"
 #include "gnunet_protocols.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
 #include "gnunet_transport_service.h"
 #include "transport.h"
 
@@ -154,7 +152,7 @@ GNUNET_TRANSPORT_address_to_string (const struct GNUNET_CONFIGURATION_Handle
   memcpy (addrbuf, address->address, alen);
   memcpy (&addrbuf[alen], address->transport_name, slen);
 
-  alc = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_AddressToStringContext));
+  alc = GNUNET_new (struct GNUNET_TRANSPORT_AddressToStringContext);
   alc->cb = aluc;
   alc->cb_cls = aluc_cls;
   alc->timeout = GNUNET_TIME_relative_to_absolute (timeout);

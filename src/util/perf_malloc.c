@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -24,12 +24,10 @@
  * @brief measure performance of allocation functions
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_crypto_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 #include <gauger.h>
 
-static uint64_t 
+static uint64_t
 perfMalloc ()
 {
   size_t i;
@@ -53,13 +51,13 @@ main (int argc, char *argv[])
 
   start = GNUNET_TIME_absolute_get ();
   kb = perfMalloc ();
-  printf ("Malloc perf took %llu ms\n",
-          (unsigned long long)
-          GNUNET_TIME_absolute_get_duration (start).rel_value);
+  printf ("Malloc perf took %s\n",
+          GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (start),
+						  GNUNET_YES));
   GAUGER ("UTIL", "Allocation",
           kb / 1024 / (1 +
-                              GNUNET_TIME_absolute_get_duration
-                              (start).rel_value), "kb/s");
+		       GNUNET_TIME_absolute_get_duration
+		       (start).rel_value_us / 1000LL), "kb/ms");
   return 0;
 }
 

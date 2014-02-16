@@ -100,8 +100,7 @@ timeout_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param distance in overlay hops, as given by transport plugin
  */
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   if (peer == NULL)
     return;
@@ -154,7 +153,7 @@ waitpid_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   struct PeerContext *p = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Killing ARM process.\n");
-  if (0 != GNUNET_OS_process_kill (p->arm_proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (p->arm_proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
   if (GNUNET_OS_process_wait (p->arm_proc) != GNUNET_OK)
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");
@@ -199,29 +198,17 @@ run (void *cls, char *const *args, const char *cfgfile,
 }
 
 
-static int
-check ()
+int
+main (int argcx, char *argvx[])
 {
-  char *const argv[] = { "test-gnunet-daemon-hostlist",
+  static char *const argv[] = {
+    "test-gnunet-daemon-hostlist",
     "-c", "test_gnunet_daemon_hostlist_data.conf",
     NULL
   };
-  struct GNUNET_GETOPT_CommandLineOption options[] = {
+  static struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
-  ok = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv,
-                      "test-gnunet-daemon-hostlist", "nohelp", options, &run,
-                      &ok);
-  return ok;
-}
-
-
-int
-main (int argc, char *argv[])
-{
-
-  int ret;
 
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-1");
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-2");
@@ -229,18 +216,24 @@ main (int argc, char *argv[])
   GNUNET_log_setup ("test-gnunet-daemon-hostlist",
                     "WARNING",
                     NULL);
-  ret = check ();
-  if (ret == 0)
+  ok = 1;
+  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv,
+                      "test-gnunet-daemon-hostlist", "nohelp", options, &run,
+                      &ok);
+  if (0 == ok)
   {
     FPRINTF (stderr, "%s",  ".");
     /* now do it again */
-    ret = check ();
+    ok = 1;
+    GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv,
+			"test-gnunet-daemon-hostlist", "nohelp", options, &run,
+			&ok);
     FPRINTF (stderr, "%s",  ".\n");
   }
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-1");
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-2");
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-3");
-  return ret;
+  return ok;
 }
 
 /* end of test_gnunet_daemon_hostlist_reconnect.c */

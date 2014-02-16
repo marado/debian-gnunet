@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -24,8 +24,16 @@
  *          gnunet-service-testbed. This binary also receives configuration
  *          from the remove controller which is put in a temporary location
  *          with ports and paths fixed so that gnunet-service-testbed runs
- *          without any hurdles. This binary also kills the testbed service
- *          should the connection from the remote controller is dropped
+ *          without any hurdles.
+ *
+ *          This helper monitors for three termination events.  They are: (1)The
+ *          stdin of the helper is closed for reading; (2)the helper received
+ *          SIGTERM/SIGINT; (3)the testbed crashed.  In case of events 1 and 2
+ *          the helper kills the testbed service.  When testbed crashed (event
+ *          3), the helper should send a SIGTERM to its own process group; this
+ *          behaviour will help terminate any child processes (peers) testbed
+ *          has started and prevents them from leaking and running forever.
+ *
  * @author Sree Harsha Totakura <sreeharsha@totakura.in>
  */
 
@@ -109,6 +117,11 @@ static struct GNUNET_DISK_FileHandle *stdout_fd;
 static struct GNUNET_OS_Process *testbed;
 
 /**
+ * Pipe used to communicate shutdown via signal.
+ */
+static struct GNUNET_DISK_PipeHandle *sigpipe;
+
+/**
  * Task identifier for the read task
  */
 static GNUNET_SCHEDULER_TaskIdentifier read_task_id;
@@ -117,6 +130,16 @@ static GNUNET_SCHEDULER_TaskIdentifier read_task_id;
  * Task identifier for the write task
  */
 static GNUNET_SCHEDULER_TaskIdentifier write_task_id;
+
+/**
+ * Task to kill the child
+ */
+static GNUNET_SCHEDULER_TaskIdentifier child_death_task_id;
+
+/**
+ * shutdown task id
+ */
+static GNUNET_SCHEDULER_TaskIdentifier shutdown_task_id;
 
 /**
  * Are we done reading messages from stdin?
@@ -130,13 +153,7 @@ static int status;
 
 
 /**
- * Are we shutting down
- */
-static int in_shutdown;
-
-
-/**
- * Task to shutting down nicely
+ * Task to shut down cleanly
  *
  * @param cls NULL
  * @param tc the task context
@@ -145,7 +162,12 @@ static void
 shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   LOG_DEBUG ("Shutting down\n");
-  in_shutdown = GNUNET_YES;
+  shutdown_task_id = GNUNET_SCHEDULER_NO_TASK;
+  if (NULL != testbed)
+  {
+    LOG_DEBUG ("Killing testbed\n");
+    GNUNET_break (0 == GNUNET_OS_process_kill (testbed, GNUNET_TERM_SIG));
+  }
   if (GNUNET_SCHEDULER_NO_TASK != read_task_id)
   {
     GNUNET_SCHEDULER_cancel (read_task_id);
@@ -156,6 +178,11 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_SCHEDULER_cancel (write_task_id);
     write_task_id = GNUNET_SCHEDULER_NO_TASK;
   }
+  if (GNUNET_SCHEDULER_NO_TASK != child_death_task_id)
+  {
+    GNUNET_SCHEDULER_cancel (child_death_task_id);
+    child_death_task_id = GNUNET_SCHEDULER_NO_TASK;
+  }
   if (NULL != stdin_fd)
     (void) GNUNET_DISK_file_close (stdin_fd);
   if (NULL != stdout_fd)
@@ -164,9 +191,7 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   tokenizer = NULL;
   if (NULL != testbed)
   {
-    LOG_DEBUG ("Killing testbed\n");
-    GNUNET_break (0 == GNUNET_OS_process_kill (testbed, SIGTERM));
-    GNUNET_assert (GNUNET_OK == GNUNET_OS_process_wait (testbed));
+    GNUNET_break (GNUNET_OK == GNUNET_OS_process_wait (testbed));
     GNUNET_OS_process_destroy (testbed);
     testbed = NULL;
   }
@@ -175,6 +200,18 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_TESTING_system_destroy (test_system, GNUNET_YES);
     test_system = NULL;
   }
+}
+
+
+/**
+ * Scheduler shutdown task to be run now.
+ */
+static void
+shutdown_now (void)
+{
+  if (GNUNET_SCHEDULER_NO_TASK != shutdown_task_id)
+    GNUNET_SCHEDULER_cancel (shutdown_task_id);
+  shutdown_task_id = GNUNET_SCHEDULER_add_now (&shutdown_task, NULL);
 }
 
 
@@ -222,6 +259,60 @@ write_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 /**
+ * Task triggered whenever we receive a SIGCHLD (child
+ * process died).
+ *
+ * @param cls closure, NULL if we need to self-restart
+ * @param tc context
+ */
+static void
+child_death_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+{
+  const struct GNUNET_DISK_FileHandle *pr;
+  char c[16];
+  enum GNUNET_OS_ProcessStatusType type;
+  unsigned long code;
+  int ret;
+
+  pr = GNUNET_DISK_pipe_handle (sigpipe, GNUNET_DISK_PIPE_END_READ);
+  child_death_task_id = GNUNET_SCHEDULER_NO_TASK;
+  if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_READ_READY))
+  {
+    child_death_task_id =
+	GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
+					pr, &child_death_task, NULL);
+    return;
+  }
+  /* consume the signal */
+  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof (c)));
+  LOG_DEBUG ("Got SIGCHLD\n");
+  if (NULL == testbed)
+  {
+    GNUNET_break (0);
+    return;
+  }
+  GNUNET_break (GNUNET_SYSERR !=
+                (ret = GNUNET_OS_process_status (testbed, &type, &code)));
+  if (GNUNET_NO != ret)
+  {
+    GNUNET_OS_process_destroy (testbed);
+    testbed = NULL;
+    /* Send SIGTERM to our process group */
+    if (0 != PLIBC_KILL (0, GNUNET_TERM_SIG))
+    {
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "signal");
+      shutdown_now ();          /* Couldn't send the signal, we shutdown frowning */
+    }
+    return;
+  }
+  LOG_DEBUG ("Child hasn't died.  Resuming to monitor its status\n");
+  child_death_task_id =
+      GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
+                                      pr, &child_death_task, NULL);
+}
+
+
+/**
  * Functions with this signature are called whenever a
  * complete message is received by the tokenizer.
  *
@@ -246,6 +337,8 @@ tokenizer_cb (void *cls, void *client,
   char *hostname;
   char *config;
   char *xconfig;
+  char *evstr;
+  //char *str;
   size_t config_size;
   uLongf ul_config_size;
   size_t xconfig_size;
@@ -309,15 +402,42 @@ tokenizer_cb (void *cls, void *client,
                     hostname_size);
     hostname[hostname_size] = '\0';
   }
+  /* unset GNUNET_TESTING_PREFIX if present as it is more relevant for testbed */
+  evstr = getenv (GNUNET_TESTING_PREFIX);
+  if (NULL != evstr)
+  {
+    /* unsetting the variable will invalidate the pointer! */
+    evstr = GNUNET_strdup (evstr);
+#ifdef WINDOWS
+    GNUNET_break (0 != SetEnvironmentVariable (GNUNET_TESTING_PREFIX, NULL));
+#else
+    GNUNET_break (0 == unsetenv (GNUNET_TESTING_PREFIX));
+#endif
+  }
   test_system =
-      GNUNET_TESTING_system_create ("testbed-helper", trusted_ip, hostname);
+      GNUNET_TESTING_system_create ("testbed-helper", trusted_ip, hostname,
+                                    NULL);
+  if (NULL != evstr)
+  {
+#ifdef WINDOWS
+    GNUNET_assert (0 != SetEnvironmentVariable (GNUNET_TESTING_PREFIX, evstr));
+#else
+    static char evar[2* PATH_MAX];
+
+    GNUNET_assert (0 < GNUNET_snprintf (evar, sizeof (evar),
+                                        GNUNET_TESTING_PREFIX "=%s", evstr));
+    putenv (evar);
+#endif
+    GNUNET_free (evstr);
+    evstr = NULL;
+  }
   GNUNET_free_non_null (hostname);
   hostname = NULL;
   GNUNET_assert (NULL != test_system);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_TESTING_configuration_create (test_system, cfg));
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONFIGURATION_get_value_string (cfg, "PATHS",
+                 GNUNET_CONFIGURATION_get_value_filename (cfg, "PATHS",
                                                         "DEFAULTCONFIG",
                                                         &config));
   if (GNUNET_OK != GNUNET_CONFIGURATION_write (cfg, config))
@@ -330,6 +450,15 @@ tokenizer_cb (void *cls, void *client,
   }
   LOG_DEBUG ("Staring testbed with config: %s\n", config);
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-testbed");
+  {
+    static char evar[2 * PATH_MAX];
+
+    /* expose testbed configuration through env variable */
+    GNUNET_assert (0 < GNUNET_snprintf (evar, sizeof (evar),
+                                        "%s=%s", ENV_TESTBED_CONFIG, config));
+    GNUNET_assert (0 == putenv (evar));
+    evstr = NULL;
+  }
   testbed =
       GNUNET_OS_start_process (PIPE_CONTROL,
                                GNUNET_OS_INHERIT_STD_ERR /*verbose? */ , NULL,
@@ -351,7 +480,7 @@ tokenizer_cb (void *cls, void *client,
   xconfig_size =
       GNUNET_TESTBED_compress_config_ (config, config_size, &xconfig);
   GNUNET_free (config);
-  wc = GNUNET_malloc (sizeof (struct WriteContext));
+  wc = GNUNET_new (struct WriteContext);
   wc->length = xconfig_size + sizeof (struct GNUNET_TESTBED_HelperReply);
   reply = GNUNET_realloc (xconfig, wc->length);
   memmove (&reply[1], reply, xconfig_size);
@@ -362,11 +491,16 @@ tokenizer_cb (void *cls, void *client,
   write_task_id =
       GNUNET_SCHEDULER_add_write_file (GNUNET_TIME_UNIT_FOREVER_REL, stdout_fd,
                                        &write_task, wc);
+  child_death_task_id =
+      GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
+                                      GNUNET_DISK_pipe_handle (sigpipe,
+                                                               GNUNET_DISK_PIPE_END_READ),
+                                      &child_death_task, NULL);
   return GNUNET_OK;
 
 error:
   status = GNUNET_SYSERR;
-  GNUNET_SCHEDULER_shutdown ();
+  shutdown_now ();
   return GNUNET_SYSERR;
 }
 
@@ -389,13 +523,15 @@ read_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   sread = GNUNET_DISK_file_read (stdin_fd, buf, sizeof (buf));
   if ((GNUNET_SYSERR == sread) || (0 == sread))
   {
-    GNUNET_SCHEDULER_shutdown ();
+    LOG_DEBUG ("STDIN closed\n");
+    shutdown_now ();
     return;
   }
   if (GNUNET_YES == done_reading)
   {
     /* didn't expect any more data! */
-    GNUNET_SCHEDULER_shutdown ();
+    GNUNET_break_op (0);
+    shutdown_now ();
     return;
   }
   LOG_DEBUG ("Read %u bytes\n", sread);
@@ -404,7 +540,7 @@ read_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
                                  GNUNET_NO))
   {
     GNUNET_break (0);
-    GNUNET_SCHEDULER_shutdown ();
+    shutdown_now ();
     return;
   }
   read_task_id =                /* No timeout while reading */
@@ -432,8 +568,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   read_task_id =
       GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL, stdin_fd,
                                       &read_task, NULL);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
-                                NULL);
+  shutdown_task_id =
+      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
+                                    NULL);
 }
 
 
@@ -443,14 +580,15 @@ run (void *cls, char *const *args, const char *cfgfile,
 static void
 sighandler_child_death ()
 {
-  if ((NULL != testbed) && (GNUNET_NO == in_shutdown))
-  {
-    LOG_DEBUG ("Child died\n");
-    GNUNET_assert (GNUNET_OK == GNUNET_OS_process_wait (testbed));
-    GNUNET_OS_process_destroy (testbed);
-    testbed = NULL;
-    GNUNET_SCHEDULER_shutdown ();       /* We are done too! */
-  }
+  static char c;
+  int old_errno;	/* back-up errno */
+
+  old_errno = errno;
+  GNUNET_break (1 ==
+                GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle
+                                        (sigpipe, GNUNET_DISK_PIPE_END_WRITE),
+                                        &c, sizeof (c)));
+  errno = old_errno;
 }
 
 
@@ -472,7 +610,12 @@ main (int argc, char **argv)
   int ret;
 
   status = GNUNET_OK;
-  in_shutdown = GNUNET_NO;
+  if (NULL == (sigpipe = GNUNET_DISK_pipe (GNUNET_NO, GNUNET_NO,
+                                           GNUNET_NO, GNUNET_NO)))
+  {
+    GNUNET_break (0);
+    return 1;
+  }
   shc_chld =
       GNUNET_SIGNAL_handler_install (GNUNET_SIGCHLD, &sighandler_child_death);
   ret =
@@ -481,6 +624,7 @@ main (int argc, char **argv)
                           &run, NULL);
   GNUNET_SIGNAL_handler_uninstall (shc_chld);
   shc_chld = NULL;
+  GNUNET_DISK_pipe_close (sigpipe);
   if (GNUNET_OK != ret)
     return 1;
   return (GNUNET_OK == status) ? 0 : 1;

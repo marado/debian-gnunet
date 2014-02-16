@@ -21,14 +21,44 @@
 /**
  * @file transport/gnunet-service-transport_blacklist.c
  * @brief blacklisting implementation
- * @author Christian Grothoff
+ * @author Christian Grothoff, Matthias Wachs
+ * @details This is the blacklisting component of transport service. With
+ * blacklisting it is possible to deny connections to specific peers of
+ * to use a specific plugin to a specific peer. Peers can be blacklisted using
+ * the configuration or a blacklist client can be asked.
+ *
+ * To blacklist peers using the configuration you have to add a section to your
+ * configuration containing the peer id of the peer to blacklist and the plugin
+ * if required.
+ *
+ * Example:
+ * To blacklist connections to P565... on peer AG2P... using tcp add:
+ * [transport-blacklist-AG2PHES1BARB9IJCPAMJTFPVJ5V3A72S3F2A8SBUB8DAQ2V0O3V8G6G2JU56FHGFOHMQVKBSQFV98TCGTC3RJ1NINP82G0RC00N1520]
+ * P565723JO1C2HSN6J29TAQ22MN6CI8HTMUU55T0FUQG4CMDGGEQ8UCNBKUMB94GC8R9G4FB2SF9LDOBAJ6AMINBP4JHHDD6L7VD801G = tcp
+ *
+ * To blacklist connections to P565... on peer AG2P... using all plugins add:
+ * [transport-blacklist-AG2PHES1BARB9IJCPAMJTFPVJ5V3A72S3F2A8SBUB8DAQ2V0O3V8G6G2JU56FHGFOHMQVKBSQFV98TCGTC3RJ1NINP82G0RC00N1520]
+ * P565723JO1C2HSN6J29TAQ22MN6CI8HTMUU55T0FUQG4CMDGGEQ8UCNBKUMB94GC8R9G4FB2SF9LDOBAJ6AMINBP4JHHDD6L7VD801G =
+ *
+ * You can also add a blacklist client usign the blacklist api. On a blacklist
+ * check, blacklisting first checks internally if the peer is blacklisted and
+ * if not, it asks the blacklisting clients. Clients are asked if it is OK to
+ * connect to a peer ID, the plugin is omitted.
+ *
+ * On blacklist check for (peer, plugin)
+ * - Do we have a local blacklist entry for this peer and this plugin?
+ *   - YES: disallow connection
+ * - Do we have a local blacklist entry for this peer and all plugins?
+ *   - YES: disallow connection
+ * - Does one of the clients disallow?
+ *   - YES: disallow connection
+ *
  */
 #include "platform.h"
 #include "gnunet-service-transport.h"
 #include "gnunet-service-transport_blacklist.h"
 #include "gnunet-service-transport_neighbours.h"
 #include "transport.h"
-
 
 /**
  * Size of the blacklist hash map.
@@ -152,7 +182,7 @@ static struct Blacklisters *bl_tail;
  * Hashmap of blacklisted peers.  Values are of type 'char *' (transport names),
  * can be NULL if we have no static blacklist.
  */
-static struct GNUNET_CONTAINER_MultiHashMap *blacklist;
+static struct GNUNET_CONTAINER_MultiPeerMap *blacklist;
 
 
 /**
@@ -207,168 +237,71 @@ client_disconnect_notification (void *cls, struct GNUNET_SERVER_Client *client)
 
 
 /**
- * Read the blacklist file, containing transport:peer entries.
- * Provided the transport is loaded, set up hashmap with these
- * entries to blacklist peers by transport.
+ * Function to iterate over options in the blacklisting section for a peer.
  *
+ * @param cls closure
+ * @param section name of the section
+ * @param option name of the option
+ * @param value value of the option
  */
 static void
-read_blacklist_file ()
+blacklist_cfg_iter (void *cls, const char *section,
+		    const char *option,
+		    const char *value)
 {
-  char *fn;
-  char *data;
-  size_t pos;
-  size_t colon_pos;
-  int tsize;
-  struct GNUNET_PeerIdentity pid;
-  uint64_t fsize;
-  struct GNUNET_CRYPTO_HashAsciiEncoded enc;
-  unsigned int entries_found;
-  char *transport_name;
+  unsigned int *res = cls;
+  struct GNUNET_PeerIdentity peer;
+  char *plugs;
+  char *pos;
 
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (GST_cfg, "TRANSPORT",
-                                               "BLACKLIST_FILE", &fn))
-  {
-    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_DEBUG,
-			       "transport", "BLACKLIST_FILE");
+  if (GNUNET_OK != GNUNET_CRYPTO_eddsa_public_key_from_string (option,
+								  strlen (option),
+								  &peer.public_key))
     return;
-  }
-  if (GNUNET_OK != GNUNET_DISK_file_test (fn))
-  {
-    GNUNET_free (fn);
-    return; /* no blacklist */
-  }
-  if (GNUNET_OK != GNUNET_DISK_file_size (fn,
-      &fsize, GNUNET_NO, GNUNET_YES))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Could not read blacklist file `%s'\n"), fn);
-    GNUNET_free (fn);
-    return;
-  }
-  if (0 == fsize)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Blacklist file `%s' is empty.\n",
-                fn);
-    GNUNET_free (fn);
-    return;
-  }
-  /* FIXME: use mmap */
-  data = GNUNET_malloc_large (fsize);
-  GNUNET_assert (data != NULL);
-  if (fsize != GNUNET_DISK_fn_read (fn, data, fsize))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to read blacklist from `%s'\n"), fn);
-    GNUNET_free (fn);
-    GNUNET_free (data);
-    return;
-  }
-  entries_found = 0;
-  pos = 0;
-  while ((pos < fsize) && isspace ((unsigned char) data[pos]))
-    pos++;
-  while ((fsize >= sizeof (struct GNUNET_CRYPTO_HashAsciiEncoded)) &&
-         (pos <=
-          fsize - sizeof (struct GNUNET_CRYPTO_HashAsciiEncoded)))
-  {
-    colon_pos = pos;
-    while ((colon_pos < fsize) && (data[colon_pos] != ':') &&
-           (!isspace ((unsigned char) data[colon_pos])))
-      colon_pos++;
-    if (colon_pos >= fsize)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _
-                  ("Syntax error in blacklist file at offset %llu, giving up!\n"),
-                  (unsigned long long) colon_pos);
-      GNUNET_free (fn);
-      GNUNET_free (data);
-      return;
-    }
 
-    if (isspace ((unsigned char) data[colon_pos]))
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _
-                  ("Syntax error in blacklist file at offset %llu, skipping bytes.\n"),
-                  (unsigned long long) colon_pos);
-      pos = colon_pos;
-      while ((pos < fsize) && isspace ((unsigned char) data[pos]))
-        pos++;
-      continue;
-    }
-    tsize = colon_pos - pos;
-    if ((pos >= fsize) || (pos + tsize >= fsize) ||
-        (tsize == 0))
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _
-                  ("Syntax error in blacklist file at offset %llu, giving up!\n"),
-                  (unsigned long long) colon_pos);
-      GNUNET_free (fn);
-      GNUNET_free (data);
-      return;
-    }
-
-    if (tsize < 1)
-      continue;
-
-    transport_name = GNUNET_malloc (tsize + 1);
-    memcpy (transport_name, &data[pos], tsize);
-    pos = colon_pos + 1;
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "Read transport name `%s' in blacklist file.\n",
-                transport_name);
-    memcpy (&enc, &data[pos], sizeof (struct GNUNET_CRYPTO_HashAsciiEncoded));
-    if (!isspace
-        ((unsigned char)
-         enc.encoding[sizeof (struct GNUNET_CRYPTO_HashAsciiEncoded) - 1]))
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _
-                  ("Syntax error in blacklist file at offset %llu, skipping bytes.\n"),
-                  (unsigned long long) pos);
-      pos++;
-      while ((pos < fsize) && (!isspace ((unsigned char) data[pos])))
-        pos++;
-      GNUNET_free_non_null (transport_name);
-      continue;
-    }
-    enc.encoding[sizeof (struct GNUNET_CRYPTO_HashAsciiEncoded) - 1] = '\0';
-    if (GNUNET_OK !=
-        GNUNET_CRYPTO_hash_from_string ((char *) &enc, &pid.hashPubKey))
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _
-                  ("Syntax error in blacklist file at offset %llu, skipping bytes `%s'.\n"),
-                  (unsigned long long) pos, &enc);
-    }
-    else
-    {
-      if (0 !=
-          memcmp (&pid, &GST_my_identity, sizeof (struct GNUNET_PeerIdentity)))
+  if ((NULL == value) || (0 == strcmp(value, "")))
+  {
+    /* Blacklist whole peer */
+    GST_blacklist_add_peer (&peer, NULL);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+		_("Adding blacklisting entry for peer `%s'\n"), GNUNET_i2s (&peer));
+  }
+  else
+  {
+    plugs = GNUNET_strdup (value);
+    for (pos = strtok (plugs, " "); pos != NULL; pos = strtok (NULL, " "))
       {
-        entries_found++;
-        GST_blacklist_add_peer (&pid, transport_name);
+	GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+		    _("Adding blacklisting entry for peer `%s':`%s'\n"),
+		    GNUNET_i2s (&peer), pos);
+	GST_blacklist_add_peer (&peer, pos);
       }
-      else
-      {
-        GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                    _("Found myself `%s' in blacklist (useless, ignored)\n"),
-                    GNUNET_i2s (&pid));
-      }
-    }
-    pos = pos + sizeof (struct GNUNET_CRYPTO_HashAsciiEncoded);
-    GNUNET_free_non_null (transport_name);
-    while ((pos < fsize) && isspace ((unsigned char) data[pos]))
-      pos++;
+    GNUNET_free (plugs);
   }
-  GNUNET_STATISTICS_update (GST_stats, "# Transport entries blacklisted",
-                            entries_found, GNUNET_NO);
-  GNUNET_free (data);
-  GNUNET_free (fn);
+  (*res)++;
+}
+
+
+/**
+ * Read blacklist configuration
+ *
+ * @param cfg the configuration handle
+ * @param my_id my peer identity
+ */
+static void
+read_blacklist_configuration (const struct GNUNET_CONFIGURATION_Handle *cfg,
+			      const struct GNUNET_PeerIdentity *my_id)
+{
+  char cfg_sect[512];
+  unsigned int res = 0;
+
+  GNUNET_snprintf (cfg_sect,
+		   sizeof (cfg_sect),
+		   "transport-blacklist-%s",
+		   GNUNET_i2s_full (my_id));
+  GNUNET_CONFIGURATION_iterate_section_values (cfg, cfg_sect, &blacklist_cfg_iter, &res);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Loaded %u blacklisting entries from configuration\n", res);
 }
 
 
@@ -376,11 +309,17 @@ read_blacklist_file ()
  * Start blacklist subsystem.
  *
  * @param server server used to accept clients from
+ * @param cfg configuration handle
+ * @param my_id my peer id
  */
 void
-GST_blacklist_start (struct GNUNET_SERVER_Handle *server)
+GST_blacklist_start (struct GNUNET_SERVER_Handle *server,
+		     const struct GNUNET_CONFIGURATION_Handle *cfg,
+		     const struct GNUNET_PeerIdentity *my_id)
 {
-  read_blacklist_file ();
+  GNUNET_assert (NULL != cfg);
+  GNUNET_assert (NULL != my_id);
+  read_blacklist_configuration (cfg, my_id);
   GNUNET_SERVER_disconnect_notify (server, &client_disconnect_notification,
                                    NULL);
 }
@@ -395,11 +334,13 @@ GST_blacklist_start (struct GNUNET_SERVER_Handle *server)
  * @return GNUNET_OK (continue to iterate)
  */
 static int
-free_blacklist_entry (void *cls, const struct GNUNET_HashCode * key, void *value)
+free_blacklist_entry (void *cls,
+		      const struct GNUNET_PeerIdentity *key,
+		      void *value)
 {
   char *be = value;
 
-  GNUNET_free (be);
+  GNUNET_free_non_null (be);
   return GNUNET_OK;
 }
 
@@ -412,9 +353,9 @@ GST_blacklist_stop ()
 {
   if (NULL != blacklist)
   {
-    GNUNET_CONTAINER_multihashmap_iterate (blacklist, &free_blacklist_entry,
+    GNUNET_CONTAINER_multipeermap_iterate (blacklist, &free_blacklist_entry,
                                            NULL);
-    GNUNET_CONTAINER_multihashmap_destroy (blacklist);
+    GNUNET_CONTAINER_multipeermap_destroy (blacklist);
     blacklist = NULL;
   }
 }
@@ -540,16 +481,12 @@ struct TestConnectionContext
  *
  * @param cls the 'struct TestConnectionContest'
  * @param neighbour neighbour's identity
- * @param ats performance data
- * @param ats_count number of entries in ats (excluding 0-termination)
  * @param address the address
  * @param bandwidth_in inbound quota in NBO
  * @param bandwidth_out outbound quota in NBO
  */
 static void
 test_connection_ok (void *cls, const struct GNUNET_PeerIdentity *neighbour,
-                    const struct GNUNET_ATS_Information *ats,
-                    uint32_t ats_count,
                     const struct GNUNET_HELLO_Address *address,
                     struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
                     struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out)
@@ -557,7 +494,7 @@ test_connection_ok (void *cls, const struct GNUNET_PeerIdentity *neighbour,
   struct TestConnectionContext *tcc = cls;
   struct GST_BlacklistCheck *bc;
 
-  bc = GNUNET_malloc (sizeof (struct GST_BlacklistCheck));
+  bc = GNUNET_new (struct GST_BlacklistCheck);
   GNUNET_CONTAINER_DLL_insert (bc_head, bc_tail, bc);
   bc->peer = *neighbour;
   bc->cont = &confirm_or_drop_neighbour;
@@ -601,7 +538,7 @@ GST_blacklist_handle_init (void *cls, struct GNUNET_SERVER_Client *client,
     bl = bl->next;
   }
   GNUNET_SERVER_client_mark_monitor (client);
-  bl = GNUNET_malloc (sizeof (struct Blacklisters));
+  bl = GNUNET_new (struct Blacklisters);
   bl->client = client;
   GNUNET_SERVER_client_keep (client);
   GNUNET_CONTAINER_DLL_insert_after (bl_head, bl_tail, bl_tail, bl);
@@ -663,7 +600,6 @@ GST_blacklist_handle_reply (void *cls, struct GNUNET_SERVER_Client *client,
     }
   }
   /* check if any other bc's are waiting for this blacklister */
-  bc = bc_head;
   for (bc = bc_head; bc != NULL; bc = bc->next)
     if ((bc->bl_pos == bl) && (GNUNET_SCHEDULER_NO_TASK == bc->task))
     {
@@ -683,15 +619,26 @@ void
 GST_blacklist_add_peer (const struct GNUNET_PeerIdentity *peer,
                         const char *transport_name)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Adding peer `%s' with plugin `%s' to blacklist\n",
-              GNUNET_i2s (peer), transport_name);
+  char * transport = NULL;
+
+  if (NULL != transport_name)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+		"Adding peer `%s' with plugin `%s' to blacklist\n",
+		GNUNET_i2s (peer), transport_name);
+    transport = GNUNET_strdup (transport_name);
+  }
+  else
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+		"Adding peer `%s' with all plugins to blacklist\n",
+		GNUNET_i2s (peer));
   if (blacklist == NULL)
     blacklist =
-      GNUNET_CONTAINER_multihashmap_create (TRANSPORT_BLACKLIST_HT_SIZE,
+      GNUNET_CONTAINER_multipeermap_create (TRANSPORT_BLACKLIST_HT_SIZE,
 					    GNUNET_NO);
-  GNUNET_CONTAINER_multihashmap_put (blacklist, &peer->hashPubKey,
-                                     GNUNET_strdup (transport_name),
+
+  GNUNET_CONTAINER_multipeermap_put (blacklist, peer,
+                                     transport,
                                      GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
 }
 
@@ -703,21 +650,40 @@ GST_blacklist_add_peer (const struct GNUNET_PeerIdentity *peer,
  * @param cls the transport name to match (const char*)
  * @param key the key (unused)
  * @param value the 'char *' (name of a blacklisted transport)
- * @return GNUNET_OK if the entry does not match, GNUNET_NO if it matches
+ * @return #GNUNET_OK if the entry does not match, #GNUNET_NO if it matches
  */
 static int
-test_blacklisted (void *cls, const struct GNUNET_HashCode * key, void *value)
+test_blacklisted (void *cls,
+		  const struct GNUNET_PeerIdentity *key,
+		  void *value)
 {
   const char *transport_name = cls;
   char *be = value;
 
-  /* blacklist check for specific no specific transport*/
-  if (transport_name == NULL)
-    return GNUNET_NO;
+  /* Blacklist entry be:
+   *  (NULL == be): peer is blacklisted with all plugins
+   *  (NULL != be): peer is blacklisted for a specific plugin
+   *
+   * If (NULL != transport_name) we look for a transport specific entry:
+   *  if (transport_name == be) forbidden
+   *
+   */
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Comparing BL request for peer `%4s':`%s' with BL entry: `%s'\n",
+	      GNUNET_i2s (key),
+	      (NULL == transport_name) ? "unspecified" : transport_name,
+	      (NULL == be) ? "all plugins" : be);
+  /* all plugins for this peer were blacklisted: disallow */
+  if (NULL == value)
+  		return GNUNET_NO;
 
   /* blacklist check for specific transport */
-  if (0 == strcmp (transport_name, be))
-    return GNUNET_NO;           /* abort iteration! */
+  if ((NULL != transport_name) && (NULL != value))
+  {
+  	if (0 == strcmp (transport_name, be))
+  			return GNUNET_NO;           /* plugin is blacklisted! */
+  }
   return GNUNET_OK;
 }
 
@@ -740,17 +706,23 @@ GST_blacklist_test_allowed (const struct GNUNET_PeerIdentity *peer,
   struct GST_BlacklistCheck *bc;
 
   GNUNET_assert (peer != NULL);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Blacklist check for peer `%s':%s\n",
+  		GNUNET_i2s (peer), (NULL != transport_name) ? transport_name : "unspecified");
 
+  /* Check local blacklist by iterating over hashmap
+   * If iteration is aborted, we found a matching blacklist entry */
   if ((blacklist != NULL) &&
       (GNUNET_SYSERR ==
-       GNUNET_CONTAINER_multihashmap_get_multiple (blacklist, &peer->hashPubKey,
+       GNUNET_CONTAINER_multipeermap_get_multiple (blacklist, peer,
                                                    &test_blacklisted,
                                                    (void *) transport_name)))
   {
-    /* disallowed by config, disapprove instantly */
+    /* Disallowed by config, disapprove instantly */
     GNUNET_STATISTICS_update (GST_stats,
                               gettext_noop ("# disconnects due to blacklist"),
                               1, GNUNET_NO);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Disallowing connection to peer `%s' on transport %s\n",
+    		GNUNET_i2s (peer), (NULL != transport_name) ? transport_name : "unspecified");
     if (cont != NULL)
       cont (cont_cls, peer, GNUNET_NO);
     return NULL;
@@ -761,11 +733,13 @@ GST_blacklist_test_allowed (const struct GNUNET_PeerIdentity *peer,
     /* no blacklist clients, approve instantly */
     if (cont != NULL)
       cont (cont_cls, peer, GNUNET_OK);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Allowing connection to peer `%s' %s\n",
+    		GNUNET_i2s (peer), (NULL != transport_name) ? transport_name : "");
     return NULL;
   }
 
   /* need to query blacklist clients */
-  bc = GNUNET_malloc (sizeof (struct GST_BlacklistCheck));
+  bc = GNUNET_new (struct GST_BlacklistCheck);
   GNUNET_CONTAINER_DLL_insert (bc_head, bc_tail, bc);
   bc->peer = *peer;
   bc->cont = cont;

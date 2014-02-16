@@ -33,8 +33,7 @@
 #include "gnunet_transport_service.h"
 #include "gnunet-daemon-hostlist.h"
 #include <curl/curl.h>
-#include "gnunet_common.h"
-#include "gnunet_bio_lib.h"
+#include "gnunet_util_lib.h"
 
 
 /**
@@ -416,6 +415,7 @@ get_bootstrap_server ()
   return ret;
 }
 
+
 /**
  * Method deciding if a preconfigured or advertisied hostlist is used on a 50:50 ratio
  * @return uri to use, NULL if there is no URL available
@@ -479,6 +479,7 @@ save_hostlist_file (int shutdown);
 
 /**
  * add val2 to val1 with overflow check
+ *
  * @param val1 value 1
  * @param val2 value 2
  * @return result
@@ -501,6 +502,7 @@ checked_add (uint64_t val1, uint64_t val2)
 
 /**
  * Subtract val2 from val1 with underflow check
+ *
  * @param val1 value 1
  * @param val2 value 2
  * @return result
@@ -516,8 +518,9 @@ checked_sub (uint64_t val1, uint64_t val2)
 
 /**
  * Method to check if  a URI is in hostlist linked list
+ *
  * @param uri uri to check
- * @return GNUNET_YES if existing in linked list, GNUNET_NO if not
+ * @return #GNUNET_YES if existing in linked list, #GNUNET_NO if not
  */
 static int
 linked_list_contains (const char *uri)
@@ -793,7 +796,7 @@ task_download (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     clean_up ();
     return;
   }
-  if (GNUNET_TIME_absolute_get_remaining (end_time).rel_value == 0)
+  if (0 == GNUNET_TIME_absolute_get_remaining (end_time).rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 _("Timeout trying to download hostlist from `%s'\n"),
@@ -829,7 +832,7 @@ task_download (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
         case CURLMSG_DONE:
           if ((msg->data.result != CURLE_OK) &&
               (msg->data.result != CURLE_GOT_NOTHING))
-            GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+            GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                         _("Download of hostlist from `%s' failed: `%s'\n"),
                         current_url,
                         curl_easy_strerror (msg->data.result));
@@ -924,6 +927,8 @@ download_hostlist ()
     return;
   }
   CURL_EASY_SETOPT (curl, CURLOPT_FOLLOWLOCATION, 1);
+  CURL_EASY_SETOPT (curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
+  CURL_EASY_SETOPT (curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP | CURLPROTO_HTTPS);
   CURL_EASY_SETOPT (curl, CURLOPT_MAXREDIRS, 4);
   /* no need to abort if the above failed */
   CURL_EASY_SETOPT (curl, CURLOPT_URL, current_url);
@@ -1021,19 +1026,20 @@ task_check (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
         GNUNET_SCHEDULER_add_now (&task_download_dispatcher, NULL);
 
   delay = hostlist_delay;
-  if (hostlist_delay.rel_value == 0)
+  if (0 == hostlist_delay.rel_value_us)
     hostlist_delay = GNUNET_TIME_UNIT_SECONDS;
   else
     hostlist_delay = GNUNET_TIME_relative_multiply (hostlist_delay, 2);
-  if (hostlist_delay.rel_value >
-      GNUNET_TIME_UNIT_HOURS.rel_value * (1 + stat_connection_count))
+  if (hostlist_delay.rel_value_us >
+      GNUNET_TIME_UNIT_HOURS.rel_value_us * (1 + stat_connection_count))
     hostlist_delay =
         GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_HOURS,
                                        (1 + stat_connection_count));
   GNUNET_STATISTICS_set (stats,
                          gettext_noop
                          ("# milliseconds between hostlist downloads"),
-                         hostlist_delay.rel_value, GNUNET_YES);
+                         hostlist_delay.rel_value_us / 1000LL,
+			 GNUNET_YES);
   if (0 == once)
   {
     delay = GNUNET_TIME_UNIT_ZERO;
@@ -1094,13 +1100,9 @@ task_hostlist_saving (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *
  * @param cls closure
  * @param peer peer identity this notification is about
- * @param atsi performance data
- * @param atsi_count number of records in 'atsi'
  */
 static void
-handler_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                 const struct GNUNET_ATS_Information *atsi,
-                 unsigned int atsi_count)
+handler_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   GNUNET_assert (stat_connection_count < UINT_MAX);
   stat_connection_count++;
@@ -1131,16 +1133,12 @@ handler_disconnect (void *cls, const struct GNUNET_PeerIdentity *peer)
  * @param cls closure (always NULL)
  * @param peer the peer sending the message
  * @param message the actual message
- * @param atsi performance data
- * @param atsi_count number of records in 'atsi'
- * @return GNUNET_OK to keep the connection open,
- *         GNUNET_SYSERR to close it (signal serious error)
+ * @return #GNUNET_OK to keep the connection open,
+ *         #GNUNET_SYSERR to close it (signal serious error)
  */
 static int
 handler_advertisement (void *cls, const struct GNUNET_PeerIdentity *peer,
-                       const struct GNUNET_MessageHeader *message,
-                       const struct GNUNET_ATS_Information *atsi,
-                       unsigned int atsi_count)
+                       const struct GNUNET_MessageHeader *message)
 {
   size_t size;
   size_t uri_size;
@@ -1200,8 +1198,9 @@ handler_advertisement (void *cls, const struct GNUNET_PeerIdentity *peer,
                                     &task_testing_intervall_reset, NULL);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Testing new hostlist advertisements is locked for the next %u ms\n",
-              TESTING_INTERVAL.rel_value);
+              "Testing new hostlist advertisements is locked for the next %s\n",
+              GNUNET_STRINGS_relative_time_to_string (TESTING_INTERVAL,
+						      GNUNET_YES));
 
   ti_download_dispatcher_task =
       GNUNET_SCHEDULER_add_now (&task_download_dispatcher, NULL);
@@ -1215,8 +1214,8 @@ handler_advertisement (void *cls, const struct GNUNET_PeerIdentity *peer,
  * we go the stat.  Initiates hostlist download scheduling.
  *
  * @param cls closure
- * @param success GNUNET_OK if statistics were
- *        successfully obtained, GNUNET_SYSERR if not.
+ * @param success #GNUNET_OK if statistics were
+ *        successfully obtained, #GNUNET_SYSERR if not.
  */
 static void
 primary_task (void *cls, int success)
@@ -1229,11 +1228,20 @@ primary_task (void *cls, int success)
 }
 
 
+/**
+ * We've received the previous delay value from statistics.  Remember it.
+ *
+ * @param cls NULL, unused
+ * @param subsystem should be "hostlist", unused
+ * @param name will be "milliseconds between hostlist downloads", unused
+ * @param value previous delay value, in milliseconds (!)
+ * @param is_persistent unused, will be GNUNET_YES
+ */
 static int
 process_stat (void *cls, const char *subsystem, const char *name,
               uint64_t value, int is_persistent)
 {
-  hostlist_delay.rel_value = value;
+  hostlist_delay.rel_value_us = value * 1000LL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Initial time between hostlist downloads is %s\n",
               GNUNET_STRINGS_relative_time_to_string (hostlist_delay, GNUNET_YES));
@@ -1251,8 +1259,6 @@ load_hostlist_file ()
   char *uri;
   char *emsg;
   struct Hostlist *hostlist;
-
-  uri = NULL;
   uint32_t times_used;
   uint32_t hellos_returned;
   uint64_t quality;
@@ -1260,6 +1266,7 @@ load_hostlist_file ()
   uint64_t created;
   uint32_t counter;
 
+  uri = NULL;
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (cfg, "HOSTLIST", "HOSTLISTFILE",
                                                &filename))
@@ -1270,7 +1277,8 @@ load_hostlist_file ()
   }
 
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("Loading saved hostlist entries from file `%s' \n"), filename);
+              _("Loading saved hostlist entries from file `%s' \n"),
+	      filename);
   if (GNUNET_NO == GNUNET_DISK_file_test (filename))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -1304,8 +1312,8 @@ load_hostlist_file ()
     hostlist->hostlist_uri = (const char *) &hostlist[1];
     memcpy (&hostlist[1], uri, strlen (uri) + 1);
     hostlist->quality = quality;
-    hostlist->time_creation.abs_value = created;
-    hostlist->time_last_usage.abs_value = last_used;
+    hostlist->time_creation.abs_value_us = created;
+    hostlist->time_last_usage.abs_value_us = last_used;
     GNUNET_CONTAINER_DLL_insert (linked_list_head, linked_list_tail, hostlist);
     linked_list_size++;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -1388,9 +1396,9 @@ save_hostlist_file (int shutdown)
           (GNUNET_OK != GNUNET_BIO_write_int32 (wh, pos->times_used)) ||
           (GNUNET_OK != GNUNET_BIO_write_int64 (wh, pos->quality)) ||
           (GNUNET_OK !=
-           GNUNET_BIO_write_int64 (wh, pos->time_last_usage.abs_value)) ||
+           GNUNET_BIO_write_int64 (wh, pos->time_last_usage.abs_value_us)) ||
           (GNUNET_OK !=
-           GNUNET_BIO_write_int64 (wh, pos->time_creation.abs_value)) ||
+           GNUNET_BIO_write_int64 (wh, pos->time_creation.abs_value_us)) ||
           (GNUNET_OK != GNUNET_BIO_write_int32 (wh, pos->hello_count)))
       {
         GNUNET_log (GNUNET_ERROR_TYPE_WARNING,

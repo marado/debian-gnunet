@@ -22,7 +22,6 @@
  * @brief testcase for core_api.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_core_service.h"
 #include "gnunet_getopt_lib.h"
@@ -153,9 +152,7 @@ transmit_ready (void *cls, size_t size, void *buf)
 
 
 static void
-connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   struct PeerContext *pc = cls;
 
@@ -207,9 +204,7 @@ disconnect_notify (void *cls, const struct GNUNET_PeerIdentity *peer)
 
 static int
 inbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+                const struct GNUNET_MessageHeader *message)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Core provides inbound data from `%4s'.\n", GNUNET_i2s (other));
@@ -219,9 +214,7 @@ inbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
 
 static int
 outbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
-                 const struct GNUNET_MessageHeader *message,
-                 const struct GNUNET_ATS_Information *atsi,
-                 unsigned int atsi_count)
+                 const struct GNUNET_MessageHeader *message)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Core notifies about outbound data for `%4s'.\n",
@@ -233,9 +226,7 @@ outbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
 
 static int
 process_mtype (void *cls, const struct GNUNET_PeerIdentity *peer,
-               const struct GNUNET_MessageHeader *message,
-               const struct GNUNET_ATS_Information *atsi,
-               unsigned int atsi_count)
+               const struct GNUNET_MessageHeader *message)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Receiving message from `%4s'.\n",
               GNUNET_i2s (peer));
@@ -272,16 +263,14 @@ connect_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-init_notify (void *cls, struct GNUNET_CORE_Handle *server,
+init_notify (void *cls,
              const struct GNUNET_PeerIdentity *my_identity)
 {
   struct PeerContext *p = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Core connection to `%4s' established\n",
               GNUNET_i2s (my_identity));
-  GNUNET_assert (server != NULL);
   p->id = *my_identity;
-  p->ch = server;
   if (cls == &p1)
   {
     GNUNET_assert (ok == 2);
@@ -310,8 +299,8 @@ setup_peer (struct PeerContext *p, const char *cfgname)
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-arm");
   p->cfg = GNUNET_CONFIGURATION_create ();
   p->arm_proc =
-    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR, 
-			     NULL, NULL, 
+    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+			     NULL, NULL,
 			     binary,
 			     "gnunet-service-arm",
                                "-c", cfgname, NULL);
@@ -345,7 +334,7 @@ run (void *cls, char *const *args, const char *cfgfile,
 static void
 stop_arm (struct PeerContext *p)
 {
-  if (0 != GNUNET_OS_process_kill (p->arm_proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (p->arm_proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
   if (GNUNET_OS_process_wait (p->arm_proc) != GNUNET_OK)
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");
@@ -357,8 +346,8 @@ stop_arm (struct PeerContext *p)
 }
 
 
-static int
-check ()
+int
+main (int argc, char *argv1[])
 {
   char *const argv[] = { "test-core-api",
     "-c",
@@ -369,26 +358,17 @@ check ()
     GNUNET_GETOPT_OPTION_END
   };
   ok = 1;
+  GNUNET_log_setup ("test-core-api",
+                    "WARNING",
+                    NULL);
   GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv,
                       "test-core-api", "nohelp", options, &run, &ok);
   stop_arm (&p1);
   stop_arm (&p2);
-  return ok;
-}
-
-int
-main (int argc, char *argv[])
-{
-  int ret;
-
-  GNUNET_log_setup ("test-core-api",
-                    "WARNING",
-                    NULL);
-  ret = check ();
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-peer-1");
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-peer-2");
 
-  return ret;
+  return ok;
 }
 
 /* end of test_core_api.c */

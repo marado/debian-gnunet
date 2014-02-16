@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -57,7 +57,7 @@ typedef void *(*GNUNET_PLUGIN_Callback) (void *arg);
  * "library_name_init" for the test to succeed.
  *
  * @param library_name name of the plugin to test if it is installed
- * @return GNUNET_YES if the plugin exists, GNUNET_NO if not
+ * @return #GNUNET_YES if the plugin exists, #GNUNET_NO if not
  */
 int
 GNUNET_PLUGIN_test (const char *library_name);
@@ -84,9 +84,9 @@ GNUNET_PLUGIN_load (const char *library_name, void *arg);
  *
  * @param cls closure
  * @param library_name full name of the library (to be used with
- *        'GNUNET_PLUGIN_unload')
+ *        #GNUNET_PLUGIN_unload)
  * @param lib_ret return value from the initialization function
- *        of the library (same as what 'GNUNET_PLUGIN_load' would
+ *        of the library (same as what #GNUNET_PLUGIN_load would
  *        have returned for the given library name)
  */
 typedef void (*GNUNET_PLUGIN_LoaderCallback) (void *cls,
@@ -104,7 +104,7 @@ typedef void (*GNUNET_PLUGIN_LoaderCallback) (void *cls,
  * @param basename basename of the plugins to load
  * @param arg argument to the plugin initialization function
  * @param cb function to call for each plugin found
- * @param cb_cls closure for 'cb'
+ * @param cb_cls closure for @a cb
  */
 void
 GNUNET_PLUGIN_load_all (const char *basename, void *arg,

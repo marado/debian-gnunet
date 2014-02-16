@@ -13,10 +13,10 @@ else:
   tmp = "/tmp"
 
 if os.name == 'nt':
-  st = 'gnunet-statistics.exe'
+  st = './gnunet-statistics.exe'
   arm = 'gnunet-arm.exe'
 else:
-  st = 'gnunet-statistics'
+  st = './gnunet-statistics'
   arm = 'gnunet-arm'
 
 run_st = [st, '-c', 'test_statistics_api_data.conf']
@@ -26,7 +26,7 @@ if debug:
   run_arm += [debug.split (' ')]
 
 def cleanup ():
-  shutil.rmtree (os.path.join (tmp, "test-gnunetd-statistics"), True)
+  shutil.rmtree (os.path.join (tmp, "test-gnunet-statistics"), True)
 
 def sub_run (args, want_stdo = True, want_stde = False, nofail = False):
   if want_stdo:

@@ -26,17 +26,22 @@
 #ifndef PLUGIN_TRANSPORT_WLAN
 #define PLUGIN_TRANSPORT_WLAN
 
-#include <stdint.h>
+#include "gnunet_crypto_lib.h"
 #include "gnunet_common.h"
 
 /**
  * Number fo bytes in a mac address.
  */
-#define MAC_ADDR_SIZE 6
+#ifdef MINGW
+  #define MAC_ADDR_SIZE 8
+  typedef uint8_t u_int8_t;
+#else
+  #define MAC_ADDR_SIZE 6
+#endif
 
 /**
  * Value for "Management" in the 'frame_control' field of the
- * struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame.  
+ * struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame.
  */
 #define IEEE80211_FC0_TYPE_MGT                  0x00
 

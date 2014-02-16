@@ -38,8 +38,8 @@ static const char *plugin_name;
 
 
 static int
-checkIt (void *cls, 
-         const struct GNUNET_HashCode *key, 
+checkIt (void *cls,
+         const struct GNUNET_HashCode *key,
 	 size_t size, const char *data,
          enum GNUNET_BLOCK_Type type,
 	 struct GNUNET_TIME_Absolute exp,
@@ -75,19 +75,19 @@ run (void *cls, char *const *args, const char *cfgfile,
   if (h == NULL)
   {
     FPRINTF (stderr,
-             "%s", 
+             "%s",
 	     "Failed to initialize datacache.  Database likely not setup, skipping test.\n");
     return;
   }
   exp = GNUNET_TIME_absolute_get ();
-  exp.abs_value += 5 * 60 * 1000;
+  exp.abs_value_us += 5 * 60 * 1000 * 1000LL;
   memset (&k, 0, sizeof (struct GNUNET_HashCode));
   for (i = 0; i < 100; i++)
   {
     GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);
     ASSERT (GNUNET_OK ==
             GNUNET_DATACACHE_put (h, &k, sizeof (struct GNUNET_HashCode),
-                                  (const char *) &n, 1 + i % 16, exp, 
+                                  (const char *) &n, 1 + i % 16, exp,
 				  0, NULL));
     k = n;
   }

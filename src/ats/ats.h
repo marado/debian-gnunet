@@ -192,6 +192,7 @@ struct PeerInformationMessage
 
 };
 
+
 struct AddressListRequestMessage
 {
   struct GNUNET_MessageHeader header;
@@ -260,6 +261,34 @@ struct ChangePreferenceMessage
   /* followed by 'num_preferences'
    * struct PreferenceInformation values */
 };
+
+
+/**
+ * Message containing application feedback for a peer
+ */
+struct FeedbackPreferenceMessage
+{
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Number of feedback values included
+   */
+  uint32_t num_feedback GNUNET_PACKED;
+
+  /**
+   * Relative time describing for which time interval this feedback is
+   */
+  struct GNUNET_TIME_RelativeNBO scope;
+
+  /**
+   * Peer this feedback is for
+   */
+  struct GNUNET_PeerIdentity peer;
+
+  /* followed by 'num_feedback'
+   * struct PreferenceInformation values */
+};
+
 GNUNET_NETWORK_STRUCT_END
 
 

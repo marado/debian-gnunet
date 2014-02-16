@@ -22,12 +22,7 @@
  * @brief tests for client.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_client_lib.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 
 #define PORT 14325
@@ -78,7 +73,7 @@ echo_cb (void *cls, struct GNUNET_SERVER_Client *client,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Receiving message from client, bouncing back\n");
   GNUNET_assert (sizeof (struct GNUNET_MessageHeader) == ntohs (message->size));
-  cc = GNUNET_malloc (sizeof (struct CopyContext));
+  cc = GNUNET_new (struct CopyContext);
   cc->client = client;
   cpy = GNUNET_malloc (ntohs (message->size));
   memcpy (cpy, message, ntohs (message->size));

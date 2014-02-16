@@ -4,7 +4,7 @@
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -20,7 +20,7 @@
 
 /**
  * @file include/gnunet_vpn_service.h
- * @brief API to access the VPN service. 
+ * @brief API to access the VPN service.
  * @author Christian Grothoff
  */
 #ifndef GNUNET_VPN_SERVICE_H
@@ -50,7 +50,7 @@ struct GNUNET_VPN_RedirectionRequest;
  *                will match 'result_af' from the request
  * @param address IP address (struct in_addr or struct in_addr6, depending on 'af')
  *                that the VPN allocated for the redirection;
- *                traffic to this IP will now be redirected to the 
+ *                traffic to this IP will now be redirected to the
  *                specified target peer; NULL on error
  */
 typedef void (*GNUNET_VPN_AllocationCallback)(void *cls,
@@ -81,9 +81,6 @@ GNUNET_VPN_cancel_request (struct GNUNET_VPN_RedirectionRequest *rr);
  * @param protocol protocol, IPPROTO_UDP or IPPROTO_TCP
  * @param peer target peer for the redirection
  * @param serv service descriptor to give to the peer
- * @param nac GNUNET_YES to notify via callback only after completion of
- *            the MESH-level connection,
- *            GNUNET_NO to notify as soon as the IP has been reserved
  * @param expiration_time at what time should the redirection expire?
  *        (this should not impact connections that are active at that time)
  * @param cb function to call with the IP
@@ -98,7 +95,6 @@ GNUNET_VPN_redirect_to_peer (struct GNUNET_VPN_Handle *vh,
 			     uint8_t protocol,
 			     const struct GNUNET_PeerIdentity *peer,
 			     const struct GNUNET_HashCode *serv,
-			     int nac,
 			     struct GNUNET_TIME_Absolute expiration_time,
 			     GNUNET_VPN_AllocationCallback cb,
 			     void *cb_cls);
@@ -119,9 +115,6 @@ GNUNET_VPN_redirect_to_peer (struct GNUNET_VPN_Handle *vh,
  * @param addr_af address family for 'addr', AF_INET or AF_INET6
  * @param addr destination IP address on the Internet; destination
  *             port is to be taken from the VPN packet itself
- * @param nac GNUNET_YES to notify via callback only after completion of
- *            the MESH-level connection,
- *            GNUNET_NO to notify as soon as the IP has been reserved
  * @param expiration_time at what time should the redirection expire?
  *        (this should not impact connections that are active at that time)
  * @param cb function to call with the IP
@@ -131,11 +124,10 @@ GNUNET_VPN_redirect_to_peer (struct GNUNET_VPN_Handle *vh,
  *         anyway)
  */
 struct GNUNET_VPN_RedirectionRequest *
-GNUNET_VPN_redirect_to_ip (struct GNUNET_VPN_Handle *vh, 
+GNUNET_VPN_redirect_to_ip (struct GNUNET_VPN_Handle *vh,
 			   int result_af,
 			   int addr_af,
 			   const void *addr,
-			   int nac,
 			   struct GNUNET_TIME_Absolute expiration_time,
 			   GNUNET_VPN_AllocationCallback cb,
 			   void *cb_cls);
@@ -145,7 +137,7 @@ GNUNET_VPN_redirect_to_ip (struct GNUNET_VPN_Handle *vh,
  * Connect to the VPN service
  *
  * @param cfg configuration to use
- * @return VPN handle 
+ * @return VPN handle
  */
 struct GNUNET_VPN_Handle *
 GNUNET_VPN_connect (const struct GNUNET_CONFIGURATION_Handle *cfg);

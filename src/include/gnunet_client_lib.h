@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     (C) 2001-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -22,6 +22,8 @@
  * @file include/gnunet_client_lib.h
  * @brief functions related to accessing services
  * @author Christian Grothoff
+ * @defgroup client Generic client-side communication with services
+ * @{
  */
 
 #ifndef GNUNET_CLIENT_LIB_H
@@ -35,11 +37,6 @@ extern "C"
 #endif
 #endif
 
-#include "gnunet_common.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_connection_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_time_lib.h"
 
 /**
  * Opaque handle for a connection to a service.
@@ -83,21 +80,7 @@ GNUNET_CLIENT_disconnect (struct GNUNET_CLIENT_Connection *client);
  * @param msg message received, NULL on timeout or fatal error
  */
 typedef void (*GNUNET_CLIENT_MessageHandler) (void *cls,
-                                              const struct GNUNET_MessageHeader
-                                              * msg);
-
-
-/**
- * Type of a function to call when we have finished shutting
- * down a service, or failed.
- *
- * @param cls closure
- * @param reason what is the result of the shutdown
- *        GNUNET_NO on shutdown (not running)
- *        GNUNET_YES on running
- *        GNUNET_SYSERR on failure to transmit message
- */
-typedef void (*GNUNET_CLIENT_ShutdownTask) (void *cls, int reason);
+                                              const struct GNUNET_MessageHeader *msg);
 
 
 /**
@@ -105,7 +88,7 @@ typedef void (*GNUNET_CLIENT_ShutdownTask) (void *cls, int reason);
  *
  * @param client connection to the service
  * @param handler function to call with the message
- * @param handler_cls closure for handler
+ * @param handler_cls closure for @a handler
  * @param timeout how long to wait until timing out
  */
 void
@@ -128,25 +111,25 @@ struct GNUNET_CLIENT_TransmitHandle;
  * @param client connection to the service
  * @param size number of bytes to send
  * @param timeout after how long should we give up (and call
- *        notify with buf NULL and size 0)?
+ *        @a notify with buf NULL and size 0)?
  * @param auto_retry if the connection to the service dies, should we
  *        automatically re-connect and retry (within the timeout period)
- *        or should we immediately fail in this case?  Pass GNUNET_YES
+ *        or should we immediately fail in this case?  Pass #GNUNET_YES
  *        if the caller does not care about temporary connection errors,
  *        for example because the protocol is stateless
  * @param notify function to call
- * @param notify_cls closure for notify
+ * @param notify_cls closure for @a notify
  * @return NULL if someone else is already waiting to be notified
  *         non-NULL if the notify callback was queued (can be used to cancel
- *         using GNUNET_CONNECTION_notify_transmit_ready_cancel)
+ *         using #GNUNET_CONNECTION_notify_transmit_ready_cancel)
  */
 struct GNUNET_CLIENT_TransmitHandle *
 GNUNET_CLIENT_notify_transmit_ready (struct GNUNET_CLIENT_Connection *client,
                                      size_t size,
                                      struct GNUNET_TIME_Relative timeout,
                                      int auto_retry,
-                                     GNUNET_CONNECTION_TransmitReadyNotify
-                                     notify, void *notify_cls);
+                                     GNUNET_CONNECTION_TransmitReadyNotify notify,
+                                     void *notify_cls);
 
 
 /**
@@ -172,12 +155,12 @@ GNUNET_CLIENT_notify_transmit_ready_cancel (struct GNUNET_CLIENT_TransmitHandle
  *         and for waiting for a response)
  * @param auto_retry if the connection to the service dies, should we
  *        automatically re-connect and retry (within the timeout period)
- *        or should we immediately fail in this case?  Pass GNUNET_YES
+ *        or should we immediately fail in this case?  Pass #GNUNET_YES
  *        if the caller does not care about temporary connection errors,
  *        for example because the protocol is stateless
  * @param rn function to call with the response
- * @param rn_cls closure for rn
- * @return GNUNET_OK on success, GNUNET_SYSERR if a request
+ * @param rn_cls closure for @a rn
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if a request
  *         is already pending
  */
 int
@@ -190,21 +173,49 @@ GNUNET_CLIENT_transmit_and_get_response (struct GNUNET_CLIENT_Connection *client
 
 
 /**
- * Wait until the service is running.
+ * Handle for a test to check if a service is running.
+ */
+struct GNUNET_CLIENT_TestHandle;
+
+/**
+ * Function called with the result on the service test.
+ *
+ * @param cls closure
+ * @param result #GNUNET_YES if the service is running,
+ *               #GNUNET_NO if the service is not running
+ *               #GNUNET_SYSERR if the configuration is invalid
+ */
+typedef void (*GNUNET_CLIENT_TestResultCallback)(void *cls,
+						 int result);
+
+
+/**
+ * Test if the service is running.  If we are given a UNIXPATH or a
+ * local address, we do this NOT by trying to connect to the service,
+ * but by trying to BIND to the same port.  If the BIND fails, we know
+ * the service is running.
  *
  * @param service name of the service to wait for
  * @param cfg configuration to use
- * @param timeout how long to wait at most in ms
- * @param task task to run if service is running
- *        (reason will be "PREREQ_DONE" (service running)
- *         or "TIMEOUT" (service not known to be running))
- * @param task_cls closure for task
+ * @param timeout how long to wait at most
+ * @param cb function to call with the result
+ * @param cb_cls closure for @a cb
+ * @return handle to cancel the test
  */
-void
+struct GNUNET_CLIENT_TestHandle *
 GNUNET_CLIENT_service_test (const char *service,
                             const struct GNUNET_CONFIGURATION_Handle *cfg,
                             struct GNUNET_TIME_Relative timeout,
-                            GNUNET_SCHEDULER_Task task, void *task_cls);
+                            GNUNET_CLIENT_TestResultCallback cb, void *cb_cls);
+
+
+/**
+ * Abort testing for service.
+ *
+ * @param th test handle
+ */
+void
+GNUNET_CLIENT_service_test_cancel (struct GNUNET_CLIENT_TestHandle *th);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
@@ -213,6 +224,8 @@ GNUNET_CLIENT_service_test (const char *service,
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */ /* end of group client */
 
 /* ifndef GNUNET_CLIENT_LIB_H */
 #endif

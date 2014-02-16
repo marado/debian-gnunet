@@ -48,7 +48,7 @@
  */
 void
 GST_neighbours_start (void *cls,
-    									NotifyConnect connect_cb,
+                      NotifyConnect connect_cb,
                       GNUNET_TRANSPORT_NotifyDisconnect disconnect_cb,
                       GNUNET_TRANSPORT_PeerIterateCallback peer_address_cb,
                       unsigned int max_fds);
@@ -74,7 +74,7 @@ GST_neighbours_try_connect (const struct GNUNET_PeerIdentity *target);
  * Test if we're connected to the given peer.
  *
  * @param target peer to test
- * @return GNUNET_YES if we are connected, GNUNET_NO if not
+ * @return #GNUNET_YES if we are connected, #GNUNET_NO if not
  */
 int
 GST_neighbours_test_connected (const struct GNUNET_PeerIdentity *target);
@@ -84,7 +84,7 @@ GST_neighbours_test_connected (const struct GNUNET_PeerIdentity *target);
  * Function called after the transmission is done.
  *
  * @param cls closure
- * @param success GNUNET_OK on success, GNUNET_NO on failure, GNUNET_SYSERR if we're not connected
+ * @param success #GNUNET_OK on success, #GNUNET_NO on failure, #GNUNET_SYSERR if we're not connected
  */
 typedef void (*GST_NeighbourSendContinuation) (void *cls, int success,
                                                size_t bytes_payload,
@@ -96,10 +96,10 @@ typedef void (*GST_NeighbourSendContinuation) (void *cls, int success,
  *
  * @param target destination
  * @param msg message to send
- * @param msg_size number of bytes in msg
+ * @param msg_size number of bytes in @a msg
  * @param timeout when to fail with timeout
  * @param cont function to call when done
- * @param cont_cls closure for 'cont'
+ * @param cont_cls closure for @a cont
  */
 void
 GST_neighbours_send (const struct GNUNET_PeerIdentity *target, const void *msg,
@@ -114,8 +114,8 @@ GST_neighbours_send (const struct GNUNET_PeerIdentity *target, const void *msg,
  *
  * @param sender sender of the message
  * @param size size of the message
- * @param do_forward set to GNUNET_YES if the message should be forwarded to clients
- *                   GNUNET_NO if the neighbour is not connected or violates the quota
+ * @param do_forward set to #GNUNET_YES if the message should be forwarded to clients
+ *                   #GNUNET_NO if the neighbour is not connected or violates the quota
  * @return how long to wait before reading more from this sender
  */
 struct GNUNET_TIME_Relative
@@ -125,26 +125,27 @@ GST_neighbours_calculate_receive_delay (const struct GNUNET_PeerIdentity
 
 /**
  * Keep the connection to the given neighbour alive longer,
- * we received a KEEPALIVE (or equivalent).
+ * we received a KEEPALIVE (or equivalent); send a response.
  *
- * @param neighbour neighbour to keep alive
+ * @param neighbour neighbour to keep alive (by sending keep alive response)
+ * @param m the keep alive message containing the nonce to respond to
  */
 void
-GST_neighbours_keepalive (const struct GNUNET_PeerIdentity *neighbour);
+GST_neighbours_keepalive (const struct GNUNET_PeerIdentity *neighbour,
+                          const struct GNUNET_MessageHeader *m);
 
 
 /**
- * We received a KEEP_ALIVE_RESPONSE message and use this to calculate latency
- * to this peer
+ * We received a KEEP_ALIVE_RESPONSE message and use this to calculate
+ * latency to this peer.  Pass the updated information (existing ats
+ * plus calculated latency) to ATS.
  *
  * @param neighbour neighbour to keep alive
- * @param ats performance data
- * @param ats_count number of entries in ats
+ * @param m the message containing the keep alive response
  */
 void
 GST_neighbours_keepalive_response (const struct GNUNET_PeerIdentity *neighbour,
-                                   const struct GNUNET_ATS_Information *ats,
-                                   uint32_t ats_count);
+    const struct GNUNET_MessageHeader *m);
 
 
 /**
@@ -172,8 +173,6 @@ GST_neighbours_force_disconnect (const struct GNUNET_PeerIdentity *target);
  *
  * @param cls closure
  * @param neighbour identity of the neighbour
- * @param ats performance data
- * @param ats_count number of entries in ats (including 0-termination)
  * @param address the address (or NULL)
  * @param bandwidth_in inbound quota in NBO
  * @param bandwidth_out outbound quota in NBO
@@ -181,8 +180,6 @@ GST_neighbours_force_disconnect (const struct GNUNET_PeerIdentity *target);
 typedef void (*GST_NeighbourIterator) (void *cls,
                                        const struct GNUNET_PeerIdentity *
                                        neighbour,
-                                       const struct GNUNET_ATS_Information *
-                                       ats, uint32_t ats_count,
                                        const struct GNUNET_HELLO_Address *
                                        address,
                                        struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
@@ -193,7 +190,7 @@ typedef void (*GST_NeighbourIterator) (void *cls,
  * Iterate over all connected neighbours.
  *
  * @param cb function to call
- * @param cb_cls closure for cb
+ * @param cb_cls closure for @a cb
  */
 void
 GST_neighbours_iterate (GST_NeighbourIterator cb, void *cb_cls);
@@ -204,12 +201,38 @@ GST_neighbours_iterate (GST_NeighbourIterator cb, void *cb_cls);
  *
  * @param peer identity of the peer where the session died
  * @param session session that is gone
- * @return GNUNET_YES if this was a session used, GNUNET_NO if
+ * @return #GNUNET_YES if this was a session used, #GNUNET_NO if
  *        this session was not in use
  */
 int
 GST_neighbours_session_terminated (const struct GNUNET_PeerIdentity *peer,
                                    struct Session *session);
+
+
+void
+GST_neighbours_notify_data_recv (const struct GNUNET_PeerIdentity *peer,
+                                 const struct GNUNET_HELLO_Address *address,
+                                 struct Session *session,
+                                 const struct GNUNET_MessageHeader *message);
+
+
+void
+GST_neighbours_notify_payload_recv (const struct GNUNET_PeerIdentity *peer,
+                                    const struct GNUNET_HELLO_Address *address,
+                                    struct Session *session,
+                                    const struct GNUNET_MessageHeader *message);
+
+
+void
+GST_neighbours_notify_payload_sent (const struct GNUNET_PeerIdentity *peer,
+                                    size_t size);
+
+
+void
+GST_neighbours_notify_data_sent (const struct GNUNET_PeerIdentity *peer,
+                                 const struct GNUNET_HELLO_Address *address,
+                                 struct Session *session,
+                                 size_t size);
 
 
 /**
@@ -227,12 +250,12 @@ GST_neighbours_session_terminated (const struct GNUNET_PeerIdentity *peer,
  */
 void
 GST_neighbours_switch_to_address (const struct GNUNET_PeerIdentity *peer,
-                                       const struct GNUNET_HELLO_Address
-                                       *address, struct Session *session,
-                                       const struct GNUNET_ATS_Information *ats,
-                                       uint32_t ats_count,
-                                       struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
-                                       struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out);
+                                  const struct GNUNET_HELLO_Address *address,
+                                  struct Session *session,
+                                  const struct GNUNET_ATS_Information *ats,
+                                  uint32_t ats_count,
+                                  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
+                                  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out);
 
 
 /**
@@ -244,16 +267,13 @@ GST_neighbours_switch_to_address (const struct GNUNET_PeerIdentity *peer,
  * @param address address of the other peer, NULL if other peer
  *                       connected to us
  * @param session session to use (or NULL)
- * @param ats performance data
- * @param ats_count number of entries in ats (excluding 0-termination)
-  */
-void
+ * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
+ */
+int
 GST_neighbours_handle_connect (const struct GNUNET_MessageHeader *message,
                                const struct GNUNET_PeerIdentity *peer,
                                const struct GNUNET_HELLO_Address *address,
-                               struct Session *session,
-                               const struct GNUNET_ATS_Information *ats,
-                               uint32_t ats_count);
+                               struct Session *session);
 
 
 /**
@@ -265,37 +285,32 @@ GST_neighbours_handle_connect (const struct GNUNET_MessageHeader *message,
  * @param address address of the other peer, NULL if other peer
  *                       connected to us
  * @param session session to use (or NULL)
- * @param ats performance data
- * @param ats_count number of entries in ats
+ * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
  */
-void
+int
 GST_neighbours_handle_connect_ack (const struct GNUNET_MessageHeader *message,
                                    const struct GNUNET_PeerIdentity *peer,
                                    const struct GNUNET_HELLO_Address *address,
-                                   struct Session *session,
-                                   const struct GNUNET_ATS_Information *ats,
-                                   uint32_t ats_count);
+                                   struct Session *session);
 
 
 /**
  * We received a 'SESSION_ACK' message from the other peer.
- * FIXME: describe what this means!
+ * If we sent a 'CONNECT_ACK' last, this means we are now
+ * connected.  Otherwise, do nothing.
  *
  * @param message possibly a 'struct SessionConnectMessage' (check format)
  * @param peer identity of the peer to switch the address for
  * @param address address of the other peer, NULL if other peer
  *                       connected to us
  * @param session session to use (or NULL)
- * @param ats performance data
- * @param ats_count number of entries in ats
+ * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
  */
-void
+int
 GST_neighbours_handle_session_ack (const struct GNUNET_MessageHeader *message,
 				   const struct GNUNET_PeerIdentity *peer,
 				   const struct GNUNET_HELLO_Address *address,
-				   struct Session *session,
-				   const struct GNUNET_ATS_Information *ats,
-				   uint32_t ats_count);
+				   struct Session *session);
 
 
 /**

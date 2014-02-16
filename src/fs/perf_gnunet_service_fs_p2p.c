@@ -124,7 +124,7 @@ print_stat (void *cls, const char *subsystem, const char *name, uint64_t value,
  * Function that gathers stats from all daemons.
  */
 static void
-stat_run (void *cls, 
+stat_run (void *cls,
 	  struct GNUNET_TESTBED_Operation *op,
 	  void *ca_result,
 	  const char *emsg);
@@ -147,7 +147,7 @@ get_done (void *cls, int success)
 /**
  * Adapter function called to establish a connection to
  * statistics service.
- * 
+ *
  * @param cls closure
  * @param cfg configuration of the peer to connect to; will be available until
  *          GNUNET_TESTBED_operation_done() is called on the operation returned
@@ -166,11 +166,11 @@ statistics_connect_adapter (void *cls,
 /**
  * Adapter function called to destroy a connection to
  * statistics service.
- * 
+ *
  * @param cls closure
  * @param op_result service handle returned from the connect adapter
  */
-static void 
+static void
 statistics_disconnect_adapter (void *cls,
 			       void *op_result)
 {
@@ -182,7 +182,7 @@ statistics_disconnect_adapter (void *cls,
  * Function that gathers stats from all daemons.
  */
 static void
-stat_run (void *cls, 
+stat_run (void *cls,
 	  struct GNUNET_TESTBED_Operation *op,
 	  void *ca_result,
 	  const char *emsg)
@@ -244,26 +244,26 @@ do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_DISK_directory_remove (fn);
     GNUNET_free (fn);
   }
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_TIMEOUT)) 
+  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_TIMEOUT))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Timeout during download, shutting down with error\n");
     ok = 1;
-    GNUNET_SCHEDULER_shutdown ();   
+    GNUNET_SCHEDULER_shutdown ();
     return;
   }
 
   del = GNUNET_TIME_absolute_get_duration (start_time);
-  if (del.rel_value == 0)
-    del.rel_value = 1;
+  if (del.rel_value_us == 0)
+    del.rel_value_us = 1;
   fancy =
     GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-				    1000LL / del.rel_value);
+				    1000000LL / del.rel_value_us);
   FPRINTF (stdout, "Download speed was %s/s\n", fancy);
   GNUNET_free (fancy);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished download, shutting down\n",
 	      (unsigned long long) FILESIZE);
-  sm = GNUNET_malloc (sizeof (struct StatMaster));
+  sm = GNUNET_new (struct StatMaster);
   sm->op =
     GNUNET_TESTBED_service_connect (NULL,
 				    daemons[sm->daemon],
@@ -276,7 +276,7 @@ do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-do_download (void *cls, 
+do_download (void *cls,
 	     const struct GNUNET_FS_Uri *uri,
 	     const char *fn)
 {
@@ -298,20 +298,23 @@ do_download (void *cls,
   else
     anonymity = 1;
   GNUNET_FS_TEST_download (daemons[0], TIMEOUT, anonymity, SEED, uri, VERBOSE,
-                           &do_report, 
+                           &do_report,
 			   (NULL == fn) ? NULL : GNUNET_strdup (fn));
 }
 
 
 static void
-do_publish (void *cls, 
+do_publish (void *cls,
+            struct GNUNET_TESTBED_RunHandle *h,
 	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers)
+	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int links_succeeded,
+            unsigned int links_failed)
 {
   unsigned int i;
   int do_index;
   int anonymity;
- 
+
   GNUNET_assert (NUM_DAEMONS == num_peers);
   for (i=0;i<num_peers;i++)
     daemons[i] = peers[i];

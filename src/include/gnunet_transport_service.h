@@ -43,13 +43,6 @@ extern "C"
  */
 #define GNUNET_TRANSPORT_VERSION 0x00000000
 
-enum TRAFFIC_METRIC_DIRECTION
-{
-	TM_SEND = 0,
-	TM_RECEIVE = 1,
-	TM_BOTH = 2
-};
-
 
 /**
  * Function called by the transport for each received message.
@@ -65,10 +58,7 @@ typedef void (*GNUNET_TRANSPORT_ReceiveCallback) (void *cls,
                                                   GNUNET_PeerIdentity * peer,
                                                   const struct
                                                   GNUNET_MessageHeader *
-                                                  message,
-                                                  const struct
-                                                  GNUNET_ATS_Information * ats,
-                                                  uint32_t ats_count);
+                                                  message);
 
 
 /**
@@ -88,10 +78,7 @@ struct GNUNET_TRANSPORT_Handle;
  */
 typedef void (*GNUNET_TRANSPORT_NotifyConnect) (void *cls,
                                                 const struct GNUNET_PeerIdentity
-                                                * peer,
-                                                const struct
-                                                GNUNET_ATS_Information * ats,
-                                                uint32_t ats_count);
+                                                * peer);
 
 /**
  * Function called to notify transport users that another
@@ -155,9 +142,9 @@ typedef void (*GNUNET_TRANSPORT_PeerIterateCallback) (void *cls,
  * @param self our own identity (API should check that it matches
  *             the identity found by transport), or NULL (no check)
  * @param cls closure for the callbacks
- * @param rec receive function to call
- * @param nc function to call on connect events
- * @param nd function to call on disconnect events
+ * @param rec receive function to call, or NULL
+ * @param nc function to call on connect events, or NULL
+ * @param nd function to call on disconnect events, or NULL
  * @return NULL on error
  */
 struct GNUNET_TRANSPORT_Handle *
@@ -210,6 +197,7 @@ GNUNET_TRANSPORT_try_connect (struct GNUNET_TRANSPORT_Handle *handle,
  */
 void
 GNUNET_TRANSPORT_try_connect_cancel (struct GNUNET_TRANSPORT_TryConnectHandle *tch);
+
 
 /**
  * Opaque handle for a transmission-ready request.
@@ -277,16 +265,15 @@ struct GNUNET_TRANSPORT_GetHelloHandle;
 
 
 /**
-  * Checks if a neighbour is connected
-  *
-  * @param handle connection to transport service
-  * @peer the peer to check
-  * @return GNUNET_YES or GNUNET_NO
-  *
-  */
+ * Checks if a given peer is connected to us
+ *
+ * @param handle connection to transport service
+ * @param peer the peer to check
+ * @return #GNUNET_YES (connected) or #GNUNET_NO (disconnected)
+ */
 int
-GNUNET_TRANSPORT_check_neighbour_connected (struct GNUNET_TRANSPORT_Handle *handle,
-                              					const struct GNUNET_PeerIdentity *peer);
+GNUNET_TRANSPORT_check_peer_connected (struct GNUNET_TRANSPORT_Handle *handle,
+                                            const struct GNUNET_PeerIdentity *peer);
 
 
 /**
@@ -294,13 +281,14 @@ GNUNET_TRANSPORT_check_neighbour_connected (struct GNUNET_TRANSPORT_Handle *hand
  *
  * @param handle transport handle
  * @param peer the peer to set the metric for
- * @param direction can be: TM_SEND, TM_RECV, TM_BOTH
+ * @param inbound set inbound direction (GNUNET_YES or GNUNET_NO)
+ * @param outbound set outbound direction (GNUNET_YES or GNUNET_NO)
  * @param ats the metric as ATS information
  * @param ats_count the number of metrics
  *
  * Supported ATS values:
  * GNUNET_ATS_QUALITY_NET_DELAY  (value in ms)
- * GNUNET_ATS_QUALITY_NET_DISTANCE (value in #hops)
+ * GNUNET_ATS_QUALITY_NET_DISTANCE (value in count(hops))
  *
  * Example
  * To enforce a delay of 10 ms for peer p1 in sending direction use:
@@ -316,10 +304,11 @@ GNUNET_TRANSPORT_check_neighbour_connected (struct GNUNET_TRANSPORT_Handle *hand
  */
 void
 GNUNET_TRANSPORT_set_traffic_metric (struct GNUNET_TRANSPORT_Handle *handle,
-																		const struct GNUNET_PeerIdentity *peer,
-																		int direction,
-																		const struct GNUNET_ATS_Information *ats,
-																		size_t ats_count);
+				     const struct GNUNET_PeerIdentity *peer,
+				     int inbound,
+				     int outbound,
+				     const struct GNUNET_ATS_Information *ats,
+				     size_t ats_count);
 
 
 /**
@@ -374,6 +363,7 @@ GNUNET_TRANSPORT_offer_hello (struct GNUNET_TRANSPORT_Handle *handle,
  */
 void
 GNUNET_TRANSPORT_offer_hello_cancel (struct GNUNET_TRANSPORT_OfferHelloHandle *ohh);
+
 
 /**
  * Handle to cancel a pending address lookup.

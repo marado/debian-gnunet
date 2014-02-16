@@ -24,10 +24,8 @@
  * @author Bartlomiej Polot
  */
 #include "platform.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_getopt_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_mesh_service.h"
-#include "gnunet_program_lib.h"
 
 
 /**
@@ -36,9 +34,45 @@
 static int monitor_connections;
 
 /**
- * Option -t
+ * Option -i.
+ */
+static int get_info;
+
+/**
+ * Option --tunnel
  */
 static char *tunnel_id;
+
+/**
+ * Option --connection
+ */
+static char *conn_id;
+
+/**
+ * Option --channel
+ */
+static char *channel_id;
+
+/**
+ * Port to listen on (-p).
+ */
+static uint32_t listen_port;
+
+/**
+ * Peer to connect to.
+ */
+static char *target_id;
+
+/**
+ * Port to connect to
+ */
+static uint32_t target_port;
+
+/**
+ * Data pending in netcat mode.
+ */
+size_t data_size;
+
 
 /**
  * Mesh handle.
@@ -46,9 +80,21 @@ static char *tunnel_id;
 static struct GNUNET_MESH_Handle *mh;
 
 /**
+ * Channel handle.
+ */
+static struct GNUNET_MESH_Channel *ch;
+
+/**
  * Shutdown task handle.
  */
 GNUNET_SCHEDULER_TaskIdentifier sd;
+
+
+
+static void
+listen_stdio (void);
+
+
 
 /**
  * Task run in monitor mode when the user presses CTRL-C to abort.
@@ -61,6 +107,11 @@ static void
 shutdown_task (void *cls,
                const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
+  if (NULL != ch)
+  {
+    GNUNET_MESH_channel_destroy (ch);
+    ch = NULL;
+  }
   if (NULL != mh)
   {
     GNUNET_MESH_disconnect (mh);
@@ -70,29 +121,258 @@ shutdown_task (void *cls,
 
 
 /**
+ * Function called to notify a client about the connection
+ * begin ready to queue more data.  "buf" will be
+ * NULL and "size" zero if the connection was closed for
+ * writing in the meantime.
+ *
+ * FIXME
+ *
+ * @param cls closure
+ * @param size number of bytes available in buf
+ * @param buf where the callee should write the message
+ * @return number of bytes written to buf
+ */
+size_t
+data_ready (void *cls, size_t size, void *buf)
+{
+  struct GNUNET_MessageHeader *msg;
+  size_t total_size;
+
+  if (NULL == buf || 0 == size)
+  {
+    GNUNET_SCHEDULER_shutdown();
+    return 0;
+  }
+
+  total_size = data_size + sizeof (struct GNUNET_MessageHeader);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "sending %u bytes\n", data_size);
+  GNUNET_assert (size >= total_size);
+
+  msg = buf;
+  msg->size = htons (total_size);
+  msg->type = htons (GNUNET_MESSAGE_TYPE_MESH_CLI);
+  memcpy (&msg[1], cls, data_size);
+  listen_stdio ();
+
+  return total_size;
+}
+
+
+/**
+ * Task run in monitor mode when the user presses CTRL-C to abort.
+ * Stops monitoring activity.
+ *
+ * @param cls Closure (unused).
+ * @param tc scheduler context
+ */
+static void
+read_stdio (void *cls,
+            const struct GNUNET_SCHEDULER_TaskContext *tc)
+{
+  static char buf[60000];
+
+  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
+  {
+    return;
+  }
+
+  data_size = read (0, buf, 60000);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "stdio read %u bytes\n", data_size);
+  if (data_size < 1)
+  {
+    GNUNET_SCHEDULER_shutdown();
+    return;
+  }
+  GNUNET_MESH_notify_transmit_ready (ch, GNUNET_NO,
+                                     GNUNET_TIME_UNIT_FOREVER_REL,
+                                     data_size
+                                     + sizeof (struct GNUNET_MessageHeader),
+                                     &data_ready, buf);
+}
+
+
+/**
+ * Start listening to stdin
+ */
+static void
+listen_stdio (void)
+{
+  struct GNUNET_NETWORK_FDSet *rs;
+
+  rs = GNUNET_NETWORK_fdset_create ();
+  GNUNET_NETWORK_fdset_set_native (rs, 0);
+  GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+                               GNUNET_TIME_UNIT_FOREVER_REL,
+                               rs, NULL,
+                               &read_stdio, NULL);
+  GNUNET_NETWORK_fdset_destroy (rs);
+}
+
+
+/**
+ * Function called whenever a channel is destroyed.  Should clean up
+ * any associated state.
+ *
+ * It must NOT call #GNUNET_MESH_channel_destroy on the channel.
+ *
+ * @param cls closure (set from #GNUNET_MESH_connect)
+ * @param channel connection to the other end (henceforth invalid)
+ * @param channel_ctx place where local state associated
+ *                   with the channel is stored
+ */
+static void
+channel_ended (void *cls,
+               const struct GNUNET_MESH_Channel *channel,
+               void *channel_ctx)
+{
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Channel ended!\n");
+  GNUNET_break (channel == ch);
+  ch = NULL;
+  GNUNET_SCHEDULER_shutdown ();
+}
+
+
+/**
+ * Method called whenever another peer has added us to a channel
+ * the other peer initiated.
+ * Only called (once) upon reception of data with a message type which was
+ * subscribed to in #GNUNET_MESH_connect.
+ *
+ * A call to #GNUNET_MESH_channel_destroy causes te channel to be ignored. In
+ * this case the handler MUST return NULL.
+ *
+ * @param cls closure
+ * @param channel new handle to the channel
+ * @param initiator peer that started the channel
+ * @param port Port this channel is for.
+ * @param options MeshOption flag field, with all active option bits set to 1.
+ *
+ * @return initial channel context for the channel
+ *         (can be NULL -- that's not an error)
+ */
+static void *
+channel_incoming (void *cls,
+                  struct GNUNET_MESH_Channel * channel,
+                  const struct GNUNET_PeerIdentity * initiator,
+                  uint32_t port, enum GNUNET_MESH_ChannelOption options)
+{
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Incoming channel %p on port %u\n",
+              channel, port);
+  if (NULL != ch)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "A channel already exists\n");
+    return NULL;
+  }
+  if (0 == listen_port)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Not listening to channels\n");
+    return NULL;
+  }
+  ch = channel;
+  listen_stdio ();
+  return NULL;
+}
+
+
+
+/**
+ * Call MESH's monitor API, get info of one connection.
+ *
+ * @param cls Closure (unused).
+ * @param tc TaskContext
+ */
+static void
+create_channel (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+{
+  struct GNUNET_PeerIdentity pid;
+  enum GNUNET_MESH_ChannelOption opt;
+
+  GNUNET_assert (NULL == ch);
+
+  if (GNUNET_OK !=
+      GNUNET_CRYPTO_eddsa_public_key_from_string (target_id,
+                                                  strlen (target_id),
+                                                  &pid.public_key))
+  {
+    FPRINTF (stderr,
+             _("Invalid target `%s'\n"),
+             target_id);
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Connecting to `%s'\n", target_id);
+  opt = GNUNET_MESH_OPTION_DEFAULT | GNUNET_MESH_OPTION_RELIABLE;
+  ch = GNUNET_MESH_channel_create (mh, NULL, &pid, target_port, opt);
+  listen_stdio ();
+}
+
+
+/**
+ * Function called whenever a message is received.
+ *
+ * Each time the function must call #GNUNET_MESH_receive_done on the channel
+ * in order to receive the next message. This doesn't need to be immediate:
+ * can be delayed if some processing is done on the message.
+ *
+ * @param cls Closure (set from #GNUNET_MESH_connect).
+ * @param channel Connection to the other end.
+ * @param channel_ctx Place to store local state associated with the channel.
+ * @param message The actual message.
+ * @return #GNUNET_OK to keep the channel open,
+ *         #GNUNET_SYSERR to close it (signal serious error).
+ */
+static int
+data_callback (void *cls,
+               struct GNUNET_MESH_Channel *channel,
+               void **channel_ctx,
+               const struct GNUNET_MessageHeader *message)
+{
+  uint16_t len;
+  ssize_t done;
+  uint16_t off;
+  const char *buf;
+  GNUNET_break (ch == channel);
+
+  len = ntohs (message->size) - sizeof (*message);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got %u bytes\n", len);
+  buf = (const char *) &message[1];
+  off = 0;
+  while (off < len)
+  {
+    done = write (1, &buf[off], len - off);
+    if (done <= 0)
+    {
+      if (-1 == done)
+        GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+                             "write");
+      return GNUNET_SYSERR;
+    }
+    off += done;
+  }
+  return GNUNET_OK;
+}
+
+
+/**
  * Method called to retrieve information about each tunnel the mesh peer
  * is aware of.
  *
- * @param cls Closure (unused).
- * @param initiator Peer that started the tunnel (owner).
+ * @param cls Closure.
  * @param tunnel_number Tunnel number.
- * @param peers Array of peer identities that participate in the tunnel.
- * @param npeers Number of peers in peers.
+ * @param origin that started the tunnel (owner).
+ * @param target other endpoint of the tunnel
  */
-static void
+void /* FIXME static */
 tunnels_callback (void *cls,
-                 const struct GNUNET_PeerIdentity *initiator,
-                 unsigned int tunnel_number,
-                 const struct GNUNET_PeerIdentity *peers,
-                 unsigned int npeers)
+                  uint32_t tunnel_number,
+                  const struct GNUNET_PeerIdentity *origin,
+                  const struct GNUNET_PeerIdentity *target)
 {
-  unsigned int i;
-
-  fprintf (stdout, "Tunnel %s [%u]: %u peers\n",
-           GNUNET_i2s_full (initiator), tunnel_number, npeers);
-  for (i = 0; i < npeers; i++)
-    fprintf (stdout, " * %s\n", GNUNET_i2s_full (&peers[i]));
-  fprintf (stdout, "\n");
+  FPRINTF (stdout, "Tunnel %s [%u]\n",
+           GNUNET_i2s_full (origin), tunnel_number);
+  FPRINTF (stdout, "\n");
 }
 
 
@@ -103,9 +383,9 @@ tunnels_callback (void *cls,
  * @param cls Closure.
  * @param peer Peer in the tunnel's tree.
  * @param parent Parent of the current peer. All 0 when peer is root.
- * 
+ *
  */
-static void
+void /* FIXME static */
 tunnel_callback (void *cls,
                  const struct GNUNET_PeerIdentity *peer,
                  const struct GNUNET_PeerIdentity *parent)
@@ -126,12 +406,13 @@ get_tunnels (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   {
     return;
   }
-  GNUNET_MESH_get_tunnels (mh, &tunnels_callback, NULL);
+//   GNUNET_MESH_get_tunnels (mh, &tunnels_callback, NULL);
   if (GNUNET_YES != monitor_connections)
   {
     GNUNET_SCHEDULER_shutdown();
   }
 }
+
 
 /**
  * Call MESH's monitor API, get info of one tunnel.
@@ -145,12 +426,43 @@ show_tunnel (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   struct GNUNET_PeerIdentity pid;
 
   if (GNUNET_OK !=
-      GNUNET_CRYPTO_hash_from_string (tunnel_id, &pid.hashPubKey))
+      GNUNET_CRYPTO_eddsa_public_key_from_string (tunnel_id,
+                                                  strlen (tunnel_id),
+                                                  &pid.public_key))
   {
+    fprintf (stderr,
+             _("Invalid tunnel owner `%s'\n"),
+             tunnel_id);
     GNUNET_SCHEDULER_shutdown();
     return;
   }
-  GNUNET_MESH_show_tunnel (mh, &pid, 0, tunnel_callback, NULL);
+//   GNUNET_MESH_show_tunnel (mh, &pid, 0, tunnel_callback, NULL);
+}
+
+
+/**
+ * Call MESH's monitor API, get info of one channel.
+ *
+ * @param cls Closure (unused).
+ * @param tc TaskContext
+ */
+static void
+show_channel (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+{
+
+}
+
+
+/**
+ * Call MESH's monitor API, get info of one connection.
+ *
+ * @param cls Closure (unused).
+ * @param tc TaskContext
+ */
+static void
+show_connection (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+{
+
 }
 
 
@@ -166,32 +478,84 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
+  GNUNET_MESH_InboundChannelNotificationHandler *newch = NULL;
+  GNUNET_MESH_ChannelEndHandler *endch = NULL;
   static const struct GNUNET_MESH_MessageHandler handlers[] = {
+    {&data_callback, GNUNET_MESSAGE_TYPE_MESH_CLI, 0},
     {NULL, 0, 0} /* FIXME add option to monitor msg types */
   };
-  GNUNET_MESH_ApplicationType apps = 0; /* FIXME add option to monitor apps */
+  static uint32_t *ports = NULL;
+  /* FIXME add option to monitor apps */
 
-  if (args[0] != NULL)
+  target_id = args[0];
+  target_port = args[0] && args[1] ? atoi(args[1]) : 0;
+  if ( (0 != get_info
+        || 0 != monitor_connections
+        || NULL != tunnel_id
+        || NULL != conn_id
+        || NULL != channel_id)
+       && target_id != NULL)
   {
-    FPRINTF (stderr, _("Invalid command line argument `%s'\n"), args[0]);
+    FPRINTF (stderr, _("You must NOT give a TARGET when using options\n"));
     return;
   }
+
+  if (NULL != target_id)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Creating channel to %s\n",
+                target_id);
+    GNUNET_SCHEDULER_add_now (&create_channel, NULL);
+    endch = &channel_ended;
+  }
+  else if (0 != listen_port)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Listen\n");
+    newch = &channel_incoming;
+    endch = &channel_ended;
+    ports = GNUNET_malloc (sizeof (uint32_t) * 2);
+    ports[0] = listen_port;
+  }
+  else if (NULL != tunnel_id)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Show tunnel\n");
+    GNUNET_SCHEDULER_add_now (&show_tunnel, NULL);
+  }
+  else if (NULL != channel_id)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Show channel\n");
+    GNUNET_SCHEDULER_add_now (&show_channel, NULL);
+  }
+  else if (NULL != conn_id)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Show connection\n");
+    GNUNET_SCHEDULER_add_now (&show_connection, NULL);
+  }
+  else if (GNUNET_YES == get_info)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Show all tunnels\n");
+    GNUNET_SCHEDULER_add_now (&get_tunnels, NULL);
+  }
+  else
+  {
+    FPRINTF (stderr, "No action requested\n");
+    return;
+  }
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Connecting to mesh\n");
   mh = GNUNET_MESH_connect (cfg,
                             NULL, /* cls */
-                            NULL, /* nt */
-                            NULL, /* cleaner */
+                            newch, /* new channel */
+                            endch, /* cleaner */
                             handlers,
-                            &apps);
+                            ports);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Done\n");
   if (NULL == mh)
     GNUNET_SCHEDULER_add_now (shutdown_task, NULL);
   else
     sd = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
                                        shutdown_task, NULL);
 
-  if (NULL != tunnel_id)
-    GNUNET_SCHEDULER_add_now (&show_tunnel, NULL);
-  else
-    GNUNET_SCHEDULER_add_now (&get_tunnels, NULL);
 }
 
 
@@ -206,11 +570,24 @@ int
 main (int argc, char *const *argv)
 {
   int res;
+  const char helpstr[] = "Create channels and retreive info about meshs status.";
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
+    {'a', "channel", "TUNNEL_ID:CHANNEL_ID",
+     gettext_noop ("provide information about a particular channel"),
+     GNUNET_YES, &GNUNET_GETOPT_set_string, &channel_id},
+    {'b', "connection", "TUNNEL_ID:CONNECTION_ID",
+     gettext_noop ("provide information about a particular connection"),
+     GNUNET_YES, &GNUNET_GETOPT_set_string, &conn_id},
+    {'i', "info", NULL,
+     gettext_noop ("provide information about all tunnels"),
+     GNUNET_NO, &GNUNET_GETOPT_set_one, &get_info},
     {'m', "monitor", NULL,
      gettext_noop ("provide information about all tunnels (continuously) NOT IMPLEMENTED"), /* FIXME */
      GNUNET_NO, &GNUNET_GETOPT_set_one, &monitor_connections},
-    {'t', "tunnel", "OWNER_ID:TUNNEL_ID",
+    {'p', "port", NULL,
+     gettext_noop ("port to listen to (default; 0)"),
+     GNUNET_YES, &GNUNET_GETOPT_set_uint, &listen_port},
+    {'t', "tunnel", "TUNNEL_ID",
      gettext_noop ("provide information about a particular tunnel"),
      GNUNET_YES, &GNUNET_GETOPT_set_string, &tunnel_id},
     GNUNET_GETOPT_OPTION_END
@@ -219,10 +596,9 @@ main (int argc, char *const *argv)
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
 
-  res = GNUNET_PROGRAM_run (argc, argv, "gnunet-mesh",
-                      gettext_noop
-                      ("Print information about mesh tunnels and peers."),
-                      options, &run, NULL);
+  res = GNUNET_PROGRAM_run (argc, argv, "gnunet-mesh (OPTIONS | TARGET PORT)",
+                            gettext_noop (helpstr),
+                            options, &run, NULL);
 
   GNUNET_free ((void *) argv);
 

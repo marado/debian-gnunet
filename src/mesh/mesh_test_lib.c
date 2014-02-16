@@ -51,7 +51,7 @@ struct GNUNET_MESH_TEST_Context
    * Main function of the test to run once all MESHs are available.
    */
   GNUNET_MESH_TEST_AppMain app_main;
-  
+
   /**
    * Closure for 'app_main'.
    */
@@ -65,12 +65,12 @@ struct GNUNET_MESH_TEST_Context
   /**
    * Handler for incoming tunnels.
    */
-  GNUNET_MESH_InboundTunnelNotificationHandler *new_tunnel;
+  GNUNET_MESH_InboundChannelNotificationHandler *new_channel;
 
   /**
    * Cleaner for destroyed incoming tunnels.
    */
-  GNUNET_MESH_TunnelEndHandler *cleaner;
+  GNUNET_MESH_ChannelEndHandler *cleaner;
 
   /**
    * Message handlers.
@@ -78,9 +78,9 @@ struct GNUNET_MESH_TEST_Context
   struct GNUNET_MESH_MessageHandler* handlers;
 
   /**
-   * Application types.
+   * Application ports.
    */
-  const GNUNET_MESH_ApplicationType* stypes;
+  const uint32_t *ports;
 
 };
 
@@ -122,10 +122,10 @@ mesh_connect_adapter (void *cls,
 
   h = GNUNET_MESH_connect (cfg,
                            (void *) (long) actx->peer,
-                           ctx->new_tunnel,
+                           ctx->new_channel,
                            ctx->cleaner,
                            ctx->handlers,
-                           ctx->stypes);
+                           ctx->ports);
   return h;
 }
 
@@ -137,7 +137,7 @@ mesh_connect_adapter (void *cls,
  * @param cls closure
  * @param op_result service handle returned from the connect adapter
  */
-static void 
+static void
 mesh_disconnect_adapter (void *cls,
                          void *op_result)
 {
@@ -154,12 +154,12 @@ mesh_disconnect_adapter (void *cls,
  *
  * @param cls The callback closure from functions generating an operation.
  * @param op The operation that has been finished.
- * @param ca_result The service handle returned from 
+ * @param ca_result The service handle returned from
  *                  GNUNET_TESTBED_ConnectAdapter() (mesh handle).
  * @param emsg Error message in case the operation has failed.
  *             NULL if operation has executed successfully.
  */
-static void 
+static void
 mesh_connect_cb (void *cls,
                  struct GNUNET_TESTBED_Operation *op,
                  void *ca_result,
@@ -167,7 +167,7 @@ mesh_connect_cb (void *cls,
 {
   struct GNUNET_MESH_TEST_Context *ctx = cls;
   unsigned int i;
- 
+
   if (NULL != emsg)
   {
     fprintf (stderr, "Failed to connect to MESH service: %s\n",
@@ -190,11 +190,6 @@ mesh_connect_cb (void *cls,
 }
 
 
-/**
- * Clean up the testbed.
- *
- * @param ctx handle for the testbed
- */
 void
 GNUNET_MESH_TEST_cleanup (struct GNUNET_MESH_TEST_Context *ctx)
 {
@@ -216,15 +211,23 @@ GNUNET_MESH_TEST_cleanup (struct GNUNET_MESH_TEST_Context *ctx)
 /**
  * Callback run when the testbed is ready (peers running and connected to
  * each other)
- * 
+ *
  * @param cls Closure (context).
+ * @param h the run handle
  * @param num_peers Number of peers that are running.
  * @param peers Handles to each one of the @c num_peers peers.
+ * @param links_succeeded the number of overlay link connection attempts that
+ *          succeeded
+ * @param links_failed the number of overlay link connection attempts that
+ *          failed
  */
 static void
 mesh_test_run (void *cls,
+               struct GNUNET_TESTBED_RunHandle *h,
                unsigned int num_peers,
-               struct GNUNET_TESTBED_Peer **peers)
+               struct GNUNET_TESTBED_Peer **peers,
+               unsigned int links_succeeded,
+               unsigned int links_failed)
 {
   struct GNUNET_MESH_TEST_Context *ctx = cls;
   unsigned int i;
@@ -234,7 +237,7 @@ mesh_test_run (void *cls,
   for (i = 0; i < num_peers; i++)
   {
     struct GNUNET_MESH_TEST_AdapterContext *newctx;
-    newctx = GNUNET_malloc (sizeof (struct GNUNET_MESH_TEST_AdapterContext));
+    newctx = GNUNET_new (struct GNUNET_MESH_TEST_AdapterContext);
     newctx->peer = i;
     newctx->ctx = ctx;
     ctx->ops[i] = GNUNET_TESTBED_service_connect (ctx,
@@ -249,44 +252,29 @@ mesh_test_run (void *cls,
 }
 
 
-/**
- * Run a test using the given name, configuration file and number of
- * peers.
- * All mesh callbacks will receive the peer number as the closure.
- *
- * @param testname Name of the test (for logging).
- * @param cfgname Name of the configuration file.
- * @param num_peers Number of peers to start.
- * @param tmain Main function to run once the testbed is ready.
- * @param tmain_cls Closure for 'tmain'.
- * @param new_tunnel Handler for incoming tunnels.
- * @param cleaner Cleaner for destroyed incoming tunnels.
- * @param handlers Message handlers.
- * @param stypes Application types.
- */
-void 
+void
 GNUNET_MESH_TEST_run (const char *testname,
                       const char *cfgname,
                       unsigned int num_peers,
                       GNUNET_MESH_TEST_AppMain tmain,
                       void *tmain_cls,
-                      GNUNET_MESH_InboundTunnelNotificationHandler new_tunnel,
-                      GNUNET_MESH_TunnelEndHandler cleaner,
+                      GNUNET_MESH_InboundChannelNotificationHandler new_channel,
+                      GNUNET_MESH_ChannelEndHandler cleaner,
                       struct GNUNET_MESH_MessageHandler* handlers,
-                      const GNUNET_MESH_ApplicationType* stypes)
+                      const uint32_t *ports)
 {
   struct GNUNET_MESH_TEST_Context *ctx;
 
-  ctx = GNUNET_malloc (sizeof (struct GNUNET_MESH_TEST_Context));
+  ctx = GNUNET_new (struct GNUNET_MESH_TEST_Context);
   ctx->num_peers = num_peers;
   ctx->ops = GNUNET_malloc (num_peers * sizeof (struct GNUNET_TESTBED_Operation *));
   ctx->meshes = GNUNET_malloc (num_peers * sizeof (struct GNUNET_MESH_Handle *));
   ctx->app_main = tmain;
   ctx->app_main_cls = tmain_cls;
-  ctx->new_tunnel = new_tunnel;
+  ctx->new_channel = new_channel;
   ctx->cleaner = cleaner;
   ctx->handlers = handlers;
-  ctx->stypes = stypes;
+  ctx->ports = ports;
   GNUNET_TESTBED_test_run (testname,
                            cfgname,
                            num_peers,

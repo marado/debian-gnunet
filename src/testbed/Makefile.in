@@ -55,17 +55,23 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 libexec_PROGRAMS = gnunet-service-testbed$(EXEEXT) \
-	gnunet-helper-testbed$(EXEEXT)
-bin_PROGRAMS = $(am__EXEEXT_1)
-noinst_PROGRAMS = gnunet-testbed-profiler$(EXEEXT) $(am__EXEEXT_2)
+	gnunet-helper-testbed$(EXEEXT) \
+	gnunet-service-testbed-logger$(EXEEXT) \
+	gnunet-daemon-testbed-blacklist$(EXEEXT)
+bin_PROGRAMS = gnunet-testbed-profiler$(EXEEXT)
 check_PROGRAMS = test_testbed_api_hosts$(EXEEXT) \
+	test_testbed_logger_api$(EXEEXT) \
+	test_gnunet_helper_testbed$(EXEEXT) \
 	test_testbed_api_controllerlink$(EXEEXT) \
 	test_testbed_api_2peers_1controller$(EXEEXT) \
 	test_testbed_api_3peers_3controllers$(EXEEXT) \
-	test_testbed_api$(EXEEXT) test_testbed_api_operations$(EXEEXT) \
+	test_testbed_api$(EXEEXT) test_testbed_api_sd$(EXEEXT) \
+	test_testbed_api_operations$(EXEEXT) \
 	test_testbed_api_testbed_run$(EXEEXT) \
 	test_testbed_api_test$(EXEEXT) \
-	test_gnunet_helper_testbed$(EXEEXT) \
+	test_testbed_api_test_timeout$(EXEEXT) \
+	test_testbed_api_peer_reconfiguration$(EXEEXT) \
+	test_testbed_api_peers_manage_services$(EXEEXT) \
 	test_testbed_api_topology$(EXEEXT) \
 	test_testbed_api_topology_clique$(EXEEXT) \
 	test_testbed_api_testbed_run_topologyrandom$(EXEEXT) \
@@ -76,42 +82,51 @@ check_PROGRAMS = test_testbed_api_hosts$(EXEEXT) \
 	test_testbed_api_testbed_run_topology2dtorus$(EXEEXT) \
 	test_testbed_api_testbed_run_topologysmallworld$(EXEEXT) \
 	test_testbed_api_testbed_run_topologyfromfile$(EXEEXT) \
-	test_testbed_api_testbed_run_topologyscalefree$(EXEEXT)
+	test_testbed_api_testbed_run_topologyscalefree$(EXEEXT) \
+	test_testbed_api_testbed_run_waitforever$(EXEEXT) \
+	test_testbed_api_statistics$(EXEEXT) \
+	gnunet-service-test-barriers$(EXEEXT) \
+	test_testbed_api_barriers$(EXEEXT)
 @ENABLE_TEST_RUN_TRUE@TESTS = test_testbed_api$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_testbed_api_hosts$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_testbed_api_2peers_1controller$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_testbed_api_3peers_3controllers$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_logger_api$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_sd$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_operations$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_hosts$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_gnunet_helper_testbed$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_2peers_1controller$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_controllerlink$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_3peers_3controllers$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_test$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_test_timeout$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_statistics$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_peer_reconfiguration$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_peers_manage_services$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_topology$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_topology_clique$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyrandom$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyline$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyclique$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyring$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologysmallworldring$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topology2dtorus$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologysmallworld$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologysmallworldring$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyfromfile$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyscalefree$(EXEEXT)
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_testbed_run_topologyscalefree$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@	test_testbed_api_barriers$(EXEEXT)
 subdir = src/testbed
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/testbed.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -163,7 +178,8 @@ am_libgnunettestbed_la_OBJECTS = testbed_api.lo testbed_api_hosts.lo \
 	testbed_api_operations.lo testbed_api_peers.lo \
 	testbed_api_services.lo testbed_api_statistics.lo \
 	testbed_api_testbed.lo testbed_api_test.lo \
-	testbed_api_topology.lo
+	testbed_api_topology.lo testbed_api_sd.lo \
+	testbed_api_barriers.lo
 libgnunettestbed_la_OBJECTS = $(am_libgnunettestbed_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -172,45 +188,60 @@ libgnunettestbed_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunettestbed_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-@WITH_LL_TRUE@am__EXEEXT_1 = gnunet-mpi-test$(EXEEXT)
-@WITH_LL_TRUE@am__EXEEXT_2 = ll-master$(EXEEXT) ll-monitor$(EXEEXT)
-PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS) $(noinst_PROGRAMS)
+libgnunettestbedlogger_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunettestbedlogger_la_OBJECTS = testbed_logger_api.lo
+libgnunettestbedlogger_la_OBJECTS =  \
+	$(am_libgnunettestbedlogger_la_OBJECTS)
+libgnunettestbedlogger_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libgnunettestbedlogger_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
+am_gnunet_daemon_testbed_blacklist_OBJECTS =  \
+	gnunet-daemon-testbed-blacklist.$(OBJEXT)
+gnunet_daemon_testbed_blacklist_OBJECTS =  \
+	$(am_gnunet_daemon_testbed_blacklist_OBJECTS)
 am_gnunet_helper_testbed_OBJECTS = gnunet-helper-testbed.$(OBJEXT)
 gnunet_helper_testbed_OBJECTS = $(am_gnunet_helper_testbed_OBJECTS)
-am_gnunet_mpi_test_OBJECTS = gnunet_mpi_test.$(OBJEXT)
-gnunet_mpi_test_OBJECTS = $(am_gnunet_mpi_test_OBJECTS)
-gnunet_mpi_test_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
+am_gnunet_service_test_barriers_OBJECTS =  \
+	gnunet-service-test-barriers.$(OBJEXT)
+gnunet_service_test_barriers_OBJECTS =  \
+	$(am_gnunet_service_test_barriers_OBJECTS)
+gnunet_service_test_barriers_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
 am_gnunet_service_testbed_OBJECTS = gnunet-service-testbed.$(OBJEXT) \
+	gnunet-service-testbed_links.$(OBJEXT) \
+	gnunet-service-testbed_peers.$(OBJEXT) \
 	gnunet-service-testbed_cache.$(OBJEXT) \
-	gnunet-service-testbed_oc.$(OBJEXT)
+	gnunet-service-testbed_oc.$(OBJEXT) \
+	gnunet-service-testbed_cpustatus.$(OBJEXT) \
+	gnunet-service-testbed_meminfo.$(OBJEXT) \
+	gnunet-service-testbed_barriers.$(OBJEXT) \
+	gnunet-service-testbed_connectionpool.$(OBJEXT)
 gnunet_service_testbed_OBJECTS = $(am_gnunet_service_testbed_OBJECTS)
+am_gnunet_service_testbed_logger_OBJECTS =  \
+	gnunet-service-testbed-logger.$(OBJEXT)
+gnunet_service_testbed_logger_OBJECTS =  \
+	$(am_gnunet_service_testbed_logger_OBJECTS)
 am_gnunet_testbed_profiler_OBJECTS =  \
 	gnunet-testbed-profiler.$(OBJEXT)
 gnunet_testbed_profiler_OBJECTS =  \
 	$(am_gnunet_testbed_profiler_OBJECTS)
-gnunet_testbed_profiler_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
-am_ll_master_OBJECTS = ll_master.$(OBJEXT)
-ll_master_OBJECTS = $(am_ll_master_OBJECTS)
-ll_master_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_ll_monitor_OBJECTS = ll_monitor.$(OBJEXT)
-ll_monitor_OBJECTS = $(am_ll_monitor_OBJECTS)
-ll_monitor_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_test_gnunet_helper_testbed_OBJECTS =  \
 	test_gnunet_helper_testbed.$(OBJEXT)
 test_gnunet_helper_testbed_OBJECTS =  \
 	$(am_test_gnunet_helper_testbed_OBJECTS)
 test_gnunet_helper_testbed_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la \
+	$(am__DEPENDENCIES_1)
 am_test_testbed_api_OBJECTS = test_testbed_api.$(OBJEXT)
 test_testbed_api_OBJECTS = $(am_test_testbed_api_OBJECTS)
 test_testbed_api_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
-	$(top_builddir)/src/dht/libgnunetdht.la libgnunettestbed.la
+	$(top_builddir)/src/arm/libgnunetarm.la libgnunettestbed.la
 am_test_testbed_api_2peers_1controller_OBJECTS =  \
 	test_testbed_api_2peers_1controller.$(OBJEXT)
 test_testbed_api_2peers_1controller_OBJECTS =  \
@@ -227,6 +258,10 @@ test_testbed_api_3peers_3controllers_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	libgnunettestbed.la
+am_test_testbed_api_barriers_OBJECTS =  \
+	test_testbed_api_barriers.$(OBJEXT)
+test_testbed_api_barriers_OBJECTS =  \
+	$(am_test_testbed_api_barriers_OBJECTS)
 am_test_testbed_api_controllerlink_OBJECTS =  \
 	test_testbed_api_controllerlink.$(OBJEXT)
 test_testbed_api_controllerlink_OBJECTS =  \
@@ -243,9 +278,37 @@ test_testbed_api_operations_OBJECTS =  \
 	$(am_test_testbed_api_operations_OBJECTS)
 test_testbed_api_operations_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_api_peer_reconfiguration_OBJECTS =  \
+	test_testbed_api_peer_reconfiguration.$(OBJEXT)
+test_testbed_api_peer_reconfiguration_OBJECTS =  \
+	$(am_test_testbed_api_peer_reconfiguration_OBJECTS)
+test_testbed_api_peer_reconfiguration_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_api_peers_manage_services_OBJECTS =  \
+	test_testbed_api_peers_manage_services.$(OBJEXT)
+test_testbed_api_peers_manage_services_OBJECTS =  \
+	$(am_test_testbed_api_peers_manage_services_OBJECTS)
+test_testbed_api_peers_manage_services_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_api_sd_OBJECTS = test_testbed_api_sd.$(OBJEXT)
+test_testbed_api_sd_OBJECTS = $(am_test_testbed_api_sd_OBJECTS)
+test_testbed_api_sd_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_api_statistics_OBJECTS =  \
+	test_testbed_api_statistics.$(OBJEXT)
+test_testbed_api_statistics_OBJECTS =  \
+	$(am_test_testbed_api_statistics_OBJECTS)
+test_testbed_api_statistics_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
 am_test_testbed_api_test_OBJECTS = test_testbed_api_test.$(OBJEXT)
 test_testbed_api_test_OBJECTS = $(am_test_testbed_api_test_OBJECTS)
 test_testbed_api_test_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_api_test_timeout_OBJECTS =  \
+	test_testbed_api_test_timeout.$(OBJEXT)
+test_testbed_api_test_timeout_OBJECTS =  \
+	$(am_test_testbed_api_test_timeout_OBJECTS)
+test_testbed_api_test_timeout_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
 am_test_testbed_api_testbed_run_OBJECTS =  \
 	test_testbed_api_testbed_run.$(OBJEXT)
@@ -306,6 +369,12 @@ am_test_testbed_api_testbed_run_topologysmallworldring_OBJECTS =  \
 test_testbed_api_testbed_run_topologysmallworldring_OBJECTS = $(am_test_testbed_api_testbed_run_topologysmallworldring_OBJECTS)
 test_testbed_api_testbed_run_topologysmallworldring_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_api_testbed_run_waitforever_OBJECTS =  \
+	test_testbed_api_testbed_run.$(OBJEXT)
+test_testbed_api_testbed_run_waitforever_OBJECTS =  \
+	$(am_test_testbed_api_testbed_run_waitforever_OBJECTS)
+test_testbed_api_testbed_run_waitforever_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
 am_test_testbed_api_topology_OBJECTS =  \
 	test_testbed_api_topology.$(OBJEXT)
 test_testbed_api_topology_OBJECTS =  \
@@ -318,6 +387,14 @@ test_testbed_api_topology_clique_OBJECTS =  \
 	$(am_test_testbed_api_topology_clique_OBJECTS)
 test_testbed_api_topology_clique_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
+am_test_testbed_logger_api_OBJECTS =  \
+	test_testbed_logger_api.$(OBJEXT)
+test_testbed_logger_api_OBJECTS =  \
+	$(am_test_testbed_logger_api_OBJECTS)
+test_testbed_logger_api_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	libgnunettestbedlogger.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -345,17 +422,27 @@ AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libgnunettestbed_la_SOURCES) \
-	$(gnunet_helper_testbed_SOURCES) $(gnunet_mpi_test_SOURCES) \
+	$(libgnunettestbedlogger_la_SOURCES) \
+	$(gnunet_daemon_testbed_blacklist_SOURCES) \
+	$(gnunet_helper_testbed_SOURCES) \
+	$(gnunet_service_test_barriers_SOURCES) \
 	$(gnunet_service_testbed_SOURCES) \
-	$(gnunet_testbed_profiler_SOURCES) $(ll_master_SOURCES) \
-	$(ll_monitor_SOURCES) $(test_gnunet_helper_testbed_SOURCES) \
+	$(gnunet_service_testbed_logger_SOURCES) \
+	$(gnunet_testbed_profiler_SOURCES) \
+	$(test_gnunet_helper_testbed_SOURCES) \
 	$(test_testbed_api_SOURCES) \
 	$(test_testbed_api_2peers_1controller_SOURCES) \
 	$(test_testbed_api_3peers_3controllers_SOURCES) \
+	$(test_testbed_api_barriers_SOURCES) \
 	$(test_testbed_api_controllerlink_SOURCES) \
 	$(test_testbed_api_hosts_SOURCES) \
 	$(test_testbed_api_operations_SOURCES) \
+	$(test_testbed_api_peer_reconfiguration_SOURCES) \
+	$(test_testbed_api_peers_manage_services_SOURCES) \
+	$(test_testbed_api_sd_SOURCES) \
+	$(test_testbed_api_statistics_SOURCES) \
 	$(test_testbed_api_test_SOURCES) \
+	$(test_testbed_api_test_timeout_SOURCES) \
 	$(test_testbed_api_testbed_run_SOURCES) \
 	$(test_testbed_api_testbed_run_topology2dtorus_SOURCES) \
 	$(test_testbed_api_testbed_run_topologyclique_SOURCES) \
@@ -366,20 +453,32 @@ SOURCES = $(libgnunettestbed_la_SOURCES) \
 	$(test_testbed_api_testbed_run_topologyscalefree_SOURCES) \
 	$(test_testbed_api_testbed_run_topologysmallworld_SOURCES) \
 	$(test_testbed_api_testbed_run_topologysmallworldring_SOURCES) \
+	$(test_testbed_api_testbed_run_waitforever_SOURCES) \
 	$(test_testbed_api_topology_SOURCES) \
-	$(test_testbed_api_topology_clique_SOURCES)
+	$(test_testbed_api_topology_clique_SOURCES) \
+	$(test_testbed_logger_api_SOURCES)
 DIST_SOURCES = $(libgnunettestbed_la_SOURCES) \
-	$(gnunet_helper_testbed_SOURCES) $(gnunet_mpi_test_SOURCES) \
+	$(libgnunettestbedlogger_la_SOURCES) \
+	$(gnunet_daemon_testbed_blacklist_SOURCES) \
+	$(gnunet_helper_testbed_SOURCES) \
+	$(gnunet_service_test_barriers_SOURCES) \
 	$(gnunet_service_testbed_SOURCES) \
-	$(gnunet_testbed_profiler_SOURCES) $(ll_master_SOURCES) \
-	$(ll_monitor_SOURCES) $(test_gnunet_helper_testbed_SOURCES) \
+	$(gnunet_service_testbed_logger_SOURCES) \
+	$(gnunet_testbed_profiler_SOURCES) \
+	$(test_gnunet_helper_testbed_SOURCES) \
 	$(test_testbed_api_SOURCES) \
 	$(test_testbed_api_2peers_1controller_SOURCES) \
 	$(test_testbed_api_3peers_3controllers_SOURCES) \
+	$(test_testbed_api_barriers_SOURCES) \
 	$(test_testbed_api_controllerlink_SOURCES) \
 	$(test_testbed_api_hosts_SOURCES) \
 	$(test_testbed_api_operations_SOURCES) \
+	$(test_testbed_api_peer_reconfiguration_SOURCES) \
+	$(test_testbed_api_peers_manage_services_SOURCES) \
+	$(test_testbed_api_sd_SOURCES) \
+	$(test_testbed_api_statistics_SOURCES) \
 	$(test_testbed_api_test_SOURCES) \
+	$(test_testbed_api_test_timeout_SOURCES) \
 	$(test_testbed_api_testbed_run_SOURCES) \
 	$(test_testbed_api_testbed_run_topology2dtorus_SOURCES) \
 	$(test_testbed_api_testbed_run_topologyclique_SOURCES) \
@@ -390,8 +489,10 @@ DIST_SOURCES = $(libgnunettestbed_la_SOURCES) \
 	$(test_testbed_api_testbed_run_topologyscalefree_SOURCES) \
 	$(test_testbed_api_testbed_run_topologysmallworld_SOURCES) \
 	$(test_testbed_api_testbed_run_topologysmallworldring_SOURCES) \
+	$(test_testbed_api_testbed_run_waitforever_SOURCES) \
 	$(test_testbed_api_topology_SOURCES) \
-	$(test_testbed_api_topology_clique_SOURCES)
+	$(test_testbed_api_topology_clique_SOURCES) \
+	$(test_testbed_logger_api_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -407,14 +508,13 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
-@WITH_LL_TRUE@CC = mpcc
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
@@ -439,24 +539,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -467,20 +559,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -488,16 +573,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -525,7 +604,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -547,12 +625,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -594,8 +675,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -610,9 +689,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -622,26 +699,24 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
-@WITH_LL_TRUE@ll_noinst_binaries = \
-@WITH_LL_TRUE@    ll-master \
-@WITH_LL_TRUE@    ll-monitor 
-
-@WITH_LL_TRUE@ll_binaries = \
-@WITH_LL_TRUE@    gnunet-mpi-test
-
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   testbed.conf
 
 gnunet_service_testbed_SOURCES = \
-  gnunet-service-testbed.c \
-  gnunet-service-testbed.h \
+  gnunet-service-testbed.c gnunet-service-testbed.h \
+  gnunet-service-testbed_links.c gnunet-service-testbed_links.h \
+  gnunet-service-testbed_peers.c \
   gnunet-service-testbed_cache.c \
-  gnunet-service-testbed_oc.c
+  gnunet-service-testbed_oc.c \
+  gnunet-service-testbed_cpustatus.c \
+  gnunet-service-testbed_meminfo.c gnunet-service-testbed_meminfo.h \
+  gnunet-service-testbed_barriers.c gnunet-service-testbed_barriers.h \
+  gnunet-service-testbed_connectionpool.c gnunet-service-testbed_connectionpool.h
 
 gnunet_service_testbed_LDADD = $(XLIB) \
  $(top_builddir)/src/util/libgnunetutil.la \
@@ -650,15 +725,29 @@ gnunet_service_testbed_LDADD = $(XLIB) \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la \
- $(LTLIBINTL) -lz
+ $(top_builddir)/src/arm/libgnunetarm.la \
+ $(LTLIBINTL) $(Z_LIBS)
 
 gnunet_service_testbed_DEPENDENCIES = \
-  libgnunettestbed.la
+ libgnunettestbed.la
+
+gnunet_service_testbed_logger_SOURCES = \
+  gnunet-service-testbed-logger.c
+
+gnunet_service_testbed_logger_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_service_testbed_logger_DEPENDENCIES = \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 gnunet_testbed_profiler_SOURCES = \
   gnunet-testbed-profiler.c
 
 gnunet_testbed_profiler_LDADD = $(XLIB) \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/testbed/libgnunettestbed.la
+
+gnunet_testbed_profiler_DEPENDENCIES = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
@@ -669,31 +758,25 @@ gnunet_helper_testbed_LDADD = $(XLIB) \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  libgnunettestbed.la \
- $(LTLIBINTL) -lz
+ $(LTLIBINTL) $(Z_LIBS)
 
 gnunet_helper_testbed_DEPENDENCIES = \
   gnunet-service-testbed.$(OBJEXT) \
   libgnunettestbed.la
 
-ll_master_SOURCES = \
-  ll_master.c
-
-ll_master_LDADD = $(XLIB) \
+gnunet_daemon_testbed_blacklist_SOURCES = gnunet-daemon-testbed-blacklist.c
+gnunet_daemon_testbed_blacklist_LDADD = $(XLIB) \
+ $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL) -lz -lllapi
+ $(LTLIBINTL)
 
-ll_monitor_SOURCES = \
-  ll_monitor.c
-
-ll_monitor_LDADD = $(XLIB) \
- $(LTLIBINTL) -lz -lllapi
-
-gnunet_mpi_test_SOURCES = gnunet_mpi_test.c
-gnunet_mpi_test_LDADD = \
+gnunet_daemon_testbed_blacklist_DEPENDENCIES = \
+ $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 lib_LTLIBRARIES = \
-  libgnunettestbed.la
+  libgnunettestbed.la \
+  libgnunettestbedlogger.la
 
 libgnunettestbed_la_SOURCES = \
   testbed_api.c testbed_api.h testbed.h \
@@ -704,7 +787,9 @@ libgnunettestbed_la_SOURCES = \
   testbed_api_statistics.c \
   testbed_api_testbed.c \
   testbed_api_test.c \
-  testbed_api_topology.c testbed_api_topology.h
+  testbed_api_topology.c testbed_api_topology.h \
+  testbed_api_sd.c testbed_api_sd.h \
+  testbed_api_barriers.c testbed_api_barriers.h
 
 libgnunettestbed_la_LIBADD = $(XLIB) \
  $(top_builddir)/src/core/libgnunetcore.la \
@@ -717,6 +802,17 @@ libgnunettestbed_la_LIBADD = $(XLIB) \
  $(LTLIBINTL)
 
 libgnunettestbed_la_LDFLAGS = \
+ $(GN_LIB_LDFLAGS) \
+ -version-info 0:0:0
+
+libgnunettestbedlogger_la_SOURCES = \
+  testbed_logger_api.c
+
+libgnunettestbedlogger_la_LIBADD = $(XLIB) \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LTLIBINTL)
+
+libgnunettestbedlogger_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS) \
  -version-info 0:0:0
 
@@ -733,7 +829,22 @@ test_testbed_api_SOURCES = \
 test_testbed_api_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
- $(top_builddir)/src/dht/libgnunetdht.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
+ libgnunettestbed.la
+
+test_testbed_logger_api_SOURCES = \
+ test_testbed_logger_api.c
+
+test_testbed_logger_api_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettestbedlogger.la
+
+test_testbed_api_sd_SOURCES = \
+ test_testbed_api_sd.c
+
+test_testbed_api_sd_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
 test_testbed_api_2peers_1controller_SOURCES = \
@@ -780,6 +891,13 @@ test_testbed_api_test_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
+test_testbed_api_test_timeout_SOURCES = \
+ test_testbed_api_test_timeout.c
+
+test_testbed_api_test_timeout_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
 test_testbed_api_topology_SOURCES = \
  test_testbed_api_topology.c
 
@@ -800,7 +918,7 @@ test_gnunet_helper_testbed_SOURCES = \
 test_gnunet_helper_testbed_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la \
- -lz
+ $(Z_LIBS)
 
 test_testbed_api_testbed_run_topologyrandom_SOURCES = \
  test_testbed_api_testbed_run.c
@@ -865,8 +983,58 @@ test_testbed_api_testbed_run_topologyscalefree_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
+test_testbed_api_testbed_run_waitforever_SOURCES = \
+ test_testbed_api_testbed_run.c
+
+test_testbed_api_testbed_run_waitforever_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_statistics_SOURCES = \
+ test_testbed_api_statistics.c
+
+test_testbed_api_statistics_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_peers_manage_services_SOURCES = \
+ test_testbed_api_peers_manage_services.c
+
+test_testbed_api_peers_manage_services_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_peer_reconfiguration_SOURCES = \
+ test_testbed_api_peer_reconfiguration.c
+
+test_testbed_api_peer_reconfiguration_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_barriers_SOURCES = \
+ test_testbed_api_barriers.c \
+ test_testbed_api_barriers.h
+
+test_testbed_api_barriers_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
+test_testbed_api_barriers_DEPENDENCIES = \
+ gnunet-service-test-barriers
+
+gnunet_service_test_barriers_SOURCES = \
+  gnunet-service-test-barriers.c \
+  test_testbed_api_barriers.h
+
+gnunet_service_test_barriers_LDADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ libgnunettestbed.la
+
 EXTRA_DIST = \
   test_testbed_api.conf \
+  test_testbed_api_test_timeout.conf \
+  test_testbed_api_template.conf \
+  test_testbed_logger_api.conf \
   test_testbed_api_testbed_run_topologyring.conf \
   test_testbed_api_testbed_run_topologyclique.conf \
   test_testbed_api_testbed_run_topologyline.conf \
@@ -876,6 +1044,7 @@ EXTRA_DIST = \
   test_testbed_api_testbed_run_topologysmallworld.conf \
   test_testbed_api_testbed_run_topologyfromfile.conf \
   test_testbed_api_testbed_run_topologyscalefree.conf \
+  test_testbed_api_barriers.conf.in \
   overlay_topology.txt \
   sample_hosts.txt \
   sample.job
@@ -950,6 +1119,8 @@ clean-libLTLIBRARIES:
 	done
 libgnunettestbed.la: $(libgnunettestbed_la_OBJECTS) $(libgnunettestbed_la_DEPENDENCIES) $(EXTRA_libgnunettestbed_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettestbed_la_LINK) -rpath $(libdir) $(libgnunettestbed_la_OBJECTS) $(libgnunettestbed_la_LIBADD) $(LIBS)
+libgnunettestbedlogger.la: $(libgnunettestbedlogger_la_OBJECTS) $(libgnunettestbedlogger_la_DEPENDENCIES) $(EXTRA_libgnunettestbedlogger_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunettestbedlogger_la_LINK) -rpath $(libdir) $(libgnunettestbedlogger_la_OBJECTS) $(libgnunettestbedlogger_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
@@ -1051,33 +1222,24 @@ clean-libexecPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
+gnunet-daemon-testbed-blacklist$(EXEEXT): $(gnunet_daemon_testbed_blacklist_OBJECTS) $(gnunet_daemon_testbed_blacklist_DEPENDENCIES) $(EXTRA_gnunet_daemon_testbed_blacklist_DEPENDENCIES) 
+	@rm -f gnunet-daemon-testbed-blacklist$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnunet_daemon_testbed_blacklist_OBJECTS) $(gnunet_daemon_testbed_blacklist_LDADD) $(LIBS)
 gnunet-helper-testbed$(EXEEXT): $(gnunet_helper_testbed_OBJECTS) $(gnunet_helper_testbed_DEPENDENCIES) $(EXTRA_gnunet_helper_testbed_DEPENDENCIES) 
 	@rm -f gnunet-helper-testbed$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_helper_testbed_OBJECTS) $(gnunet_helper_testbed_LDADD) $(LIBS)
-gnunet-mpi-test$(EXEEXT): $(gnunet_mpi_test_OBJECTS) $(gnunet_mpi_test_DEPENDENCIES) $(EXTRA_gnunet_mpi_test_DEPENDENCIES) 
-	@rm -f gnunet-mpi-test$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_mpi_test_OBJECTS) $(gnunet_mpi_test_LDADD) $(LIBS)
+gnunet-service-test-barriers$(EXEEXT): $(gnunet_service_test_barriers_OBJECTS) $(gnunet_service_test_barriers_DEPENDENCIES) $(EXTRA_gnunet_service_test_barriers_DEPENDENCIES) 
+	@rm -f gnunet-service-test-barriers$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnunet_service_test_barriers_OBJECTS) $(gnunet_service_test_barriers_LDADD) $(LIBS)
 gnunet-service-testbed$(EXEEXT): $(gnunet_service_testbed_OBJECTS) $(gnunet_service_testbed_DEPENDENCIES) $(EXTRA_gnunet_service_testbed_DEPENDENCIES) 
 	@rm -f gnunet-service-testbed$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_testbed_OBJECTS) $(gnunet_service_testbed_LDADD) $(LIBS)
+gnunet-service-testbed-logger$(EXEEXT): $(gnunet_service_testbed_logger_OBJECTS) $(gnunet_service_testbed_logger_DEPENDENCIES) $(EXTRA_gnunet_service_testbed_logger_DEPENDENCIES) 
+	@rm -f gnunet-service-testbed-logger$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnunet_service_testbed_logger_OBJECTS) $(gnunet_service_testbed_logger_LDADD) $(LIBS)
 gnunet-testbed-profiler$(EXEEXT): $(gnunet_testbed_profiler_OBJECTS) $(gnunet_testbed_profiler_DEPENDENCIES) $(EXTRA_gnunet_testbed_profiler_DEPENDENCIES) 
 	@rm -f gnunet-testbed-profiler$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_testbed_profiler_OBJECTS) $(gnunet_testbed_profiler_LDADD) $(LIBS)
-ll-master$(EXEEXT): $(ll_master_OBJECTS) $(ll_master_DEPENDENCIES) $(EXTRA_ll_master_DEPENDENCIES) 
-	@rm -f ll-master$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(ll_master_OBJECTS) $(ll_master_LDADD) $(LIBS)
-ll-monitor$(EXEEXT): $(ll_monitor_OBJECTS) $(ll_monitor_DEPENDENCIES) $(EXTRA_ll_monitor_DEPENDENCIES) 
-	@rm -f ll-monitor$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(ll_monitor_OBJECTS) $(ll_monitor_LDADD) $(LIBS)
 test_gnunet_helper_testbed$(EXEEXT): $(test_gnunet_helper_testbed_OBJECTS) $(test_gnunet_helper_testbed_DEPENDENCIES) $(EXTRA_test_gnunet_helper_testbed_DEPENDENCIES) 
 	@rm -f test_gnunet_helper_testbed$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_gnunet_helper_testbed_OBJECTS) $(test_gnunet_helper_testbed_LDADD) $(LIBS)
@@ -1090,6 +1252,9 @@ test_testbed_api_2peers_1controller$(EXEEXT): $(test_testbed_api_2peers_1control
 test_testbed_api_3peers_3controllers$(EXEEXT): $(test_testbed_api_3peers_3controllers_OBJECTS) $(test_testbed_api_3peers_3controllers_DEPENDENCIES) $(EXTRA_test_testbed_api_3peers_3controllers_DEPENDENCIES) 
 	@rm -f test_testbed_api_3peers_3controllers$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_3peers_3controllers_OBJECTS) $(test_testbed_api_3peers_3controllers_LDADD) $(LIBS)
+test_testbed_api_barriers$(EXEEXT): $(test_testbed_api_barriers_OBJECTS) $(test_testbed_api_barriers_DEPENDENCIES) $(EXTRA_test_testbed_api_barriers_DEPENDENCIES) 
+	@rm -f test_testbed_api_barriers$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_barriers_OBJECTS) $(test_testbed_api_barriers_LDADD) $(LIBS)
 test_testbed_api_controllerlink$(EXEEXT): $(test_testbed_api_controllerlink_OBJECTS) $(test_testbed_api_controllerlink_DEPENDENCIES) $(EXTRA_test_testbed_api_controllerlink_DEPENDENCIES) 
 	@rm -f test_testbed_api_controllerlink$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_controllerlink_OBJECTS) $(test_testbed_api_controllerlink_LDADD) $(LIBS)
@@ -1099,9 +1264,24 @@ test_testbed_api_hosts$(EXEEXT): $(test_testbed_api_hosts_OBJECTS) $(test_testbe
 test_testbed_api_operations$(EXEEXT): $(test_testbed_api_operations_OBJECTS) $(test_testbed_api_operations_DEPENDENCIES) $(EXTRA_test_testbed_api_operations_DEPENDENCIES) 
 	@rm -f test_testbed_api_operations$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_operations_OBJECTS) $(test_testbed_api_operations_LDADD) $(LIBS)
+test_testbed_api_peer_reconfiguration$(EXEEXT): $(test_testbed_api_peer_reconfiguration_OBJECTS) $(test_testbed_api_peer_reconfiguration_DEPENDENCIES) $(EXTRA_test_testbed_api_peer_reconfiguration_DEPENDENCIES) 
+	@rm -f test_testbed_api_peer_reconfiguration$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_peer_reconfiguration_OBJECTS) $(test_testbed_api_peer_reconfiguration_LDADD) $(LIBS)
+test_testbed_api_peers_manage_services$(EXEEXT): $(test_testbed_api_peers_manage_services_OBJECTS) $(test_testbed_api_peers_manage_services_DEPENDENCIES) $(EXTRA_test_testbed_api_peers_manage_services_DEPENDENCIES) 
+	@rm -f test_testbed_api_peers_manage_services$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_peers_manage_services_OBJECTS) $(test_testbed_api_peers_manage_services_LDADD) $(LIBS)
+test_testbed_api_sd$(EXEEXT): $(test_testbed_api_sd_OBJECTS) $(test_testbed_api_sd_DEPENDENCIES) $(EXTRA_test_testbed_api_sd_DEPENDENCIES) 
+	@rm -f test_testbed_api_sd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_sd_OBJECTS) $(test_testbed_api_sd_LDADD) $(LIBS)
+test_testbed_api_statistics$(EXEEXT): $(test_testbed_api_statistics_OBJECTS) $(test_testbed_api_statistics_DEPENDENCIES) $(EXTRA_test_testbed_api_statistics_DEPENDENCIES) 
+	@rm -f test_testbed_api_statistics$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_statistics_OBJECTS) $(test_testbed_api_statistics_LDADD) $(LIBS)
 test_testbed_api_test$(EXEEXT): $(test_testbed_api_test_OBJECTS) $(test_testbed_api_test_DEPENDENCIES) $(EXTRA_test_testbed_api_test_DEPENDENCIES) 
 	@rm -f test_testbed_api_test$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_test_OBJECTS) $(test_testbed_api_test_LDADD) $(LIBS)
+test_testbed_api_test_timeout$(EXEEXT): $(test_testbed_api_test_timeout_OBJECTS) $(test_testbed_api_test_timeout_DEPENDENCIES) $(EXTRA_test_testbed_api_test_timeout_DEPENDENCIES) 
+	@rm -f test_testbed_api_test_timeout$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_test_timeout_OBJECTS) $(test_testbed_api_test_timeout_LDADD) $(LIBS)
 test_testbed_api_testbed_run$(EXEEXT): $(test_testbed_api_testbed_run_OBJECTS) $(test_testbed_api_testbed_run_DEPENDENCIES) $(EXTRA_test_testbed_api_testbed_run_DEPENDENCIES) 
 	@rm -f test_testbed_api_testbed_run$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_testbed_run_OBJECTS) $(test_testbed_api_testbed_run_LDADD) $(LIBS)
@@ -1132,12 +1312,18 @@ test_testbed_api_testbed_run_topologysmallworld$(EXEEXT): $(test_testbed_api_tes
 test_testbed_api_testbed_run_topologysmallworldring$(EXEEXT): $(test_testbed_api_testbed_run_topologysmallworldring_OBJECTS) $(test_testbed_api_testbed_run_topologysmallworldring_DEPENDENCIES) $(EXTRA_test_testbed_api_testbed_run_topologysmallworldring_DEPENDENCIES) 
 	@rm -f test_testbed_api_testbed_run_topologysmallworldring$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_testbed_run_topologysmallworldring_OBJECTS) $(test_testbed_api_testbed_run_topologysmallworldring_LDADD) $(LIBS)
+test_testbed_api_testbed_run_waitforever$(EXEEXT): $(test_testbed_api_testbed_run_waitforever_OBJECTS) $(test_testbed_api_testbed_run_waitforever_DEPENDENCIES) $(EXTRA_test_testbed_api_testbed_run_waitforever_DEPENDENCIES) 
+	@rm -f test_testbed_api_testbed_run_waitforever$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_api_testbed_run_waitforever_OBJECTS) $(test_testbed_api_testbed_run_waitforever_LDADD) $(LIBS)
 test_testbed_api_topology$(EXEEXT): $(test_testbed_api_topology_OBJECTS) $(test_testbed_api_topology_DEPENDENCIES) $(EXTRA_test_testbed_api_topology_DEPENDENCIES) 
 	@rm -f test_testbed_api_topology$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_topology_OBJECTS) $(test_testbed_api_topology_LDADD) $(LIBS)
 test_testbed_api_topology_clique$(EXEEXT): $(test_testbed_api_topology_clique_OBJECTS) $(test_testbed_api_topology_clique_DEPENDENCIES) $(EXTRA_test_testbed_api_topology_clique_DEPENDENCIES) 
 	@rm -f test_testbed_api_topology_clique$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_testbed_api_topology_clique_OBJECTS) $(test_testbed_api_topology_clique_LDADD) $(LIBS)
+test_testbed_logger_api$(EXEEXT): $(test_testbed_logger_api_OBJECTS) $(test_testbed_logger_api_DEPENDENCIES) $(EXTRA_test_testbed_logger_api_DEPENDENCIES) 
+	@rm -f test_testbed_logger_api$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_testbed_logger_api_OBJECTS) $(test_testbed_logger_api_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1145,34 +1331,50 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-daemon-testbed-blacklist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-helper-testbed.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-test-barriers.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed-logger.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_barriers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_cache.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_connectionpool.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_cpustatus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_links.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_meminfo.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_oc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-testbed_peers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-testbed-profiler.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_mpi_test.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ll_master.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ll_monitor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gnunet_helper_testbed.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_2peers_1controller.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_3peers_3controllers.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_barriers.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_controllerlink.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_hosts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_operations.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_peer_reconfiguration.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_peers_manage_services.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_sd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_statistics.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_test.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_test_timeout.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_testbed_run.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_topology.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_api_topology_clique.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_testbed_logger_api.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_barriers.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_hosts.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_operations.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_peers.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_sd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_services.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_statistics.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_test.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_testbed.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_api_topology.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testbed_logger_api.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -1442,7 +1644,7 @@ clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -1516,21 +1718,21 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
 
 .PHONY: CTAGS GTAGS all all-am check check-TESTS check-am clean \
 	clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
-	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool \
-	clean-noinstPROGRAMS ctags distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
-	install-pdf install-pdf-am install-pkgcfgDATA install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA
+	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool ctags \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
+	install-pkgcfgDATA install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
+	uninstall-pkgcfgDATA
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

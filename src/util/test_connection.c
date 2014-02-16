@@ -22,10 +22,7 @@
  * @brief tests for connection.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_connection_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 #define PORT 12435
 
@@ -65,9 +62,9 @@ open_listen_socket ()
   if (GNUNET_NETWORK_socket_setsockopt
       (desc, SOL_SOCKET, SO_REUSEADDR, &on, sizeof (on)) != GNUNET_OK)
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK, "setsockopt");
-  GNUNET_assert (GNUNET_NETWORK_socket_bind
-                 (desc, (const struct sockaddr *) &sa,
-                  sizeof (sa)) == GNUNET_OK);
+  GNUNET_assert (GNUNET_OK ==
+		 GNUNET_NETWORK_socket_bind (desc, (const struct sockaddr *) &sa,
+					     sizeof (sa)));
   GNUNET_NETWORK_socket_listen (desc, 5);
   return desc;
 }

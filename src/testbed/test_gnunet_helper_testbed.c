@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -87,7 +87,8 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   if (GNUNET_SCHEDULER_NO_TASK != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
-  GNUNET_HELPER_stop (helper);
+  if (NULL != helper)
+    GNUNET_HELPER_stop (helper, GNUNET_NO);
   GNUNET_free_non_null (msg);
   if (NULL != cfg)
     GNUNET_CONFIGURATION_destroy (cfg);
@@ -205,14 +206,14 @@ run (void *cls, char *const *args, const char *cfgfile,
     "gnunet-helper-testbed",
     NULL
   };
-  const char *controller_name = "127.0.0.1";
+  const char *trusted_ip = "127.0.0.1";
 
   helper =
       GNUNET_HELPER_start (GNUNET_YES, "gnunet-helper-testbed", binary_argv,
                            &mst_cb, &exp_cb, NULL);
   GNUNET_assert (NULL != helper);
   cfg = GNUNET_CONFIGURATION_dup (cfg2);
-  msg = GNUNET_TESTBED_create_helper_init_msg_ (controller_name, NULL, cfg);
+  msg = GNUNET_TESTBED_create_helper_init_msg_ (trusted_ip, NULL, cfg);
   shandle =
       GNUNET_HELPER_send (helper, &msg->header, GNUNET_NO, &cont_cb, NULL);
   GNUNET_assert (NULL != shandle);

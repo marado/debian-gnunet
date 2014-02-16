@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -35,7 +35,10 @@ extern "C"
 #endif
 #endif
 
-#include "gnunet_bandwidth_lib.h"
+/**
+ * Last resort choice for configuration file name.
+ */
+#define GNUNET_DEFAULT_USER_CONFIG_FILE "~/.config/gnunet.conf"
 
 /**
  * Bandwidth (in/out) to assume initially (before either peer has
@@ -94,6 +97,14 @@ extern "C"
 
 
 /**
+ * After how long do we expire an address in a HELLO that we just
+ * validated?  This value is also used for our own addresses when we
+ * create a HELLO.
+ */
+#define GNUNET_CONSTANTS_DHT_MAX_EXPIRATION GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_HOURS, 24)
+
+
+/**
  * Size of the 'struct EncryptedMessage' of the core (which
  * is the per-message overhead of the core).
  */
@@ -111,12 +122,18 @@ extern "C"
  */
 #define GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE (63 * 1024)
 
+/**
+ * Largest block that can be stored in the DHT.
+ */
+#define GNUNET_CONSTANTS_MAX_BLOCK_SIZE (62 * 1024)
+
 
 /**
  * K-value that must be used for the bloom filters in 'GET'
  * queries.
  */
 #define GNUNET_CONSTANTS_BLOOMFILTER_K 16
+
 
 
 

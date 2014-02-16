@@ -4,7 +4,7 @@
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -20,13 +20,12 @@
 
 /**
  * @file include/gnunet_dns_service.h
- * @brief API to access the DNS service. 
+ * @brief API to access the DNS service.
  * @author Christian Grothoff
  */
-#ifndef GNUNET_DNS_SERVICE_NEW_H
-#define GNUNET_DNS_SERVICE_NEW_H
+#ifndef GNUNET_DNS_SERVICE_H
+#define GNUNET_DNS_SERVICE_H
 
-#include "gnunet_common.h"
 #include "gnunet_util_lib.h"
 
 
@@ -42,7 +41,7 @@ struct GNUNET_DNS_RequestHandle;
 
 /**
  * Flags that specify when to call the client's handler.
- */ 
+ */
 enum GNUNET_DNS_Flags
 {
 
@@ -154,7 +153,7 @@ GNUNET_DNS_request_drop (struct GNUNET_DNS_RequestHandle *rh);
  * @param reply reply data
  */
 void
-GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,		   
+GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,		
 			   uint16_t reply_length,
 			   const char *reply);
 
@@ -166,7 +165,7 @@ GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
  * @param flags when to call rh
  * @param rh function to call with DNS requests
  * @param rh_cls closure to pass to rh
- * @return DNS handle 
+ * @return DNS handle
  */
 struct GNUNET_DNS_Handle *
 GNUNET_DNS_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,

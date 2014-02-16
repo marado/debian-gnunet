@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -89,7 +89,7 @@ struct RetryListEntry
    * the prev pointer for the DLL
    */
   struct RetryListEntry *prev;
-  
+
   /**
    * The link to be retired
    */
@@ -136,7 +136,7 @@ struct TopologyContext
    * DLL tail for retry list
    */
   struct RetryListEntry *rl_tail;
-  
+
   /**
    * The number of peers
    */
@@ -275,7 +275,7 @@ overlay_link_completed (void *cls, struct GNUNET_TESTBED_Operation *op,
     {
       LOG (GNUNET_ERROR_TYPE_WARNING,
            "Error while establishing a link: %s -- Retrying\n", emsg);
-      retry_entry = GNUNET_malloc (sizeof (struct RetryListEntry));
+      retry_entry = GNUNET_new (struct RetryListEntry);
       retry_entry->link = link;
       GNUNET_CONTAINER_DLL_insert_tail (tc->rl_head, tc->rl_tail, retry_entry);
     }
@@ -292,7 +292,7 @@ overlay_link_completed (void *cls, struct GNUNET_TESTBED_Operation *op,
     tc->nlinks = 0;
     while (NULL != (retry_entry = tc->rl_head))
     {
-      link = retry_entry->link;      
+      link = retry_entry->link;
       link->op =
           GNUNET_TESTBED_overlay_connect (tc->op_cls, &overlay_link_completed,
                                           link, tc->peers[link->A],
@@ -429,6 +429,8 @@ gen_topo_ring (struct TopologyContext *tc)
  * @param rows number of rows in the 2d torus. Can be NULL
  * @param rows_len the length of each row. This array will be allocated
  *          fresh. The caller should free it. Can be NULL
+ * @return the number of links that are required to generate a 2d torus for the
+ *           given number of peers
  */
 unsigned int
 GNUNET_TESTBED_2dtorus_calc_links (unsigned int num_peers, unsigned int *rows,
@@ -451,7 +453,7 @@ GNUNET_TESTBED_2dtorus_calc_links (unsigned int num_peers, unsigned int *rows,
   for (y = 0; y < _rows - 1; y++)
     _rows_len[y] = sq_floor;
   _num_peers = sq_floor * sq_floor;
-  cnt = 2 * _num_peers;
+  cnt = (_num_peers < 2) ? _num_peers : 2 * _num_peers;
   x = 0;
   y = 0;
   while (_num_peers < num_peers)
@@ -587,46 +589,91 @@ gen_topo_random (struct TopologyContext *tc, unsigned int links, int append)
  * "Emergence of Scaling in Random Networks." Science 286, 509-512, 1999.
  *
  * @param tc the topology context
+ * @param cap maximum allowed node degree
+ * @param m number of edges to establish for a new node when it is added to the
+ *   network
  */
 static void
-gen_scale_free (struct TopologyContext *tc)
+gen_scale_free (struct TopologyContext *tc, uint16_t cap, uint8_t m)
 {
-  double random;
-  double probability;
+  unsigned int *deg;
+  unsigned int *etab;
+  unsigned int *used;
+  unsigned int etaboff;
   unsigned int cnt;
-  unsigned int previous_connections;
-  unsigned int i;
-  uint16_t *popularity;
+  unsigned int cnt2;
+  unsigned int peer;
+  unsigned int random_peer;
+  unsigned int links;
+  unsigned int off;
+  unsigned int redo_threshold;
 
-  popularity = GNUNET_malloc (sizeof (uint16_t) * tc->num_peers);
-  /* Initially connect peer 1 to peer 0 */
-  tc->link_array_size = 1;
-  tc->link_array = GNUNET_malloc (sizeof (struct OverlayLink));
+  etaboff = 0;
+  tc->link_array_size = tc->num_peers * m;
+  tc->link_array = GNUNET_malloc_large (sizeof (struct OverlayLink) *
+                                        tc->link_array_size);
+  etab = GNUNET_malloc_large (sizeof (unsigned int) * 2 * tc->link_array_size);
+  deg = GNUNET_malloc (sizeof (unsigned int) * tc->num_peers);
+  used = GNUNET_malloc (sizeof (unsigned int) * m);
+  /* start by connecting peer 1 to peer 0 */
   make_link (&tc->link_array[0], 0, 1, tc);
-  popularity[0]++;              /* increase popularity of 0 as 1 connected to it */
-  for (cnt = 1; cnt < tc->num_peers; cnt++)
+  deg[0]++;
+  deg[1]++;
+  etab[etaboff++] = 0;
+  etab[etaboff++] = 1;
+  links = 1;
+  for (peer = 2; peer < tc->num_peers; peer++)
   {
-    previous_connections = tc->link_array_size;
-    for (i = 0; i < cnt; i++)
+    if (cap < deg[peer])
+      continue;
+    for (cnt = 0; cnt < GNUNET_MIN (peer, m); cnt++)
     {
-      probability = ((double) popularity[i]) / ((double) previous_connections);
-      random =
-          ((double)
-           GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                     UINT64_MAX)) / ((double) UINT64_MAX);
-      if (random < probability)
+      redo_threshold = 0;
+    redo:
+      off = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK, etaboff);
+      random_peer = etab[off];
+      if (cap < deg[random_peer])
       {
-        tc->link_array_size++;
-        tc->link_array =
-            GNUNET_realloc (tc->link_array,
-                            (sizeof (struct OverlayLink) *
-                             tc->link_array_size));
-        make_link (&tc->link_array[tc->link_array_size - 1], cnt, i, tc);
-        popularity[cnt]++;
+        if (++redo_threshold > GNUNET_MAX (1, cap / 2))
+        {
+          redo_threshold = 0;
+          off = 0;
+          for (cnt2 = 0; cnt2 < etaboff; cnt2++)
+          {
+            if (random_peer == etab[cnt2])
+            {
+              off++;
+              continue;
+            }
+            etab[cnt2 - off] = etab[cnt2];
+          }
+          etaboff -= off;
+        }
+        goto redo;
       }
+      for (cnt2 = 0; cnt2 < cnt; cnt2++)
+        if (random_peer == used[cnt2])
+          goto redo;
+      make_link (&tc->link_array[links + cnt], random_peer, peer, tc);
+      deg[random_peer]++;
+      deg[peer]++;
+      used[cnt] = random_peer;
     }
+    for (cnt = 0; cnt < GNUNET_MIN (peer, m); cnt++)
+    {
+      etab[etaboff++] = used[cnt];
+      etab[etaboff++] = peer;
+    }
+    links += GNUNET_MIN (peer, m);
   }
-  GNUNET_free (popularity);
+  GNUNET_free (etab);
+  GNUNET_free (used);
+  GNUNET_free (deg);
+  GNUNET_assert (links <= tc->link_array_size);
+  tc->link_array_size = links;
+  tc->link_array =
+      GNUNET_realloc (tc->link_array,
+                      sizeof (struct OverlayLink) * tc->link_array_size);
 }
 
 
@@ -686,7 +733,6 @@ gen_topo_from_file (struct TopologyContext *tc, const char *filename)
   offset = 0;
   peer_id = 0;
   state = PEER_INDEX;
-  buf = data;
   while (offset < fs)
   {
     if (0 != isspace (data[offset]))
@@ -877,11 +923,13 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
   if (num_peers < 2)
     return NULL;
   c = peers[0]->controller;
-  tc = GNUNET_malloc (sizeof (struct TopologyContext));
+  tc = GNUNET_new (struct TopologyContext);
   tc->peers = peers;
   tc->num_peers = num_peers;
   tc->op_cls = op_cls;
   tc->retry_cnt = DEFAULT_RETRY_CNT;
+  tc->comp_cb = comp_cb;
+  tc->comp_cb_cls = comp_cb_cls;
   switch (topo)
   {
   case GNUNET_TESTBED_TOPOLOGY_LINE:
@@ -892,12 +940,10 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
     break;
   case GNUNET_TESTBED_TOPOLOGY_ERDOS_RENYI:
     gen_topo_random (tc, va_arg (va, unsigned int), GNUNET_NO);
-
     break;
   case GNUNET_TESTBED_TOPOLOGY_SMALL_WORLD_RING:
     gen_topo_ring (tc);
     gen_topo_random (tc, va_arg (va, unsigned int), GNUNET_YES);
-
     break;
   case GNUNET_TESTBED_TOPOLOGY_CLIQUE:
     tc->link_array_size = num_peers * (num_peers - 1);
@@ -932,7 +978,14 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
 
     break;
   case GNUNET_TESTBED_TOPOLOGY_SCALE_FREE:
-    gen_scale_free (tc);
+    {
+      uint16_t cap;
+      uint8_t m;
+
+      cap = (uint16_t) va_arg (va, unsigned int);
+      m = (uint8_t) va_arg (va, unsigned int);
+      gen_scale_free (tc, cap, m);
+    }
     break;
   case GNUNET_TESTBED_TOPOLOGY_FROM_FILE:
   {
@@ -1020,7 +1073,7 @@ GNUNET_TESTBED_overlay_configure_topology (void *op_cls,
   GNUNET_assert (topo < GNUNET_TESTBED_TOPOLOGY_OPTION_END);
   va_start (vargs, topo);
   op = GNUNET_TESTBED_overlay_configure_topology_va (op_cls, num_peers, peers,
-                                                     max_connections, 
+                                                     max_connections,
                                                      comp_cb, comp_cb_cls,
                                                      topo,
                                                      vargs);

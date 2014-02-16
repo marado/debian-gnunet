@@ -4,7 +4,7 @@
 #
 #    GNUnet is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published
-#    by the Free Software Foundation; either version 2, or (at your
+#    by the Free Software Foundation; either version 3, or (at your
 #    option) any later version.
 #
 #    GNUnet is distributed in the hope that it will be useful, but
@@ -33,11 +33,11 @@ if gnunet_pyexpect_dir not in sys.path:
 from gnunet_pyexpect import pexpect
 
 if os.name == 'posix':
-  peerinfo = 'gnunet-peerinfo'
+  peerinfo = './gnunet-peerinfo'
   gnunetarm = 'gnunet-arm'
   gnunettesting = 'gnunet-testing'
 elif os.name == 'nt':
-  peerinfo = 'gnunet-peerinfo.exe'
+  peerinfo = './gnunet-peerinfo.exe'
   gnunetarm = 'gnunet-arm.exe'
   gnunettesting = 'gnunet-testing.exe'
 
@@ -64,7 +64,7 @@ try:
   pinfo.expect ("stdout", re.compile (r'I am peer `.*\'.\r?\n'))
 
   pinfo.spawn (None, [peerinfo, '-c', 'test_gnunet_peerinfo_data.conf', '-qs'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-  pinfo.expect ("stdout", re.compile (r'.......................................................................................................\r?\n'))
+  pinfo.expect ("stdout", re.compile (r'....................................................\r?\n'))
 
   pinfo.spawn (None, [peerinfo, '-c', 'test_gnunet_peerinfo_data.conf', 'invalid'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   pinfo.expect ("stdout", re.compile (r'Invalid command line argument `invalid\'\r?\n'))
@@ -88,7 +88,7 @@ try:
   pinfo.spawn (None, [peerinfo, '-c', 'test_gnunet_peerinfo_data.conf', '-qs'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   pid = pinfo.read ("stdout")
   pid.strip ()
-  
+
 finally:
   arm = subprocess.Popen ([gnunetarm, '-eq', '-c', 'test_gnunet_peerinfo_data.conf'])
   arm.communicate ()

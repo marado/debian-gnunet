@@ -55,35 +55,25 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-libexec_PROGRAMS = gnunet-service-gns$(EXEEXT) $(am__EXEEXT_2) \
-	$(am__EXEEXT_3) $(am__EXEEXT_4) gnunet-dns2gns$(EXEEXT)
-bin_PROGRAMS = $(am__EXEEXT_1) gnunet-gns$(EXEEXT)
-check_PROGRAMS = test_gns_simple_shorten$(EXEEXT) \
-	test_gns_simple_get_authority$(EXEEXT) \
-	test_gns_simple_lookup$(EXEEXT) \
-	test_gns_simple_delegated_lookup$(EXEEXT) \
-	test_gns_simple_mx_lookup$(EXEEXT) \
-	test_gns_simple_srv_lookup$(EXEEXT) \
-	test_gns_simple_zkey_lookup$(EXEEXT) \
-	test_gns_dht_delegated_lookup$(EXEEXT) \
-	test_gns_pseu_shorten$(EXEEXT) test_gns_max_queries$(EXEEXT) \
-	test_gns_cname_lookup$(EXEEXT) test_gns_ns_lookup$(EXEEXT) \
-	test_gns_revocation$(EXEEXT) test_gns_dht_three_peers$(EXEEXT)
+libexec_PROGRAMS = gnunet-service-gns$(EXEEXT) $(am__EXEEXT_4) \
+	gnunet-dns2gns$(EXEEXT) $(am__EXEEXT_5)
+bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) gnunet-gns$(EXEEXT) \
+	$(am__EXEEXT_3)
+@HAVE_MHD_TRUE@@LINUX_TRUE@am__append_1 = gnunet-bcd
+@HAVE_GNUTLS_DANE_TRUE@am__append_2 = -lgnutls-dane
 subdir = src/gns
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/gns.conf.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/argz.m4 \
-	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/glib-2.0.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libcurl.m4 $(top_srcdir)/m4/libgcrypt.m4 \
+	$(top_srcdir)/m4/libgcrypt.m4 $(top_srcdir)/m4/libgnurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libunistring.m4 \
-	$(top_srcdir)/m4/ltdl.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -133,18 +123,25 @@ libgnunet_plugin_block_gns_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_block_gns_la_LDFLAGS) $(LDFLAGS) -o $@
+am__DEPENDENCIES_1 =
+libgnunet_plugin_gnsrecord_gns_la_DEPENDENCIES =  \
+	$(top_builddir)/src/dns/libgnunetdnsparser.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_gnsrecord_gns_la_OBJECTS =  \
+	plugin_gnsrecord_gns.lo
+libgnunet_plugin_gnsrecord_gns_la_OBJECTS =  \
+	$(am_libgnunet_plugin_gnsrecord_gns_la_OBJECTS)
+libgnunet_plugin_gnsrecord_gns_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_gnsrecord_gns_la_LDFLAGS) $(LDFLAGS) -o $@
 am_libgnunetgns_la_OBJECTS = gns_api.lo
 libgnunetgns_la_OBJECTS = $(am_libgnunetgns_la_OBJECTS)
 libgnunetgns_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetgns_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am_libgnunetgns_common_la_OBJECTS = gns_common.lo
-libgnunetgns_common_la_OBJECTS = $(am_libgnunetgns_common_la_OBJECTS)
-libgnunetgns_common_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunetgns_common_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
 libw32nsp_la_DEPENDENCIES =
 am_libw32nsp_la_OBJECTS = w32nsp.lo
 libw32nsp_la_OBJECTS = $(am_libw32nsp_la_OBJECTS)
@@ -154,72 +151,30 @@ libw32nsp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @MINGW_TRUE@am_libw32nsp_la_rpath = -rpath $(libdir)
 @MINGW_TRUE@am__EXEEXT_1 = w32nsp-install$(EXEEXT) \
 @MINGW_TRUE@	w32nsp-uninstall$(EXEEXT) w32nsp-resolve$(EXEEXT)
-@HAVE_MHD_TRUE@am__EXEEXT_2 = gnunet-gns-fcfsd$(EXEEXT)
-@HAVE_GNUTLS_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_3 =  \
-@HAVE_GNUTLS_TRUE@@HAVE_MHD_TRUE@	gnunet-gns-proxy$(EXEEXT)
+@MINGW_TRUE@am__EXEEXT_2 = gnunet-gns-import$(EXEEXT)
+@HAVE_MHD_TRUE@@LINUX_TRUE@am__EXEEXT_3 = gnunet-bcd$(EXEEXT)
 @MINGW_TRUE@am__EXEEXT_4 = gnunet-gns-helper-service-w32$(EXEEXT)
+@HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_5 = gnunet-gns-proxy$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
+am_gnunet_bcd_OBJECTS = gnunet-bcd.$(OBJEXT)
+gnunet_bcd_OBJECTS = $(am_gnunet_bcd_OBJECTS)
 am_gnunet_dns2gns_OBJECTS = gnunet-dns2gns.$(OBJEXT)
 gnunet_dns2gns_OBJECTS = $(am_gnunet_dns2gns_OBJECTS)
-am__DEPENDENCIES_1 =
 am_gnunet_gns_OBJECTS = gnunet-gns.$(OBJEXT)
 gnunet_gns_OBJECTS = $(am_gnunet_gns_OBJECTS)
-am_gnunet_gns_fcfsd_OBJECTS = gnunet-gns-fcfsd.$(OBJEXT)
-gnunet_gns_fcfsd_OBJECTS = $(am_gnunet_gns_fcfsd_OBJECTS)
 am_gnunet_gns_helper_service_w32_OBJECTS =  \
 	gnunet-gns-helper-service-w32.$(OBJEXT)
 gnunet_gns_helper_service_w32_OBJECTS =  \
 	$(am_gnunet_gns_helper_service_w32_OBJECTS)
+am_gnunet_gns_import_OBJECTS = gnunet-gns-import.$(OBJEXT)
+gnunet_gns_import_OBJECTS = $(am_gnunet_gns_import_OBJECTS)
 am_gnunet_gns_proxy_OBJECTS = gnunet-gns-proxy.$(OBJEXT)
 gnunet_gns_proxy_OBJECTS = $(am_gnunet_gns_proxy_OBJECTS)
 am_gnunet_service_gns_OBJECTS = gnunet-service-gns.$(OBJEXT) \
 	gnunet-service-gns_resolver.$(OBJEXT) \
+	gnunet-service-gns_shorten.$(OBJEXT) \
 	gnunet-service-gns_interceptor.$(OBJEXT)
 gnunet_service_gns_OBJECTS = $(am_gnunet_service_gns_OBJECTS)
-am_test_gns_cname_lookup_OBJECTS = test_gns_cname_lookup.$(OBJEXT)
-test_gns_cname_lookup_OBJECTS = $(am_test_gns_cname_lookup_OBJECTS)
-am_test_gns_dht_delegated_lookup_OBJECTS =  \
-	test_gns_dht_delegated_lookup.$(OBJEXT)
-test_gns_dht_delegated_lookup_OBJECTS =  \
-	$(am_test_gns_dht_delegated_lookup_OBJECTS)
-am_test_gns_dht_three_peers_OBJECTS =  \
-	test_gns_dht_three_peers.$(OBJEXT)
-test_gns_dht_three_peers_OBJECTS =  \
-	$(am_test_gns_dht_three_peers_OBJECTS)
-am_test_gns_max_queries_OBJECTS = test_gns_max_queries.$(OBJEXT)
-test_gns_max_queries_OBJECTS = $(am_test_gns_max_queries_OBJECTS)
-am_test_gns_ns_lookup_OBJECTS = test_gns_ns_lookup.$(OBJEXT)
-test_gns_ns_lookup_OBJECTS = $(am_test_gns_ns_lookup_OBJECTS)
-am_test_gns_pseu_shorten_OBJECTS = test_gns_pseu_shorten.$(OBJEXT)
-test_gns_pseu_shorten_OBJECTS = $(am_test_gns_pseu_shorten_OBJECTS)
-am_test_gns_revocation_OBJECTS = test_gns_revocation.$(OBJEXT)
-test_gns_revocation_OBJECTS = $(am_test_gns_revocation_OBJECTS)
-am_test_gns_simple_delegated_lookup_OBJECTS =  \
-	test_gns_simple_delegated_lookup.$(OBJEXT)
-test_gns_simple_delegated_lookup_OBJECTS =  \
-	$(am_test_gns_simple_delegated_lookup_OBJECTS)
-am_test_gns_simple_get_authority_OBJECTS =  \
-	test_gns_simple_get_authority.$(OBJEXT)
-test_gns_simple_get_authority_OBJECTS =  \
-	$(am_test_gns_simple_get_authority_OBJECTS)
-am_test_gns_simple_lookup_OBJECTS = test_gns_simple_lookup.$(OBJEXT)
-test_gns_simple_lookup_OBJECTS = $(am_test_gns_simple_lookup_OBJECTS)
-am_test_gns_simple_mx_lookup_OBJECTS =  \
-	test_gns_simple_mx_lookup.$(OBJEXT)
-test_gns_simple_mx_lookup_OBJECTS =  \
-	$(am_test_gns_simple_mx_lookup_OBJECTS)
-am_test_gns_simple_shorten_OBJECTS =  \
-	test_gns_simple_shorten.$(OBJEXT)
-test_gns_simple_shorten_OBJECTS =  \
-	$(am_test_gns_simple_shorten_OBJECTS)
-am_test_gns_simple_srv_lookup_OBJECTS =  \
-	test_gns_simple_srv_lookup.$(OBJEXT)
-test_gns_simple_srv_lookup_OBJECTS =  \
-	$(am_test_gns_simple_srv_lookup_OBJECTS)
-am_test_gns_simple_zkey_lookup_OBJECTS =  \
-	test_gns_simple_zkey_lookup.$(OBJEXT)
-test_gns_simple_zkey_lookup_OBJECTS =  \
-	$(am_test_gns_simple_zkey_lookup_OBJECTS)
 am_w32nsp_install_OBJECTS = w32nsp-install.$(OBJEXT)
 w32nsp_install_OBJECTS = $(am_w32nsp_install_OBJECTS)
 w32nsp_install_DEPENDENCIES =
@@ -257,47 +212,21 @@ AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libgnunet_plugin_block_gns_la_SOURCES) \
-	$(libgnunetgns_la_SOURCES) $(libgnunetgns_common_la_SOURCES) \
-	$(libw32nsp_la_SOURCES) $(gnunet_dns2gns_SOURCES) \
-	$(gnunet_gns_SOURCES) $(gnunet_gns_fcfsd_SOURCES) \
-	$(gnunet_gns_helper_service_w32_SOURCES) \
-	$(gnunet_gns_proxy_SOURCES) $(gnunet_service_gns_SOURCES) \
-	$(test_gns_cname_lookup_SOURCES) \
-	$(test_gns_dht_delegated_lookup_SOURCES) \
-	$(test_gns_dht_three_peers_SOURCES) \
-	$(test_gns_max_queries_SOURCES) $(test_gns_ns_lookup_SOURCES) \
-	$(test_gns_pseu_shorten_SOURCES) \
-	$(test_gns_revocation_SOURCES) \
-	$(test_gns_simple_delegated_lookup_SOURCES) \
-	$(test_gns_simple_get_authority_SOURCES) \
-	$(test_gns_simple_lookup_SOURCES) \
-	$(test_gns_simple_mx_lookup_SOURCES) \
-	$(test_gns_simple_shorten_SOURCES) \
-	$(test_gns_simple_srv_lookup_SOURCES) \
-	$(test_gns_simple_zkey_lookup_SOURCES) \
-	$(w32nsp_install_SOURCES) $(w32nsp_resolve_SOURCES) \
-	$(w32nsp_uninstall_SOURCES)
+	$(libgnunet_plugin_gnsrecord_gns_la_SOURCES) \
+	$(libgnunetgns_la_SOURCES) $(libw32nsp_la_SOURCES) \
+	$(gnunet_bcd_SOURCES) $(gnunet_dns2gns_SOURCES) \
+	$(gnunet_gns_SOURCES) $(gnunet_gns_helper_service_w32_SOURCES) \
+	$(gnunet_gns_import_SOURCES) $(gnunet_gns_proxy_SOURCES) \
+	$(gnunet_service_gns_SOURCES) $(w32nsp_install_SOURCES) \
+	$(w32nsp_resolve_SOURCES) $(w32nsp_uninstall_SOURCES)
 DIST_SOURCES = $(libgnunet_plugin_block_gns_la_SOURCES) \
-	$(libgnunetgns_la_SOURCES) $(libgnunetgns_common_la_SOURCES) \
-	$(libw32nsp_la_SOURCES) $(gnunet_dns2gns_SOURCES) \
-	$(gnunet_gns_SOURCES) $(gnunet_gns_fcfsd_SOURCES) \
-	$(gnunet_gns_helper_service_w32_SOURCES) \
-	$(gnunet_gns_proxy_SOURCES) $(gnunet_service_gns_SOURCES) \
-	$(test_gns_cname_lookup_SOURCES) \
-	$(test_gns_dht_delegated_lookup_SOURCES) \
-	$(test_gns_dht_three_peers_SOURCES) \
-	$(test_gns_max_queries_SOURCES) $(test_gns_ns_lookup_SOURCES) \
-	$(test_gns_pseu_shorten_SOURCES) \
-	$(test_gns_revocation_SOURCES) \
-	$(test_gns_simple_delegated_lookup_SOURCES) \
-	$(test_gns_simple_get_authority_SOURCES) \
-	$(test_gns_simple_lookup_SOURCES) \
-	$(test_gns_simple_mx_lookup_SOURCES) \
-	$(test_gns_simple_shorten_SOURCES) \
-	$(test_gns_simple_srv_lookup_SOURCES) \
-	$(test_gns_simple_zkey_lookup_SOURCES) \
-	$(w32nsp_install_SOURCES) $(w32nsp_resolve_SOURCES) \
-	$(w32nsp_uninstall_SOURCES)
+	$(libgnunet_plugin_gnsrecord_gns_la_SOURCES) \
+	$(libgnunetgns_la_SOURCES) $(libw32nsp_la_SOURCES) \
+	$(gnunet_bcd_SOURCES) $(gnunet_dns2gns_SOURCES) \
+	$(gnunet_gns_SOURCES) $(gnunet_gns_helper_service_w32_SOURCES) \
+	$(gnunet_gns_import_SOURCES) $(gnunet_gns_proxy_SOURCES) \
+	$(gnunet_service_gns_SOURCES) $(w32nsp_install_SOURCES) \
+	$(w32nsp_resolve_SOURCES) $(w32nsp_uninstall_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -351,11 +280,11 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-ARGZ_H = @ARGZ_H@
 AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
+AUTOSTART = @AUTOSTART@
 AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
@@ -382,24 +311,16 @@ EXEEXT = @EXEEXT@
 EXT_LIBS = @EXT_LIBS@
 EXT_LIB_PATH = @EXT_LIB_PATH@
 FGREP = @FGREP@
-GLIB_CFLAGS = @GLIB_CFLAGS@
-GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
-GLIB_LIBS = @GLIB_LIBS@
-GLIB_MKENUMS = @GLIB_MKENUMS@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNUNETDNS_GROUP = @GNUNETDNS_GROUP@
-GN_DAEMON_CONFIG_DIR = @GN_DAEMON_CONFIG_DIR@
-GN_DAEMON_HOME_DIR = @GN_DAEMON_HOME_DIR@
 GN_INTLINCL = @GN_INTLINCL@
 GN_LIBINTL = @GN_LIBINTL@
 GN_LIB_LDFLAGS = @GN_LIB_LDFLAGS@
 GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
-GN_USER_HOME_DIR = @GN_USER_HOME_DIR@
-GOBJECT_QUERY = @GOBJECT_QUERY@
 GREP = @GREP@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
-INCLTDL = @INCLTDL@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -410,20 +331,13 @@ INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 JAVAPORT = @JAVAPORT@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
-LIBADD_DL = @LIBADD_DL@
-LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
-LIBADD_DLOPEN = @LIBADD_DLOPEN@
-LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
-LIBCURL = @LIBCURL@
-LIBCURL_CPPFLAGS = @LIBCURL_CPPFLAGS@
 LIBGCRYPT_CFLAGS = @LIBGCRYPT_CFLAGS@
 LIBGCRYPT_CONFIG = @LIBGCRYPT_CONFIG@
 LIBGCRYPT_LIBS = @LIBGCRYPT_LIBS@
-LIBGTOP_CFLAGS = @LIBGTOP_CFLAGS@
-LIBGTOP_LIBS = @LIBGTOP_LIBS@
+LIBGNURL = @LIBGNURL@
+LIBGNURL_CPPFLAGS = @LIBGNURL_CPPFLAGS@
 LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
-LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBPREFIX = @LIBPREFIX@
 LIBS = @LIBS@
@@ -431,16 +345,10 @@ LIBTOOL = @LIBTOOL@
 LIBUNISTRING = @LIBUNISTRING@
 LIPO = @LIPO@
 LN_S = @LN_S@
-LTDLDEPS = @LTDLDEPS@
-LTDLINCL = @LTDLINCL@
-LTDLOPEN = @LTDLOPEN@
 LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
-LT_CONFIG_H = @LT_CONFIG_H@
-LT_DLLOADERS = @LT_DLLOADERS@
-LT_DLPREOPEN = @LT_DLPREOPEN@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
@@ -468,7 +376,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 POSTGRES_CPPFLAGS = @POSTGRES_CPPFLAGS@
 POSTGRES_LDFLAGS = @POSTGRES_LDFLAGS@
 POSUB = @POSUB@
@@ -490,12 +397,15 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XMKMF = @XMKMF@
 X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
-_libcurl_config = @_libcurl_config@
+Z_CFLAGS = @Z_CFLAGS@
+Z_LIBS = @Z_LIBS@
+_libgnurl_config = @_libgnurl_config@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -537,8 +447,6 @@ libdir = @libdir@
 libexecdir = $(pkglibdir)/libexec/
 localedir = @localedir@
 localstatedir = @localstatedir@
-ltdl_LIBOBJS = @ltdl_LIBOBJS@
-ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -553,9 +461,7 @@ pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
-subdirs = @subdirs@
 svnversioncommand = @svnversioncommand@
-sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target = @target@
 target_alias = @target_alias@
@@ -565,25 +471,30 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-INCLUDES = -I$(top_srcdir)/src/include
-@HAVE_GLIBCNSS_TRUE@NSS_SUBDIR = nss
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
+@HAVE_GLIBCNSS_TRUE@@INSTALL_NSS_TRUE@NSS_SUBDIR = nss
 SUBDIRS = . $(NSS_SUBDIR)
 EXTRA_DIST = \
   test_gns_defaults.conf \
+  test_gns_lookup.conf \
+  test_gns_nick_shorten.conf \
+  test_gns_proxy.conf \
   test_gns_simple_lookup.conf \
-  test_gns_dht_default.conf \
   gns-helper-service-w32.conf \
+  w32nsp.def \
   gnunet-gns-proxy-setup-ca \
-  zonefiles/188JSUMKEF25GVU8TTV0PBNNN8JVCPUEDFV1UHJJU884JD25V0T0.zkey \
+  zonefiles/J7POEUT41A8PBFS7KVVDRF88GBOU4HK8PSU5QKVLVE3R9T91E99G.zkey \
   zonefiles/OEFL7A4VEF1B40QLEMTG5D8G1CN6EN16QUSG5R2DT71GRJN34LSG.zkey \
-  zonefiles/test_zonekey
+  zonefiles/test_zonekey \
+  $(check_SCRIPTS)
 
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @MINGW_TRUE@DO_W32_HELPER = gnunet-gns-helper-service-w32
 @MINGW_TRUE@DO_W32_NSP = libw32nsp.la
 @MINGW_TRUE@DO_W32_NSPTOOLS = w32nsp-install w32nsp-uninstall w32nsp-resolve
 @MINGW_TRUE@DO_W32_HS_CONF = gns-helper-service-w32.conf
-@MINGW_FALSE@USE_VPN = $(top_builddir)/src/vpn/libgnunetvpn.la
+@MINGW_TRUE@DO_NONPOSIX_GNSIMPORT = gnunet-gns-import
+USE_VPN = $(top_builddir)/src/vpn/libgnunetvpn.la
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 pkgcfgdir = $(pkgdatadir)/config.d/
 plugindir = $(libdir)/gnunet
@@ -593,50 +504,85 @@ pkgcfg_DATA = \
 
 lib_LTLIBRARIES = \
   $(DO_W32_NSP) \
-  libgnunetgns.la \
-  libgnunetgns_common.la
+  libgnunetgns.la
 
-@HAVE_MHD_TRUE@DO_FCFSD = gnunet-gns-fcfsd
-@HAVE_GNUTLS_TRUE@@HAVE_MHD_TRUE@DO_PROXY = gnunet-gns-proxy
+@HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@DO_PROXY = gnunet-gns-proxy
 bin_SCRIPTS = gnunet-gns-proxy-setup-ca
 plugin_LTLIBRARIES = \
-  libgnunet_plugin_block_gns.la
+  libgnunet_plugin_block_gns.la \
+  libgnunet_plugin_gnsrecord_gns.la
+
+libgnunet_plugin_gnsrecord_gns_la_SOURCES = \
+  plugin_gnsrecord_gns.c
+
+libgnunet_plugin_gnsrecord_gns_la_LIBADD = \
+  $(top_builddir)/src/dns/libgnunetdnsparser.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LTLIBINTL)
+
+libgnunet_plugin_gnsrecord_gns_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
 
 gnunet_gns_SOURCES = \
  gnunet-gns.c
 
 gnunet_gns_LDADD = \
   $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
 gnunet_gns_DEPENDENCIES = \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetgns.la
+
+gnunet_bcd_SOURCES = \
+ gnunet-bcd.c
+
+gnunet_bcd_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL) -lmicrohttpd
+
+gnunet_bcd_DEPENDENCIES = \
+  $(top_builddir)/src/util/libgnunetutil.la
 
 gnunet_dns2gns_SOURCES = \
  gnunet-dns2gns.c
 
 gnunet_dns2gns_LDADD = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/gns/libgnunetgns.la \
   $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/namestore/libgnunetnamestore.la \
   $(top_builddir)/src/dns/libgnunetdnsparser.la \
-	$(top_builddir)/src/dns/libgnunetdnsstub.la \
+  $(top_builddir)/src/dns/libgnunetdnsstub.la \
   $(GN_LIBINTL)
 
 gnunet_dns2gns_DEPENDENCIES = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(top_builddir)/src/dns/libgnunetdnsparser.la \
+  $(top_builddir)/src/dns/libgnunetdnsstub.la \
   libgnunetgns.la
 
 gnunet_gns_proxy_SOURCES = \
- gnunet-gns-proxy.c gns_proxy_proto.h 
+ gnunet-gns-proxy.c
 
-gnunet_gns_proxy_LDADD = -lmicrohttpd -lcurl -lgnutls \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL)
-
+gnunet_gns_proxy_LDADD = -lmicrohttpd -lgnurl -lgnutls \
+	$(top_builddir)/src/gns/libgnunetgns.la \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
+	$(top_builddir)/src/util/libgnunetutil.la $(GN_LIBINTL) \
+	$(am__append_2)
 gnunet_gns_proxy_DEPENDENCIES = \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetgns.la
 
 gnunet_gns_helper_service_w32_SOURCES = \
@@ -644,11 +590,30 @@ gnunet_gns_helper_service_w32_SOURCES = \
 
 gnunet_gns_helper_service_w32_LDADD = \
   $(top_builddir)/src/gns/libgnunetgns.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
 gnunet_gns_helper_service_w32_DEPENDENCIES = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   libgnunetgns.la
+
+gnunet_gns_import_SOURCES = \
+  gnunet-gns-import.c
+
+gnunet_gns_import_LDADD = \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
+
+gnunet_gns_import_DEPENDENCIES = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la
 
 w32nsp_install_SOURCES = \
   w32nsp-install.c
@@ -665,41 +630,36 @@ w32nsp_resolve_LDADD = -lws2_32
 gnunet_service_gns_SOURCES = \
  gnunet-service-gns.c \
  gnunet-service-gns_resolver.c gnunet-service-gns_resolver.h \
- gnunet-service-gns_interceptor.c gnunet-service-gns_interceptor.h 
+ gnunet-service-gns_shorten.c gnunet-service-gns_shorten.h \
+ gnunet-service-gns_interceptor.c gnunet-service-gns_interceptor.h
 
 gnunet_service_gns_LDADD = \
   -lm \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/revocation/libgnunetrevocation.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetgns_common.la \
-	$(top_builddir)/src/dns/libgnunetdns.la \
-	$(top_builddir)/src/dns/libgnunetdnsparser.la \
-	$(top_builddir)/src/dht/libgnunetdht.la \
-	$(top_builddir)/src/namestore/libgnunetnamestore.la \
-	$(USE_VPN) \
+  $(top_builddir)/src/dns/libgnunetdns.la \
+  $(top_builddir)/src/dns/libgnunetdnsparser.la \
+  $(top_builddir)/src/dns/libgnunetdnsstub.la \
+  $(top_builddir)/src/dht/libgnunetdht.la \
+  $(top_builddir)/src/tun/libgnunettun.la \
+  $(top_builddir)/src/namecache/libgnunetnamecache.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(USE_VPN) \
   $(GN_LIBINTL)
 
 gnunet_service_gns_DEPENDENCIES = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/revocation/libgnunetrevocation.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetgns_common.la \
-	$(top_builddir)/src/dns/libgnunetdns.la \
-	$(top_builddir)/src/dns/libgnunetdnsparser.la \
-	$(top_builddir)/src/dht/libgnunetdht.la \
-	$(top_builddir)/src/namestore/libgnunetnamestore.la \
-	$(USE_VPN)
-
-gnunet_gns_fcfsd_SOURCES = \
- gnunet-gns-fcfsd.c 
-
-gnunet_gns_fcfsd_LDADD = -lmicrohttpd \
-  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/tun/libgnunettun.la \
+  $(top_builddir)/src/dns/libgnunetdns.la \
+  $(top_builddir)/src/dns/libgnunetdnsparser.la \
+  $(top_builddir)/src/dht/libgnunetdht.la \
   $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(GN_LIBINTL)
-
-gnunet_gns_fcfsd_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la
+  $(USE_VPN)
 
 libw32nsp_la_SOURCES = \
   w32nsp.c
@@ -709,33 +669,21 @@ libw32nsp_la_LIBADD = \
 
 libw32nsp_la_LDFLAGS = \
   -export-symbols $(top_srcdir)/src/gns/w32nsp.def \
-  $(GN_LIB_LDFLAGS)
+  -no-undefined -static-libgcc
 
 libgnunetgns_la_SOURCES = \
  gns_api.c gns.h
 
 libgnunetgns_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la $(XLIB) \
- $(top_builddir)/src/namestore/libgnunetnamestore.la
+ $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la
 
 libgnunetgns_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 
 libgnunetgns_la_DEPENDENCIES = \
  $(top_builddir)/src/util/libgnunetutil.la \
- $(top_builddir)/src/namestore/libgnunetnamestore.la
-
-libgnunetgns_common_la_SOURCES = \
- gns_common.c gns_common.h
-
-libgnunetgns_common_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)
-
-libgnunetgns_common_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la 
-
-libgnunetgns_common_la_DEPENDENCIES = \
- $(top_builddir)/src/util/libgnunetutil.la 
+ $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la
 
 libgnunet_plugin_block_gns_la_SOURCES = \
   plugin_block_gns.c
@@ -743,252 +691,33 @@ libgnunet_plugin_block_gns_la_SOURCES = \
 libgnunet_plugin_block_gns_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/block/libgnunetblock.la \
-  $(top_builddir)/src/gns/libgnunetgns_common.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la
 
 libgnunet_plugin_block_gns_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_block_gns_la_DEPENDENCIES = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetgns_common.la \
   $(top_builddir)/src/block/libgnunetblock.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la
 
-@ENABLE_TEST_RUN_TRUE@@LINUX_TRUE@TESTS = $(check_PROGRAMS)
+check_SCRIPTS = \
+  test_gns_lookup.sh \
+  test_gns_ipv6_lookup.sh\
+  test_gns_txt_lookup.sh\
+  test_gns_mx_lookup.sh \
+  test_gns_gns2dns_lookup.sh \
+  test_gns_dht_lookup.sh\
+  test_gns_delegated_lookup.sh \
+  test_gns_nick_shorten.sh\
+  test_gns_plus_lookup.sh\
+  test_gns_zkey_lookup.sh\
+  test_gns_rel_expiration.sh\
+  test_gns_soa_lookup.sh\
+  test_gns_revocation.sh\
+  test_gns_cname_lookup.sh
 
-#  test_gns_simple_lookup
-#  test_gns_simple_delegated_lookup
-#  test_gns_dht_delegated_lookup
-
-#test_gns_proxy_SOURCES = \
-#  test_gns_proxy.c
-#test_gns_proxy_LDADD = -lmicrohttpd @LIBCURL@ \
-#  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-#  $(top_builddir)/src/gns/libgnunetgns.la \
-#  $(top_builddir)/src/testing/libgnunettesting.la
-#test_gns_proxy_DEPENDENCIES = \
-#  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-#  libgnunetgns.la \
-#  $(top_builddir)/src/testing/libgnunettesting.la
-test_gns_dht_three_peers_SOURCES = \
-  test_gns_dht_three_peers.c
-
-test_gns_dht_three_peers_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la
-
-test_gns_dht_three_peers_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la
-
-test_gns_simple_lookup_SOURCES = \
-  test_gns_simple_lookup.c
-
-test_gns_simple_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_delegated_lookup_SOURCES = \
-  test_gns_simple_delegated_lookup.c
-
-test_gns_simple_delegated_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_delegated_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_mx_lookup_SOURCES = \
-  test_gns_simple_mx_lookup.c
-
-test_gns_simple_mx_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_mx_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_srv_lookup_SOURCES = \
-  test_gns_simple_srv_lookup.c
-
-test_gns_simple_srv_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_srv_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_zkey_lookup_SOURCES = \
-  test_gns_simple_zkey_lookup.c
-
-test_gns_simple_zkey_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_zkey_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_dht_delegated_lookup_SOURCES = \
-  test_gns_dht_delegated_lookup.c
-
-test_gns_dht_delegated_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/dht/libgnunetdht.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_dht_delegated_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/dht/libgnunetdht.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_shorten_SOURCES = \
-  test_gns_simple_shorten.c
-
-test_gns_simple_shorten_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_shorten_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_get_authority_SOURCES = \
-  test_gns_simple_get_authority.c
-
-test_gns_simple_get_authority_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_simple_get_authority_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_pseu_shorten_SOURCES = \
-  test_gns_pseu_shorten.c
-
-test_gns_pseu_shorten_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/dht/libgnunetdht.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_pseu_shorten_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/dht/libgnunetdht.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_max_queries_SOURCES = \
-  test_gns_max_queries.c
-
-test_gns_max_queries_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_max_queries_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_cname_lookup_SOURCES = \
-  test_gns_cname_lookup.c
-
-test_gns_cname_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_cname_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_ns_lookup_SOURCES = \
-  test_gns_ns_lookup.c
-
-test_gns_ns_lookup_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_ns_lookup_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_revocation_SOURCES = \
-  test_gns_revocation.c
-
-test_gns_revocation_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  $(top_builddir)/src/gns/libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
-test_gns_revocation_DEPENDENCIES = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/namestore/libgnunetnamestore.la \
-  libgnunetgns.la \
-  $(top_builddir)/src/testing/libgnunettesting.la
-
+@ENABLE_TEST_RUN_TRUE@@HAVE_SQLITE_TRUE@TESTS = $(check_SCRIPTS)
 all: all-recursive
 
 .SUFFIXES:
@@ -1091,10 +820,10 @@ clean-pluginLTLIBRARIES:
 	done
 libgnunet_plugin_block_gns.la: $(libgnunet_plugin_block_gns_la_OBJECTS) $(libgnunet_plugin_block_gns_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_block_gns_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_block_gns_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_block_gns_la_OBJECTS) $(libgnunet_plugin_block_gns_la_LIBADD) $(LIBS)
+libgnunet_plugin_gnsrecord_gns.la: $(libgnunet_plugin_gnsrecord_gns_la_OBJECTS) $(libgnunet_plugin_gnsrecord_gns_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_gnsrecord_gns_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_gnsrecord_gns_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_gnsrecord_gns_la_OBJECTS) $(libgnunet_plugin_gnsrecord_gns_la_LIBADD) $(LIBS)
 libgnunetgns.la: $(libgnunetgns_la_OBJECTS) $(libgnunetgns_la_DEPENDENCIES) $(EXTRA_libgnunetgns_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetgns_la_LINK) -rpath $(libdir) $(libgnunetgns_la_OBJECTS) $(libgnunetgns_la_LIBADD) $(LIBS)
-libgnunetgns_common.la: $(libgnunetgns_common_la_OBJECTS) $(libgnunetgns_common_la_DEPENDENCIES) $(EXTRA_libgnunetgns_common_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetgns_common_la_LINK) -rpath $(libdir) $(libgnunetgns_common_la_OBJECTS) $(libgnunetgns_common_la_LIBADD) $(LIBS)
 libw32nsp.la: $(libw32nsp_la_OBJECTS) $(libw32nsp_la_DEPENDENCIES) $(EXTRA_libw32nsp_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libw32nsp_la_LINK) $(am_libw32nsp_la_rpath) $(libw32nsp_la_OBJECTS) $(libw32nsp_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
@@ -1137,15 +866,6 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	@list='$(bin_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-
-clean-checkPROGRAMS:
-	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
 	echo " rm -f" $$list; \
 	rm -f $$list || exit $$?; \
 	test -n "$(EXEEXT)" || exit 0; \
@@ -1198,66 +918,27 @@ clean-libexecPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+gnunet-bcd$(EXEEXT): $(gnunet_bcd_OBJECTS) $(gnunet_bcd_DEPENDENCIES) $(EXTRA_gnunet_bcd_DEPENDENCIES) 
+	@rm -f gnunet-bcd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnunet_bcd_OBJECTS) $(gnunet_bcd_LDADD) $(LIBS)
 gnunet-dns2gns$(EXEEXT): $(gnunet_dns2gns_OBJECTS) $(gnunet_dns2gns_DEPENDENCIES) $(EXTRA_gnunet_dns2gns_DEPENDENCIES) 
 	@rm -f gnunet-dns2gns$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_dns2gns_OBJECTS) $(gnunet_dns2gns_LDADD) $(LIBS)
 gnunet-gns$(EXEEXT): $(gnunet_gns_OBJECTS) $(gnunet_gns_DEPENDENCIES) $(EXTRA_gnunet_gns_DEPENDENCIES) 
 	@rm -f gnunet-gns$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_gns_OBJECTS) $(gnunet_gns_LDADD) $(LIBS)
-gnunet-gns-fcfsd$(EXEEXT): $(gnunet_gns_fcfsd_OBJECTS) $(gnunet_gns_fcfsd_DEPENDENCIES) $(EXTRA_gnunet_gns_fcfsd_DEPENDENCIES) 
-	@rm -f gnunet-gns-fcfsd$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_gns_fcfsd_OBJECTS) $(gnunet_gns_fcfsd_LDADD) $(LIBS)
 gnunet-gns-helper-service-w32$(EXEEXT): $(gnunet_gns_helper_service_w32_OBJECTS) $(gnunet_gns_helper_service_w32_DEPENDENCIES) $(EXTRA_gnunet_gns_helper_service_w32_DEPENDENCIES) 
 	@rm -f gnunet-gns-helper-service-w32$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_gns_helper_service_w32_OBJECTS) $(gnunet_gns_helper_service_w32_LDADD) $(LIBS)
+gnunet-gns-import$(EXEEXT): $(gnunet_gns_import_OBJECTS) $(gnunet_gns_import_DEPENDENCIES) $(EXTRA_gnunet_gns_import_DEPENDENCIES) 
+	@rm -f gnunet-gns-import$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gnunet_gns_import_OBJECTS) $(gnunet_gns_import_LDADD) $(LIBS)
 gnunet-gns-proxy$(EXEEXT): $(gnunet_gns_proxy_OBJECTS) $(gnunet_gns_proxy_DEPENDENCIES) $(EXTRA_gnunet_gns_proxy_DEPENDENCIES) 
 	@rm -f gnunet-gns-proxy$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_gns_proxy_OBJECTS) $(gnunet_gns_proxy_LDADD) $(LIBS)
 gnunet-service-gns$(EXEEXT): $(gnunet_service_gns_OBJECTS) $(gnunet_service_gns_DEPENDENCIES) $(EXTRA_gnunet_service_gns_DEPENDENCIES) 
 	@rm -f gnunet-service-gns$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_gns_OBJECTS) $(gnunet_service_gns_LDADD) $(LIBS)
-test_gns_cname_lookup$(EXEEXT): $(test_gns_cname_lookup_OBJECTS) $(test_gns_cname_lookup_DEPENDENCIES) $(EXTRA_test_gns_cname_lookup_DEPENDENCIES) 
-	@rm -f test_gns_cname_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_cname_lookup_OBJECTS) $(test_gns_cname_lookup_LDADD) $(LIBS)
-test_gns_dht_delegated_lookup$(EXEEXT): $(test_gns_dht_delegated_lookup_OBJECTS) $(test_gns_dht_delegated_lookup_DEPENDENCIES) $(EXTRA_test_gns_dht_delegated_lookup_DEPENDENCIES) 
-	@rm -f test_gns_dht_delegated_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_dht_delegated_lookup_OBJECTS) $(test_gns_dht_delegated_lookup_LDADD) $(LIBS)
-test_gns_dht_three_peers$(EXEEXT): $(test_gns_dht_three_peers_OBJECTS) $(test_gns_dht_three_peers_DEPENDENCIES) $(EXTRA_test_gns_dht_three_peers_DEPENDENCIES) 
-	@rm -f test_gns_dht_three_peers$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_dht_three_peers_OBJECTS) $(test_gns_dht_three_peers_LDADD) $(LIBS)
-test_gns_max_queries$(EXEEXT): $(test_gns_max_queries_OBJECTS) $(test_gns_max_queries_DEPENDENCIES) $(EXTRA_test_gns_max_queries_DEPENDENCIES) 
-	@rm -f test_gns_max_queries$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_max_queries_OBJECTS) $(test_gns_max_queries_LDADD) $(LIBS)
-test_gns_ns_lookup$(EXEEXT): $(test_gns_ns_lookup_OBJECTS) $(test_gns_ns_lookup_DEPENDENCIES) $(EXTRA_test_gns_ns_lookup_DEPENDENCIES) 
-	@rm -f test_gns_ns_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_ns_lookup_OBJECTS) $(test_gns_ns_lookup_LDADD) $(LIBS)
-test_gns_pseu_shorten$(EXEEXT): $(test_gns_pseu_shorten_OBJECTS) $(test_gns_pseu_shorten_DEPENDENCIES) $(EXTRA_test_gns_pseu_shorten_DEPENDENCIES) 
-	@rm -f test_gns_pseu_shorten$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_pseu_shorten_OBJECTS) $(test_gns_pseu_shorten_LDADD) $(LIBS)
-test_gns_revocation$(EXEEXT): $(test_gns_revocation_OBJECTS) $(test_gns_revocation_DEPENDENCIES) $(EXTRA_test_gns_revocation_DEPENDENCIES) 
-	@rm -f test_gns_revocation$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_revocation_OBJECTS) $(test_gns_revocation_LDADD) $(LIBS)
-test_gns_simple_delegated_lookup$(EXEEXT): $(test_gns_simple_delegated_lookup_OBJECTS) $(test_gns_simple_delegated_lookup_DEPENDENCIES) $(EXTRA_test_gns_simple_delegated_lookup_DEPENDENCIES) 
-	@rm -f test_gns_simple_delegated_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_delegated_lookup_OBJECTS) $(test_gns_simple_delegated_lookup_LDADD) $(LIBS)
-test_gns_simple_get_authority$(EXEEXT): $(test_gns_simple_get_authority_OBJECTS) $(test_gns_simple_get_authority_DEPENDENCIES) $(EXTRA_test_gns_simple_get_authority_DEPENDENCIES) 
-	@rm -f test_gns_simple_get_authority$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_get_authority_OBJECTS) $(test_gns_simple_get_authority_LDADD) $(LIBS)
-test_gns_simple_lookup$(EXEEXT): $(test_gns_simple_lookup_OBJECTS) $(test_gns_simple_lookup_DEPENDENCIES) $(EXTRA_test_gns_simple_lookup_DEPENDENCIES) 
-	@rm -f test_gns_simple_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_lookup_OBJECTS) $(test_gns_simple_lookup_LDADD) $(LIBS)
-test_gns_simple_mx_lookup$(EXEEXT): $(test_gns_simple_mx_lookup_OBJECTS) $(test_gns_simple_mx_lookup_DEPENDENCIES) $(EXTRA_test_gns_simple_mx_lookup_DEPENDENCIES) 
-	@rm -f test_gns_simple_mx_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_mx_lookup_OBJECTS) $(test_gns_simple_mx_lookup_LDADD) $(LIBS)
-test_gns_simple_shorten$(EXEEXT): $(test_gns_simple_shorten_OBJECTS) $(test_gns_simple_shorten_DEPENDENCIES) $(EXTRA_test_gns_simple_shorten_DEPENDENCIES) 
-	@rm -f test_gns_simple_shorten$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_shorten_OBJECTS) $(test_gns_simple_shorten_LDADD) $(LIBS)
-test_gns_simple_srv_lookup$(EXEEXT): $(test_gns_simple_srv_lookup_OBJECTS) $(test_gns_simple_srv_lookup_DEPENDENCIES) $(EXTRA_test_gns_simple_srv_lookup_DEPENDENCIES) 
-	@rm -f test_gns_simple_srv_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_srv_lookup_OBJECTS) $(test_gns_simple_srv_lookup_LDADD) $(LIBS)
-test_gns_simple_zkey_lookup$(EXEEXT): $(test_gns_simple_zkey_lookup_OBJECTS) $(test_gns_simple_zkey_lookup_DEPENDENCIES) $(EXTRA_test_gns_simple_zkey_lookup_DEPENDENCIES) 
-	@rm -f test_gns_simple_zkey_lookup$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_simple_zkey_lookup_OBJECTS) $(test_gns_simple_zkey_lookup_LDADD) $(LIBS)
 w32nsp-install$(EXEEXT): $(w32nsp_install_OBJECTS) $(w32nsp_install_DEPENDENCIES) $(EXTRA_w32nsp_install_DEPENDENCIES) 
 	@rm -f w32nsp-install$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(w32nsp_install_OBJECTS) $(w32nsp_install_LDADD) $(LIBS)
@@ -1310,30 +991,18 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gns_api.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gns_common.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-bcd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-dns2gns.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-gns-fcfsd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-gns-helper-service-w32.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-gns-import.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-gns-proxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-gns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-gns.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-gns_interceptor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-gns_resolver.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-gns_shorten.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_block_gns.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_cname_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_dht_delegated_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_dht_three_peers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_max_queries.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_ns_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_pseu_shorten.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_revocation.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_delegated_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_get_authority.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_mx_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_shorten.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_srv_lookup.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_simple_zkey_lookup.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_gnsrecord_gns.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32nsp-install.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32nsp-resolve.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32nsp-uninstall.Po@am__quote@
@@ -1671,7 +1340,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) $(check_SCRIPTS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
@@ -1714,9 +1383,9 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
-	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool \
-	clean-pluginLTLIBRARIES mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
+	clean-libexecPROGRAMS clean-libtool clean-pluginLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
@@ -1792,16 +1461,16 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am check check-TESTS check-am clean clean-binPROGRAMS \
-	clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
-	clean-libexecPROGRAMS clean-libtool clean-pluginLTLIBRARIES \
-	ctags ctags-recursive distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-binSCRIPTS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libLTLIBRARIES install-libexecPROGRAMS \
-	install-man install-pdf install-pdf-am install-pkgcfgDATA \
+	clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
+	clean-libtool clean-pluginLTLIBRARIES ctags ctags-recursive \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-binSCRIPTS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
+	install-pdf install-pdf-am install-pkgcfgDATA \
 	install-pluginLTLIBRARIES install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	installdirs-am maintainer-clean maintainer-clean-generic \
@@ -1812,17 +1481,6 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
 	uninstall-pluginLTLIBRARIES
 
- #test_gns_proxy
-
-#Build stub api
-#libgnunetnamestore_la_SOURCES = \
-# namestore_stub_api.c
-#libgnunetnamestore_la_LIBADD = \
-# $(top_builddir)/src/util/libgnunetutil.la $(XLIB)
-#libgnunetnamestore_la_LDFLAGS = \
-#  $(GN_LIB_LDFLAGS)
-#libgnunetnamestore_la_DEPENDENCIES = \
-# $(top_builddir)/src/util/libgnunetutil.la
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

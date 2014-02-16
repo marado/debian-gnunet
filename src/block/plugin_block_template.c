@@ -56,7 +56,7 @@ block_plugin_template_evaluate (void *cls, enum GNUNET_BLOCK_Type type,
   struct GNUNET_HashCode chash;
   struct GNUNET_HashCode mhash;
   /* FIXME: check validity first... */
-     
+
   /* mandatory duplicate-detection code... */
   if (NULL != bf)
   {
@@ -111,7 +111,7 @@ libgnunet_plugin_block_template_init (void *cls)
   };
   struct GNUNET_BLOCK_PluginFunctions *api;
 
-  api = GNUNET_malloc (sizeof (struct GNUNET_BLOCK_PluginFunctions));
+  api = GNUNET_new (struct GNUNET_BLOCK_PluginFunctions);
   api->evaluate = &block_plugin_template_evaluate;
   api->get_key = &block_plugin_template_get_key;
   api->types = types;

@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -101,7 +101,7 @@ create_elem (enum GNUNET_CONTAINER_SListDisposition disp, const void *buf,
   }
   else
   {
-    e = GNUNET_malloc (sizeof (struct GNUNET_CONTAINER_SList_Elem));
+    e = GNUNET_new (struct GNUNET_CONTAINER_SList_Elem);
     e->elem = (void *) buf;
   }
   e->disp = disp;
@@ -190,7 +190,7 @@ GNUNET_CONTAINER_slist_append (struct GNUNET_CONTAINER_SList *dst,
 struct GNUNET_CONTAINER_SList *
 GNUNET_CONTAINER_slist_create ()
 {
-  return GNUNET_malloc (sizeof (struct GNUNET_CONTAINER_SList));
+  return GNUNET_new (struct GNUNET_CONTAINER_SList);
 }
 
 

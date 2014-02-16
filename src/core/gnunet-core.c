@@ -70,27 +70,21 @@ shutdown_task (void *cls,
  *
  * @param cls closure (unused)
  * @param peer peer identity this notification is about
- * @param atsi performance data for the connection
- * @param atsi_count number of records in 'atsi'
  */
 static void
-connected_peer_callback (void *cls, const struct GNUNET_PeerIdentity *peer,
-                         const struct GNUNET_ATS_Information *atsi,
-                         unsigned int atsi_count)
+connected_peer_callback (void *cls,
+			 const struct GNUNET_PeerIdentity *peer)
 {
-  struct GNUNET_CRYPTO_HashAsciiEncoded enc;
-
   if (NULL == peer)
     return;
-  GNUNET_CRYPTO_hash_to_enc (&peer->hashPubKey, &enc);
-  printf (_("Peer `%s'\n"), (const char *) &enc);
+  printf (_("Peer `%s'\n"),
+	  GNUNET_i2s_full (peer));
 }
 
-void
+
+static void
 monitor_notify_startup (void *cls,
-                       struct GNUNET_CORE_Handle * server,
-                       const struct GNUNET_PeerIdentity *
-                       my_identity)
+			const struct GNUNET_PeerIdentity *my_identity)
 {
   my_id = (*my_identity);
 }
@@ -102,12 +96,9 @@ monitor_notify_startup (void *cls,
  *
  * @param cls closure
  * @param peer the peer that connected
- * @param ats performance data
- * @param ats_count number of entries in ats (excluding 0-termination)
  */
 static void
-monitor_notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+monitor_notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   struct GNUNET_TIME_Absolute now = GNUNET_TIME_absolute_get();
   const char *now_str;
@@ -151,7 +142,6 @@ monitor_notify_disconnect (void *cls, const struct GNUNET_PeerIdentity *peer)
              monitor_connections_counter);
   }
 }
-
 
 
 /**

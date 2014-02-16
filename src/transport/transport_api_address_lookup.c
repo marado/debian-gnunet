@@ -28,14 +28,11 @@
  * transport plugin, and whether or not the address given is currently
  * in the 'connected' state (according to the transport service).
  */
-
 #include "platform.h"
-#include "gnunet_client_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_hello_lib.h"
 #include "gnunet_protocols.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
 #include "gnunet_transport_service.h"
 #include "transport.h"
 
@@ -73,7 +70,7 @@ struct GNUNET_TRANSPORT_PeerIterateContext
    * Backoff for reconnect.
    */
   struct GNUNET_TIME_Relative backoff;
-  
+
   /**
    * Task ID for reconnect.
    */
@@ -119,7 +116,7 @@ send_request (struct GNUNET_TRANSPORT_PeerIterateContext *pal_ctx)
   msg.timeout = GNUNET_TIME_absolute_hton (pal_ctx->timeout);
   msg.peer = pal_ctx->peer;
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CLIENT_transmit_and_get_response (pal_ctx->client, 
+                 GNUNET_CLIENT_transmit_and_get_response (pal_ctx->client,
 							  &msg.header,
                                                           GNUNET_TIME_absolute_get_remaining (pal_ctx->timeout),
 							  GNUNET_YES,
@@ -129,7 +126,7 @@ send_request (struct GNUNET_TRANSPORT_PeerIterateContext *pal_ctx)
 
 /**
  * Task run to re-establish the connection.
- * 
+ *
  * @param cls our 'struct GNUNET_TRANSPORT_PeerAddressLookupContext*'
  * @param tc scheduler context, unused
  */
@@ -325,14 +322,14 @@ GNUNET_TRANSPORT_peer_get_active_addresses (const struct
     return NULL;
   if (GNUNET_YES != one_shot)
     timeout = GNUNET_TIME_UNIT_FOREVER_REL;
-  pal_ctx = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_PeerIterateContext));
+  pal_ctx = GNUNET_new (struct GNUNET_TRANSPORT_PeerIterateContext);
   pal_ctx->cb = peer_address_callback;
   pal_ctx->cb_cls = peer_address_callback_cls;
   pal_ctx->cfg = cfg;
   pal_ctx->timeout = GNUNET_TIME_relative_to_absolute (timeout);
   if (NULL != peer)
     pal_ctx->peer = *peer;
-  pal_ctx->one_shot = one_shot;  
+  pal_ctx->one_shot = one_shot;
   pal_ctx->client = client;
   send_request (pal_ctx);
 

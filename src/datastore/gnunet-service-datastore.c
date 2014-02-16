@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -332,7 +332,7 @@ expired_processor (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
     return GNUNET_SYSERR;
   }
   now = GNUNET_TIME_absolute_get ();
-  if (expiration.abs_value > now.abs_value)
+  if (expiration.abs_value_us > now.abs_value_us)
   {
     /* finished processing */
     expired_kill_task =
@@ -342,9 +342,11 @@ expired_processor (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
     return GNUNET_SYSERR;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Deleting content `%s' of type %u that expired %llu ms ago\n",
+              "Deleting content `%s' of type %u that expired %s ago\n",
               GNUNET_h2s (key), type,
-              (unsigned long long) (now.abs_value - expiration.abs_value));
+	      GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (expiration,
+											   now),
+						      GNUNET_YES));
   min_expiration = now;
   GNUNET_STATISTICS_update (stats, gettext_noop ("# bytes expired"), size,
                             GNUNET_YES);
@@ -404,11 +406,12 @@ quota_processor (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
   if (NULL == key)
     return GNUNET_SYSERR;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Deleting %llu bytes of low-priority (%u) content `%s' of type %u at %llu ms prior to expiration (still trying to free another %llu bytes)\n",
+              "Deleting %llu bytes of low-priority (%u) content `%s' of type %u at %s prior to expiration (still trying to free another %llu bytes)\n",
               (unsigned long long) (size + GNUNET_DATASTORE_ENTRY_OVERHEAD),
 	      (unsigned int) priority,
-              GNUNET_h2s (key), type, 
-	      (unsigned long long) GNUNET_TIME_absolute_get_remaining (expiration).rel_value,
+              GNUNET_h2s (key), type,
+	      GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (expiration),
+						      GNUNET_YES),
 	      *need);
   if (size + GNUNET_DATASTORE_ENTRY_OVERHEAD > *need)
     *need = 0;
@@ -513,7 +516,7 @@ transmit (struct GNUNET_SERVER_Client *client, struct GNUNET_MessageHeader *msg)
     GNUNET_free (msg);
     return;
   }
-  tcc = GNUNET_malloc (sizeof (struct TransmitCallbackContext));
+  tcc = GNUNET_new (struct TransmitCallbackContext);
   tcc->msg = msg;
   tcc->client = client;
   if (NULL ==
@@ -595,7 +598,7 @@ transmit_item (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
     /* transmit 'DATA_END' */
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Transmitting `%s' message\n",
                 "DATA_END");
-    end = GNUNET_malloc (sizeof (struct GNUNET_MessageHeader));
+    end = GNUNET_new (struct GNUNET_MessageHeader);
     end->size = htons (sizeof (struct GNUNET_MessageHeader));
     end->type = htons (GNUNET_MESSAGE_TYPE_DATASTORE_DATA_END);
     transmit (client, end);
@@ -619,10 +622,11 @@ transmit_item (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
   dm->key = *key;
   memcpy (&dm[1], data, size);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Transmitting `%s' message for `%s' of type %u with expiration %llu (now: %llu)\n",
+              "Transmitting `%s' message for `%s' of type %u with expiration %s (in: %s)\n",
               "DATA", GNUNET_h2s (key), type,
-              (unsigned long long) expiration.abs_value,
-              (unsigned long long) GNUNET_TIME_absolute_get ().abs_value);
+              GNUNET_STRINGS_absolute_time_to_string (expiration),
+              GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (expiration),
+						      GNUNET_YES));
   GNUNET_STATISTICS_update (stats, gettext_noop ("# results found"), 1,
                             GNUNET_NO);
   transmit (client, &dm->header);
@@ -694,7 +698,7 @@ handle_reserve (void *cls, struct GNUNET_SERVER_Client *client,
   reserved += req;
   GNUNET_STATISTICS_set (stats, gettext_noop ("# reserved"), reserved,
                          GNUNET_NO);
-  e = GNUNET_malloc (sizeof (struct ReservationList));
+  e = GNUNET_new (struct ReservationList);
   e->next = reservations;
   reservations = e;
   e->client = client;
@@ -896,8 +900,8 @@ check_present (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
                 "Result already present in datastore\n");
     /* FIXME: change API to allow increasing 'replication' counter */
     if ((ntohl (dm->priority) > 0) ||
-        (GNUNET_TIME_absolute_ntoh (dm->expiration).abs_value >
-         expiration.abs_value))
+        (GNUNET_TIME_absolute_ntoh (dm->expiration).abs_value_us >
+         expiration.abs_value_us))
       plugin->api->update (plugin->api->cls, uid,
                            (int32_t) ntohl (dm->priority),
                            GNUNET_TIME_absolute_ntoh (dm->expiration), NULL);
@@ -1270,7 +1274,7 @@ load_plugin ()
   struct DatastorePlugin *ret;
   char *libname;
 
-  ret = GNUNET_malloc (sizeof (struct DatastorePlugin));
+  ret = GNUNET_new (struct DatastorePlugin);
   ret->env.cfg = cfg;
   ret->env.duc = &disk_utilization_change_cb;
   ret->env.cls = NULL;
@@ -1469,7 +1473,7 @@ run (void *cls, struct GNUNET_SERVER_Handle *server,
      sizeof (struct GNUNET_MessageHeader)},
     {NULL, NULL, 0, 0}
   };
-  char *fn;  
+  char *fn;
   char *pfn;
   unsigned int bf_size;
   int refresh_bf;
@@ -1500,7 +1504,7 @@ run (void *cls, struct GNUNET_SERVER_Handle *server,
   cache_size = quota / 8;       /* Or should we make this an option? */
   GNUNET_STATISTICS_set (stats, gettext_noop ("# cache size"), cache_size,
                          GNUNET_NO);
-  if (quota / (32 * 1024LL) > (1 << 31)) 
+  if (quota / (32 * 1024LL) > (1 << 31))
     bf_size = (1 << 31);          /* absolute limit: ~2 GB, beyond that BF just won't help anyway */
   else
     bf_size = quota / (32 * 1024LL);         /* 8 bit per entry, 1 bit per 32 kb in DB */
@@ -1606,7 +1610,7 @@ run (void *cls, struct GNUNET_SERVER_Handle *server,
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 		_("Rebuilding bloomfilter.  Please be patient.\n"));
     if (NULL != plugin->api->get_keys)
-      plugin->api->get_keys (plugin->api->cls, &add_key_to_bloomfilter, filter);  
+      plugin->api->get_keys (plugin->api->cls, &add_key_to_bloomfilter, filter);
     else
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		  _("Plugin does not support get_keys function. Please fix!\n"));

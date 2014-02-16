@@ -20,14 +20,10 @@
 /**
  * @file statistics/test_statistics_api_watch.c
  * @brief testcase for statistics_api.c watch functions
- * @author Christian Grothoff 
+ * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_getopt_lib.h"
-#include "gnunet_os_lib.h"
-#include "gnunet_program_lib.h"
-#include "gnunet_scheduler_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_statistics_service.h"
 
 
@@ -123,7 +119,7 @@ main (int argc, char *argv_ign[])
   };
   struct GNUNET_OS_Process *proc;
   char *binary;
-  
+
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-statistics");
   proc =
     GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR, NULL, NULL,
@@ -134,7 +130,7 @@ main (int argc, char *argv_ign[])
   ok = 3;
   GNUNET_PROGRAM_run (3, argv, "test-statistics-api", "nohelp", options, &run,
                       NULL);
-  if (0 != GNUNET_OS_process_kill (proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
     ok = 1;

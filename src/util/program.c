@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     (C) 2009-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -25,15 +25,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_crypto_lib.h"
-#include "gnunet_directories.h"
-#include "gnunet_getopt_lib.h"
-#include "gnunet_os_lib.h"
-#include "gnunet_program_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_resolver_service.h"
-#include "gnunet_scheduler_lib.h"
+#include "gnunet_constants.h"
 #include <gcrypt.h>
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
@@ -61,7 +55,7 @@ struct CommandContext
   GNUNET_PROGRAM_Main task;
 
   /**
-   * Closure for task.
+   * Closure for @e task.
    */
   void *task_cls;
 
@@ -72,9 +66,20 @@ struct CommandContext
 
 };
 
+
+/**
+ * Start task that may speed up our system clock artificially
+ *
+ * @param cfg configuration to use
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if the speedup was not configured
+ */
 int
 GNUNET_SPEEDUP_start_ (const struct GNUNET_CONFIGURATION_Handle *cfg);
 
+
+/**
+ * Stop tasks that modify clock behavior.
+ */
 int
 GNUNET_SPEEDUP_stop_ (void);
 
@@ -127,16 +132,16 @@ cmd_sorter (const void *a1, const void *a2)
  * Run a standard GNUnet command startup sequence (initialize loggers
  * and configuration, parse options).
  *
- * @param argc number of command line arguments
+ * @param argc number of command line arguments in @a argv
  * @param argv command line arguments
  * @param binaryName our expected name
  * @param binaryHelp help text for the program
  * @param options command line options
  * @param task main function to run
- * @param task_cls closure for task
- * @param run_without_scheduler GNUNET_NO start the scheduler, GNUNET_YES do not
+ * @param task_cls closure for @a task
+ * @param run_without_scheduler #GNUNET_NO start the scheduler, #GNUNET_YES do not
  *        start the scheduler just run the main task
- * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
  */
 int
 GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
@@ -146,9 +151,13 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
                     int run_without_scheduler)
 {
   struct CommandContext cc;
+#if ENABLE_NLS
   char *path;
+#endif
   char *loglev;
   char *logfile;
+  char *cfg_fn;
+  const char *xdg;
   int ret;
   unsigned int cnt;
   unsigned long long skew_offset;
@@ -170,7 +179,7 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
 
   logfile = NULL;
   gargs = getenv ("GNUNET_ARGS");
-  if (gargs != NULL)
+  if (NULL != gargs)
   {
     char **gargv;
     unsigned int gargc;
@@ -183,12 +192,8 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
     for (i = 0; i < argc; i++)
       GNUNET_array_append (gargv, gargc, GNUNET_strdup (argv[i]));
     cargs = GNUNET_strdup (gargs);
-    tok = strtok (cargs, " ");
-    while (NULL != tok)
-    {
+    for (tok = strtok (cargs, " "); NULL != tok; tok = strtok (NULL, " "))
       GNUNET_array_append (gargv, gargc, GNUNET_strdup (tok));
-      tok = strtok (NULL, " ");
-    }
     GNUNET_free (cargs);
     GNUNET_array_append (gargv, gargc, NULL);
     argv = (char *const *) gargv;
@@ -199,12 +204,11 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
   cc.task = task;
   cc.task_cls = task_cls;
   cc.cfg = cfg = GNUNET_CONFIGURATION_create ();
-
   /* prepare */
 #if ENABLE_NLS
   setlocale (LC_ALL, "");
   path = GNUNET_OS_installation_get_path (GNUNET_OS_IPK_LOCALEDIR);
-  if (path != NULL)
+  if (NULL != path)
   {
     BINDTEXTDOMAIN ("GNUnet", path);
     GNUNET_free (path);
@@ -212,7 +216,7 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
   textdomain ("GNUnet");
 #endif
   cnt = 0;
-  while (options[cnt].name != NULL)
+  while (NULL != options[cnt].name)
     cnt++;
   allopts =
       GNUNET_malloc ((cnt +
@@ -227,7 +231,15 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
   qsort (allopts, cnt, sizeof (struct GNUNET_GETOPT_CommandLineOption),
          &cmd_sorter);
   loglev = NULL;
-  cc.cfgfile = GNUNET_strdup (GNUNET_DEFAULT_USER_CONFIG_FILE);
+  xdg = getenv ("XDG_CONFIG_HOME");
+  if (NULL != xdg)
+    GNUNET_asprintf (&cfg_fn,
+                     "%s%s%s",
+                     xdg,
+                     DIR_SEPARATOR_STR,
+                     "gnunet.conf");
+  else
+    cfg_fn = GNUNET_strdup (GNUNET_DEFAULT_USER_CONFIG_FILE);
   lpfx = GNUNET_strdup (binaryName);
   if (NULL != (spc = strstr (lpfx, " ")))
     *spc = '\0';
@@ -235,24 +247,41 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
   if ((GNUNET_OK > ret) ||
       (GNUNET_OK != GNUNET_log_setup (lpfx, loglev, logfile)))
   {
-    GNUNET_CONFIGURATION_destroy (cfg);
-    GNUNET_free_non_null (cc.cfgfile);
-    GNUNET_free_non_null (loglev);
-    GNUNET_free_non_null (logfile);
     GNUNET_free (allopts);
     GNUNET_free (lpfx);
-    return (ret == GNUNET_SYSERR) ? GNUNET_SYSERR : GNUNET_OK;
+    goto cleanup;
   }
+  if (NULL == cc.cfgfile)
+    cc.cfgfile = GNUNET_strdup (cfg_fn);
   if (GNUNET_YES ==
       GNUNET_DISK_file_test (cc.cfgfile))
-    (void) GNUNET_CONFIGURATION_load (cfg, cc.cfgfile);
+  {
+    if (GNUNET_SYSERR == GNUNET_CONFIGURATION_load (cfg, cc.cfgfile))
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Malformed configuration file `%s', exit ...\n"),
+                  cc.cfgfile);
+      ret = GNUNET_SYSERR;
+      GNUNET_free (allopts);
+      GNUNET_free (lpfx);
+      goto cleanup;
+    }
+  }
   else
   {
-    (void) GNUNET_CONFIGURATION_load (cfg, NULL);
-    if (0 != strcmp (cc.cfgfile, GNUNET_DEFAULT_USER_CONFIG_FILE))
+    if (0 != strcmp (cc.cfgfile, cfg_fn))
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		  _("Could not access configuration file `%s'\n"),
 		  cc.cfgfile);
+    if (GNUNET_SYSERR == GNUNET_CONFIGURATION_load (cfg, NULL))
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Malformed configuration, exit ...\n"));
+      ret = GNUNET_SYSERR;
+      GNUNET_free (allopts);
+      GNUNET_free (lpfx);
+      goto cleanup;
+    }
   }
   GNUNET_free (allopts);
   GNUNET_free (lpfx);
@@ -270,20 +299,22 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
   cc.args = &argv[ret];
   if (GNUNET_NO == run_without_scheduler)
   {
-          GNUNET_SCHEDULER_run (&program_main, &cc);
+    GNUNET_SCHEDULER_run (&program_main, &cc);
   }
   else
   {
-          GNUNET_RESOLVER_connect (cc.cfg);
-          cc.task (cc.task_cls, cc.args, cc.cfgfile, cc.cfg);
+    GNUNET_RESOLVER_connect (cc.cfg);
+    cc.task (cc.task_cls, cc.args, cc.cfgfile, cc.cfg);
   }
-  /* clean up */
+  ret = GNUNET_OK;
+ cleanup:
   GNUNET_SPEEDUP_stop_ ();
   GNUNET_CONFIGURATION_destroy (cfg);
   GNUNET_free_non_null (cc.cfgfile);
+  GNUNET_free (cfg_fn);
   GNUNET_free_non_null (loglev);
   GNUNET_free_non_null (logfile);
-  return GNUNET_OK;
+  return ret;
 }
 
 /**
@@ -296,18 +327,23 @@ GNUNET_PROGRAM_run2 (int argc, char *const *argv, const char *binaryName,
  * @param binaryHelp help text for the program
  * @param options command line options
  * @param task main function to run
- * @param task_cls closure for task
- * @return GNUNET_SYSERR on error, GNUNET_OK on success
+ * @param task_cls closure for @a task
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
  */
 int
-GNUNET_PROGRAM_run (int argc, char *const *argv, const char *binaryName,
+GNUNET_PROGRAM_run (int argc, char *const *argv,
+                    const char *binaryName,
                     const char *binaryHelp,
                     const struct GNUNET_GETOPT_CommandLineOption *options,
-                    GNUNET_PROGRAM_Main task, void *task_cls)
+                    GNUNET_PROGRAM_Main task,
+                    void *task_cls)
 {
-        return GNUNET_PROGRAM_run2 (argc, argv, binaryName, binaryHelp, options, task, task_cls, GNUNET_NO);
+  return GNUNET_PROGRAM_run2 (argc, argv,
+                              binaryName, binaryHelp,
+                              options,
+                              task, task_cls,
+                              GNUNET_NO);
 }
-
 
 
 /* end of program.c */

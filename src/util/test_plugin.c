@@ -22,7 +22,7 @@
  * @brief testcase for plugin.c
  */
 #include "platform.h"
-#include "gnunet_plugin_lib.h"
+#include "gnunet_util_lib.h"
 
 
 static void
@@ -53,7 +53,7 @@ main (int argc, char *argv[])
   ret = GNUNET_PLUGIN_load ("libgnunet_plugin_test", "in");
   if (ret == NULL)
     return 1;
-  if (0 != strcmp (ret, "Hello"))    
+  if (0 != strcmp (ret, "Hello"))
     return 2;
   ret = GNUNET_PLUGIN_unload ("libgnunet_plugin_test", "out");
   if (ret == NULL)

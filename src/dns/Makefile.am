@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
   WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
@@ -82,7 +82,7 @@ gnunet_service_dns_DEPENDENCIES = \
   libgnunetdnsstub.la
 
 libgnunetdnsparser_la_SOURCES = \
- dnsparser.c dnsparser.h
+ dnsparser.c 
 libgnunetdnsparser_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la $(XLIB) \
   -lidn

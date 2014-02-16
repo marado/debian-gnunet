@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -33,11 +33,11 @@ GNUNET_NETWORK_STRUCT_BEGIN
 /**
  * Initial message from a client to a testing control service.
  */
-    struct GNUNET_TESTBED_InitMessage
+struct GNUNET_TESTBED_InitMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_INIT
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_INIT
    */
   struct GNUNET_MessageHeader header;
 
@@ -85,11 +85,26 @@ struct GNUNET_TESTBED_AddHostMessage
    * 0 to use no user name; otherwise 'strlen (username)',
    * excluding 0-termination!
    */
-  uint16_t user_name_length GNUNET_PACKED;
+  uint16_t username_length GNUNET_PACKED;
 
-  /* followed by 0-terminated user name */
+  /**
+   * Number of bytes in the host name (excluding 0-termination) that follows the
+   * user name; cannot be 0
+   */
+  uint16_t hostname_length GNUNET_PACKED;
 
-  /* followed by 0-terminated host name */
+  /**
+   * The length of the uncompressed configuration
+   */
+  uint16_t config_size GNUNET_PACKED;
+
+  /* followed by non 0-terminated user name */
+
+  /* followed by non 0-terminated host name */
+
+  /* followed by gzip compressed configuration to start or connect to a
+     controller on this host.  While starting the controller this configration
+     is used as a template */
 
 };
 
@@ -119,39 +134,11 @@ struct GNUNET_TESTBED_HostConfirmedMessage
 
 
 /**
- * Message to testing service: configure service sharing
- * at a host.
- */
-struct GNUNET_TESTBED_ConfigureSharedServiceMessage
-{
-
-  /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_SHARE_SERVICE
-   */
-  struct GNUNET_MessageHeader header;
-
-  /**
-   * Host that is being configured.
-   */
-  uint32_t host_id GNUNET_PACKED;
-
-  /**
-   * Number of peers that should share a service instance;
-   * 1 for no sharing, 0 to forcefully disable the service.
-   */
-  uint32_t num_peers GNUNET_PACKED;
-
-  /* followed by 0-terminated name of the service */
-
-};
-
-
-/**
  * Client notifies controller that it should delegate
  * requests for a particular client to a particular
  * sub-controller.
  */
-struct GNUNET_TESTBED_ControllerLinkMessage
+struct GNUNET_TESTBED_ControllerLinkRequest
 {
 
   /**
@@ -175,18 +162,46 @@ struct GNUNET_TESTBED_ControllerLinkMessage
   uint32_t slave_host_id GNUNET_PACKED;
 
   /**
-   * The size of the uncompressed configuration
-   */
-  uint16_t config_size GNUNET_PACKED;
-
-  /**
    * Set to 1 if the receiving controller is the master controller for
    * the slave host (and thus responsible for starting it?). 0 if not
    */
   uint8_t is_subordinate;
 
-  /* followed by serialized slave configuration;
-   * gzip'ed configuration file in INI format */
+};
+
+
+/**
+ * Response message for ControllerLinkRequest message
+ */
+struct GNUNET_TESTBED_ControllerLinkResponse
+{
+
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS_RESULT
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * The size of the compressed configuration. Can be ZERO if the controller is
+   * not started (depends on the ControllerLinkRequest). NBO.
+   */
+  uint16_t config_size GNUNET_PACKED;
+
+  /**
+   * Set to GNUNET_YES to signify SUCCESS; GNUNET_NO to signify failure
+   */
+  uint16_t success GNUNET_PACKED;
+
+  /**
+   * The id of the operation which created this message. NBO
+   */
+  uint64_t operation_id GNUNET_PACKED;
+
+  /* If controller linking is successful and configuration is present, then here
+   * comes the serialized gzip configuration with which the controller is
+   * running at the delegate host */
+
+  /* In case of failure, here comes the error message (without \0 termination)*/
 
 };
 
@@ -204,14 +219,14 @@ struct GNUNET_TESTBED_PeerCreateMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * Unique operation id
-   */
-  uint64_t operation_id GNUNET_PACKED;
-
-  /**
    * On which host should the peer be started?
    */
   uint32_t host_id GNUNET_PACKED;
+
+  /**
+   * Unique operation id
+   */
+  uint64_t operation_id GNUNET_PACKED;
 
   /**
    * Unique ID for the peer.
@@ -221,7 +236,7 @@ struct GNUNET_TESTBED_PeerCreateMessage
   /**
    * Size of the uncompressed configuration
    */
-  uint32_t config_size GNUNET_PACKED;
+  uint16_t config_size GNUNET_PACKED;
 
   /* followed by serialized peer configuration;
    * gzip'ed configuration file in INI format */
@@ -237,7 +252,7 @@ struct GNUNET_TESTBED_PeerReconfigureMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPDE_TESTBED_RECONFIGURE_PEER
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER
    */
   struct GNUNET_MessageHeader header;
 
@@ -250,6 +265,11 @@ struct GNUNET_TESTBED_PeerReconfigureMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
+
+  /**
+   * The length of the serialized configuration when uncompressed
+   */
+  uint16_t config_size GNUNET_PACKED;
 
   /* followed by serialized peer configuration;
    * gzip'ed configuration file in INI format */
@@ -265,7 +285,7 @@ struct GNUNET_TESTBED_PeerStartMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_START_PEER
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_START_PEER
    */
   struct GNUNET_MessageHeader header;
 
@@ -290,7 +310,7 @@ struct GNUNET_TESTBED_PeerStopMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER
    */
   struct GNUNET_MessageHeader header;
 
@@ -315,7 +335,7 @@ struct GNUNET_TESTBED_PeerDestroyMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER
    */
   struct GNUNET_MessageHeader header;
 
@@ -340,7 +360,7 @@ struct GNUNET_TESTBED_ConfigureUnderlayLinkMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_CONFIGURE_UNDERLAY_LINK
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_CONFIGURE_UNDERLAY_LINK
    */
   struct GNUNET_MessageHeader header;
 
@@ -377,7 +397,7 @@ struct GNUNET_TESTBED_OverlayConnectMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT
    */
   struct GNUNET_MessageHeader header;
 
@@ -411,7 +431,7 @@ struct GNUNET_TESTBED_OverlayConnectMessage
 struct GNUNET_TESTBED_RemoteOverlayConnectMessage
 {
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_REMOTE_OVERLAY_CONNECT
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_REMOTE_OVERLAY_CONNECT
    */
   struct GNUNET_MessageHeader header;
 
@@ -434,6 +454,8 @@ struct GNUNET_TESTBED_RemoteOverlayConnectMessage
    * To be followed by the HELLO message of A
    */
   struct GNUNET_MessageHeader hello[0];
+  // FIXME: we usually do not use this gcc-hack as some
+  // compilers / tools really get messed up by it...
 
 };
 
@@ -445,13 +467,13 @@ struct GNUNET_TESTBED_PeerEventMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_PEER_EVENT
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_PEER_EVENT
    */
   struct GNUNET_MessageHeader header;
 
   /**
-   * 'enum GNUNET_TESTBED_EventType' (in NBO);
-   * either GNUNET_TESTBED_ET_PEER_START or GNUNET_TESTBED_ET_PEER_STOP.
+   * `enum GNUNET_TESTBED_EventType` (in NBO);
+   * either #GNUNET_TESTBED_ET_PEER_START or #GNUNET_TESTBED_ET_PEER_STOP.
    */
   int32_t event_type GNUNET_PACKED;
 
@@ -594,7 +616,7 @@ struct GNUNET_TESTBED_PeerGetConfigurationMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_CONFIGURATION
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_INFORMATION
    */
   struct GNUNET_MessageHeader header;
 
@@ -618,7 +640,7 @@ struct GNUNET_TESTBED_PeerConfigurationInformationMessage
 {
 
   /**
-   * Type is GNUNET_MESSAGE_TYPE_TESTBED_PEER_CONFIGURATION
+   * Type is #GNUNET_MESSAGE_TYPE_TESTBED_PEER_INFORMATION
    */
   struct GNUNET_MessageHeader header;
 
@@ -671,7 +693,7 @@ struct GNUNET_TESTBED_SlaveGetConfigurationMessage
 
 
 /**
- * Reply to GNUNET_MESSAGE_TYPE_TESTBED_GET_SLAVE_CONFIG message
+ * Reply to #GNUNET_MESSAGE_TYPE_TESTBED_GET_SLAVE_CONFIGURATION message
  */
 struct GNUNET_TESTBED_SlaveConfiguration
 {
@@ -697,6 +719,186 @@ struct GNUNET_TESTBED_SlaveConfiguration
 
   /* followed by gzip-compressed configuration of the peer */
 
+};
+
+
+/**
+ * Shutdown peers message
+ */
+struct GNUNET_TESTBED_ShutdownPeersMessage
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Operation ID
+   */
+  uint64_t operation_id GNUNET_PACKED;
+};
+
+
+/**
+ * Message to start/stop services of a peer
+ */
+struct GNUNET_TESTBED_ManagePeerServiceMessage
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Unique ID of the peer whose service has to be managed.
+   */
+  uint32_t peer_id GNUNET_PACKED;
+
+  /**
+   * Operation ID
+   */
+  uint64_t operation_id GNUNET_PACKED;
+
+  /**
+   * set this to 1 to start the service; 0 to stop the service
+   */
+  uint8_t start;
+
+  /**
+   * The NULL-terminated name of the service to start/stop follows here
+   */
+};
+
+
+/**
+ * Message to send underlay link model of a peer.  This message will be
+ * forwarded to the controller running the peer.
+ */
+struct GNUNET_TESTBED_UnderlayLinkModelMsg
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_UNDERLAYLINKMODELMSG
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * The number of peer entries contained in this message
+   */
+  uint32_t nentries GNUNET_PACKED;
+
+  /**
+   * The number of link properties contained in this message
+   */
+  uint32_t nprops GNUNET_PACKED;
+
+  /**
+   * Array of ids of peers to be in the blacklist/whitelist.  Each id is of type
+   * uint32_t.  Number of ids should be equal to nentries.
+   */
+
+  /**
+   * Array of link properties.  Each link property is to be arraged in a
+   * sequence of four integers of type uint32_t: peer_id, latency, loss and
+   * bandwidth.
+   */
+
+};
+
+
+/**************************************/
+/* Barriers IPC messages and protocol */
+/**************************************/
+
+
+/**
+ * The environmental variable which when available refers to the configuration
+ * file the local testbed controller is using
+ */
+#define ENV_TESTBED_CONFIG "GNUNET_TESTBED_CONTROLLER_CONFIG"
+
+
+/**
+ * Message to initialise a barrier
+ */
+struct GNUNET_TESTBED_BarrierInit
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * The quorum percentage needed for crossing the barrier
+   */
+  uint8_t quorum;
+
+  /**
+   * name of the barrier.  Non NULL-terminated.
+   */
+  char name[0];
+};
+
+
+/**
+ * Message to cancel a barrier
+ */
+struct GNUNET_TESTBED_BarrierCancel
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * The barrier name.  Non NULL terminated
+   */
+  char name[0];
+};
+
+
+/**
+ * Message for signalling status changes of a barrier
+ */
+struct GNUNET_TESTBED_BarrierStatusMsg
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * status.  Use enumerated values of enum BarrierStatus
+   */
+  uint16_t status GNUNET_PACKED;
+
+  /**
+   * strlen of the barrier name
+   */
+  uint16_t name_len GNUNET_PACKED;
+
+  /**
+   * the barrier name (NULL terminated) concatenated with an error message (NULL
+   * terminated) if the status were to indicate an error
+   */
+  char data[0];
+};
+
+
+/**
+ * Message sent from peers to the testbed-barrier service to indicate that they
+ * have reached a barrier and are waiting for it to be crossed
+ */
+struct GNUNET_TESTBED_BarrierWait
+{
+  /**
+   * Type is GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_WAIT
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * The name of the barrier they have reached.  Non-NULL terminated.
+   */
+  char name[0];
 };
 
 
