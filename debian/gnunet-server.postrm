@@ -23,7 +23,7 @@ case "${1}" in
 
 		if [ -x /usr/sbin/deluser ]
 		then
-			deluser --quiet --system ${_USERNAME}
+			deluser --quiet --system ${_USERNAME} || true
 		fi
 
 		if [ -x /usr/sbin/delgroup ]
