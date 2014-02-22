@@ -1,3 +1,10 @@
+gnunet (0.9.5a-3) unstable; urgency=medium
+
+  * debian/rules: copy gnunet.conf from debian/etc/ instead of echo it directly,
+    to make debian/rules independent of the shell (Closes: #739298).
+
+ -- Bertrand Marc <beberking@gmail.com>  Sat, 22 Feb 2014 10:58:38 +0100
+
 gnunet (0.9.5a-2) unstable; urgency=medium
 
   * Do not install /usr/share/doc/gnunet/README in gnunet-server

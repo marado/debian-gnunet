@@ -18,8 +18,7 @@ override_dh_auto_install:
 	
 	# Create config file
 	mkdir -p debian/tmp/etc
-	echo "[PATHS]\nSERVICEHOME = /var/lib/gnunet\n" \
-		> debian/tmp/etc/gnunet.conf
+	cp debian/etc/gnunet.conf debian/tmp/etc/
 
 	# Remove gnunet-download-manager.scm extension to match the manpage name
 	mv debian/tmp/usr/bin/gnunet-download-manager.scm \
