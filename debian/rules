@@ -3,6 +3,7 @@
 SHELL := sh -e
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
 %:
 	dh ${@} --with autoreconf
@@ -35,7 +36,14 @@ override_dh_auto_install:
 		debian/tmp/usr/bin/gnunet-template \
 		debian/tmp/usr/bin/gnunet-helper-transport-wlan-dummy
 
-override_dh_install: debian/gnunet-server.init
+ifneq ($(DEB_HOST_ARCH_OS),linux)
+	# Remove files related to the libraries/tools not built
+	find debian/tmp -name '*gnunet*vpn*' -print -delete
+	find debian/tmp -name '*gnunet*dns*' -print -delete
+	find debian/tmp -name '*gns*' -print -delete
+endif
+
+override_dh_install: debian/gnunet-server.init debian/gnunet-server.install.kfreebsd debian/gnunet-server.install.hurd
 	dh_install -a --fail-missing
 
 override_dh_strip:
@@ -46,7 +54,14 @@ override_dh_auto_clean:
 	rm -rf debian/gnunet-server.init
 	rm -rf contrib/gnunet_janitor.py contrib/gnunet_pyexpect.py libltdl/ \
 		src/integration-tests/*.py
+	rm -f debian/gnunet-server.install.kfreebsd debian/gnunet-server.install.hurd
 
 debian/gnunet-server.init: debian/gnunet-server.init.in
 	sed 's/@DEB_HOST_MULTIARCH@/$(DEB_HOST_MULTIARCH)/g' $< > $@
 
+debian/gnunet-server.install.kfreebsd debian/gnunet-server.install.hurd: debian/gnunet-server.install
+	cat debian/gnunet-server.install \
+	  | grep -v gnunet-dns | grep -v gnunetdns \
+	  | grep -v gns \
+	  | grep -v gnunet-vpn | grep -v gnunetvpn \
+	  > $@
