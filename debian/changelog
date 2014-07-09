@@ -1,3 +1,22 @@
+gnunet (0.9.5a-4) unstable; urgency=medium
+
+  [ Pino Toscano ]
+  * Fix FTBFS on non-linux architectures (Closes: #740544):
+   + remove gnunet-server.install.[kfreebsd,hurd].
+   + generate gnunet-server.install.[kfreebsd,hurd] during install and remove
+     them during auto_clean.   
+   + remove the useless leftovers of vpn, dns and gns stuff on non-linux
+     architectures (which are useless as the related libraries are not built).
+
+  [ Hideki Yamane ]
+  * Add "Build-Depends: libidn11-dev" to fix FTBFS "error: Libidn not found"
+    (Closes: #747782).
+
+  [ Bertrand Marc ]
+  * Build-depend on libgnutls28-dev instead of libgnutls-dev (Closes: #753031).
+
+ -- Bertrand Marc <beberking@gmail.com>  Wed, 09 Jul 2014 19:52:24 +0200
+
 gnunet (0.9.5a-3) unstable; urgency=medium
 
   * debian/rules: copy gnunet.conf from debian/etc/ instead of echo it directly,
