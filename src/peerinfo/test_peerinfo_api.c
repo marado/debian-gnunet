@@ -81,19 +81,17 @@ address_generator (void *cls, size_t max, void *buf)
   return ret;
 }
 
+struct GNUNET_PeerIdentity pid;
 
 static void
 add_peer ()
 {
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded pkey;
-  struct GNUNET_PeerIdentity pid;
   struct GNUNET_HELLO_Message *h2;
   size_t agc;
 
   agc = 2;
-  memset (&pkey, 32, sizeof (pkey));
-  GNUNET_CRYPTO_hash (&pkey, sizeof (pkey), &pid.hashPubKey);
-  h2 = GNUNET_HELLO_create (&pkey, &address_generator, &agc);
+  memset (&pid, 32, sizeof (pid));
+  h2 = GNUNET_HELLO_create (&pid.public_key, &address_generator, &agc, GNUNET_NO);
   GNUNET_PEERINFO_add_peer (h, h2, NULL, NULL);
   GNUNET_free (h2);
 
@@ -120,7 +118,7 @@ process (void *cls, const struct GNUNET_PeerIdentity *peer,
       /* try again */
       retries++;
       add_peer ();
-      ic = GNUNET_PEERINFO_iterate (h, NULL,
+      ic = GNUNET_PEERINFO_iterate (h, GNUNET_NO, NULL,
                                     GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_SECONDS, 15), &process,
                                     cls);
@@ -145,14 +143,14 @@ process (void *cls, const struct GNUNET_PeerIdentity *peer,
 
 
 static void
-run (void *cls, 
+run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
   h = GNUNET_PEERINFO_connect (cfg);
   GNUNET_assert (NULL != h);
   add_peer ();
-  ic = GNUNET_PEERINFO_iterate (h, NULL,
+  ic = GNUNET_PEERINFO_iterate (h, GNUNET_NO, &pid,
                                 GNUNET_TIME_relative_multiply
                                 (GNUNET_TIME_UNIT_SECONDS, 15), &process, cls);
 }

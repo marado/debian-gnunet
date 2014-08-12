@@ -68,8 +68,6 @@
  *
  * @param cls closure
  * @param peer the peer that connected
- * @param ats performance data
- * @param ats_count number of entries in ats (excluding 0-termination)
  * @param bandwidth_in inbound bandwidth in NBO
  * @param bandwidth_out outbound bandwidth in NBO
  *
@@ -77,8 +75,6 @@
 
 typedef void (*NotifyConnect) (void *cls,
                               const struct GNUNET_PeerIdentity *peer,
-                              const struct GNUNET_ATS_Information *ats,
-                              uint32_t ats_count,
                               struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
                               struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out);
 
@@ -124,12 +120,6 @@ struct ConnectInfoMessage
    * Type will be GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT
    */
   struct GNUNET_MessageHeader header;
-
-  /**
-   * Number of ATS key-value pairs that follow this struct
-   * (excluding the 0-terminator).
-   */
-  uint32_t ats_count GNUNET_PACKED;
 
   /**
    * Identity of the new neighbour.
@@ -186,9 +176,9 @@ struct TransportRequestConnectMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * For alignment.
+   * Connect (GNUNET_YES) or connect (GNUNET_NO).
    */
-  uint32_t reserved;
+  uint32_t connect;
 
   /**
    * Identity of the peer we would like to connect to.
@@ -233,12 +223,6 @@ struct InboundMessage
    * Type will be GNUNET_MESSAGE_TYPE_TRANSPORT_RECV
    */
   struct GNUNET_MessageHeader header;
-
-  /**
-   * Number of ATS key-value pairs that follow this struct
-   * (excluding the 0-terminator).
-   */
-  uint32_t ats_count GNUNET_PACKED;
 
   /**
    * Which peer sent the message?
@@ -301,14 +285,14 @@ struct OutboundMessage
 {
 
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_TRANSPORT_SEND
+   * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_SEND
    */
   struct GNUNET_MessageHeader header;
 
   /**
-   * Message priority.
+   * Always zero.
    */
-  uint32_t priority GNUNET_PACKED;
+  uint32_t reserved GNUNET_PACKED;
 
   /**
    * Allowed delay.
@@ -358,13 +342,19 @@ struct AddressLookupMessage
 
 
 /**
- * Message from the library to the transport service
- * asking for human readable addresses known for a peer.
+ * Message from the transport service to the library containing information
+ * about a peer. Information contained are:
+ * - current address used to communicate with this peer
+ * - state
+ * - state timeout
+ *
+ * Memory layout:
+ * [AddressIterateResponseMessage][address[addrlen]][transportname[pluginlen]]
  */
-struct PeerAddressLookupMessage
+struct ValidationIterateResponseMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_TRANSPORT_PEER_ADDRESS_LOOKUP
+   * Type is #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_VALIDATION_RESPONSE
    */
   struct GNUNET_MessageHeader header;
 
@@ -374,25 +364,45 @@ struct PeerAddressLookupMessage
   uint32_t reserved;
 
   /**
-   * timeout to give up.  FIXME: remove in the future.
-   */
-  struct GNUNET_TIME_RelativeNBO timeout;
-
-  /**
-   * The identity of the peer to look up.
+   * Peer identity
    */
   struct GNUNET_PeerIdentity peer;
-};
 
+  /**
+   * Local info about the address
+   */
+  uint32_t local_address_info GNUNET_PACKED;
+
+  /**
+   * Address length
+   */
+  uint32_t addrlen GNUNET_PACKED;
+
+  /**
+   * Length of the plugin name
+   */
+  uint32_t pluginlen GNUNET_PACKED;
+
+  /**
+   * State
+   */
+  uint32_t state GNUNET_PACKED;
+
+  struct GNUNET_TIME_AbsoluteNBO last_validation;
+
+  struct GNUNET_TIME_AbsoluteNBO valid_until;
+
+  struct GNUNET_TIME_AbsoluteNBO next_validation;
+};
 
 /**
  * Message from the library to the transport service
  * asking for binary addresses known for a peer.
  */
-struct AddressIterateMessage
+struct ValidationMonitorMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_ITERATE
+   * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_VALIDATION_REQUEST
    */
   struct GNUNET_MessageHeader header;
 
@@ -402,9 +412,28 @@ struct AddressIterateMessage
   uint32_t one_shot;
 
   /**
-   * timeout to give up.  FIXME: remove in the future
+   * The identity of the peer to look up.
    */
-  struct GNUNET_TIME_AbsoluteNBO timeout;
+  struct GNUNET_PeerIdentity peer;
+
+};
+
+
+/**
+ * Message from the library to the transport service
+ * asking for binary addresses known for a peer.
+ */
+struct PeerMonitorMessage
+{
+  /**
+   * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_PEER_REQUEST
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * One shot call or continous replies?
+   */
+  uint32_t one_shot;
 
   /**
    * The identity of the peer to look up.
@@ -443,15 +472,19 @@ struct TrafficMetricMessage
 
 
 /**
- * Message from the transport service to the library
- * containing binary addresses known for a peer.
+ * Message from the transport service to the library containing information
+ * about a peer. Information contained are:
+ * - current address used to communicate with this peer
+ * - state
+ * - state timeout
+ *
  * Memory layout:
  * [AddressIterateResponseMessage][address[addrlen]][transportname[pluginlen]]
  */
-struct AddressIterateResponseMessage
+struct PeerIterateResponseMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_ITERATE_RESPONSE
+   * Type is #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_PEER_RESPONSE
    */
   struct GNUNET_MessageHeader header;
 
@@ -460,18 +493,33 @@ struct AddressIterateResponseMessage
    */
   uint32_t reserved;
 
-    /**
+  /**
    * Peer identity
    */
   struct GNUNET_PeerIdentity peer;
 
   /**
-   * address length
+   * Timeout for the state this peer is in
+   */
+  struct GNUNET_TIME_AbsoluteNBO state_timeout;
+
+  /**
+   * Local info about the address
+   */
+  uint32_t local_address_info GNUNET_PACKED;
+
+  /**
+   * State this peer is in as #GNUNET_TRANSPORT_PeerState enumeration element
+   */
+  uint32_t state GNUNET_PACKED;
+
+  /**
+   * Address length
    */
   uint32_t addrlen GNUNET_PACKED;
 
   /**
-   * length of the plugin name
+   * Length of the plugin name
    */
   uint32_t pluginlen GNUNET_PACKED;
 

@@ -20,12 +20,11 @@
 
 /**
  * @file template/gnunet-service-template.c
- * @brief program that tracks template
+ * @brief program that does template
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_getopt_lib.h"
-#include "gnunet_service_lib.h"
+#include "gnunet_util_lib.h"
 
 
 /**

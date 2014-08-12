@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -32,7 +32,7 @@
  * processes using signals.  Because signals are not supported on W32
  * and Java (at least not nicely), we can alternatively use a pipe
  * to send signals to the child processes (if the child process is
- * a full-blown GNUnet process that supports reading signals from 
+ * a full-blown GNUnet process that supports reading signals from
  * a pipe, of course).  Naturally, this also only works for 'normal'
  * termination via signals, and not as a replacement for SIGKILL.
  * Thus using pipes to communicate signals should only be enabled if
@@ -72,7 +72,7 @@ enum GNUNET_OS_InheritStdioFlags
    * inherit stdin of the parent.
    */
   GNUNET_OS_INHERIT_STD_IN = 1,
-  
+
   /**
    * When this flag is set, the child process will
    * inherit stdout of the parent.
@@ -195,7 +195,7 @@ enum GNUNET_OS_ProcessStatusType
 
 /**
  * Get the path to a specific GNUnet installation directory or, with
- * GNUNET_OS_IPK_SELF_PREFIX, the current running apps installation
+ * #GNUNET_OS_IPK_SELF_PREFIX, the current running apps installation
  * directory.
  *
  * @param dirkind what kind of directory is desired?
@@ -225,24 +225,24 @@ GNUNET_OS_get_libexec_binary_path (const char *progname);
  * @param isDefault is this presumably the default interface
  * @param addr address of this interface (can be NULL for unknown or unassigned)
  * @param broadcast_addr the broadcast address (can be NULL for unknown or unassigned)
- * @param netmask the network mask (can be NULL for unknown or unassigned))
+ * @param netmask the network mask (can be NULL for unknown or unassigned)
  * @param addrlen length of the address
- * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
+ * @return #GNUNET_OK to continue iteration, #GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_OS_NetworkInterfaceProcessor) (void *cls, const char *name,
+typedef int (*GNUNET_OS_NetworkInterfaceProcessor) (void *cls,
+                                                    const char *name,
                                                     int isDefault,
-                                                    const struct sockaddr *
-                                                    addr,
-                                                    const struct sockaddr *
-                                                    broadcast_addr,
-                                                    const struct sockaddr *
-                                                    netmask, socklen_t addrlen);
+                                                    const struct sockaddr *addr,
+                                                    const struct sockaddr *broadcast_addr,
+                                                    const struct sockaddr *netmask,
+                                                    socklen_t addrlen);
 
 
 /**
  * @brief Enumerate all network interfaces
+ *
  * @param proc the callback function
- * @param proc_cls closure for proc
+ * @param proc_cls closure for @a proc
  */
 void
 GNUNET_OS_network_interfaces_list (GNUNET_OS_NetworkInterfaceProcessor proc,
@@ -304,24 +304,13 @@ GNUNET_OS_process_get_pid (struct GNUNET_OS_Process *proc);
 
 
 /**
- * Set process priority
- *
- * @param proc pointer to process structure
- * @param prio priority value
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
- */
-int
-GNUNET_OS_set_process_priority (struct GNUNET_OS_Process *proc,
-                                enum GNUNET_SCHEDULER_Priority prio);
-
-
-/**
  * Start a process.
  *
  * @param pipe_control should a pipe be used to send signals to the child?
  * @param std_inheritance a set of GNUNET_OS_INHERIT_STD_* flags
  * @param pipe_stdin pipe to use to send input to child process (or NULL)
  * @param pipe_stdout pipe to use to get output from child process (or NULL)
+ * @param pipe_stderr pipe to use to get error output from child process (or NULL)
  * @param filename name of the binary
  * @param argv NULL-terminated array of arguments to the process
  * @return pointer to process structure of the new process, NULL on error
@@ -331,7 +320,8 @@ GNUNET_OS_start_process_vap (int pipe_control,
                              enum GNUNET_OS_InheritStdioFlags std_inheritance,
 			     struct GNUNET_DISK_PipeHandle *pipe_stdin,
 			     struct GNUNET_DISK_PipeHandle *pipe_stdout,
-			     const char *filename, 
+			     struct GNUNET_DISK_PipeHandle *pipe_stderr,
+			     const char *filename,
 			     char *const argv[]);
 
 
@@ -342,6 +332,7 @@ GNUNET_OS_start_process_vap (int pipe_control,
  * @param std_inheritance a set of GNUNET_OS_INHERIT_STD_* flags
  * @param pipe_stdin pipe to use to send input to child process (or NULL)
  * @param pipe_stdout pipe to use to get output from child process (or NULL)
+ * @param pipe_stderr pipe to use to get error output from child process (or NULL)
  * @param filename name of the binary
  * @param ... NULL-terminated list of arguments to the process
  * @return pointer to process structure of the new process, NULL on error
@@ -351,6 +342,7 @@ GNUNET_OS_start_process (int pipe_control,
                          enum GNUNET_OS_InheritStdioFlags std_inheritance,
 			 struct GNUNET_DISK_PipeHandle *pipe_stdin,
                          struct GNUNET_DISK_PipeHandle *pipe_stdout,
+                         struct GNUNET_DISK_PipeHandle *pipe_stderr,
                          const char *filename, ...);
 
 
@@ -361,6 +353,7 @@ GNUNET_OS_start_process (int pipe_control,
  * @param std_inheritance a set of GNUNET_OS_INHERIT_STD_* flags
  * @param pipe_stdin pipe to use to send input to child process (or NULL)
  * @param pipe_stdout pipe to use to get output from child process (or NULL)
+ * @param pipe_stderr pipe to use to get error output from child process (or NULL)
  * @param filename name of the binary
  * @param va NULL-terminated list of arguments to the process
  * @return pointer to process structure of the new process, NULL on error
@@ -370,6 +363,7 @@ GNUNET_OS_start_process_va (int pipe_control,
                             enum GNUNET_OS_InheritStdioFlags std_inheritance,
 			    struct GNUNET_DISK_PipeHandle *pipe_stdin,
                             struct GNUNET_DISK_PipeHandle *pipe_stdout,
+                            struct GNUNET_DISK_PipeHandle *pipe_stderr,
                             const char *filename, va_list va);
 
 /**
@@ -387,9 +381,34 @@ GNUNET_OS_start_process_va (int pipe_control,
 struct GNUNET_OS_Process *
 GNUNET_OS_start_process_v (int pipe_control,
                            enum GNUNET_OS_InheritStdioFlags std_inheritance,
-			   const SOCKTYPE *lsocks, 
+			   const SOCKTYPE *lsocks,
 			   const char *filename,
                            char *const argv[]);
+
+
+/**
+ * Start a process.  This function is similar to the GNUNET_OS_start_process_*
+ * except that the filename and arguments can have whole strings which contain
+ * the arguments.  These arguments are to be separated by spaces and are parsed
+ * in the order they appear.  Arguments containing spaces can be used by
+ * quoting them with @em ".
+ *
+ * @param pipe_control should a pipe be used to send signals to the child?
+ * @param std_inheritance a set of GNUNET_OS_INHERIT_STD_* flags
+ * @param lsocks array of listen sockets to dup systemd-style (or NULL);
+ *         must be NULL on platforms where dup is not supported
+ * @param filename name of the binary.  It is valid to have the arguments
+ *         in this string when they are separated by spaces.
+ * @param ... more arguments.  Should be of type `char *`.  It is valid
+ *         to have the arguments in these strings when they are separated by
+ *         spaces.  The last argument MUST be NULL.
+ * @return pointer to process structure of the new process, NULL on error
+ */
+struct GNUNET_OS_Process *
+GNUNET_OS_start_process_s (int pipe_control,
+                           unsigned int std_inheritance,
+                           const SOCKTYPE * lsocks,
+                           const char *filename, ...);
 
 
 /**
@@ -440,7 +459,7 @@ GNUNET_OS_command_run (GNUNET_OS_LineProcessor proc, void *proc_cls,
  * @param proc pointer to process structure
  * @param type status type
  * @param code return code/signal number
- * @return GNUNET_OK on success, GNUNET_NO if the process is still running, GNUNET_SYSERR otherwise
+ * @return #GNUNET_OK on success, #GNUNET_NO if the process is still running, #GNUNET_SYSERR otherwise
  */
 int
 GNUNET_OS_process_status (struct GNUNET_OS_Process *proc,
@@ -456,7 +475,7 @@ GNUNET_OS_process_status (struct GNUNET_OS_Process *proc,
  * or to terminate very soon.
  *
  * @param proc pointer to process structure of the process to wait for
- * @return GNUNET_OK on success, GNUNET_SYSERR otherwise
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR otherwise
  */
 int
 GNUNET_OS_process_wait (struct GNUNET_OS_Process *proc);
@@ -483,13 +502,19 @@ GNUNET_OS_install_parent_control_handler (void *cls,
  * Attempts to find the file using the current
  * PATH environment variable as a search path.
  *
- * @param binary the name of the file to check
- * @return GNUNET_YES if the file is SUID,
- *         GNUNET_NO if not SUID (but binary exists)
- *         GNUNET_SYSERR on error (no such binary or not executable)
+ * @param binary the name of the file to check.
+ *        W32: must not have an .exe suffix.
+ * @param check_suid input true if the binary should be checked for SUID (*nix)
+ *        W32: checks if the program has sufficient privileges by executing this
+ *             binary with the -d flag. -d omits a programs main loop and only
+ *             executes all privileged operations in an binary.
+ * @param params parameters used for w32 privilege checking (can be NULL for != w32, or when not checking for suid/permissions )
+ * @return #GNUNET_YES if the file is SUID (*nix) or can be executed with current privileges (W32),
+ *         #GNUNET_NO if not SUID (but binary exists),
+ *         #GNUNET_SYSERR on error (no such binary or not executable)
  */
 int
-GNUNET_OS_check_helper_binary (const char *binary);
+GNUNET_OS_check_helper_binary (const char *binary, int check_suid, const char * params);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

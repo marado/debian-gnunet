@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -75,6 +75,31 @@ extern "C"
  * Consensus.
  */
 #define GNUNET_APPLICATION_TYPE_CONSENSUS 18
+
+/**
+ * Set. Used for two-peer set operations implemented using stream.
+ */
+#define GNUNET_APPLICATION_TYPE_SET 19
+
+/**
+ * Vectorproduct. Used for two-peer scalarproduct operations
+ */
+#define GNUNET_APPLICATION_TYPE_SCALARPRODUCT 20
+
+/**
+ * Conversation control data.
+ */
+#define GNUNET_APPLICATION_TYPE_CONVERSATION_CONTROL 21
+
+/**
+ * Conversation audio data.
+ */
+#define GNUNET_APPLICATION_TYPE_CONVERSATION_AUDIO 22
+
+/**
+ * MQTT publish-subscribe.
+ */
+#define GNUNET_APPLICATION_TYPE_MQTT 23
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

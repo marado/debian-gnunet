@@ -31,6 +31,7 @@
 #include "gnunet_transport_service.h"
 #include "gnunet_core_service.h"
 #include "gnunet_block_lib.h"
+#include "gnunet_ats_service.h"
 #include "fs.h"
 
 
@@ -63,12 +64,6 @@
 #define GET_MESSAGE_BIT_RETURN_TO 1
 
 /**
- * The hash of the public key of the target
- * namespace is included (for SKS queries).
- */
-#define GET_MESSAGE_BIT_SKS_NAMESPACE 2
-
-/**
  * The peer identity of a peer that had claimed to have the content
  * previously is included (can be used if responder-anonymity is not
  * desired; note that the precursor presumably lacked a direct
@@ -88,7 +83,7 @@ struct GetMessage
 {
 
   /**
-   * Message type will be GNUNET_MESSAGE_TYPE_FS_GET.
+   * Message type will be #GNUNET_MESSAGE_TYPE_FS_GET.
    */
   struct GNUNET_MessageHeader header;
 
@@ -119,7 +114,7 @@ struct GetMessage
   /**
    * Which of the optional hash codes are present at the end of the
    * message?  See GET_MESSAGE_BIT_xx constants.  For each bit that is
-   * set, an additional struct GNUNET_HashCode with the respective content
+   * set, an additional `struct GNUNET_HashCode` with the respective content
    * (in order of the bits) will be appended to the end of the GET
    * message.
    */
@@ -131,7 +126,7 @@ struct GetMessage
    */
   struct GNUNET_HashCode query;
 
-  /* this is followed by hash codes as specified in the "hash_bitmap";
+  /* this is followed by PeerIdentities as specified in the "hash_bitmap";
    * after that, an optional bloomfilter (with bits set for replies
    * that should be suppressed) can be present */
 };
@@ -222,6 +217,12 @@ extern struct GNUNET_LOAD_Value *GSF_rt_entry_lifetime;
  * Running average of the observed latency to other peers (round trip).
  */
 extern struct GNUNET_TIME_Relative GSF_avg_latency;
+
+/**
+ * Handle to ATS service.
+ */
+extern struct GNUNET_ATS_PerformanceHandle *GSF_ats;
+
 
 /**
  * Typical priorities we're seeing from other peers right now.  Since

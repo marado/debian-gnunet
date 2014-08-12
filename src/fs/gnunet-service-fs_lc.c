@@ -170,11 +170,11 @@ GSF_local_client_lookup_ (struct GNUNET_SERVER_Client *client)
   struct GSF_LocalClient *pos;
 
   pos = client_head;
-  while ((pos != NULL) && (pos->client != client))
+  while ((NULL != pos) && (pos->client != client))
     pos = pos->next;
-  if (pos != NULL)
+  if (NULL != pos)
     return pos;
-  pos = GNUNET_malloc (sizeof (struct GSF_LocalClient));
+  pos = GNUNET_new (struct GSF_LocalClient);
   pos->client = client;
   GNUNET_CONTAINER_DLL_insert (client_head, client_tail, pos);
   return pos;
@@ -296,17 +296,16 @@ client_response_handler (void *cls, enum GNUNET_BLOCK_EvaluationResult eval,
  * @param client identification of the client
  * @param message the actual message
  * @param prptr where to store the pending request handle for the request
- * @return GNUNET_YES to start local processing,
- *         GNUNET_NO to not (yet) start local processing,
- *         GNUNET_SYSERR on error
+ * @return #GNUNET_YES to start local processing,
+ *         #GNUNET_NO to not (yet) start local processing,
+ *         #GNUNET_SYSERR on error
  */
 int
 GSF_local_client_start_search_handler_ (struct GNUNET_SERVER_Client *client,
-                                        const struct GNUNET_MessageHeader
-                                        *message,
+                                        const struct GNUNET_MessageHeader *message,
                                         struct GSF_PendingRequest **prptr)
 {
-  static struct GNUNET_HashCode all_zeros;
+  static struct GNUNET_PeerIdentity all_zeros;
   const struct SearchMessage *sm;
   struct GSF_LocalClient *lc;
   struct ClientRequest *cr;
@@ -335,12 +334,12 @@ GSF_local_client_start_search_handler_ (struct GNUNET_SERVER_Client *client,
               GNUNET_h2s (&sm->query), (unsigned int) type);
   lc = GSF_local_client_lookup_ (client);
   cr = NULL;
-  /* detect duplicate KBLOCK requests */
-  if ((type == GNUNET_BLOCK_TYPE_FS_KBLOCK) ||
-      (type == GNUNET_BLOCK_TYPE_FS_NBLOCK) || (type == GNUNET_BLOCK_TYPE_ANY))
+  /* detect duplicate UBLOCK requests */
+  if ((type == GNUNET_BLOCK_TYPE_FS_UBLOCK) ||
+      (type == GNUNET_BLOCK_TYPE_ANY))
   {
     cr = lc->cr_head;
-    while (cr != NULL)
+    while (NULL != cr)
     {
       prd = GSF_pending_request_get_data_ (cr->pr);
       /* only unify with queries that hae not yet started local processing
@@ -353,7 +352,7 @@ GSF_local_client_start_search_handler_ (struct GNUNET_SERVER_Client *client,
       cr = cr->next;
     }
   }
-  if (cr != NULL)
+  if (NULL != cr)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Have existing request, merging content-seen lists.\n");
@@ -368,19 +367,18 @@ GSF_local_client_start_search_handler_ (struct GNUNET_SERVER_Client *client,
     GNUNET_STATISTICS_update (GSF_stats,
                               gettext_noop ("# client searches active"), 1,
                               GNUNET_NO);
-    cr = GNUNET_malloc (sizeof (struct ClientRequest));
+    cr = GNUNET_new (struct ClientRequest);
     cr->lc = lc;
     GNUNET_CONTAINER_DLL_insert (lc->cr_head, lc->cr_tail, cr);
     options = GSF_PRO_LOCAL_REQUEST;
     if (0 != (SEARCH_MESSAGE_OPTION_LOOPBACK_ONLY & ntohl (sm->options)))
       options |= GSF_PRO_LOCAL_ONLY;
-    cr->pr = GSF_pending_request_create_ (options, type, &sm->query, (type == GNUNET_BLOCK_TYPE_FS_SBLOCK) ? &sm->target        /* namespace */
-                                          : NULL,
+    cr->pr = GSF_pending_request_create_ (options, type,
+					  &sm->query,
                                           (0 !=
                                            memcmp (&sm->target, &all_zeros,
-                                                   sizeof (struct GNUNET_HashCode)))
-                                          ? (const struct GNUNET_PeerIdentity *)
-                                          &sm->target : NULL, NULL, 0,
+                                                   sizeof (struct GNUNET_PeerIdentity)))
+                                          ? &sm->target : NULL, NULL, 0,
                                           0 /* bf */ ,
                                           ntohl (sm->anonymity_level),
                                           0 /* priority */ ,
@@ -498,7 +496,7 @@ GSF_client_disconnect_handler_ (void *cls, struct GNUNET_SERVER_Client *client)
     GNUNET_CONTAINER_DLL_remove (pos->res_head, pos->res_tail, res);
     GNUNET_free (res);
   }
-  if (pos->th != NULL)
+  if (NULL != pos->th)
   {
     GNUNET_SERVER_notify_transmit_ready_cancel (pos->th);
     pos->th = NULL;

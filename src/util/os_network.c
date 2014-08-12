@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -27,10 +27,8 @@
  * @author Jake Dust
  * @author LRN
  */
-
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_os_lib.h"
+#include "gnunet_util_lib.h"
 
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
@@ -252,7 +250,7 @@ GNUNET_OS_network_interfaces_list (GNUNET_OS_NetworkInterfaceProcessor proc,
 
           pass_netmask = (struct sockaddr *) &netmask6;
         }
-        
+
         if (GNUNET_OK !=
             proc (proc_cls, ifc, 0 == strcmp (ifc, GNUNET_DEFAULT_INTERFACE),
                   (const struct sockaddr *) &a6,

@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2007, 2008, 2009, 2012 Christian Grothoff (and other contributing authors)
+     (C) 2007-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -213,12 +213,12 @@ get_ip_as_string (struct GNUNET_SERVER_Client *client,
   next = cache_head;
   while ( (NULL != (pos = next)) &&
 	  ( (pos->af != af) ||
-	    (pos->ip_len != ip_len) || 
+	    (pos->ip_len != ip_len) ||
 	    (0 != memcmp (pos->ip, ip, ip_len))) )
   {
     next = pos->next;
-    if (GNUNET_TIME_absolute_get_duration (pos->last_request).rel_value <
-        60 * 60 * 1000)
+    if (GNUNET_TIME_absolute_get_duration (pos->last_request).rel_value_us <
+        60 * 60 * 1000 * 1000LL)
     {
       GNUNET_CONTAINER_DLL_remove (cache_head,
 				   cache_tail,
@@ -231,8 +231,8 @@ get_ip_as_string (struct GNUNET_SERVER_Client *client,
   if (pos != NULL)
   {
     pos->last_request = now;
-    if (GNUNET_TIME_absolute_get_duration (pos->last_request).rel_value <
-        60 * 60 * 1000)
+    if (GNUNET_TIME_absolute_get_duration (pos->last_request).rel_value_us <
+        60 * 60 * 1000 * 1000LL)
     {
       GNUNET_free_non_null (pos->addr);
       pos->addr = NULL;
@@ -274,13 +274,24 @@ getaddrinfo_resolve (struct GNUNET_SERVER_TransmitContext *tc,
   struct addrinfo *result;
   struct addrinfo *pos;
 
-  memset (&hints, 0, sizeof (struct addrinfo));
-// FIXME in PlibC
-#ifndef MINGW
-  hints.ai_family = af;
-#else
-  hints.ai_family = AF_INET;
+#ifdef WINDOWS
+  /* Due to a bug, getaddrinfo will not return a mix of different families */
+  if (AF_UNSPEC == af)
+  {
+    int ret1;
+    int ret2;
+    ret1 = getaddrinfo_resolve (tc, hostname, AF_INET);
+    ret2 = getaddrinfo_resolve (tc, hostname, AF_INET6);
+    if ((ret1 == GNUNET_OK) || (ret2 == GNUNET_OK))
+      return GNUNET_OK;
+    if ((ret1 == GNUNET_SYSERR) || (ret2 == GNUNET_SYSERR))
+      return GNUNET_SYSERR;
+    return GNUNET_NO;
+  }
 #endif
+
+  memset (&hints, 0, sizeof (struct addrinfo));
+  hints.ai_family = af;
   hints.ai_socktype = SOCK_STREAM;      /* go for TCP */
 
   if (0 != (s = getaddrinfo (hostname, NULL, &hints, &result)))
@@ -291,10 +302,9 @@ getaddrinfo_resolve (struct GNUNET_SERVER_TransmitContext *tc,
                  AF_INET) ? "IPv4" : ((af == AF_INET6) ? "IPv6" : "any"),
                 gai_strerror (s));
     if ((s == EAI_BADFLAGS) || (s == EAI_MEMORY)
-#ifndef MINGW
+#ifndef WINDOWS
         || (s == EAI_SYSTEM)
 #else
-        // FIXME NILS
         || 1
 #endif
         )
@@ -303,8 +313,7 @@ getaddrinfo_resolve (struct GNUNET_SERVER_TransmitContext *tc,
   }
   if (result == NULL)
     return GNUNET_SYSERR;
-  pos = result;
-  while (pos != NULL)
+  for (pos = result; pos != NULL; pos = pos->ai_next)
   {
     switch (pos->ai_family)
     {
@@ -323,8 +332,7 @@ getaddrinfo_resolve (struct GNUNET_SERVER_TransmitContext *tc,
     default:
       /* unsupported, skip */
       break;
-    }     
-    pos = pos->ai_next;
+    }
   }
   freeaddrinfo (result);
   return GNUNET_OK;
@@ -340,6 +348,11 @@ gethostbyname2_resolve (struct GNUNET_SERVER_TransmitContext *tc,
   struct hostent *hp;
   int ret1;
   int ret2;
+
+#ifdef WINDOWS
+  /* gethostbyname2() in plibc is a compat dummy that calls gethostbyname(). */
+  return GNUNET_NO;
+#endif
 
   if (af == AF_UNSPEC)
   {
@@ -364,15 +377,15 @@ gethostbyname2_resolve (struct GNUNET_SERVER_TransmitContext *tc,
   {
   case AF_INET:
     GNUNET_assert (hp->h_length == sizeof (struct in_addr));
-    GNUNET_SERVER_transmit_context_append_data (tc, 
-						hp->h_addr_list[0], 
+    GNUNET_SERVER_transmit_context_append_data (tc,
+						hp->h_addr_list[0],
 						hp->h_length,
                                                 GNUNET_MESSAGE_TYPE_RESOLVER_RESPONSE);
     break;
   case AF_INET6:
     GNUNET_assert (hp->h_length == sizeof (struct in6_addr));
-    GNUNET_SERVER_transmit_context_append_data (tc, 
-						hp->h_addr_list[0], 
+    GNUNET_SERVER_transmit_context_append_data (tc,
+						hp->h_addr_list[0],
 						hp->h_length,
                                                 GNUNET_MESSAGE_TYPE_RESOLVER_RESPONSE);
     break;
@@ -406,7 +419,7 @@ gethostbyname_resolve (struct GNUNET_SERVER_TransmitContext *tc,
     return GNUNET_SYSERR;
   }
   GNUNET_assert (hp->h_length == sizeof (struct in_addr));
-  GNUNET_SERVER_transmit_context_append_data (tc, 
+  GNUNET_SERVER_transmit_context_append_data (tc,
 					      hp->h_addr_list[0],
 					      hp->h_length,
                                               GNUNET_MESSAGE_TYPE_RESOLVER_RESPONSE);
@@ -482,7 +495,7 @@ handle_get (void *cls, struct GNUNET_SERVER_Client *client,
   {
     /* IP from hostname */
     const char *hostname;
-  
+
     hostname = (const char *) &msg[1];
     if (hostname[size - 1] != '\0')
     {
@@ -521,12 +534,12 @@ handle_get (void *cls, struct GNUNET_SERVER_Client *client,
   }
   {
     char buf[INET6_ADDRSTRLEN];
-    
+
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Resolver asked to look up IP address `%s'.\n", 
+		"Resolver asked to look up IP address `%s'.\n",
 		inet_ntop (af, ip, buf, sizeof (buf)));
   }
-  get_ip_as_string (client, af, ip);  
+  get_ip_as_string (client, af, ip);
 }
 
 

@@ -43,11 +43,11 @@
  * @param type block type
  * @param query original query (hash)
  * @param bf pointer to bloom filter associated with query; possibly updated (!)
- * @param bf_mutator mutation value for bf
+ * @param bf_mutator mutation value for @a bf
  * @param xquery extrended query data (can be NULL, depending on type)
- * @param xquery_size number of bytes in xquery
+ * @param xquery_size number of bytes in @a xquery
  * @param reply_block response to validate
- * @param reply_block_size number of bytes in reply block
+ * @param reply_block_size number of bytes in @a reply_block
  * @return characterization of result
  */
 static enum GNUNET_BLOCK_EvaluationResult
@@ -96,9 +96,9 @@ block_plugin_test_evaluate (void *cls, enum GNUNET_BLOCK_Type type,
  * @param cls closure
  * @param type block type
  * @param block block to get the key for
- * @param block_size number of bytes in block
+ * @param block_size number of bytes in @a block
  * @param key set to the key (query) for the given block
- * @return GNUNET_OK on success, GNUNET_SYSERR if type not supported
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if type not supported
  *         (or if extracting a key from a block of this type does not work)
  */
 static int
@@ -114,6 +114,9 @@ block_plugin_test_get_key (void *cls, enum GNUNET_BLOCK_Type type,
 
 /**
  * Entry point for the plugin.
+ *
+ * @param cls NULL
+ * @return the exported block API
  */
 void *
 libgnunet_plugin_block_test_init (void *cls)
@@ -125,7 +128,7 @@ libgnunet_plugin_block_test_init (void *cls)
   };
   struct GNUNET_BLOCK_PluginFunctions *api;
 
-  api = GNUNET_malloc (sizeof (struct GNUNET_BLOCK_PluginFunctions));
+  api = GNUNET_new (struct GNUNET_BLOCK_PluginFunctions);
   api->evaluate = &block_plugin_test_evaluate;
   api->get_key = &block_plugin_test_get_key;
   api->types = types;
@@ -135,11 +138,14 @@ libgnunet_plugin_block_test_init (void *cls)
 
 /**
  * Exit point from the plugin.
+ *
+ * @param cls the return value from #libgnunet_plugin_block_test_init
+ * @return NULL
  */
 void *
 libgnunet_plugin_block_test_done (void *cls)
 {
-  struct GNUNET_TRANSPORT_PluginFunctions *api = cls;
+  struct GNUNET_BLOCK_PluginFunctions *api = cls;
 
   GNUNET_free (api);
   return NULL;

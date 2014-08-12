@@ -74,7 +74,7 @@ struct OwnAddressList
   /**
    * Signature for a 'struct TransportPongMessage' for this address.
    */
-  struct GNUNET_CRYPTO_RsaSignature pong_signature;
+  struct GNUNET_CRYPTO_EddsaSignature pong_signature;
 
 };
 
@@ -161,17 +161,23 @@ static void
 refresh_hello_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GeneratorContext gc;
+  int friend_only;
 
   hello_task = GNUNET_SCHEDULER_NO_TASK;
   gc.addr_pos = oal_head;
   gc.expiration = GNUNET_TIME_relative_to_absolute (hello_expiration);
 
+
+  friend_only = GNUNET_HELLO_is_friend_only (our_hello);
   GNUNET_free (our_hello);
-  our_hello = GNUNET_HELLO_create (&GST_my_public_key, &address_generator, &gc);
+  our_hello = GNUNET_HELLO_create (&GST_my_identity.public_key,
+				   &address_generator,
+				   &gc, friend_only);
   GNUNET_assert (NULL != our_hello);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG | GNUNET_ERROR_TYPE_BULK,
-              "Refreshed my `%s', new size is %d\n", "HELLO",
-              GNUNET_HELLO_size (our_hello));
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Refreshed my %s `%s', new size is %d\n",
+              (GNUNET_YES == GNUNET_HELLO_is_friend_only (our_hello)) ? "friend-only" : "public",
+              "HELLO", GNUNET_HELLO_size (our_hello));
   GNUNET_STATISTICS_update (GST_stats, gettext_noop ("# refreshed my HELLO"), 1,
                             GNUNET_NO);
   if (NULL != hello_cb)
@@ -200,15 +206,17 @@ refresh_hello ()
 /**
  * Initialize the HELLO module.
  *
+ * @param friend_only use a friend only hello
  * @param cb function to call whenever our HELLO changes
  * @param cb_cls closure for cb
  */
 void
-GST_hello_start (GST_HelloCallback cb, void *cb_cls)
+GST_hello_start (int friend_only, GST_HelloCallback cb, void *cb_cls)
 {
   hello_cb = cb;
   hello_cb_cls = cb_cls;
-  our_hello = GNUNET_HELLO_create (&GST_my_public_key, NULL, NULL);
+  our_hello = GNUNET_HELLO_create (&GST_my_identity.public_key,
+				   NULL, NULL, friend_only);
   GNUNET_assert (NULL != our_hello);
   refresh_hello ();
 }
@@ -280,7 +288,7 @@ GST_hello_modify_addresses (int addremove,
     GNUNET_break (0);
     return;
   }
-  al = GNUNET_malloc (sizeof (struct OwnAddressList));
+  al = GNUNET_new (struct OwnAddressList);
   GNUNET_CONTAINER_DLL_insert (oal_head, oal_tail, al);
   al->address = GNUNET_HELLO_address_copy (address);
   refresh_hello ();
@@ -299,7 +307,7 @@ GST_hello_modify_addresses (int addremove,
  */
 int
 GST_hello_test_address (const struct GNUNET_HELLO_Address *address,
-                        struct GNUNET_CRYPTO_RsaSignature **sig,
+                        struct GNUNET_CRYPTO_EddsaSignature **sig,
                         struct GNUNET_TIME_Absolute **sig_expiration)
 {
   struct OwnAddressList *al;

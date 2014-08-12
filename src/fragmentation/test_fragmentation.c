@@ -213,8 +213,8 @@ run (void *cls, char *const *args, const char *cfgfile,
         htons (sizeof (struct GNUNET_MessageHeader) + (17 * i) % (32 * 1024));
     frags[i] = GNUNET_FRAGMENT_context_create (NULL /* no stats */ ,
                                                MTU, &trackers[i],
-                                               GNUNET_TIME_UNIT_MILLISECONDS, 
-                                               GNUNET_TIME_UNIT_SECONDS, 
+                                               GNUNET_TIME_UNIT_MILLISECONDS,
+                                               GNUNET_TIME_UNIT_SECONDS,
 					       msg,
                                                &proc_frac, &frags[i]);
   }
@@ -241,7 +241,7 @@ main (int argc, char *argv[])
                     "WARNING",
                     NULL);
   for (i = 0; i < NUM_MSGS; i++)
-    GNUNET_BANDWIDTH_tracker_init (&trackers[i],
+    GNUNET_BANDWIDTH_tracker_init (&trackers[i], NULL, NULL,
                                    GNUNET_BANDWIDTH_value_init ((i + 1) * 1024),
                                    100);
   GNUNET_PROGRAM_run (5, argv_prog, "test-fragmentation", "nohelp", options,

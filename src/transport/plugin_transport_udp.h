@@ -25,6 +25,9 @@
  * @author Nathan Evans
  * @author Matthias Wachs
  */
+#ifndef PLUGIN_TRANSPORT_UDP_H
+#define PLUGIN_TRANSPORT_UDP_H
+
 #include "platform.h"
 #include "gnunet_hello_lib.h"
 #include "gnunet_util_lib.h"
@@ -40,6 +43,8 @@
 #include "transport.h"
 
 #define LOG(kind,...) GNUNET_log_from (kind, "transport-udp", __VA_ARGS__)
+
+#define PLUGIN_NAME "udp"
 
 #define DEBUG_UDP GNUNET_NO
 #define DEBUG_UDP_BROADCASTING GNUNET_NO
@@ -58,6 +63,11 @@ GNUNET_NETWORK_STRUCT_BEGIN
 struct IPv4UdpAddress
 {
   /**
+   * Optional options and flags for this address
+   */
+  uint32_t options GNUNET_PACKED;
+
+  /**
    * IPv4 address, in network byte order.
    */
   uint32_t ipv4_addr GNUNET_PACKED;
@@ -74,6 +84,10 @@ struct IPv4UdpAddress
  */
 struct IPv6UdpAddress
 {
+  /**
+   * Optional options and flags for this address
+   */
+  uint32_t options GNUNET_PACKED;
 
   /**
    * IPv6 address.
@@ -110,6 +124,8 @@ struct UDPMessage
 
 };
 
+struct UDP_MessageWrapper;
+
 
 /**
  * Encapsulation of all of the state of the plugin.
@@ -126,7 +142,7 @@ struct Plugin
    * Session of peers with whom we are currently connected,
    * map of peer identity to 'struct PeerSession'.
    */
-  struct GNUNET_CONTAINER_MultiHashMap *sessions;
+  struct GNUNET_CONTAINER_MultiPeerMap *sessions;
 
   /**
    * Heap with all of our defragmentation activities.
@@ -213,31 +229,10 @@ struct Plugin
   struct GNUNET_TIME_Relative broadcast_interval;
 
   /**
-   * Broadcast with IPv4
-   */
-  int broadcast_ipv4;
-
-  /**
-   * Broadcast with IPv6
-   */
-  int broadcast_ipv6;
-
-
-  /**
    * Tokenizer for inbound messages.
    */
   struct GNUNET_SERVER_MessageStreamTokenizer *broadcast_ipv6_mst;
   struct GNUNET_SERVER_MessageStreamTokenizer *broadcast_ipv4_mst;
-
-  /**
-   * ID of select broadcast task
-   */
-  GNUNET_SCHEDULER_TaskIdentifier send_ipv4_broadcast_task;
-
-  /**
-   * ID of select broadcast task
-   */
-  GNUNET_SCHEDULER_TaskIdentifier send_ipv6_broadcast_task;
 
   /**
    * IPv6 multicast address
@@ -245,15 +240,30 @@ struct Plugin
   struct sockaddr_in6 ipv6_multicast_address;
 
   /**
-   * DLL of IPv4 broadcast addresses
+   * DLL of broadcast addresses
    */
-  struct BroadcastAddress *ipv4_broadcast_tail;
-  struct BroadcastAddress *ipv4_broadcast_head;
+  struct BroadcastAddress *broadcast_tail;
+  struct BroadcastAddress *broadcast_head;
 
   /**
-   * Enable IPv6
+   * Is IPv6 enabled: GNUNET_YES or GNUNET_NO
    */
   int enable_ipv6;
+
+  /**
+   * Is IPv4 enabled: GNUNET_YES or GNUNET_NO
+   */
+  int enable_ipv4;
+
+  /**
+   * Is broadcasting enabled: GNUNET_YES or GNUNET_NO
+   */
+  int enable_broadcasting;
+
+  /**
+   * Is receiving broadcasts enabled: GNUNET_YES or GNUNET_NO
+   */
+  int enable_broadcasting_receiving;
 
   /**
    * Port we broadcasting on.
@@ -282,12 +292,20 @@ const char *
 udp_address_to_string (void *cls, const void *addr, size_t addrlen);
 
 void
-udp_broadcast_receive ();
+udp_broadcast_receive (struct Plugin *plugin,
+                       const char * buf,
+                       ssize_t size,
+                       const struct sockaddr *addr,
+                       size_t addrlen);
 
 void
-setup_broadcast (struct Plugin *plugin, struct sockaddr_in6 *serverAddrv6, struct sockaddr_in *serverAddrv4);
+setup_broadcast (struct Plugin *plugin,
+                 struct sockaddr_in6 *server_addrv6,
+                 struct sockaddr_in *server_addrv4);
 
 void
 stop_broadcast (struct Plugin *plugin);
 
+/*#ifndef PLUGIN_TRANSPORT_UDP_H*/
+#endif
 /* end of plugin_transport_udp.h */

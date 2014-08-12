@@ -61,6 +61,11 @@
 #include <netinet/ip_icmp.h>
 #include <netinet/in.h>
 
+/* The following constant is missing from FreeBSD 9.2 */
+#ifndef ICMP_TIME_EXCEEDED
+#define ICMP_TIME_EXCEEDED 11
+#endif
+
 /**
  * Must match IP given in the server.
  */
@@ -232,7 +237,11 @@ send_icmp_udp (const struct in_addr *my_ip, const struct in_addr *other)
   off = 0;
   ip_pkt.vers_ihl = 0x45;
   ip_pkt.tos = 0;
+#ifdef FREEBSD
+  ip_pkt.pkt_len = sizeof (packet); /* Workaround PR kern/21737 */
+#else
   ip_pkt.pkt_len = htons (sizeof (packet));
+#endif
   ip_pkt.id = htons (PACKET_ID);
   ip_pkt.flags_frag_offset = 0;
   ip_pkt.ttl = 128;
@@ -301,7 +310,7 @@ send_icmp_udp (const struct in_addr *my_ip, const struct in_addr *other)
   }
   else if (sizeof (packet) != (size_t) err)
   {
-    fprintf (stderr, "Error: partial send of ICMP message\n");
+    fprintf (stderr, "Error: partial send of ICMP message with size %lu\n", (unsigned long) off);
   }
 }
 
@@ -329,7 +338,11 @@ send_icmp (const struct in_addr *my_ip, const struct in_addr *other)
   off = 0;
   ip_pkt.vers_ihl = 0x45;
   ip_pkt.tos = 0;
+#ifdef FREEBSD
+  ip_pkt.pkt_len = sizeof (packet); /* Workaround PR kern/21737 */
+#else
   ip_pkt.pkt_len = htons (sizeof (packet));
+#endif
   ip_pkt.id = htons (PACKET_ID);
   ip_pkt.flags_frag_offset = 0;
   ip_pkt.ttl = IPDEFTTL;

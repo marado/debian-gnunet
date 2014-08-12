@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010 Christian Grothoff (and other contributing authors)
+     (C) 2001-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -22,7 +22,16 @@
  * @file include/gnunet_protocols.h
  * @brief constants for network protocols
  * @author Christian Grothoff
+ * @defgroup protocols Types of messages used in GNUnet
+ * @{
  */
+
+/*******************************************************************************
+ * TODO: we need a way to register message types centrally (via some webpage).
+ * For now: unofficial extensions should start at 48k, internal extensions
+ * defined here should leave some room (4-10 additional messages to the previous
+ * extension).
+ ******************************************************************************/
 
 #ifndef GNUNET_PROTOCOLS_H
 #define GNUNET_PROTOCOLS_H
@@ -78,14 +87,14 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_ARM_STOP 9
 
 /**
- * Request ARM service itself to shutdown.
- */
-#define GNUNET_MESSAGE_TYPE_ARM_SHUTDOWN 10
-
-/**
  * Response from ARM.
  */
-#define GNUNET_MESSAGE_TYPE_ARM_RESULT 11
+#define GNUNET_MESSAGE_TYPE_ARM_RESULT 10
+
+/**
+ * Status update from ARM.
+ */
+#define GNUNET_MESSAGE_TYPE_ARM_STATUS 11
 
 /**
  * Request to ARM to list all currently running services
@@ -97,15 +106,27 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_ARM_LIST_RESULT 13
 
+/**
+ * Request to ARM to notify client of service status changes
+ */
+#define GNUNET_MESSAGE_TYPE_ARM_MONITOR 14
+
 /*******************************************************************************
  * HELLO message types
  ******************************************************************************/
 
 /**
- * HELLO message used for communicating peer addresses.
+ * Previously used for HELLO messages used for communicating peer addresses.
  * Managed by libgnunethello.
  */
-#define GNUNET_MESSAGE_TYPE_HELLO 16
+#define GNUNET_MESSAGE_TYPE_HELLO_LEGACY 16
+
+/**
+ * HELLO message with friend only flag used for communicating peer addresses.
+ * Managed by libgnunethello.
+ */
+
+#define GNUNET_MESSAGE_TYPE_HELLO 17
 
 /*******************************************************************************
  * FRAGMENTATION message types
@@ -128,7 +149,7 @@ extern "C"
  ******************************************************************************/
 
 /**
- * Type of data messages from the plugin to the gnunet-wlan-helper 
+ * Type of data messages from the plugin to the gnunet-wlan-helper
  */
 #define GNUNET_MESSAGE_TYPE_WLAN_DATA_TO_HELPER 39
 
@@ -162,40 +183,56 @@ extern "C"
  * unwrapped by the DV service and handed to the plugin
  * for processing
  */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_DV_RECEIVE 44
+#define GNUNET_MESSAGE_TYPE_DV_RECV 44
 
 /**
  * DV Plugin to DV service message, indicating a message
  * should be sent out.
  */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_DV_SEND 45
+#define GNUNET_MESSAGE_TYPE_DV_SEND 45
 
 /**
  * DV service to DV api message, containing a confirmation
  * or failure of a DV_SEND message.
  */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_DV_SEND_RESULT 46
+#define GNUNET_MESSAGE_TYPE_DV_SEND_ACK 46
 
 /**
  * P2P DV message encapsulating some real message
  */
-#define GNUNET_MESSAGE_TYPE_DV_DATA 47
-
-/**
- * P2P DV message gossipping peer information
- */
-#define GNUNET_MESSAGE_TYPE_DV_GOSSIP 48
+#define GNUNET_MESSAGE_TYPE_DV_ROUTE 47
 
 /**
  * DV Plugin to DV service message, indicating
  * startup.
  */
-#define GNUNET_MESSAGE_TYPE_DV_START 49
+#define GNUNET_MESSAGE_TYPE_DV_START 48
 
 /**
- * P2P DV message notifying connected peers of a disconnect
+ * P2P DV message telling plugin that a peer connected
+ */
+#define GNUNET_MESSAGE_TYPE_DV_CONNECT 49
+
+/**
+ * P2P DV message telling plugin that a peer disconnected
  */
 #define GNUNET_MESSAGE_TYPE_DV_DISCONNECT 50
+
+/**
+ * P2P DV message telling plugin that a message transmission failed (negative ACK)
+ */
+#define GNUNET_MESSAGE_TYPE_DV_SEND_NACK 51
+
+/**
+ * P2P DV message telling plugin that our distance to a peer changed
+ */
+#define GNUNET_MESSAGE_TYPE_DV_DISTANCE_CHANGED 52
+
+/**
+ * DV message box for boxing multiple messages.
+ */
+#define GNUNET_MESSAGE_TYPE_DV_BOX 53
+
 
 /*******************************************************************************
  * Transport-UDP message types
@@ -296,7 +333,6 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_CORE_SEND 76
 
-
 /**
  * Request for peer iteration from CORE service.
  */
@@ -306,16 +342,6 @@ extern "C"
  * Last reply from core to request for peer iteration from CORE service.
  */
 #define GNUNET_MESSAGE_TYPE_CORE_ITERATE_PEERS_END 79
-
-/**
- * Check whether a given peer is currently connected to CORE.
- */
-#define GNUNET_MESSAGE_TYPE_CORE_PEER_CONNECTED 80
-
-/**
- * Session key exchange between peers.
- */
-#define GNUNET_MESSAGE_TYPE_CORE_SET_KEY 81
 
 /**
  * Encapsulation for an encrypted message between peers.
@@ -346,6 +372,12 @@ extern "C"
  * uncompressed type map of the sender
  */
 #define GNUNET_MESSAGE_TYPE_CORE_BINARY_TYPE_MAP 87
+
+/**
+ * Session key exchange between peers.
+ */
+#define GNUNET_MESSAGE_TYPE_CORE_EPHEMERAL_KEY 88
+
 
 /*******************************************************************************
  * DATASTORE message types
@@ -484,14 +516,14 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_FS_MIGRATION_STOP 139
 
 /**
- * P2P request for content (one FS to another via a stream).
+ * P2P request for content (one FS to another via a mesh).
  */
-#define GNUNET_MESSAGE_TYPE_FS_STREAM_QUERY 140
+#define GNUNET_MESSAGE_TYPE_FS_MESH_QUERY 140
 
 /**
- * P2P answer for content (one FS to another via a stream).
+ * P2P answer for content (one FS to another via a mesh).
  */
-#define GNUNET_MESSAGE_TYPE_FS_STREAM_REPLY 141
+#define GNUNET_MESSAGE_TYPE_FS_MESH_REPLY 141
 
 
 /*******************************************************************************
@@ -573,7 +605,35 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_DHT_CLIENT_GET_RESULTS_KNOWN             156
 
+/**
+ * Trail setup request is received by a peer.
+ */
+#define GNUNET_MESSAGE_TYPE_DHT_P2P_TRAIL_SETUP                157
 
+/**
+ * Trail to a particular peer is returned to this peer.
+ */
+#define GNUNET_MESSAGE_TYPE_DHT_P2P_TRAIL_SETUP_RESULT         158
+
+/**
+ * Verify if your immediate successor is still your immediate successor.
+ */
+#define GNUNET_MESSAGE_TYPE_DHT_P2P_VERIFY_SUCCESSOR           159
+
+/**
+ * Notify your new immediate successor that you are its new predecessor.
+ */
+#define GNUNET_MESSAGE_TYPE_DHT_P2P_NOTIFY_NEW_SUCCESSOR           160
+
+/**
+ * Message which contains the immediate predecessor of requested successor
+ */
+#define GNUNET_MESSAGE_TYPE_DHT_P2P_VERIFY_SUCCESSOR_RESULT    161
+
+/**
+ * Message which contains the get result.
+ */
+#define GNUNET_MESSAGE_TYPE_DHT_P2P_GET_RESULT                 162
 /*******************************************************************************
  * HOSTLIST message types
  ******************************************************************************/
@@ -751,69 +811,74 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_MESH_HELLO 216
 
 /**
- * Request the creation of a path
+ * Request the creation of a connection
  */
-#define GNUNET_MESSAGE_TYPE_MESH_PATH_CREATE            256
+#define GNUNET_MESSAGE_TYPE_MESH_CONNECTION_CREATE      256
 
 /**
- * Request the modification of an existing path
+ * Send origin an ACK that the connection is complete
  */
-#define GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGE            257
+#define GNUNET_MESSAGE_TYPE_MESH_CONNECTION_ACK         257
 
 /**
- * Notify that a connection of a path is no longer valid
+ * Notify that a connection is no longer valid
  */
-#define GNUNET_MESSAGE_TYPE_MESH_PATH_BROKEN            258
+#define GNUNET_MESSAGE_TYPE_MESH_CONNECTION_BROKEN      258
 
 /**
- * At some point, the route will spontaneously change
+ * At some point, the route will spontaneously change TODO
  */
 #define GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGED           259
 
 /**
- * Transport data in the mesh (origin->end) unicast
+ * Payload data (usually inside a encrypted tunnel).
  */
-#define GNUNET_MESSAGE_TYPE_MESH_UNICAST                260
+#define GNUNET_MESSAGE_TYPE_MESH_DATA                   260
 
 /**
- * Transport data to all peers in a tunnel
+ * Confirm payload data end-to-end.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_MULTICAST              261
+#define GNUNET_MESSAGE_TYPE_MESH_DATA_ACK               261
 
 /**
- * Transport data back in the mesh (end->origin)
+ * Key exchange encapsulation.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_TO_ORIGIN              262
+#define GNUNET_MESSAGE_TYPE_MESH_KX                     262
 
 /**
- * Send origin an ACK that the path is complete
+ * New ephemeral key.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_PATH_ACK               263
+#define GNUNET_MESSAGE_TYPE_MESH_KX_EPHEMERAL           263
 
 /**
- * Avoid path timeouts
+ * Challenge to test peer's session key.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_PATH_KEEPALIVE         264
+#define GNUNET_MESSAGE_TYPE_MESH_KX_PING                264
 
 /**
- * Request the destuction of a path
+ * Answer to session key challenge.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_PATH_DESTROY           265
+#define GNUNET_MESSAGE_TYPE_MESH_KX_PONG                265
 
 /**
- * Request the destruction of a whole tunnel
+ * Request the destuction of a connection
  */
-#define GNUNET_MESSAGE_TYPE_MESH_TUNNEL_DESTROY         266
+#define GNUNET_MESSAGE_TYPE_MESH_CONNECTION_DESTROY     266
 
 /**
- * ACK for a data packet.
+ * Hop-by-hop, connection dependent ACK.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_ACK                    267
+#define GNUNET_MESSAGE_TYPE_MESH_ACK                    268
 
 /**
- * Poll for an ACK.
+ * Poll for a hop-by-hop ACK.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_POLL                   268
+#define GNUNET_MESSAGE_TYPE_MESH_POLL                   269
+
+/**
+ * Announce connection is still alive (direction sensitive).
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_KEEPALIVE              270
 
 /**
  * Connect to the mesh service, specifying subscriptions
@@ -821,69 +886,34 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_MESH_LOCAL_CONNECT          272
 
 /**
- * Ask the mesh service to create a new tunnel
+ * Ask the mesh service to create a new channel.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_CREATE    273
+#define GNUNET_MESSAGE_TYPE_MESH_CHANNEL_CREATE         273
 
 /**
- * Ask the mesh service to destroy a tunnel
+ * Ask the mesh service to destroy a channel.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_DESTROY   274
+#define GNUNET_MESSAGE_TYPE_MESH_CHANNEL_DESTROY        274
 
 /**
- * Ask the mesh service to add a peer to an existing tunnel
+ * Confirm the creation of a channel
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD         275
+#define GNUNET_MESSAGE_TYPE_MESH_CHANNEL_ACK            275
 
 /**
- * Ask the mesh service to remove a peer from a tunnel
+ * Reject the creation of a channel
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_DEL         276
+#define GNUNET_MESSAGE_TYPE_MESH_CHANNEL_NACK           276
 
 /**
- * Ask the mesh service to add a peer offering a service to an existing tunnel
+ * Encrypted data. (Payload, channel management, keepalive)
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD_BY_TYPE 277
+#define GNUNET_MESSAGE_TYPE_MESH_ENCRYPTED              280
 
 /**
- * Ask the mesh service to add a peer described by a service string
+ * Payload client <-> service
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_ANNOUNCE_REGEX   278
-
-/**
- * Ask the mesh service to add a peer described by a service string
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD_BY_STRING 279
-
-/**
- * Ask the mesh service to add a peer to the blacklist of an existing tunnel
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_BLACKLIST   280
-
-/**
- * Ask the mesh service to remove a peer from the blacklist of a tunnel
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_UNBLACKLIST 281
-
-/**
- * Set tunnel speed to slowest peer
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_MIN       282
-
-/**
- * Set tunnel speed to fastest peer
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_MAX       283
-
-/**
- * Set tunnel buffering on.
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_BUFFER    284
-
-/**
- * Set tunnel buffering off.
- */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_NOBUFFER  285
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_DATA             285
 
 /**
  * Local ACK for data.
@@ -891,14 +921,49 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_MESH_LOCAL_ACK              286
 
 /**
+ * Local information about all channels of service.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CHANNELS    290
+
+/**
+ * Local information of service about a specific channel.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CHANNEL     291
+
+/**
  * Local information about all tunnels of service.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_TUNNELS     287
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_TUNNELS     292
 
 /**
  * Local information of service about a specific tunnel.
  */
-#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_TUNNEL      288
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_TUNNEL      293
+
+/**
+ * Local information about all connections of service.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CONNECTIONS 294
+
+/**
+ * Local information of service about a specific connection.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CONNECTION  295
+
+/**
+ * Local information about all peers known to the service.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_PEERS       296
+
+/**
+ * Local information of service about a specific peer.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_PEER        297
+
+/**
+ * Traffic (net-cat style) used by the Command Line Interface.
+ */
+#define GNUNET_MESSAGE_TYPE_MESH_CLI                    298
 
 /**
  * 640kb should be enough for everybody
@@ -1127,6 +1192,13 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_ATS_ADDRESSLIST_RESPONSE 355
 
+/**
+ * Type of the 'struct ChangePreferenceMessage' sent by clients to ATS
+ * to ask for allocation preference changes.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_PREFERENCE_FEEDBACK 356
+
+
 /*******************************************************************************
  * TRANSPORT message types
  ******************************************************************************/
@@ -1243,7 +1315,7 @@ extern "C"
 /**
  * Request to monitor addresses used by a peer or all peers.
  */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_ITERATE 380
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_PEER_REQUEST 380
 
 /**
  * Message send by a peer to notify the other to keep the session alive
@@ -1252,16 +1324,16 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_KEEPALIVE 381
 
 /**
- * Response to a GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_KEEPALIVE message to
+ * Response to a #GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_KEEPALIVE message to
  * measure latency in a regular interval
  */
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_KEEPALIVE_RESPONSE 382
 
-
 /**
- * Request to iterate over all known addresses.
+ * Response to #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_PEER_REQUEST
+ * request to iterate over all known addresses.
  */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_ITERATE_RESPONSE 383
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_PEER_RESPONSE 383
 
 /**
  * Message send by a peer to notify the other to keep the session alive.
@@ -1273,66 +1345,16 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_TRAFFIC_METRIC 385
 
-/*******************************************************************************
- * STREAM messages types
- ******************************************************************************/
+/**
+ * Request to monitor address validations by a peer or all peers.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_VALIDATION_REQUEST 386
 
 /**
- * Message containing data exchanged between stream end-points over mesh.
+ * Response to #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_VALIDATION_REQUEST
+ * request to iterate over all known addresses.
  */
-#define GNUNET_MESSAGE_TYPE_STREAM_DATA 400
-
-/**
- * ACK message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_ACK 401
-
-/**
- * Handshake hello message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_HELLO 402
-
-/**
- * Handshake hello acknowledgement message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_HELLO_ACK 403
-
-/**
- * Reset message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_RESET 404
-
-/**
- * Transmit close message (data transmission no longer possible after this
- * message) 
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_TRANSMIT_CLOSE 405
-
-/**
- * Transmit close acknowledgement message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_TRANSMIT_CLOSE_ACK 406
-
-/**
- * Receive close message (data is no loger read by the receiver after this
- * message) 
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_RECEIVE_CLOSE 407
-
-/**
- * Receive close acknowledgement message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_RECEIVE_CLOSE_ACK 408
-
-/**
- * Stream close message (data is no longer sent or read after this message)
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_CLOSE 409
-
-/**
- * Close acknowledgement message
- */
-#define GNUNET_MESSAGE_TYPE_STREAM_CLOSE_ACK 410
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_VALIDATION_RESPONSE 387
 
 /*******************************************************************************
  * FS-PUBLISH-HELPER IPC Messages
@@ -1375,53 +1397,52 @@ extern "C"
 
 
 /*******************************************************************************
+ * NAMECACHE message types
+ ******************************************************************************/
+
+/**
+ * Client to service: lookup block
+ */
+#define GNUNET_MESSAGE_TYPE_NAMECACHE_LOOKUP_BLOCK 431
+
+/**
+ * Service to client: result of block lookup
+ */
+#define GNUNET_MESSAGE_TYPE_NAMECACHE_LOOKUP_BLOCK_RESPONSE 432
+
+/**
+ * Client to service: cache a block
+ */
+#define GNUNET_MESSAGE_TYPE_NAMECACHE_BLOCK_CACHE 433
+
+/**
+ * Service to client: result of block cache request
+ */
+#define GNUNET_MESSAGE_TYPE_NAMECACHE_BLOCK_CACHE_RESPONSE 434
+
+/*******************************************************************************
  * NAMESTORE message types
  ******************************************************************************/
 
 /**
- * Client to service: register.
+ * Client to service: store records (as authority)
  */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_START 430
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_STORE 435
 
 /**
- * Client to service: lookup name
+ * Service to client: result of store operation.
  */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_LOOKUP_NAME 431
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_STORE_RESPONSE 436
 
 /**
- * Service to client: result of name lookup
+ * Client to service: lookup label
  */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_LOOKUP_NAME_RESPONSE 432
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_LOOKUP 437
 
 /**
- * Client to service: put records (for caching)
+ * Service to client: lookup label
  */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_PUT 433
-
-/**
- * Service to client: result of put operation.
- */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_PUT_RESPONSE 434
-
-/**
- * Client to service: create record as authority
- */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_CREATE 435
-
-/**
- * Service to client: result of record creation request
- */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_CREATE_RESPONSE 436
-
-/**
- * Client to service: remove record(s)
- */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_REMOVE 437
-
-/**
- * Service to client: result of removal request.
- */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_REMOVE_RESPONSE 438
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_LOOKUP_RESPONSE 438
 
 /**
  * Client to service: "reverse" lookup for zone name based on zone key
@@ -1434,14 +1455,26 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME_RESPONSE 440
 
 /**
- * Client to service: please start iteration
+ * Client to service: start monitoring (yields sequence of
+ * "ZONE_ITERATION_RESPONSES" --- forever).
  */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_START 445
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_MONITOR_START 441
 
 /**
- * Service to client: current record in iteration (or end of list).
+ * Service to client: you're now in sync.
  */
-#define GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_RESPONSE 446
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_MONITOR_SYNC 442
+
+/**
+ * Service to client: here is a (plaintext) record you requested.
+ */
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT 443
+
+/**
+ * Client to service: please start iteration; receives
+ * "GNUNET_MESSAGE_TYPE_NAMESTORE_LOOKUP_NAME_RESPONSE" messages in return.
+ */
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_START 445
 
 /**
  * Client to service: next record in iteration please.
@@ -1452,7 +1485,6 @@ extern "C"
  * Client to service: stop iterating.
  */
 #define GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_STOP 448
-
 
 /*******************************************************************************
  * LOCKMANAGER message types
@@ -1493,106 +1525,139 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TESTBED_ADD_HOST_SUCCESS 462
 
 /**
- * Message to configure a service to be shared among peers
- */
-#define GNUNET_MESSAGE_TYPE_TESTBED_SHARE_SERVICE 463
-
-/**
  * Message to link delegated controller to slave controller
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS 464
+#define GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS 463
 
 /**
  * Message to create a peer at a host
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER 465
+#define GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER 464
 
 /**
  * Message to reconfigure a peer
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER 466
+#define GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER 465
 
 /**
  * Message to start a peer at a host
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_START_PEER 467
+#define GNUNET_MESSAGE_TYPE_TESTBED_START_PEER 466
 
 /**
  * Message to stop a peer at a host
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER 468
+#define GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER 467
 
 /**
  * Message to destroy a peer
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER 469
+#define GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER 468
 
 /**
  * Configure underlay link message
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_CONFIGURE_UNDERLAY_LINK 470
+#define GNUNET_MESSAGE_TYPE_TESTBED_CONFIGURE_UNDERLAY_LINK 469
 
 /**
  * Message to connect peers in a overlay
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT 471
+#define GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT 470
 
 /**
  * Message for peer events
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_PEER_EVENT 472
+#define GNUNET_MESSAGE_TYPE_TESTBED_PEER_EVENT 471
 
 /**
  * Message for peer connect events
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_PEER_CONNECT_EVENT 473
+#define GNUNET_MESSAGE_TYPE_TESTBED_PEER_CONNECT_EVENT 472
 
 /**
  * Message for operation events
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_OPERATION_FAIL_EVENT 474
+#define GNUNET_MESSAGE_TYPE_TESTBED_OPERATION_FAIL_EVENT 473
 
 /**
  * Message to signal successful peer creation
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER_SUCCESS 475
+#define GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER_SUCCESS 474
 
 /**
  * Message to signal a generic operation has been successful
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_GENERIC_OPERATION_SUCCESS 476
+#define GNUNET_MESSAGE_TYPE_TESTBED_GENERIC_OPERATION_SUCCESS 475
 
 /**
- * Message to get the configuration of a peer
+ * Message to get a peer's information
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_CONFIGURATION 477
+#define GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_INFORMATION 476
 
 /**
- * Message containing the peer configuration
+ * Message containing the peer's information
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_PEER_CONFIGURATION 478
+#define GNUNET_MESSAGE_TYPE_TESTBED_PEER_INFORMATION 477
 
 /**
  * Message to request a controller to make one of its peer to connect to another
  * peer using the contained HELLO
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_REMOTE_OVERLAY_CONNECT 479
+#define GNUNET_MESSAGE_TYPE_TESTBED_REMOTE_OVERLAY_CONNECT 478
 
 /**
  * Message to request configuration of a slave controller
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_GET_SLAVE_CONFIGURATION 480
+#define GNUNET_MESSAGE_TYPE_TESTBED_GET_SLAVE_CONFIGURATION 479
 
 /**
  * Message which contains the configuration of slave controller
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_SLAVE_CONFIGURATION 481
+#define GNUNET_MESSAGE_TYPE_TESTBED_SLAVE_CONFIGURATION 480
+
+/**
+ * Message to signal the result of GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS request
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS_RESULT 481
+
+/**
+ * A controller receiving this message floods it to its directly-connected
+ * sub-controllers and then stops and destroys all peers
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS 482
+
+/**
+ * Message to start/stop a service of a peer
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_MANAGE_PEER_SERVICE 483
+
+/**
+ * Message to initialise a barrier.  Messages of these type are flooded to all
+ * sub-controllers
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT 484
+
+/**
+ * Message to cancel a barrier.  This message is flooded to all sub-controllers
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL 485
+
+/**
+ * Message for signalling status of a barrier
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS 486
+
+/**
+ * Message sent by a peer when it has reached a barrier and is waiting for it to
+ * be crossed
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_WAIT 487
 
 /**
  * Not really a message, but for careful checks on the testbed messages; Should
  * always be the maximum and never be used to send messages with this type
  */
-#define GNUNET_MESSAGE_TYPE_TESTBED_MAX 482
+#define GNUNET_MESSAGE_TYPE_TESTBED_MAX 488
 
 /**
  * The initialization message towards gnunet-testbed-helper
@@ -1605,20 +1670,19 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TESTBED_HELPER_REPLY 496
 
 
+/******************************************************************************
+ * GNS.
+ *****************************************************************************/
+
 /**
- * GNS. FIXME: document!
+ * Client would like to resolve a name.
  */
 #define GNUNET_MESSAGE_TYPE_GNS_LOOKUP 500
 
+/**
+ * Service response to name resolution request from client.
+ */
 #define GNUNET_MESSAGE_TYPE_GNS_LOOKUP_RESULT 501
-
-#define GNUNET_MESSAGE_TYPE_GNS_SHORTEN 502
-
-#define GNUNET_MESSAGE_TYPE_GNS_SHORTEN_RESULT 503
-
-#define GNUNET_MESSAGE_TYPE_GNS_GET_AUTH 504
-
-#define GNUNET_MESSAGE_TYPE_GNS_GET_AUTH_RESULT 505
 
 
 /*******************************************************************************
@@ -1661,7 +1725,6 @@ extern "C"
 /* message types 526-539 reserved for consensus client/service messages */
 
 
-
 /**
  * Sent by client to service, telling whether a received element should
  * be accepted and propagated further or not.
@@ -1679,27 +1742,677 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_DIFFERENCE_DIGEST 542
 
 /**
- * Elements, and requests for further elements
+ * One or more elements that are sent from peer to peer.
  */
 #define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ELEMENTS 543
+
+/**
+ * Elements, and requests for further elements
+ */
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ELEMENTS_REQUEST 544
+
+/**
+ * Elements that a peer reports to be missing at the remote peer.
+ */
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ELEMENTS_REPORT 545
 
 /*
  * Initialization message for consensus p2p communication.
  */
-#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_HELLO 544
-
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_HELLO 546
 
 /**
- *  Next available: 570
+ * Report that the peer is synced with the partner after successfuly decoding the invertible bloom filter.
  */
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_SYNCED 547
+
+/**
+ * Interaction os over, got synched and reported all elements
+ */
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_FIN 548
+
+/**
+ * Abort a round, don't send requested elements anymore
+ */
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ABORT 548
+
+/**
+ * Abort a round, don't send requested elements anymore
+ */
+#define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ROUND_CONTEXT 547
 
 
 /*******************************************************************************
- * TODO: we need a way to register message types centrally (via some webpage).
- * For now: unofficial extensions should start at 48k, internal extensions
- * define here should leave some room (4-10 additional messages to the previous
- * extension).
+ * SET message types
  ******************************************************************************/
+
+#define GNUNET_MESSAGE_TYPE_SET_REJECT 569
+
+/**
+ * Cancel a set operation
+ */
+#define GNUNET_MESSAGE_TYPE_SET_CANCEL 570
+
+/**
+ * Acknowledge result from iteration
+ */
+#define GNUNET_MESSAGE_TYPE_SET_ITER_ACK 571
+
+/**
+ * Create an empty set
+ */
+#define GNUNET_MESSAGE_TYPE_SET_RESULT 572
+
+/**
+ * Add element to set
+ */
+#define GNUNET_MESSAGE_TYPE_SET_ADD 573
+
+/**
+ * Remove element from set
+ */
+#define GNUNET_MESSAGE_TYPE_SET_REMOVE 574
+
+/**
+ * Listen for operation requests
+ */
+#define GNUNET_MESSAGE_TYPE_SET_LISTEN 575
+
+/**
+ * Accept a set request
+ */
+#define GNUNET_MESSAGE_TYPE_SET_ACCEPT 576
+
+/**
+ * Evaluate a set operation
+ */
+#define GNUNET_MESSAGE_TYPE_SET_EVALUATE 577
+
+/**
+ * Start a set operation with the given set
+ */
+#define GNUNET_MESSAGE_TYPE_SET_CONCLUDE 578
+
+/**
+ * Notify the client of a request from a remote peer
+ */
+#define GNUNET_MESSAGE_TYPE_SET_REQUEST 579
+
+/**
+ * Create a new local set
+ */
+#define GNUNET_MESSAGE_TYPE_SET_CREATE 580
+
+/**
+ * Request a set operation from a remote peer.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_P2P_OPERATION_REQUEST 581
+
+/**
+ * Strata estimator.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_UNION_P2P_SE 582
+
+/**
+ * Invertible bloom filter.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_UNION_P2P_IBF 583
+
+/**
+ * Actual set elements.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_P2P_ELEMENTS 584
+
+/**
+ * Requests for the elements with the given hashes.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_P2P_ELEMENT_REQUESTS 585
+
+/**
+ * Operation is done.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_P2P_DONE 586
+
+/**
+ * Start iteration over set elements.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_ITER_REQUEST 587
+
+/**
+ * Element result for the iterating client.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_ITER_ELEMENT 588
+
+/**
+ * Iteration end marker for the client.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_ITER_DONE 589
+
+/**
+ * Information about the element count for intersection
+ */
+#define GNUNET_MESSAGE_TYPE_SET_INTERSECTION_P2P_ELEMENT_INFO 591
+
+/**
+ * Bloom filter message for intersection exchange started by Bob.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_INTERSECTION_P2P_BF 592
+
+/**
+ * Bloom filter message for intersection exchange started by Bob.
+ */
+#define GNUNET_MESSAGE_TYPE_SET_INTERSECTION_P2P_BF_PART 593
+
+/*******************************************************************************
+ * TESTBED LOGGER message types
+ ******************************************************************************/
+
+/**
+ * Message for TESTBED LOGGER
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_LOGGER_MSG 600
+
+/**
+ * Message for TESTBED LOGGER acknowledgement
+ */
+#define GNUNET_MESSAGE_TYPE_TESTBED_LOGGER_ACK 601
+
+
+/*******************************************************************************
+ * EXPERIMENTATION message types
+ ******************************************************************************/
+
+/**
+ * Message for experimentation request
+ */
+#define GNUNET_MESSAGE_TYPE_EXPERIMENTATION_REQUEST 610
+
+/**
+ * Message for experimentation response
+ */
+#define GNUNET_MESSAGE_TYPE_EXPERIMENTATION_RESPONSE 611
+
+/**
+ * Message for experimentation response
+ */
+#define GNUNET_MESSAGE_TYPE_EXPERIMENTATION_START 612
+
+/**
+ * Message for experimentation response
+ */
+#define GNUNET_MESSAGE_TYPE_EXPERIMENTATION_START_ACK 613
+
+/**
+ * Message for experimentation response
+ */
+#define GNUNET_MESSAGE_TYPE_EXPERIMENTATION_STOP 614
+
+
+
+
+/**
+ * Advertise regex capability.
+ */
+#define GNUNET_MESSAGE_TYPE_REGEX_ANNOUNCE 620
+
+/**
+ * Search for peer with matching capability.
+ */
+#define GNUNET_MESSAGE_TYPE_REGEX_SEARCH 621
+
+/**
+ * Result in response to regex search.
+ */
+#define GNUNET_MESSAGE_TYPE_REGEX_RESULT 622
+
+/*******************************************************************************
+ * IDENTITY message types
+ ******************************************************************************/
+
+/**
+ * First message send from identity client to service (to subscribe to
+ * updates).
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_START 624
+
+/**
+ * Generic response from identity service with success and/or error message.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE 625
+
+/**
+ * Update about identity status from service to clients.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE 626
+
+/**
+ * Client requests to know default identity for a subsystem.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_GET_DEFAULT 627
+
+/**
+ * Client sets default identity; or service informs about default identity.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT 628
+
+/**
+ * Create new identity (client->service).
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_CREATE 629
+
+/**
+ * Rename existing identity (client->service).
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_RENAME 630
+
+/**
+ * Delete identity (client->service).
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_DELETE 631
+
+
+/*******************************************************************************
+ * REVOCATION message types
+ ******************************************************************************/
+
+/**
+ * Client to service: was this key revoked?
+ */
+#define GNUNET_MESSAGE_TYPE_REVOCATION_QUERY 636
+
+/**
+ * Service to client: answer if key was revoked!
+ */
+#define GNUNET_MESSAGE_TYPE_REVOCATION_QUERY_RESPONSE 637
+
+/**
+ * Client to service OR peer-to-peer: revoke this key!
+ */
+#define GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE 638
+
+/**
+ * Service to client: revocation confirmed
+ */
+#define GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE_RESPONSE 639
+
+
+/*******************************************************************************
+ * SCALARPRODUCT message types
+ ******************************************************************************/
+
+/**
+ * Client -> Vector-Product Service request message
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_TO_ALICE 640
+
+/**
+ * Client -> Vector-Product Service request message
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_TO_BOB 641
+
+/**
+ * Vector-Product Service request -> remote VP Service
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_ALICE_TO_BOB 642
+
+/**
+ * Vector-Product Service request -> remote VP Service Multipart
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_ALICE_TO_BOB_MULTIPART 643
+
+/**
+ * remote Vector-Product Service response -> requesting VP Service
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_BOB_TO_ALICE 644
+
+/**
+ * remote Vector-Product Service response -> requesting VP Service Multipart
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_BOB_TO_ALICE_MULTIPART 645
+
+/**
+ * Vector-Product Service response -> Client
+ */
+#define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_SERVICE_TO_CLIENT 646
+
+
+/*******************************************************************************
+ * PSYCSTORE message types
+ ******************************************************************************/
+
+/**
+ * Store a membership event.
+ */
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_MEMBERSHIP_STORE 650
+
+/**
+ * Test for membership of a member at a particular point in time.
+ */
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_MEMBERSHIP_TEST 651
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_FRAGMENT_STORE 652
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_FRAGMENT_GET 653
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_MESSAGE_GET 654
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_MESSAGE_GET_FRAGMENT 655
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_COUNTERS_GET 656
+
+/* 657 */
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_STATE_MODIFY 658
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_STATE_SYNC 659
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_STATE_RESET 660
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_STATE_HASH_UPDATE 661
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_STATE_GET 662
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_STATE_GET_PREFIX 663
+
+/**
+ * Generic response from PSYCstore service with success and/or error message.
+ */
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_RESULT_CODE 664
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_RESULT_FRAGMENT 665
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_RESULT_COUNTERS 666
+
+#define GNUNET_MESSAGE_TYPE_PSYCSTORE_RESULT_STATE 667
+
+
+/*******************************************************************************
+ * PSYC message types
+ ******************************************************************************/
+
+/**
+ * C: client
+ * S: service
+ * M: muticast
+ */
+
+/** S->C: result of an operation */
+#define GNUNET_MESSAGE_TYPE_PSYC_RESULT_CODE 680
+
+/** C->S: request to start a master */
+#define GNUNET_MESSAGE_TYPE_PSYC_MASTER_START 681
+
+/** S->C: master start acknowledgement */
+#define GNUNET_MESSAGE_TYPE_PSYC_MASTER_START_ACK 682
+
+/** C->S: request to start a master */
+#define GNUNET_MESSAGE_TYPE_PSYC_SLAVE_JOIN 683
+
+/** S->C: slave join acknowledgement */
+#define GNUNET_MESSAGE_TYPE_PSYC_SLAVE_JOIN_ACK 684
+
+/* 685-686 */
+
+/** M->S->C: incoming join request from multicast */
+#define GNUNET_MESSAGE_TYPE_PSYC_JOIN_REQUEST 687
+
+/** C->S->M: decision about a join request */
+#define GNUNET_MESSAGE_TYPE_PSYC_JOIN_DECISION 688
+
+
+/** C->S: request to remove channel slave from the membership database. */
+#define GNUNET_MESSAGE_TYPE_PSYC_CHANNEL_SLAVE_ADD 689
+
+/** C->S: request to add channel slave to the membership database */
+#define GNUNET_MESSAGE_TYPE_PSYC_CHANNEL_SLAVE_RM 690
+
+
+/** M<->S<->C: PSYC message which contains one or more message parts. */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE 691
+
+/** Message part: method */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_METHOD 692
+
+/** Message part: modifier */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_MODIFIER 693
+
+/** Message part: modifier continuation */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_MOD_CONT 694
+
+/** Message part: data */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_DATA 695
+
+/** Message part: end of message */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_END 696
+
+/** Message part: message cancelled */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_CANCEL 697
+
+/** S->C: message acknowledgment */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_ACK 698
+
+/* 699-700 */
+
+/** C->S: client requests channel history from PSYCstore. */
+#define GNUNET_MESSAGE_TYPE_PSYC_STORY_REQUEST 701
+
+/** S->C: result for a channel history request */
+#define GNUNET_MESSAGE_TYPE_PSYC_STORY_RESULT 702
+
+
+/** C->S: request best matching state variable from PSYCstore. */
+#define GNUNET_MESSAGE_TYPE_PSYC_STATE_GET 703
+
+/** C->S: request state variables with a given prefix from PSYCstore. */
+#define GNUNET_MESSAGE_TYPE_PSYC_STATE_GET_PREFIX 704
+
+/** S->C: result for a state request. */
+#define GNUNET_MESSAGE_TYPE_PSYC_STATE_RESULT 705
+
+
+/*******************************************************************************
+ * CONVERSATION message types
+ ******************************************************************************/
+
+/**
+ * Message to transmit the audio between helper and speaker/microphone library.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_AUDIO 730
+
+/**
+ * Client -> Server message to register a phone.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_REGISTER 731
+
+/**
+ * Client -> Server message to reject/hangup a call
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_PICK_UP 732
+
+/**
+ * Client -> Server message to reject/hangup a call
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_HANG_UP 733
+
+/**
+ * Client <- Server message to indicate a ringing phone
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_CALL 734
+
+/**
+ * Client <- Server message to indicate a ringing phone
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_RING 735
+
+/**
+ * Client <-> Server message to suspend connection.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_SUSPEND 736
+
+/**
+ * Client <-> Server message to resume connection.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_RESUME 737
+
+/**
+ * Client <-> Server message to send audio data.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_PICKED_UP 738
+
+/**
+ * Client <-> Server message to send audio data.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_CS_AUDIO 739
+
+/**
+ * Mesh: call initiation
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_RING 740
+
+/**
+ * Mesh: hang up / refuse call
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_HANG_UP 741
+
+/**
+ * Mesh: pick up phone (establish audio channel)
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_PICK_UP 742
+
+/**
+ * Mesh: phone suspended.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_SUSPEND 743
+
+/**
+ * Mesh: phone resumed.
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_RESUME 744
+
+/**
+ * Mesh: audio data
+ */
+#define GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_AUDIO 745
+
+
+/*******************************************************************************
+ * MULTICAST message types
+ ******************************************************************************/
+
+
+/* WIP: no numbers assigned yet */
+
+/**
+ * Start an origin.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_ORIGIN_START 750
+
+/**
+ * Stop an origin.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_ORIGIN_STOP 751
+
+/**
+ * Join a group as a member.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_MEMBER_JOIN 752
+
+/**
+ * Leave a group.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_MEMBER_PART 753
+
+/**
+ * Multicast message from the origin to all members.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_MESSAGE 754
+
+/**
+ * A unicast message from a group member to the origin.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_REQUEST 755
+
+/**
+ * A peer wants to join the group.
+ *
+ * Unicast message to the origin or another group member.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_JOIN_REQUEST
+
+/**
+ * Response to a join request.
+ *
+ * Unicast message from a group member to the peer wanting to join.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_JOIN_DECISION
+
+/**
+ * A peer wants to part the group.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_PART_REQUEST
+
+/**
+ * Acknowledgement sent in response to a part request.
+ *
+ * Unicast message from a group member to the peer wanting to part.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_PART_ACK
+
+/**
+ * Group terminated.
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_GROUP_END
+
+/**
+ *
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_REPLAY_REQUEST
+
+/**
+ *
+ */
+#define GNUNET_MESSAGE_TYPE_MULTICAST_REPLAY_REQUEST_CANCEL
+
+
+
+/*******************************************************************************
+ * SECRETSHARING message types
+ ******************************************************************************/
+
+
+/**
+ * Establish a new session.
+ */
+#define GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_GENERATE 780
+
+/**
+ * Request the decryption of a ciphertext.
+ */
+#define GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_DECRYPT 781
+
+/**
+ * The service succeeded in decrypting a ciphertext.
+ */
+#define GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_DECRYPT_DONE 782
+
+/**
+ * The cryptosystem has been established.
+ * Contains the peer's share.
+ */
+#define GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_SECRET_READY 783
+
+
+
+/**
+ * Next available: 800
+ */
+
+
+
+/*******************************************************************************
+ * SOCIAL message types
+ ******************************************************************************/
+
 
 /**
  * Type used to match 'all' message types.
@@ -1713,6 +2426,8 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */ /* end of group protocols */
 
 /* ifndef GNUNET_PROTOCOLS_H */
 #endif

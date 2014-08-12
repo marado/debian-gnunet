@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -20,7 +20,7 @@
 
 /**
  * @file util/gnunet-ecc.c
- * @brief tool to manipulate ECC key files
+ * @brief tool to manipulate EDDSA key files
  * @author Christian Grothoff
  */
 #include "platform.h"
@@ -30,9 +30,24 @@
 
 
 /**
+ * Flag for listing public key.
+ */
+static int list_keys;
+
+/**
+ * Flag for listing public key.
+ */
+static int list_keys_count;
+
+/**
  * Flag for printing public key.
  */
 static int print_public_key;
+
+/**
+ * Flag for printing the output of random example operations.
+ */
+static int print_examples_flag;
 
 /**
  * Flag for printing hash of public key.
@@ -40,55 +55,9 @@ static int print_public_key;
 static int print_peer_identity;
 
 /**
- * Flag for printing short hash of public key.
- */
-static int print_short_identity;
-
-/**
- * Use weak random number generator for key generation.
- */
-static int weak_random;
-
-/**
  * Option set to create a bunch of keys at once.
  */
 static unsigned int make_keys;
-
-/**
- * The private information of an ECC key pair.
- * NOTE: this must match the definition in crypto_ksk.c and crypto_ecc.c!
- */
-struct GNUNET_CRYPTO_EccPrivateKey
-{
-  gcry_sexp_t sexp;
-};
-
-
-/**
- * Create a new private key. Caller must free return value.
- *
- * @return fresh private key
- */
-static struct GNUNET_CRYPTO_EccPrivateKey *
-ecc_key_create ()
-{
-  struct GNUNET_CRYPTO_EccPrivateKey *ret;
-  gcry_sexp_t s_key;
-  gcry_sexp_t s_keyparam;
-
-  GNUNET_assert (0 ==
-                 gcry_sexp_build (&s_keyparam, NULL,
-                                  "(genkey(ecc(nbits %d)(ecc-use-e 3:257)))",
-                                  2048));
-  GNUNET_assert (0 == gcry_pk_genkey (&s_key, s_keyparam));
-  gcry_sexp_release (s_keyparam);
-#if EXTRA_CHECKS
-  GNUNET_assert (0 == gcry_pk_testkey (s_key));
-#endif
-  ret = GNUNET_malloc (sizeof (struct GNUNET_CRYPTO_EccPrivateKey));
-  ret->sexp = s_key;
-  return ret;
-}
 
 
 /**
@@ -98,8 +67,7 @@ static void
 create_keys (const char *fn)
 {
   FILE *f;
-  struct GNUNET_CRYPTO_EccPrivateKey *pk;
-  struct GNUNET_CRYPTO_EccPrivateKeyBinaryEncoded *enc;
+  struct GNUNET_CRYPTO_EddsaPrivateKey *pk;
 
   if (NULL == (f = fopen (fn, "w+")))
   {
@@ -113,32 +81,181 @@ create_keys (const char *fn)
 	   _("Generating %u keys, please wait"),
 	   make_keys);
   while (0 < make_keys--)
-  {    
+  {
     fprintf (stderr,
 	     ".");
-    if (NULL == (pk = ecc_key_create ()))
+    if (NULL == (pk = GNUNET_CRYPTO_eddsa_key_create ()))
     {
        GNUNET_break (0);
        break;
     }
-    enc = GNUNET_CRYPTO_ecc_encode_key (pk);
-    if (htons (enc->size) != fwrite (enc, 1, htons (enc->size), f))
-      {
-	fprintf (stderr,
-		 _("\nFailed to write to `%s': %s\n"),
-		 fn,
-		 STRERROR (errno));
-	GNUNET_CRYPTO_ecc_key_free (pk);
-	GNUNET_free (enc);
-	break;
-      }
-    GNUNET_CRYPTO_ecc_key_free (pk);
-    GNUNET_free (enc);
+    if (GNUNET_TESTING_HOSTKEYFILESIZE !=
+	fwrite (pk, 1,
+		GNUNET_TESTING_HOSTKEYFILESIZE, f))
+    {
+      fprintf (stderr,
+	       _("\nFailed to write to `%s': %s\n"),
+	       fn,
+	       STRERROR (errno));
+      GNUNET_free (pk);
+      break;
+    }
+    GNUNET_free (pk);
   }
-  if (0 == make_keys)
+  if (UINT_MAX == make_keys)
     fprintf (stderr,
-	     _("Finished!\n"));
+	     _("\nFinished!\n"));
+  else
+    fprintf (stderr,
+	     _("\nError, %u keys not generated\n"), make_keys);
   fclose (f);
+}
+
+
+static void
+print_hex (char *msg, void *buf, size_t size)
+{
+  size_t i;
+  printf ("%s: ", msg);
+  for (i = 0; i < size; i++)
+  {
+    printf ("%02hhx", ((char *)buf)[i]);
+  }
+  printf ("\n");
+}
+
+
+static void
+print_examples_ecdh ()
+{
+  struct GNUNET_CRYPTO_EcdhePrivateKey *dh_priv1;
+  struct GNUNET_CRYPTO_EcdhePublicKey *dh_pub1;
+  struct GNUNET_CRYPTO_EcdhePrivateKey *dh_priv2;
+  struct GNUNET_CRYPTO_EcdhePublicKey *dh_pub2;
+  struct GNUNET_HashCode hash;
+  char buf[128];
+
+  dh_pub1 = GNUNET_new (struct GNUNET_CRYPTO_EcdhePublicKey);
+  dh_priv1 = GNUNET_CRYPTO_ecdhe_key_create ();
+  dh_pub2 = GNUNET_new (struct GNUNET_CRYPTO_EcdhePublicKey);
+  dh_priv2 = GNUNET_CRYPTO_ecdhe_key_create ();
+  GNUNET_CRYPTO_ecdhe_key_get_public (dh_priv1, dh_pub1);
+  GNUNET_CRYPTO_ecdhe_key_get_public (dh_priv2, dh_pub2);
+
+  GNUNET_assert (NULL != GNUNET_STRINGS_data_to_string (dh_priv1, 32, buf, 128));
+  printf ("ECDHE key 1:\n");
+  printf ("private: %s\n", buf);
+  print_hex ("private(hex)", dh_priv1, sizeof *dh_priv1);
+  GNUNET_assert (NULL != GNUNET_STRINGS_data_to_string (dh_pub1, 32, buf, 128));
+  printf ("public: %s\n", buf);
+  print_hex ("public(hex)", dh_pub1, sizeof *dh_pub1);
+
+  GNUNET_assert (NULL != GNUNET_STRINGS_data_to_string (dh_priv2, 32, buf, 128));
+  printf ("ECDHE key 2:\n");
+  printf ("private: %s\n", buf);
+  print_hex ("private(hex)", dh_priv2, sizeof *dh_priv2);
+  GNUNET_assert (NULL != GNUNET_STRINGS_data_to_string (dh_pub2, 32, buf, 128));
+  printf ("public: %s\n", buf);
+  print_hex ("public(hex)", dh_pub2, sizeof *dh_pub2);
+
+  GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_ecc_ecdh (dh_priv1, dh_pub2, &hash));
+  GNUNET_assert (NULL != GNUNET_STRINGS_data_to_string (&hash, 64, buf, 128));
+  printf ("ECDH shared secret: %s\n", buf);
+
+  GNUNET_free (dh_priv1);
+  GNUNET_free (dh_priv2);
+  GNUNET_free (dh_pub1);
+  GNUNET_free (dh_pub2);
+}
+
+
+/**
+ * Print some random example operations to stdout.
+ */
+static void
+print_examples ()
+{
+  print_examples_ecdh ();
+  // print_examples_ecdsa ();
+  // print_examples_eddsa ();
+}
+
+
+static void
+print_key (const char *filename)
+{
+  struct GNUNET_DISK_FileHandle *fd;
+  struct GNUNET_CRYPTO_EddsaPrivateKey private_key;
+  struct GNUNET_CRYPTO_EddsaPublicKey public_key;
+  char *hostkeys_data;
+  char *hostkey_str;
+  uint64_t fs;
+  unsigned int total_hostkeys;
+  unsigned int c;
+
+  if (GNUNET_YES != GNUNET_DISK_file_test (filename))
+  {
+    fprintf (stderr,
+             _("Hostkeys file `%s' not found\n"),
+             filename);
+    return;
+  }
+
+  /* Check hostkey file size, read entire thing into memory */
+  if (GNUNET_OK != GNUNET_DISK_file_size (filename, &fs, GNUNET_YES, GNUNET_YES))
+    fs = 0;
+  if (0 == fs)
+  {
+    fprintf (stderr,
+             _("Hostkeys file `%s' is empty\n"),
+             filename);
+    return;       /* File is empty */
+  }
+  if (0 != (fs % GNUNET_TESTING_HOSTKEYFILESIZE))
+  {
+    fprintf (stderr,
+             _("Incorrect hostkey file format: %s\n"),
+             filename);
+    return;
+  }
+  fd = GNUNET_DISK_file_open (filename, GNUNET_DISK_OPEN_READ,
+                                         GNUNET_DISK_PERM_NONE);
+  if (NULL == fd)
+  {
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR, "open", filename);
+    return;
+  }
+  hostkeys_data = GNUNET_malloc (fs);
+  if (fs != GNUNET_DISK_file_read (fd, hostkeys_data, fs))
+  {
+    fprintf (stderr,
+             _("Could not read hostkey file: %s\n"),
+             filename);
+    GNUNET_free (hostkeys_data);
+    GNUNET_DISK_file_close (fd);
+    return;
+  }
+  GNUNET_DISK_file_close (fd);
+
+  if (NULL == hostkeys_data)
+    return;
+  total_hostkeys = fs / GNUNET_TESTING_HOSTKEYFILESIZE;
+  for (c = 0; (c < total_hostkeys) && (c < list_keys_count); c++)
+  {
+    memcpy (&private_key,
+            hostkeys_data + (c * GNUNET_TESTING_HOSTKEYFILESIZE),
+            GNUNET_TESTING_HOSTKEYFILESIZE);
+    GNUNET_CRYPTO_eddsa_key_get_public (&private_key, &public_key);
+    hostkey_str = GNUNET_CRYPTO_eddsa_public_key_to_string (&public_key);
+    if (NULL != hostkey_str)
+    {
+      fprintf (stderr, "%4u: %s\n", c, hostkey_str);
+      GNUNET_free (hostkey_str);
+    }
+    else
+      fprintf (stderr, "%4u: %s\n", c, "invalid");
+  }
+  GNUNET_free (hostkeys_data);
 }
 
 
@@ -154,54 +271,65 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-  struct GNUNET_CRYPTO_EccPrivateKey *pk;
-  struct GNUNET_CRYPTO_EccPublicKeyBinaryEncoded pub;
-  struct GNUNET_PeerIdentity pid;
-
-  if (NULL == args[0])
+  if (print_examples_flag)
   {
-    fprintf (stderr, _("No hostkey file specified on command line\n"));
+    print_examples ();
     return;
   }
-  if (0 != weak_random)    
-    GNUNET_CRYPTO_random_disable_entropy_gathering ();  
+  if (NULL == args[0])
+  {
+    FPRINTF (stderr,
+             "%s",
+             _("No hostkey file specified on command line\n"));
+    return;
+  }
+  if (list_keys)
+  {
+    print_key (args[0]);
+    return;
+  }
   if (make_keys > 0)
   {
     create_keys (args[0]);
     return;
   }
-  pk = GNUNET_CRYPTO_ecc_key_create_from_file (args[0]);
-  if (NULL == pk)
-    return;
   if (print_public_key)
   {
+    struct GNUNET_CRYPTO_EddsaPrivateKey *pk;
+    struct GNUNET_CRYPTO_EddsaPublicKey pub;
     char *s;
 
-    GNUNET_CRYPTO_ecc_key_get_public (pk, &pub);
-    s = GNUNET_CRYPTO_ecc_public_key_to_string (&pub);
-    fprintf (stdout, "%s\n", s);
+    pk = GNUNET_CRYPTO_eddsa_key_create_from_file (args[0]);
+    if (NULL == pk)
+      return;
+    GNUNET_CRYPTO_eddsa_key_get_public (pk, &pub);
+    s = GNUNET_CRYPTO_eddsa_public_key_to_string (&pub);
+    FPRINTF (stdout,
+             "%s\n",
+             s);
     GNUNET_free (s);
+    GNUNET_free (pk);
   }
   if (print_peer_identity)
   {
-    struct GNUNET_CRYPTO_HashAsciiEncoded enc;
+    char *str;
+    struct GNUNET_DISK_FileHandle *keyfile;
+    struct GNUNET_CRYPTO_EddsaPrivateKey pk;
+    struct GNUNET_CRYPTO_EddsaPublicKey pub;
 
-    GNUNET_CRYPTO_ecc_key_get_public (pk, &pub);
-    GNUNET_CRYPTO_hash (&pub, sizeof (pub), &pid.hashPubKey);
-    GNUNET_CRYPTO_hash_to_enc (&pid.hashPubKey, &enc);
-    fprintf (stdout, "%s\n", enc.encoding);
+    keyfile = GNUNET_DISK_file_open (args[0], GNUNET_DISK_OPEN_READ,
+                                     GNUNET_DISK_PERM_NONE);
+    if (NULL == keyfile)
+      return;
+    while (sizeof (pk) == GNUNET_DISK_file_read (keyfile, &pk, sizeof (pk)))
+    {
+      GNUNET_CRYPTO_eddsa_key_get_public (&pk, &pub);
+      str = GNUNET_CRYPTO_eddsa_public_key_to_string (&pub);
+      FPRINTF (stdout, "%s\n", str);
+      GNUNET_free (str);
+    }
   }
-  if (print_short_identity)
-  {
-    struct GNUNET_CRYPTO_ShortHashAsciiEncoded enc;
-    struct GNUNET_CRYPTO_ShortHashCode sh;
 
-    GNUNET_CRYPTO_ecc_key_get_public (pk, &pub);
-    GNUNET_CRYPTO_short_hash (&pub, sizeof (pub), &sh);
-    GNUNET_CRYPTO_short_hash_to_enc (&sh, &enc);
-    fprintf (stdout, "%s\n", enc.short_encoding);
-  }
-  GNUNET_CRYPTO_ecc_key_free (pk);
 }
 
 
@@ -215,7 +343,14 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
+  list_keys_count = UINT32_MAX;
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
+    { 'i', "iterate", "FILE",
+      gettext_noop ("list keys included in a file (for testing)"),
+      0, &GNUNET_GETOPT_set_one, &list_keys },
+    { 'e', "end=", "COUNT",
+      gettext_noop ("number of keys to list included in a file (for testing)"),
+      1, &GNUNET_GETOPT_set_uint, &list_keys_count },
     { 'g', "generate-keys", "COUNT",
       gettext_noop ("create COUNT public-private key pairs (for testing)"),
       1, &GNUNET_GETOPT_set_uint, &make_keys },
@@ -225,12 +360,9 @@ main (int argc, char *const *argv)
     { 'P', "print-peer-identity", NULL,
       gettext_noop ("print the hash of the public key in ASCII format"),
       0, &GNUNET_GETOPT_set_one, &print_peer_identity },
-    { 's', "print-short-identity", NULL,
-      gettext_noop ("print the short hash of the public key in ASCII format"),
-      0, &GNUNET_GETOPT_set_one, &print_short_identity },
-    { 'w', "weak-random", NULL,
-      gettext_noop ("use insecure, weak random number generator for key generation (for testing only)"),
-      0, &GNUNET_GETOPT_set_one, &weak_random },
+    { 'E', "examples", NULL,
+      gettext_noop ("print examples of ECC operations (used for compatibility testing)"),
+      0, &GNUNET_GETOPT_set_one, &print_examples_flag },
     GNUNET_GETOPT_OPTION_END
   };
   int ret;

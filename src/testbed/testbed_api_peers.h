@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -40,22 +40,22 @@ enum PeerState
     /**
      * State to signify that this peer is invalid
      */
-  PS_INVALID,
+  TESTBED_PS_INVALID,
 
     /**
      * The peer has been created
      */
-  PS_CREATED,
+  TESTBED_PS_CREATED,
 
     /**
      * The peer is running
      */
-  PS_STARTED,
+  TESTBED_PS_STARTED,
 
     /**
      * The peer is stopped
      */
-  PS_STOPPED,
+  TESTBED_PS_STOPPED,
 };
 
 
@@ -65,6 +65,16 @@ enum PeerState
  */
 struct GNUNET_TESTBED_Peer
 {
+  /**
+   * peer list DLL
+   */
+  struct GNUNET_TESTBED_Peer *next;
+
+  /**
+   * peer list DLL
+   */
+  struct GNUNET_TESTBED_Peer *prev;
+
   /**
    * Our controller context (not necessarily the controller
    * that is responsible for starting/running the peer!).
@@ -85,6 +95,11 @@ struct GNUNET_TESTBED_Peer
    * Peer's state
    */
   enum PeerState state;
+
+  /**
+   * Has an underlay model already set for this peer?
+   */
+  uint8_t underlay_model_exists;
 };
 
 
@@ -186,6 +201,28 @@ struct PeerInfoData
 
 
 /**
+ * Data for the operations of type OP_PEER_RECONFIGURE
+ */
+struct PeerReconfigureData
+{
+  /**
+   * The peer whose information has been requested
+   */
+  struct GNUNET_TESTBED_Peer *peer;
+
+  /**
+   * The serialized new configuration template
+   */
+  char *config;
+
+  /**
+   * the size of the serialized configuration
+   */
+  uint16_t cfg_size;
+};
+
+
+/**
  * Data structure for OperationType OP_OVERLAY_CONNECT
  */
 struct OverlayConnectData
@@ -218,20 +255,21 @@ struct OverlayConnectData
    */
   struct OperationContext *sub_opc;
 
-  /**
-   * The starting time of this operation
-   */
-  struct GNUNET_TIME_Absolute tstart;
+};
 
-  /**
-   * Has this operation failed
-   */
-  int failed;
 
-  /**
-   * The timing slot index for this operation
-   */
-  unsigned int tslot_index;
+struct ManageServiceData {
+  GNUNET_TESTBED_OperationCompletionCallback cb;
+
+  void *cb_cls;
+
+  struct GNUNET_TESTBED_Peer *peer;
+
+  char *service_name;
+
+  unsigned int start;
+
+  uint16_t msize;
 
 };
 
@@ -247,6 +285,31 @@ struct OverlayConnectData
 struct GNUNET_TESTBED_PeerGetConfigurationMessage *
 GNUNET_TESTBED_generate_peergetconfig_msg_ (uint32_t peer_id,
                                             uint64_t operation_id);
+
+
+/**
+ * Adds a peer to the peer list
+ *
+ * @param peer the peer to add to the peer list
+ */
+void
+GNUNET_TESTBED_peer_register_ (struct GNUNET_TESTBED_Peer *peer);
+
+
+/**
+ * Removes a peer from the peer list
+ *
+ * @param peer the peer to remove
+ */
+void
+GNUNET_TESTBED_peer_deregister_ (struct GNUNET_TESTBED_Peer *peer);
+
+
+/**
+ * Frees all peers
+ */
+void
+GNUNET_TESTBED_cleanup_peers_ (void);
 
 #endif
 /* end of testbed_api_peers.h */

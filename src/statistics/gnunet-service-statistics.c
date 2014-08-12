@@ -241,11 +241,20 @@ load (struct GNUNET_SERVER_Handle *server)
   struct GNUNET_SERVER_MessageStreamTokenizer *mst;
   char *emsg;
 
-  fn = GNUNET_DISK_get_home_filename (cfg, "statistics", "statistics.data",
-                                      NULL);
-  if (fn == NULL)
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_get_value_filename (cfg,
+                                               "STATISTICS",
+                                               "DATABASE",
+                                               &fn))
+  {
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
+                               "STATISTICS",
+                               "DATABASE");
     return;
-  if ((GNUNET_OK != GNUNET_DISK_file_size (fn, &fsize, GNUNET_NO, GNUNET_YES)) || (fsize == 0))
+  }
+  if ( (GNUNET_OK !=
+        GNUNET_DISK_file_size (fn, &fsize, GNUNET_NO, GNUNET_YES)) ||
+       (0 == fsize) )
   {
     GNUNET_free (fn);
     return;
@@ -291,15 +300,22 @@ save ()
   struct StatsEntry *pos;
   char *fn;
   struct GNUNET_BIO_WriteHandle *wh;
-  
   uint16_t size;
   unsigned long long total;
 
-  wh = NULL;
-  fn = GNUNET_DISK_get_home_filename (cfg, "statistics", "statistics.data",
-                                      NULL);
-  if (fn != NULL)
-    wh = GNUNET_BIO_write_open (fn);
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_get_value_filename (cfg,
+                                               "STATISTICS",
+                                               "DATABASE",
+                                               &fn))
+  {
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
+                               "STATISTICS",
+                               "DATABASE");
+    return;
+  }
+  (void) GNUNET_DISK_directory_create_for_file (fn);
+  wh = GNUNET_BIO_write_open (fn);
   total = 0;
   while (NULL != (pos = start))
   {
@@ -409,9 +425,8 @@ make_client_entry (struct GNUNET_SERVER_Client *client)
     GNUNET_SERVER_receive_done (client, GNUNET_SYSERR);
     return NULL;
   }
-  ce = GNUNET_malloc (sizeof (struct ClientEntry));
+  ce = GNUNET_new (struct ClientEntry);
   ce->client = client;
-  GNUNET_SERVER_client_keep (client);
   GNUNET_CONTAINER_DLL_insert (client_head, client_tail, ce);
   GNUNET_SERVER_notification_context_add (nc, client);
   return ce;
@@ -496,6 +511,7 @@ notify_change (struct StatsEntry *se)
     pos->last_value = se->value;
   }
 }
+
 
 /**
  * Handle SET-message.
@@ -702,10 +718,9 @@ handle_watch (void *cls, struct GNUNET_SERVER_Client *client,
                 "New statistic on `%s:%s' with value %llu created.\n", service,
                 name, pos->value);
   }
-  we = GNUNET_malloc (sizeof (struct WatchEntry));
+  we = GNUNET_new (struct WatchEntry);
   we->client = client;
   we->last_value_set = GNUNET_NO;
-  GNUNET_SERVER_client_keep (client);
   we->wid = ce->max_wid++;
   GNUNET_CONTAINER_DLL_insert (pos->we_head, pos->we_tail, we);
   if (pos->value != 0)
@@ -717,7 +732,7 @@ handle_watch (void *cls, struct GNUNET_SERVER_Client *client,
 /**
  * Actually perform the shutdown.
  */
-static void 
+static void
 do_shutdown ()
 {
   struct WatchEntry *we;
@@ -727,14 +742,13 @@ do_shutdown ()
     return;
   save ();
   GNUNET_SERVER_notification_context_destroy (nc);
-  nc = NULL;  
+  nc = NULL;
   GNUNET_assert (NULL == client_head);
   while (NULL != (se = start))
   {
     start = se->next;
     while (NULL != (we = se->we_head))
     {
-      GNUNET_SERVER_client_drop (we->client);
       GNUNET_CONTAINER_DLL_remove (se->we_head, se->we_tail, we);
       GNUNET_free (we);
     }
@@ -778,7 +792,6 @@ handle_client_disconnect (void *cls, struct GNUNET_SERVER_Client *client)
   {
     if (ce->client == client)
     {
-      GNUNET_SERVER_client_drop (ce->client);
       GNUNET_CONTAINER_DLL_remove (client_head, client_tail, ce);
       GNUNET_free (ce);
       break;
@@ -794,7 +807,6 @@ handle_client_disconnect (void *cls, struct GNUNET_SERVER_Client *client)
       wen = we->next;
       if (we->client != client)
         continue;
-      GNUNET_SERVER_client_drop (we->client);
       GNUNET_CONTAINER_DLL_remove (se->we_head, se->we_tail, we);
       GNUNET_free (we);
     }

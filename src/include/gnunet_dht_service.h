@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2004, 2005, 2006, 2008, 2009, 2011 Christian Grothoff (and other contributing authors)
+      (C) 2004-2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -22,6 +22,8 @@
  * @file include/gnunet_dht_service.h
  * @brief API to the DHT service
  * @author Christian Grothoff
+ * @defgroup dht Distributed Hash Table
+ * @{
  */
 
 #ifndef GNUNET_DHT_SERVICE_H
@@ -68,21 +70,21 @@ struct GNUNET_DHT_FindPeerHandle;
  */
 enum GNUNET_DHT_RouteOption
 {
-    /**
-     * Default.  Do nothing special.
-     */
+  /**
+   * Default.  Do nothing special.
+   */
   GNUNET_DHT_RO_NONE = 0,
 
-    /**
-     * Each peer along the way should look at 'enc' (otherwise
-     * only the k-peers closest to the key should look at it).
-     */
+  /**
+   * Each peer along the way should look at 'enc' (otherwise
+   * only the k-peers closest to the key should look at it).
+   */
   GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE = 1,
 
-    /**
-     * We should keep track of the route that the message
-     * took in the P2P network.
-     */
+  /**
+   * We should keep track of the route that the message
+   * took in the P2P network.
+   */
   GNUNET_DHT_RO_RECORD_ROUTE = 2,
 
   /**
@@ -90,9 +92,9 @@ enum GNUNET_DHT_RouteOption
    */
   GNUNET_DHT_RO_FIND_PEER = 4,
 
-    /**
-     * Possible message option for query key randomization.
-     */
+  /**
+   * Possible message option for query key randomization.
+   */
   GNUNET_DHT_RO_BART = 8
 };
 
@@ -130,12 +132,12 @@ struct GNUNET_DHT_PutHandle;
 
 /**
  * Type of a PUT continuation.  You must not call
- * "GNUNET_DHT_disconnect" in this continuation.
+ * #GNUNET_DHT_disconnect in this continuation.
  *
  * @param cls closure
- * @param success GNUNET_OK if the PUT was transmitted,
- *                GNUNET_NO on timeout,
- *                GNUNET_SYSERR on disconnect from service
+ * @param success #GNUNET_OK if the PUT was transmitted,
+ *                #GNUNET_NO on timeout,
+ *                #GNUNET_SYSERR on disconnect from service
  *                after the PUT message was transmitted
  *                (so we don't know if it was received or not)
  */
@@ -152,26 +154,26 @@ typedef void (*GNUNET_DHT_PutContinuation)(void *cls,
  *                nearest peers this request should reach
  * @param options routing options for this message
  * @param type type of the value
- * @param size number of bytes in data; must be less than 64k
+ * @param size number of bytes in @a data; must be less than 64k
  * @param data the data to store
  * @param exp desired expiration time for the value
  * @param timeout how long to wait for transmission of this request
  * @param cont continuation to call when done (transmitting request to service)
- *        You must not call "GNUNET_DHT_disconnect" in this continuation
- * @param cont_cls closure for cont
+ *        You must not call #GNUNET_DHT_disconnect in this continuation
+ * @param cont_cls closure for @a cont
  * @return handle to cancel the "PUT" operation, NULL on error
  *        (size too big)
  */
 struct GNUNET_DHT_PutHandle *
-GNUNET_DHT_put (struct GNUNET_DHT_Handle *handle, 
-		const struct GNUNET_HashCode * key,
+GNUNET_DHT_put (struct GNUNET_DHT_Handle *handle,
+                const struct GNUNET_HashCode *key,
                 uint32_t desired_replication_level,
                 enum GNUNET_DHT_RouteOption options,
                 enum GNUNET_BLOCK_Type type,
-		size_t size, const void *data,
+                size_t size, const void *data,
                 struct GNUNET_TIME_Absolute exp,
                 struct GNUNET_TIME_Relative timeout,
-		GNUNET_DHT_PutContinuation cont,
+                GNUNET_DHT_PutContinuation cont,
                 void *cont_cls);
 
 
@@ -180,8 +182,8 @@ GNUNET_DHT_put (struct GNUNET_DHT_Handle *handle,
  * go out over the network (we can't stop that); However, if the PUT
  * has not yet been sent to the service, cancelling the PUT will stop
  * this from happening (but there is no way for the user of this API
- * to tell if that is the case).  The only use for this API is to 
- * prevent a later call to 'cont' from "GNUNET_DHT_put" (i.e. because
+ * to tell if that is the case).  The only use for this API is to
+ * prevent a later call to 'cont' from #GNUNET_DHT_put (i.e. because
  * the system is shutting down).
  *
  * @param ph put operation to cancel ('cont' will no longer be called)
@@ -198,28 +200,29 @@ GNUNET_DHT_put_cancel (struct GNUNET_DHT_PutHandle *ph);
  * @param exp when will this value expire
  * @param key key of the result
  * @param get_path peers on reply path (or NULL if not recorded)
- * @param get_path_length number of entries in get_path
+ *                 [0] = datastore's first neighbor, [length - 1] = local peer
+ * @param get_path_length number of entries in @a get_path
  * @param put_path peers on the PUT path (or NULL if not recorded)
- * @param put_path_length number of entries in get_path
+ *                 [0] = origin, [length - 1] = datastore
+ * @param put_path_length number of entries in @a put_path
  * @param type type of the result
- * @param size number of bytes in data
+ * @param size number of bytes in @a data
  * @param data pointer to the result data
  */
 typedef void (*GNUNET_DHT_GetIterator) (void *cls,
                                         struct GNUNET_TIME_Absolute exp,
-                                        const struct GNUNET_HashCode * key,
-                                        const struct GNUNET_PeerIdentity *
-                                        get_path, unsigned int get_path_length,
-                                        const struct GNUNET_PeerIdentity *
-                                        put_path, unsigned int put_path_length,
+                                        const struct GNUNET_HashCode *key,
+                                        const struct GNUNET_PeerIdentity *get_path,
+					unsigned int get_path_length,
+                                        const struct GNUNET_PeerIdentity *put_path,
+					unsigned int put_path_length,
                                         enum GNUNET_BLOCK_Type type,
                                         size_t size, const void *data);
 
 
-
 /**
  * Perform an asynchronous GET operation on the DHT identified. See
- * also "GNUNET_BLOCK_evaluate".
+ * also #GNUNET_BLOCK_evaluate.
  *
  * @param handle handle to the DHT service
  * @param type expected type of the response object
@@ -228,20 +231,20 @@ typedef void (*GNUNET_DHT_GetIterator) (void *cls,
                   nearest peers this request should reach
  * @param options routing options for this message
  * @param xquery extended query data (can be NULL, depending on type)
- * @param xquery_size number of bytes in xquery
+ * @param xquery_size number of bytes in @a xquery
  * @param iter function to call on each result
- * @param iter_cls closure for iter
+ * @param iter_cls closure for @a iter
  *
  * @return handle to stop the async get
  */
 struct GNUNET_DHT_GetHandle *
 GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
-                      enum GNUNET_BLOCK_Type type, 
-		      const struct GNUNET_HashCode *key,
+                      enum GNUNET_BLOCK_Type type,
+                      const struct GNUNET_HashCode *key,
                       uint32_t desired_replication_level,
-                      enum GNUNET_DHT_RouteOption options, 
-		      const void *xquery, size_t xquery_size, 
-		      GNUNET_DHT_GetIterator iter, void *iter_cls);
+                      enum GNUNET_DHT_RouteOption options,
+                      const void *xquery, size_t xquery_size,
+                      GNUNET_DHT_GetIterator iter, void *iter_cls);
 
 
 /**
@@ -250,7 +253,7 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
  *
  * @param get_handle get operation for which results should be filtered
  * @param num_results number of results to be blocked that are
- *        provided in this call (size of the 'results' array)
+ *        provided in this call (size of the @a results array)
  * @param results array of hash codes over the 'data' of the results
  *        to be blocked
  */
@@ -285,7 +288,7 @@ struct GNUNET_DHT_MonitorHandle;
  * @param options Options, for instance RecordRoute, DemultiplexEverywhere.
  * @param type The type of data in the request.
  * @param hop_count Hop count so far.
- * @param path_length number of entries in path (or 0 if not recorded).
+ * @param path_length number of entries in @a path (or 0 if not recorded).
  * @param path peers on the GET path (or NULL if not recorded).
  * @param desired_replication_level Desired replication level.
  * @param key Key of the requested data.
@@ -294,7 +297,7 @@ typedef void (*GNUNET_DHT_MonitorGetCB) (void *cls,
                                          enum GNUNET_DHT_RouteOption options,
                                          enum GNUNET_BLOCK_Type type,
                                          uint32_t hop_count,
-                                         uint32_t desired_replication_level, 
+                                         uint32_t desired_replication_level,
                                          unsigned int path_length,
                                          const struct GNUNET_PeerIdentity *path,
                                          const struct GNUNET_HashCode * key);
@@ -305,24 +308,22 @@ typedef void (*GNUNET_DHT_MonitorGetCB) (void *cls,
  * @param cls Closure.
  * @param type The type of data in the result.
  * @param get_path Peers on GET path (or NULL if not recorded).
- * @param get_path_length number of entries in get_path.
+ * @param get_path_length number of entries in @a get_path.
  * @param put_path peers on the PUT path (or NULL if not recorded).
- * @param put_path_length number of entries in get_path.
+ * @param put_path_length number of entries in @a get_path.
  * @param exp Expiration time of the data.
  * @param key Key of the data.
  * @param data Pointer to the result data.
- * @param size Number of bytes in data.
+ * @param size Number of bytes in @a data.
  */
 typedef void (*GNUNET_DHT_MonitorGetRespCB) (void *cls,
                                              enum GNUNET_BLOCK_Type type,
-                                             const struct GNUNET_PeerIdentity
-                                             *get_path,
+                                             const struct GNUNET_PeerIdentity *get_path,
                                              unsigned int get_path_length,
-                                             const struct GNUNET_PeerIdentity
-                                             * put_path,
+                                             const struct GNUNET_PeerIdentity *put_path,
                                              unsigned int put_path_length,
                                              struct GNUNET_TIME_Absolute exp,
-                                             const struct GNUNET_HashCode * key,
+                                             const struct GNUNET_HashCode *key,
                                              const void *data,
                                              size_t size);
 
@@ -333,7 +334,7 @@ typedef void (*GNUNET_DHT_MonitorGetRespCB) (void *cls,
  * @param options Options, for instance RecordRoute, DemultiplexEverywhere.
  * @param type The type of data in the request.
  * @param hop_count Hop count so far.
- * @param path_length number of entries in path (or 0 if not recorded).
+ * @param path_length number of entries in @a path (or 0 if not recorded).
  * @param path peers on the PUT path (or NULL if not recorded).
  * @param desired_replication_level Desired replication level.
  * @param exp Expiration time of the data.
@@ -345,11 +346,11 @@ typedef void (*GNUNET_DHT_MonitorPutCB) (void *cls,
                                          enum GNUNET_DHT_RouteOption options,
                                          enum GNUNET_BLOCK_Type type,
                                          uint32_t hop_count,
-                                         uint32_t desired_replication_level, 
+                                         uint32_t desired_replication_level,
                                          unsigned int path_length,
                                          const struct GNUNET_PeerIdentity *path,
                                          struct GNUNET_TIME_Absolute exp,
-                                         const struct GNUNET_HashCode * key,
+                                         const struct GNUNET_HashCode *key,
                                          const void *data,
                                          size_t size);
 
@@ -362,8 +363,7 @@ typedef void (*GNUNET_DHT_MonitorPutCB) (void *cls,
  * @param get_cb Callback to process monitored get messages.
  * @param get_resp_cb Callback to process monitored get response messages.
  * @param put_cb Callback to process monitored put messages.
- * @param cb_cls Closure for cb.
- *
+ * @param cb_cls Closure for callbacks
  * @return Handle to stop monitoring.
  */
 struct GNUNET_DHT_MonitorHandle *
@@ -378,10 +378,9 @@ GNUNET_DHT_monitor_start (struct GNUNET_DHT_Handle *handle,
 
 /**
  * Stop monitoring.
+ * On return handle will no longer be valid, caller must not use again!!!
  *
  * @param handle The handle to the monitor request returned by monitor_start.
- *
- * On return handle will no longer be valid, caller must not use again!!!
  */
 void
 GNUNET_DHT_monitor_stop (struct GNUNET_DHT_MonitorHandle *handle);
@@ -393,6 +392,8 @@ GNUNET_DHT_monitor_stop (struct GNUNET_DHT_MonitorHandle *handle);
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */ /* end of group dht */
 
 
 #endif

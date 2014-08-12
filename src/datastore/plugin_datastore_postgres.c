@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2010, 2011, 2012 Christian Grothoff (and other contributing authors)
+     (C) 2009-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -257,7 +257,7 @@ postgres_plugin_estimate_size (void *cls)
 /**
  * Store an item in the datastore.
  *
- * @param cls closure with the 'struct Plugin' 
+ * @param cls closure with the 'struct Plugin'
  * @param key key for the item
  * @param size number of bytes in data
  * @param data content stored
@@ -283,7 +283,7 @@ postgres_plugin_put (void *cls, const struct GNUNET_HashCode * key, uint32_t siz
   uint32_t bprio = htonl (priority);
   uint32_t banon = htonl (anonymity);
   uint32_t brepl = htonl (replication);
-  uint64_t bexpi = GNUNET_TIME_absolute_hton (expiration).abs_value__;
+  uint64_t bexpi = GNUNET_TIME_absolute_hton (expiration).abs_value_us__;
 
   const char *paramValues[] = {
     (const char *) &brepl,
@@ -335,7 +335,7 @@ postgres_plugin_put (void *cls, const struct GNUNET_HashCode * key, uint32_t siz
  */
 static void
 process_result (struct Plugin *plugin, PluginDatumProcessor proc,
-                void *proc_cls, PGresult * res, 
+                void *proc_cls, PGresult * res,
 		const char *filename, int line)
 {
   int iret;
@@ -392,7 +392,7 @@ process_result (struct Plugin *plugin, PluginDatumProcessor proc,
   type = ntohl (*(uint32_t *) PQgetvalue (res, 0, 0));
   priority = ntohl (*(uint32_t *) PQgetvalue (res, 0, 1));
   anonymity = ntohl (*(uint32_t *) PQgetvalue (res, 0, 2));
-  expiration_time.abs_value =
+  expiration_time.abs_value_us =
       GNUNET_ntohll (*(uint64_t *) PQgetvalue (res, 0, 3));
   memcpy (&key, PQgetvalue (res, 0, 4), sizeof (struct GNUNET_HashCode));
   size = PQgetlength (res, 0, 5);
@@ -712,7 +712,7 @@ postgres_plugin_get_expiration (void *cls, PluginDatumProcessor proc,
   const char *paramValues[] = { (const char *) &btime };
   PGresult *ret;
 
-  btime = GNUNET_htonll (GNUNET_TIME_absolute_get ().abs_value);
+  btime = GNUNET_htonll (GNUNET_TIME_absolute_get ().abs_value_us);
   ret =
       PQexecPrepared (plugin->dbh, "select_expiration_order", 1, paramValues,
                       paramLengths, paramFormats, 1);
@@ -751,7 +751,7 @@ postgres_plugin_update (void *cls, uint64_t uid, int delta,
   PGresult *ret;
   int32_t bdelta = (int32_t) htonl ((uint32_t) delta);
   uint32_t boid = htonl ((uint32_t) uid);
-  uint64_t bexpire = GNUNET_TIME_absolute_hton (expire).abs_value__;
+  uint64_t bexpire = GNUNET_TIME_absolute_hton (expire).abs_value_us__;
 
   const char *paramValues[] = {
     (const char *) &bdelta,
@@ -802,7 +802,7 @@ postgres_plugin_get_keys (void *cls,
     if (sizeof (struct GNUNET_HashCode) != PQgetlength (res, i, 0))
     {
       memcpy (&key, PQgetvalue (res, i, 0), sizeof (struct GNUNET_HashCode));
-      proc (proc_cls, &key, 1);    
+      proc (proc_cls, &key, 1);
     }
   }
   PQclear (res);
@@ -819,7 +819,7 @@ static void
 postgres_plugin_drop (void *cls)
 {
   struct Plugin *plugin = cls;
-  
+
   if (GNUNET_OK != GNUNET_POSTGRES_exec (plugin->dbh, "DROP TABLE gn090"))
     GNUNET_log_from (GNUNET_ERROR_TYPE_WARNING, "postgres", _("Failed to drop table from database.\n"));
 }
@@ -838,14 +838,14 @@ libgnunet_plugin_datastore_postgres_init (void *cls)
   struct GNUNET_DATASTORE_PluginFunctions *api;
   struct Plugin *plugin;
 
-  plugin = GNUNET_malloc (sizeof (struct Plugin));
+  plugin = GNUNET_new (struct Plugin);
   plugin->env = env;
   if (GNUNET_OK != init_connection (plugin))
   {
     GNUNET_free (plugin);
     return NULL;
   }
-  api = GNUNET_malloc (sizeof (struct GNUNET_DATASTORE_PluginFunctions));
+  api = GNUNET_new (struct GNUNET_DATASTORE_PluginFunctions);
   api->cls = plugin;
   api->estimate_size = &postgres_plugin_estimate_size;
   api->put = &postgres_plugin_put;

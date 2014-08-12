@@ -22,8 +22,6 @@
  * @brief testcase for core_api.c focusing quota compliance on core level
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_constants.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_core_service.h"
 #include "gnunet_getopt_lib.h"
@@ -131,7 +129,10 @@ terminate_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     p1.nth = NULL;
   }
   if (connect_task != GNUNET_SCHEDULER_NO_TASK)
+  {
     GNUNET_SCHEDULER_cancel (connect_task);
+    connect_task = GNUNET_SCHEDULER_NO_TASK;
+  }
   ch = p1.ch;
   p1.ch = NULL;
   GNUNET_CORE_disconnect (ch);
@@ -163,7 +164,10 @@ terminate_task_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   if (measure_task != GNUNET_SCHEDULER_NO_TASK)
     GNUNET_SCHEDULER_cancel (measure_task);
   if (connect_task != GNUNET_SCHEDULER_NO_TASK)
+  {
     GNUNET_SCHEDULER_cancel (connect_task);
+    connect_task = GNUNET_SCHEDULER_NO_TASK;
+  }
 
   GNUNET_TRANSPORT_get_hello_cancel (p1.ghh);
   GNUNET_TRANSPORT_get_hello_cancel (p2.ghh);
@@ -231,10 +235,10 @@ measurement_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   FPRINTF (stdout, "%s",  "\n");
   running = GNUNET_NO;
 
-  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value;
+  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
 
-  throughput_out = total_bytes_sent * 1000 / delta;     /* convert to bytes/s */
-  throughput_in = total_bytes_recv * 1000 / delta;      /* convert to bytes/s */
+  throughput_out = total_bytes_sent * 1000000LL / delta;     /* convert to bytes/s */
+  throughput_in = total_bytes_recv * 1000000LL / delta;      /* convert to bytes/s */
 
   max_quota_in = GNUNET_MIN (current_quota_p1_in, current_quota_p2_in);
   max_quota_out = GNUNET_MIN (current_quota_p1_out, current_quota_p2_out);
@@ -321,7 +325,8 @@ transmit_ready (void *cls, size_t size, void *buf)
     if ((p1.ch != NULL) && (p1.connect_status == 1))
       GNUNET_break (NULL !=
                     (p1.nth =
-                     GNUNET_CORE_notify_transmit_ready (p1.ch, GNUNET_NO, 0,
+                     GNUNET_CORE_notify_transmit_ready (p1.ch, GNUNET_NO,
+                                                        GNUNET_CORE_PRIO_BEST_EFFORT,
                                                         FAST_TIMEOUT, &p2.id,
                                                         MESSAGESIZE,
                                                         &transmit_ready, &p1)));
@@ -360,9 +365,7 @@ transmit_ready (void *cls, size_t size, void *buf)
 
 
 static void
-connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   struct PeerContext *pc = cls;
 
@@ -390,7 +393,8 @@ connect_notify (void *cls, const struct GNUNET_PeerIdentity *peer,
 
     GNUNET_break (NULL !=
                   (p1.nth =
-                   GNUNET_CORE_notify_transmit_ready (p1.ch, GNUNET_NO, 0,
+                   GNUNET_CORE_notify_transmit_ready (p1.ch, GNUNET_NO,
+                                                      GNUNET_CORE_PRIO_BEST_EFFORT,
                                                       TIMEOUT, &p2.id,
                                                       MESSAGESIZE,
                                                       &transmit_ready, &p1)));
@@ -425,9 +429,7 @@ disconnect_notify (void *cls, const struct GNUNET_PeerIdentity *peer)
 
 static int
 inbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+                const struct GNUNET_MessageHeader *message)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Core provides inbound data from `%4s' %llu.\n",
@@ -439,9 +441,7 @@ inbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
 
 static int
 outbound_notify (void *cls, const struct GNUNET_PeerIdentity *other,
-                 const struct GNUNET_MessageHeader *message,
-                 const struct GNUNET_ATS_Information *atsi,
-                 unsigned int atsi_count)
+                 const struct GNUNET_MessageHeader *message)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Core notifies about outbound data for `%4s'.\n",
@@ -455,9 +455,7 @@ transmit_ready (void *cls, size_t size, void *buf);
 
 static int
 process_mtype (void *cls, const struct GNUNET_PeerIdentity *peer,
-               const struct GNUNET_MessageHeader *message,
-               const struct GNUNET_ATS_Information *atsi,
-               unsigned int atsi_count)
+               const struct GNUNET_MessageHeader *message)
 {
   static int n;
   const struct TestMessage *hdr;
@@ -492,7 +490,8 @@ process_mtype (void *cls, const struct GNUNET_PeerIdentity *peer,
 
   if (running == GNUNET_YES)
     GNUNET_break (NULL !=
-                  GNUNET_CORE_notify_transmit_ready (p1.ch, GNUNET_NO, 0,
+                  GNUNET_CORE_notify_transmit_ready (p1.ch, GNUNET_NO,
+                                                     GNUNET_CORE_PRIO_BEST_EFFORT,
                                                      FAST_TIMEOUT, &p2.id,
                                                      MESSAGESIZE,
                                                      &transmit_ready, &p1));
@@ -508,7 +507,7 @@ static struct GNUNET_CORE_MessageHandler handlers[] = {
 
 
 static void
-init_notify (void *cls, struct GNUNET_CORE_Handle *server,
+init_notify (void *cls,
              const struct GNUNET_PeerIdentity *my_identity)
 {
   struct PeerContext *p = cls;
@@ -516,9 +515,8 @@ init_notify (void *cls, struct GNUNET_CORE_Handle *server,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Connection to CORE service of `%4s' established\n",
               GNUNET_i2s (my_identity));
-  GNUNET_assert (server != NULL);
+  GNUNET_assert (NULL != my_identity);
   p->id = *my_identity;
-  GNUNET_assert (p->ch == server);
   if (cls == &p1)
   {
     GNUNET_assert (ok == 2);
@@ -573,9 +571,11 @@ setup_peer (struct PeerContext *p, const char *cfgname)
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-arm");
   p->cfg = GNUNET_CONFIGURATION_create ();
   p->arm_proc =
-    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR, NULL, NULL, binary,
-                               "gnunet-service-arm",
-                               "-c", cfgname, NULL);
+    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR, 
+                             NULL, NULL, NULL,
+                             binary,
+                             "gnunet-service-arm",
+                             "-c", cfgname, NULL);
   GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_load (p->cfg, cfgname));
   p->stats = GNUNET_STATISTICS_create ("core", p->cfg);
   GNUNET_assert (p->stats != NULL);
@@ -638,7 +638,7 @@ run (void *cls, char *const *args, const char *cfgfile,
 static void
 stop_arm (struct PeerContext *p)
 {
-  if (0 != GNUNET_OS_process_kill (p->arm_proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (p->arm_proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
   if (GNUNET_OS_process_wait (p->arm_proc) != GNUNET_OK)
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");

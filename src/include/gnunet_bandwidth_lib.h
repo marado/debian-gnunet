@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -52,6 +52,27 @@ struct GNUNET_BANDWIDTH_Value32NBO
 };
 GNUNET_NETWORK_STRUCT_END
 
+
+/**
+ * Callback to be called by the bandwidth tracker if the tracker
+ * was updated and the client should update it's delay values
+ *
+ * @param cls a closure to pass
+ */
+typedef void
+(*GNUNET_BANDWIDTH_TrackerUpdateCallback) (void *cls);
+
+
+/**
+ * Callback to be called by the bandwidth tracker if the tracker
+ * was updated and the client should update it's delay values
+ *
+ * @param cls a closure to pass
+ */
+typedef void
+(*GNUNET_BANDWIDTH_ExcessNotificationCallback) (void *cls);
+
+
 /**
  * Struct to track available bandwidth.  Combines a time stamp with a
  * number of bytes transmitted, a quota and a maximum amount that
@@ -62,9 +83,37 @@ GNUNET_NETWORK_STRUCT_END
 struct GNUNET_BANDWIDTH_Tracker
 {
   /**
+   * Closure for @e update_cb.
+   */
+  void *update_cb_cls;
+
+  /**
+   * Function we call if the tracker's bandwidth is increased and a
+   * previously returned timeout might now expire earlier.
+   */
+  GNUNET_BANDWIDTH_TrackerUpdateCallback update_cb;
+
+  /**
+   * Closure for @e excess_cb.
+   */
+  void *excess_cb_cls;
+
+  /**
+   * Function we call if the tracker is about to throw
+   * away bandwidth due to excess (max carry exceeded).
+   */
+  GNUNET_BANDWIDTH_ExcessNotificationCallback excess_cb;
+
+  /**
    * Number of bytes consumed since we last updated the tracker.
    */
   int64_t consumption_since_last_update__;
+
+  /**
+   * Task scheduled to call the @e excess_cb once we have
+   * reached the maximum bandwidth the tracker can hold.
+   */
+  GNUNET_SCHEDULER_TaskIdentifier excess_task;
 
   /**
    * Time when we last updated the tracker.
@@ -79,7 +128,7 @@ struct GNUNET_BANDWIDTH_Tracker
   /**
    * Maximum number of seconds over which bandwidth may "accumulate".
    * Note that additionally, we also always allow at least
-   * GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.
+   * #GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.
    */
   uint32_t max_carry_s__;
 };
@@ -110,10 +159,8 @@ GNUNET_BANDWIDTH_value_init (uint32_t bytes_per_second);
  * @return number of bytes available at bps until deadline
  */
 uint64_t
-GNUNET_BANDWIDTH_value_get_available_until (struct GNUNET_BANDWIDTH_Value32NBO
-                                            bps,
-                                            struct GNUNET_TIME_Relative
-                                            deadline);
+GNUNET_BANDWIDTH_value_get_available_until (struct GNUNET_BANDWIDTH_Value32NBO bps,
+                                            struct GNUNET_TIME_Relative deadline);
 
 
 /**
@@ -127,7 +174,6 @@ GNUNET_BANDWIDTH_value_get_available_until (struct GNUNET_BANDWIDTH_Value32NBO
 struct GNUNET_TIME_Relative
 GNUNET_BANDWIDTH_value_get_delay_for (struct GNUNET_BANDWIDTH_Value32NBO bps,
                                       uint64_t size);
-
 
 
 /**
@@ -152,26 +198,67 @@ GNUNET_BANDWIDTH_value_min (struct GNUNET_BANDWIDTH_Value32NBO b1,
  * bytes).
  *
  * @param av tracker to initialize
+ * @param update_cb callback to notify a client about the tracker being updated
+ * @param update_cb_cls cls for the callback
  * @param bytes_per_second_limit initial limit to assume
  * @param max_carry_s maximum number of seconds unused bandwidth
  *        may accumulate before it expires
  */
 void
 GNUNET_BANDWIDTH_tracker_init (struct GNUNET_BANDWIDTH_Tracker *av,
-                               struct GNUNET_BANDWIDTH_Value32NBO
-                               bytes_per_second_limit, uint32_t max_carry_s);
+                               GNUNET_BANDWIDTH_TrackerUpdateCallback update_cb,
+                               void *update_cb_cls,
+                               struct GNUNET_BANDWIDTH_Value32NBO bytes_per_second_limit,
+                               uint32_t max_carry_s);
+
+
+/**
+ * Initialize bandwidth tracker.  Note that in addition to the
+ * 'max_carry_s' limit, we also always allow at least
+ * GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.  So if the
+ * bytes-per-second limit is so small that within 'max_carry_s' not
+ * even GNUNET_SERVER_MAX_MESSAGE_SIZE is allowed to accumulate, it is
+ * ignored and replaced by GNUNET_SERVER_MAX_MESSAGE_SIZE (which is in
+ * bytes).
+ *
+ * @param av tracker to initialize
+ * @param update_cb callback to notify a client about the tracker being updated
+ * @param update_cb_cls cls for the @a update_cb callback
+ * @param bytes_per_second_limit initial limit to assume
+ * @param max_carry_s maximum number of seconds unused bandwidth
+ *        may accumulate before it expires
+ * @param excess_cb callback to notify if we have excess bandwidth
+ * @param excess_cb_cls closure for @a excess_cb
+ */
+void
+GNUNET_BANDWIDTH_tracker_init2 (struct GNUNET_BANDWIDTH_Tracker *av,
+                                GNUNET_BANDWIDTH_TrackerUpdateCallback update_cb,
+                                void *update_cb_cls,
+                                struct GNUNET_BANDWIDTH_Value32NBO bytes_per_second_limit,
+                                uint32_t max_carry_s,
+                                GNUNET_BANDWIDTH_ExcessNotificationCallback excess_cb,
+                                void *excess_cb_cls);
+
+
+/**
+ * Stop notifying about tracker updates and excess notifications
+ *
+ * @param av the respective trackers
+ */
+void
+GNUNET_BANDWIDTH_tracker_notification_stop (struct GNUNET_BANDWIDTH_Tracker *av);
 
 
 /**
  * Notify the tracker that a certain number of bytes of bandwidth have
  * been consumed.  Note that it is legal to consume bytes even if not
  * enough bandwidth is available (in that case,
- * GNUNET_BANDWIDTH_tracker_get_delay may return non-zero delay values
+ * #GNUNET_BANDWIDTH_tracker_get_delay() may return non-zero delay values
  * even for a size of zero for a while).
  *
  * @param av tracker to update
  * @param size number of bytes consumed
- * @return GNUNET_YES if this consumption is above the limit
+ * @return #GNUNET_YES if this consumption is above the limit
  */
 int
 GNUNET_BANDWIDTH_tracker_consume (struct GNUNET_BANDWIDTH_Tracker *av,

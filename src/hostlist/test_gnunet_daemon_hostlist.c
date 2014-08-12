@@ -100,8 +100,7 @@ timeout_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param distance in overlay hops, as given by transport plugin
  */
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   if (peer == NULL)
     return;
@@ -136,9 +135,11 @@ setup_peer (struct PeerContext *p, const char *cfgname)
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-arm");
   p->cfg = GNUNET_CONFIGURATION_create ();
   p->arm_proc =
-    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR, NULL, NULL, binary,
-                               "gnunet-service-arm",
-                               "-c", cfgname, NULL);
+    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                             NULL, NULL, NULL,
+                             binary,
+                             "gnunet-service-arm",
+                             "-c", cfgname, NULL);
   GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_load (p->cfg, cfgname));
   p->th =
       GNUNET_TRANSPORT_connect (p->cfg, NULL, p, NULL, &notify_connect, NULL);
@@ -154,7 +155,7 @@ waitpid_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   struct PeerContext *p = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Killing ARM process.\n");
-  if (0 != GNUNET_OS_process_kill (p->arm_proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (p->arm_proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
   if (GNUNET_OS_process_wait (p->arm_proc) != GNUNET_OK)
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");

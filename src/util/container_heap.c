@@ -4,7 +4,7 @@
 
   GNUnet is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 2, or (at your
+  by the Free Software Foundation; either version 3, or (at your
   option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
@@ -142,7 +142,7 @@ GNUNET_CONTAINER_heap_create (enum GNUNET_CONTAINER_HeapOrder order)
 {
   struct GNUNET_CONTAINER_Heap *heap;
 
-  heap = GNUNET_malloc (sizeof (struct GNUNET_CONTAINER_Heap));
+  heap = GNUNET_new (struct GNUNET_CONTAINER_Heap);
   heap->order = order;
   return heap;
 }
@@ -351,7 +351,7 @@ GNUNET_CONTAINER_heap_insert (struct GNUNET_CONTAINER_Heap *heap, void *element,
 {
   struct GNUNET_CONTAINER_HeapNode *node;
 
-  node = GNUNET_malloc (sizeof (struct GNUNET_CONTAINER_HeapNode));
+  node = GNUNET_new (struct GNUNET_CONTAINER_HeapNode);
   node->heap = heap;
   node->element = element;
   node->cost = cost;

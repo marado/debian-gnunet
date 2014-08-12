@@ -36,7 +36,7 @@
 /**
  * Map of peer identities to 'struct GNUNET_BANDWIDTH_Tracker *'s
  */
-static struct GNUNET_CONTAINER_MultiHashMap *trackers;
+static struct GNUNET_CONTAINER_MultiPeerMap *trackers;
 
 
 /**
@@ -57,17 +57,19 @@ GAS_reservations_reserve (const struct GNUNET_PeerIdentity *peer,
   struct GNUNET_BANDWIDTH_Tracker *tracker;
   struct GNUNET_TIME_Relative ret;
 
-  tracker = GNUNET_CONTAINER_multihashmap_get (trackers, &peer->hashPubKey);
+  tracker = GNUNET_CONTAINER_multipeermap_get (trackers, peer);
   if (NULL == tracker)
     return GNUNET_TIME_UNIT_ZERO;       /* not connected, satisfy now */
   if (amount >= 0)
   {
     ret = GNUNET_BANDWIDTH_tracker_get_delay (tracker, amount);
-    if (ret.rel_value > 0)
+    if (ret.rel_value_us > 0)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Delay to satisfy reservation for %d bytes is %llu ms\n",
-                  (int) amount, (unsigned long long) ret.rel_value);
+                  "Delay to satisfy reservation for %d bytes is %s\n",
+                  (int) amount,
+		  GNUNET_STRINGS_relative_time_to_string (ret,
+							  GNUNET_YES));
       return ret;
     }
   }
@@ -91,25 +93,26 @@ GAS_reservations_set_bandwidth (const struct GNUNET_PeerIdentity *peer,
 {
   struct GNUNET_BANDWIDTH_Tracker *tracker;
 
-  tracker = GNUNET_CONTAINER_multihashmap_get (trackers, &peer->hashPubKey);
+  tracker = GNUNET_CONTAINER_multipeermap_get (trackers, peer);
   if (0 == ntohl (bandwidth_in.value__))
   {
     if (NULL == tracker)
       return;
     GNUNET_assert (GNUNET_YES ==
-                   GNUNET_CONTAINER_multihashmap_remove (trackers,
-                                                         &peer->hashPubKey,
+                   GNUNET_CONTAINER_multipeermap_remove (trackers,
+                                                         peer,
                                                          tracker));
     GNUNET_free (tracker);
     return;
   }
   if (NULL == tracker)
   {
-    tracker = GNUNET_malloc (sizeof (struct GNUNET_BANDWIDTH_Tracker));
-    GNUNET_BANDWIDTH_tracker_init (tracker, bandwidth_in,
+    tracker = GNUNET_new (struct GNUNET_BANDWIDTH_Tracker);
+    GNUNET_BANDWIDTH_tracker_init (tracker, NULL, NULL, bandwidth_in,
                                    MAX_BANDWIDTH_CARRY_S);
-    GNUNET_CONTAINER_multihashmap_put (trackers, &peer->hashPubKey, tracker,
-                                       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+    GNUNET_assert (GNUNET_OK ==
+                   GNUNET_CONTAINER_multipeermap_put (trackers, peer, tracker,
+                                                      GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
     return;
   }
   GNUNET_BANDWIDTH_tracker_update_quota (tracker, bandwidth_in);
@@ -122,7 +125,7 @@ GAS_reservations_set_bandwidth (const struct GNUNET_PeerIdentity *peer,
 void
 GAS_reservations_init ()
 {
-  trackers = GNUNET_CONTAINER_multihashmap_create (128, GNUNET_NO);
+  trackers = GNUNET_CONTAINER_multipeermap_create (128, GNUNET_NO);
 }
 
 
@@ -135,7 +138,8 @@ GAS_reservations_init ()
  * @return GNUNET_OK (continue to iterate)
  */
 static int
-free_tracker (void *cls, const struct GNUNET_HashCode * key, void *value)
+free_tracker (void *cls,
+	      const struct GNUNET_PeerIdentity *key, void *value)
 {
   struct GNUNET_BANDWIDTH_Tracker *tracker = value;
 
@@ -150,8 +154,8 @@ free_tracker (void *cls, const struct GNUNET_HashCode * key, void *value)
 void
 GAS_reservations_done ()
 {
-  GNUNET_CONTAINER_multihashmap_iterate (trackers, &free_tracker, NULL);
-  GNUNET_CONTAINER_multihashmap_destroy (trackers);
+  GNUNET_CONTAINER_multipeermap_iterate (trackers, &free_tracker, NULL);
+  GNUNET_CONTAINER_multipeermap_destroy (trackers);
 }
 
 /* end of gnunet-service-ats_reservations.c */

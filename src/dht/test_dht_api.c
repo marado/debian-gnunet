@@ -172,7 +172,7 @@ test_get (void *cls, int success)
   retry_context.next_timeout = BASE_TIMEOUT;
 
   get_handle =
-      GNUNET_DHT_get_start (dht_handle, 
+      GNUNET_DHT_get_start (dht_handle,
                             GNUNET_BLOCK_TYPE_TEST, &hash, 1,
                             GNUNET_DHT_RO_NONE, NULL, 0, &test_get_iterator,
                             NULL);
@@ -202,6 +202,7 @@ run (void *cls,
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES, 1), &end_badly,
                                     NULL);
+
 
   memset (&hash, 42, sizeof (struct GNUNET_HashCode));
   data = GNUNET_malloc (data_size);

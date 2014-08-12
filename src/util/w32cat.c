@@ -20,6 +20,46 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <stdint.h>
+#include <signal.h>
+
+DWORD WINAPI
+parent_control_thread (LPVOID lpParameter)
+{
+  HANDLE h = (HANDLE) lpParameter;
+  while (TRUE)
+  {
+    DWORD dw;
+    BOOL b;
+    unsigned char c;
+    b = ReadFile (h, &c, 1, &dw, NULL);
+    if (!b)
+    {
+      ExitProcess (0);
+    }
+    raise ((int) c);
+  }
+}
+
+void
+install_parent_control_handler ()
+{
+  const char *env_buf;
+  char *env_buf_end;
+  uint64_t pipe_fd;
+  HANDLE pipe_handle;
+
+  env_buf = getenv ("GNUNET_OS_CONTROL_PIPE");
+  if ( (NULL == env_buf) || (strlen (env_buf) <= 0) )
+    return;
+  errno = 0;
+  pipe_fd = strtoull (env_buf, &env_buf_end, 16);
+  if ((0 != errno) || (env_buf == env_buf_end))
+    return;
+  /* Gcc will issue a warning here. What to do with it? */
+  pipe_handle = (HANDLE) (uintptr_t) pipe_fd;
+  CreateThread (NULL, 0, parent_control_thread, (LPVOID) pipe_handle, 0, NULL);
+}
 
 int
 main (int argc, char **argv)
@@ -39,10 +79,12 @@ main (int argc, char **argv)
   if (argvw == NULL)
     return 1;
 
+  install_parent_control_handler ();
+
   for (i = 1; i < argcw || argcw == 1; i++)
   {
     DWORD r, w;
-    int is_dash = wcscmp (argvw[i], L"-") == 0;
+    int is_dash = wcscmp (NULL == argvw[i] ? L"-" : argvw[i], L"-") == 0;
     if (argcw == 1 || is_dash)
     {
       stdi = GetStdHandle (STD_INPUT_HANDLE);

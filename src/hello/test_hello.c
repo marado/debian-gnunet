@@ -93,8 +93,8 @@ main (int argc, char *argv[])
   struct GNUNET_HELLO_Message *msg1;
   struct GNUNET_HELLO_Message *msg2;
   struct GNUNET_HELLO_Message *msg3;
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded publicKey;
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded pk;
+  struct GNUNET_CRYPTO_EddsaPublicKey publicKey;
+  struct GNUNET_CRYPTO_EddsaPublicKey pk;
   struct GNUNET_TIME_Absolute startup_time;
   unsigned int i;
 
@@ -104,7 +104,7 @@ main (int argc, char *argv[])
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Testing HELLO creation (without addresses)...\n");
   i = 0;
-  msg1 = GNUNET_HELLO_create (&publicKey, &my_addr_gen, &i);
+  msg1 = GNUNET_HELLO_create (&publicKey, &my_addr_gen, &i, GNUNET_NO);
   GNUNET_assert (msg1 != NULL);
   GNUNET_assert (0 < GNUNET_HELLO_size (msg1));
 
@@ -116,7 +116,7 @@ main (int argc, char *argv[])
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	   "Testing HELLO creation (with one address)...\n");
   i = 1;
-  msg2 = GNUNET_HELLO_create (&publicKey, &my_addr_gen, &i);
+  msg2 = GNUNET_HELLO_create (&publicKey, &my_addr_gen, &i, GNUNET_NO);
   GNUNET_assert (msg2 != NULL);
   GNUNET_assert (GNUNET_HELLO_size (msg1) < GNUNET_HELLO_size (msg2));
 
@@ -137,7 +137,7 @@ main (int argc, char *argv[])
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	   "Testing HELLO creation (with two addresses)...\n");
   i = 2;
-  msg3 = GNUNET_HELLO_create (&publicKey, &my_addr_gen, &i);
+  msg3 = GNUNET_HELLO_create (&publicKey, &my_addr_gen, &i, GNUNET_NO);
   GNUNET_assert (msg3 != NULL);
   GNUNET_assert (GNUNET_HELLO_size (msg2) < GNUNET_HELLO_size (msg3));
 

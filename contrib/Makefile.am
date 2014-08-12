@@ -1,12 +1,15 @@
-INCLUDES = -I$(top_srcdir)/src/include -I$(top_builddir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include -I$(top_builddir)/src/include
 
+tap32dir = $(pkgdatadir)/openvpn-tap32/tapw32/
+
+tap64dir = $(pkgdatadir)/openvpn-tap32/tapw64/
 
 noinst_PROGRAMS = \
  timeout_watchdog
 
 if !MINGW
 timeout_watchdog_SOURCES = \
- timeout_watchdog.c 
+ timeout_watchdog.c
 else
 timeout_watchdog_SOURCES = \
  timeout_watchdog_w32.c
@@ -22,9 +25,23 @@ bin_SCRIPTS = \
  gnunet-gns-import.sh
 
 dist_pkgdata_DATA = \
+ gns-bcd.html \
+ gns-bcd.tex \
+ gnunet-logo.pdf \
  gnunet-logo-color.png \
- testing_hostkeys.dat \
  testing_hostkeys.ecc
+
+if MINGW
+tap32_DATA = \
+ openvpn-tap32/tapw32/tap0901.sys \
+ openvpn-tap32/tapw32/tap0901.cat \
+ openvpn-tap32/tapw32/OemWin2k.inf
+
+tap64_DATA = \
+ openvpn-tap32/tapw64/tap0901.sys \
+ openvpn-tap32/tapw64/tap0901.cat \
+ openvpn-tap32/tapw64/OemWin2k.inf
+endif
 
 EXTRA_DIST = \
  coverage.sh \
@@ -33,7 +50,19 @@ EXTRA_DIST = \
  gnunet_pyexpect.py.in \
  gnunet_janitor.py.in \
  pydiffer.py.in \
- gnunet-gns-import.sh
+ gnunet-gns-import.sh \
+ openvpn-tap32/tapw32/tap0901.sys \
+ openvpn-tap32/tapw32/tap0901.cat \
+ openvpn-tap32/tapw32/OemWin2k.inf \
+ openvpn-tap32/tapw64/tap0901.sys \
+ openvpn-tap32/tapw64/tap0901.cat \
+ openvpn-tap32/tapw64/OemWin2k.inf \
+ openvpn-tap32/INSTALL \
+ openvpn-tap32/tap32-signed-i386-2.1.zip \
+ openvpn-tap32/tap32-source-2.1.zip
+
+CLEANFILES = \
+  $(noinst_SCRIPTS)
 
 do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 
@@ -47,20 +76,28 @@ do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 # gnmessage.sh \
 # junkinsert.sh \
 # junklookup.sh \
-# namespacehelper.sh 
+# namespacehelper.sh
 
 
 check_PROGRAMS = \
  test_gnunet_prefix
 
+if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+TESTS = $(check_PROGRAMS)
+endif
+
 test_gnunet_prefix_SOURCES = \
  test_gnunet_prefix.c
+
+test_gnunet_prefix_CPPFLAGS = \
+  $(LTDLINCL) $(AM_CPPFLAGS)
 
 test_gnunet_prefix_LDADD = \
   $(GCLIBADD) $(WINLIB) \
   $(LTLIBICONV) \
   $(GN_LIBINTL) \
-  -lltdl -lunistring $(XLIB) 
+  $(LIBLTDL) -lunistring $(XLIB)
 
 pkghellodir= $(pkgdatadir)/hellos
 

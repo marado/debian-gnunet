@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -32,6 +32,11 @@
 
 #define TIME_REL_SECS(sec)						\
   GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, sec)
+
+/**
+ * configuration handle to use as template configuration while creating hosts
+ */
+static struct GNUNET_CONFIGURATION_Handle *cfg;
 
 /**
  * Host we are creating and using
@@ -74,6 +79,11 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     num_hosts--;
   }
   GNUNET_free (hosts);
+  if (NULL != cfg)
+  {
+    GNUNET_CONFIGURATION_destroy (cfg);
+    cfg = NULL;
+  }
 }
 
 
@@ -87,23 +97,71 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  */
 static void
 run (void *cls, char *const *args, const char *cfgfile,
-     const struct GNUNET_CONFIGURATION_Handle *cfg)
+     const struct GNUNET_CONFIGURATION_Handle *config)
 {
-  host = GNUNET_TESTBED_host_create ("localhost", NULL, 0);
+  unsigned int cnt;
+
+  cfg = GNUNET_CONFIGURATION_dup (config);
+  host = GNUNET_TESTBED_host_create ("localhost", NULL, cfg, 0);
   GNUNET_assert (NULL != host);
   GNUNET_assert (0 != GNUNET_TESTBED_host_get_id_ (host));
   GNUNET_TESTBED_host_destroy (host);
-  host = GNUNET_TESTBED_host_create (NULL, NULL, 0);
+  host = GNUNET_TESTBED_host_create (NULL, NULL, cfg, 0);
   GNUNET_assert (NULL != host);
   GNUNET_assert (0 == GNUNET_TESTBED_host_get_id_ (host));
   GNUNET_assert (host == GNUNET_TESTBED_host_lookup_by_id_ (0));
   hosts = NULL;
-  num_hosts = GNUNET_TESTBED_hosts_load_from_file ("sample_hosts.txt", &hosts);
-  GNUNET_assert (15 == num_hosts);
+  num_hosts = GNUNET_TESTBED_hosts_load_from_file ("sample_hosts.txt", cfg, &hosts);
+  GNUNET_assert (7 == num_hosts);
   GNUNET_assert (NULL != hosts);
+  for (cnt = 0; cnt < num_hosts; cnt++)
+  {
+    if (cnt < 3)
+    {
+      GNUNET_assert (0 == strcmp ("totakura",
+                                  GNUNET_TESTBED_host_get_username_
+                                  (hosts[cnt])));
+      GNUNET_assert (NULL != GNUNET_TESTBED_host_get_hostname (hosts[cnt]));
+      GNUNET_assert (22 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
+    }
+    if (3 == cnt)
+    {
+      GNUNET_assert (0 == strcmp ("totakura",
+                                  GNUNET_TESTBED_host_get_username_
+                                  (hosts[cnt])));
+      GNUNET_assert (NULL != GNUNET_TESTBED_host_get_hostname (hosts[cnt]));
+      GNUNET_assert (2022 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
+    }
+    if (4 == cnt)
+    {
+      GNUNET_assert (0 == strcmp ("totakura",
+                                  GNUNET_TESTBED_host_get_username_
+                                  (hosts[cnt])));
+      GNUNET_assert (0 == strcmp ("asgard.realm",
+                                  GNUNET_TESTBED_host_get_hostname
+                                  (hosts[cnt])));
+      GNUNET_assert (22 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
+    }
+    if (5 == cnt)
+    {
+      GNUNET_assert (NULL == GNUNET_TESTBED_host_get_username_ (hosts[cnt]));
+      GNUNET_assert (0 == strcmp ("rivendal",
+                                  GNUNET_TESTBED_host_get_hostname
+                                  (hosts[cnt])));
+      GNUNET_assert (22 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
+    }
+    if (6 == cnt)
+    {
+      GNUNET_assert (NULL == GNUNET_TESTBED_host_get_username_ (hosts[cnt]));
+      GNUNET_assert (0 == strcmp ("rohan",
+                                  GNUNET_TESTBED_host_get_hostname
+                                  (hosts[cnt])));
+      GNUNET_assert (561 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
+    }
+  }
   status = GNUNET_YES;
   shutdown_id =
-      GNUNET_SCHEDULER_add_delayed (TIME_REL_SECS (2), &do_shutdown, NULL);
+      GNUNET_SCHEDULER_add_delayed (TIME_REL_SECS (0), &do_shutdown, NULL);
 }
 
 

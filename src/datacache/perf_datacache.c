@@ -44,7 +44,7 @@ static const char *plugin_name;
 
 
 static int
-checkIt (void *cls, 
+checkIt (void *cls,
          const struct GNUNET_HashCode * key, size_t size, const char *data,
          enum GNUNET_BLOCK_Type type,
 	 struct GNUNET_TIME_Absolute exp,
@@ -96,7 +96,7 @@ run (void *cls, char *const *args, const char *cfgfile,
 	   GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (start), GNUNET_YES));
   GNUNET_snprintf (gstr, sizeof (gstr), "DATACACHE-%s", plugin_name);
   GAUGER (gstr, "Time to PUT item in datacache",
-          GNUNET_TIME_absolute_get_duration (start).rel_value / ITERATIONS,
+          GNUNET_TIME_absolute_get_duration (start).rel_value_us / 1000LL / ITERATIONS,
           "ms/item");
   start = GNUNET_TIME_absolute_get ();
   memset (&k, 0, sizeof (struct GNUNET_HashCode));
@@ -116,7 +116,7 @@ run (void *cls, char *const *args, const char *cfgfile,
            ITERATIONS - found);
   if (found > 0)
     GAUGER (gstr, "Time to GET item from datacache",
-            GNUNET_TIME_absolute_get_duration (start).rel_value / found,
+            GNUNET_TIME_absolute_get_duration (start).rel_value_us / 1000LL / found,
             "ms/item");
   GNUNET_DATACACHE_destroy (h);
   ASSERT (ok == 0);

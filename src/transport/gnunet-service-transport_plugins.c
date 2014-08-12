@@ -86,15 +86,23 @@ static struct TransportPlugin *plugins_tail;
  * plugin that caused the call.
  *
  * @param recv_cb function to call when data is received
+ * @param register_quota_cb function to call to register a quota callback
+ * @param unregister_quota_cb function to call to unregister a quota callback
  * @param address_cb function to call when our public addresses changed
+ * @param session_start_cb function to call when a session was created
  * @param session_end_cb function to call when a session was terminated
  * @param address_type_cb function to call when a address type is requested
+ * @param metric_update_cb function to call when address metrics change
  */
 void
 GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
+                  GNUNET_TRANSPORT_RegisterQuotaNotification register_quota_cb,
+                  GNUNET_TRANSPORT_UnregisterQuotaNotification unregister_quota_cb,
                   GNUNET_TRANSPORT_AddressNotification address_cb,
+                  GNUNET_TRANSPORT_SessionStart session_start_cb,
                   GNUNET_TRANSPORT_SessionEnd session_end_cb,
-                  GNUNET_TRANSPORT_AddressToType address_type_cb)
+                  GNUNET_TRANSPORT_AddressToType address_type_cb,
+                  GNUNET_TRANSPORT_UpdateAddressMetrics metric_update_cb)
 {
   struct TransportPlugin *plug;
   struct TransportPlugin *next;
@@ -102,6 +110,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
   char *libname;
   char *plugs;
   char *pos;
+  int fail;
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_number (GST_cfg, "TRANSPORT",
@@ -115,14 +124,16 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
       GNUNET_CONFIGURATION_get_value_string (GST_cfg, "TRANSPORT", "PLUGINS",
                                              &plugs))
     return;
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _("Starting transport plugins `%s'\n"),
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+              _("Starting transport plugins `%s'\n"),
               plugs);
   for (pos = strtok (plugs, " "); pos != NULL; pos = strtok (NULL, " "))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, _("Loading `%s' transport plugin\n"),
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                _("Loading `%s' transport plugin\n"),
                 pos);
     GNUNET_asprintf (&libname, "libgnunet_plugin_transport_%s", pos);
-    plug = GNUNET_malloc (sizeof (struct TransportPlugin));
+    plug = GNUNET_new (struct TransportPlugin);
     plug->short_name = GNUNET_strdup (pos);
     plug->lib_name = libname;
     plug->env.cfg = GST_cfg;
@@ -131,8 +142,12 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     plug->env.cls = plug->short_name;
     plug->env.receive = recv_cb;
     plug->env.notify_address = address_cb;
+    plug->env.session_start = session_start_cb;
     plug->env.session_end = session_end_cb;
     plug->env.get_address_type = address_type_cb;
+    plug->env.update_address_metrics = metric_update_cb;
+    plug->env.register_quota_notification = register_quota_cb;
+    plug->env.unregister_quota_notification = unregister_quota_cb;
     plug->env.max_connections = tneigh;
     plug->env.stats = GST_stats;
     GNUNET_CONTAINER_DLL_insert (plugins_head, plugins_tail, plug);
@@ -144,11 +159,112 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     plug = next;
     next = plug->next;
     plug->api = GNUNET_PLUGIN_load (plug->lib_name, &plug->env);
-    if (plug->api == NULL)
+    if (NULL == plug->api)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   _("Failed to load transport plugin for `%s'\n"),
                   plug->lib_name);
+      GNUNET_CONTAINER_DLL_remove (plugins_head, plugins_tail, plug);
+      GNUNET_free (plug->short_name);
+      GNUNET_free (plug->lib_name);
+      GNUNET_free (plug);
+      continue;
+    }
+    fail = GNUNET_NO;
+    if (NULL == plug->api->address_pretty_printer)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "address_pretty_printer",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->address_to_string)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "address_to_string",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->string_to_address)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "string_to_address",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->check_address)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "check_address",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->get_session)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "get_session",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->get_network)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "get_network",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->send)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "send",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->disconnect_peer)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "disconnect_peer",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->disconnect_session)
+    {
+    	fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "disconnect_session",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->query_keepalive_factor)
+    {
+      fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "query_keepalive_factor",
+                  plug->lib_name);
+    }
+    if (NULL == plug->api->update_session_timeout)
+    {
+        fail = GNUNET_YES;
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  "update_session_timeout",
+                  plug->lib_name);
+    }
+    if (GNUNET_YES == fail)
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Did not load plugin `%s' due to missing functions\n"),
+                  plug->lib_name);
+      GNUNET_break (NULL == GNUNET_PLUGIN_unload (plug->lib_name, plug->api));
       GNUNET_CONTAINER_DLL_remove (plugins_head, plugins_tail, plug);
       GNUNET_free (plug->short_name);
       GNUNET_free (plug->lib_name);
@@ -241,9 +357,15 @@ GST_plugins_a2s (const struct GNUNET_HELLO_Address *address)
 {
   struct GNUNET_TRANSPORT_PluginFunctions *api;
   static char unable_to_show[1024];
+  static const char *s;
 
   if (address == NULL)
-    return "<inbound>";
+  {
+  	GNUNET_break (0); /* a HELLO address cannot be NULL */
+    return "<invalid>";
+  }
+  if (0 == address->address_length)
+    return TRANSPORT_SESSION_INBOUND_STRING; /* Addresse with length 0 are inbound, address->address itself may be NULL */
   api = GST_plugins_printer_find (address->transport_name);
   if (NULL == api)
     return "<plugin unknown>";
@@ -255,8 +377,8 @@ GST_plugins_a2s (const struct GNUNET_HELLO_Address *address)
                      address->transport_name);
     return unable_to_show;
   }
-  return api->address_to_string (NULL, address->address,
-                                 address->address_length);
+  return (NULL != (s = api->address_to_string (NULL, address->address,
+                                 address->address_length)) ? s : "<invalid>");
 }
 
 

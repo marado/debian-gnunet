@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
   WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
@@ -15,11 +15,19 @@ dist_pkgcfg_DATA = \
   nat.conf
 
 if LINUX
-NATBIN = gnunet-helper-nat-server gnunet-helper-nat-client
-NATSERVER = gnunet-helper-nat-server.c
-NATCLIENT = gnunet-helper-nat-client.c
+  NATBIN = gnunet-helper-nat-server gnunet-helper-nat-client
+  NATSERVER = gnunet-helper-nat-server.c
+  NATCLIENT = gnunet-helper-nat-client.c
 install-exec-hook:
 	$(top_srcdir)/src/nat/install-nat-helper.sh $(libexecdir) $(SUDO_BINARY) || true
+else
+if XFREEBSD
+  NATBIN = gnunet-helper-nat-server gnunet-helper-nat-client
+  NATSERVER = gnunet-helper-nat-server.c
+  NATCLIENT = gnunet-helper-nat-client.c
+install-exec-hook:
+	$(top_srcdir)/src/nat/install-nat-helper.sh $(libexecdir) $(SUDO_BINARY) || true
+endif
 else
 install-exec-hook:
 endif
@@ -64,7 +72,7 @@ libgnunetnat_la_LIBADD = \
 
 libgnunetnat_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
-  -version-info 1:0:1
+  -version-info 1:1:1
 
 check_PROGRAMS = \
   test_nat \
@@ -72,6 +80,7 @@ check_PROGRAMS = \
   test_nat_test
 
 if ENABLE_TEST_RUN
+ AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
  TESTS = $(check_PROGRAMS)
 endif
 

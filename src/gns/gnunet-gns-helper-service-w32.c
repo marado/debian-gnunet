@@ -26,6 +26,7 @@
 #define INITGUID
 #include "platform.h"
 #include <gnunet_util_lib.h>
+#include <gnunet_identity_service.h>
 #include <gnunet_dnsparser_lib.h>
 #include <gnunet_namestore_service.h>
 #include <gnunet_gns_service.h>
@@ -49,22 +50,63 @@ DEFINE_GUID(SVCID_INET_HOSTADDRBYNAME, 0x0002a803, 0x0000, 0x0000, 0xc0, 0x00, 0
 
 struct request
 {
+  /**
+   * We keep these in a doubly-linked list (for cleanup).
+   */
+  struct request *next;
+
+  /**
+   * We keep these in a doubly-linked list (for cleanup).
+   */
+  struct request *prev;
+
   struct GNUNET_SERVER_Client *client;
   GUID sc;
   int af;
   wchar_t *name;
   char *u8name;
+  struct GNUNET_GNS_LookupRequest *lookup_request;
 };
+
+/**
+ * Head of the doubly-linked list (for cleanup).
+ */
+static struct request *rq_head;
+
+/**
+ * Tail of the doubly-linked list (for cleanup).
+ */
+static struct request *rq_tail;
 
 /**
  * Handle to GNS service.
  */
 static struct GNUNET_GNS_Handle *gns;
 
-static struct GNUNET_CRYPTO_ShortHashCode *zone = NULL;
-static struct GNUNET_CRYPTO_ShortHashCode user_zone;
-struct GNUNET_CRYPTO_RsaPrivateKey *shorten_key = NULL;
+/**
+ * Active operation on identity service.
+ */
+static struct GNUNET_IDENTITY_Operation *id_op;
 
+/**
+ * Handle for identity service.
+ */
+static struct GNUNET_IDENTITY_Handle *identity;
+
+/**
+ * Public key of the gns-master ego
+ */
+static struct GNUNET_CRYPTO_EcdsaPublicKey gns_master_pubkey;
+
+/**
+ * Private key of the gns-short ego
+ */
+static struct GNUNET_CRYPTO_EcdsaPrivateKey gns_short_privkey;
+
+/**
+ * Set to 1 once egos are obtained.
+ */
+static int got_egos = 0;
 
 /**
  * Task run on shutdown.  Cleans up everything.
@@ -76,6 +118,27 @@ static void
 do_shutdown (void *cls,
 	     const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
+  struct request *rq;
+  if (NULL != id_op)
+  {
+    GNUNET_IDENTITY_cancel (id_op);
+    id_op = NULL;
+  }
+  if (NULL != identity)
+  {
+    GNUNET_IDENTITY_disconnect (identity);
+    identity = NULL;
+  }
+  while (NULL != (rq = rq_head))
+  {
+    if (NULL != rq->lookup_request)
+      GNUNET_GNS_lookup_cancel(rq->lookup_request);
+    GNUNET_CONTAINER_DLL_remove (rq_head, rq_tail, rq);
+    GNUNET_free_non_null (rq->name);
+    if (rq->u8name)
+      free (rq->u8name);
+    GNUNET_free (rq);
+  }
   if (NULL != gns)
   {
     GNUNET_GNS_disconnect (gns);
@@ -109,11 +172,11 @@ struct TransmitCallbackContext
    */
   struct GNUNET_SERVER_TransmitHandle *th;
 
+
   /**
-   * Client that we are transmitting to.
+   * Handle for the client to which to send
    */
   struct GNUNET_SERVER_Client *client;
-
 };
 
 
@@ -133,9 +196,10 @@ static struct TransmitCallbackContext *tcc_tail;
  */
 static int cleaning_done;
 
+
 /**
  * Function called to notify a client about the socket
- * begin ready to queue more data.  "buf" will be
+ * being ready to queue more data.  "buf" will be
  * NULL and "size" zero if the socket was closed for
  * writing in the meantime.
  *
@@ -157,16 +221,25 @@ transmit_callback (void *cls, size_t size, void *buf)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 _("Transmission to client failed!\n"));
-    GNUNET_SERVER_client_drop (tcc->client);
     GNUNET_free (tcc->msg);
     GNUNET_free (tcc);
     return 0;
   }
   GNUNET_assert (size >= msize);
   memcpy (buf, tcc->msg, msize);
-  GNUNET_SERVER_client_drop (tcc->client);
   GNUNET_free (tcc->msg);
   GNUNET_free (tcc);
+  for (tcc = tcc_head; tcc; tcc = tcc->next)
+  {
+    if (NULL == tcc->th)
+    {
+      tcc->th = GNUNET_SERVER_notify_transmit_ready (tcc->client,
+          ntohs (tcc->msg->size),
+          GNUNET_TIME_UNIT_FOREVER_REL,
+          &transmit_callback, tcc);
+      break;
+    }
+  }
   return msize;
 }
 
@@ -178,7 +251,7 @@ transmit_callback (void *cls, size_t size, void *buf)
  * @param msg message to transmit, will be freed!
  */
 static void
-transmit (struct GNUNET_SERVER_Client *client, 
+transmit (struct GNUNET_SERVER_Client *client,
 	  struct GNUNET_MessageHeader *msg)
 {
   struct TransmitCallbackContext *tcc;
@@ -187,33 +260,24 @@ transmit (struct GNUNET_SERVER_Client *client,
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 _("Shutdown in progress, aborting transmission.\n"));
-    GNUNET_SERVER_client_drop (client);
     GNUNET_free (msg);
     return;
   }
-  tcc = GNUNET_malloc (sizeof (struct TransmitCallbackContext));
+  tcc = GNUNET_new (struct TransmitCallbackContext);
   tcc->msg = msg;
   tcc->client = client;
-  if (NULL ==
-      (tcc->th =
-       GNUNET_SERVER_notify_transmit_ready (client, 
-					    ntohs (msg->size),
-                                            GNUNET_TIME_UNIT_FOREVER_REL,
-                                            &transmit_callback, tcc)))
-  {
-    GNUNET_break (0);
-    GNUNET_SERVER_client_drop (client);
-    GNUNET_free (msg);
-    GNUNET_free (tcc);
-    return;
-  }
-  GNUNET_SERVER_client_keep (client);
+  tcc->th = GNUNET_SERVER_notify_transmit_ready (client,
+      ntohs (msg->size),
+      GNUNET_TIME_UNIT_FOREVER_REL,
+      &transmit_callback, tcc);
   GNUNET_CONTAINER_DLL_insert (tcc_head, tcc_tail, tcc);
 }
+
 
 #define MarshallPtr(ptr, base, type) \
   if (ptr) \
     ptr = (type *) ((char *) ptr - (char *) base)
+
 
 void
 MarshallWSAQUERYSETW (WSAQUERYSETW *qs, GUID *sc)
@@ -250,9 +314,8 @@ MarshallWSAQUERYSETW (WSAQUERYSETW *qs, GUID *sc)
 
 
 static void
-process_ip_lookup_result (void* cls, 
-			  uint32_t rd_count,
-			  const struct GNUNET_NAMESTORE_RecordData *rd)
+process_lookup_result (void* cls, uint32_t rd_count,
+    const struct GNUNET_GNSRECORD_Data *rd)
 {
   int i, j, csanum;
   struct request *rq = (struct request *) cls;
@@ -266,8 +329,9 @@ process_ip_lookup_result (void* cls,
   size_t blobaddrcount = 0;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Got lookup result with count %u for rq %p with client %p\n",
-              rd_count, rq, rq->client);
+      "Got lookup result with count %u for rq %p with client %p\n",
+      rd_count, rq, rq->client);
+  rq->lookup_request = NULL;
 
   if (rd_count == 0)
   {
@@ -276,6 +340,11 @@ process_ip_lookup_result (void* cls,
     msg->header.size = htons (size);
     msg->header.type = htons (GNUNET_MESSAGE_TYPE_W32RESOLVER_RESPONSE);
     transmit (rq->client, &msg->header);
+    GNUNET_CONTAINER_DLL_remove (rq_head, rq_tail, rq);
+    GNUNET_free_non_null (rq->name);
+    if (rq->u8name)
+      free (rq->u8name);
+    GNUNET_free (rq);
     return;
   }
 
@@ -290,13 +359,13 @@ process_ip_lookup_result (void* cls,
   {
     switch (rd[i].record_type)
     {
-    case GNUNET_GNS_RECORD_A:
+    case GNUNET_DNSPARSER_TYPE_A:
       if (rd[i].data_size != sizeof (struct in_addr))
         continue;
       size += sizeof (CSADDR_INFO) + sizeof (struct sockaddr_in) * 2;
       csanum++;
       break;
-    case GNUNET_GNS_RECORD_AAAA:
+    case GNUNET_DNSPARSER_TYPE_AAAA:
       if (rd[i].data_size != sizeof (struct in6_addr))
         continue;
       size += sizeof (CSADDR_INFO) + sizeof (struct sockaddr_in6) * 2;
@@ -313,13 +382,13 @@ process_ip_lookup_result (void* cls,
     blobsize += sizeof (void *); /* For addresses */
     for (i = 0; i < rd_count; i++)
     {
-      if ((rq->af == AF_INET || rq->af == AF_UNSPEC) && rd[i].record_type == GNUNET_GNS_RECORD_A)
+      if ((rq->af == AF_INET || rq->af == AF_UNSPEC) && rd[i].record_type == GNUNET_DNSPARSER_TYPE_A)
       {
         blobsize += sizeof (void *);
         blobsize += sizeof (struct in_addr);
         blobaddrcount++;
       }
-      else if (rq->af == AF_INET6 && rd[i].record_type == GNUNET_GNS_RECORD_AAAA)
+      else if (rq->af == AF_INET6 && rd[i].record_type == GNUNET_DNSPARSER_TYPE_AAAA)
       {
         blobsize += sizeof (void *);
         blobsize += sizeof (struct in6_addr);
@@ -328,7 +397,6 @@ process_ip_lookup_result (void* cls,
     }
     size += blobsize;
   }
-  size += sizeof (struct GNUNET_MessageHeader);
   size_recalc = sizeof (struct GNUNET_W32RESOLVER_GetMessage) + sizeof (WSAQUERYSETW);
   msg = GNUNET_malloc (size);
   msg->header.size = htons (size - sizeof (struct GNUNET_MessageHeader));
@@ -337,10 +405,8 @@ process_ip_lookup_result (void* cls,
   msg->sc_data1 = htonl (rq->sc.Data1);
   msg->sc_data2 = htons (rq->sc.Data2);
   msg->sc_data3 = htons (rq->sc.Data3);
-  msg->sc_data4 = 0;
   for (i = 0; i < 8; i++)
-    msg->sc_data4 |= rq->sc.Data4[i] << ((7 - i) * 8);
-  msg->sc_data4 = GNUNET_htonll (msg->sc_data4);
+    msg->sc_data4[i] = rq->sc.Data4[i];
   qs = (WSAQUERYSETW *) &msg[1];
   ptr = (char *) &qs[1];
   GNUNET_break (size_recalc == (size_t) ((char *) ptr - (char *) msg));
@@ -375,7 +441,7 @@ process_ip_lookup_result (void* cls,
   {
     switch (rd[i].record_type)
     {
-    case GNUNET_GNS_RECORD_A:
+    case GNUNET_DNSPARSER_TYPE_A:
       if (rd[i].data_size != sizeof (struct in_addr))
         continue;
       qs->lpcsaBuffer[j].iSocketType = SOCK_STREAM;
@@ -397,7 +463,7 @@ process_ip_lookup_result (void* cls,
       size_recalc += sizeof (CSADDR_INFO) + sizeof (struct sockaddr_in) * 2;
       j++;
       break;
-    case GNUNET_GNS_RECORD_AAAA:
+    case GNUNET_DNSPARSER_TYPE_AAAA:
       if (rd[i].data_size != sizeof (struct in6_addr))
         continue;
       qs->lpcsaBuffer[j].iSocketType = SOCK_STREAM;
@@ -468,7 +534,7 @@ process_ip_lookup_result (void* cls,
     for (i = 0; i < rd_count; i++)
     {
       if ((rq->af == AF_INET || rq->af == AF_UNSPEC) &&
-          rd[i].record_type == GNUNET_GNS_RECORD_A)
+          rd[i].record_type == GNUNET_DNSPARSER_TYPE_A)
       {
         he->h_addr_list[j] = (char *) ptr;
         ptr += sizeof (struct in_addr);
@@ -479,7 +545,7 @@ process_ip_lookup_result (void* cls,
         memcpy (he->h_addr_list[j], rd[i].data, sizeof (struct in_addr));
         j++;
       }
-      else if (rq->af == AF_INET6 && rd[i].record_type == GNUNET_GNS_RECORD_AAAA)
+      else if (rq->af == AF_INET6 && rd[i].record_type == GNUNET_DNSPARSER_TYPE_AAAA)
       {
         he->h_addr_list[j] = (char *) ptr;
         ptr += sizeof (struct in6_addr);
@@ -493,9 +559,7 @@ process_ip_lookup_result (void* cls,
     }
     he->h_addr_list[j] = NULL;
   }
-  msgend = (struct GNUNET_MessageHeader *) ptr;
-  ptr += sizeof (struct GNUNET_MessageHeader);
-  size_recalc += sizeof (struct GNUNET_MessageHeader);
+  msgend = GNUNET_new (struct GNUNET_MessageHeader);
 
   msgend->type = htons (GNUNET_MESSAGE_TYPE_W32RESOLVER_RESPONSE);
   msgend->size = htons (sizeof (struct GNUNET_MessageHeader));
@@ -506,7 +570,14 @@ process_ip_lookup_result (void* cls,
   }
   MarshallWSAQUERYSETW (qs, &rq->sc);
   transmit (rq->client, &msg->header);
+  transmit (rq->client, msgend);
+  GNUNET_CONTAINER_DLL_remove (rq_head, rq_tail, rq);
+  GNUNET_free_non_null (rq->name);
+  if (rq->u8name)
+    free (rq->u8name);
+  GNUNET_free (rq);
 }
+
 
 static void
 get_ip_from_hostname (struct GNUNET_SERVER_Client *client,
@@ -519,25 +590,25 @@ get_ip_from_hostname (struct GNUNET_SERVER_Client *client,
   uint32_t rtype;
 
   if (IsEqualGUID (&SVCID_DNS_TYPE_A, &sc))
-    rtype = GNUNET_GNS_RECORD_A;
+    rtype = GNUNET_DNSPARSER_TYPE_A;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_NS, &sc))
-    rtype = GNUNET_GNS_RECORD_NS;
+    rtype = GNUNET_DNSPARSER_TYPE_NS;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_CNAME, &sc))
-    rtype = GNUNET_GNS_RECORD_CNAME;
+    rtype = GNUNET_DNSPARSER_TYPE_CNAME;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_SOA, &sc))
-    rtype = GNUNET_GNS_RECORD_SOA;
+    rtype = GNUNET_DNSPARSER_TYPE_SOA;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_PTR, &sc))
-    rtype = GNUNET_GNS_RECORD_PTR;
+    rtype = GNUNET_DNSPARSER_TYPE_PTR;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_MX, &sc))
-    rtype = GNUNET_GNS_RECORD_MX;
+    rtype = GNUNET_DNSPARSER_TYPE_MX;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_TEXT, &sc))
-    rtype = GNUNET_GNS_RECORD_TXT;
+    rtype = GNUNET_DNSPARSER_TYPE_TXT;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_AAAA, &sc))
-    rtype = GNUNET_GNS_RECORD_AAAA;
+    rtype = GNUNET_DNSPARSER_TYPE_AAAA;
   else if (IsEqualGUID (&SVCID_DNS_TYPE_SRV, &sc))
-    rtype = GNUNET_GNS_RECORD_SRV;
+    rtype = GNUNET_DNSPARSER_TYPE_SRV;
   else if (IsEqualGUID (&SVCID_INET_HOSTADDRBYNAME, &sc))
-    rtype = GNUNET_GNS_RECORD_A;
+    rtype = GNUNET_DNSPARSER_TYPE_A;
   else
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -554,12 +625,15 @@ get_ip_from_hostname (struct GNUNET_SERVER_Client *client,
     namelen = 0;
   if (namelen > 0)
     hostname = (char *) u16_to_u8 (name, namelen + 1, NULL, &strl);
-  
+  else
+    hostname = NULL;
+
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "W32 DNS resolver asked to look up %s for `%s'.\n",
               af == AF_INET ? "IPv4" : af == AF_INET6 ? "IPv6" : "anything",
               hostname);
-  rq = GNUNET_malloc (sizeof (struct request));
+
+  rq = GNUNET_new (struct request);
   rq->sc = sc;
   rq->client = client;
   rq->af = af;
@@ -576,27 +650,29 @@ get_ip_from_hostname (struct GNUNET_SERVER_Client *client,
               "Launching a lookup for client %p with rq %p\n",
               client, rq);
 
-  if (NULL != GNUNET_GNS_lookup_zone (gns, hostname, zone, rtype,
-      GNUNET_YES, shorten_key, &process_ip_lookup_result, rq))
+  rq->lookup_request = GNUNET_GNS_lookup (gns, hostname, &gns_master_pubkey,
+      rtype, GNUNET_NO /* Use DHT */, &gns_short_privkey, &process_lookup_result,
+      rq);
+
+  if (NULL != rq->lookup_request)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Lookup launched, waiting for a reply\n");
-    GNUNET_SERVER_client_keep (client);
     GNUNET_SERVER_receive_done (client, GNUNET_OK);
+    GNUNET_CONTAINER_DLL_insert (rq_head, rq_tail, rq);
   }
   else
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "Lookup was not, disconnecting the client\n");
-    if (namelen)
-    {
-      GNUNET_free (rq->name);
+                "Lookup was not launched, disconnecting the client\n");
+    GNUNET_free_non_null (rq->name);
+    if (rq->u8name)
       free (rq->u8name);
-    }
     GNUNET_free (rq);
     GNUNET_SERVER_receive_done (client, GNUNET_SYSERR);
   }
 }
+
 
 /**
  * Handle GET-message.
@@ -613,13 +689,22 @@ handle_get (void *cls, struct GNUNET_SERVER_Client *client,
   const struct GNUNET_W32RESOLVER_GetMessage *msg;
   GUID sc;
   uint16_t size;
-  uint64_t data4;
   int i;
   const wchar_t *hostname;
   int af;
 
+  if (!got_egos)
+  {
+    /*
+     * FIXME: be done with GNUNET_OK, put the get request into a queue?
+     * or postpone GNUNET_SERVER_add_handlers() until egos are obtained?
+     */
+    GNUNET_SERVER_receive_done (client, GNUNET_NO);
+    return;
+  }
+
   msize = ntohs (message->size);
-  if (msize < sizeof (struct GNUNET_W32RESOLVER_GetMessage))
+  if (msize <= sizeof (struct GNUNET_W32RESOLVER_GetMessage))
   {
     GNUNET_break (0);
     GNUNET_SERVER_receive_done (client, GNUNET_SYSERR);
@@ -628,28 +713,96 @@ handle_get (void *cls, struct GNUNET_SERVER_Client *client,
   msg = (const struct GNUNET_W32RESOLVER_GetMessage *) message;
   size = msize - sizeof (struct GNUNET_W32RESOLVER_GetMessage);
   af = ntohl (msg->af);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got NBO GUID: %08X-%04X-%04X-%016llX\n",
-      msg->sc_data1, msg->sc_data2, msg->sc_data3, msg->sc_data4);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+      "Got NBO GUID: %08X-%04X-%04X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
+      msg->sc_data1, msg->sc_data2, msg->sc_data3, msg->sc_data4[0], msg->sc_data4[1],
+      msg->sc_data4[2], msg->sc_data4[3], msg->sc_data4[4], msg->sc_data4[5],
+      msg->sc_data4[6], msg->sc_data4[7]);
   sc.Data1 = ntohl (msg->sc_data1);
   sc.Data2 = ntohs (msg->sc_data2);
   sc.Data3 = ntohs (msg->sc_data3);
-  data4 = GNUNET_ntohll (msg->sc_data4);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got GUID: %08X-%04X-%04X-%016llX\n",
-      sc.Data1, sc.Data2, sc.Data3, data4);
   for (i = 0; i < 8; i++)
-    sc.Data4[i] = 0xFF & (data4 >> ((7 - i) * 8));
-  
+    sc.Data4[i] = msg->sc_data4[i];
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Got GUID: %08X-%04X-%04X-%02X-%02X-%02X-%02X-%02X-%02X-%02X-%02X\n",
+              sc.Data1, sc.Data2, sc.Data3, sc.Data4[0], sc.Data4[1], sc.Data4[2],
+              sc.Data4[3], sc.Data4[4], sc.Data4[5], sc.Data4[6], sc.Data4[7]);
+
   hostname = (const wchar_t *) &msg[1];
-  if (hostname[size - 1] != L'\0')
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "name of %u bytes (last word is 0x%0X): %*S\n",
+        size, hostname[size / 2 - 2], size / 2, hostname);
+  if (hostname[size / 2 - 1] != L'\0')
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "name of length %u, not 0-terminated: %*S\n",
-        size, size, hostname);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "name of length %u, not 0-terminated (%d-th word is 0x%0X): %*S\n",
+        size, size / 2 - 1, hostname[size / 2 - 1], size, hostname);
     GNUNET_break (0);
     GNUNET_SERVER_receive_done (client, GNUNET_SYSERR);
     return;
   }
   get_ip_from_hostname (client, hostname, af, sc);
-  return;
+}
+
+
+/**
+ * Method called to with the ego we are to use for shortening
+ * during the lookup.
+ *
+ * @param cls closure (NULL, unused)
+ * @param ego ego handle, NULL if not found
+ * @param ctx context for application to store data for this ego
+ *                 (during the lifetime of this process, initially NULL)
+ * @param name name assigned by the user for this ego,
+ *                   NULL if the user just deleted the ego and it
+ *                   must thus no longer be used
+ */
+static void
+identity_shorten_cb (void *cls,
+         struct GNUNET_IDENTITY_Ego *ego,
+         void **ctx,
+         const char *name)
+{
+  id_op = NULL;
+  if (NULL == ego)
+  {
+    fprintf (stderr,
+       _("Ego for `gns-short' not found. This is not really fatal, but i'll pretend that it is and refuse to perform a lookup.  Did you run gnunet-gns-import.sh?\n"));
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  gns_short_privkey = *GNUNET_IDENTITY_ego_get_private_key (ego);
+  got_egos = 1;
+}
+
+/**
+ * Method called to with the ego we are to use for the lookup,
+ * when the ego is the one for the default master zone.
+ *
+ * @param cls closure (NULL, unused)
+ * @param ego ego handle, NULL if not found
+ * @param ctx context for application to store data for this ego
+ *                 (during the lifetime of this process, initially NULL)
+ * @param name name assigned by the user for this ego,
+ *                   NULL if the user just deleted the ego and it
+ *                   must thus no longer be used
+ */
+static void
+identity_master_cb (void *cls,
+        struct GNUNET_IDENTITY_Ego *ego,
+        void **ctx,
+        const char *name)
+{
+  id_op = NULL;
+  if (NULL == ego)
+  {
+    fprintf (stderr,
+       _("Ego for `gns-master' not found, cannot perform lookup.  Did you run gnunet-gns-import.sh?\n"));
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  GNUNET_IDENTITY_ego_get_public_key (ego, &gns_master_pubkey);
+  id_op = GNUNET_IDENTITY_get (identity, "gns-short", &identity_shorten_cb,
+      NULL);
+  GNUNET_assert (NULL != id_op);
 }
 
 
@@ -662,67 +815,36 @@ handle_get (void *cls, struct GNUNET_SERVER_Client *client,
  */
 static void
 run (void *cls, struct GNUNET_SERVER_Handle *server,
-     const struct GNUNET_CONFIGURATION_Handle *cfg)
+    const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   static const struct GNUNET_SERVER_MessageHandler handlers[] = {
     {&handle_get, NULL, GNUNET_MESSAGE_TYPE_W32RESOLVER_REQUEST, 0},
     {NULL, NULL, 0, 0}
   };
 
-  char* keyfile;
-  struct GNUNET_CRYPTO_RsaPrivateKey *key = NULL;
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded pkey;
-  struct GNUNET_CRYPTO_ShortHashAsciiEncoded zonename;
-
-  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_filename (cfg, "gns",
-                                                           "ZONEKEY", &keyfile))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                "No private key for root zone found, using default!\n");
-    zone = NULL;
-  }
-  else
-  {
-    if (GNUNET_YES == GNUNET_DISK_file_test (keyfile))
-    {
-      key = GNUNET_CRYPTO_rsa_key_create_from_file (keyfile);
-      GNUNET_CRYPTO_rsa_key_get_public (key, &pkey);
-      GNUNET_CRYPTO_short_hash(&pkey,
-                         sizeof(struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded),
-                         &user_zone);
-      zone = &user_zone;
-      GNUNET_CRYPTO_short_hash_to_enc (zone, &zonename);
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Using zone: %s!\n", &zonename);
-      GNUNET_CRYPTO_rsa_key_free(key);
-    }
-    GNUNET_free(keyfile);
-  }
-
-  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_filename (cfg, "gns",
-                                                   "SHORTEN_ZONEKEY", &keyfile))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                "No shorten key found!\n");
-    shorten_key = NULL;
-  }
-  else
-  {
-    if (GNUNET_YES == GNUNET_DISK_file_test (keyfile))
-    {
-      shorten_key = GNUNET_CRYPTO_rsa_key_create_from_file (keyfile);
-    }
-    GNUNET_free(keyfile);
-  }
-
   gns = GNUNET_GNS_connect (cfg);
-  if (gns == NULL)
+  if (NULL == gns)
+  {
+    fprintf (stderr, _("Failed to connect to GNS\n"));
+    GNUNET_SCHEDULER_shutdown ();
     return;
+  }
+  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &do_shutdown,
+      NULL);
+
+  identity = GNUNET_IDENTITY_connect (cfg, NULL, NULL);
+  if (NULL == identity)
+  {
+    fprintf (stderr, _("Failed to connect to identity service\n"));
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+
+  id_op = GNUNET_IDENTITY_get (identity, "gns-master", &identity_master_cb,
+      NULL);
+  GNUNET_assert (NULL != id_op);
 
   GNUNET_SERVER_add_handlers (server, handlers);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &do_shutdown,
-                                NULL);
-
 }
 
 
@@ -738,12 +860,9 @@ main (int argc, char *const *argv)
 {
   int ret;
 
-  ret =
-      (GNUNET_OK ==
-       GNUNET_SERVICE_run (argc, argv, "gns-helper-service-w32", GNUNET_SERVICE_OPTION_NONE,
-                           &run, NULL)) ? 0 : 1;
-
-  return ret;
+  ret = GNUNET_SERVICE_run (argc, argv, "gns-helper-service-w32",
+      GNUNET_SERVICE_OPTION_NONE, &run, NULL);
+  return (GNUNET_OK == ret) ? 0 : 1;
 }
 
-/* end of gnunet-gns.c */
+/* end of gnunet-gns-helper-service-w32.c */

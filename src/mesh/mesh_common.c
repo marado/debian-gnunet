@@ -26,224 +26,322 @@
 
 #include "mesh.h"
 
-
 /**
- * Check if one pid is bigger than other, accounting for overflow.
+ * @brief Translate a fwd variable into a string representation, for logging.
  *
- * @param bigger Argument that should be bigger.
- * @param smaller Argument that should be smaller.
+ * @param fwd Is FWD? (#GNUNET_YES or #GNUNET_NO)
  *
- * @return True if bigger (arg1) has a higher value than smaller (arg 2).
+ * @return String representing FWD or BCK.
  */
-int
-GMC_is_pid_bigger (uint32_t bigger, uint32_t smaller)
+char *
+GM_f2s (int fwd)
 {
-    return (GNUNET_YES == PID_OVERFLOW(smaller, bigger) ||
-            (bigger > smaller && GNUNET_NO == PID_OVERFLOW(bigger, smaller)));
+  if (GNUNET_YES == fwd)
+  {
+    return "FWD";
+  }
+  else if (GNUNET_NO == fwd)
+  {
+    return "BCK";
+  }
+  else
+  {
+    /* Not an error, can happen with CONNECTION_BROKEN messages. */
+    return "";
+  }
 }
 
-/**
- * Get the higher ACK value out of two values, taking in account overflow.
- *
- * @param a First ACK value.
- * @param b Second ACK value.
- *
- * @return Highest ACK value from the two.
- */
-uint32_t
-GMC_max_pid (uint32_t a, uint32_t b)
+int
+GM_is_pid_bigger (uint32_t bigger, uint32_t smaller)
 {
-  if (GMC_is_pid_bigger(a, b))
+    return (GNUNET_YES == PID_OVERFLOW (smaller, bigger) ||
+            (bigger > smaller && GNUNET_NO == PID_OVERFLOW (bigger, smaller)));
+}
+
+
+uint32_t
+GM_max_pid (uint32_t a, uint32_t b)
+{
+  if (GM_is_pid_bigger(a, b))
     return a;
   return b;
 }
 
 
-/**
- * Get the lower ACK value out of two values, taking in account overflow.
- *
- * @param a First ACK value.
- * @param b Second ACK value.
- *
- * @return Lowest ACK value from the two.
- */
 uint32_t
-GMC_min_pid (uint32_t a, uint32_t b)
+GM_min_pid (uint32_t a, uint32_t b)
 {
-  if (GMC_is_pid_bigger(a, b))
+  if (GM_is_pid_bigger(a, b))
     return b;
   return a;
 }
 
 
+const struct GNUNET_HashCode *
+GM_h2hc (const struct GNUNET_MESH_Hash *id)
+{
+  static struct GNUNET_HashCode hc;
+  memcpy (&hc, id, sizeof (*id));
+
+  return &hc;
+}
+
+
+const char *
+GM_h2s (const struct GNUNET_MESH_Hash *id)
+{
+  static char s[53];
+
+  memcpy (s, GNUNET_h2s_full (GM_h2hc (id)), 52);
+  s[52] = '\0';
+
+  return s;
+}
+
+
 #if !defined(GNUNET_CULL_LOGGING)
 const char *
-GNUNET_MESH_DEBUG_M2S (uint16_t m)
+GM_m2s (uint16_t m)
 {
   static char buf[32];
+  const char *t;
+
   switch (m)
-    {
+  {
       /**
        * Request the creation of a path
        */
-    case 256: return "GNUNET_MESSAGE_TYPE_MESH_PATH_CREATE";
+    case GNUNET_MESSAGE_TYPE_MESH_CONNECTION_CREATE:
+      t = "CONNECTION_CREATE";
+      break;
 
       /**
        * Request the modification of an existing path
        */
-    case 257: return "GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGE";
+    case GNUNET_MESSAGE_TYPE_MESH_CONNECTION_ACK:
+      t = "CONNECTION_ACK";
+      break;
 
       /**
        * Notify that a connection of a path is no longer valid
        */
-    case 258: return "GNUNET_MESSAGE_TYPE_MESH_PATH_BROKEN";
+    case GNUNET_MESSAGE_TYPE_MESH_CONNECTION_BROKEN:
+      t = "CONNECTION_BROKEN";
+      break;
 
       /**
        * At some point, the route will spontaneously change
        */
-    case 259: return "GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGED";
+    case GNUNET_MESSAGE_TYPE_MESH_PATH_CHANGED:
+      t = "PATH_CHANGED";
+      break;
 
       /**
-       * Transport data in the mesh (origin->end) unicast
+       * Transport payload data.
        */
-    case 260: return "GNUNET_MESSAGE_TYPE_MESH_UNICAST";
+    case GNUNET_MESSAGE_TYPE_MESH_DATA:
+      t = "DATA";
+      break;
+
+    /**
+     * Confirm receipt of payload data.
+     */
+    case GNUNET_MESSAGE_TYPE_MESH_DATA_ACK:
+      t = "DATA_ACK";
+      break;
 
       /**
-       * Transport data to all peers in a tunnel
+       * Key exchange encapsulation.
        */
-    case 261: return "GNUNET_MESSAGE_TYPE_MESH_MULTICAST";
+    case GNUNET_MESSAGE_TYPE_MESH_KX:
+      t = "KX";
+      break;
 
       /**
-       * Transport data back in the mesh (end->origin)
+       * New ephemeral key.
        */
-    case 262: return "GNUNET_MESSAGE_TYPE_MESH_TO_ORIGIN";
+    case GNUNET_MESSAGE_TYPE_MESH_KX_EPHEMERAL:
+      t = "KX_EPHEMERAL";
+      break;
 
       /**
-       * Send origin an ACK that the path is complete
+       * Challenge to test peer's session key.
        */
-    case 263: return "GNUNET_MESSAGE_TYPE_MESH_PATH_ACK";
+    case GNUNET_MESSAGE_TYPE_MESH_KX_PING:
+      t = "KX_PING";
+      break;
 
       /**
-       * Avoid path timeouts
+       * Answer to session key challenge.
        */
-    case 264: return "GNUNET_MESSAGE_TYPE_MESH_PATH_KEEPALIVE";
+    case GNUNET_MESSAGE_TYPE_MESH_KX_PONG:
+      t = "KX_PONG";
+      break;
 
       /**
        * Request the destuction of a path
        */
-    case 265: return "GNUNET_MESSAGE_TYPE_MESH_PATH_DESTROY";
-
-      /**
-       * Request the destruction of a whole tunnel
-       */
-    case 266: return "GNUNET_MESSAGE_TYPE_MESH_TUNNEL_DESTROY";
+    case GNUNET_MESSAGE_TYPE_MESH_CONNECTION_DESTROY:
+      t = "CONNECTION_DESTROY";
+      break;
 
       /**
        * ACK for a data packet.
        */
-    case 267: return "GNUNET_MESSAGE_TYPE_MESH_ACK";
+    case GNUNET_MESSAGE_TYPE_MESH_ACK:
+      t = "ACK";
+      break;
 
       /**
        * POLL for ACK.
        */
-    case 268: return "GNUNET_MESSAGE_TYPE_MESH_POLL";
+    case GNUNET_MESSAGE_TYPE_MESH_POLL:
+      t = "POLL";
+      break;
 
       /**
+       * Announce origin is still alive.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_KEEPALIVE:
+      t = "KEEPALIVE";
+      break;
+
+    /**
        * Connect to the mesh service, specifying subscriptions
        */
-    case 272: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_CONNECT";
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_CONNECT:
+      t = "LOCAL_CONNECT";
+      break;
 
       /**
        * Ask the mesh service to create a new tunnel
        */
-    case 273: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_CREATE";
+    case GNUNET_MESSAGE_TYPE_MESH_CHANNEL_CREATE:
+      t = "CHANNEL_CREATE";
+      break;
 
       /**
        * Ask the mesh service to destroy a tunnel
        */
-    case 274: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_DESTROY";
+    case GNUNET_MESSAGE_TYPE_MESH_CHANNEL_DESTROY:
+      t = "CHANNEL_DESTROY";
+      break;
 
       /**
-       * Ask the mesh service to add a peer to an existing tunnel
+       * Confirm the creation of a channel.
        */
-    case 275: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD";
+    case GNUNET_MESSAGE_TYPE_MESH_CHANNEL_ACK:
+      t = "CHANNEL_ACK";
+      break;
 
       /**
-       * Ask the mesh service to remove a peer from a tunnel
+       * Confirm the creation of a channel.
        */
-    case 276: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_DEL";
+    case GNUNET_MESSAGE_TYPE_MESH_CHANNEL_NACK:
+      t = "CHANNEL_NACK";
+      break;
 
       /**
-       * Ask the mesh service to add a peer offering a service to an existing tunnel
+       * Encrypted payload.
        */
-    case 277: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD_BY_TYPE";
+    case GNUNET_MESSAGE_TYPE_MESH_ENCRYPTED:
+      t = "ENCRYPTED";
+      break;
 
       /**
-       * Ask the mesh service to add a peer described by a service string
+       * Local payload traffic
        */
-    case 278: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_ANNOUNCE_REGEX";
-
-      /**
-       * Ask the mesh service to add a peer described by a service string
-       */
-    case 279: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_ADD_BY_STRING";
-
-      /**
-       * Ask the mesh service to add a peer to the blacklist of an existing tunnel
-       */
-    case 280: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_BLACKLIST";
-
-      /**
-       * Ask the mesh service to remove a peer from the blacklist of a tunnel
-       */
-    case 281: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_PEER_UNBLACKLIST";
-
-      /**
-       * Set tunnel speed to slowest peer
-       */
-    case 282: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_MIN";
-
-      /**
-       * Set tunnel speed to fastest peer
-       */
-    case 283: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_MAX";
-
-      /**
-       * Set tunnel buffering on.
-       */
-    case 284: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_BUFFER";
-
-      /**
-       * Set tunnel buffering off.
-       */
-    case 285: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_TUNNEL_NOBUFFER";
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_DATA:
+      t = "LOCAL_DATA";
+      break;
 
       /**
        * Local ACK for data.
        */
-    case 286: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_ACK";
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_ACK:
+      t = "LOCAL_ACK";
+      break;
+
+      /**
+       * Local monitoring of channels.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CHANNELS:
+      t = "LOCAL_INFO_CHANNELS";
+      break;
+
+      /**
+       * Local monitoring of a channel.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CHANNEL:
+      t = "LOCAL_INFO_CHANNEL";
+      break;
 
       /**
        * Local monitoring of service.
        */
-    case 287: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_MONITOR";
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_TUNNELS:
+      t = "LOCAL_INFO_TUNNELS";
+      break;
 
       /**
-       * Local monitoring of service of a specific tunnel.
+       * Local monitoring of service.
        */
-    case 288: return "GNUNET_MESSAGE_TYPE_MESH_LOCAL_MONITOR_TUNNEL";
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_TUNNEL:
+      t = "LOCAL_INFO_TUNNEL";
+      break;
+
+      /**
+       * Local information about all connections of service.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CONNECTIONS:
+      t = "LOCAL_INFO_CONNECTIONS";
+      break;
+
+      /**
+       * Local information of service about a specific connection.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_CONNECTION:
+      t = "LOCAL_INFO_CONNECTION";
+      break;
+
+      /**
+       * Local information about all peers known to the service.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_PEERS:
+      t = "LOCAL_INFO_PEERS";
+      break;
+
+      /**
+       * Local information of service about a specific peer.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_LOCAL_INFO_PEER:
+      t = "LOCAL_INFO_PEER";
+      break;
+
+      /**
+       * Traffic (net-cat style) used by the Command Line Interface.
+       */
+    case GNUNET_MESSAGE_TYPE_MESH_CLI:
+      t = "CLI";
+      break;
 
       /**
        * 640kb should be enough for everybody
        */
-    case 299: return "GNUNET_MESSAGE_TYPE_MESH_RESERVE_END";
-    }
-  sprintf(buf, "%u (UNKNOWN TYPE)", m);
+    case 299:
+      t = "RESERVE_END";
+      break;
+
+    default:
+      sprintf(buf, "%u (UNKNOWN TYPE)", m);
+      return buf;
+  }
+  sprintf(buf, "{%22s}", t);
   return buf;
 }
 #else
 const char *
-GNUNET_MESH_DEBUG_M2S (uint16_t m)
+GM_m2s (uint16_t m)
 {
   return "";
 }

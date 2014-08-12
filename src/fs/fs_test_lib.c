@@ -183,20 +183,21 @@ struct TestDownloadOperation
  * @param tc scheduler context (unused)
  */
 static void
-report_uri (void *cls, 
+report_uri (void *cls,
 	    const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct TestPublishOperation *po = cls;
 
   GNUNET_FS_publish_stop (po->publish_context);
   GNUNET_TESTBED_operation_done (po->fs_op);
-  po->publish_cont (po->publish_cont_cls, 
+  po->publish_cont (po->publish_cont_cls,
 		    po->publish_uri,
-		    (GNUNET_YES == po->do_index) 
+		    (GNUNET_YES == po->do_index)
 		    ? po->publish_tmp_file
 		    : NULL);
   GNUNET_FS_uri_destroy (po->publish_uri);
-  if (GNUNET_YES != po->do_index)
+  if ( (GNUNET_YES != po->do_index) &&
+       (NULL != po->publish_tmp_file) )
     (void) GNUNET_DISK_directory_remove (po->publish_tmp_file);
   GNUNET_free_non_null (po->publish_tmp_file);
   GNUNET_free (po);
@@ -217,10 +218,7 @@ publish_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   po->publish_timeout_task = GNUNET_SCHEDULER_NO_TASK;
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
               "Timeout while trying to publish data\n");
-  if (NULL == po->fs)
-    GNUNET_TESTBED_operation_done (po->fs_op);
-  else
-    GNUNET_TESTBED_operation_done (po->fs_op);
+  GNUNET_TESTBED_operation_done (po->fs_op);
   GNUNET_FS_publish_stop (po->publish_context);
   po->publish_cont (po->publish_cont_cls, NULL, NULL);
   (void) GNUNET_DISK_directory_remove (po->publish_tmp_file);
@@ -256,6 +254,8 @@ publish_progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
                   (unsigned long long) info->value.publish.completed,
                   (unsigned long long) info->value.publish.size);
     break;
+  case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
+    break;
   case GNUNET_FS_STATUS_DOWNLOAD_PROGRESS:
     if (po->verbose)
       GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Download at %llu/%llu bytes\n",
@@ -275,15 +275,15 @@ publish_progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
  * @param cls pointer to uint32_t with publishing seed
  * @param offset offset to generate data for
  * @param max maximum number of bytes to generate
- * @param buf where to write generated data 
+ * @param buf where to write generated data
  * @param emsg where to store error message (unused)
  * @return number of bytes written to buf
  */
 static size_t
-file_generator (void *cls, 
+file_generator (void *cls,
 		uint64_t offset,
-		size_t max, 
-		void *buf, 
+		size_t max,
+		void *buf,
 		char **emsg)
 {
   uint32_t *publish_seed = cls;
@@ -310,7 +310,7 @@ file_generator (void *cls,
 
 /**
  * Connect adapter for publishing operation.
- * 
+ *
  * @param cls the 'struct TestPublishOperation'
  * @param cfg configuration of the peer to connect to; will be available until
  *          GNUNET_TESTBED_operation_done() is called on the operation returned
@@ -322,7 +322,7 @@ publish_connect_adapter (void *cls,
 			 const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct TestPublishOperation *po = cls;
- 
+
   return GNUNET_FS_start (cfg,
 			  "fs-test-publish",
 			  &publish_progress_cb, po,
@@ -333,11 +333,11 @@ publish_connect_adapter (void *cls,
 
 /**
  * Adapter function called to destroy connection to file-sharing service.
- * 
+ *
  * @param cls the 'struct GNUNET_FS_Handle'
  * @param op_result unused (different for publish/download!)
  */
-static void 
+static void
 fs_disconnect_adapter (void *cls,
 		       void *op_result)
 {
@@ -411,14 +411,16 @@ publish_fs_connect_complete_cb (void *cls,
                                                       po->publish_tmp_file,
                                                       NULL, NULL, po->do_index,
                                                       &bo);
+    GNUNET_assert (NULL != fi);
   }
   else
   {
     fi = GNUNET_FS_file_information_create_from_reader (po->fs, po,
-                                                        po->size, 
-							&file_generator, &po->publish_seed, 
+                                                        po->size,
+							&file_generator, &po->publish_seed,
 							NULL, NULL,
                                                         po->do_index, &bo);
+    GNUNET_assert (NULL != fi);
   }
   po->publish_context =
     GNUNET_FS_publish_start (po->fs, fi, NULL, NULL, NULL,
@@ -450,7 +452,7 @@ GNUNET_FS_TEST_publish (struct GNUNET_TESTBED_Peer *peer,
 {
   struct TestPublishOperation *po;
 
-  po = GNUNET_malloc (sizeof (struct TestPublishOperation));
+  po = GNUNET_new (struct TestPublishOperation);
   po->publish_cont = cont;
   po->publish_cont_cls = cont_cls;
   po->publish_seed = seed;
@@ -492,10 +494,7 @@ download_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   GNUNET_SCHEDULER_add_continuation (dop->download_cont,
                                      dop->download_cont_cls,
                                      GNUNET_SCHEDULER_REASON_TIMEOUT);
-  if (NULL == dop->fs)
-    GNUNET_TESTBED_operation_done (dop->fs_op);
-  else
-    GNUNET_TESTBED_operation_done (dop->fs_op);
+  GNUNET_TESTBED_operation_done (dop->fs_op);
   GNUNET_FS_uri_destroy (dop->uri);
   GNUNET_free (dop);
 }
@@ -563,7 +562,7 @@ download_progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
 
 /**
  * Connect adapter for download operation.
- * 
+ *
  * @param cls the 'struct TestDownloadOperation'
  * @param cfg configuration of the peer to connect to; will be available until
  *          GNUNET_TESTBED_operation_done() is called on the operation returned
@@ -575,7 +574,7 @@ download_connect_adapter (void *cls,
 			 const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct TestPublishOperation *po = cls;
- 
+
   return GNUNET_FS_start (cfg,
 			  "fs-test-download",
 			  &download_progress_cb, po,
@@ -632,7 +631,7 @@ GNUNET_FS_TEST_download (struct GNUNET_TESTBED_Peer *peer,
 {
   struct TestDownloadOperation *dop;
 
-  dop = GNUNET_malloc (sizeof (struct TestDownloadOperation));
+  dop = GNUNET_new (struct TestDownloadOperation);
   dop->uri = GNUNET_FS_uri_dup (uri);
   dop->size = GNUNET_FS_uri_chk_get_file_size (uri);
   dop->verbose = verbose;

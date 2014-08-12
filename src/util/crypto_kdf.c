@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -36,11 +36,11 @@
  * @param result buffer for the derived key, allocated by caller
  * @param out_len desired length of the derived key
  * @param xts salt
- * @param xts_len length of xts
+ * @param xts_len length of @a xts
  * @param skm source key material
- * @param skm_len length of skm
+ * @param skm_len length of @a skm
  * @param argp va_list of void * & size_t pairs for context chunks
- * @return GNUNET_YES on success
+ * @return #GNUNET_YES on success
  */
 int
 GNUNET_CRYPTO_kdf_v (void *result, size_t out_len, const void *xts,
@@ -63,16 +63,17 @@ GNUNET_CRYPTO_kdf_v (void *result, size_t out_len, const void *xts,
                                xts, xts_len, skm, skm_len, argp);
 }
 
+
 /**
  * @brief Derive key
  * @param result buffer for the derived key, allocated by caller
  * @param out_len desired length of the derived key
  * @param xts salt
- * @param xts_len length of xts
+ * @param xts_len length of @a xts
  * @param skm source key material
- * @param skm_len length of skm
+ * @param skm_len length of @a skm
  * @param ... void * & size_t pairs for context chunks
- * @return GNUNET_YES on success
+ * @return #GNUNET_YES on success
  */
 int
 GNUNET_CRYPTO_kdf (void *result, size_t out_len, const void *xts,

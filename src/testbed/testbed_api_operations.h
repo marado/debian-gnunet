@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -38,14 +38,35 @@ struct OperationQueue;
 
 
 /**
+ * The type of operation queue
+ */
+enum OperationQueueType
+{
+  /**
+   * Operation queue which permits a fixed maximum number of operations to be
+   * active at any time
+   */
+  OPERATION_QUEUE_TYPE_FIXED,
+
+  /**
+   * Operation queue which adapts the number of operations to be active based on
+   * the operation completion times of previously executed operation in it
+   */
+  OPERATION_QUEUE_TYPE_ADAPTIVE
+};
+
+
+/**
  * Create an operation queue.
  *
- * @param max_active maximum number of operations in this
- *        queue that can be active in parallel at the same time
+ * @param type the type of operation queue
+ * @param max_active maximum number of operations in this queue that can be
+ *   active in parallel at the same time.
  * @return handle to the queue
  */
 struct OperationQueue *
-GNUNET_TESTBED_operation_queue_create_ (unsigned int max_active);
+GNUNET_TESTBED_operation_queue_create_ (enum OperationQueueType type,
+                                        unsigned int max_active);
 
 
 /**
@@ -56,6 +77,17 @@ GNUNET_TESTBED_operation_queue_create_ (unsigned int max_active);
  */
 void
 GNUNET_TESTBED_operation_queue_destroy_ (struct OperationQueue *queue);
+
+
+/**
+ * Destroys the operation queue if it is empty.  If not empty return GNUNET_NO.
+ *
+ * @param queue the queue to destroy if empty
+ * @return GNUNET_YES if the queue is destroyed.  GNUNET_NO if not (because it
+ *           is not empty)
+ */
+int
+GNUNET_TESTBED_operation_queue_destroy_empty_ (struct OperationQueue *queue);
 
 
 /**
@@ -78,14 +110,14 @@ GNUNET_TESTBED_operation_queue_reset_max_active_ (struct OperationQueue *queue,
  * waiting for the operation to become active.
  *
  * @param queue queue to add the operation to
- * @param operation operation to add to the queue
+ * @param op operation to add to the queue
  * @param nres the number of units of the resources of queue needed by the
  *          operation. Should be greater than 0.
  */
 void
 GNUNET_TESTBED_operation_queue_insert2_ (struct OperationQueue *queue,
-                                         struct GNUNET_TESTBED_Operation
-                                         *operation, unsigned int nres);
+                                         struct GNUNET_TESTBED_Operation *op,
+                                         unsigned int nres);
 
 
 /**
@@ -95,12 +127,11 @@ GNUNET_TESTBED_operation_queue_insert2_ (struct OperationQueue *queue,
  * waiting for the operation to become active.
  *
  * @param queue queue to add the operation to
- * @param operation operation to add to the queue
+ * @param op operation to add to the queue
  */
 void
 GNUNET_TESTBED_operation_queue_insert_ (struct OperationQueue *queue,
-                                        struct GNUNET_TESTBED_Operation
-                                        *operation);
+                                        struct GNUNET_TESTBED_Operation *op);
 
 
 /**
@@ -110,27 +141,10 @@ GNUNET_TESTBED_operation_queue_insert_ (struct OperationQueue *queue,
  * insertions to be made without having the first one instantly trigger the
  * operation if the first queue has sufficient resources).
  *
- * @param operation the operation to marks as waiting
+ * @param op the operation to marks as waiting
  */
 void
-GNUNET_TESTBED_operation_begin_wait_ (struct GNUNET_TESTBED_Operation
-                                      *operation);
-
-
-/**
- * Remove an operation from a queue.  This can be because the
- * oeration was active and has completed (and the resources have
- * been released), or because the operation was cancelled and
- * thus scheduling the operation is no longer required.
- *
- * @param queue queue to add the operation to
- * @param operation operation to add to the queue
- */
-void
-GNUNET_TESTBED_operation_queue_remove_ (struct OperationQueue *queue,
-                                        struct GNUNET_TESTBED_Operation
-                                        *operation);
-
+GNUNET_TESTBED_operation_begin_wait_ (struct GNUNET_TESTBED_Operation *op);
 
 
 /**
@@ -176,10 +190,43 @@ GNUNET_TESTBED_operation_create_ (void *cls, OperationStart start,
  * An operation is 'done' (was cancelled or finished); remove
  * it from the queues and release associated resources.
  *
- * @param operation operation that finished
+ * @param op operation that finished
  */
 void
-GNUNET_TESTBED_operation_release_ (struct GNUNET_TESTBED_Operation *operation);
+GNUNET_TESTBED_operation_release_ (struct GNUNET_TESTBED_Operation *op);
+
+
+/**
+ * Marks an active operation as inactive - the operation will be kept in a
+ * ready-to-be-released state and continues to hold resources until another
+ * operation contents for them.
+ *
+ * @param op the operation to be marked as inactive.  The operation start
+ *          callback should have been called before for this operation to mark
+ *          it as inactive.
+ */
+void
+GNUNET_TESTBED_operation_inactivate_ (struct GNUNET_TESTBED_Operation *op);
+
+
+/**
+ * Marks and inactive operation as active.  This fuction should be called to
+ * ensure that the oprelease callback will not be called until it is either
+ * marked as inactive or released.
+ *
+ * @param op the operation to be marked as active
+ */
+void
+GNUNET_TESTBED_operation_activate_ (struct GNUNET_TESTBED_Operation *op);
+
+
+/**
+ * Marks an operation as failed
+ *
+ * @param op the operation to be marked as failed
+ */
+void
+GNUNET_TESTBED_operation_mark_failed (struct GNUNET_TESTBED_Operation *op);
 
 
 #endif

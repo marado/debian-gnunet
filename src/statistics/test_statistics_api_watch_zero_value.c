@@ -157,7 +157,8 @@ main (int argc, char *argv_ign[])
 
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-statistics");
   proc =
-    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR, NULL, NULL,
+    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                             NULL, NULL, NULL,
 			     binary,
 			     "gnunet-service-statistics",
 			     "-c", "test_statistics_api_data.conf", NULL);
@@ -166,7 +167,7 @@ main (int argc, char *argv_ign[])
   ok2 = 1;
   GNUNET_PROGRAM_run (3, argv, "test-statistics-api", "nohelp", options, &run,
                       NULL);
-  if (0 != GNUNET_OS_process_kill (proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
     ok = 1;

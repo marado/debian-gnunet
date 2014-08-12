@@ -70,27 +70,21 @@ shutdown_task (void *cls,
  *
  * @param cls closure (unused)
  * @param peer peer identity this notification is about
- * @param atsi performance data for the connection
- * @param atsi_count number of records in 'atsi'
  */
 static void
-connected_peer_callback (void *cls, const struct GNUNET_PeerIdentity *peer,
-                         const struct GNUNET_ATS_Information *atsi,
-                         unsigned int atsi_count)
+connected_peer_callback (void *cls,
+			 const struct GNUNET_PeerIdentity *peer)
 {
-  struct GNUNET_CRYPTO_HashAsciiEncoded enc;
-
   if (NULL == peer)
     return;
-  GNUNET_CRYPTO_hash_to_enc (&peer->hashPubKey, &enc);
-  printf (_("Peer `%s'\n"), (const char *) &enc);
+  printf (_("Peer `%s'\n"),
+	  GNUNET_i2s_full (peer));
 }
 
-void
+
+static void
 monitor_notify_startup (void *cls,
-                       struct GNUNET_CORE_Handle * server,
-                       const struct GNUNET_PeerIdentity *
-                       my_identity)
+			const struct GNUNET_PeerIdentity *my_identity)
 {
   my_id = (*my_identity);
 }
@@ -102,12 +96,9 @@ monitor_notify_startup (void *cls,
  *
  * @param cls closure
  * @param peer the peer that connected
- * @param ats performance data
- * @param ats_count number of entries in ats (excluding 0-termination)
  */
 static void
-monitor_notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+monitor_notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   struct GNUNET_TIME_Absolute now = GNUNET_TIME_absolute_get();
   const char *now_str;
@@ -152,7 +143,56 @@ monitor_notify_disconnect (void *cls, const struct GNUNET_PeerIdentity *peer)
   }
 }
 
+/**
+ * Function called with the result of the check if the 'transport'
+ * service is running.
+ *
+ * @param cls closure with our configuration
+ * @param result #GNUNET_YES if transport is running
+ */
+static void
+testservice_task (void *cls, int result)
+{
+  const struct GNUNET_CONFIGURATION_Handle *cfg = cls;
+  static const struct GNUNET_CORE_MessageHandler handlers[] = {
+    {NULL, 0, 0}
+  };
 
+  if (result != GNUNET_OK)
+    {
+      FPRINTF (stderr, _("Service `%s' is not running\n"), "core");
+      return;
+    }
+
+  if (GNUNET_NO == monitor_connections)
+  {
+    if (GNUNET_OK != GNUNET_CORE_iterate_peers (cfg, &connected_peer_callback, NULL))
+    {
+      fprintf (stderr, ("Failed to connect to CORE service to iterate peers!\n"));
+      return;
+    }
+  }
+  else
+  {
+    memset(&my_id, '\0', sizeof (my_id));
+    ch = GNUNET_CORE_connect (cfg, NULL,
+                              monitor_notify_startup,
+                              monitor_notify_connect,
+                              monitor_notify_disconnect,
+                              NULL, GNUNET_NO,
+                              NULL, GNUNET_NO,
+                              handlers);
+
+    if (NULL == ch)
+    {
+      GNUNET_SCHEDULER_add_now (shutdown_task, NULL);
+      fprintf (stderr, ("Failed to connect to CORE service!\n"));
+      return;
+    }
+    else
+      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, shutdown_task, NULL);
+  }
+}
 
 /**
  * Main function that will be run by the scheduler.
@@ -166,32 +206,14 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-  static const struct GNUNET_CORE_MessageHandler handlers[] = {
-    {NULL, 0, 0}
-  };
   if (args[0] != NULL)
   {
     FPRINTF (stderr, _("Invalid command line argument `%s'\n"), args[0]);
     return;
   }
-  if (GNUNET_NO == monitor_connections)
-    GNUNET_CORE_iterate_peers (cfg, &connected_peer_callback, NULL);
-  else
-  {
-    memset(&my_id, '\0', sizeof (my_id));
-    ch = GNUNET_CORE_connect (cfg, NULL,
-                              monitor_notify_startup,
-                              monitor_notify_connect,
-                              monitor_notify_disconnect,
-                              NULL, GNUNET_NO,
-                              NULL, GNUNET_NO,
-                              handlers);
 
-    if (NULL == ch)
-      GNUNET_SCHEDULER_add_now (shutdown_task, NULL);
-    else
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, shutdown_task, NULL);
-  }
+  GNUNET_CLIENT_service_test ("core", cfg, GNUNET_TIME_UNIT_SECONDS,
+      &testservice_task, (void *) cfg);
 }
 
 

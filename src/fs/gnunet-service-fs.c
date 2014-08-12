@@ -43,7 +43,7 @@
 #include "gnunet-service-fs_pr.h"
 #include "gnunet-service-fs_push.h"
 #include "gnunet-service-fs_put.h"
-#include "gnunet-service-fs_stream.h"
+#include "gnunet-service-fs_mesh.h"
 #include "fs.h"
 
 /**
@@ -99,6 +99,12 @@ struct GNUNET_LOAD_Value *GSF_rt_entry_lifetime;
  * Initialized to 5s as the initial default.
  */
 struct GNUNET_TIME_Relative GSF_avg_latency = { 500 };
+
+/**
+ * Handle to ATS service.
+ */
+struct GNUNET_ATS_PerformanceHandle *GSF_ats;
+
 
 /**
  * Typical priorities we're seeing from other peers right now.  Since
@@ -196,7 +202,7 @@ GSF_update_datastore_delay_ (struct GNUNET_TIME_Absolute start)
   struct GNUNET_TIME_Relative delay;
 
   delay = GNUNET_TIME_absolute_get_duration (start);
-  GNUNET_LOAD_update (datastore_get_load, delay.rel_value);
+  GNUNET_LOAD_update (datastore_get_load, delay.rel_value_us);
 }
 
 
@@ -205,6 +211,7 @@ GSF_update_datastore_delay_ (struct GNUNET_TIME_Absolute start)
  * to even consider processing the query at
  * all.
  *
+ * @param priority priority of the request (used as a reference point to compare with the load)
  * @return GNUNET_YES if the load is too high to do anything (load high)
  *         GNUNET_NO to process normally (load normal)
  *         GNUNET_SYSERR to process for free (load low)
@@ -226,29 +233,44 @@ GSF_test_get_load_too_high_ (uint32_t priority)
 /**
  * We've received peer performance information. Update
  * our running average for the P2P latency.
- *
- * @param atsi performance information
- * @param atsi_count number of 'atsi' records
+*
+ * @param cls closure
+ * @param address the address
+ * @param active is this address in active use
+ * @param bandwidth_out assigned outbound bandwidth for the connection
+ * @param bandwidth_in assigned inbound bandwidth for the connection
+ * @param ats performance data for the address (as far as known)
+ * @param ats_count number of performance records in 'ats'
  */
 static void
-update_latencies (const struct GNUNET_ATS_Information *atsi,
-                  unsigned int atsi_count)
+update_latencies (void *cls,
+		  const struct GNUNET_HELLO_Address *address,
+		  int active,
+		  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
+		  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
+		  const struct GNUNET_ATS_Information *ats,
+		  uint32_t ats_count)
 {
   unsigned int i;
+  struct GNUNET_TIME_Relative latency;
 
-  for (i = 0; i < atsi_count; i++)
+  if (GNUNET_YES != active)
+  	return;
+  for (i = 0; i < ats_count; i++)
   {
-    if (ntohl (atsi[i].type) == GNUNET_ATS_QUALITY_NET_DELAY)
-    {
-      GSF_avg_latency.rel_value =
-          (GSF_avg_latency.rel_value * 31 +
-           GNUNET_MIN (5000, ntohl (atsi[i].value))) / 32;
-      GNUNET_STATISTICS_set (GSF_stats,
-                             gettext_noop
-                             ("# running average P2P latency (ms)"),
-                             GSF_avg_latency.rel_value, GNUNET_NO);
-      break;
-    }
+    if (GNUNET_ATS_QUALITY_NET_DELAY != ntohl (ats[i].type))
+      continue;
+    latency.rel_value_us = ntohl (ats[i].value);
+    GSF_update_peer_latency_ (&address->peer,
+			      latency);
+    GSF_avg_latency.rel_value_us =
+      (GSF_avg_latency.rel_value_us * 31 +
+       GNUNET_MIN (5000, ntohl (ats[i].value))) / 32;
+    GNUNET_STATISTICS_set (GSF_stats,
+			   gettext_noop
+			   ("# running average P2P latency (ms)"),
+			   GSF_avg_latency.rel_value_us / 1000LL, GNUNET_NO);
+    break;
   }
 }
 
@@ -260,16 +282,12 @@ update_latencies (const struct GNUNET_ATS_Information *atsi,
  * @param other the other peer involved (sender or receiver, NULL
  *        for loopback messages where we are both sender and receiver)
  * @param message the actual message
- * @param atsi performance information
- * @param atsi_count number of records in 'atsi'
  * @return GNUNET_OK to keep the connection open,
  *         GNUNET_SYSERR to close it (signal serious error)
  */
 static int
 handle_p2p_put (void *cls, const struct GNUNET_PeerIdentity *other,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+                const struct GNUNET_MessageHeader *message)
 {
   struct GSF_ConnectedPeer *cp;
 
@@ -280,7 +298,6 @@ handle_p2p_put (void *cls, const struct GNUNET_PeerIdentity *other,
     return GNUNET_OK;
   }
   GSF_cover_content_count++;
-  update_latencies (atsi, atsi_count);
   return GSF_handle_p2p_content_ (cp, message);
 }
 
@@ -342,16 +359,12 @@ consider_forwarding (void *cls, struct GSF_PendingRequest *pr,
  * @param other the other peer involved (sender or receiver, NULL
  *        for loopback messages where we are both sender and receiver)
  * @param message the actual message
- * @param atsi performance information
- * @param atsi_count number of records in 'atsi'
  * @return GNUNET_OK to keep the connection open,
  *         GNUNET_SYSERR to close it (signal serious error)
  */
 static int
 handle_p2p_get (void *cls, const struct GNUNET_PeerIdentity *other,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *atsi,
-                unsigned int atsi_count)
+                const struct GNUNET_MessageHeader *message)
 {
   struct GSF_PendingRequest *pr;
 
@@ -360,7 +373,6 @@ handle_p2p_get (void *cls, const struct GNUNET_PeerIdentity *other,
     return GNUNET_SYSERR;
   GSF_pending_request_get_data_ (pr)->has_started = GNUNET_YES;
   GSF_local_lookup_ (pr, &consider_forwarding, NULL);
-  update_latencies (atsi, atsi_count);
   return GNUNET_OK;
 }
 
@@ -400,14 +412,12 @@ start_p2p_processing (void *cls, struct GSF_PendingRequest *pr,
     {
     case GNUNET_BLOCK_TYPE_FS_DBLOCK:
     case GNUNET_BLOCK_TYPE_FS_IBLOCK:
-      /* the above block types MAY be available via 'stream' */
+      /* the above block types MAY be available via 'mesh' */
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		  "Considering stream-based download for block\n");
-      GSF_stream_lookup_ (pr);
-      break; 
-    case GNUNET_BLOCK_TYPE_FS_KBLOCK:
-    case GNUNET_BLOCK_TYPE_FS_SBLOCK:
-    case GNUNET_BLOCK_TYPE_FS_NBLOCK:
+		  "Considering mesh-based download for block\n");
+      GSF_mesh_lookup_ (pr);
+      break;
+    case GNUNET_BLOCK_TYPE_FS_UBLOCK:
       /* the above block types are in the DHT */
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		  "Considering DHT-based search for block\n");
@@ -465,11 +475,17 @@ handle_start_search (void *cls, struct GNUNET_SERVER_Client *client,
 static void
 shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
-  GSF_stream_stop ();
+  GSF_mesh_stop_client ();
+  GSF_mesh_stop_server ();
   if (NULL != GSF_core)
   {
     GNUNET_CORE_disconnect (GSF_core);
     GSF_core = NULL;
+  }
+  if (NULL != GSF_ats)
+  {
+    GNUNET_ATS_performance_done (GSF_ats);
+    GSF_ats = NULL;
   }
   GSF_put_done_ ();
   GSF_push_done_ ();
@@ -534,19 +550,15 @@ consider_peer_for_forwarding (void *cls, const struct GNUNET_HashCode * key,
  *
  * @param cls closure, not used
  * @param peer peer identity this notification is about
- * @param atsi performance information
- * @param atsi_count number of records in 'atsi'
  */
 static void
-peer_connect_handler (void *cls, const struct GNUNET_PeerIdentity *peer,
-                      const struct GNUNET_ATS_Information *atsi,
-                      unsigned int atsi_count)
+peer_connect_handler (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   struct GSF_ConnectedPeer *cp;
 
   if (0 == memcmp (&my_id, peer, sizeof (struct GNUNET_PeerIdentity)))
     return;
-  cp = GSF_peer_connect_handler_ (peer, atsi, atsi_count);
+  cp = GSF_peer_connect_handler_ (peer);
   if (NULL == cp)
     return;
   GSF_iterate_pending_requests_ (&consider_peer_for_forwarding, cp);
@@ -561,11 +573,10 @@ peer_connect_handler (void *cls, const struct GNUNET_PeerIdentity *peer,
  * directly (which should work if you are authorized...).
  *
  * @param cls closure
- * @param server handle to the server, NULL if we failed
  * @param my_identity ID of this peer, NULL if we failed
  */
 static void
-peer_init_handler (void *cls, struct GNUNET_CORE_Handle *server,
+peer_init_handler (void *cls,
                    const struct GNUNET_PeerIdentity *my_identity)
 {
   my_id = *my_identity;
@@ -614,7 +625,7 @@ main_init (struct GNUNET_SERVER_Handle *server,
   anon_p2p_off = (GNUNET_YES ==
 		  GNUNET_CONFIGURATION_get_value_yesno (GSF_cfg,
 							"fs",
-							"DISABLE_ANON_TRANSFER"));  
+							"DISABLE_ANON_TRANSFER"));
   GSF_core =
       GNUNET_CORE_connect (GSF_cfg, NULL, &peer_init_handler,
                            &peer_connect_handler, &GSF_peer_disconnect_handler_,
@@ -635,7 +646,8 @@ main_init (struct GNUNET_SERVER_Handle *server,
       GNUNET_SCHEDULER_add_delayed (COVER_AGE_FREQUENCY, &age_cover_counters,
                                     NULL);
   datastore_get_load = GNUNET_LOAD_value_init (DATASTORE_LOAD_AUTODECLINE);
-  GSF_stream_start ();
+  GSF_mesh_start_server ();
+  GSF_mesh_start_client ();
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
                                 NULL);
   return GNUNET_OK;
@@ -676,13 +688,13 @@ run (void *cls, struct GNUNET_SERVER_Handle *server,
   GSF_rt_entry_lifetime = GNUNET_LOAD_value_init (GNUNET_TIME_UNIT_FOREVER_REL);
   GSF_stats = GNUNET_STATISTICS_create ("fs", cfg);
   block_cfg = GNUNET_CONFIGURATION_create ();
-  GNUNET_CONFIGURATION_set_value_string (block_cfg, "block", "PLUGINS", "fs");
   GSF_block_ctx = GNUNET_BLOCK_context_create (block_cfg);
   GNUNET_assert (NULL != GSF_block_ctx);
   GSF_dht = GNUNET_DHT_connect (cfg, FS_DHT_HT_SIZE);
   GSF_plan_init ();
   GSF_pending_request_init_ ();
   GSF_connected_peer_init_ ();
+  GSF_ats = GNUNET_ATS_performance_init (GSF_cfg, &update_latencies, NULL);
   GSF_push_init_ ();
   GSF_put_init_ ();
   if ((GNUNET_OK != GNUNET_FS_indexing_init (cfg, GSF_dsh)) ||

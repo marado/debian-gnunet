@@ -4,7 +4,7 @@
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -60,7 +60,7 @@ struct GNUNET_DNS_Request
    * Always zero.
    */
   uint32_t reserved GNUNET_PACKED;
-  
+
   /**
    * Unique request ID.
    */
@@ -85,7 +85,7 @@ struct GNUNET_DNS_Response
    * Zero to drop, 1 for no change (no payload), 2 for update (message has payload).
    */
   uint32_t drop_flag GNUNET_PACKED;
-  
+
   /**
    * Unique request ID.
    */

@@ -1,10 +1,10 @@
 /*
       This file is part of GNUnet
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     (C) 2011, 2014 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -27,23 +27,23 @@
 #include "platform.h"
 
 
-int 
+int
 main (int argc,
       char **argv)
 {
   const char *basename;
   const char *dirname;
 
-  basename = getenv ("GNUNET_PREFIX");  
+  basename = getenv ("GNUNET_PREFIX");
   if (NULL == basename)
   {
     fprintf (stderr,
 	     _("Environment variable GNUNET_PREFIX not set\n"));
-    fprintf (stderr, 
+    fprintf (stderr,
 	     _("Testcases will not work!\n"));
     return 1;
   }
-  dirname = DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "gnunet" DIR_SEPARATOR_STR "config.d";
+  dirname = DIR_SEPARATOR_STR ".." DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "gnunet" DIR_SEPARATOR_STR "config.d";
   {
     char tmp[strlen (basename) + strlen (dirname) + 1];
     sprintf (tmp, "%s%s", basename, dirname);
@@ -56,7 +56,7 @@ main (int argc,
       fprintf (stderr,
 	       _("Check that you did run `make install' and that GNUNET_PREFIX='%s' is the correct prefix.\n"),
 	       basename);
-      fprintf (stderr, 
+      fprintf (stderr,
 	       _("Testcases will not work!\n"));
       return 2;
     }

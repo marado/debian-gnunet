@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/gnunet
 
@@ -32,6 +32,8 @@ libgnunetdatastore_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 1:0:0
 
+bin_PROGRAMS = \
+ gnunet-datastore
 
 libexec_PROGRAMS = \
  gnunet-service-datastore
@@ -43,8 +45,19 @@ gnunet_service_datastore_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
+gnunet_datastore_SOURCES = \
+ gnunet-datastore.c 
+gnunet_datastore_LDADD = \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
+gnunet_datastore_DEPENDENCIES = \
+  libgnunetdatastore.la
+
+
 if HAVE_MYSQL
  MYSQL_PLUGIN = libgnunet_plugin_datastore_mysql.la
+if HAVE_TESTING
 if HAVE_BENCHMARKS
   MYSQL_BENCHMARKS = \
    perf_datastore_api_mysql \
@@ -56,8 +69,10 @@ endif
   test_plugin_datastore_mysql \
   $(MYSQL_BENCHMARKS)
 endif
+endif
 if HAVE_SQLITE
  SQLITE_PLUGIN = libgnunet_plugin_datastore_sqlite.la
+if HAVE_TESTING
 if HAVE_BENCHMARKS
   SQLITE_BENCHMARKS = \
    perf_datastore_api_sqlite \
@@ -69,8 +84,10 @@ endif
   test_plugin_datastore_sqlite \
   $(SQLITE_BENCHMARKS)
 endif
+endif
 if HAVE_POSTGRES
  POSTGRES_PLUGIN = libgnunet_plugin_datastore_postgres.la
+if HAVE_TESTING
 if HAVE_BENCHMARKS
   POSTGRES_BENCHMARKS = \
    perf_datastore_api_postgres \
@@ -81,6 +98,7 @@ endif
   test_datastore_api_management_postgres \
   test_plugin_datastore_postgres \
   $(POSTGRES_BENCHMARKS)
+endif
 endif
 
 plugin_LTLIBRARIES = \
@@ -115,11 +133,11 @@ libgnunet_plugin_datastore_mysql_la_SOURCES = \
 libgnunet_plugin_datastore_mysql_la_LIBADD = \
   $(top_builddir)/src/mysql/libgnunetmysql.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) -lz -lmysqlclient
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) $(Z_LIBS) -lmysqlclient
 libgnunet_plugin_datastore_mysql_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS) $(MYSQL_LDFLAGS) -lmysqlclient
 libgnunet_plugin_datastore_mysql_la_CPPFLAGS = \
- $(MYSQL_CPPFLAGS)
+ $(MYSQL_CPPFLAGS) $(AM_CPPFLAGS)
 
 libgnunet_plugin_datastore_postgres_la_SOURCES = \
   plugin_datastore_postgres.c
@@ -130,7 +148,7 @@ libgnunet_plugin_datastore_postgres_la_LIBADD = \
 libgnunet_plugin_datastore_postgres_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS) $(POSTGRES_LDFLAGS) -lpq
 libgnunet_plugin_datastore_postgres_la_CPPFLAGS = \
- $(POSTGRES_CPPFLAGS)
+ $(POSTGRES_CPPFLAGS) $(AM_CPPFLAGS)
 
 
 libgnunet_plugin_datastore_template_la_SOURCES = \
@@ -152,6 +170,7 @@ check_PROGRAMS = \
   $(POSTGRES_TESTS)
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_PROGRAMS)
 endif
 

@@ -7,12 +7,12 @@
     it under the terms of the GNU General Public License as published
     by the Free Software Foundation; either version 3 of the License,
     or (at your option) any later version.
- 
+
     nss-mdns is distributed in the hope that it will be useful, but1
     WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
     General Public License for more details.
- 
+
     You should have received a copy of the GNU Lesser General Public License
     along with nss-mdns; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
@@ -61,13 +61,13 @@ static int ends_with(const char *name, const char* suffix) {
 
 
 /**
- * Check if name is inside .gads or .zkey TLD
+ * Check if name is inside .gnu or .zkey TLD
  *
  * @param name name to check
  * @return 1 if true
  */
-static int verify_name_allowed(const char *name) {
-    return ends_with(name, ".gads") || ends_with(name, ".zkey"); 
+static int verify_name_allowed (const char *name) {
+  return ends_with(name, ".gnu") || ends_with(name, ".zkey");
 }
 
 /**
@@ -96,7 +96,7 @@ enum nss_status _nss_gns_gethostbyname2_r(
     int i;
     size_t address_length, l, idx, astart;
     int name_allowed;
-    
+
     if (af == AF_UNSPEC)
 #ifdef NSS_IPV6_ONLY
         af = AF_INET6;
@@ -105,13 +105,13 @@ enum nss_status _nss_gns_gethostbyname2_r(
 #endif
 
 #ifdef NSS_IPV4_ONLY
-    if (af != AF_INET) 
+    if (af != AF_INET)
 #elif NSS_IPV6_ONLY
     if (af != AF_INET6)
-#else        
+#else
     if (af != AF_INET && af != AF_INET6)
-#endif        
-    {    
+#endif
+    {
         *errnop = EINVAL;
         *h_errnop = NO_RECOVERY;
 
@@ -122,19 +122,19 @@ enum nss_status _nss_gns_gethostbyname2_r(
     if (buflen <
         sizeof(char*)+    /* alias names */
         strlen(name)+1)  {   /* official name */
-        
+
         *errnop = ERANGE;
         *h_errnop = NO_RECOVERY;
         status = NSS_STATUS_TRYAGAIN;
-        
+
         goto finish;
     }
-    
+
     u.count = 0;
     u.data_len = 0;
 
     name_allowed = verify_name_allowed(name);
-    
+
     if (name_allowed) {
 
         if (!gns_resolve_name(af, name, &u) == 0)
@@ -156,22 +156,22 @@ enum nss_status _nss_gns_gethostbyname2_r(
         goto finish;
     }
 
-        
+
     /* Alias names */
     *((char**) buffer) = NULL;
     result->h_aliases = (char**) buffer;
     idx = sizeof(char*);
-    
+
     /* Official name */
-    strcpy(buffer+idx, name); 
+    strcpy(buffer+idx, name);
     result->h_name = buffer+idx;
     idx += strlen(name)+1;
 
     ALIGN(idx);
-    
+
     result->h_addrtype = af;
     result->h_length = address_length;
-    
+
     /* Check if there's enough space for the addresses */
     if (buflen < idx+u.data_len+sizeof(char*)*(u.count+1)) {
         *errnop = ERANGE;
@@ -195,7 +195,7 @@ enum nss_status _nss_gns_gethostbyname2_r(
     result->h_addr_list = (char**) (buffer+idx);
 
     status = NSS_STATUS_SUCCESS;
-    
+
 finish:
     return status;
 }
@@ -252,19 +252,10 @@ enum nss_status _nss_gns_gethostbyaddr_r(
     size_t buflen,
     int *errnop,
     int *h_errnop) {
-
-    /* we dont do this */
-    
-    enum nss_status status = NSS_STATUS_UNAVAIL;
-    
+  
     *errnop = EINVAL;
     *h_errnop = NO_RECOVERY;
-
-    /* Check for address types */
-
-    *h_errnop = NO_RECOVERY;
-
-    status = NSS_STATUS_NOTFOUND;
-    return status;
+    //NOTE we allow to leak this into DNS so no NOTFOUND
+    return NSS_STATUS_UNAVAIL;
 }
 

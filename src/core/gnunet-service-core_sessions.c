@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010, 2011 Christian Grothoff (and other contributing authors)
+     (C) 2009-2014 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -31,11 +31,18 @@
 #include "gnunet-service-core_sessions.h"
 #include "gnunet-service-core_clients.h"
 #include "gnunet_constants.h"
+#include "core.h"
+
 
 /**
  * How often do we transmit our typemap?
  */
 #define TYPEMAP_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 5)
+
+/**
+ * How often do we transmit our typemap on first attempt?
+ */
+#define TYPEMAP_FREQUENCY_FIRST GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5)
 
 
 /**
@@ -68,6 +75,11 @@ struct SessionMessageEntry
    * MessageEntry" itself!)
    */
   size_t size;
+
+  /**
+   * How important is this message.
+   */
+  enum GNUNET_CORE_Priority priority;
 
 };
 
@@ -115,13 +127,6 @@ struct Session
   struct GSC_TypeMap *tmap;
 
   /**
-   * At what time did we initially establish this session?
-   * (currently unused, should be integrated with ATS in the
-   * future...).
-   */
-  struct GNUNET_TIME_Absolute time_established;
-
-  /**
    * Task to transmit corked messages with a delay.
    */
   GNUNET_SCHEDULER_TaskIdentifier cork_task;
@@ -137,13 +142,19 @@ struct Session
    */
   int ready_to_transmit;
 
+  /**
+   * Is this the first time we're sending the typemap? If so,
+   * we want to send it a bit faster the second time.  0 if
+   * we are sending for the first time, 1 if not.
+   */
+  int first_typemap;
 };
 
 
 /**
- * Map of peer identities to 'struct Session'.
+ * Map of peer identities to `struct Session`.
  */
-static struct GNUNET_CONTAINER_MultiHashMap *sessions;
+static struct GNUNET_CONTAINER_MultiPeerMap *sessions;
 
 
 /**
@@ -156,7 +167,7 @@ static struct GNUNET_CONTAINER_MultiHashMap *sessions;
 static struct Session *
 find_session (const struct GNUNET_PeerIdentity *peer)
 {
-  return GNUNET_CONTAINER_multihashmap_get (sessions, &peer->hashPubKey);
+  return GNUNET_CONTAINER_multipeermap_get (sessions, peer);
 }
 
 
@@ -176,7 +187,8 @@ GSC_SESSIONS_end (const struct GNUNET_PeerIdentity *pid)
   session = find_session (pid);
   if (NULL == session)
     return;
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Destroying session for peer `%4s'\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Destroying session for peer `%4s'\n",
               GNUNET_i2s (&session->peer));
   if (GNUNET_SCHEDULER_NO_TASK != session->cork_task)
   {
@@ -195,16 +207,14 @@ GSC_SESSIONS_end (const struct GNUNET_PeerIdentity *pid)
     GNUNET_free (sme);
   }
   GNUNET_SCHEDULER_cancel (session->typemap_task);
-  GSC_CLIENTS_notify_clients_about_neighbour (&session->peer, NULL,
-                                              0 /* FIXME: ATSI */ ,
+  GSC_CLIENTS_notify_clients_about_neighbour (&session->peer,
                                               session->tmap, NULL);
   GNUNET_assert (GNUNET_YES ==
-                 GNUNET_CONTAINER_multihashmap_remove (sessions,
-                                                       &session->
-                                                       peer.hashPubKey,
+                 GNUNET_CONTAINER_multipeermap_remove (sessions,
+                                                       &session->peer,
                                                        session));
   GNUNET_STATISTICS_set (GSC_stats, gettext_noop ("# peers connected"),
-                         GNUNET_CONTAINER_multihashmap_size (sessions),
+                         GNUNET_CONTAINER_multipeermap_size (sessions),
                          GNUNET_NO);
   GSC_TYPEMAP_destroy (session->tmap);
   session->tmap = NULL;
@@ -216,20 +226,29 @@ GSC_SESSIONS_end (const struct GNUNET_PeerIdentity *pid)
  * Transmit our current typemap message to the other peer.
  * (Done periodically in case an update got lost).
  *
- * @param cls the 'struct Session*'
+ * @param cls the `struct Session *`
  * @param tc unused
  */
 static void
-transmit_typemap_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+transmit_typemap_task (void *cls,
+                       const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct Session *session = cls;
   struct GNUNET_MessageHeader *hdr;
   struct GNUNET_TIME_Relative delay;
 
-  delay = TYPEMAP_FREQUENCY;
+  if (0 == session->first_typemap)
+  {
+    delay = TYPEMAP_FREQUENCY_FIRST;
+    session->first_typemap = 1;
+  }
+  else
+  {
+    delay = TYPEMAP_FREQUENCY;
+  }
   /* randomize a bit to avoid spont. sync */
-  delay.rel_value +=
-      GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 1000);
+  delay.rel_value_us +=
+      GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 1000 * 1000);
   session->typemap_task =
       GNUNET_SCHEDULER_add_delayed (delay, &transmit_typemap_task, session);
   GNUNET_STATISTICS_update (GSC_stats,
@@ -253,23 +272,23 @@ GSC_SESSIONS_create (const struct GNUNET_PeerIdentity *peer,
 {
   struct Session *session;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Creating session for peer `%4s'\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Creating session for peer `%4s'\n",
               GNUNET_i2s (peer));
-  session = GNUNET_malloc (sizeof (struct Session));
+  session = GNUNET_new (struct Session);
   session->tmap = GSC_TYPEMAP_create ();
   session->peer = *peer;
   session->kxinfo = kx;
-  session->time_established = GNUNET_TIME_absolute_get ();
   session->typemap_task =
       GNUNET_SCHEDULER_add_now (&transmit_typemap_task, session);
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multihashmap_put (sessions, &peer->hashPubKey,
+                 GNUNET_CONTAINER_multipeermap_put (sessions, peer,
                                                     session,
                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   GNUNET_STATISTICS_set (GSC_stats, gettext_noop ("# peers connected"),
-                         GNUNET_CONTAINER_multihashmap_size (sessions),
+                         GNUNET_CONTAINER_multipeermap_size (sessions),
                          GNUNET_NO);
-  GSC_CLIENTS_notify_clients_about_neighbour (peer, NULL, 0 /* FIXME: ATSI */ ,
+  GSC_CLIENTS_notify_clients_about_neighbour (peer,
                                               NULL, session->tmap);
 }
 
@@ -277,19 +296,20 @@ GSC_SESSIONS_create (const struct GNUNET_PeerIdentity *peer,
 /**
  * Notify the given client about the session (client is new).
  *
- * @param cls the 'struct GSC_Client'
+ * @param cls the `struct GSC_Client`
  * @param key peer identity
- * @param value the 'struct Session'
- * @return GNUNET_OK (continue to iterate)
+ * @param value the `struct Session`
+ * @return #GNUNET_OK (continue to iterate)
  */
 static int
-notify_client_about_session (void *cls, const struct GNUNET_HashCode * key,
+notify_client_about_session (void *cls,
+                             const struct GNUNET_PeerIdentity *key,
                              void *value)
 {
   struct GSC_Client *client = cls;
   struct Session *session = value;
 
-  GSC_CLIENTS_notify_client_about_neighbour (client, &session->peer, NULL, 0,   /* FIXME: ATS!? */
+  GSC_CLIENTS_notify_client_about_neighbour (client, &session->peer,
                                              NULL,      /* old TMAP: none */
                                              session->tmap);
   return GNUNET_OK;
@@ -305,7 +325,7 @@ void
 GSC_SESSIONS_notify_client_about_sessions (struct GSC_Client *client)
 {
   /* notify new client about existing sessions */
-  GNUNET_CONTAINER_multihashmap_iterate (sessions, &notify_client_about_session,
+  GNUNET_CONTAINER_multipeermap_iterate (sessions, &notify_client_about_session,
                                          client);
 }
 
@@ -325,8 +345,8 @@ try_transmission (struct Session *session);
  *
  * @param car request to queue; this handle is then shared between
  *         the caller (CLIENTS subsystem) and SESSIONS and must not
- *         be released by either until either 'GNUNET_SESSIONS_dequeue',
- *         'GNUNET_SESSIONS_transmit' or 'GNUNET_CLIENTS_failed'
+ *         be released by either until either #GSC_SESSIONS_dequeue(),
+ *         #GSC_SESSIONS_transmit() or #GSC_CLIENTS_failed()
  *         have been invoked on it
  */
 void
@@ -335,7 +355,7 @@ GSC_SESSIONS_queue_request (struct GSC_ClientActiveRequest *car)
   struct Session *session;
 
   session = find_session (&car->target);
-  if (session == NULL)
+  if (NULL == session)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Dropped client request for transmission (am disconnected)\n");
@@ -398,7 +418,7 @@ discard_expired_requests (struct Session *session)
   {
     pos = nxt;
     nxt = pos->next;
-    if ((pos->deadline.abs_value < now.abs_value) &&
+    if ((pos->deadline.abs_value_us < now.abs_value_us) &&
         (GNUNET_YES != pos->was_solicited))
     {
       GNUNET_STATISTICS_update (GSC_stats,
@@ -414,27 +434,40 @@ discard_expired_requests (struct Session *session)
 
 
 /**
- * Solicit messages for transmission.
+ * Solicit messages for transmission, starting with those of the highest
+ * priority.
  *
  * @param session session to solict messages for
+ * @param msize how many bytes do we have already
  */
 static void
-solicit_messages (struct Session *session)
+solicit_messages (struct Session *session,
+                  size_t msize)
 {
   struct GSC_ClientActiveRequest *car;
   struct GSC_ClientActiveRequest *nxt;
   size_t so_size;
+  enum GNUNET_CORE_Priority pmax;
 
   discard_expired_requests (session);
-  so_size = 0;
+  so_size = msize;
+  pmax = GNUNET_CORE_PRIO_BACKGROUND;
+  for (car = session->active_client_request_head; NULL != car; car = car->next)
+  {
+    if (GNUNET_YES == car->was_solicited)
+      continue;
+    pmax = GNUNET_MAX (pmax, car->priority);
+  }
   nxt = session->active_client_request_head;
   while (NULL != (car = nxt))
   {
     nxt = car->next;
+    if (car->priority < pmax)
+      continue;
     if (so_size + car->msize > GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE)
       break;
     so_size += car->msize;
-    if (car->was_solicited == GNUNET_YES)
+    if (GNUNET_YES == car->was_solicited)
       continue;
     car->was_solicited = GNUNET_YES;
     GSC_CLIENTS_solicit_request (car);
@@ -446,11 +479,12 @@ solicit_messages (struct Session *session)
  * Some messages were delayed (corked), but the timeout has now expired.
  * Send them now.
  *
- * @param cls 'struct Session' with the messages to transmit now
+ * @param cls `struct Session` with the messages to transmit now
  * @param tc scheduler context (unused)
  */
 static void
-pop_cork_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+pop_cork_task (void *cls,
+               const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct Session *session = cls;
 
@@ -461,7 +495,8 @@ pop_cork_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 /**
  * Try to perform a transmission on the given session. Will solicit
- * additional messages if the 'sme' queue is not full enough.
+ * additional messages if the 'sme' queue is not full enough or has
+ * only low-priority messages.
  *
  * @param session session to transmit messages from
  */
@@ -472,33 +507,74 @@ try_transmission (struct Session *session)
   size_t msize;
   struct GNUNET_TIME_Absolute now;
   struct GNUNET_TIME_Absolute min_deadline;
+  enum GNUNET_CORE_Priority maxp;
+  enum GNUNET_CORE_Priority maxpc;
+  struct GSC_ClientActiveRequest *car;
+  int excess;
 
   if (GNUNET_YES != session->ready_to_transmit)
     return;
   msize = 0;
   min_deadline = GNUNET_TIME_UNIT_FOREVER_ABS;
-  /* check 'ready' messages */
+  /* if the peer has excess bandwidth, background traffic is allowed,
+     otherwise not */
+  excess = GSC_NEIGHBOURS_check_excess_bandwidth (&session->peer);
+  if (GNUNET_YES == excess)
+    maxp = GNUNET_CORE_PRIO_BACKGROUND;
+  else
+    maxp = GNUNET_CORE_PRIO_BEST_EFFORT;
+  /* determine highest priority of 'ready' messages we already solicited from clients */
   pos = session->sme_head;
   while ((NULL != pos) &&
          (msize + pos->size <= GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE))
   {
     GNUNET_assert (pos->size < GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE);
     msize += pos->size;
+    maxp = GNUNET_MAX (maxp, pos->priority);
     min_deadline = GNUNET_TIME_absolute_min (min_deadline, pos->deadline);
     pos = pos->next;
   }
-  now = GNUNET_TIME_absolute_get ();
-  if ((msize == 0) ||
-      ((msize < GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE / 2) &&
-       (min_deadline.abs_value > now.abs_value)))
+  if (maxp < GNUNET_CORE_PRIO_CRITICAL_CONTROL)
   {
-    /* not enough ready yet, try to solicit more */
-    solicit_messages (session);
+    /* if highest already solicited priority from clients is not critical,
+       check if there are higher-priority messages to be solicited from clients */
+    if (GNUNET_YES == excess)
+      maxpc = GNUNET_CORE_PRIO_BACKGROUND;
+    else
+      maxpc = GNUNET_CORE_PRIO_BEST_EFFORT;
+    for (car = session->active_client_request_head; NULL != car; car = car->next)
+    {
+      if (GNUNET_YES == car->was_solicited)
+        continue;
+      maxpc = GNUNET_MAX (maxpc, car->priority);
+    }
+    if (maxpc > maxp)
+    {
+      /* we have messages waiting for solicitation that have a higher
+         priority than those that we already accepted; solicit the
+         high-priority messages first */
+      solicit_messages (session, 0);
+      return;
+    }
+  }
+
+  now = GNUNET_TIME_absolute_get ();
+  if ( ( (GNUNET_YES == excess) ||
+         (maxpc >= GNUNET_CORE_PRIO_BEST_EFFORT) ) &&
+       ( (0 == msize) ||
+         ( (msize < GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE / 2) &&
+           (min_deadline.abs_value_us > now.abs_value_us))) )
+  {
+    /* not enough ready yet (tiny message & cork possible), or no messages at all,
+       and either excess bandwidth or best-effort or higher message waiting at
+       client; in this case, we try to solicit more */
+    solicit_messages (session,
+                      msize);
     if (msize > 0)
     {
       /* if there is data to send, just not yet, make sure we do transmit
        * it once the deadline is reached */
-      if (session->cork_task != GNUNET_SCHEDULER_NO_TASK)
+      if (GNUNET_SCHEDULER_NO_TASK != session->cork_task)
         GNUNET_SCHEDULER_cancel (session->cork_task);
       session->cork_task =
           GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_absolute_get_remaining
@@ -507,7 +583,8 @@ try_transmission (struct Session *session)
     }
     return;
   }
-  /* create plaintext buffer of all messages, encrypt and transmit */
+  /* create plaintext buffer of all messages (that fit), encrypt and
+     transmit */
   {
     static unsigned long long total_bytes;
     static unsigned int total_msgs;
@@ -531,7 +608,8 @@ try_transmission (struct Session *session)
       total_msgs = 1;
       total_bytes = used;
     }
-    GNUNET_STATISTICS_set (GSC_stats, "# avg payload per encrypted message",
+    GNUNET_STATISTICS_set (GSC_stats,
+                           "# avg payload per encrypted message",
                            total_bytes / total_msgs, GNUNET_NO);
     /* now actually transmit... */
     session->ready_to_transmit = GNUNET_NO;
@@ -545,11 +623,13 @@ try_transmission (struct Session *session)
  *
  * @param cls the message
  * @param key neighbour's identity
- * @param value 'struct Neighbour' of the target
- * @return always GNUNET_OK
+ * @param value `struct Neighbour` of the target
+ * @return always #GNUNET_OK
  */
 static int
-do_send_message (void *cls, const struct GNUNET_HashCode * key, void *value)
+do_send_message (void *cls,
+                 const struct GNUNET_PeerIdentity *key,
+                 void *value)
 {
   const struct GNUNET_MessageHeader *hdr = cls;
   struct Session *session = value;
@@ -560,7 +640,8 @@ do_send_message (void *cls, const struct GNUNET_HashCode * key, void *value)
   m = GNUNET_malloc (sizeof (struct SessionMessageEntry) + size);
   memcpy (&m[1], hdr, size);
   m->size = size;
-  GNUNET_CONTAINER_DLL_insert (session->sme_head, session->sme_tail, m);
+  m->priority = GNUNET_CORE_PRIO_CRITICAL_CONTROL;
+  GNUNET_CONTAINER_DLL_insert_tail (session->sme_head, session->sme_tail, m);
   try_transmission (session);
   return GNUNET_OK;
 }
@@ -576,7 +657,8 @@ GSC_SESSIONS_broadcast (const struct GNUNET_MessageHeader *msg)
 {
   if (NULL == sessions)
     return;
-  GNUNET_CONTAINER_multihashmap_iterate (sessions, &do_send_message,
+  GNUNET_CONTAINER_multipeermap_iterate (sessions,
+                                         &do_send_message,
                                          (void *) msg);
 }
 
@@ -608,13 +690,17 @@ GSC_SESSIONS_solicit (const struct GNUNET_PeerIdentity *pid)
  *            this handle will now be 'owned' by the SESSIONS subsystem
  * @param msg message to transmit
  * @param cork is corking allowed?
+ * @param priority how important is this message
  */
 void
 GSC_SESSIONS_transmit (struct GSC_ClientActiveRequest *car,
-                       const struct GNUNET_MessageHeader *msg, int cork)
+                       const struct GNUNET_MessageHeader *msg,
+                       int cork,
+                       enum GNUNET_CORE_Priority priority)
 {
   struct Session *session;
   struct SessionMessageEntry *sme;
+  struct SessionMessageEntry *pos;
   size_t msize;
 
   session = find_session (&car->target);
@@ -624,25 +710,39 @@ GSC_SESSIONS_transmit (struct GSC_ClientActiveRequest *car,
   sme = GNUNET_malloc (sizeof (struct SessionMessageEntry) + msize);
   memcpy (&sme[1], msg, msize);
   sme->size = msize;
+  sme->priority = priority;
   if (GNUNET_YES == cork)
     sme->deadline =
         GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_MAX_CORK_DELAY);
-  GNUNET_CONTAINER_DLL_insert_tail (session->sme_head, session->sme_tail, sme);
+  pos = session->sme_head;
+  while ( (NULL != pos) &&
+          (pos->priority > sme->priority) )
+    pos = pos->next;
+  if (NULL == pos)
+    GNUNET_CONTAINER_DLL_insert_tail (session->sme_head,
+                                      session->sme_tail,
+                                      sme);
+  else
+    GNUNET_CONTAINER_DLL_insert_after (session->sme_head,
+                                       session->sme_tail,
+                                       pos->prev,
+                                       sme);
   try_transmission (session);
 }
 
 
 /**
- * Helper function for GSC_SESSIONS_handle_client_iterate_peers.
+ * Helper function for #GSC_SESSIONS_handle_client_iterate_peers().
  *
- * @param cls the 'struct GNUNET_SERVER_TransmitContext' to queue replies
+ * @param cls the `struct GNUNET_SERVER_TransmitContext` to queue replies
  * @param key identity of the connected peer
- * @param value the 'struct Neighbour' for the peer
- * @return GNUNET_OK (continue to iterate)
+ * @param value the `struct Neighbour` for the peer
+ * @return #GNUNET_OK (continue to iterate)
  */
-#include "core.h"
 static int
-queue_connect_message (void *cls, const struct GNUNET_HashCode * key, void *value)
+queue_connect_message (void *cls,
+                       const struct GNUNET_PeerIdentity *key,
+                       void *value)
 {
   struct GNUNET_SERVER_TransmitContext *tc = cls;
   struct Session *session = value;
@@ -651,8 +751,7 @@ queue_connect_message (void *cls, const struct GNUNET_HashCode * key, void *valu
   /* FIXME: code duplication with clients... */
   cnm.header.size = htons (sizeof (struct ConnectNotifyMessage));
   cnm.header.type = htons (GNUNET_MESSAGE_TYPE_CORE_NOTIFY_CONNECT);
-  // FIXME: full ats...
-  cnm.ats_count = htonl (0);
+  cnm.reserved = htonl (0);
   cnm.peer = session->peer;
   GNUNET_SERVER_transmit_context_append_message (tc, &cnm.header);
   return GNUNET_OK;
@@ -671,45 +770,13 @@ queue_connect_message (void *cls, const struct GNUNET_HashCode * key, void *valu
 void
 GSC_SESSIONS_handle_client_iterate_peers (void *cls,
                                           struct GNUNET_SERVER_Client *client,
-                                          const struct GNUNET_MessageHeader
-                                          *message)
+                                          const struct GNUNET_MessageHeader *message)
 {
   struct GNUNET_MessageHeader done_msg;
   struct GNUNET_SERVER_TransmitContext *tc;
 
   tc = GNUNET_SERVER_transmit_context_create (client);
-  GNUNET_CONTAINER_multihashmap_iterate (sessions, &queue_connect_message, tc);
-  done_msg.size = htons (sizeof (struct GNUNET_MessageHeader));
-  done_msg.type = htons (GNUNET_MESSAGE_TYPE_CORE_ITERATE_PEERS_END);
-  GNUNET_SERVER_transmit_context_append_message (tc, &done_msg);
-  GNUNET_SERVER_transmit_context_run (tc, GNUNET_TIME_UNIT_FOREVER_REL);
-}
-
-
-/**
- * Handle CORE_PEER_CONNECTED request.   Notify client about connection
- * to the given neighbour.  For this request type, the client does not
- * have to have transmitted an INIT request.  All current peers are
- * returned, regardless of which message types they accept.
- *
- * @param cls unused
- * @param client client sending the iteration request
- * @param message iteration request message
- */
-void
-GSC_SESSIONS_handle_client_have_peer (void *cls,
-                                      struct GNUNET_SERVER_Client *client,
-                                      const struct GNUNET_MessageHeader
-                                      *message)
-{
-  struct GNUNET_MessageHeader done_msg;
-  struct GNUNET_SERVER_TransmitContext *tc;
-  const struct GNUNET_PeerIdentity *peer;
-
-  peer = (const struct GNUNET_PeerIdentity *) &message[1];      // YUCK!
-  tc = GNUNET_SERVER_transmit_context_create (client);
-  GNUNET_CONTAINER_multihashmap_get_multiple (sessions, &peer->hashPubKey,
-                                              &queue_connect_message, tc);
+  GNUNET_CONTAINER_multipeermap_iterate (sessions, &queue_connect_message, tc);
   done_msg.size = htons (sizeof (struct GNUNET_MessageHeader));
   done_msg.type = htons (GNUNET_MESSAGE_TYPE_CORE_ITERATE_PEERS_END);
   GNUNET_SERVER_transmit_context_append_message (tc, &done_msg);
@@ -740,7 +807,7 @@ GSC_SESSIONS_set_typemap (const struct GNUNET_PeerIdentity *peer,
     GNUNET_break (0);
     return;
   }
-  GSC_CLIENTS_notify_clients_about_neighbour (peer, NULL, 0,    /* FIXME: ATS */
+  GSC_CLIENTS_notify_clients_about_neighbour (peer,
                                               session->tmap, nmap);
   GSC_TYPEMAP_destroy (session->tmap);
   session->tmap = nmap;
@@ -769,7 +836,7 @@ GSC_SESSIONS_add_to_typemap (const struct GNUNET_PeerIdentity *peer,
   if (GNUNET_YES == GSC_TYPEMAP_test_match (session->tmap, &type, 1))
     return;                     /* already in it */
   nmap = GSC_TYPEMAP_extend (session->tmap, &type, 1);
-  GSC_CLIENTS_notify_clients_about_neighbour (peer, NULL, 0,    /* FIXME: ATS */
+  GSC_CLIENTS_notify_clients_about_neighbour (peer,
                                               session->tmap, nmap);
   GSC_TYPEMAP_destroy (session->tmap);
   session->tmap = nmap;
@@ -782,7 +849,7 @@ GSC_SESSIONS_add_to_typemap (const struct GNUNET_PeerIdentity *peer,
 void
 GSC_SESSIONS_init ()
 {
-  sessions = GNUNET_CONTAINER_multihashmap_create (128, GNUNET_NO);
+  sessions = GNUNET_CONTAINER_multipeermap_create (128, GNUNET_NO);
 }
 
 
@@ -791,11 +858,13 @@ GSC_SESSIONS_init ()
  *
  * @param cls NULL
  * @param key identity of the connected peer
- * @param value the 'struct Session' for the peer
- * @return GNUNET_OK (continue to iterate)
+ * @param value the `struct Session` for the peer
+ * @return #GNUNET_OK (continue to iterate)
  */
 static int
-free_session_helper (void *cls, const struct GNUNET_HashCode * key, void *value)
+free_session_helper (void *cls,
+                     const struct GNUNET_PeerIdentity *key,
+                     void *value)
 {
   struct Session *session = value;
 
@@ -812,8 +881,8 @@ GSC_SESSIONS_done ()
 {
   if (NULL != sessions)
   {
-    GNUNET_CONTAINER_multihashmap_iterate (sessions, &free_session_helper, NULL);
-    GNUNET_CONTAINER_multihashmap_destroy (sessions);
+    GNUNET_CONTAINER_multipeermap_iterate (sessions, &free_session_helper, NULL);
+    GNUNET_CONTAINER_multipeermap_destroy (sessions);
     sessions = NULL;
   }
 }

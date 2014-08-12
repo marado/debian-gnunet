@@ -39,76 +39,45 @@ extern "C"
 #include <stdint.h>
 
 
-/**
- * @brief A RegexBlock contains one or more of this struct in the payload.
- */
-struct RegexEdge
-{
-      /**
-       * Destination of this edge.
-       */
-    struct GNUNET_HashCode key;
+GNUNET_NETWORK_STRUCT_BEGIN
 
-      /**
-       * Length of the token towards the new state.
-       */
-    unsigned int n_token;
-
-    /* char token[n_token] */
-};
-
-/**
- * @brief Block to announce a regex state.
- */
-struct RegexBlock
-{
-      /**
-       * The key of the state.
-       */
-    struct GNUNET_HashCode key;
-
-      /**
-       * Length of the proof regex string.
-       */
-    unsigned int n_proof;
-
-      /**
-       * Numer of edges parting from this state.
-       */
-    unsigned int n_edges;
-
-      /**
-       * Is this state an accepting state?
-       */
-    int accepting;
-
-    /* char proof[n_proof] */
-    /* struct RegexEdge edges[n_edges] */
-};
 
 /**
  * @brief Block to announce a peer accepting a state.
  */
-struct RegexAccept
+struct RegexAcceptBlock
 {
-      /**
-       * The key of the state.
-       */
-    struct GNUNET_HashCode key;
 
-      /**
-       * Length of the proof regex string.
-       * FIXME necessary???
-       * already present in the leading MeshRegexBlock
-       */
-    // unsigned int n_proof;
+  /**
+   * Accept blocks must be signed.  Signature
+   * goes over expiration time and key.
+   */
+  struct GNUNET_CRYPTO_EccSignaturePurpose purpose;
 
-      /**
-       * The identity of the peer accepting the state
-       */
-    struct GNUNET_PeerIdentity id;
+  /**
+   * When does the signature expire?
+   */
+  struct GNUNET_TIME_AbsoluteNBO expiration_time;
 
+  /**
+   * The key of the state.
+   */
+  struct GNUNET_HashCode key;
+
+  /**
+   * Public key of the peer signing.
+   */
+  struct GNUNET_PeerIdentity peer;
+
+  /**
+   * The signature.
+   */
+  struct GNUNET_CRYPTO_EddsaSignature signature;
 };
+
+
+GNUNET_NETWORK_STRUCT_END
+
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

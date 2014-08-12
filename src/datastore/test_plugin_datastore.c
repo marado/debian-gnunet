@@ -158,8 +158,9 @@ iterate_one_shot (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
   guid = uid;
   crc->phase++;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Found result type=%u, priority=%u, size=%u, expire=%llu, key %s\n",
-	      type, priority, size, (unsigned long long) expiration.abs_value,
+	      "Found result type=%u, priority=%u, size=%u, expire=%s, key %s\n",
+	      type, priority, size,
+	      GNUNET_STRINGS_absolute_time_to_string (expiration),
 	      GNUNET_h2s (key));
   GNUNET_SCHEDULER_add_now (&test, crc);
   return GNUNET_OK;
@@ -225,7 +226,7 @@ test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Test aborted.\n");
     crc->phase = RP_ERROR;
   }
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, 
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "In phase %d, iteration %u\n", crc->phase, crc->cnt);
   switch (crc->phase)
   {
@@ -344,7 +345,7 @@ run (void *cls, char *const *args, const char *cfgfile,
              "%s", "Could not initialize plugin, assuming database not configured. Test not run!\n");
     return;
   }
-  crc = GNUNET_malloc (sizeof (struct CpsRunContext));
+  crc = GNUNET_new (struct CpsRunContext);
   crc->api = api;
   crc->cfg = c;
   crc->phase = RP_PUT;

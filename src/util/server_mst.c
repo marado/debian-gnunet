@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -25,11 +25,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_connection_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 
 #if HAVE_UNALIGNED_64_ACCESS
@@ -85,7 +81,7 @@ struct GNUNET_SERVER_MessageStreamTokenizer
  * Create a message stream tokenizer.
  *
  * @param cb function to call on completed messages
- * @param cb_cls closure for cb
+ * @param cb_cls closure for @a cb
  * @return handle to tokenizer
  */
 struct GNUNET_SERVER_MessageStreamTokenizer *
@@ -94,7 +90,7 @@ GNUNET_SERVER_mst_create (GNUNET_SERVER_MessageTokenizerCallback cb,
 {
   struct GNUNET_SERVER_MessageStreamTokenizer *ret;
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_SERVER_MessageStreamTokenizer));
+  ret = GNUNET_new (struct GNUNET_SERVER_MessageStreamTokenizer);
   ret->hdr = GNUNET_malloc (GNUNET_SERVER_MIN_BUFFER_SIZE);
   ret->curr_buf = GNUNET_SERVER_MIN_BUFFER_SIZE;
   ret->cb = cb;
@@ -110,17 +106,18 @@ GNUNET_SERVER_mst_create (GNUNET_SERVER_MessageTokenizerCallback cb,
  * @param mst tokenizer to use
  * @param client_identity ID of client for which this is a buffer
  * @param buf input data to add
- * @param size number of bytes in buf
+ * @param size number of bytes in @a buf
  * @param purge should any excess bytes in the buffer be discarded
  *       (i.e. for packet-based services like UDP)
  * @param one_shot only call callback once, keep rest of message in buffer
- * @return GNUNET_OK if we are done processing (need more data)
- *         GNUNET_NO if one_shot was set and we have another message ready
- *         GNUNET_SYSERR if the data stream is corrupt
+ * @return #GNUNET_OK if we are done processing (need more data)
+ *         #GNUNET_NO if @a one_shot was set and we have another message ready
+ *         #GNUNET_SYSERR if the data stream is corrupt
  */
 int
 GNUNET_SERVER_mst_receive (struct GNUNET_SERVER_MessageStreamTokenizer *mst,
-                           void *client_identity, const char *buf, size_t size,
+                           void *client_identity,
+                           const char *buf, size_t size,
                            int purge, int one_shot)
 {
   const struct GNUNET_MessageHeader *hdr;

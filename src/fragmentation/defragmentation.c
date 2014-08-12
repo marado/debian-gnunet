@@ -210,7 +210,7 @@ GNUNET_DEFRAGMENT_context_create (struct GNUNET_STATISTICS_Handle *stats,
 {
   struct GNUNET_DEFRAGMENT_Context *dc;
 
-  dc = GNUNET_malloc (sizeof (struct GNUNET_DEFRAGMENT_Context));
+  dc = GNUNET_new (struct GNUNET_DEFRAGMENT_Context);
   dc->stats = stats;
   dc->cls = cls;
   dc->proc = proc;
@@ -354,13 +354,13 @@ estimate_latency (struct MessageContext *mc)
   for (i = 0; i < total; i++)
   {
     x[i] = (double) i;
-    y[i] = (double) (first[i].time.abs_value - first[0].time.abs_value);
+    y[i] = (double) (first[i].time.abs_value_us - first[0].time.abs_value_us);
   }
   gsl_fit_mul (x, 1, y, 1, total, &c1, &cov11, &sumsq);
   c1 += sqrt (sumsq);           /* add 1 std dev */
-  ret.rel_value = (uint64_t) c1;
-  if (ret.rel_value == 0)
-    ret = GNUNET_TIME_UNIT_MILLISECONDS;        /* always at least 1 */
+  ret.rel_value_us = (uint64_t) c1;
+  if (0 == ret.rel_value_us)
+    ret = GNUNET_TIME_UNIT_MICROSECONDS;        /* always at least 1 */
   return ret;
 }
 
@@ -381,7 +381,7 @@ discard_oldest_mc (struct GNUNET_DEFRAGMENT_Context *dc)
   while (NULL != pos)
   {
     if ((old == NULL) ||
-        (old->last_update.abs_value > pos->last_update.abs_value))
+        (old->last_update.abs_value_us > pos->last_update.abs_value_us))
       old = pos;
     pos = pos->next;
   }
@@ -459,7 +459,7 @@ GNUNET_DEFRAGMENT_process_fragment (struct GNUNET_DEFRAGMENT_Context *dc,
   for (mc = dc->head; NULL != mc; mc = mc->next)
     if (mc->fragment_id > fid)
       last++;
-  
+
   mc = dc->head;
   while ((NULL != mc) && (fid != mc->fragment_id))
     mc = mc->next;
@@ -538,13 +538,13 @@ GNUNET_DEFRAGMENT_process_fragment (struct GNUNET_DEFRAGMENT_Context *dc,
   }
   /* send ACK */
   if (mc->frag_times_write_offset - mc->frag_times_start_offset > 1)
-  { 
+  {
     dc->latency = estimate_latency (mc);
   }
   delay = GNUNET_TIME_relative_multiply (dc->latency, bc + 1);
   if ( (last + fid == num_fragments) ||
-       (0 == mc->bits) || 
-       (GNUNET_YES == duplicate))     
+       (0 == mc->bits) ||
+       (GNUNET_YES == duplicate))
   {
     /* message complete or duplicate or last missing fragment in
        linear sequence; ACK now! */

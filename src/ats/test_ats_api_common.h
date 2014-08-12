@@ -25,13 +25,10 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
 #include "gnunet_ats_service.h"
+#include "gnunet-service-ats_addresses.h"
 
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30)
-
-#define PEERID0 "2AK99KD8RM9UA9LC3QKA0IQ5UBFC0FBB50EBGCFQT8448DGGACNAC4CJQDD1CPFS494O41U88DJD1FLIG8VA5CQR9IN4L96GP104MVO"
-#define PEERID1 "5ED7I0AR3MSTAL7FQN04S22E0EQ3CR9RLASCDLVMM1BNFPUPTCT46DLKNJ4DACASJ6U0DR5J8S3R2UJL49682JS7MOVRAB8P8A4PJH0"
 
 struct Test_Address
 {
@@ -71,5 +68,26 @@ compare_addresses (const struct GNUNET_HELLO_Address *address1, void *session1,
 int
 compare_ats (const struct GNUNET_ATS_Information *ats_is, uint32_t ats_count_is,
              const struct GNUNET_ATS_Information *ats_should, uint32_t ats_count_should);
+
+struct ATS_Address *
+create_address (const struct GNUNET_PeerIdentity *peer,
+                const char *plugin_name,
+                const void *plugin_addr, size_t plugin_addr_len,
+                uint32_t session_id);
+
+/**
+ * Load quotas for networks from configuration
+ *
+ * @param cfg configuration handle
+ * @param out_dest where to write outbound quotas
+ * @param in_dest where to write inbound quotas
+ * @param dest_length length of inbound and outbound arrays
+ * @return number of networks loaded
+ */
+unsigned int
+load_quotas (const struct GNUNET_CONFIGURATION_Handle *cfg,
+						 unsigned long long *out_dest,
+						 unsigned long long *in_dest,
+						 int dest_length);
 
 /* end of file test_ats_api_common.h */

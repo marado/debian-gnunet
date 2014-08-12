@@ -1,10 +1,10 @@
 /*
   This file is part of GNUnet.
-  (C) 2012 Christian Grothoff (and other contributing authors)
+  (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
   GNUnet is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 2, or (at your
+  by the Free Software Foundation; either version 3, or (at your
   option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
@@ -35,6 +35,7 @@
 #include "testbed_api_operations.h"
 #include "testbed_api_hosts.h"
 #include "gnunet_testing_lib.h"
+#include "gnunet-service-testbed_links.h"
 
 
 /**
@@ -53,11 +54,6 @@
  * By how much should the arrays lists grow
  */
 #define LIST_GROW_STEP 10
-
-/**
- * Default timeout for operations which may take some time
- */
-#define TIMEOUT GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_SECONDS, 15)
 
 
 /**
@@ -171,60 +167,6 @@ struct LinkControllersContext
    * The ID of the operation
    */
   uint64_t operation_id;
-
-};
-
-
-/**
- * Structure representing a connected(directly-linked) controller
- */
-struct Slave
-{
-  /**
-   * The controller process handle if we had started the controller
-   */
-  struct GNUNET_TESTBED_ControllerProc *controller_proc;
-
-  /**
-   * The controller handle
-   */
-  struct GNUNET_TESTBED_Controller *controller;
-
-  /**
-   * The configuration of the slave. Cannot be NULL
-   */
-  struct GNUNET_CONFIGURATION_Handle *cfg;
-
-  /**
-   * handle to lcc which is associated with this slave startup. Should be set to
-   * NULL when the slave has successfully started up
-   */
-  struct LinkControllersContext *lcc;
-
-  /**
-   * Head of the host registration DLL
-   */
-  struct HostRegistration *hr_dll_head;
-
-  /**
-   * Tail of the host registration DLL
-   */
-  struct HostRegistration *hr_dll_tail;
-
-  /**
-   * The current host registration handle
-   */
-  struct GNUNET_TESTBED_HostRegistrationHandle *rhandle;
-
-  /**
-   * Hashmap to hold Registered host contexts
-   */
-  struct GNUNET_CONTAINER_MultiHashMap *reghost_map;
-
-  /**
-   * The id of the host this controller is running on
-   */
-  uint32_t host_id;
 
 };
 
@@ -376,6 +318,11 @@ struct ForwardedOverlayConnectContext
   struct GNUNET_MessageHeader *orig_msg;
 
   /**
+   * The client handle
+   */
+  struct GNUNET_SERVER_Client *client;
+
+  /**
    * The id of the operation which created this context information
    */
   uint64_t operation_id;
@@ -414,26 +361,6 @@ struct RegisteredHostContext
   struct GNUNET_TESTBED_Host *host;
 
   /**
-   * The gateway to which this operation is forwarded to
-   */
-  struct Slave *gateway;
-
-  /**
-   * The gateway through which peer2's controller can be reached
-   */
-  struct Slave *gateway2;
-
-  /**
-   * Handle for sub-operations
-   */
-  struct GNUNET_TESTBED_Operation *sub_op;
-
-  /**
-   * The client which initiated the link controller operation
-   */
-  struct GNUNET_SERVER_Client *client;
-
-  /**
    * Head of the ForwardedOverlayConnectContext DLL
    */
   struct ForwardedOverlayConnectContext *focc_dll_head;
@@ -455,125 +382,37 @@ struct RegisteredHostContext
     RHC_INIT = 0,
 
     /**
-     * State where we attempt to get peer2's controller configuration
-     */
-    RHC_GET_CFG,
-
-    /**
-     * State where we attempt to link the controller of peer 1 to the controller
-     * of peer2
-     */
-    RHC_LINK,
-
-    /**
      * State where we attempt to do the overlay connection again
      */
-    RHC_OL_CONNECT
+    RHC_DONE
   } state;
 
 };
 
 
 /**
- * States of LCFContext
+ * Context data for GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS handler
  */
-enum LCFContextState
+struct HandlerContext_ShutdownPeers
 {
   /**
-   * The Context has been initialized; Nothing has been done on it
+   * The number of slave we expect to hear from since we forwarded the
+   * GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS message to them
    */
-  INIT,
+  unsigned int nslaves;
 
   /**
-   * Delegated host has been registered at the forwarding controller
+   * Did we observe a timeout with respect to this operation at any of the
+   * slaves
    */
-  DELEGATED_HOST_REGISTERED,
-
-  /**
-   * The slave host has been registred at the forwarding controller
-   */
-  SLAVE_HOST_REGISTERED,
-
-  /**
-   * The context has been finished (may have error)
-   */
-  FINISHED
+  int timeout;
 };
 
-
-/**
- * Link controllers request forwarding context
- */
-struct LCFContext
-{
-  /**
-   * The gateway which will pass the link message to delegated host
-   */
-  struct Slave *gateway;
-
-  /**
-   * The controller link message that has to be forwarded to
-   */
-  struct GNUNET_TESTBED_ControllerLinkMessage *msg;
-
-  /**
-   * The client which has asked to perform this operation
-   */
-  struct GNUNET_SERVER_Client *client;
-
-  /**
-   * Handle for operations which are forwarded while linking controllers
-   */
-  struct ForwardedOperationContext *fopc;
-
-  /**
-   * The id of the operation which created this context
-   */
-  uint64_t operation_id;
-
-  /**
-   * The state of this context
-   */
-  enum LCFContextState state;
-
-  /**
-   * The delegated host
-   */
-  uint32_t delegated_host_id;
-
-  /**
-   * The slave host
-   */
-  uint32_t slave_host_id;
-
-};
-
-
-/**
- * Structure of a queue entry in LCFContext request queue
- */
-struct LCFContextQueue
-{
-  /**
-   * The LCFContext
-   */
-  struct LCFContext *lcf;
-
-  /**
-   * Head prt for DLL
-   */
-  struct LCFContextQueue *next;
-
-  /**
-   * Tail ptr for DLL
-   */
-  struct LCFContextQueue *prev;
-};
 
 /**
  * Our configuration
  */
-struct GNUNET_CONFIGURATION_Handle *our_config;
+extern struct GNUNET_CONFIGURATION_Handle *GST_config;
 
 /**
  * The master context; generated with the first INIT message
@@ -601,14 +440,14 @@ extern struct Peer **GST_peer_list;
 extern struct GNUNET_TESTBED_Host **GST_host_list;
 
 /**
- * A list of directly linked neighbours
- */
-extern struct Slave **GST_slave_list;
-
-/**
  * Operation queue for open file descriptors
  */
 extern struct OperationQueue *GST_opq_openfds;
+
+/**
+ * Timeout for operations which may take some time
+ */
+const extern struct GNUNET_TIME_Relative GST_timeout;
 
 /**
  * The size of the peer list
@@ -616,14 +455,55 @@ extern struct OperationQueue *GST_opq_openfds;
 extern unsigned int GST_peer_list_size;
 
 /**
+ * The current number of peers running locally under this controller
+ */
+extern unsigned int GST_num_local_peers;
+
+/**
  * The size of the host list
  */
 extern unsigned int GST_host_list_size;
 
 /**
- * The size of directly linked neighbours list
+ * The directory where to store load statistics data
  */
-extern unsigned int GST_slave_list_size;
+extern char *GST_stats_dir;
+
+/**
+ * Condition to check if host id is valid
+ */
+#define VALID_HOST_ID(id) \
+  ( ((id) < GST_host_list_size) && (NULL != GST_host_list[id]) )
+
+/**
+ * Condition to check if peer id is valid
+ */
+#define VALID_PEER_ID(id) \
+  ( ((id) < GST_peer_list_size) && (NULL != GST_peer_list[id]) )
+
+
+/**
+ * Similar to GNUNET_array_grow(); however instead of calling GNUNET_array_grow()
+ * several times we call it only once. The array is also made to grow in steps
+ * of LIST_GROW_STEP.
+ *
+ * @param ptr the array pointer to grow
+ * @param size the size of array
+ * @param accommodate_size the size which the array has to accommdate; after
+ *          this call the array will be big enough to accommdate sizes upto
+ *          accommodate_size
+ */
+#define GST_array_grow_large_enough(ptr, size, accommodate_size) \
+  do                                                                    \
+  {                                                                     \
+    unsigned int growth_size;                                           \
+    GNUNET_assert (size <= accommodate_size);                            \
+    growth_size = size;                                                 \
+    while (growth_size <= accommodate_size)                             \
+      growth_size += LIST_GROW_STEP;                                    \
+    GNUNET_array_grow (ptr, size, growth_size);                         \
+    GNUNET_assert (size > accommodate_size);                            \
+  } while (0)
 
 
 /**
@@ -644,6 +524,13 @@ GST_queue_message (struct GNUNET_SERVER_Client *client,
  */
 void
 GST_destroy_peer (struct Peer *peer);
+
+
+/**
+ * Stops and destroys all peers
+ */
+void
+GST_destroy_peers ();
 
 
 /**
@@ -708,6 +595,13 @@ GST_forwarded_operation_timeout (void *cls,
 
 
 /**
+ * Clears the forwarded operations queue
+ */
+void
+GST_clear_fopcq ();
+
+
+/**
  * Send operation failure message to client
  *
  * @param client the client to which the failure message has to be sent to
@@ -717,6 +611,17 @@ GST_forwarded_operation_timeout (void *cls,
 void
 GST_send_operation_fail_msg (struct GNUNET_SERVER_Client *client,
                              uint64_t operation_id, const char *emsg);
+
+
+/**
+ * Function to send generic operation success message to given client
+ *
+ * @param client the client to send the message to
+ * @param operation_id the id of the operation which was successful
+ */
+void
+GST_send_operation_success_msg (struct GNUNET_SERVER_Client *client,
+                                uint64_t operation_id);
 
 
 /**
@@ -730,6 +635,125 @@ void
 GST_handle_remote_overlay_connect (void *cls,
                                    struct GNUNET_SERVER_Client *client,
                                    const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Handler for GNUNET_MESSAGE_TYPE_TESTBED_CREATEPEER messages
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_peer_create (void *cls, struct GNUNET_SERVER_Client *client,
+                        const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Message handler for GNUNET_MESSAGE_TYPE_TESTBED_DESTROYPEER messages
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_peer_destroy (void *cls, struct GNUNET_SERVER_Client *client,
+                         const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Message handler for GNUNET_MESSAGE_TYPE_TESTBED_DESTROYPEER messages
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_peer_start (void *cls, struct GNUNET_SERVER_Client *client,
+                       const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Message handler for GNUNET_MESSAGE_TYPE_TESTBED_DESTROYPEER messages
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_peer_stop (void *cls, struct GNUNET_SERVER_Client *client,
+                      const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Handler for GNUNET_MESSAGE_TYPE_TESTBED_GETPEERCONFIG messages
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_peer_get_config (void *cls, struct GNUNET_SERVER_Client *client,
+                            const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Handler for GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS messages
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_shutdown_peers (void *cls, struct GNUNET_SERVER_Client *client,
+                           const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Handler for GNUNET_TESTBED_ManagePeerServiceMessage message
+ *
+ * @param cls NULL
+ * @param client identification of client
+ * @param message the actual message
+ */
+void
+GST_handle_manage_peer_service (void *cls, struct GNUNET_SERVER_Client *client,
+                                const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Handler for GNUNET_MESSAGE_TYPDE_TESTBED_RECONFIGURE_PEER type messages.
+ * Should stop the peer asyncronously, destroy it and create it again with the
+ * new configuration.
+ *
+ * @param cls NULL
+ * @param client identification of the client
+ * @param message the actual message
+ */
+void
+GST_handle_peer_reconfigure (void *cls, struct GNUNET_SERVER_Client *client,
+                             const struct GNUNET_MessageHeader *message);
+
+
+/**
+ * Frees the ManageServiceContext queue
+ */
+void
+GST_free_mctxq ();
+
+
+/**
+ * Cleans up the queue used for forwarding link controllers requests
+ */
+void
+GST_free_lcfq ();
+
+
+/**
+ * Cleans up the route list
+ */
+void
+GST_route_list_clear ();
 
 
 /**
@@ -765,6 +789,13 @@ GST_free_roccq ();
 
 
 /**
+ * Cleans up the Peer reconfigure context list
+ */
+void
+GST_free_prcq ();
+
+
+/**
  * Initializes the cache
  *
  * @param size the size of the cache
@@ -794,7 +825,7 @@ GST_cache_lookup_hello (const unsigned int peer_id);
  * Caches the HELLO of the given peer. Updates the HELLO if it was already
  * cached before
  *
- * @param id the peer identity of the peer whose HELLO has to be cached
+ * @param peer_id the peer identity of the peer whose HELLO has to be cached
  * @param hello the HELLO message
  */
 void
@@ -803,109 +834,18 @@ GST_cache_add_hello (const unsigned int peer_id,
 
 
 /**
- * Functions of this type are called when the needed handle is available for
- * usage. These functions are to be registered with either of the functions
- * GST_cache_get_handle_transport() or GST_cache_get_handle_core(). The
- * corresponding handles will be set and if they are not, then it signals an
- * error while opening the handles.
- *
- * @param cls the closure passed to GST_cache_get_handle_transport() or
- *          GST_cache_get_handle_core()
- * @param ch the handle to CORE. Can be NULL if it is not requested
- * @param th the handle to TRANSPORT. Can be NULL if it is not requested
- * @param peer_id the identity of the peer. Will be NULL if ch is NULL. In other
- *          cases, its value being NULL means that CORE connection has failed.
- */
-typedef void (*GST_cache_handle_ready_cb) (void *cls,
-                                           struct GNUNET_CORE_Handle * ch,
-                                           struct GNUNET_TRANSPORT_Handle * th,
-                                           const struct GNUNET_PeerIdentity *
-                                           peer_id);
-
-
-/**
- * Callback to notify when the target peer given to
- * GST_cache_get_handle_transport() is connected. Note that this callback may
- * not be called if the target peer is already connected. Use
- * GNUNET_TRANSPORT_check_neighbour_connected() to check if the target peer is
- * already connected or not. This callback will be called only once or never (in
- * case the target cannot be connected).
- *
- * @param cls the closure given to GST_cache_get_handle_done() for this callback
- * @param target the peer identity of the target peer. The pointer should be
- *          valid until GST_cache_get_handle_done() is called.
- */
-typedef void (*GST_cache_peer_connect_notify) (void *cls,
-                                               const struct GNUNET_PeerIdentity
-                                               * target);
-
-
-/**
- * Get a transport handle with the given configuration. If the handle is already
- * cached before, it will be retured in the given callback; the peer_id is used to lookup in the
- * cache. If not a new operation is started to open the transport handle and
- * will be given in the callback when it is available.
- *
- * @param peer_id the index of the peer
- * @param cfg the configuration with which the transport handle has to be
- *          created if it was not present in the cache
- * @param cb the callback to notify when the transport handle is available
- * @param cb_cls the closure for the above callback
- * @param target the peer identify of the peer whose connection to our TRANSPORT
- *          subsystem will be notified through the connect_notify_cb. Can be NULL
- * @param connect_notify_cb the callback to call when the given target peer is
- *          connected. This callback will only be called once or never again (in
- *          case the target peer cannot be connected). Can be NULL
- * @param connect_notify_cb_cls the closure for the above callback
- * @return the handle which can be used cancel or mark that the handle is no
- *           longer being used
- */
-struct GSTCacheGetHandle *
-GST_cache_get_handle_transport (unsigned int peer_id,
-                                const struct GNUNET_CONFIGURATION_Handle *cfg,
-                                GST_cache_handle_ready_cb cb, void *cb_cls,
-                                const struct GNUNET_PeerIdentity *target,
-                                GST_cache_peer_connect_notify connect_notify_cb,
-                                void *connect_notify_cb_cls);
-
-
-/**
- * Get a CORE handle with the given configuration. If the handle is already
- * cached before, it will be retured in the given callback; the peer_id is used
- * to lookup in the cache. If the handle is not cached before, a new operation
- * is started to open the CORE handle and will be given in the callback when it
- * is available along with the peer identity
- *
- * @param peer_id the index of the peer
- * @param cfg the configuration with which the transport handle has to be
- *          created if it was not present in the cache
- * @param cb the callback to notify when the transport handle is available
- * @param cb_cls the closure for the above callback
- * @param target the peer identify of the peer whose connection to our CORE
- *          subsystem will be notified through the connect_notify_cb. Can be NULL
- * @param connect_notify_cb the callback to call when the given target peer is
- *          connected. This callback will only be called once or never again (in
- *          case the target peer cannot be connected). Can be NULL
- * @param connect_notify_cb_cls the closure for the above callback
- * @return the handle which can be used cancel or mark that the handle is no
- *           longer being used
- */
-struct GSTCacheGetHandle *
-GST_cache_get_handle_core (unsigned int peer_id,
-                           const struct GNUNET_CONFIGURATION_Handle *cfg,
-                           GST_cache_handle_ready_cb cb, void *cb_cls,
-                           const struct GNUNET_PeerIdentity *target,
-                           GST_cache_peer_connect_notify connect_notify_cb,
-                           void *connect_notify_cb_cls);
-
-
-/**
- * Mark the GetCacheHandle as being done if a handle has been provided already
- * or as being cancelled if the callback for the handle hasn't been called.
- *
- * @param cgh the CacheGetHandle handle
+ * Initialize logging CPU and IO statisticfs.  Checks the configuration for
+ * "STATS_DIR" and logs to a file in that directory.  The file is name is
+ * generated from the hostname and the process's PID.
  */
 void
-GST_cache_get_handle_done (struct GSTCacheGetHandle *cgh);
+GST_stats_init (const struct GNUNET_CONFIGURATION_Handle *cfg);
+
+
+/**
+ * Shutdown the status calls module.
+ */
+void
+GST_stats_destroy ();
 
 /* End of gnunet-service-testbed.h */

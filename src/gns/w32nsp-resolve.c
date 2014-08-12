@@ -23,18 +23,18 @@
  * @author LRN
  */
 #define INITGUID
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <nspapi.h>
 #include <ws2spi.h>
 #include <nspapi.h>
-#include <ws2tcpip.h>
 #include "gnunet_w32nsp_lib.h"
 #include <stdio.h>
 
 typedef int (WSPAPI *LPNSPSTARTUP) (LPGUID lpProviderId, LPNSP_ROUTINE lpnspRoutines);
 
 GUID host = {0x0002a800,0,0,{ 0xC0,0,0,0,0,0,0,0x46 }};
-GUID ip4 = {0x00090035,0,1,{ 0xc0,0,0,0,0,0,0,0x046}}; 
+GUID ip4 = {0x00090035,0,1,{ 0xc0,0,0,0,0,0,0,0x046}};
 GUID ip6 = {0x00090035,0,0x001c, { 0xc0,0,0,0,0,0,0,0x046}};
 
 DEFINE_GUID(W32_DNS, 0x22059D40, 0x7E9E, 0x11CF, 0xAE, 0x5A, 0x00, 0xAA, 0x00, 0xA7, 0x11, 0x2B);
@@ -57,7 +57,7 @@ DEFINE_GUID(SVCID_INET_HOSTADDRBYNAME, 0x0002a803, 0x0000, 0x0000, 0xc0, 0x00, 0
 // to convert structures returned as BLOBs.
 //
 
-VOID 
+VOID
 FixList(PCHAR ** List, PCHAR Base)
 {
     if(*List)
@@ -78,7 +78,7 @@ FixList(PCHAR ** List, PCHAR Base)
 // Routine to convert a hostent returned in a BLOB to one with
 // usable pointers. The structure is converted in-place.
 //
-VOID 
+VOID
 UnpackHostEnt(struct hostent * hostent)
 {
      PCHAR pch;
@@ -161,8 +161,8 @@ main (int argc, char **argv)
   int ret;
   int r = 1;
   WSADATA wsd;
-  GUID *prov = NULL;
-  GUID *sc = NULL;
+  GUID prov;
+  GUID sc;
   wchar_t *cmdl;
   int wargc;
   wchar_t **wargv;
@@ -190,27 +190,39 @@ main (int argc, char **argv)
   if (wargc == 5)
   {
     if (wcscmp (wargv[1], L"A") == 0)
-      sc = &SVCID_DNS_TYPE_A;
+      sc = SVCID_DNS_TYPE_A;
     else if (wcscmp (wargv[1], L"AAAA") == 0)
-      sc = &SVCID_DNS_TYPE_AAAA;
+      sc = SVCID_DNS_TYPE_AAAA;
     else if (wcscmp (wargv[1], L"name") == 0)
-      sc = &SVCID_HOSTNAME;
+      sc = SVCID_HOSTNAME;
     else if (wcscmp (wargv[1], L"addr") == 0)
-      sc = &SVCID_INET_HOSTADDRBYNAME;
+      sc = SVCID_INET_HOSTADDRBYNAME;
     else
       wargc -= 1;
     if (wcscmp (wargv[4], L"mswdns") == 0)
-      prov = &W32_DNS;
+      prov = W32_DNS;
     else if (wcscmp (wargv[4], L"gnunetdns") == 0)
-      prov = &GNUNET_NAMESPACE_PROVIDER_DNS;
+      prov = GNUNET_NAMESPACE_PROVIDER_DNS;
     else
       wargc -= 1;
+  }
+  else if (wargc == 3)
+  {
+  }
+  else
+  {
+    fprintf (stderr, "Usage: %S <record type> <service name> <NSP library path> <NSP id>\n"
+        "record type      - one of the following: A | AAAA | name | addr\n"
+        "service name     - a string to resolve; \" \" (a space) means 'blank'\n"
+        "NSP library path - path to libw32nsp\n"
+        "NSP id           - one of the following: mswdns | gnunetdns\n",
+        wargv[0]);
   }
 
   if (wargc == 5)
   {
     HMODULE nsp;
-   
+
     nsp = LoadLibraryW (wargv[3]);
     if (nsp == NULL)
     {
@@ -219,12 +231,15 @@ main (int argc, char **argv)
     else
     {
       LPNSPSTARTUP startup = (LPNSPSTARTUP) GetProcAddress (nsp, "NSPStartup");
+      if (startup == NULL)
+        startup = (LPNSPSTARTUP) GetProcAddress (nsp, "NSPStartup@8");
       if (startup != NULL)
       {
         NSP_ROUTINE api;
-        ret = startup (prov, &api);
+        api.cbSize = sizeof (api);
+        ret = startup (&prov, &api);
         if (NO_ERROR != ret)
-          fprintf (stderr, "startup failed\n");
+          fprintf (stderr, "startup failed: %lu\n", GetLastError ());
         else
         {
           HANDLE lookup;
@@ -236,10 +251,10 @@ main (int argc, char **argv)
           memset (&search, 0, sizeof (search));
           search.dwSize = sizeof (search);
           search.lpszServiceInstanceName = (wcscmp (wargv[2], L" ") == 0) ? NULL : wargv[2];
-          search.lpServiceClassId = sc;
-          search.lpNSProviderId = prov;
+          search.lpServiceClassId = &sc;
+          search.lpNSProviderId = &prov;
           search.dwNameSpace = NS_ALL;
-          ret = api.NSPLookupServiceBegin (prov, &search, NULL, LUP_RETURN_ALL, &lookup);
+          ret = api.NSPLookupServiceBegin (&prov, &search, NULL, LUP_RETURN_ALL, &lookup);
           if (ret != NO_ERROR)
           {
             fprintf (stderr, "lookup start failed\n");
@@ -251,7 +266,7 @@ main (int argc, char **argv)
             err = GetLastError ();
             if (ret != NO_ERROR)
             {
-              fprintf (stderr, "lookup next failed\n");
+              fprintf (stderr, "lookup next failed: %lu\n", err);
             }
             else
             {
@@ -358,10 +373,69 @@ main (int argc, char **argv)
             if (ret != NO_ERROR)
               printf ("NSPLookupServiceEnd() failed: %lu\n", GetLastError ());
           }
-          api.NSPCleanup (prov);
+          api.NSPCleanup (&prov);
         }
       }
       FreeLibrary (nsp);
+    }
+  }
+  else if (wargc == 3)
+  {
+    int s;
+    ADDRINFOW hints;
+    ADDRINFOW *result;
+    ADDRINFOW *pos;
+
+    memset (&hints, 0, sizeof (struct addrinfo));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    if (0 != (s = GetAddrInfoW (wargv[2], NULL, &hints, &result)))
+    {
+      fprintf (stderr, "Cound not resolve `%S' using GetAddrInfoW: %lu\n",
+          wargv[2], GetLastError ());
+    }
+    else
+    {
+      for (pos = result; pos != NULL; pos = pos->ai_next)
+      {
+        wchar_t tmpbuf[1024];
+        DWORD buflen = 1024;
+        if (0 == WSAAddressToStringW (pos->ai_addr, pos->ai_addrlen, NULL, tmpbuf, &buflen))
+          fprintf (stderr, "Result:\n"
+                         "  flags: 0x%X\n"
+                         "  family: 0x%X\n"
+                         "  socktype: 0x%X\n"
+                         "  protocol: 0x%X\n"
+                         "  addrlen: %u\n"
+                         "  addr: %S\n"
+                         "  canonname: %S\n",
+                         pos->ai_flags,
+                         pos->ai_family,
+                         pos->ai_socktype,
+                         pos->ai_protocol,
+                         pos->ai_addrlen,
+                         tmpbuf,
+                         pos->ai_canonname);
+        else
+          fprintf (stderr, "Result:\n"
+                         "  flags: 0x%X\n"
+                         "  family: 0x%X\n"
+                         "  socktype: 0x%X\n"
+                         "  protocol: 0x%X\n"
+                         "  addrlen: %u\n"
+                         "  addr: %S\n"
+                         "  canonname: %S\n",
+                         pos->ai_flags,
+                         pos->ai_family,
+                         pos->ai_socktype,
+                         pos->ai_protocol,
+                         pos->ai_addrlen,
+                         L"<can't stringify>",
+                         pos->ai_canonname);
+      }
+      if (NULL != result)
+        FreeAddrInfoW (result);
     }
   }
   WSACleanup();

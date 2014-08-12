@@ -179,8 +179,7 @@ end_badly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 static void
 notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+                const struct GNUNET_MessageHeader *message)
 {
   struct PeerContext *p = cls;
   struct PeerContext *t = NULL;
@@ -269,14 +268,15 @@ sendtask (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
               p2->no, GNUNET_i2s (&p2->id), p1->no, receiver_s);
   GNUNET_free (receiver_s);
 
-  th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, TEST_MESSAGE_SIZE, 0,
+  th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id,
+                                               TEST_MESSAGE_SIZE,
                                                TIMEOUT_TRANSMIT, &notify_ready,
                                                p1);
 }
 
+
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   static int c;
 
@@ -284,6 +284,7 @@ notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
   struct PeerContext *p = cls;
   struct PeerContext *t = NULL;
 
+  connected = GNUNET_YES;
   if (0 == memcmp (peer, &p1->id, sizeof (struct GNUNET_PeerIdentity)))
     t = p1;
   if (0 == memcmp (peer, &p2->id, sizeof (struct GNUNET_PeerIdentity)))
@@ -322,6 +323,7 @@ testing_connect_cb (struct PeerContext *p1, struct PeerContext *p2, void *cls)
   cc = NULL;
   char *p1_c = GNUNET_strdup (GNUNET_i2s (&p1->id));
 
+  connected = GNUNET_YES;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peers connected: %u (%s) <-> %u (%s)\n",
               p1->no, p1_c, p2->no, GNUNET_i2s (&p2->id));
   GNUNET_free (p1_c);

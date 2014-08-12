@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010 Christian Grothoff (and other contributing authors)
+     (C) 2009-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -21,8 +21,9 @@
 /**
  * @file include/gnunet_server_lib.h
  * @brief library for building GNUnet network servers
- *
  * @author Christian Grothoff
+ * @defgroup server functions for a server that communicates with clients
+ * @{
  */
 
 #ifndef GNUNET_SERVER_LIB_H
@@ -41,7 +42,10 @@ extern "C"
 
 
 /**
- * Largest supported message.
+ * Largest supported message (to be precise, one byte more
+ * than the largest possible message, so tests involving
+ * this value should check for messages being smaller than
+ * this value).
  */
 #define GNUNET_SERVER_MAX_MESSAGE_SIZE 65536
 
@@ -75,11 +79,9 @@ struct GNUNET_SERVER_TransmitHandle;
  * @param message the actual message
  */
 typedef void (*GNUNET_SERVER_MessageCallback) (void *cls,
-                                               struct GNUNET_SERVER_Client *
-                                               client,
+                                               struct GNUNET_SERVER_Client *client,
                                                const struct GNUNET_MessageHeader
-                                               * message);
-
+                                               *message);
 
 
 /**
@@ -94,7 +96,7 @@ struct GNUNET_SERVER_MessageHandler
   GNUNET_SERVER_MessageCallback callback;
 
   /**
-   * Closure argument for "callback".
+   * Closure argument for @e callback.
    */
   void *callback_cls;
 
@@ -118,10 +120,10 @@ struct GNUNET_SERVER_MessageHandler
  * Create a new server.
  *
  * @param access function for access control
- * @param access_cls closure for access
+ * @param access_cls closure for @a access
  * @param lsocks NULL-terminated array of listen sockets
  * @param idle_timeout after how long should we timeout idle connections?
- * @param require_found if YES, connections sending messages of unknown type
+ * @param require_found if #GNUNET_YES, connections sending messages of unknown type
  *        will be closed
  * @return handle for the new server, NULL on error
  *         (typically, "port" already in use)
@@ -137,18 +139,18 @@ GNUNET_SERVER_create_with_sockets (GNUNET_CONNECTION_AccessCheck access,
  * Create a new server.
  *
  * @param access function for access control
- * @param access_cls closure for access
- * @param serverAddr address toes listen on (including port), NULL terminated array
- * @param socklen lengths of respective serverAddr
+ * @param access_cls closure for @a access
+ * @param server_addr address toes listen on (including port), NULL terminated array
+ * @param socklen lengths of respective @a server_addr
  * @param idle_timeout after how long should we timeout idle connections?
- * @param require_found if YES, connections sending messages of unknown type
+ * @param require_found if #GNUNET_YES, connections sending messages of unknown type
  *        will be closed
  * @return handle for the new server, NULL on error
  *         (typically, "port" already in use)
  */
 struct GNUNET_SERVER_Handle *
 GNUNET_SERVER_create (GNUNET_CONNECTION_AccessCheck access, void *access_cls,
-                      struct sockaddr *const *serverAddr,
+                      struct sockaddr *const *server_addr,
                       const socklen_t * socklen,
                       struct GNUNET_TIME_Relative idle_timeout,
                       int require_found);
@@ -156,6 +158,7 @@ GNUNET_SERVER_create (GNUNET_CONNECTION_AccessCheck access, void *access_cls,
 
 /**
  * Suspend accepting connections from the listen socket temporarily.
+ * Resume activity using #GNUNET_SERVER_resume.
  *
  * @param server server to stop accepting connections.
  */
@@ -166,15 +169,16 @@ GNUNET_SERVER_suspend (struct GNUNET_SERVER_Handle *server);
 /**
  * Resume accepting connections from the listen socket.
  *
- * @param server server to stop accepting connections.
+ * @param server server to resume accepting connections.
  */
 void
 GNUNET_SERVER_resume (struct GNUNET_SERVER_Handle *server);
 
 
 /**
- * Stop the listen socket and get ready to shutdown the server
- * once only 'monitor' clients are left.
+ * Stop the listen socket and get ready to shutdown the server once
+ * only clients marked using #GNUNET_SERVER_client_mark_monitor are
+ * left.
  *
  * @param server server to stop listening on
  */
@@ -206,8 +210,7 @@ GNUNET_SERVER_destroy (struct GNUNET_SERVER_Handle *server);
  */
 void
 GNUNET_SERVER_add_handlers (struct GNUNET_SERVER_Handle *server,
-                            const struct GNUNET_SERVER_MessageHandler
-                            *handlers);
+                            const struct GNUNET_SERVER_MessageHandler *handlers);
 
 
 /**
@@ -219,18 +222,18 @@ GNUNET_SERVER_add_handlers (struct GNUNET_SERVER_Handle *server,
  * @param timeout after how long should we give up (and call
  *        notify with buf NULL and size 0)?
  * @param callback function to call when space is available
- * @param callback_cls closure for callback
+ * @param callback_cls closure for @a callback
  * @return non-NULL if the notify callback was queued; can be used
  *           to cancel the request using
- *           GNUNET_SERVER_notify_transmit_ready_cancel.
+ *           #GNUNET_SERVER_notify_transmit_ready_cancel.
  *         NULL if we are already going to notify someone else (busy)
  */
 struct GNUNET_SERVER_TransmitHandle *
 GNUNET_SERVER_notify_transmit_ready (struct GNUNET_SERVER_Client *client,
                                      size_t size,
                                      struct GNUNET_TIME_Relative timeout,
-                                     GNUNET_CONNECTION_TransmitReadyNotify
-                                     callback, void *callback_cls);
+                                     GNUNET_CONNECTION_TransmitReadyNotify callback,
+                                     void *callback_cls);
 
 
 /**
@@ -245,12 +248,12 @@ GNUNET_SERVER_notify_transmit_ready_cancel (struct GNUNET_SERVER_TransmitHandle 
 /**
  * Set the 'monitor' flag on this client.  Clients which have been
  * marked as 'monitors' won't prevent the server from shutting down
- * once 'GNUNET_SERVER_stop_listening' has been invoked.  The idea is
+ * once #GNUNET_SERVER_stop_listening has been invoked.  The idea is
  * that for "normal" clients we likely want to allow them to process
  * their requests; however, monitor-clients are likely to 'never'
  * disconnect during shutdown and thus will not be considered when
  * determining if the server should continue to exist after
- * 'GNUNET_SERVER_destroy' has been called.
+ * #GNUNET_SERVER_destroy has been called.
  *
  * @param client the client to set the 'monitor' flag on
  */
@@ -259,8 +262,11 @@ GNUNET_SERVER_client_mark_monitor (struct GNUNET_SERVER_Client *client);
 
 
 /**
- * Set the persistent flag on this client, used to setup client connection
- * to only be killed when the service it's connected to is actually dead.
+ * Set the persistent flag on this client, used to setup client
+ * connection to only be killed when the process of the service it's
+ * connected to is actually dead.  This API is used during shutdown
+ * signalling within ARM, and it is not expected that typical users
+ * of the API would need this function.
  *
  * @param client the client to set the persistent flag on
  */
@@ -271,17 +277,18 @@ GNUNET_SERVER_client_persist_ (struct GNUNET_SERVER_Client *client);
 /**
  * Resume receiving from this client, we are done processing the
  * current request.  This function must be called from within each
- * GNUNET_SERVER_MessageCallback (or its respective continuations).
+ * #GNUNET_SERVER_MessageCallback (or its respective continuations).
  *
  * @param client client we were processing a message of
- * @param success GNUNET_OK to keep the connection open and
+ * @param success #GNUNET_OK to keep the connection open and
  *                          continue to receive
- *                GNUNET_NO to close the connection (normal behavior)
- *                GNUNET_SYSERR to close the connection (signal
+ *                #GNUNET_NO to close the connection (normal behavior)
+ *                #GNUNET_SYSERR to close the connection (signal
  *                          serious error)
  */
 void
-GNUNET_SERVER_receive_done (struct GNUNET_SERVER_Client *client, int success);
+GNUNET_SERVER_receive_done (struct GNUNET_SERVER_Client *client,
+			    int success);
 
 
 /**
@@ -295,6 +302,53 @@ GNUNET_SERVER_receive_done (struct GNUNET_SERVER_Client *client, int success);
 void
 GNUNET_SERVER_client_set_timeout (struct GNUNET_SERVER_Client *client,
                                   struct GNUNET_TIME_Relative timeout);
+
+
+/**
+ * Return user context associated with the given client.
+ * Note: you should probably use the macro (call without the underscore).
+ *
+ * @param client client to query
+ * @param size number of bytes in user context struct (for verification only)
+ * @return pointer to user context
+ */
+void *
+GNUNET_SERVER_client_get_user_context_ (struct GNUNET_SERVER_Client *client,
+					size_t size);
+
+
+/**
+ * Set user context to be associated with the given client.
+ * Note: you should probably use the macro (call without the underscore).
+ *
+ * @param client client to query
+ * @param ptr pointer to user context
+ * @param size number of bytes in user context struct (for verification only)
+ */
+void
+GNUNET_SERVER_client_set_user_context_ (struct GNUNET_SERVER_Client *client,
+					void *ptr,
+					size_t size);
+
+
+/**
+ * Return user context associated with the given client.
+ *
+ * @param client client to query
+ * @param type expected return type (i.e. 'struct Foo')
+ * @return pointer to user context of type 'type *'.
+ */
+#define GNUNET_SERVER_client_get_user_context(client,type)              \
+  (type *) GNUNET_SERVER_client_get_user_context_ (client, sizeof (type))
+
+/**
+ * Set user context to be associated with the given client.
+ *
+ * @param client client to query
+ * @param value pointer to user context
+ */
+#define GNUNET_SERVER_client_set_user_context(client,value)             \
+  GNUNET_SERVER_client_set_user_context_ (client, value, sizeof (*value))
 
 
 /**
@@ -319,9 +373,9 @@ GNUNET_SERVER_disable_receive_done_warning (struct GNUNET_SERVER_Client
  * @param sender the "pretended" sender of the message
  *        can be NULL!
  * @param message message to transmit
- * @return GNUNET_OK if the message was OK and the
+ * @return #GNUNET_OK if the message was OK and the
  *                   connection can stay open
- *         GNUNET_SYSERR if the connection to the
+ *         #GNUNET_SYSERR if the connection to the
  *         client should be shut down
  */
 int
@@ -340,7 +394,7 @@ GNUNET_SERVER_inject (struct GNUNET_SERVER_Handle *server,
  * @param connection the connection to manage (client must
  *        stop using this connection from now on)
  * @return the client handle (client should call
- *         "client_drop" on the return value eventually)
+ *         #GNUNET_SERVER_client_drop on the return value eventually)
  */
 struct GNUNET_SERVER_Client *
 GNUNET_SERVER_connect_socket (struct GNUNET_SERVER_Handle *server,
@@ -375,12 +429,12 @@ GNUNET_SERVER_client_drop (struct GNUNET_SERVER_Client *client);
  *
  * @param client the client to get the address for
  * @param addr where to store the address
- * @param addrlen where to store the length of the address
- * @return GNUNET_OK on success
+ * @param addrlen where to store the length of @a addr
+ * @return #GNUNET_OK on success
  */
 int
 GNUNET_SERVER_client_get_address (struct GNUNET_SERVER_Client *client,
-                                  void **addr, size_t * addrlen);
+                                  void **addr, size_t *addrlen);
 
 
 /**
@@ -392,8 +446,18 @@ GNUNET_SERVER_client_get_address (struct GNUNET_SERVER_Client *client,
  *        for the last call when the server is destroyed
  */
 typedef void (*GNUNET_SERVER_DisconnectCallback) (void *cls,
-                                                  struct GNUNET_SERVER_Client *
-                                                  client);
+                                                  struct GNUNET_SERVER_Client *client);
+
+
+/**
+ * Functions with this signature are called whenever a client
+ * is connected on the network level.
+ *
+ * @param cls closure
+ * @param client identification of the client
+ */
+typedef void (*GNUNET_SERVER_ConnectCallback) (void *cls,
+					       struct GNUNET_SERVER_Client *client);
 
 
 /**
@@ -408,7 +472,7 @@ typedef void (*GNUNET_SERVER_DisconnectCallback) (void *cls,
  *
  * @param server the server manageing the clients
  * @param callback function to call on disconnect
- * @param callback_cls closure for callback
+ * @param callback_cls closure for @a callback
  */
 void
 GNUNET_SERVER_disconnect_notify (struct GNUNET_SERVER_Handle *server,
@@ -417,23 +481,63 @@ GNUNET_SERVER_disconnect_notify (struct GNUNET_SERVER_Handle *server,
 
 
 /**
- * Ask the server to stop notifying us whenever a client disconnects.
+ * Ask the server to notify us whenever a client connects.
+ * This function is called whenever the actual network connection
+ * is opened. If the server is destroyed before this
+ * notification is explicitly cancelled, the @a callback will
+ * once be called with a 'client' argument of NULL to indicate
+ * that the server itself is now gone (and that the callback
+ * won't be called anymore and also can no longer be cancelled).
  *
  * @param server the server manageing the clients
- * @param callback function to call on disconnect
- * @param callback_cls closure for callback
+ * @param callback function to call on sconnect
+ * @param callback_cls closure for @a callback
  */
 void
-GNUNET_SERVER_disconnect_notify_cancel (struct GNUNET_SERVER_Handle *server,
-                                        GNUNET_SERVER_DisconnectCallback
-                                        callback, void *callback_cls);
+GNUNET_SERVER_connect_notify (struct GNUNET_SERVER_Handle *server,
+			      GNUNET_SERVER_ConnectCallback callback,
+			      void *callback_cls);
 
 
 /**
- * Ask the server to disconnect from the given client.
- * This is the same as returning GNUNET_SYSERR from a message
- * handler, except that it allows dropping of a client even
- * when not handling a message from that client.
+ * Ask the server to stop notifying us whenever a client disconnects.
+ * Arguments must match exactly those given to
+ * #GNUNET_SERVER_disconnect_notify.  It is not necessary to call this
+ * function during shutdown of the server; in fact, most applications
+ * will never use this function.
+ *
+ * @param server the server manageing the clients
+ * @param callback function to call on disconnect
+ * @param callback_cls closure for @a callback
+ */
+void
+GNUNET_SERVER_disconnect_notify_cancel (struct GNUNET_SERVER_Handle *server,
+                                        GNUNET_SERVER_DisconnectCallback callback,
+                                        void *callback_cls);
+
+
+/**
+ * Ask the server to stop notifying us whenever a client connects.
+ * Arguments must match exactly those given to
+ * #GNUNET_SERVER_connect_notify.  It is not necessary to call this
+ * function during shutdown of the server; in fact, most applications
+ * will never use this function.
+ *
+ * @param server the server manageing the clients
+ * @param callback function to call on connect
+ * @param callback_cls closure for @a callback
+ */
+void
+GNUNET_SERVER_connect_notify_cancel (struct GNUNET_SERVER_Handle *server,
+				     GNUNET_SERVER_ConnectCallback callback,
+				     void *callback_cls);
+
+
+/**
+ * Ask the server to disconnect from the given client.  This is the
+ * same as passing #GNUNET_SYSERR to #GNUNET_SERVER_receive_done,
+ * except that it allows dropping of a client even when not handling a
+ * message from that client.
  *
  * @param client the client to disconnect from
  */
@@ -447,7 +551,7 @@ GNUNET_SERVER_client_disconnect (struct GNUNET_SERVER_Client *client);
  * instead of potentially buffering multiple messages.
  *
  * @param client handle to the client
- * @return GNUNET_OK on success
+ * @return #GNUNET_OK on success
  */
 int
 GNUNET_SERVER_client_disable_corking (struct GNUNET_SERVER_Client *client);
@@ -462,8 +566,7 @@ struct GNUNET_SERVER_TransmitContext;
 
 
 /**
- * Create a new transmission context for the
- * given client.
+ * Create a new transmission context for the given client.
  *
  * @param client client to create the context for.
  * @return NULL on error
@@ -475,16 +578,16 @@ GNUNET_SERVER_transmit_context_create (struct GNUNET_SERVER_Client *client);
 /**
  * Append a message to the transmission context.
  * All messages in the context will be sent by
- * the transmit_context_run method.
+ * the #GNUNET_SERVER_transmit_context_run method.
  *
  * @param tc context to use
  * @param data what to append to the result message
- * @param length length of data
+ * @param length length of @a data
  * @param type type of the message
  */
 void
-GNUNET_SERVER_transmit_context_append_data (struct GNUNET_SERVER_TransmitContext
-                                            *tc, const void *data,
+GNUNET_SERVER_transmit_context_append_data (struct GNUNET_SERVER_TransmitContext *tc,
+                                            const void *data,
                                             size_t length, uint16_t type);
 
 
@@ -497,17 +600,14 @@ GNUNET_SERVER_transmit_context_append_data (struct GNUNET_SERVER_TransmitContext
  * @param msg message to append
  */
 void
-GNUNET_SERVER_transmit_context_append_message (struct
-                                               GNUNET_SERVER_TransmitContext
-                                               *tc,
-                                               const struct GNUNET_MessageHeader
-                                               *msg);
+GNUNET_SERVER_transmit_context_append_message (struct GNUNET_SERVER_TransmitContext *tc,
+                                               const struct GNUNET_MessageHeader *msg);
 
 
 /**
  * Execute a transmission context.  If there is an error in the
  * transmission, the receive_done method will be called with an error
- * code (GNUNET_SYSERR), otherwise with GNUNET_OK.
+ * code (#GNUNET_SYSERR), otherwise with #GNUNET_OK.
  *
  * @param tc transmission context to use
  * @param timeout when to time out and abort the transmission
@@ -519,19 +619,19 @@ GNUNET_SERVER_transmit_context_run (struct GNUNET_SERVER_TransmitContext *tc,
 
 /**
  * Destroy a transmission context.  This function must not be called
- * after 'GNUNET_SERVER_transmit_context_run'.
+ * after #GNUNET_SERVER_transmit_context_run.
  *
  * @param tc transmission context to destroy
- * @param success code to give to 'GNUNET_SERVER_receive_done' for
- *        the client:  GNUNET_OK to keep the connection open and
+ * @param success code to give to #GNUNET_SERVER_receive_done  for
+ *        the client: #GNUNET_OK to keep the connection open and
  *                          continue to receive
- *                GNUNET_NO to close the connection (normal behavior)
- *                GNUNET_SYSERR to close the connection (signal
+ *                #GNUNET_NO to close the connection (normal behavior)
+ *                #GNUNET_SYSERR to close the connection (signal
  *                          serious error)
  */
 void
-GNUNET_SERVER_transmit_context_destroy (struct GNUNET_SERVER_TransmitContext
-                                        *tc, int success);
+GNUNET_SERVER_transmit_context_destroy (struct GNUNET_SERVER_TransmitContext *tc,
+                                        int success);
 
 
 /**
@@ -565,9 +665,7 @@ GNUNET_SERVER_notification_context_create (struct GNUNET_SERVER_Handle *server,
  * @param nc context to destroy.
  */
 void
-GNUNET_SERVER_notification_context_destroy (struct
-                                            GNUNET_SERVER_NotificationContext
-                                            *nc);
+GNUNET_SERVER_notification_context_destroy (struct GNUNET_SERVER_NotificationContext *nc);
 
 
 /**
@@ -577,8 +675,7 @@ GNUNET_SERVER_notification_context_destroy (struct
  * @param client client to add
  */
 void
-GNUNET_SERVER_notification_context_add (struct GNUNET_SERVER_NotificationContext
-                                        *nc,
+GNUNET_SERVER_notification_context_add (struct GNUNET_SERVER_NotificationContext *nc,
                                         struct GNUNET_SERVER_Client *client);
 
 
@@ -592,12 +689,10 @@ GNUNET_SERVER_notification_context_add (struct GNUNET_SERVER_NotificationContext
  * @param can_drop can this message be dropped due to queue length limitations
  */
 void
-GNUNET_SERVER_notification_context_unicast (struct
-                                            GNUNET_SERVER_NotificationContext
-                                            *nc,
+GNUNET_SERVER_notification_context_unicast (struct GNUNET_SERVER_NotificationContext *nc,
                                             struct GNUNET_SERVER_Client *client,
-                                            const struct GNUNET_MessageHeader
-                                            *msg, int can_drop);
+                                            const struct GNUNET_MessageHeader *msg,
+                                            int can_drop);
 
 
 /**
@@ -608,12 +703,9 @@ GNUNET_SERVER_notification_context_unicast (struct
  * @param can_drop can this message be dropped due to queue length limitations
  */
 void
-GNUNET_SERVER_notification_context_broadcast (struct
-                                              GNUNET_SERVER_NotificationContext
-                                              *nc,
-                                              const struct GNUNET_MessageHeader
-                                              *msg, int can_drop);
-
+GNUNET_SERVER_notification_context_broadcast (struct GNUNET_SERVER_NotificationContext *nc,
+                                              const struct GNUNET_MessageHeader *msg,
+                                              int can_drop);
 
 
 /**
@@ -621,29 +713,28 @@ GNUNET_SERVER_notification_context_broadcast (struct
  */
 struct GNUNET_SERVER_MessageStreamTokenizer;
 
+
 /**
  * Functions with this signature are called whenever a
  * complete message is received by the tokenizer.
  *
- * Do not call GNUNET_SERVER_mst_destroy in callback
+ * Do not call #GNUNET_SERVER_mst_destroy from within
+ * the scope of this callback.
  *
  * @param cls closure
  * @param client identification of the client
  * @param message the actual message
- *
- * @return GNUNET_OK on success, GNUNET_SYSERR to stop further processing
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR to stop further processing
  */
 typedef int (*GNUNET_SERVER_MessageTokenizerCallback) (void *cls, void *client,
-                                                        const struct
-                                                        GNUNET_MessageHeader *
-                                                        message);
+                                                       const struct GNUNET_MessageHeader *message);
 
 
 /**
  * Create a message stream tokenizer.
  *
  * @param cb function to call on completed messages
- * @param cb_cls closure for cb
+ * @param cb_cls closure for @a cb
  * @return handle to tokenizer
  */
 struct GNUNET_SERVER_MessageStreamTokenizer *
@@ -659,17 +750,18 @@ GNUNET_SERVER_mst_create (GNUNET_SERVER_MessageTokenizerCallback cb,
  * @param client_identity ID of client for which this is a buffer,
  *        can be NULL (will be passed back to 'cb')
  * @param buf input data to add
- * @param size number of bytes in buf
+ * @param size number of bytes in @a buf
  * @param purge should any excess bytes in the buffer be discarded
  *       (i.e. for packet-based services like UDP)
  * @param one_shot only call callback once, keep rest of message in buffer
- * @return GNUNET_OK if we are done processing (need more data)
- *         GNUNET_NO if one_shot was set and we have another message ready
- *         GNUNET_SYSERR if the data stream is corrupt
+ * @return #GNUNET_OK if we are done processing (need more data)
+ *         #GNUNET_NO if one_shot was set and we have another message ready
+ *         #GNUNET_SYSERR if the data stream is corrupt
  */
 int
 GNUNET_SERVER_mst_receive (struct GNUNET_SERVER_MessageStreamTokenizer *mst,
-                           void *client_identity, const char *buf, size_t size,
+                           void *client_identity,
+                           const char *buf, size_t size,
                            int purge, int one_shot);
 
 
@@ -685,36 +777,38 @@ GNUNET_SERVER_mst_destroy (struct GNUNET_SERVER_MessageStreamTokenizer *mst);
 /**
  * Signature of a function to create a custom tokenizer.
  *
- * @param cls closure from 'GNUNET_SERVER_set_callbacks'
+ * @param cls closure from #GNUNET_SERVER_set_callbacks
  * @param client handle to client the tokenzier will be used for
  * @return handle to custom tokenizer ('mst')
  */
 typedef void* (*GNUNET_SERVER_MstCreateCallback) (void *cls,
                                                   struct GNUNET_SERVER_Client *client);
 
-/**
- * Signature of a function to destroy a custom tokenizer.
- *
- * @param cls closure from 'GNUNET_SERVER_set_callbacks'
- * @param mst custom tokenizer handle
- */
-typedef void (*GNUNET_SERVER_MstDestroyCallback) (void *cls, void *mst);
 
 /**
  * Signature of a function to destroy a custom tokenizer.
  *
- * @param cls closure from 'GNUNET_SERVER_set_callbacks'
+ * @param cls closure from #GNUNET_SERVER_set_callbacks
+ * @param mst custom tokenizer handle
+ */
+typedef void (*GNUNET_SERVER_MstDestroyCallback) (void *cls, void *mst);
+
+
+/**
+ * Signature of a function to receive data for a custom tokenizer.
+ *
+ * @param cls closure from #GNUNET_SERVER_set_callbacks
  * @param mst custom tokenizer handle
  * @param client_identity ID of client for which this is a buffer,
  *        can be NULL (will be passed back to 'cb')
  * @param buf input data to add
- * @param size number of bytes in buf
+ * @param size number of bytes in @a buf
  * @param purge should any excess bytes in the buffer be discarded
  *       (i.e. for packet-based services like UDP)
  * @param one_shot only call callback once, keep rest of message in buffer
- * @return GNUNET_OK if we are done processing (need more data)
- *         GNUNET_NO if one_shot was set and we have another message ready
- *         GNUNET_SYSERR if the data stream is corrupt 
+ * @return #GNUNET_OK if we are done processing (need more data)
+ *         #GNUNET_NO if one_shot was set and we have another message ready
+ *         #GNUNET_SYSERR if the data stream is corrupt
  */
 typedef int (*GNUNET_SERVER_MstReceiveCallback) (void *cls, void *mst,
                                                  struct GNUNET_SERVER_Client *client,
@@ -730,7 +824,7 @@ typedef int (*GNUNET_SERVER_MstReceiveCallback) (void *cls, void *mst,
  * @param create new tokenizer initialization function
  * @param destroy new tokenizer destruction function
  * @param receive new tokenizer receive function
- * @param cls closure for 'create', 'receive', 'destroy' 
+ * @param cls closure for @a create, @a receive and @a destroy
  */
 void
 GNUNET_SERVER_set_callbacks (struct GNUNET_SERVER_Handle *server,
@@ -747,6 +841,7 @@ GNUNET_SERVER_set_callbacks (struct GNUNET_SERVER_Handle *server,
 }
 #endif
 
+/** @} */ /* end of group server */
 
 /* ifndef GNUNET_SERVER_LIB_H */
 #endif

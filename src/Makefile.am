@@ -2,16 +2,35 @@
 #  INTLEMU_SUBDIRS = intlemu
 #endif
 
-if HAVE_EXPERIMENTAL
- EXP_DIR = chat dv consensus sysmon
+if HAVE_TESTING
+ TESTING = testing
+ TESTBED = testbed
+ CONSENSUS = consensus
+ SECRETSHARING = secretsharing
+ EXPERIMENTATION = experimentation
+ SCALARPRODUCT = scalarproduct
 endif
 
-if LINUX
-# All of these currently only work on GNU/Linux
- LINUX_DIR = dns exit vpn gns pt
+if HAVE_EXPERIMENTAL
+ EXP_DIR = \
+  dv \
+  multicast \
+  env \
+  psycstore \
+  psyc \
+  $(CONSENSUS) \
+  $(SECRETSHARING) \
+  $(SCALARPRODUCT) \
+  $(EXPERIMENTATION)
 endif
-if MINGW
- MINGW_DIR = dns gns
+
+
+if BUILD_PULSE_HELPERS
+CONVERSATION_DIR = conversation
+else
+if BUILD_GST_HELPERS
+CONVERSATION_DIR = conversation
+endif
 endif
 
 if HAVE_MYSQL
@@ -22,7 +41,6 @@ if HAVE_POSTGRES
  POSTGRES_DIR = postgres
 endif
 
-
 SUBDIRS = \
   include $(INTLEMU_SUBDIRS) \
   util \
@@ -31,13 +49,12 @@ SUBDIRS = \
   block \
   statistics \
   arm \
-  testing \
+  $(TESTING) \
   peerinfo \
   $(MYSQL_DIR) \
   $(POSTGRES_DIR) \
   datacache \
   datastore \
-  namestore \
   template \
   ats \
   nat \
@@ -46,17 +63,26 @@ SUBDIRS = \
   ats-tool \
   peerinfo-tool \
   core \
-  testbed \
+  $(TESTBED) \
+  ats-tests \
   nse \
   dht \
   hostlist \
   topology \
   regex \
   mesh \
-  lockmanager \
-  stream \
+  dns \
+  identity \
+  set \
+  revocation \
+  gnsrecord \
+  namecache \
+  namestore \
+  vpn \
+  gns \
+  $(CONVERSATION_DIR) \
   fs \
-  $(LINUX_DIR) \
-  $(MINGW_DIR) \
+  exit \
+  pt \
   integration-tests \
-  $(EXP_DIR) 
+  $(EXP_DIR)

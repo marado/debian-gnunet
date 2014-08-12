@@ -31,14 +31,36 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_hello_lib.h"
 
+/**
+ * Function called to notify transport users that a neighbour peer changed its
+ * active address.
+ *
+ * @param cls closure
+ * @param peer peer this update is about (never NULL)
+ * @param address address (never NULL)
+ * @param last_validation point in time when last validation was performed
+ * @param valid_until point in time how long address is valid
+ * @param next_validation point in time when next validation will be performed
+ * @param state state of validation notification
+ */
+typedef void (*GST_ValidationChangedCallback) (void *cls,
+    const struct GNUNET_PeerIdentity *peer,
+    const struct GNUNET_HELLO_Address *address,
+    struct GNUNET_TIME_Absolute last_validation,
+    struct GNUNET_TIME_Absolute valid_until,
+    struct GNUNET_TIME_Absolute next_validation,
+    enum GNUNET_TRANSPORT_ValidationState state);
+
 
 /**
  * Start the validation subsystem.
  *
+ * @param cb callback to call with changes to valdidation entries
+ * @param cb_cls cls for the callback
  * @param max_fds maximum number of fds to use
  */
 void
-GST_validation_start (unsigned int max_fds);
+GST_validation_start (GST_ValidationChangedCallback cb, void *cb_cls, unsigned int max_fds);
 
 
 /**
@@ -57,13 +79,11 @@ GST_validation_stop (void);
  * @param session the session
  * @param in_use GNUNET_YES if we are now using the address for a connection,
  *               GNUNET_NO if we are no longer using the address for a connection
- * @param line line of caller just for DEBUGGING!
  */
 void
 GST_validation_set_address_use (const struct GNUNET_HELLO_Address *address,
                                 struct Session *session,
-                                int in_use,
-                                int line);
+                                int in_use);
 
 
 /**
@@ -81,6 +101,14 @@ GST_validation_get_address_latency (const struct GNUNET_PeerIdentity *sender,
                                     const struct GNUNET_HELLO_Address *address,
                                     struct Session *session);
 
+/**
+ * Iterate over all iteration entries
+ *
+ * @param cb function to call
+ * @param cb_cls closure for cb
+ */
+void
+GST_validation_iterate (GST_ValidationChangedCallback cb, void *cb_cls);
 
 /**
  * We've received a PING.  If appropriate, generate a PONG.
@@ -89,8 +117,9 @@ GST_validation_get_address_latency (const struct GNUNET_PeerIdentity *sender,
  * @param hdr the PING
  * @param sender_address address of the sender, NULL if we did not initiate
  * @param session session we got the PING from
+ * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
  */
-void
+int
 GST_validation_handle_ping (const struct GNUNET_PeerIdentity *sender,
                             const struct GNUNET_MessageHeader *hdr,
                             const struct GNUNET_HELLO_Address *sender_address,
@@ -103,8 +132,9 @@ GST_validation_handle_ping (const struct GNUNET_PeerIdentity *sender,
  *
  * @param sender peer sending the PONG
  * @param hdr the PONG
+ * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
  */
-void
+int
 GST_validation_handle_pong (const struct GNUNET_PeerIdentity *sender,
                             const struct GNUNET_MessageHeader *hdr);
 
@@ -114,8 +144,9 @@ GST_validation_handle_pong (const struct GNUNET_PeerIdentity *sender,
  * validation.
  *
  * @param hello the HELLO we received
+ * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
  */
-void
+int
 GST_validation_handle_hello (const struct GNUNET_MessageHeader *hello);
 
 
@@ -134,8 +165,7 @@ GST_validation_handle_hello (const struct GNUNET_MessageHeader *hello);
  */
 typedef void (*GST_ValidationAddressCallback) (void *cls,
                                                const struct
-                                               GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded
-                                               * public_key,
+                                               GNUNET_CRYPTO_EddsaPublicKey *public_key,
                                                struct GNUNET_TIME_Absolute
                                                valid_until,
                                                struct GNUNET_TIME_Absolute

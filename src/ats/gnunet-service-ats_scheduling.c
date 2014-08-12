@@ -92,6 +92,7 @@ GAS_scheduling_remove_client (struct GNUNET_SERVER_Client *client)
  * @param plugin_name 0-termintated string specifying the transport plugin
  * @param plugin_addr binary address for the plugin to use
  * @param plugin_addr_len number of bytes in plugin_addr
+ * @param local_address_info the local address for the address
  * @param session_id session ID to use for the given client (other clients will see 0)
  * @param atsi performance data for the address
  * @param atsi_count number of performance records in 'ats'
@@ -100,16 +101,16 @@ GAS_scheduling_remove_client (struct GNUNET_SERVER_Client *client)
  */
 void
 GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity
-                                            *peer, const char *plugin_name,
-                                            const void *plugin_addr,
-                                            size_t plugin_addr_len,
-                                            uint32_t session_id,
-                                            const struct GNUNET_ATS_Information
-                                            *atsi, uint32_t atsi_count,
-                                            struct GNUNET_BANDWIDTH_Value32NBO
-                                            bandwidth_out,
-                                            struct GNUNET_BANDWIDTH_Value32NBO
-                                            bandwidth_in)
+                                *peer,
+                                const char *plugin_name,
+                                const void *plugin_addr,
+                                size_t plugin_addr_len,
+                                uint32_t local_address_info,
+                                uint32_t session_id,
+                                const struct GNUNET_ATS_Information *atsi,
+                                uint32_t atsi_count,
+                                struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
+                                struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in)
 {
   struct AddressSuggestionMessage *msg;
   size_t plugin_name_length = strlen (plugin_name) + 1;
@@ -136,6 +137,7 @@ GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity
   msg->peer = *peer;
   msg->address_length = htons (plugin_addr_len);
   msg->plugin_name_length = htons (plugin_name_length);
+  msg->address_local_info = htonl (local_address_info);
   msg->session_id = htonl (session_id);
   msg->bandwidth_out = bandwidth_out;
   msg->bandwidth_in = bandwidth_in;
@@ -147,8 +149,9 @@ GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "ATS sends quota for peer `%s': (in/out) %u/%u\n",
-              GNUNET_i2s (peer), ntohl (bandwidth_in.value__),
-              ntohl (bandwidth_out.value__));
+              GNUNET_i2s (peer),
+              (unsigned int) ntohl (bandwidth_in.value__),
+              (unsigned int) ntohl (bandwidth_out.value__));
 
   GNUNET_SERVER_notification_context_unicast (nc, my_client, &msg->header,
                                               GNUNET_YES);
@@ -277,7 +280,7 @@ GAS_handle_address_add (void *cls, struct GNUNET_SERVER_Client *client,
   GNUNET_STATISTICS_update (GSA_stats, "# address updates received", 1,
                             GNUNET_NO);
   GAS_addresses_add (address_handle, &m->peer, plugin_name, address, address_length,
-                        ntohl (m->session_id), atsi, ats_count);
+      ntohl(m->address_local_info), ntohl (m->session_id), atsi, ats_count);
   GNUNET_SERVER_receive_done (client, GNUNET_OK);
 }
 
@@ -336,6 +339,7 @@ GAS_handle_address_update (void *cls, struct GNUNET_SERVER_Client *client,
   GNUNET_STATISTICS_update (GSA_stats, "# address updates received", 1,
                             GNUNET_NO);
   GAS_addresses_update (address_handle, &m->peer, plugin_name, address, address_length,
+                        ntohl (m->address_local_info),
                         ntohl (m->session_id), atsi, ats_count);
   GNUNET_SERVER_receive_done (client, GNUNET_OK);
 }
@@ -396,6 +400,7 @@ GAS_handle_address_in_use (void *cls, struct GNUNET_SERVER_Client *client,
                               plugin_name,
                               address,
                               address_length,
+                              ntohl (m->address_local_info),
                               ntohl (m->session_id),
                               in_use);
 
@@ -464,6 +469,7 @@ GAS_handle_address_destroyed (void *cls, struct GNUNET_SERVER_Client *client,
   GNUNET_STATISTICS_update (GSA_stats, "# addresses destroyed", 1, GNUNET_NO);
   GAS_addresses_destroy (address_handle, &m->peer, plugin_name,
                          address, address_length,
+                         ntohl (m->address_local_info),
                          ntohl (m->session_id));
   if (0 != ntohl (m->session_id))
   {
@@ -487,6 +493,7 @@ GAS_handle_address_destroyed (void *cls, struct GNUNET_SERVER_Client *client,
 void
 GAS_scheduling_init (struct GNUNET_SERVER_Handle *server, struct GAS_Addresses_Handle *ah)
 {
+  GNUNET_assert (NULL != ah);
   address_handle = ah;
   nc = GNUNET_SERVER_notification_context_create (server, 128);
 }

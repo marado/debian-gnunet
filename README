@@ -9,8 +9,8 @@ primary application for GNUnet is anonymous file-sharing.  GNUnet is
 currently developed by a worldwide group of independent free software
 developers.  GNUnet is a GNU package (http://www.gnu.org/).
 
-This is an ALPHA release.  There are known and significant bugs as 
-well as many missing features in this release.  
+This is an ALPHA release.  There are known and significant bugs as
+well as many missing features in this release.
 
 Additional documentation about GNUnet can be found at
 https://gnunet.org/.
@@ -29,20 +29,28 @@ packages.  Hence please make sure to use  the versions listed below.
 These are the direct dependencies for running GNUnet:
 
 - libextractor  >= 0.6.1
-- libmicrohttpd >= 0.9.18
-- libgcrypt     >= 1.2
-- libcurl       >= 7.21.3
+- libmicrohttpd >= 0.9.33
+- libgcrypt     >= 1.6
+- libgnurl      >= 7.35.0 (available from https://gnunet.org/gnurl)
 - libunistring  >= 0.9.2
-- gnutls        >= 2.12.0
+- gnutls        >= 3.2.12
+- libidn        >= 1.0
+- libglpk       >= 4.45
+- openssl       >= 1.0 (binary, used to generate X.509 certificate)
 - libltdl       >= 2.2 (part of GNU libtool)
-- sqlite        >= 3.0 (default database)
-- mysql         >= 5.1 (alternative to sqLite)
-- postgres      >= 8.3 (alternative to sqLite)
+- sqlite        >= 3.8 (default database, required)
+- mysql         >= 5.1 (alternative to sqlite)
+- postgres      >= 8.3 (alternative to sqlite)
+- libopus       >= 1.0.1 (optional for experimental conversation tool)
+- libpulse      >= 2.0 (optional for experimental conversation tool)
+- libogg        >= 1.3.0 (optional for experimental conversation tool)
+- python-zbar   >= 0.10 (optional for gnunet-qr)
+- TeX Live      >= 2012 (optional for gnunet-bcd)
 
 Recommended autotools for compiling the SVN version are:
 - autoconf >= 2.59
 - automake >= 1.11.1
-- libtool  >= 2.2 
+- libtool  >= 2.2
 
 
 How to install?
@@ -90,7 +98,7 @@ securely and then compile and install GNUnet to $GNUNET_PREFIX/bin/,
 $GNUNET_PREFIX/lib/ and $GNUNET_PREFIX/share/ and start the system
 with the default configuration.  It is strongly recommended that you
 add a user "gnunet" to run "gnunet-arm".  You can then still run the
-end-user applications as another user.  
+end-user applications as another user.
 
 If you create a system user "gnunet", it is recommended that you edit
 the configuration file slightly so that data can be stored in the
@@ -99,15 +107,16 @@ the $HOME-directory of your "gnunet" user is, you might need to set
 the SERVICEHOME option in section "[PATHS]" to "/var/lib/gnunet" to
 do this.  Depending on your personal preferences, you may also want to
 use "/etc/gnunet.conf" for the location of the configuration file in
-this case (instead of ~gnunet/.gnunet/gnunet.conf").  In this case,
-you need to start GNUnet using "gnunet-arm -s -c /etc/gnunet.conf".
+this case (instead of ~gnunet/.config/gnunet.conf").  In this case,
+you need to start GNUnet using "gnunet-arm -s -c /etc/gnunet.conf" or
+set "XDG_CONFIG_HOME=/etc/".
 
 You can avoid running 'make install' as root if you run configure
 with the "--with-sudo=yes" option and have extensive sudo rights
 (can run "chmod +s" and "chown" via 'sudo').  If you run 'make install'
 as a normal user without sudo rights (or the configure option),
 certain binaries that require additional priviledges will not be
-installed properly (and autonomous NAT traversal, WLAN, DNS/GNS and 
+installed properly (and autonomous NAT traversal, WLAN, DNS/GNS and
 the VPN will then not work).
 
 If you run 'configure' and 'make install' as root or use the SUDO
@@ -156,7 +165,7 @@ GNUnet uses two types of configuration files, one that specifies the
 system-wide defaults (typically located in
 $GNUNET_PREFIX/share/gnunet/config.d/) and a second one that overrides
 default values with user-specific preferences.  The user-specific
-configuration file should be located in "~/.gnunet/gnunet.conf" or its
+configuration file should be located in "~/.config/gnunet.conf" or its
 location can be specified by giving the "-c" option to the respective
 GNUnet application.
 
@@ -209,7 +218,7 @@ together with a description.  To publish files on GNUnet, use the
 
 
 The GTK user interface is shipped separately.  After downloading and
-installing gnunet-gtk, you can invoke the setup tool and the 
+installing gnunet-gtk, you can invoke the setup tool and the
 file-sharing GUI with:
 
 $ gnunet-setup
@@ -242,9 +251,9 @@ $ export GNUNET_PREFIX=$SOMEWHERE
 $ make check
 
 Some of the testcases require python >= 2.6 and pexpect to be
-installed.  If any testcases fail to pass on your system, run 
-"contrib/report.sh" and report the output together with 
-information about the failing testcase to the Mantis bugtracking 
+installed.  If any testcases fail to pass on your system, run
+"contrib/report.sh" and report the output together with
+information about the failing testcase to the Mantis bugtracking
 system at https://gnunet.org/bugs/.
 
 

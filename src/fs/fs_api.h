@@ -35,11 +35,6 @@
 #include "fs.h"
 
 /**
- * Size of the individual blocks used for file-sharing.
- */
-#define DBLOCK_SIZE (32*1024)
-
-/**
  * Pick a multiple of 2 here to achive 8-byte alignment!  We also
  * probably want DBlocks to have (roughly) the same size as IBlocks.
  * With SHA-512, the optimal value is 32768 byte / 128 byte = 256 (128
@@ -125,7 +120,7 @@ struct Location
   /**
    * Identity of the peer sharing the file.
    */
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded peer;
+  struct GNUNET_PeerIdentity peer;
 
   /**
    * Time when this location URI expires.
@@ -133,38 +128,39 @@ struct Location
   struct GNUNET_TIME_Absolute expirationTime;
 
   /**
-   * RSA signature over the GNUNET_EC_FileIdentifier,
-   * GNUNET_hash of the peer and expiration time.
+   * Signature over the GNUNET_EC_FileIdentifier,
+   * peer identity and expiration time.
    */
-  struct GNUNET_CRYPTO_RsaSignature contentSignature;
+  struct GNUNET_CRYPTO_EddsaSignature contentSignature;
 
 };
 
 /**
  * Types of URIs.
  */
-enum uri_types
+enum GNUNET_FS_UriType
 {
-    /**
-     * Content-hash-key (simple file).
-     */
-  chk,
+  /**
+   * Content-hash-key (simple file).
+   */
+  GNUNET_FS_URI_CHK,
 
-    /**
-     * Signed key space (file in namespace).
-     */
-  sks,
+  /**
+   * Signed key space (file in namespace).
+   */
+  GNUNET_FS_URI_SKS,
 
-    /**
-     * Keyword search key (query with keywords).
-     */
-  ksk,
+  /**
+   * Keyword search key (query with keywords).
+   */
+  GNUNET_FS_URI_KSK,
 
-    /**
-     * Location (chk with identity of hosting peer).
-     */
-  loc
+  /**
+   * Location (chk with identity of hosting peer).
+   */
+  GNUNET_FS_URI_LOC
 };
+
 
 /**
  * A Universal Resource Identifier (URI), opaque.
@@ -174,23 +170,20 @@ struct GNUNET_FS_Uri
   /**
    * Type of the URI.
    */
-  enum uri_types type;
+  enum GNUNET_FS_UriType type;
 
   union
   {
     struct
     {
       /**
-       * Keywords start with a '+' if they are
-       * mandatory (in which case the '+' is NOT
-       * part of the keyword) and with a
-       * simple space if they are optional
-       * (in which case the space is ALSO not
-       * part of the actual keyword).
+       * Keywords start with a '+' if they are mandatory (in which
+       * case the '+' is NOT part of the keyword) and with a simple
+       * space if they are optional (in which case the space is ALSO
+       * not part of the actual keyword).
        *
-       * Double-quotes to protect spaces and
-       * %-encoding are NOT used internally
-       * (only in URI-strings).
+       * Double-quotes to protect spaces and %-encoding are NOT used
+       * internally (only in URI-strings).
        */
       char **keywords;
 
@@ -203,15 +196,16 @@ struct GNUNET_FS_Uri
     struct
     {
       /**
-       * Hash of the public key for the namespace.
+       * Identifier of the namespace.
        */
-      struct GNUNET_HashCode ns;
+      struct GNUNET_CRYPTO_EcdsaPublicKey ns;
 
       /**
-       * Human-readable identifier chosen for this
-       * entry in the namespace.
+       * Human-readable identifier chosen for this entry in the
+       * namespace.
        */
       char *identifier;
+
     } sks;
 
     /**
@@ -346,14 +340,14 @@ struct GNUNET_FS_FileInformation
       int do_index;
 
       /**
-       * Is "file_id" already valid?  Set to GNUNET_YES once the hash
+       * Is "file_id" already valid?  Set to #GNUNET_YES once the hash
        * has been calculated.
        */
       int have_hash;
 
       /**
        * Has the service confirmed our INDEX_START request?
-       * GNUNET_YES if this step has been completed.
+       * #GNUNET_YES if this step has been completed.
        */
       int index_start_confirmed;
 
@@ -381,6 +375,16 @@ struct GNUNET_FS_FileInformation
        * available).
        */
       void *dir_data;
+
+      /**
+       * How much of the directory have we published (relative to @e contents_size).
+       */
+      uint64_t contents_completed;
+
+      /**
+       * Sum of all of the sizes of all of the files in the directory.
+       */
+      uint64_t contents_size;
 
     } dir;
 
@@ -420,19 +424,19 @@ typedef void (*GNUNET_FS_QueueStop) (void *cls);
 
 /**
  * Priorities for the queue.
- */ 
+ */
 enum GNUNET_FS_QueuePriority
-  {
-    /**
-     * This is a probe (low priority).
-     */
-    GNUNET_FS_QUEUE_PRIORITY_PROBE,
+{
+  /**
+   * This is a probe (low priority).
+   */
+  GNUNET_FS_QUEUE_PRIORITY_PROBE,
 
-    /**
-     * Default priority.
-     */
-    GNUNET_FS_QUEUE_PRIORITY_NORMAL
-  };
+  /**
+   * Default priority.
+   */
+  GNUNET_FS_QUEUE_PRIORITY_NORMAL
+};
 
 
 /**
@@ -509,8 +513,6 @@ struct GNUNET_FS_QueueEntry
 };
 
 
-
-
 /**
  * Information we store for each search result.
  */
@@ -518,7 +520,13 @@ struct GNUNET_FS_SearchResult
 {
 
   /**
-   * Search context this result belongs to.
+   * File-sharing context this result belongs to.
+   */
+  struct GNUNET_FS_Handle *h;
+
+  /**
+   * Search context this result belongs to; can be NULL
+   * for probes that come from a directory result.
    */
   struct GNUNET_FS_SearchContext *sc;
 
@@ -592,6 +600,11 @@ struct GNUNET_FS_SearchResult
    * How much longer should we run the current probe before giving up?
    */
   struct GNUNET_TIME_Relative remaining_probe_time;
+
+  /**
+   * Anonymity level to use for probes using this search result.
+   */
+  uint32_t anonymity;
 
   /**
    * Number of mandatory keywords for which we have NOT yet found the
@@ -697,6 +710,7 @@ GNUNET_FS_make_file_reader_context_ (const char *filename);
 size_t
 GNUNET_FS_data_reader_copy_ (void *cls, uint64_t offset, size_t max, void *buf,
                              char **emsg);
+
 
 /**
  * Notification of FS that a search probe has made progress.
@@ -818,11 +832,13 @@ GNUNET_FS_unindex_make_status_ (struct GNUNET_FS_ProgressInfo *pi,
  * call the callback.
  *
  * @param pi structure to fill in
+ * @param h file-sharing handle
  * @param sc overall search context
  * @return value returned by the callback
  */
 void *
 GNUNET_FS_search_make_status_ (struct GNUNET_FS_ProgressInfo *pi,
+			       struct GNUNET_FS_Handle *h,
                                struct GNUNET_FS_SearchContext *sc);
 
 
@@ -896,6 +912,7 @@ GNUNET_FS_remove_sync_dir_ (struct GNUNET_FS_Handle *h, const char *ext,
 void
 GNUNET_FS_file_information_sync_ (struct GNUNET_FS_FileInformation *f);
 
+
 /**
  * Synchronize this publishing struct with its mirror
  * on disk.  Note that all internal FS-operations that change
@@ -906,6 +923,7 @@ GNUNET_FS_file_information_sync_ (struct GNUNET_FS_FileInformation *f);
  */
 void
 GNUNET_FS_publish_sync_ (struct GNUNET_FS_PublishContext *pc);
+
 
 /**
  * Synchronize this unindex struct with its mirror
@@ -918,6 +936,7 @@ GNUNET_FS_publish_sync_ (struct GNUNET_FS_PublishContext *pc);
 void
 GNUNET_FS_unindex_sync_ (struct GNUNET_FS_UnindexContext *uc);
 
+
 /**
  * Synchronize this search struct with its mirror
  * on disk.  Note that all internal FS-operations that change
@@ -928,6 +947,7 @@ GNUNET_FS_unindex_sync_ (struct GNUNET_FS_UnindexContext *uc);
  */
 void
 GNUNET_FS_search_sync_ (struct GNUNET_FS_SearchContext *sc);
+
 
 /**
  * Synchronize this search result with its mirror
@@ -940,6 +960,7 @@ GNUNET_FS_search_sync_ (struct GNUNET_FS_SearchContext *sc);
 void
 GNUNET_FS_search_result_sync_ (struct GNUNET_FS_SearchResult *sr);
 
+
 /**
  * Synchronize this download struct with its mirror
  * on disk.  Note that all internal FS-operations that change
@@ -951,6 +972,7 @@ GNUNET_FS_search_result_sync_ (struct GNUNET_FS_SearchResult *sr);
 void
 GNUNET_FS_download_sync_ (struct GNUNET_FS_DownloadContext *dc);
 
+
 /**
  * Create SUSPEND event for the given publish operation
  * and then clean up our state (without stop signal).
@@ -959,6 +981,7 @@ GNUNET_FS_download_sync_ (struct GNUNET_FS_DownloadContext *dc);
  */
 void
 GNUNET_FS_publish_signal_suspend_ (void *cls);
+
 
 /**
  * Create SUSPEND event for the given search operation
@@ -969,6 +992,7 @@ GNUNET_FS_publish_signal_suspend_ (void *cls);
 void
 GNUNET_FS_search_signal_suspend_ (void *cls);
 
+
 /**
  * Create SUSPEND event for the given download operation
  * and then clean up our state (without stop signal).
@@ -978,6 +1002,7 @@ GNUNET_FS_search_signal_suspend_ (void *cls);
 void
 GNUNET_FS_download_signal_suspend_ (void *cls);
 
+
 /**
  * Create SUSPEND event for the given unindex operation
  * and then clean up our state (without stop signal).
@@ -986,6 +1011,7 @@ GNUNET_FS_download_signal_suspend_ (void *cls);
  */
 void
 GNUNET_FS_unindex_signal_suspend_ (void *cls);
+
 
 /**
  * Function signature of the functions that can be called
@@ -1029,11 +1055,12 @@ struct TopLevelActivity
  *
  * @param h global fs handle
  * @param ssf suspend signal function to use
- * @param ssf_cls closure for ssf
+ * @param ssf_cls closure for @a ssf
  * @return fresh top-level activity handle
  */
 struct TopLevelActivity *
-GNUNET_FS_make_top (struct GNUNET_FS_Handle *h, SuspendSignalFunction ssf,
+GNUNET_FS_make_top (struct GNUNET_FS_Handle *h,
+                    SuspendSignalFunction ssf,
                     void *ssf_cls);
 
 
@@ -1044,7 +1071,8 @@ GNUNET_FS_make_top (struct GNUNET_FS_Handle *h, SuspendSignalFunction ssf,
  * @param top top level activity entry
  */
 void
-GNUNET_FS_end_top (struct GNUNET_FS_Handle *h, struct TopLevelActivity *top);
+GNUNET_FS_end_top (struct GNUNET_FS_Handle *h,
+                   struct TopLevelActivity *top);
 
 
 
@@ -1166,7 +1194,7 @@ struct GNUNET_FS_PublishContext
   /**
    * Namespace that we are publishing in, NULL if we have no namespace.
    */
-  struct GNUNET_FS_Namespace *ns;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey *ns;
 
   /**
    * ID of the content in the namespace, NULL if we have no namespace.
@@ -1251,13 +1279,13 @@ struct GNUNET_FS_PublishContext
   int rid;
 
   /**
-   * Set to GNUNET_YES if all processing has completed.
+   * Set to #GNUNET_YES if all processing has completed.
    */
   int all_done;
-  
+
   /**
-   * Flag set to GNUNET_YES if the next callback from
-   * GNUNET_FS_file_information_inspect should be skipped because it
+   * Flag set to #GNUNET_YES if the next callback from
+   * #GNUNET_FS_file_information_inspect should be skipped because it
    * is for the directory which was already processed with the parent.
    */
   int skip_next_fi_callback;
@@ -1279,7 +1307,7 @@ enum UnindexState
    * the respective DBlocks and IBlocks.
    */
   UNINDEX_STATE_DS_REMOVE = 1,
-  
+
   /**
    * Find out which keywords apply.
    */
@@ -1295,12 +1323,12 @@ enum UnindexState
    * the unindexing.
    */
   UNINDEX_STATE_FS_NOTIFY = 4,
-  
+
   /**
    * We're done.
    */
   UNINDEX_STATE_COMPLETE = 5,
-  
+
   /**
    * We've encountered a fatal error.
    */
@@ -1318,7 +1346,7 @@ struct GNUNET_FS_UnindexContext
    * The content hash key of the last block we processed, will in the
    * end be set to the CHK from the URI.  Used to remove the KBlocks.
    */
-  struct ContentHashKey chk; 
+  struct ContentHashKey chk;
 
   /**
    * Global FS context.
@@ -1357,7 +1385,7 @@ struct GNUNET_FS_UnindexContext
 
   /**
    * Connection to the FS service, only valid during the
-   * UNINDEX_STATE_FS_NOTIFY phase.
+   * #UNINDEX_STATE_FS_NOTIFY phase.
    */
   struct GNUNET_CLIENT_Connection *client;
 
@@ -1389,14 +1417,14 @@ struct GNUNET_FS_UnindexContext
   struct GNUNET_DATASTORE_QueueEntry *dqe;
 
   /**
-   * Current key for decrypting KBLocks from 'get_key' operation.
+   * Current key for decrypting UBLocks from 'get_key' operation.
    */
-  struct GNUNET_HashCode key;
+  struct GNUNET_HashCode ukey;
 
   /**
    * Current query of 'get_key' operation.
    */
-  struct GNUNET_HashCode query;
+  struct GNUNET_HashCode uquery;
 
   /**
    * First content UID, 0 for none.
@@ -1419,7 +1447,7 @@ struct GNUNET_FS_UnindexContext
   uint64_t file_size;
 
   /**
-   * Random offset given to 'GNUNET_DATASTORE_get_key'.
+   * Random offset given to #GNUNET_DATASTORE_get_key.
    */
   uint64_t roff;
 
@@ -1447,16 +1475,22 @@ struct GNUNET_FS_UnindexContext
  */
 struct SearchRequestEntry
 {
-  /**
-   * Hash of the original keyword, also known as the
-   * key (for decrypting the KBlock).
-   */
-  struct GNUNET_HashCode key;
 
   /**
    * Hash of the public key, also known as the query.
    */
-  struct GNUNET_HashCode query;
+  struct GNUNET_HashCode uquery;
+
+  /**
+   * Derived public key, hashes to 'uquery'.
+   */
+  struct GNUNET_CRYPTO_EcdsaPublicKey dpub;
+
+  /**
+   * The original keyword, used to derive the
+   * key (for decrypting the UBlock).
+   */
+  char *keyword;
 
   /**
    * Map that contains a "struct GNUNET_FS_SearchResult" for each result that
@@ -1550,7 +1584,7 @@ struct GNUNET_FS_SearchContext
   /**
    * ID of a task that is using this struct and that must be cancelled
    * when the search is being stopped (if not
-   * GNUNET_SCHEDULER_NO_TASK).  Used for the task that adds some
+   * #GNUNET_SCHEDULER_NO_TASK).  Used for the task that adds some
    * artificial delay when trying to reconnect to the FS service.
    */
   GNUNET_SCHEDULER_TaskIdentifier task;
@@ -1591,65 +1625,65 @@ struct GNUNET_FS_SearchContext
  */
 enum BlockRequestState
 {
-    /**
-     * Initial state, block has only been allocated (since it is
-     * relevant to the overall download request).
-     */
+  /**
+   * Initial state, block has only been allocated (since it is
+   * relevant to the overall download request).
+   */
   BRS_INIT = 0,
 
-    /**
-     * We've checked the block on the path down the tree, and the
-     * content on disk did match the desired CHK, but not all
-     * the way down, so at the bottom some blocks will still
-     * need to be reconstructed).
-     */
+  /**
+   * We've checked the block on the path down the tree, and the
+   * content on disk did match the desired CHK, but not all
+   * the way down, so at the bottom some blocks will still
+   * need to be reconstructed).
+   */
   BRS_RECONSTRUCT_DOWN = 1,
 
-    /**
-     * We've calculated the CHK bottom-up based on the meta data.
-     * This may work, but if it did we have to write the meta data to
-     * disk at the end (and we still need to check against the
-     * CHK set on top).
-     */
+  /**
+   * We've calculated the CHK bottom-up based on the meta data.
+   * This may work, but if it did we have to write the meta data to
+   * disk at the end (and we still need to check against the
+   * CHK set on top).
+   */
   BRS_RECONSTRUCT_META_UP = 2,
 
-    /**
-     * We've calculated the CHK bottom-up based on what we have on
-     * disk, which may not be what the desired CHK is.  If the
-     * reconstructed CHKs match whatever comes from above, we're
-     * done with the respective subtree.
-     */
+  /**
+   * We've calculated the CHK bottom-up based on what we have on
+   * disk, which may not be what the desired CHK is.  If the
+   * reconstructed CHKs match whatever comes from above, we're
+   * done with the respective subtree.
+   */
   BRS_RECONSTRUCT_UP = 3,
 
-    /**
-     * We've determined the real, desired CHK for this block
-     * (full tree reconstruction failed), request is now pending.
-     * If the CHK that bubbled up through reconstruction did match
-     * the top-level request, the state machine for the subtree
-     * would have moved to BRS_DOWNLOAD_UP.
-     */
+  /**
+   * We've determined the real, desired CHK for this block
+   * (full tree reconstruction failed), request is now pending.
+   * If the CHK that bubbled up through reconstruction did match
+   * the top-level request, the state machine for the subtree
+   * would have moved to BRS_DOWNLOAD_UP.
+   */
   BRS_CHK_SET = 4,
 
-    /**
-     * We've successfully downloaded this block, but the children
-     * still need to be either downloaded or verified (download
-     * request propagates down).  If the download fails, the
-     * state machine for this block may move to
-     * BRS_DOWNLOAD_ERROR instead.
-     */
+  /**
+   * We've successfully downloaded this block, but the children
+   * still need to be either downloaded or verified (download
+   * request propagates down).  If the download fails, the
+   * state machine for this block may move to
+   * BRS_DOWNLOAD_ERROR instead.
+   */
   BRS_DOWNLOAD_DOWN = 5,
 
-    /**
-     * This block and all of its children have been downloaded
-     * successfully (full completion propagates up).
-     */
+  /**
+   * This block and all of its children have been downloaded
+   * successfully (full completion propagates up).
+   */
   BRS_DOWNLOAD_UP = 6,
 
-    /**
-     * We got a block back that matched the query but did not hash to
-     * the key (malicious publisher or hash collision); this block
-     * can never be downloaded (error propagates up).
-     */
+  /**
+   * We got a block back that matched the query but did not hash to
+   * the key (malicious publisher or hash collision); this block
+   * can never be downloaded (error propagates up).
+   */
   BRS_ERROR = 7
 };
 
@@ -1713,7 +1747,7 @@ struct DownloadRequest
   enum BlockRequestState state;
 
   /**
-   * GNUNET_YES if this entry is in the pending list.
+   * #GNUNET_YES if this entry is in the pending list.
    */
   int is_pending;
 
@@ -1933,7 +1967,7 @@ struct GNUNET_FS_DownloadContext
 
   /**
    * Flag set upon transitive completion (includes child downloads).
-   * This flag is only set to GNUNET_YES for directories where all
+   * This flag is only set to #GNUNET_YES for directories where all
    * child-downloads have also completed (and signalled completion).
    */
   int has_finished;
@@ -1950,96 +1984,6 @@ struct GNUNET_FS_DownloadContext
 
 };
 
-
-/**
- * Information about an (updateable) node in the
- * namespace.
- */
-struct NamespaceUpdateNode
-{
-  /**
-   * Identifier for this node.
-   */
-  char *id;
-
-  /**
-   * Identifier of children of this node.
-   */
-  char *update;
-
-  /**
-   * Metadata for this entry.
-   */
-  struct GNUNET_CONTAINER_MetaData *md;
-
-  /**
-   * URI of this entry in the namespace.
-   */
-  struct GNUNET_FS_Uri *uri;
-
-  /**
-   * Namespace update generation ID.  Used to ensure
-   * freshness of the tree_id.
-   */
-  unsigned int nug;
-
-  /**
-   * TREE this entry belongs to (if nug is current).
-   */
-  unsigned int tree_id;
-
-};
-
-
-struct GNUNET_FS_Namespace
-{
-
-  /**
-   * Handle to the FS service context.
-   */
-  struct GNUNET_FS_Handle *h;
-
-  /**
-   * Array with information about nodes in the namespace.
-   */
-  struct NamespaceUpdateNode **update_nodes;
-
-  /**
-   * Private key for the namespace.
-   */
-  struct GNUNET_CRYPTO_RsaPrivateKey *key;
-
-  /**
-   * Hash map mapping identifiers of update nodes
-   * to the update nodes (initialized on-demand).
-   */
-  struct GNUNET_CONTAINER_MultiHashMap *update_map;
-
-  /**
-   * Name of the file with the private key.
-   */
-  char *filename;
-
-  /**
-   * Name of the namespace.
-   */
-  char *name;
-
-  /**
-   * Size of the update nodes array.
-   */
-  unsigned int update_node_count;
-
-  /**
-   * Reference counter.
-   */
-  unsigned int rc;
-
-  /**
-   * Generator for unique nug numbers.
-   */
-  unsigned int nug_gen;
-};
 
 #endif
 

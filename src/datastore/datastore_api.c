@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2004, 2005, 2006, 2007, 2009, 2010, 2011 Christian Grothoff (and other contributing authors)
+     (C) 2004-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -293,10 +293,10 @@ disconnect_after_drop (void *cls,
 /**
  * Transmit DROP message to datastore service.
  *
- * @param cls the 'struct GNUNET_DATASTORE_Handle'
- * @param size number of bytes that can be copied to buf
+ * @param cls the `struct GNUNET_DATASTORE_Handle`
+ * @param size number of bytes that can be copied to @a buf
  * @param buf where to copy the drop message
- * @return number of bytes written to buf
+ * @return number of bytes written to @a buf
  */
 static size_t
 transmit_drop (void *cls, size_t size, void *buf)
@@ -327,7 +327,7 @@ transmit_drop (void *cls, size_t size, void *buf)
  * associated resources).
  *
  * @param h handle to the datastore
- * @param drop set to GNUNET_YES to delete all data in datastore (!)
+ * @param drop set to #GNUNET_YES to delete all data in datastore (!)
  */
 void
 GNUNET_DATASTORE_disconnect (struct GNUNET_DATASTORE_Handle *h, int drop)
@@ -381,20 +381,26 @@ GNUNET_DATASTORE_disconnect (struct GNUNET_DATASTORE_Handle *h, int drop)
 /**
  * A request has timed out (before being transmitted to the service).
  *
- * @param cls the 'struct GNUNET_DATASTORE_QueueEntry'
+ * @param cls the `struct GNUNET_DATASTORE_QueueEntry`
  * @param tc scheduler context
  */
 static void
 timeout_queue_entry (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_DATASTORE_QueueEntry *qe = cls;
+  struct GNUNET_DATASTORE_Handle *h = qe->h;
 
-  GNUNET_STATISTICS_update (qe->h->stats,
+  GNUNET_STATISTICS_update (h->stats,
                             gettext_noop ("# queue entry timeouts"), 1,
                             GNUNET_NO);
   qe->task = GNUNET_SCHEDULER_NO_TASK;
   GNUNET_assert (GNUNET_NO == qe->was_transmitted);
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Timeout of request in datastore queue\n");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Timeout of request in datastore queue\n");
+  /* response_proc's expect request at the head of the queue! */
+  GNUNET_CONTAINER_DLL_remove (h->queue_head, h->queue_tail, qe);
+  GNUNET_CONTAINER_DLL_insert (h->queue_head, h->queue_tail, qe);
+  GNUNET_assert (h->queue_head == qe);
   qe->response_proc (qe->h, NULL);
 }
 
@@ -410,7 +416,7 @@ timeout_queue_entry (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *        (if other requests of higher priority are in the queue)
  * @param timeout timeout for the operation
  * @param response_proc function to call with replies (can be NULL)
- * @param qc client context (NOT a closure for response_proc)
+ * @param qc client context (NOT a closure for @a response_proc)
  * @return NULL if the queue is full
  */
 static struct GNUNET_DATASTORE_QueueEntry *
@@ -472,10 +478,12 @@ make_queue_entry (struct GNUNET_DATASTORE_Handle *h, size_t msize,
   {
     if ((pos->max_queue < h->queue_size) && (pos->was_transmitted == GNUNET_NO))
     {
-      GNUNET_assert (pos->response_proc != NULL);
+      GNUNET_assert (NULL != pos->response_proc);
       /* move 'pos' element to head so that it will be
        * killed on 'NULL' call below */
-      LOG (GNUNET_ERROR_TYPE_DEBUG, "Dropping request from datastore queue\n");     
+      LOG (GNUNET_ERROR_TYPE_DEBUG,
+           "Dropping request from datastore queue\n");
+      /* response_proc's expect request at the head of the queue! */
       GNUNET_CONTAINER_DLL_remove (h->queue_head, h->queue_tail, pos);
       GNUNET_CONTAINER_DLL_insert (h->queue_head, h->queue_tail, pos);
       GNUNET_STATISTICS_update (h->stats,
@@ -504,7 +512,7 @@ process_queue (struct GNUNET_DATASTORE_Handle *h);
 /**
  * Try reconnecting to the datastore service.
  *
- * @param cls the 'struct GNUNET_DATASTORE_Handle'
+ * @param cls the `struct GNUNET_DATASTORE_Handle`
  * @param tc scheduler context
  */
 static void
@@ -586,10 +594,10 @@ receive_cb (void *cls, const struct GNUNET_MessageHeader *msg)
 /**
  * Transmit request from queue to datastore service.
  *
- * @param cls the 'struct GNUNET_DATASTORE_Handle'
- * @param size number of bytes that can be copied to buf
+ * @param cls the `struct GNUNET_DATASTORE_Handle`
+ * @param size number of bytes that can be copied to @a buf
  * @param buf where to copy the drop message
- * @return number of bytes written to buf
+ * @return number of bytes written to @a buf
  */
 static size_t
 transmit_request (void *cls, size_t size, void *buf)
@@ -691,7 +699,7 @@ process_queue (struct GNUNET_DATASTORE_Handle *h)
  * @param emsg error message
  */
 static void
-drop_status_cont (void *cls, int32_t result, 
+drop_status_cont (void *cls, int32_t result,
 		  struct GNUNET_TIME_Absolute min_expiration,
 		  const char *emsg)
 {
@@ -800,7 +808,7 @@ process_status_message (void *cls, const struct GNUNET_MessageHeader *msg)
   h->retry_time = GNUNET_TIME_UNIT_ZERO;
   process_queue (h);
   if (rc.cont != NULL)
-    rc.cont (rc.cont_cls, status, 
+    rc.cont (rc.cont_cls, status,
 	     GNUNET_TIME_absolute_ntoh (sm->min_expiration),
 	     emsg);
 }
@@ -827,7 +835,7 @@ process_status_message (void *cls, const struct GNUNET_MessageHeader *msg)
  *        (if other requests of higher priority are in the queue)
  * @param timeout timeout for the operation
  * @param cont continuation to call when done
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel; note that even if NULL is returned, the callback will be invoked
  *         (or rather, will already have been invoked)
@@ -850,9 +858,10 @@ GNUNET_DATASTORE_put (struct GNUNET_DATASTORE_Handle *h, uint32_t rid,
   union QueueContext qc;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Asked to put %u bytes of data under key `%s' for %llu ms\n", size,
+       "Asked to put %u bytes of data under key `%s' for %s\n", size,
        GNUNET_h2s (key),
-       GNUNET_TIME_absolute_get_remaining (expiration).rel_value);
+       GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (expiration),
+					       GNUNET_YES));
   msize = sizeof (struct DataMessage) + size;
   GNUNET_assert (msize < GNUNET_SERVER_MAX_MESSAGE_SIZE);
   qc.sc.cont = cont;
@@ -899,7 +908,7 @@ GNUNET_DATASTORE_put (struct GNUNET_DATASTORE_Handle *h, uint32_t rid,
  * @param timeout how long to wait at most for a response (or before dying in queue)
  * @param cont continuation to call when done; "success" will be set to
  *             a positive reservation value if space could be reserved.
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel; note that even if NULL is returned, the callback will be invoked
  *         (or rather, will already have been invoked)
@@ -927,7 +936,8 @@ GNUNET_DATASTORE_reserve (struct GNUNET_DATASTORE_Handle *h, uint64_t amount,
                          max_queue_size, timeout, &process_status_message, &qc);
   if (qe == NULL)
   {
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Could not create queue entry to reserve\n");
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Could not create queue entry to reserve\n");
     return NULL;
   }
   GNUNET_STATISTICS_update (h->stats,
@@ -959,7 +969,7 @@ GNUNET_DATASTORE_reserve (struct GNUNET_DATASTORE_Handle *h, uint64_t amount,
  *        (if other requests of higher priority are in the queue)
  * @param timeout how long to wait at most for a response
  * @param cont continuation to call when done
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel; note that even if NULL is returned, the callback will be invoked
  *         (or rather, will already have been invoked)
@@ -1015,7 +1025,7 @@ GNUNET_DATASTORE_release_reserve (struct GNUNET_DATASTORE_Handle *h,
  *        (if other requests of higher priority are in the queue)
  * @param timeout how long to wait at most for a response
  * @param cont continuation to call when done
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel; note that even if NULL is returned, the callback will be invoked
  *         (or rather, will already have been invoked)
@@ -1037,15 +1047,18 @@ GNUNET_DATASTORE_update (struct GNUNET_DATASTORE_Handle *h, uint64_t uid,
   if (cont == NULL)
     cont = &drop_status_cont;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Asked to update entry %llu raising priority by %u and expiration to %llu\n",
-       uid, (unsigned int) priority, (unsigned long long) expiration.abs_value);
+       "Asked to update entry %llu raising priority by %u and expiration to %s\n",
+       uid,
+       (unsigned int) priority,
+       GNUNET_STRINGS_absolute_time_to_string (expiration));
   qc.sc.cont = cont;
   qc.sc.cont_cls = cont_cls;
   qe = make_queue_entry (h, sizeof (struct UpdateMessage), queue_priority,
                          max_queue_size, timeout, &process_status_message, &qc);
   if (qe == NULL)
   {
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Could not create queue entry for UPDATE\n");
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Could not create queue entry for UPDATE\n");
     return NULL;
   }
   GNUNET_STATISTICS_update (h->stats,
@@ -1064,9 +1077,9 @@ GNUNET_DATASTORE_update (struct GNUNET_DATASTORE_Handle *h, uint64_t uid,
 
 /**
  * Explicitly remove some content from the database.
- * The "cont"inuation will be called with status
- * "GNUNET_OK" if content was removed, "GNUNET_NO"
- * if no matching entry was found and "GNUNET_SYSERR"
+ * The @a cont continuation will be called with `status`
+ * #GNUNET_OK" if content was removed, #GNUNET_NO
+ * if no matching entry was found and #GNUNET_SYSERR
  * on all other types of errors.
  *
  * @param h handle to the datastore
@@ -1078,7 +1091,7 @@ GNUNET_DATASTORE_update (struct GNUNET_DATASTORE_Handle *h, uint64_t uid,
  *        (if other requests of higher priority are in the queue)
  * @param timeout how long to wait at most for a response
  * @param cont continuation to call when done
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel; note that even if NULL is returned, the callback will be invoked
  *         (or rather, will already have been invoked)
@@ -1136,7 +1149,7 @@ GNUNET_DATASTORE_remove (struct GNUNET_DATASTORE_Handle *h,
  * Type of a function to call when we receive a message
  * from the service.
  *
- * @param cls closure
+ * @param cls closure with the `struct GNUNET_DATASTORE_Handle *`
  * @param msg message received, NULL on timeout or fatal error
  */
 static void
@@ -1182,7 +1195,7 @@ process_result_message (void *cls, const struct GNUNET_MessageHeader *msg)
     h->retry_time = GNUNET_TIME_UNIT_ZERO;
     h->result_count = 0;
     process_queue (h);
-    if (rc.proc != NULL)
+    if (NULL != rc.proc)
       rc.proc (rc.proc_cls, NULL, 0, NULL, 0, 0, 0, GNUNET_TIME_UNIT_ZERO_ABS,
                0);
     return;
@@ -1251,7 +1264,7 @@ process_result_message (void *cls, const struct GNUNET_MessageHeader *msg)
  * @param proc function to call on a random value; it
  *        will be called once with a value (if available)
  *        and always once with a value of NULL.
- * @param proc_cls closure for proc
+ * @param proc_cls closure for @a proc
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel
  */
@@ -1268,14 +1281,15 @@ GNUNET_DATASTORE_get_for_replication (struct GNUNET_DATASTORE_Handle *h,
   union QueueContext qc;
 
   GNUNET_assert (NULL != proc);
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Asked to get replication entry in %llu ms\n",
-       (unsigned long long) timeout.rel_value);
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Asked to get replication entry in %s\n",
+       GNUNET_STRINGS_relative_time_to_string (timeout, GNUNET_YES));
   qc.rc.proc = proc;
   qc.rc.proc_cls = proc_cls;
   qe = make_queue_entry (h, sizeof (struct GNUNET_MessageHeader),
                          queue_priority, max_queue_size, timeout,
                          &process_result_message, &qc);
-  if (qe == NULL)
+  if (NULL == qe)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Could not create queue entry for GET REPLICATION\n");
@@ -1309,7 +1323,7 @@ GNUNET_DATASTORE_get_for_replication (struct GNUNET_DATASTORE_Handle *h,
  * @param proc function to call on a random value; it
  *        will be called once with a value (if available)
  *        or with NULL if none value exists.
- * @param proc_cls closure for proc
+ * @param proc_cls closure for @a proc
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel
  */
@@ -1330,15 +1344,15 @@ GNUNET_DATASTORE_get_zero_anonymity (struct GNUNET_DATASTORE_Handle *h,
   GNUNET_assert (NULL != proc);
   GNUNET_assert (type != GNUNET_BLOCK_TYPE_ANY);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Asked to get %llu-th zero-anonymity entry of type %d in %llu ms\n",
+       "Asked to get %llu-th zero-anonymity entry of type %d in %s\n",
        (unsigned long long) offset, type,
-       (unsigned long long) timeout.rel_value);
+       GNUNET_STRINGS_relative_time_to_string (timeout, GNUNET_YES));
   qc.rc.proc = proc;
   qc.rc.proc_cls = proc_cls;
   qe = make_queue_entry (h, sizeof (struct GetZeroAnonymityMessage),
                          queue_priority, max_queue_size, timeout,
                          &process_result_message, &qc);
-  if (qe == NULL)
+  if (NULL == qe)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Could not create queue entry for zero-anonymity procation\n");
@@ -1375,7 +1389,7 @@ GNUNET_DATASTORE_get_zero_anonymity (struct GNUNET_DATASTORE_Handle *h,
  * @param timeout how long to wait at most for a response
  * @param proc function to call on each matching value;
  *        will be called once with a NULL value at the end
- * @param proc_cls closure for proc
+ * @param proc_cls closure for @a proc
  * @return NULL if the entry was not queued, otherwise a handle that can be used to
  *         cancel
  */

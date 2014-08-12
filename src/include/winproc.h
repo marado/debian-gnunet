@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -112,7 +112,7 @@ extern "C"
   typedef NET_API_STATUS WINAPI (*TNetUserSetInfo) (LPCWSTR servername,
                                                     LPCWSTR username,
                                                     DWORD level, LPBYTE buf,
-                                                    LPDWORD parm_err);
+                                                    LPDWORD param_err);
   typedef NTSTATUS NTAPI (*TLsaOpenPolicy) (PLSA_UNICODE_STRING,
                                             PLSA_OBJECT_ATTRIBUTES, ACCESS_MASK,
                                             PLSA_HANDLE);

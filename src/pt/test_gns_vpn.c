@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -27,11 +27,12 @@
 #include <curl/curl.h>
 #include <microhttpd.h>
 #include "gnunet_namestore_service.h"
+#include "gnunet_gnsrecord_lib.h"
 #include "gnunet_gns_service.h"
 #include "gnunet_testing_lib.h"
 
 #define PORT 8080
-#define TEST_DOMAIN "www.gads"
+#define TEST_DOMAIN "www.gnu"
 
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 300)
 
@@ -217,9 +218,9 @@ curl_main ()
     }
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Download complete, shutting down!\n");
     do_shutdown ();
-    return;    
+    return;
   }
-  GNUNET_assert (CURLM_OK == curl_multi_fdset (multi, &rs, &ws, &es, &max)); 
+  GNUNET_assert (CURLM_OK == curl_multi_fdset (multi, &rs, &ws, &es, &max));
   if ( (CURLM_OK != curl_multi_timeout (multi, &timeout)) ||
        (-1 == timeout) )
     delay = GNUNET_TIME_UNIT_SECONDS;
@@ -236,15 +237,15 @@ curl_main ()
 					      &nrs,
 					      &nws,
 					      &curl_task,
-					      NULL);  
+					      NULL);
 }
 
 
 static void
 start_curl (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
-  GNUNET_asprintf (&url, 
-		   "http://%s/hello_world",	
+  GNUNET_asprintf (&url,
+		   "http://%s/hello_world",
 		   TEST_DOMAIN);
   curl = curl_easy_init ();
   curl_easy_setopt (curl, CURLOPT_URL, url);
@@ -280,7 +281,7 @@ disco_ns (void* cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *                will match 'result_af' from the request
  * @param address IP address (struct in_addr or struct in_addr6, depending on 'af')
  *                that the VPN allocated for the redirection;
- *                traffic to this IP will now be redirected to the 
+ *                traffic to this IP will now be redirected to the
  *                specified target peer; NULL on error
  */
 static void
@@ -290,11 +291,11 @@ commence_testing (void *cls, int32_t success, const char *emsg)
 
   if ((emsg != NULL) && (GNUNET_YES != success))
   {
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "NS failed to create record %s\n", emsg);
     GNUNET_SCHEDULER_shutdown ();
     return;
-  }  
+  }
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 10), &start_curl, NULL);
 }
 
@@ -302,7 +303,7 @@ commence_testing (void *cls, int32_t success, const char *emsg)
 /**
  * Function to keep the HTTP server running.
  */
-static void 
+static void
 mhd_main (void);
 
 
@@ -316,7 +317,7 @@ mhd_task (void *cls,
 }
 
 
-static void 
+static void
 mhd_main ()
 {
   struct GNUNET_NETWORK_FDSet nrs;
@@ -351,7 +352,7 @@ mhd_main ()
 					     &nrs,
 					     &nws,
 					     &mhd_task,
-					     NULL);  
+					     NULL);
 }
 
 
@@ -363,11 +364,11 @@ run (void *cls,
   enum MHD_FLAG flags;
   struct GNUNET_PeerIdentity id;
   struct GNUNET_CRYPTO_HashAsciiEncoded peername;
-  struct GNUNET_CRYPTO_RsaPrivateKey *host_key;
-  struct GNUNET_NAMESTORE_RecordData rd;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key;
+  struct GNUNET_GNSRECORD_Data rd;
   char *rd_string;
   char *zone_keyfile;
-  
+
   GNUNET_TESTING_peer_get_identity (peer, &id);
   GNUNET_CRYPTO_hash_to_enc ((struct GNUNET_HashCode*)&id, &peername);
 
@@ -383,34 +384,38 @@ run (void *cls,
 			  MHD_OPTION_END);
   GNUNET_assert (NULL != mhd);
   mhd_main ();
-  
+
   if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_filename (cfg, "gns",
                                                             "ZONEKEY",
                                                             &zone_keyfile))
   {
-    GNUNET_log(GNUNET_ERROR_TYPE_ERROR, "Failed to get key from cfg\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failed to get key from cfg\n");
     return;
   }
 
-  host_key = GNUNET_CRYPTO_rsa_key_create_from_file (zone_keyfile);
-  rd.expiration_time = GNUNET_TIME_UNIT_FOREVER_ABS.abs_value;
-  GNUNET_asprintf (&rd_string, "6 %s %s", (char*)&peername, "www.gads.");
-  GNUNET_assert (GNUNET_OK == GNUNET_NAMESTORE_string_to_value (GNUNET_GNS_RECORD_VPN,
+  zone_key = GNUNET_CRYPTO_ecdsa_key_create_from_file (zone_keyfile);
+  rd.expiration_time = GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us;
+  GNUNET_asprintf (&rd_string,
+                   "6 %s %s",
+                   (char*) &peername,
+                   "www.gnu.");
+  GNUNET_assert (GNUNET_OK == GNUNET_GNSRECORD_string_to_value (GNUNET_GNSRECORD_TYPE_VPN,
                                                                rd_string,
                                                                (void**)&rd.data,
                                                                &rd.data_size));
-  rd.record_type = GNUNET_GNS_RECORD_VPN;
+  rd.record_type = GNUNET_GNSRECORD_TYPE_VPN;
 
-  GNUNET_NAMESTORE_record_create (namestore,
-                                  host_key,
-                                  "www",
-                                  &rd,
-                                  &commence_testing,
-                                  NULL);
+  GNUNET_NAMESTORE_records_store (namestore,
+				  zone_key,
+				  "www",
+				  1, &rd,
+				  &commence_testing,
+				  NULL);
   GNUNET_free ((void**)rd.data);
   GNUNET_free (rd_string);
   GNUNET_free (zone_keyfile);
-  GNUNET_CRYPTO_rsa_key_free (host_key);
+  GNUNET_free (zone_key);
 }
 
 
@@ -433,7 +438,7 @@ open_dev_null (int target_fd,
   if (fd == target_fd)
     return;
   if (-1 == dup2 (fd, target_fd))
-  {    
+  {
     (void) close (fd);
     abort ();
   }
@@ -443,13 +448,13 @@ open_dev_null (int target_fd,
 
 /**
  * Run the given command and wait for it to complete.
- * 
+ *
  * @param file name of the binary to run
  * @param cmd command line arguments (as given to 'execv')
  * @return 0 on success, 1 on any error
  */
 static int
-fork_and_exec (const char *file, 
+fork_and_exec (const char *file,
 	       char *const cmd[])
 {
   int status;
@@ -459,8 +464,8 @@ fork_and_exec (const char *file,
   pid = fork ();
   if (-1 == pid)
   {
-    fprintf (stderr, 
-	     "fork failed: %s\n", 
+    fprintf (stderr,
+	     "fork failed: %s\n",
 	     strerror (errno));
     return 1;
   }
@@ -469,25 +474,25 @@ fork_and_exec (const char *file,
     /* we are the child process */
     /* close stdin/stdout to not cause interference
        with the helper's main protocol! */
-    (void) close (0); 
+    (void) close (0);
     open_dev_null (0, O_RDONLY);
-    (void) close (1); 
+    (void) close (1);
     open_dev_null (1, O_WRONLY);
     (void) execv (file, cmd);
     /* can only get here on error */
-    fprintf (stderr, 
-	     "exec `%s' failed: %s\n", 
+    fprintf (stderr,
+	     "exec `%s' failed: %s\n",
 	     file,
 	     strerror (errno));
     _exit (1);
   }
   /* keep running waitpid as long as the only error we get is 'EINTR' */
   while ( (-1 == (ret = waitpid (pid, &status, 0))) &&
-	  (errno == EINTR) ); 
+	  (errno == EINTR) );
   if (-1 == ret)
   {
-    fprintf (stderr, 
-	     "waitpid failed: %s\n", 
+    fprintf (stderr,
+	     "waitpid failed: %s\n",
 	     strerror (errno));
     return 1;
   }
@@ -508,19 +513,19 @@ main (int argc, char *const *argv)
   {
     "iptables", "-t", "mangle", "-L", "-v", NULL
   };
-  
+
   if (0 == access ("/sbin/iptables", X_OK))
     sbin_iptables = "/sbin/iptables";
   else if (0 == access ("/usr/sbin/iptables", X_OK))
     sbin_iptables = "/usr/sbin/iptables";
   else
   {
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "Executable iptables not found in approved directories: %s, skipping\n",
 	     strerror (errno));
     return 0;
   }
-  
+
   if (0 != fork_and_exec (sbin_iptables, iptables_args))
   {
     fprintf (stderr,
@@ -543,26 +548,25 @@ main (int argc, char *const *argv)
   bin_dns = GNUNET_OS_get_libexec_binary_path ("gnunet-helper-dns");
   if ( (0 != geteuid ()) &&
        ( (GNUNET_YES !=
-	  GNUNET_OS_check_helper_binary (bin_vpn)) ||
+	  GNUNET_OS_check_helper_binary (bin_vpn, GNUNET_YES, "-d gnunet-vpn - - 169.1.3.3.7 255.255.255.0")) || //ipv4 only please!
 	 (GNUNET_YES !=
-	  GNUNET_OS_check_helper_binary (bin_exit)) ||
+	  GNUNET_OS_check_helper_binary (bin_exit, GNUNET_YES, "-d gnunet-vpn - - - 169.1.3.3.7 255.255.255.0")) || //no nat, ipv4 only
 	 (GNUNET_YES !=
-	  GNUNET_OS_check_helper_binary (bin_dns))) )
-  {    
+	  GNUNET_OS_check_helper_binary (bin_dns, GNUNET_YES, NULL))) ) // TODO: once we have a windows-testcase, add test parameters here
+  {
     fprintf (stderr,
 	     "WARNING: gnunet-helper-{exit,vpn,dns} binaries in $PATH are not SUID, refusing to run test (as it would have to fail).\n");
     fprintf (stderr,
 	     "Change $PATH ('.' in $PATH before $GNUNET_PREFIX/bin is problematic) or permissions (run 'make install' as root) to fix this!\n");
-    GNUNET_free (bin_vpn);    
+    GNUNET_free (bin_vpn);
     GNUNET_free (bin_exit);
     GNUNET_free (bin_dns);
     return 0;
   }
-  GNUNET_free (bin_vpn);    
+  GNUNET_free (bin_vpn);
   GNUNET_free (bin_exit);
   GNUNET_free (bin_dns);
-  GNUNET_CRYPTO_rsa_setup_hostkey ("test_gns_vpn.conf");
-  
+
   dest_ip = "169.254.86.1";
   dest_af = AF_INET;
   src_af = AF_INET;
@@ -571,11 +575,11 @@ main (int argc, char *const *argv)
     use_v6 = GNUNET_YES;
   else
     use_v6 = GNUNET_NO;
-  
+
   if ( (GNUNET_OK != GNUNET_NETWORK_test_pf (src_af)) ||
        (GNUNET_OK != GNUNET_NETWORK_test_pf (dest_af)) )
   {
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "Required address families not supported by this system, skipping test.\n");
     return 0;
   }

@@ -94,9 +94,9 @@ get_class (uint16_t class)
   static char buf[6];
   switch (class)
   {
-  case GNUNET_DNSPARSER_CLASS_INTERNET: return "IN";
-  case GNUNET_DNSPARSER_CLASS_CHAOS: return "CHAOS";
-  case GNUNET_DNSPARSER_CLASS_HESIOD: return "HESIOD";
+  case GNUNET_TUN_DNS_CLASS_INTERNET: return "IN";
+  case GNUNET_TUN_DNS_CLASS_CHAOS: return "CHAOS";
+  case GNUNET_TUN_DNS_CLASS_HESIOD: return "HESIOD";
   }
   GNUNET_snprintf (buf, sizeof (buf), "%u", (unsigned int) class);
   return buf;
@@ -113,7 +113,7 @@ display_query (const struct GNUNET_DNSPARSER_Query *query)
 {
   fprintf (stdout,
 	   "\t\t%s %s: %s\n",
-	   get_class (query->class),
+	   get_class (query->dns_traffic_class),
 	   get_type (query->type),
 	   query->name);
 }
@@ -130,7 +130,7 @@ display_record (const struct GNUNET_DNSPARSER_Record *record)
   const char *format;
   char buf[INET6_ADDRSTRLEN];
   char *tmp;
-  
+
   tmp = NULL;
   switch (record->type)
   {
@@ -164,7 +164,7 @@ display_record (const struct GNUNET_DNSPARSER_Record *record)
 		       (unsigned int) record->data.soa->refresh,
 		       (unsigned int) record->data.soa->retry,
 		       (unsigned int) record->data.soa->expire,
-		       (unsigned int) record->data.soa->minimum_ttl);	       
+		       (unsigned int) record->data.soa->minimum_ttl);	
       format = tmp;
     }
     break;
@@ -210,11 +210,11 @@ display_record (const struct GNUNET_DNSPARSER_Record *record)
   }
   fprintf (stdout,
 	   "\t\t%s %s: %s = %s (%u s)\n",
-	   get_class (record->class),
+	   get_class (record->dns_traffic_class),
 	   get_type (record->type),
 	   record->name,
 	   format,
-	   (unsigned int) (GNUNET_TIME_absolute_get_remaining (record->expiration_time).rel_value / 1000));
+	   (unsigned int) (GNUNET_TIME_absolute_get_remaining (record->expiration_time).rel_value_us / 1000LL / 1000LL));
   GNUNET_free_non_null (tmp);
 }
 
@@ -242,7 +242,7 @@ display_record (const struct GNUNET_DNSPARSER_Record *record)
  * @param request_length number of bytes in request
  * @param request udp payload of the DNS request
  */
-static void 
+static void
 display_request (void *cls,
 		 struct GNUNET_DNS_RequestHandle *rh,
 		 size_t request_length,
@@ -284,13 +284,13 @@ display_request (void *cls,
 	   p->flags.authenticated_data ? "AD " : "",
 	   p->flags.recursion_available ? "RA " : "",
 	   return_codes[p->flags.return_code & 15],
-	   op_codes[p->flags.opcode & 15]);  
+	   op_codes[p->flags.opcode & 15]);
   if (p->num_queries > 0)
     fprintf (stdout,
 	     "\tQueries:\n");
   for (i=0;i<p->num_queries;i++)
     display_query (&p->queries[i]);
-  
+
   if (p->num_answers > 0)
     fprintf (stdout,
 	     "\tAnswers:\n");
@@ -338,7 +338,7 @@ run (void *cls, char *const *args, const char *cfgfile,
   if (outbound_only)
     flags |= GNUNET_DNS_FLAG_RESPONSE_MONITOR;
   handle =
-    GNUNET_DNS_connect (cfg, 
+    GNUNET_DNS_connect (cfg,
 			flags,
 			&display_request,
 			NULL);

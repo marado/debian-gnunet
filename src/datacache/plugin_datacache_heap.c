@@ -95,7 +95,7 @@ struct Value
    * Type of the block.
    */
   enum GNUNET_BLOCK_Type type;
-  
+
 };
 
 
@@ -110,7 +110,7 @@ struct PutContext
   /**
    * Expiration time for the new value.
    */
-  struct GNUNET_TIME_Absolute discard_time; 
+  struct GNUNET_TIME_Absolute discard_time;
 
   /**
    * Data for the new value.
@@ -155,8 +155,8 @@ struct PutContext
  *
  * @param cls the 'struct PutContext'
  * @param key the key for the value(s)
- * @param value an existing value 
- * @return GNUNET_YES if not found (to continue to iterate)
+ * @param value an existing value
+ * @return #GNUNET_YES if not found (to continue to iterate)
  */
 static int
 put_cb (void *cls,
@@ -170,19 +170,19 @@ put_cb (void *cls,
        (val->type == put_ctx->type) &&
        (0 == memcmp (&val[1], put_ctx->data, put_ctx->size)) )
   {
-    put_ctx->found = GNUNET_YES;    
+    put_ctx->found = GNUNET_YES;
     val->discard_time = GNUNET_TIME_absolute_max (val->discard_time,
 						  put_ctx->discard_time);
     /* replace old path with new path */
     GNUNET_array_grow (val->path_info,
 		       val->path_info_len,
 		       put_ctx->path_info_len);
-    memcpy (val->path_info, 
+    memcpy (val->path_info,
 	    put_ctx->path_info,
-	    put_ctx->path_info_len * sizeof (struct GNUNET_PeerIdentity));   
+	    put_ctx->path_info_len * sizeof (struct GNUNET_PeerIdentity));
     GNUNET_CONTAINER_heap_update_cost (put_ctx->heap,
 				       val->hn,
-				       val->discard_time.abs_value);
+				       val->discard_time.abs_value_us);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		"Got same value for key %s and type %d (size %u vs %u)\n",
 		GNUNET_h2s (key),
@@ -198,13 +198,13 @@ put_cb (void *cls,
 /**
  * Store an item in the datastore.
  *
- * @param cls closure (our "struct Plugin")
+ * @param cls closure (our `struct Plugin`)
  * @param key key to store data under
  * @param size number of bytes in data
  * @param data data to store
  * @param type type of the value
  * @param discard_time when to discard the value in any case
- * @param path_info_len number of entries in 'path_info'
+ * @param path_info_len number of entries in @a path_info
  * @param path_info a path through the network
    * @return 0 if duplicate, -1 on error, number of bytes used otherwise
  */
@@ -250,7 +250,7 @@ heap_plugin_put (void *cls, const struct GNUNET_HashCode * key, size_t size,
 					    GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
   val->hn = GNUNET_CONTAINER_heap_insert (plugin->heap,
 					  val,
-					  val->discard_time.abs_value);
+					  val->discard_time.abs_value_us);
   return size + OVERHEAD;
 }
 
@@ -289,7 +289,7 @@ struct GetContext
  *
  * @param cls the 'struct GetContext'
  * @param key the key for the value(s)
- * @param value an existing value 
+ * @param value an existing value
  * @return GNUNET_YES to continue to iterate
  */
 static int
@@ -341,7 +341,7 @@ heap_plugin_get (void *cls, const struct GNUNET_HashCode * key,
 
   get_ctx.type = type;
   get_ctx.iter = iter;
-  get_ctx.iter_cls = iter_cls;  
+  get_ctx.iter_cls = iter_cls;
   get_ctx.cnt = 0;
   GNUNET_CONTAINER_multihashmap_get_multiple (plugin->map,
 					      key,
@@ -356,14 +356,14 @@ heap_plugin_get (void *cls, const struct GNUNET_HashCode * key,
  * from the datacache right now.
  *
  * @param cls closure (our "struct Plugin")
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 static int
 heap_plugin_del (void *cls)
 {
   struct Plugin *plugin = cls;
   struct Value *val;
-  
+
   val = GNUNET_CONTAINER_heap_remove_root (plugin->heap);
   if (NULL == val)
     return GNUNET_SYSERR;
@@ -383,8 +383,8 @@ heap_plugin_del (void *cls)
 /**
  * Entry point for the plugin.
  *
- * @param cls closure (the "struct GNUNET_DATACACHE_PluginEnvironmnet")
- * @return the plugin's closure (our "struct Plugin")
+ * @param cls closure (the `struct GNUNET_DATACACHE_PluginEnvironmnet`)
+ * @return the plugin's closure (our `struct Plugin`)
  */
 void *
 libgnunet_plugin_datacache_heap_init (void *cls)
@@ -393,12 +393,12 @@ libgnunet_plugin_datacache_heap_init (void *cls)
   struct GNUNET_DATACACHE_PluginFunctions *api;
   struct Plugin *plugin;
 
-  plugin = GNUNET_malloc (sizeof (struct Plugin));
+  plugin = GNUNET_new (struct Plugin);
   plugin->map = GNUNET_CONTAINER_multihashmap_create (1024,  /* FIXME: base on quota! */
 						      GNUNET_YES);
   plugin->heap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
   plugin->env = env;
-  api = GNUNET_malloc (sizeof (struct GNUNET_DATACACHE_PluginFunctions));
+  api = GNUNET_new (struct GNUNET_DATACACHE_PluginFunctions);
   api->cls = plugin;
   api->get = &heap_plugin_get;
   api->put = &heap_plugin_put;
@@ -427,6 +427,7 @@ libgnunet_plugin_datacache_heap_done (void *cls)
 		   GNUNET_CONTAINER_multihashmap_remove (plugin->map,
 							 &val->key,
 							 val));
+    GNUNET_free_non_null (val->path_info);
     GNUNET_free (val);
   }
   GNUNET_CONTAINER_heap_destroy (plugin->heap);

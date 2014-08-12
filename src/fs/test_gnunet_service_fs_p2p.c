@@ -64,11 +64,11 @@ do_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_TIMEOUT))
   {
     del = GNUNET_TIME_absolute_get_duration (start_time);
-    if (del.rel_value == 0)
-      del.rel_value = 1;
+    if (del.rel_value_us == 0)
+      del.rel_value_us = 1;
     fancy =
-        GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-                                        1000LL / del.rel_value);
+      GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
+				      1000000LL / del.rel_value_us);
     FPRINTF (stdout, "Download speed was %s/s\n", fancy);
     GNUNET_free (fancy);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished download, shutting down\n",
@@ -103,10 +103,10 @@ do_download (void *cls, const struct GNUNET_FS_Uri *uri,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Downloading %llu bytes\n",
               (unsigned long long) FILESIZE);
   start_time = GNUNET_TIME_absolute_get ();
-  GNUNET_FS_TEST_download (daemons[0], TIMEOUT, 
-			   anonymity_level, SEED, uri, 
+  GNUNET_FS_TEST_download (daemons[0], TIMEOUT,
+			   anonymity_level, SEED, uri,
 			   VERBOSE, &do_stop,
-                           (NULL == fn) 
+                           (NULL == fn)
 			   ? NULL
 			   : GNUNET_strdup (fn));
 }
@@ -114,12 +114,15 @@ do_download (void *cls, const struct GNUNET_FS_Uri *uri,
 
 static void
 do_publish (void *cls,
+            struct GNUNET_TESTBED_RunHandle *h,
 	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers)
+	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int links_succeeded,
+            unsigned int links_failed)
 {
   unsigned int i;
- 
-  if (NULL != strstr (progname, "stream"))
+
+  if (NULL != strstr (progname, "mesh"))
     anonymity_level = 0;
   else
     anonymity_level = 1;
@@ -128,8 +131,8 @@ do_publish (void *cls,
     daemons[i] = peers[i];
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Publishing %llu bytes\n",
               (unsigned long long) FILESIZE);
-  GNUNET_FS_TEST_publish (daemons[1], TIMEOUT, 
-			  anonymity_level, GNUNET_NO, 
+  GNUNET_FS_TEST_publish (daemons[1], TIMEOUT,
+			  anonymity_level, GNUNET_NO,
 			  FILESIZE, SEED,
                           VERBOSE, &do_download, NULL);
 }
@@ -141,8 +144,8 @@ main (int argc, char *argv[])
   const char *config;
 
   progname = argv[0];
-  if (NULL != strstr (progname, "stream"))
-    config = "test_gnunet_service_fs_p2p_stream.conf";
+  if (NULL != strstr (progname, "mesh"))
+    config = "test_gnunet_service_fs_p2p_mesh.conf";
   else
     config = "fs_test_lib_data.conf";
   (void) GNUNET_TESTBED_test_run ("test-gnunet-service-fs-p2p",

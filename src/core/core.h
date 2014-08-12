@@ -111,60 +111,14 @@ struct ConnectNotifyMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * Number of ATS key-value pairs that follow this struct
+   * Always zero.
    */
-  uint32_t ats_count GNUNET_PACKED;
+  uint32_t reserved GNUNET_PACKED;
 
   /**
    * Identity of the connecting peer.
    */
   struct GNUNET_PeerIdentity peer;
-
-};
-
-
-/**
- * Message sent by the service to clients to notify them
- * about a peer changing status.
- */
-struct PeerStatusNotifyMessage
-{
-  /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_NOTIFY_PEER_STATUS
-   */
-  struct GNUNET_MessageHeader header;
-
-  /**
-   * Number of ATS key-value pairs that follow this struct
-   * (excluding the 0-terminator).
-   */
-  uint32_t ats_count GNUNET_PACKED;
-
-  /**
-   * When the peer would time out (unless we see activity)
-   */
-  struct GNUNET_TIME_AbsoluteNBO timeout;
-
-  /**
-   * Available bandwidth from the peer.
-   */
-  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in;
-
-  /**
-   * Available bandwidth to the peer.
-   */
-  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out;
-
-  /**
-   * Identity of the peer.
-   */
-  struct GNUNET_PeerIdentity peer;
-
-  /**
-   * First of the ATS information blocks (we must have at least
-   * one due to the 0-termination requirement).
-   */
-  struct GNUNET_ATS_Information ats;
 
 };
 
@@ -211,19 +165,9 @@ struct NotifyTrafficMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * Number of ATS key-value pairs that follow this struct
-   * (excluding the 0-terminator).
-   */
-  uint32_t ats_count GNUNET_PACKED;
-
-  /**
    * Identity of the receiver or sender.
    */
   struct GNUNET_PeerIdentity peer;
-
-  /* Followed by ATS information blocks:
-   * struct GNUNET_ATS_Information ats[ats_count]
-   */
 
   /* Followed by payload (message or just header), variable size */
 };
@@ -236,7 +180,7 @@ struct NotifyTrafficMessage
 struct SendMessageRequest
 {
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_SEND_REQUEST
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_SEND_REQUEST
    */
   struct GNUNET_MessageHeader header;
 
@@ -277,12 +221,12 @@ struct SendMessageRequest
 /**
  * Core notifying client that it is allowed to now
  * transmit a message to the given target
- * (response to GNUNET_MESSAGE_TYPE_CORE_SEND_REQUEST).
+ * (response to #GNUNET_MESSAGE_TYPE_CORE_SEND_REQUEST).
  */
 struct SendMessageReady
 {
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_SEND_READY
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_SEND_READY
    */
   struct GNUNET_MessageHeader header;
 
@@ -309,12 +253,12 @@ struct SendMessageReady
 
 /**
  * Client asking core to transmit a particular message to a particular
- * target (response to GNUNET_MESSAGE_TYPE_CORE_SEND_READY).
+ * target (response to #GNUNET_MESSAGE_TYPE_CORE_SEND_READY).
  */
 struct SendMessage
 {
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_SEND
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_SEND
    */
   struct GNUNET_MessageHeader header;
 
@@ -335,14 +279,14 @@ struct SendMessage
   struct GNUNET_PeerIdentity peer;
 
   /**
-   * GNUNET_YES if corking is allowed, GNUNET_NO if not.
+   * #GNUNET_YES if corking is allowed, #GNUNET_NO if not.
    */
   uint32_t cork GNUNET_PACKED;
 
   /**
    * Always 0.
    */
-  uint64_t reserved GNUNET_PACKED;
+  uint32_t reserved GNUNET_PACKED;
 
 };
 

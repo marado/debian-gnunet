@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -26,14 +26,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_connection_lib.h"
-#include "gnunet_container_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-server-nc", __VA_ARGS__)
 
 
 /**
@@ -152,11 +147,12 @@ struct GNUNET_SERVER_NotificationContext
 /**
  * Client has disconnected, clean up.
  *
- * @param cls our 'struct GNUNET_SERVER_NotificationContext *'
+ * @param cls our `struct GNUNET_SERVER_NotificationContext *`
  * @param client handle of client that disconnected
  */
 static void
-handle_client_disconnect (void *cls, struct GNUNET_SERVER_Client *client)
+handle_client_disconnect (void *cls,
+                          struct GNUNET_SERVER_Client *client)
 {
   struct GNUNET_SERVER_NotificationContext *nc = cls;
   struct ClientList *pos;
@@ -201,7 +197,7 @@ handle_client_disconnect (void *cls, struct GNUNET_SERVER_Client *client)
  * @param server server for which this function creates the context
  * @param queue_length maximum number of messages to keep in
  *        the notification queue; optional messages are dropped
- *        it the queue gets longer than this number of messages
+ *        if the queue gets longer than this number of messages
  * @return handle to the notification context
  */
 struct GNUNET_SERVER_NotificationContext *
@@ -210,7 +206,7 @@ GNUNET_SERVER_notification_context_create (struct GNUNET_SERVER_Handle *server,
 {
   struct GNUNET_SERVER_NotificationContext *ret;
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_SERVER_NotificationContext));
+  ret = GNUNET_new (struct GNUNET_SERVER_NotificationContext);
   ret->server = server;
   ret->queue_length = queue_length;
   GNUNET_SERVER_disconnect_notify (server, &handle_client_disconnect, ret);
@@ -224,9 +220,7 @@ GNUNET_SERVER_notification_context_create (struct GNUNET_SERVER_Handle *server,
  * @param nc context to destroy.
  */
 void
-GNUNET_SERVER_notification_context_destroy (struct
-                                            GNUNET_SERVER_NotificationContext
-                                            *nc)
+GNUNET_SERVER_notification_context_destroy (struct GNUNET_SERVER_NotificationContext *nc)
 {
   struct ClientList *pos;
   struct PendingMessageList *pml;
@@ -265,16 +259,15 @@ GNUNET_SERVER_notification_context_destroy (struct
  * @param client client to add
  */
 void
-GNUNET_SERVER_notification_context_add (struct GNUNET_SERVER_NotificationContext
-                                        *nc,
+GNUNET_SERVER_notification_context_add (struct GNUNET_SERVER_NotificationContext *nc,
                                         struct GNUNET_SERVER_Client *client)
 {
   struct ClientList *cl;
 
   for (cl = nc->clients_head; NULL != cl; cl = cl->next)
     if (cl->client == client)
-      return; /* already present */    
-  cl = GNUNET_malloc (sizeof (struct ClientList));
+      return; /* already present */
+  cl = GNUNET_new (struct ClientList);
   GNUNET_CONTAINER_DLL_insert (nc->clients_head,
 			       nc->clients_tail,
 			       cl);
@@ -286,11 +279,11 @@ GNUNET_SERVER_notification_context_add (struct GNUNET_SERVER_NotificationContext
 
 /**
  * Function called to notify a client about the socket begin ready to
- * queue more data.  "buf" will be NULL and "size" zero if the socket
+ * queue more data.  @a buf will be NULL and @a size zero if the socket
  * was closed for writing in the meantime.
  *
- * @param cls the 'struct ClientList *'
- * @param size number of bytes available in buf
+ * @param cls the `struct ClientList *`
+ * @param size number of bytes available in @a buf
  * @param buf where the callee should write the message
  * @return number of bytes written to buf
  */
@@ -355,7 +348,8 @@ transmit_message (void *cls, size_t size, void *buf)
  */
 static void
 do_unicast (struct GNUNET_SERVER_NotificationContext *nc,
-            struct ClientList *client, const struct GNUNET_MessageHeader *msg,
+            struct ClientList *client,
+            const struct GNUNET_MessageHeader *msg,
             int can_drop)
 {
   struct PendingMessageList *pml;
@@ -385,7 +379,7 @@ do_unicast (struct GNUNET_SERVER_NotificationContext *nc,
   /* append */
   GNUNET_CONTAINER_DLL_insert_tail (client->pending_head, client->pending_tail,
                                     pml);
-  if (client->th == NULL)
+  if (NULL == client->th)
     client->th =
         GNUNET_SERVER_notify_transmit_ready (client->client,
                                              ntohs (client->pending_head->
@@ -406,11 +400,10 @@ do_unicast (struct GNUNET_SERVER_NotificationContext *nc,
  */
 void
 GNUNET_SERVER_notification_context_unicast (struct
-                                            GNUNET_SERVER_NotificationContext
-                                            *nc,
+                                            GNUNET_SERVER_NotificationContext *nc,
                                             struct GNUNET_SERVER_Client *client,
-                                            const struct GNUNET_MessageHeader
-                                            *msg, int can_drop)
+                                            const struct GNUNET_MessageHeader *msg,
+                                            int can_drop)
 {
   struct ClientList *pos;
 
@@ -431,10 +424,9 @@ GNUNET_SERVER_notification_context_unicast (struct
  */
 void
 GNUNET_SERVER_notification_context_broadcast (struct
-                                              GNUNET_SERVER_NotificationContext
-                                              *nc,
-                                              const struct GNUNET_MessageHeader
-                                              *msg, int can_drop)
+                                              GNUNET_SERVER_NotificationContext *nc,
+                                              const struct GNUNET_MessageHeader *msg,
+                                              int can_drop)
 {
   struct ClientList *pos;
 

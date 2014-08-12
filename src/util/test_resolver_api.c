@@ -199,7 +199,9 @@ check_rootserver_name (void *cls, const char *hostname)
   else
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                "Received invalid rootserver hostname `%s'.\n", hostname);
+                "Received invalid rootserver hostname `%s', expected `%s'\n",
+                hostname,
+                ROOTSERVER_NAME);
     GNUNET_break (0);
   }
 }
@@ -292,11 +294,11 @@ run (void *cls, char *const *args, const char *cfgfile,
 
   rootserver =
       gethostbyaddr (&rootserver_addr, sizeof (rootserver_addr), AF_INET);
-  if (rootserver == NULL)
+  if (NULL == rootserver)
   {
     /* Error: resolving IP addresses does not work */
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("gethostbyaddr() could not lookup hostname: %s\n"),
+                "gethostbyaddr() could not lookup hostname: %s\n",
                 hstrerror (h_errno));
     GNUNET_break (0);
   }
@@ -353,7 +355,7 @@ main (int argc, char *argv[])
   int ok = 1 + 2 + 4 + 8;
   char *fn;
   struct GNUNET_OS_Process *proc;
-  char *const argvx[] = { 
+  char *const argvx[] = {
     "test-resolver-api", "-c", "test_resolver_api_data.conf", NULL
   };
   struct GNUNET_GETOPT_CommandLineOption options[] =
@@ -363,9 +365,10 @@ main (int argc, char *argv[])
                     "WARNING",
                     NULL);
   fn = GNUNET_OS_get_libexec_binary_path ("gnunet-service-resolver");
-  proc = GNUNET_OS_start_process (GNUNET_YES, 
-				  GNUNET_OS_INHERIT_STD_OUT_AND_ERR, 
-				  NULL, NULL, fn, 
+  proc = GNUNET_OS_start_process (GNUNET_YES,
+				  GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+				  NULL, NULL, NULL,
+                                  fn,
 				  "gnunet-service-resolver",
                                   "-c", "test_resolver_api_data.conf", NULL);
   GNUNET_assert (NULL != proc);
@@ -374,7 +377,7 @@ main (int argc, char *argv[])
                  GNUNET_PROGRAM_run ((sizeof (argvx) / sizeof (char *)) - 1,
                                      argvx, "test-resolver-api", "nohelp",
                                      options, &run, &ok));
-  if (0 != GNUNET_OS_process_kill (proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
     ok = 1;

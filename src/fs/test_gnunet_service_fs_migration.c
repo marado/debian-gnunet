@@ -73,11 +73,11 @@ do_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_TIMEOUT))
   {
     del = GNUNET_TIME_absolute_get_duration (start_time);
-    if (del.rel_value == 0)
-      del.rel_value = 1;
+    if (del.rel_value_us == 0)
+      del.rel_value_us = 1;
     fancy =
         GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-                                        1000LL / del.rel_value);
+                                        1000000LL / del.rel_value_us);
     FPRINTF (stdout, "Download speed was %s/s\n", fancy);
     GNUNET_free (fancy);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished download, shutting down\n",
@@ -93,7 +93,7 @@ do_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-do_download (void *cls, 
+do_download (void *cls,
 	     const char *emsg)
 {
   struct DownloadContext *dc = cls;
@@ -131,7 +131,7 @@ stop_source_peer (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   struct DownloadContext *dc = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Stopping source peer\n");
-  op = GNUNET_TESTBED_peer_stop (daemons[1], &do_download, dc);
+  op = GNUNET_TESTBED_peer_stop (NULL, daemons[1], &do_download, dc);
   GNUNET_assert (NULL != op);
 }
 
@@ -151,7 +151,7 @@ do_wait (void *cls, const struct GNUNET_FS_Uri *uri,
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Waiting to allow content to migrate\n");
-  dc = GNUNET_malloc (sizeof (struct DownloadContext));
+  dc = GNUNET_new (struct DownloadContext);
   dc->uri = GNUNET_FS_uri_dup (uri);
   if (NULL != fn)
     dc->fn = GNUNET_strdup (fn);
@@ -160,9 +160,12 @@ do_wait (void *cls, const struct GNUNET_FS_Uri *uri,
 
 
 static void
-do_publish (void *cls, 
+do_publish (void *cls,
+            struct GNUNET_TESTBED_RunHandle *h,
 	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers)
+	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int links_succeeded,
+            unsigned int links_failed)
 {
   unsigned int i;
 

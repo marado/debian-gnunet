@@ -96,13 +96,13 @@ sq_prepare (sqlite3 * dbh, const char *zSql,    /* SQL statement, UTF-8 encoded 
  * @param type type of the value
  * @param discard_time when to discard the value in any case
  * @param path_info_len number of entries in 'path_info'
- * @param path_info array of peers that have processed the request 
+ * @param path_info array of peers that have processed the request
  * @return 0 if duplicate, -1 on error, number of bytes used otherwise
  */
 static ssize_t
 sqlite_plugin_put (void *cls,
 		   const struct GNUNET_HashCode *key,
-		   size_t size, const char *data, 
+		   size_t size, const char *data,
 		   enum GNUNET_BLOCK_Type type,
                    struct GNUNET_TIME_Absolute discard_time,
 		   unsigned int path_info_len,
@@ -116,7 +116,7 @@ sqlite_plugin_put (void *cls,
        "Processing `%s' of %u bytes with key `%4s' and expiration %s\n",
        "PUT", (unsigned int) size, GNUNET_h2s (key),
        GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (discard_time), GNUNET_YES));
-  dval = (int64_t) discard_time.abs_value;
+  dval = (int64_t) discard_time.abs_value_us;
   if (dval < 0)
     dval = INT64_MAX;
   if (sq_prepare
@@ -135,11 +135,11 @@ sqlite_plugin_put (void *cls,
 			  key, sizeof (struct GNUNET_HashCode),
                           SQLITE_TRANSIENT)) ||
       (SQLITE_OK != sqlite3_bind_blob (stmt, 4,
-				       data, size, 
+				       data, size,
 				       SQLITE_TRANSIENT)) ||
-      (SQLITE_OK != sqlite3_bind_blob (stmt, 5, 
-				       path_info, 
-				       path_info_len * sizeof (struct GNUNET_PeerIdentity), 
+      (SQLITE_OK != sqlite3_bind_blob (stmt, 5,
+				       path_info,
+				       path_info_len * sizeof (struct GNUNET_PeerIdentity),
 				       SQLITE_TRANSIENT)))
   {
     LOG_SQLITE (plugin->dbh, GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
@@ -203,13 +203,13 @@ sqlite_plugin_get (void *cls, const struct GNUNET_HashCode * key,
                 "sq_prepare");
     return 0;
   }
-  ntime = (int64_t) now.abs_value;
+  ntime = (int64_t) now.abs_value_us;
   GNUNET_assert (ntime >= 0);
   if ((SQLITE_OK !=
        sqlite3_bind_blob (stmt, 1, key, sizeof (struct GNUNET_HashCode),
                           SQLITE_TRANSIENT)) ||
       (SQLITE_OK != sqlite3_bind_int (stmt, 2, type)) ||
-      (SQLITE_OK != sqlite3_bind_int64 (stmt, 3, now.abs_value)))
+      (SQLITE_OK != sqlite3_bind_int64 (stmt, 3, now.abs_value_us)))
   {
     LOG_SQLITE (plugin->dbh, GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
                 "sqlite3_bind_xxx");
@@ -256,7 +256,7 @@ sqlite_plugin_get (void *cls, const struct GNUNET_HashCode * key,
          sqlite3_bind_blob (stmt, 1, key, sizeof (struct GNUNET_HashCode),
                             SQLITE_TRANSIENT)) ||
         (SQLITE_OK != sqlite3_bind_int (stmt, 2, type)) ||
-        (SQLITE_OK != sqlite3_bind_int64 (stmt, 3, now.abs_value)))
+        (SQLITE_OK != sqlite3_bind_int64 (stmt, 3, now.abs_value_us)))
     {
       LOG_SQLITE (plugin->dbh, GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
                   "sqlite3_bind_xxx");
@@ -267,7 +267,7 @@ sqlite_plugin_get (void *cls, const struct GNUNET_HashCode * key,
       break;
     size = sqlite3_column_bytes (stmt, 0);
     dat = sqlite3_column_blob (stmt, 0);
-    exp.abs_value = sqlite3_column_int64 (stmt, 1);
+    exp.abs_value_us = sqlite3_column_int64 (stmt, 1);
     psize = sqlite3_column_bytes (stmt, 2);
     if (0 != psize % sizeof (struct GNUNET_PeerIdentity))
     {
@@ -279,7 +279,7 @@ sqlite_plugin_get (void *cls, const struct GNUNET_HashCode * key,
       path = sqlite3_column_blob (stmt, 2);
     else
       path = NULL;
-    ntime = (int64_t) exp.abs_value;
+    ntime = (int64_t) exp.abs_value_us;
     if (ntime == INT64_MAX)
       exp = GNUNET_TIME_UNIT_FOREVER_ABS;
     cnt++;
@@ -438,11 +438,11 @@ libgnunet_plugin_datacache_sqlite_init (void *cls)
 		"  path BLOB DEFAULT '')");
   SQLITE3_EXEC (dbh, "CREATE INDEX idx_hashidx ON ds090 (key,type,expire)");
   SQLITE3_EXEC (dbh, "CREATE INDEX idx_expire ON ds090 (expire)");
-  plugin = GNUNET_malloc (sizeof (struct Plugin));
+  plugin = GNUNET_new (struct Plugin);
   plugin->env = env;
   plugin->dbh = dbh;
   plugin->fn = fn_utf8;
-  api = GNUNET_malloc (sizeof (struct GNUNET_DATACACHE_PluginFunctions));
+  api = GNUNET_new (struct GNUNET_DATACACHE_PluginFunctions);
   api->cls = plugin;
   api->get = &sqlite_plugin_get;
   api->put = &sqlite_plugin_put;

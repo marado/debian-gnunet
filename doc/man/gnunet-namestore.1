@@ -9,7 +9,7 @@ gnunet\-namestore \- manipulate GNUnet zones
 .br
 
 .SH DESCRIPTION
-\fBgnunet\-namestore\fP can be used to create and manipulate a GNS zone.  
+\fBgnunet\-namestore\fP can be used to create and manipulate a GNS zone.
 
 .SH OPTIONS
 .B
@@ -20,7 +20,7 @@ Desired operation is adding a record
 Use the configuration file FILENAME.
 .B
 .IP "\-d, \-\-delete"
-Desired operation is deleting a record
+Desired operation is deleting all of the records under the given name
 .B
 .IP "\-D, \-\-display"
 Desired operation is listing of matching records
@@ -34,8 +34,14 @@ Print short help on options.
 .IP "\-L LOGLEVEL, \-\-loglevel=LOGLEVEL"
 Use LOGLEVEL for logging.  Valid values are DEBUG, INFO, WARNING and ERROR.
 .B
+.IP "\-m, \-\-monitor"
+Monitor changes to the zone on an ongoing basis (in contrast to \-D, which merely displays the current records)
+.B
 .IP "\-n NAME, \-\-name=NAME"
 Name of the record to add/delete/display
+.B
+.IP "\-r PKEY, \-\-reverse=PKEY"
+Determine our GNS name for the given public key (reverse lookup of the PKEY) in the given zone.
 .B
 .IP "\-t TYPE, \-\-type=TYPE"
 Type of the record to add/delete/display (i.e. "A", "AAAA", "NS", "PKEY", "MX" etc.)
@@ -49,8 +55,8 @@ Print GNUnet version number.
 .IP "\-V VALUE, \-\-value=VALUE"
 Value to store or remove from the GNS zone.  Specific format depends on the record type.  A records expect a dotted decimal IPv4 address, AAAA records an IPv6 address, PKEY a public key in GNUnet's printable format, and CNAME and NS records should be a domain name.
 .B
-.IP "\-z FILENAME, \-\-zonekey=FILENAME"
-Specifies the filename with the private key for the zone (mandatory option)
+.IP "\-z EGO, \-\-zone=EGO"
+Specifies the name of the ego controlling the private key for the zone (mandatory option)
 
 
 .SH BUGS

@@ -22,10 +22,7 @@
  * @brief tests for the scheduler
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_time_lib.h"
-#include "gnunet_disk_lib.h"
+#include "gnunet_util_lib.h"
 
 
 struct GNUNET_DISK_PipeHandle *p;
@@ -177,6 +174,7 @@ checkShutdown ()
 }
 
 
+#ifndef MINGW
 static void
 taskSig (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
@@ -185,7 +183,7 @@ taskSig (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   GNUNET_assert (1 == *ok);
   *ok = 8;
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &taskLast, cls);
-  GNUNET_break (0 == PLIBC_KILL (getpid (), SIGTERM));
+  GNUNET_break (0 == PLIBC_KILL (getpid (), GNUNET_TERM_SIG));
 }
 
 
@@ -202,6 +200,7 @@ checkSignal ()
   GNUNET_SCHEDULER_run (&taskSig, &ok);
   return ok;
 }
+#endif
 
 
 static void

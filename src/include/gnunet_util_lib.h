@@ -4,7 +4,7 @@
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -36,30 +36,24 @@ extern "C"
 #endif
 #endif
 
-#include "gnunet_common.h"
+#include "gnunet_crypto_lib.h"
 #include "gnunet_bandwidth_lib.h"
 #include "gnunet_bio_lib.h"
-#include "gnunet_client_lib.h"
-#include "gnunet_configuration_lib.h"
 #include "gnunet_connection_lib.h"
+#include "gnunet_client_lib.h"
 #include "gnunet_container_lib.h"
-#include "gnunet_crypto_lib.h"
-#include "gnunet_disk_lib.h"
 #include "gnunet_getopt_lib.h"
 #include "gnunet_helper_lib.h"
-#include "gnunet_network_lib.h"
+#include "gnunet_mq_lib.h"
 #include "gnunet_os_lib.h"
 #include "gnunet_peer_lib.h"
 #include "gnunet_plugin_lib.h"
 #include "gnunet_program_lib.h"
 #include "gnunet_protocols.h"
-#include "gnunet_pseudonym_lib.h"
-#include "gnunet_scheduler_lib.h"
 #include "gnunet_server_lib.h"
 #include "gnunet_service_lib.h"
 #include "gnunet_signal_lib.h"
 #include "gnunet_strings_lib.h"
-#include "gnunet_time_lib.h"
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

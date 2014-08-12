@@ -71,8 +71,7 @@ cleanup (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tskctx)
 
 static int
 receive (void *cls, const struct GNUNET_PeerIdentity *other,
-         const struct GNUNET_MessageHeader *message,
-         const struct GNUNET_ATS_Information *atsi, unsigned int atsi_count)
+         const struct GNUNET_MessageHeader *message)
 {
   if (die_task != GNUNET_SCHEDULER_NO_TASK)
     GNUNET_SCHEDULER_cancel (die_task);
@@ -104,12 +103,12 @@ send_message (void *cls, size_t size, void *buf)
 
 
 static void
-init (void *cls, struct GNUNET_CORE_Handle *core,
+init (void *cls,
       const struct GNUNET_PeerIdentity *my_identity)
 {
-  if (core == NULL)
+  if (NULL == my_identity)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Could NOT connect to CORE;\n");
+    GNUNET_break (0);
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -120,8 +119,7 @@ init (void *cls, struct GNUNET_CORE_Handle *core,
 
 
 static void
-connect_cb (void *cls, const struct GNUNET_PeerIdentity *peer,
-            const struct GNUNET_ATS_Information *atsi, unsigned int atsi_count)
+connect_cb (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Connected to peer %s.\n",
               GNUNET_i2s (peer));
@@ -154,7 +152,7 @@ run (void *cls,
   };
   core =
     GNUNET_CORE_connect (cfg, NULL, &init, &connect_cb, NULL, NULL,
-			 0, NULL, 0, handlers); 
+			 0, NULL, 0, handlers);
   die_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_SECONDS, 300), &cleanup,

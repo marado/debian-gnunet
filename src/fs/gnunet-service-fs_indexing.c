@@ -236,7 +236,7 @@ signal_index_ok (struct IndexInfo *ii)
                 _
                 ("Index request received for file `%s' is already indexed as `%s'.  Permitting anyway.\n"),
                 ii->filename,
-		ir->filename);           
+		ir->filename);
     GNUNET_SERVER_transmit_context_append_data (ii->tc, NULL, 0,
                                                 GNUNET_MESSAGE_TYPE_FS_INDEX_START_OK);
     GNUNET_SERVER_transmit_context_run (ii->tc, GNUNET_TIME_UNIT_MINUTES);
@@ -468,7 +468,7 @@ GNUNET_FS_handle_unindex (void *cls, struct GNUNET_SERVER_Client *client,
  * @param msg error message
  */
 static void
-remove_cont (void *cls, int success, 
+remove_cont (void *cls, int success,
 	     struct GNUNET_TIME_Absolute min_expiration,
 	     const char *msg)
 {
@@ -508,8 +508,8 @@ GNUNET_FS_handle_on_demand_block (const struct GNUNET_HashCode * key, uint32_t s
 {
   const struct OnDemandBlock *odb;
   struct GNUNET_HashCode nkey;
-  struct GNUNET_CRYPTO_AesSessionKey skey;
-  struct GNUNET_CRYPTO_AesInitializationVector iv;
+  struct GNUNET_CRYPTO_SymmetricSessionKey skey;
+  struct GNUNET_CRYPTO_SymmetricInitializationVector iv;
   struct GNUNET_HashCode query;
   ssize_t nsize;
   char ndata[DBLOCK_SIZE];
@@ -566,7 +566,7 @@ GNUNET_FS_handle_on_demand_block (const struct GNUNET_HashCode * key, uint32_t s
   GNUNET_DISK_file_close (fh);
   GNUNET_CRYPTO_hash (ndata, nsize, &nkey);
   GNUNET_CRYPTO_hash_to_aes_key (&nkey, &skey, &iv);
-  GNUNET_CRYPTO_aes_encrypt (ndata, nsize, &skey, &iv, edata);
+  GNUNET_CRYPTO_symmetric_encrypt (ndata, nsize, &skey, &iv, edata);
   GNUNET_CRYPTO_hash (edata, nsize, &query);
   if (0 != memcmp (&query, key, sizeof (struct GNUNET_HashCode)))
   {

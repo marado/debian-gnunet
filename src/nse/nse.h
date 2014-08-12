@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -29,11 +29,6 @@
 #define NSE_H
 
 #include "gnunet_common.h"
-
-/**
- * Generate debug-level log messages?
- */
-#define DEBUG_NSE GNUNET_EXTRA_LOGGING
 
 GNUNET_NETWORK_STRUCT_BEGIN
 

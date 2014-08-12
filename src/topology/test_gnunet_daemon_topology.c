@@ -39,7 +39,7 @@ static unsigned int connect_left;
 
 
 static void
-notify_connect_complete (void *cls, 
+notify_connect_complete (void *cls,
 			 struct GNUNET_TESTBED_Operation *op,
 			 const char *emsg)
 {
@@ -62,9 +62,12 @@ notify_connect_complete (void *cls,
 
 
 static void
-do_connect (void *cls, 
+do_connect (void *cls,
+            struct GNUNET_TESTBED_RunHandle *h,
 	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers)
+	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int links_succeeded,
+            unsigned int links_failed)
 {
   unsigned int i;
 

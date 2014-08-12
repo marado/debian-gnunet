@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
@@ -25,7 +25,7 @@ libgnunetstatistics_la_LIBADD = \
   $(GN_LIBINTL) $(XLIB)
 libgnunetstatistics_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
-  -version-info 1:2:1
+  -version-info 1:3:1
 
 libexec_PROGRAMS = \
  gnunet-service-statistics
@@ -58,6 +58,7 @@ check_PROGRAMS = \
  test_statistics_api_watch_zero_value 
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 endif
 
@@ -85,8 +86,10 @@ test_statistics_api_watch_zero_value_LDADD = \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la  
 
+if HAVE_PYTHON
 check_SCRIPTS = \
   test_gnunet_statistics.py
+endif
 
 do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 
