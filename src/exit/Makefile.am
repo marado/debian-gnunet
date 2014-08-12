@@ -1,7 +1,7 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
-  WINFLAGS = -Wl,--no-undefined, --export-all-symbols
+  WINFLAGS = -Wl,--no-undefined,--export-all-symbols
   EXITBIN = gnunet-helper-exit
 endif
 
@@ -34,7 +34,7 @@ libexec_PROGRAMS = \
 if MINGW
   gnunet_helper_exit_LDFLAGS = \
     -no-undefined -Wl,--export-all-symbols 
-   
+
   gnunet_helper_exit_LDADD = \
     -lsetupapi -lnewdev -lshell32 -liconv -lstdc++ \
     -lcomdlg32 -lgdi32 -liphlpapi
@@ -49,7 +49,7 @@ gnunet_daemon_exit_SOURCES = \
  gnunet-daemon-exit.c exit.h 
 gnunet_daemon_exit_LDADD = \
   $(top_builddir)/src/dns/libgnunetdnsstub.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
+  $(top_builddir)/src/dht/libgnunetdht.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/tun/libgnunettun.la \
   $(top_builddir)/src/util/libgnunetutil.la \

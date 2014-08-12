@@ -245,9 +245,9 @@ run_continuation (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 #endif
              "Stored %llu kB / %lluk ops / %llu ops/s\n", stored_bytes / 1024,  /* used size in k */
              stored_ops / 1024, /* total operations (in k) */
-             1000 * stored_ops / (1 +
-                                  GNUNET_TIME_absolute_get_duration
-                                  (start_time).rel_value));
+             1000LL * 1000LL * stored_ops / (1 +
+					     GNUNET_TIME_absolute_get_duration
+					     (start_time).rel_value_us));
     crc->phase = RP_PUT;
     crc->j = 0;
     GNUNET_SCHEDULER_add_continuation (&run_continuation, crc,
@@ -257,7 +257,7 @@ run_continuation (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_snprintf (gstr, sizeof (gstr), "DATASTORE-%s", plugin_name);
     if ((crc->i == ITERATIONS) && (stored_ops > 0))
       GAUGER (gstr, "PUT operation duration",
-              GNUNET_TIME_absolute_get_duration (start_time).rel_value /
+              GNUNET_TIME_absolute_get_duration (start_time).rel_value_us / 1000LL /
               stored_ops, "ms/operation");
     GNUNET_DATASTORE_disconnect (datastore, GNUNET_YES);
     GNUNET_free (crc);
@@ -294,7 +294,7 @@ run_tests (void *cls, int success, struct GNUNET_TIME_Absolute min_expiration, c
 
 
 static void
-run (void *cls, 
+run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
@@ -303,7 +303,7 @@ run (void *cls,
 
   datastore = GNUNET_DATASTORE_connect (cfg);
   start_time = GNUNET_TIME_absolute_get ();
-  crc = GNUNET_malloc (sizeof (struct CpsRunContext));
+  crc = GNUNET_new (struct CpsRunContext);
   crc->cfg = cfg;
   crc->phase = RP_PUT;
   if (NULL ==

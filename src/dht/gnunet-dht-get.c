@@ -26,6 +26,7 @@
 #include "platform.h"
 #include "gnunet_dht_service.h"
 
+#define LOG(kind,...) GNUNET_log_from (kind, "dht-clients",__VA_ARGS__)
 /**
  * The type of the query
  */
@@ -128,8 +129,8 @@ get_result_iterator (void *cls, struct GNUNET_TIME_Absolute exp,
                      unsigned int put_path_length, enum GNUNET_BLOCK_Type type,
                      size_t size, const void *data)
 {
-  FPRINTF (stdout, 
-	   _("Result %d, type %d:\n%.*s\n"), 
+  FPRINTF (stdout,
+	   _("Result %d, type %d:\n%.*s\n"),
 	   result_count, type,
            (unsigned int) size, (char *) data);
   result_count++;
@@ -149,6 +150,8 @@ run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   struct GNUNET_HashCode key;
+
+
 
   cfg = c;
   if (NULL == query_key)

@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -456,7 +456,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
   switch (event->type)
   {
   case GNUNET_TESTBED_ET_OPERATION_FINISHED:
-    if ((NULL != event->details.operation_finished.op_cls) ||
+    if ((NULL != event->op_cls) ||
         (NULL != event->details.operation_finished.emsg))
     {
       GNUNET_break (0);
@@ -472,19 +472,19 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
         abort_test ();
         return;
       }
-      if (event->details.operation_finished.operation == peer1.operation)
+      if (event->op == peer1.operation)
       {
         GNUNET_TESTBED_operation_done (peer1.operation);
         peer1.operation = NULL;
         peer1.peer = NULL;
       }
-      else if (event->details.operation_finished.operation == peer2.operation)
+      else if (event->op == peer2.operation)
       {
         GNUNET_TESTBED_operation_done (peer2.operation);
         peer2.operation = NULL;
         peer2.peer = NULL;
       }
-      else if (event->details.operation_finished.operation == peer3.operation)
+      else if (event->op == peer3.operation)
       {
         GNUNET_TESTBED_operation_done (peer3.operation);
         peer3.operation = NULL;
@@ -566,7 +566,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       result = PEER1_STARTED;
       common_operation =
           GNUNET_TESTBED_controller_link (NULL, controller1, neighbour1, NULL,
-                                          cfg, GNUNET_YES);
+                                          GNUNET_YES);
       break;
     case PEER2_CREATED:
       if (event->details.peer_start.host != neighbour1)
@@ -587,7 +587,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       }
       common_operation =
           GNUNET_TESTBED_controller_link (NULL, controller1, neighbour2, NULL,
-                                          cfg, GNUNET_YES);
+                                          GNUNET_YES);
       if (NULL == common_operation)
       {
         GNUNET_break (0);
@@ -706,9 +706,9 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       common_operation = NULL;
       result = PEERS_CONNECTED_2;
       LOG (GNUNET_ERROR_TYPE_DEBUG, "Peers connected again\n");
-      peer1.operation = GNUNET_TESTBED_peer_stop (peer1.peer, NULL, NULL);
-      peer2.operation = GNUNET_TESTBED_peer_stop (peer2.peer, NULL, NULL);
-      peer3.operation = GNUNET_TESTBED_peer_stop (peer3.peer, NULL, NULL);
+      peer1.operation = GNUNET_TESTBED_peer_stop (NULL, peer1.peer, NULL, NULL);
+      peer2.operation = GNUNET_TESTBED_peer_stop (NULL, peer2.peer, NULL, NULL);
+      peer3.operation = GNUNET_TESTBED_peer_stop (NULL, peer3.peer, NULL, NULL);
       break;
     default:
       GNUNET_break (0);
@@ -736,7 +736,7 @@ registration_comp (void *cls, const char *emsg)
   reg_handle = NULL;
   if (cls == neighbour1)
   {
-    neighbour2 = GNUNET_TESTBED_host_create ("127.0.0.1", NULL, 0);
+    neighbour2 = GNUNET_TESTBED_host_create ("127.0.0.1", NULL, cfg, 0);
     if (NULL == neighbour2)
     {
       GNUNET_break (0);
@@ -803,7 +803,7 @@ status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *config,
   {
   case INIT:
     controller1 =
-        GNUNET_TESTBED_controller_connect (config, host, event_mask,
+        GNUNET_TESTBED_controller_connect (host, event_mask,
                                            &controller_cb, NULL);
     if (NULL == controller1)
     {
@@ -812,7 +812,7 @@ status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *config,
       return;
     }
     result = CONTROLLER1_UP;
-    neighbour1 = GNUNET_TESTBED_host_create ("127.0.0.1", NULL, 0);
+    neighbour1 = GNUNET_TESTBED_host_create ("127.0.0.1", NULL, cfg, 0);
     if (NULL == neighbour1)
     {
       GNUNET_break (0);
@@ -865,7 +865,7 @@ host_habitable_cb (void *cls, const struct GNUNET_TESTBED_Host *_host,
     return;
   }
   cp1 =
-      GNUNET_TESTBED_controller_start ("127.0.0.1", host, cfg, status_cb, NULL);
+      GNUNET_TESTBED_controller_start ("127.0.0.1", host, status_cb, NULL);
 }
 
 
@@ -881,7 +881,8 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *config)
 {
-  host = GNUNET_TESTBED_host_create (NULL, NULL, 0);
+  cfg = GNUNET_CONFIGURATION_dup (config);
+  host = GNUNET_TESTBED_host_create (NULL, NULL, cfg, 0);
   if (NULL == host)
   {
     GNUNET_break (0);
@@ -902,7 +903,6 @@ run (void *cls, char *const *args, const char *cfgfile,
     result = SKIP;
     return;
   }
-  cfg = GNUNET_CONFIGURATION_dup (config);
   abort_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES, 3), &do_abort,

@@ -83,9 +83,7 @@ struct PutOperator
  * of block that we're putting into the DHT).
  */
 static struct PutOperator operators[] = {
-  {NULL, GNUNET_BLOCK_TYPE_FS_KBLOCK, 0, 0, 0},
-  {NULL, GNUNET_BLOCK_TYPE_FS_SBLOCK, 0, 0, 0},
-  {NULL, GNUNET_BLOCK_TYPE_FS_NBLOCK, 0, 0, 0},
+  {NULL, GNUNET_BLOCK_TYPE_FS_UBLOCK, 0, 0, 0},
   {NULL, GNUNET_BLOCK_TYPE_ANY, 0, 0, 0}
 };
 
@@ -180,10 +178,10 @@ delay_dht_put_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *        maybe 0 if no unique identifier is available
  */
 static void
-process_dht_put_content (void *cls, 
-			 const struct GNUNET_HashCode * key, 
+process_dht_put_content (void *cls,
+			 const struct GNUNET_HashCode * key,
 			 size_t size,
-                         const void *data, 
+                         const void *data,
 			 enum GNUNET_BLOCK_Type type,
                          uint32_t priority, uint32_t anonymity,
                          struct GNUNET_TIME_Absolute expiration, uint64_t uid)

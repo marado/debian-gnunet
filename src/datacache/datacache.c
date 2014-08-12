@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -153,8 +153,8 @@ GNUNET_DATACACHE_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
   }
   bf_size = quota / 32;         /* 8 bit per entry, 1 bit per 32 kb in DB */
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_DATACACHE_Handle));
-  
+  ret = GNUNET_new (struct GNUNET_DATACACHE_Handle);
+
   if (GNUNET_YES !=
       GNUNET_CONFIGURATION_get_value_yesno (cfg, section, "DISABLE_BF"))
   {
@@ -166,12 +166,12 @@ GNUNET_DATACACHE_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
     if (NULL != ret->bloom_name)
     {
       ret->filter = GNUNET_CONTAINER_bloomfilter_load (ret->bloom_name, quota / 1024,     /* 8 bit per entry in DB, expect 1k entries */
-						       5); 
-    }    
+						       5);
+    }
     if (NULL == ret->filter)
     {
 	ret->filter = GNUNET_CONTAINER_bloomfilter_init (NULL, bf_size, 5); /* approx. 3% false positives at max use */
-    }  
+    }
   }
   ret->stats = GNUNET_STATISTICS_create ("datacache", cfg);
   ret->section = GNUNET_strdup (section);
@@ -233,9 +233,9 @@ GNUNET_DATACACHE_destroy (struct GNUNET_DATACACHE_Handle *h)
  * @param data data to store
  * @param type type of the value
  * @param discard_time when to discard the value in any case
- * @param path_info_len number of entries in 'path_info'
+ * @param path_info_len number of entries in @a path_info
  * @param path_info a path through the network
- * @return GNUNET_OK on success, GNUNET_SYSERR on error, GNUNET_NO if duplicate
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error, #GNUNET_NO if duplicate
  */
 int
 GNUNET_DATACACHE_put (struct GNUNET_DATACACHE_Handle *h,
@@ -247,8 +247,8 @@ GNUNET_DATACACHE_put (struct GNUNET_DATACACHE_Handle *h,
 {
   ssize_t used;
 
-  used = h->api->put (h->api->cls, key, 
-		      size, data, 
+  used = h->api->put (h->api->cls, key,
+		      size, data,
 		      type, discard_time,
 		      path_info_len, path_info);
   if (-1 == used)

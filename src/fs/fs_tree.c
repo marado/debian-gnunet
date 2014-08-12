@@ -250,13 +250,13 @@ GNUNET_FS_tree_calculate_block_size (uint64_t fsize, uint64_t offset,
 
 
 /**
- * Initialize a tree encoder.  This function will call "proc" and
+ * Initialize a tree encoder.  This function will call @a proc and
  * "progress" on each block in the tree.  Once all blocks have been
- * processed, "cont" will be scheduled.  The "reader" will be called
+ * processed, "cont" will be scheduled.  The @a reader will be called
  * to obtain the (plaintext) blocks for the file.  Note that this
- * function will not actually call "proc".  The client must
- * call "GNUNET_FS_tree_encoder_next" to trigger encryption (and
- * calling of "proc") for the each block.
+ * function will not actually call @a proc.  The client must
+ * call #GNUNET_FS_tree_encoder_next to trigger encryption (and
+ * calling of @a proc) for the each block.
  *
  * @param h the global FS context
  * @param size overall size of the file to encode
@@ -268,14 +268,15 @@ GNUNET_FS_tree_calculate_block_size (uint64_t fsize, uint64_t offset,
  */
 struct GNUNET_FS_TreeEncoder *
 GNUNET_FS_tree_encoder_create (struct GNUNET_FS_Handle *h, uint64_t size,
-                               void *cls, GNUNET_FS_DataReader reader,
+                               void *cls,
+			       GNUNET_FS_DataReader reader,
                                GNUNET_FS_TreeBlockProcessor proc,
                                GNUNET_FS_TreeProgressCallback progress,
                                GNUNET_SCHEDULER_Task cont)
 {
   struct GNUNET_FS_TreeEncoder *te;
 
-  te = GNUNET_malloc (sizeof (struct GNUNET_FS_TreeEncoder));
+  te = GNUNET_new (struct GNUNET_FS_TreeEncoder);
   te->h = h;
   te->size = size;
   te->cls = cls;
@@ -335,8 +336,8 @@ GNUNET_FS_tree_encoder_next (struct GNUNET_FS_TreeEncoder *te)
   uint16_t pt_size;
   char iob[DBLOCK_SIZE];
   char enc[DBLOCK_SIZE];
-  struct GNUNET_CRYPTO_AesSessionKey sk;
-  struct GNUNET_CRYPTO_AesInitializationVector iv;
+  struct GNUNET_CRYPTO_SymmetricSessionKey sk;
+  struct GNUNET_CRYPTO_SymmetricInitializationVector iv;
   unsigned int off;
 
   GNUNET_assert (GNUNET_NO == te->in_next);
@@ -346,8 +347,8 @@ GNUNET_FS_tree_encoder_next (struct GNUNET_FS_TreeEncoder *te)
     off = CHK_PER_INODE * (te->chk_tree_depth - 1);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "TE done, reading CHK `%s' from %u\n",
                 GNUNET_h2s (&te->chk_tree[off].query), off);
-    te->uri = GNUNET_malloc (sizeof (struct GNUNET_FS_Uri));
-    te->uri->type = chk;
+    te->uri = GNUNET_new (struct GNUNET_FS_Uri);
+    te->uri->type = GNUNET_FS_URI_CHK;
     te->uri->data.chk.chk = te->chk_tree[off];
     te->uri->data.chk.file_length = GNUNET_htonll (te->size);
     te->in_next = GNUNET_NO;
@@ -382,7 +383,7 @@ GNUNET_FS_tree_encoder_next (struct GNUNET_FS_TreeEncoder *te)
   mychk = &te->chk_tree[te->current_depth * CHK_PER_INODE + off];
   GNUNET_CRYPTO_hash (pt_block, pt_size, &mychk->key);
   GNUNET_CRYPTO_hash_to_aes_key (&mychk->key, &sk, &iv);
-  GNUNET_CRYPTO_aes_encrypt (pt_block, pt_size, &sk, &iv, enc);
+  GNUNET_CRYPTO_symmetric_encrypt (pt_block, pt_size, &sk, &iv, enc);
   GNUNET_CRYPTO_hash (enc, pt_size, &mychk->query);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "TE calculates query to be `%s', stored at %u\n",
@@ -415,25 +416,41 @@ GNUNET_FS_tree_encoder_next (struct GNUNET_FS_TreeEncoder *te)
 
 
 /**
- * Clean up a tree encoder and return information
- * about the resulting URI or an error message.
+ * Get the resulting URI from the encoding.
  *
  * @param te the tree encoder to clean up
- * @param uri set to the resulting URI (if encoding finished)
+ * @return uri set to the resulting URI (if encoding finished), NULL otherwise
+ */
+struct GNUNET_FS_Uri *
+GNUNET_FS_tree_encoder_get_uri (struct GNUNET_FS_TreeEncoder *te)
+{
+  if (NULL != te->uri)
+    return GNUNET_FS_uri_dup (te->uri);
+  return NULL;
+}
+
+
+/**
+ * Clean up a tree encoder and return information
+ * about possible errors.
+ *
+ * @param te the tree encoder to clean up
  * @param emsg set to an error message (if an error occured
  *        within the tree encoder; if this function is called
  *        prior to completion and prior to an internal error,
- *        both "*uri" and "*emsg" will be set to NULL).
+ *        both "*emsg" will be set to NULL).
  */
 void
 GNUNET_FS_tree_encoder_finish (struct GNUNET_FS_TreeEncoder *te,
-                               struct GNUNET_FS_Uri **uri, char **emsg)
+			       char **emsg)
 {
-  (void) te->reader (te->cls, UINT64_MAX, 0, 0, NULL);
+  if (NULL != te->reader)
+  {
+    (void) te->reader (te->cls, UINT64_MAX, 0, 0, NULL);
+    te->reader =  NULL;
+  }
   GNUNET_assert (GNUNET_NO == te->in_next);
-  if (uri != NULL)
-    *uri = te->uri;
-  else if (NULL != te->uri)
+  if (NULL != te->uri)
     GNUNET_FS_uri_destroy (te->uri);
   if (emsg != NULL)
     *emsg = te->emsg;

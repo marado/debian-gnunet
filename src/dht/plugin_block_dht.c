@@ -42,11 +42,11 @@
  * @param type block type
  * @param query original query (hash)
  * @param bf pointer to bloom filter associated with query; possibly updated (!)
- * @param bf_mutator mutation value for bf
+ * @param bf_mutator mutation value for @a bf
  * @param xquery extended query data (can be NULL, depending on type)
- * @param xquery_size number of bytes in xquery
+ * @param xquery_size number of bytes in @a xquery
  * @param reply_block response to validate
- * @param reply_block_size number of bytes in reply block
+ * @param reply_block_size number of bytes in @a reply_block
  * @return characterization of result
  */
 static enum GNUNET_BLOCK_EvaluationResult
@@ -61,6 +61,7 @@ block_plugin_dht_evaluate (void *cls, enum GNUNET_BLOCK_Type type,
   const struct GNUNET_HELLO_Message *hello;
   struct GNUNET_PeerIdentity pid;
   const struct GNUNET_MessageHeader *msg;
+  struct GNUNET_HashCode phash;
 
   if (type != GNUNET_BLOCK_TYPE_DHT_HELLO)
     return GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED;
@@ -90,7 +91,8 @@ block_plugin_dht_evaluate (void *cls, enum GNUNET_BLOCK_Type type,
   }
   if (NULL != bf)
   {
-    GNUNET_BLOCK_mingle_hash (&pid.hashPubKey, bf_mutator, &mhash);
+    GNUNET_CRYPTO_hash (&pid, sizeof (pid), &phash);
+    GNUNET_BLOCK_mingle_hash (&phash, bf_mutator, &mhash);
     if (NULL != *bf)
     {
       if (GNUNET_YES == GNUNET_CONTAINER_bloomfilter_test (*bf, &mhash))
@@ -114,9 +116,9 @@ block_plugin_dht_evaluate (void *cls, enum GNUNET_BLOCK_Type type,
  * @param cls closure
  * @param type block type
  * @param block block to get the key for
- * @param block_size number of bytes in block
+ * @param block_size number of bytes @a block
  * @param key set to the key (query) for the given block
- * @return GNUNET_OK on success, GNUNET_SYSERR if type not supported
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if type not supported
  *         (or if extracting a key from a block of this type does not work)
  */
 static int
@@ -145,6 +147,7 @@ block_plugin_dht_get_key (void *cls, enum GNUNET_BLOCK_Type type,
     return GNUNET_NO;
   }
   hello = block;
+  memset (key, 0, sizeof (*key));
   pid = (struct GNUNET_PeerIdentity *) key;
   if (GNUNET_OK != GNUNET_HELLO_get_id (hello, pid))
   {
@@ -170,7 +173,7 @@ libgnunet_plugin_block_dht_init (void *cls)
   };
   struct GNUNET_BLOCK_PluginFunctions *api;
 
-  api = GNUNET_malloc (sizeof (struct GNUNET_BLOCK_PluginFunctions));
+  api = GNUNET_new (struct GNUNET_BLOCK_PluginFunctions);
   api->evaluate = &block_plugin_dht_evaluate;
   api->get_key = &block_plugin_dht_get_key;
   api->types = types;

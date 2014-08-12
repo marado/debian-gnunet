@@ -126,16 +126,19 @@ static void
 end ()
 {
   unsigned long long delta;
-
+  unsigned long long rate;
   char *value_name;
+
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Stopping peers\n");
 
-  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value;
-  FPRINTF (stderr, "\nThroughput was %llu kb/s\n",
-           total_bytes * 1000 / 1024 / delta);
+  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
+  rate = (1000LL* 1000ll * total_bytes) / (1024 * delta);
+  FPRINTF (stderr, "\nThroughput was %llu KiBytes/s\n",
+      rate);
+
   GNUNET_asprintf (&value_name, "unreliable_%s", test_plugin);
-  GAUGER ("TRANSPORT", value_name, (int) (total_bytes * 1000 / 1024 / delta),
+  GAUGER ("TRANSPORT", value_name, (int) rate,
           "kb/s");
   GNUNET_free (value_name);
 
@@ -284,8 +287,7 @@ get_bit (const char *map, unsigned int bit)
 
 static void
 notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+                const struct GNUNET_MessageHeader *message)
 {
   static int n;
 
@@ -410,7 +412,7 @@ notify_ready (void *cls, size_t size, void *buf)
   while ((size - ret >= s) && (n < TOTAL_MSGS));
   if (n < TOTAL_MSGS)
   {
-    th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, s, 0,
+    th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, s,
                                                  TIMEOUT_TRANSMIT,
                                                  &notify_ready, NULL);
     msg_scheduled = n;
@@ -434,8 +436,7 @@ notify_ready (void *cls, size_t size, void *buf)
 
 
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peer `%4s' connected to us (%p)!\n",
@@ -459,7 +460,7 @@ sendtask ()
   start_time = GNUNET_TIME_absolute_get ();
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Starting to send %u messages\n",
               TOTAL_MSGS);
-  th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, get_size (0), 0,
+  th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, get_size (0),
                                                TIMEOUT_TRANSMIT, &notify_ready,
                                                NULL);
 }

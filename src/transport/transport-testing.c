@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -24,7 +24,6 @@
  *
  * @author Matthias Wachs
  */
-
 #include "transport-testing.h"
 
 
@@ -67,8 +66,7 @@ find_connecting_context (struct GNUNET_TRANSPORT_TESTING_handle *tth,
 
 
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   struct PeerContext *p = cls;
   char *p2_s;
@@ -78,7 +76,7 @@ notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
   GNUNET_assert (NULL != p->tth);
   p2 = find_peer_context (p->tth, peer);
   if (p->nc != NULL)
-    p->nc (p->cb_cls, peer, ats, ats_count);
+    p->nc (p->cb_cls, peer);
 
   if (p2 != NULL)
     GNUNET_asprintf (&p2_s, "%u (`%s')", p2->no, GNUNET_i2s (&p2->id));
@@ -145,15 +143,14 @@ notify_disconnect (void *cls, const struct GNUNET_PeerIdentity *peer)
 
 static void
 notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+                const struct GNUNET_MessageHeader *message)
 {
   struct PeerContext *p = cls;
 
   if (p == NULL)
     return;
   if (p->rec != NULL)
-    p->rec (p->cb_cls, peer, message, ats, ats_count);
+    p->rec (p->cb_cls, peer, message);
 }
 
 
@@ -249,7 +246,7 @@ GNUNET_TRANSPORT_TESTING_start_peer (struct GNUNET_TRANSPORT_TESTING_handle *tth
     return NULL;
   }
 
-  struct PeerContext *p = GNUNET_malloc (sizeof (struct PeerContext));
+  struct PeerContext *p = GNUNET_new (struct PeerContext);
   GNUNET_CONTAINER_DLL_insert (tth->p_head, tth->p_tail, p);
 
   /* Create configuration and call testing lib to modify it */
@@ -302,7 +299,7 @@ GNUNET_TRANSPORT_TESTING_start_peer (struct GNUNET_TRANSPORT_TESTING_handle *tth
     GNUNET_log_from (GNUNET_ERROR_TYPE_DEBUG, "transport-testing",
                      "Peer %u configured with identity `%s'\n",
                      p->no,
-                     GNUNET_i2s (&p->id));
+                     GNUNET_i2s_full (&p->id));
   }
 
   p->tth = tth;
@@ -474,7 +471,7 @@ GNUNET_TRANSPORT_TESTING_connect_peers (struct GNUNET_TRANSPORT_TESTING_handle *
   GNUNET_assert (tth != NULL);
 
   struct ConnectingContext *cc =
-      GNUNET_malloc (sizeof (struct ConnectingContext));
+      GNUNET_new (struct ConnectingContext);
 
   GNUNET_assert (p1 != NULL);
   GNUNET_assert (p2 != NULL);
@@ -577,10 +574,11 @@ GNUNET_TRANSPORT_TESTING_init ()
   struct GNUNET_TRANSPORT_TESTING_handle *tth;
 
   /* prepare hostkeys */
-  tth = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_TESTING_handle));
+  tth = GNUNET_new (struct GNUNET_TRANSPORT_TESTING_handle);
 
   /* Init testing the testing lib */
-  tth->tl_system = GNUNET_TESTING_system_create ("transport-testing", NULL, NULL);
+  tth->tl_system = GNUNET_TESTING_system_create ("transport-testing", NULL,
+                                                 NULL, NULL);
   if (NULL == tth->tl_system)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR, _("Failed to initialize testing library!\n"));

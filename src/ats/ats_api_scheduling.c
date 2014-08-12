@@ -290,9 +290,6 @@ transmit_message_to_ats (void *cls, size_t size, void *buf)
     ret += p->size;
     size -= p->size;
     GNUNET_CONTAINER_DLL_remove (sh->pending_head, sh->pending_tail, p);
-    if (GNUNET_YES == p->is_init)
-      GNUNET_CLIENT_receive (sh->client, &process_ats_message, sh,
-                             GNUNET_TIME_UNIT_FOREVER_REL);
     GNUNET_free (p);
   }
   do_transmit (sh);
@@ -638,10 +635,15 @@ process_ats_message (void *cls, const struct GNUNET_MessageHeader *msg)
       return;
     }
   }
+
+  if (NULL == sh->suggest_cb)
+  	return;
+
   address.peer = m->peer;
   address.address = plugin_address;
   address.address_length = plugin_address_length;
   address.transport_name = plugin_name;
+  address.local_info = ntohl(m->address_local_info);
 
   if ((s == NULL) && (0 == address.address_length))
   {
@@ -655,7 +657,9 @@ process_ats_message (void *cls, const struct GNUNET_MessageHeader *msg)
     return;
   }
 
-  sh->suggest_cb (sh->suggest_cb_cls, &address, s, m->bandwidth_out,
+  sh->suggest_cb (sh->suggest_cb_cls,
+                  (const struct GNUNET_PeerIdentity *) &m->peer,
+                  &address, s, m->bandwidth_out,
                   m->bandwidth_in, atsi, ats_count);
 
   GNUNET_CLIENT_receive (sh->client, &process_ats_message, sh,
@@ -679,6 +683,8 @@ reconnect (struct GNUNET_ATS_SchedulingHandle *sh)
   GNUNET_assert (NULL == sh->client);
   sh->client = GNUNET_CLIENT_connect ("ats", sh->cfg);
   GNUNET_assert (NULL != sh->client);
+  GNUNET_CLIENT_receive (sh->client, &process_ats_message, sh,
+                           GNUNET_TIME_UNIT_FOREVER_REL);
   if ((NULL == (p = sh->pending_head)) || (GNUNET_YES != p->is_init))
   {
     p = GNUNET_malloc (sizeof (struct PendingMessage) +
@@ -842,6 +848,21 @@ GNUNET_ATS_print_network_type (uint32_t net)
   return NULL;
 }
 
+/**
+ * Convert a ATS property to a string
+ *
+ * @param type the atsi type
+ * @return a string or NULL if invalid
+ */
+const char *
+GNUNET_ATS_print_property_type (uint32_t type)
+{
+	char *props[GNUNET_ATS_PropertyCount] = GNUNET_ATS_PropertyStrings;
+	if ((type > 0) && (type < GNUNET_ATS_PropertyCount))
+		return props[type];
+	return NULL;
+}
+
 
 /**
  * Returns where the address is located: LAN or WAN or ...
@@ -949,7 +970,7 @@ GNUNET_ATS_scheduling_init (const struct GNUNET_CONFIGURATION_Handle *cfg,
 {
   struct GNUNET_ATS_SchedulingHandle *sh;
 
-  sh = GNUNET_malloc (sizeof (struct GNUNET_ATS_SchedulingHandle));
+  sh = GNUNET_new (struct GNUNET_ATS_SchedulingHandle);
   sh->cfg = cfg;
   sh->suggest_cb = suggest_cb;
   sh->suggest_cb_cls = suggest_cb_cls;
@@ -1037,16 +1058,23 @@ GNUNET_ATS_reset_backoff (struct GNUNET_ATS_SchedulingHandle *sh,
 }
 
 /**
- * We would like to establish a new connection with a peer.  ATS
- * should suggest a good address to begin with.
+ * We would like to receive address suggestions for a peer. ATS will
+ * respond with a call to the continuation immediately containing an address or
+ * no address if none is available. ATS can suggest more addresses until we call
+ * #GNUNET_ATS_suggest_address_cancel.
+ *
  *
  * @param sh handle
  * @param peer identity of the peer we need an address for
+ * @param cont the continuation to call with the address
+ * @param cont_cls the cls for the continuation
  * @return suggest handle
  */
 struct GNUNET_ATS_SuggestHandle *
 GNUNET_ATS_suggest_address (struct GNUNET_ATS_SchedulingHandle *sh,
-                            const struct GNUNET_PeerIdentity *peer)
+                            const struct GNUNET_PeerIdentity *peer,
+                            GNUNET_ATS_AddressSuggestionCallback cont,
+                            void *cont_cls)
 {
   struct PendingMessage *p;
   struct RequestAddressMessage *m;
@@ -1065,7 +1093,7 @@ GNUNET_ATS_suggest_address (struct GNUNET_ATS_SchedulingHandle *sh,
   m->peer = *peer;
   GNUNET_CONTAINER_DLL_insert_tail (sh->pending_head, sh->pending_tail, p);
   do_transmit (sh);
-  s = GNUNET_malloc (sizeof (struct GNUNET_ATS_SuggestHandle));
+  s = GNUNET_new (struct GNUNET_ATS_SuggestHandle);
   s->id = (*peer);
   GNUNET_CONTAINER_DLL_insert_tail (sh->sug_head, sh->sug_tail, s);
   return s;
@@ -1115,6 +1143,32 @@ GNUNET_ATS_suggest_address_cancel (struct GNUNET_ATS_SchedulingHandle *sh,
 
 
 /**
+ * Test if a address and a session is known to ATS
+ *
+ * @param sh the scheduling handle
+ * @param address the address
+ * @param session the session
+ * @return GNUNET_YES or GNUNET_NO
+ */
+int
+GNUNET_ATS_session_known (struct GNUNET_ATS_SchedulingHandle *sh,
+    											const struct GNUNET_HELLO_Address *address,
+    											struct Session *session)
+{
+	int s;
+  if (NULL != session)
+  {
+    if (NOT_FOUND != (s = find_session_id (sh, session, &address->peer)))
+    {
+      /* Existing */
+      return GNUNET_YES;
+    }
+    return GNUNET_NO;
+  }
+  return GNUNET_NO;
+}
+
+/**
  * We have a new address ATS should know. Addresses have to be added with this
  * function before they can be: updated, set in use and destroyed
  *
@@ -1147,11 +1201,9 @@ GNUNET_ATS_address_add (struct GNUNET_ATS_SchedulingHandle *sh,
     return GNUNET_SYSERR;
   }
 
-  namelen =
-      (address->transport_name ==
-       NULL) ? 0 : strlen (address->transport_name) + 1;
-  msize =
-      sizeof (struct AddressUpdateMessage) + address->address_length +
+  namelen = (address->transport_name == NULL) ? 0 : strlen (address->transport_name) + 1;
+
+  msize = sizeof (struct AddressUpdateMessage) + address->address_length +
       ats_count * sizeof (struct GNUNET_ATS_Information) + namelen;
   if ((msize >= GNUNET_SERVER_MAX_MESSAGE_SIZE) ||
       (address->address_length >= GNUNET_SERVER_MAX_MESSAGE_SIZE) ||
@@ -1165,14 +1217,9 @@ GNUNET_ATS_address_add (struct GNUNET_ATS_SchedulingHandle *sh,
 
   if (NULL != session)
   {
-    s = find_session_id (sh, session, &address->peer);
-    if (NOT_FOUND != s)
+    if (NOT_FOUND != (s = find_session_id (sh, session, &address->peer)))
     {
       /* Already existing, nothing todo */
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Adding duplicate address for peer `%s', plugin `%s', session %p id %u\n",
-                  GNUNET_i2s (&address->peer),
-                  address->transport_name, session, s);
       return GNUNET_SYSERR;
     }
     s = find_empty_session_slot (sh, session, &address->peer);
@@ -1188,6 +1235,7 @@ GNUNET_ATS_address_add (struct GNUNET_ATS_SchedulingHandle *sh,
   m->ats_count = htonl (ats_count);
   m->peer = address->peer;
   m->address_length = htons (address->address_length);
+  m->address_local_info = htonl ((uint32_t) address->local_info);
   m->plugin_name_length = htons (namelen);
   m->session_id = htonl (s);
 
@@ -1222,8 +1270,10 @@ GNUNET_ATS_address_add (struct GNUNET_ATS_SchedulingHandle *sh,
  * @param session session handle, can be NULL
  * @param ats performance data for the address
  * @param ats_count number of performance records in 'ats'
+ * @return GNUNET_YES on success, GNUNET_NO if address or session are unknown,
+ * GNUNET_SYSERR on hard failure
  */
-void
+int
 GNUNET_ATS_address_update (struct GNUNET_ATS_SchedulingHandle *sh,
                            const struct GNUNET_HELLO_Address *address,
                            struct Session *session,
@@ -1238,14 +1288,18 @@ GNUNET_ATS_address_update (struct GNUNET_ATS_SchedulingHandle *sh,
   size_t msize;
   uint32_t s = 0;
 
-  if (address == NULL)
+  if (NULL == address)
   {
     GNUNET_break (0);
-    return;
+    return GNUNET_SYSERR;
+  }
+  if (NULL == sh)
+  {
+    GNUNET_break (0);
+    return GNUNET_SYSERR;
   }
 
-  namelen =
-      (address->transport_name ==
+  namelen = (address->transport_name ==
        NULL) ? 0 : strlen (address->transport_name) + 1;
   msize =
       sizeof (struct AddressUpdateMessage) + address->address_length +
@@ -1257,22 +1311,14 @@ GNUNET_ATS_address_update (struct GNUNET_ATS_SchedulingHandle *sh,
        GNUNET_SERVER_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_ATS_Information)))
   {
     GNUNET_break (0);
-    return;
+    return GNUNET_SYSERR;
   }
 
   if (NULL != session)
   {
     s = find_session_id (sh, session, &address->peer);
     if (NOT_FOUND == s)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  "Update for unknown address for peer `%s', plugin `%s', session %p id %u\n",
-                  GNUNET_i2s (&address->peer),
-                  address->transport_name, session, s);
-
-      GNUNET_break (0);
-      return;
-    }
+      return GNUNET_NO;
   }
 
   p = GNUNET_malloc (sizeof (struct PendingMessage) + msize);
@@ -1284,6 +1330,7 @@ GNUNET_ATS_address_update (struct GNUNET_ATS_SchedulingHandle *sh,
   m->ats_count = htonl (ats_count);
   m->peer = address->peer;
   m->address_length = htons (address->address_length);
+  m->address_local_info = htonl ((uint32_t) address->local_info);
   m->plugin_name_length = htons (namelen);
 
   m->session_id = htonl (s);
@@ -1300,7 +1347,7 @@ GNUNET_ATS_address_update (struct GNUNET_ATS_SchedulingHandle *sh,
   memcpy (&pm[address->address_length], address->transport_name, namelen);
   GNUNET_CONTAINER_DLL_insert_tail (sh->pending_head, sh->pending_tail, p);
   do_transmit (sh);
-  return;
+  return GNUNET_YES;
 }
 
 
@@ -1367,6 +1414,7 @@ GNUNET_ATS_address_in_use (struct GNUNET_ATS_SchedulingHandle *sh,
   m->peer = address->peer;
   m->in_use = htons (in_use);
   m->address_length = htons (address->address_length);
+  m->address_local_info = htonl ((uint32_t) address->local_info);
   m->plugin_name_length = htons (namelen);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -1385,7 +1433,10 @@ GNUNET_ATS_address_in_use (struct GNUNET_ATS_SchedulingHandle *sh,
 
 
 /**
- * A session got destroyed, stop including it as a valid address.
+ * An address got destroyed, stop including it as a valid address.
+ *
+ * If a session is given, only the session will be removed, if no session is
+ * given the full address will be deleted.
  *
  * @param sh handle
  * @param address the address
@@ -1442,6 +1493,7 @@ GNUNET_ATS_address_destroyed (struct GNUNET_ATS_SchedulingHandle *sh,
   m->reserved = htonl (0);
   m->peer = address->peer;
   m->address_length = htons (address->address_length);
+  m->address_local_info = htonl ((uint32_t) address->local_info);
   m->plugin_name_length = htons (namelen);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,

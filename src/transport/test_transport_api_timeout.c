@@ -111,8 +111,10 @@ end ()
   {
     ok = disconnects;
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                "Fail! Had %u disconnects while waiting %llu seconds \n",
-                disconnects, WAIT.rel_value);
+                "Fail! Had %u disconnects while waiting %s\n",
+                disconnects,
+		GNUNET_STRINGS_relative_time_to_string (WAIT,
+							GNUNET_YES));
   }
 
   GNUNET_TRANSPORT_TESTING_done (tth);
@@ -147,8 +149,7 @@ end_badly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 static void
 notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+                const struct GNUNET_MessageHeader *message)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received message of type %d from peer %s!\n",
@@ -156,8 +157,7 @@ notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
 }
 
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peer `%4s' connected to us (%p)!\n",
               GNUNET_i2s (peer), cls);
@@ -195,8 +195,8 @@ timer (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
       GNUNET_TIME_relative_add (time_running,
                                 GNUNET_TIME_relative_divide (WAIT, 10));
 
-  if (time_running.rel_value ==
-      GNUNET_TIME_relative_max (time_running, WAIT).rel_value)
+  if (time_running.rel_value_us ==
+      GNUNET_TIME_relative_max (time_running, WAIT).rel_value_us)
   {
     FPRINTF (stderr, "%s",  "100%%\n");
     shutdown_flag = GNUNET_YES;
@@ -223,7 +223,10 @@ testing_connect_cb (struct PeerContext *p1, struct PeerContext *p2, void *cls)
 
   shutdown_flag = GNUNET_NO;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Waiting for %llu seconds\n", (WAIT.rel_value) / 1000);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Waiting for %s\n",
+	      GNUNET_STRINGS_relative_time_to_string (WAIT,
+						      GNUNET_YES));
 
   if (die_task != GNUNET_SCHEDULER_NO_TASK)
     GNUNET_SCHEDULER_cancel (die_task);
@@ -251,6 +254,7 @@ start_cb (struct PeerContext *p, void *cls)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Test tries to connect peer %u (`%s') -> peer %u (`%s')\n",
               p1->no, sender_c, p2->no, GNUNET_i2s (&p2->id));
+  GNUNET_free (sender_c);
 
   cc = GNUNET_TRANSPORT_TESTING_connect_peers (tth, p1, p2, &testing_connect_cb,
                                                NULL);

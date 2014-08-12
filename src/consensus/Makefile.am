@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 pkgcfgdir= $(pkgdatadir)/config.d/
 
@@ -8,7 +8,7 @@ pkgcfg_DATA = \
   consensus.conf
 
 if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
+ WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 endif
 
 if USE_COVERAGE
@@ -16,55 +16,55 @@ if USE_COVERAGE
 endif
 
 bin_PROGRAMS = \
- gnunet-consensus \
- gnunet-consensus-start-peers \
- gnunet-consensus-ibf
+ gnunet-consensus-profiler
 
 libexec_PROGRAMS = \
  gnunet-service-consensus
 
+# FIXME: add option "configure --with-evil"?
+if HAVE_EXPERIMENTAL
+libexec_PROGRAMS += \
+ gnunet-service-evil-consensus
+endif
+
 lib_LTLIBRARIES = \
   libgnunetconsensus.la
 
-gnunet_consensus_SOURCES = \
- gnunet-consensus.c
-gnunet_consensus_LDADD = \
+gnunet_consensus_profiler_SOURCES = \
+ gnunet-consensus-profiler.c
+gnunet_consensus_profiler_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/consensus/libgnunetconsensus.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   $(GN_LIBINTL)
-gnunet_consensus_DEPENDENCIES = \
+gnunet_consensus_profiler_DEPENDENCIES = \
   libgnunetconsensus.la
-
-gnunet_consensus_start_peers_SOURCES = \
- gnunet-consensus-start-peers.c
-gnunet_consensus_start_peers_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/consensus/libgnunetconsensus.la \
-  $(GN_LIBINTL)
-gnunet_consensus_start_peers_DEPENDENCIES = \
-  libgnunetconsensus.la
-
-gnunet_consensus_ibf_SOURCES = \
- gnunet-consensus-ibf.c \
- ibf.c
-gnunet_consensus_ibf_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL)
 
 gnunet_service_consensus_SOURCES = \
- gnunet-service-consensus.c \
- ibf.c
+ gnunet-service-consensus.c
 gnunet_service_consensus_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/stream/libgnunetstream.la \
-  $(top_builddir)/src/mesh/libgnunetmesh.la \
+  $(top_builddir)/src/set/libgnunetset.la \
   $(GN_LIBINTL)
+gnunet_service_consensus_DEPENDENCIES = \
+  $(top_builddir)/src/set/libgnunetset.la
+
+gnunet_service_evil_consensus_SOURCES = \
+ gnunet-service-consensus.c \
+ consensus_protocol.h
+gnunet_service_evil_consensus_LDADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(top_builddir)/src/core/libgnunetcore.la \
+  $(top_builddir)/src/set/libgnunetset.la \
+  $(GN_LIBINTL)
+gnunet_service_evil_consensus_DEPENDENCIES = \
+  $(top_builddir)/src/set/libgnunetset.la
+gnunet_service_evil_consensus_CFLAGS = -DEVIL
 
 libgnunetconsensus_la_SOURCES = \
-  consensus_api.c
+  consensus_api.c \
+  consensus.h
 libgnunetconsensus_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(LTLIBINTL)
@@ -75,6 +75,7 @@ check_PROGRAMS = \
  test_consensus_api
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_PROGRAMS)
 endif
 

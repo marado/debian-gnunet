@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
   WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
@@ -24,9 +24,11 @@ noinst_PROGRAMS = \
  gnunet-hello
 
 check_PROGRAMS = \
- test_hello
+ test_hello \
+ test_friend_hello
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_PROGRAMS)
 endif
 
@@ -36,6 +38,11 @@ test_hello_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la  
 
+test_friend_hello_SOURCES = \
+ test_friend_hello.c
+test_friend_hello_LDADD = \
+ $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/util/libgnunetutil.la  
 
 gnunet_hello_SOURCES = \
  gnunet-hello.c

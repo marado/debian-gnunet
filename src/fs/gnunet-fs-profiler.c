@@ -20,7 +20,7 @@
 
 /**
  * @file fs/gnunet-fs-profiler.c
- * @brief tool to benchmark/profile file-sharing 
+ * @brief tool to benchmark/profile file-sharing
  * @author Christian Grothoff
  */
 #include "platform.h"
@@ -117,6 +117,7 @@ terminate_task (void *cls,
 {
   terminate_taskid = GNUNET_SCHEDULER_NO_TASK;
   GNUNET_TESTBED_get_statistics (0, NULL,
+                                 NULL, NULL,
 				 &process_stats,
 				 &shutdown_task,
 				 NULL);
@@ -127,21 +128,31 @@ terminate_task (void *cls,
  * Signature of a main function for a testcase.
  *
  * @param cls closure
+ * @param h the run handle
  * @param num_peers number of peers in 'peers'
  * @param peers handle to peers run in the testbed
+ * @param links_succeeded the number of overlay link connection attempts that
+ *          succeeded
+ * @param links_failed the number of overlay link connection attempts that
+ *          failed
  */
 static void
-test_master (void *cls, unsigned int num_peers, struct GNUNET_TESTBED_Peer **peers)
+test_master (void *cls,
+             struct GNUNET_TESTBED_RunHandle *h,
+             unsigned int num_peers,
+             struct GNUNET_TESTBED_Peer **peers,
+             unsigned int links_succeeded,
+             unsigned int links_failed)
 {
   // const struct GNUNET_CONFIGURATION_Handle *cfg = cls;
   // FIXME: enable clients to signal 'completion' before timeout;
   // in that case, run the 'terminate_task' "immediately"
 
-  if (0 != timeout.rel_value)
+  if (0 != timeout.rel_value_us)
     terminate_taskid = GNUNET_SCHEDULER_add_delayed (timeout,
 						     &terminate_task, NULL);
   else
-    terminate_taskid = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, 
+    terminate_taskid = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
 						     &terminate_task,
 						     NULL);
 }

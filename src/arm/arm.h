@@ -36,34 +36,81 @@
 GNUNET_NETWORK_STRUCT_BEGIN
 
 /**
+ * Status update from ARM to client.
+ */
+struct GNUNET_ARM_StatusMessage
+{
+
+  /**
+   * Reply to client, of type is GNUNET_MESSAGE_TYPE_ARM_STATUS.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Status from the 'enum GNUNET_ARM_ServiceStatus'
+   */
+  uint32_t status;
+
+  /* followed by a 0-terminated service name */
+};
+
+struct GNUNET_ARM_Message
+{
+  /**
+   * Reply to client, type is #GNUNET_MESSAGE_TYPE_ARM_RESULT or
+   * #GNUNET_MESSAGE_TYPE_ARM_LIST_RESULT.
+   * OR
+   * Request from client, type is #GNUNET_MESSAGE_TYPE_ARM_START or
+   * #GNUNET_MESSAGE_TYPE_ARM_STOP.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * For alignment.
+   */
+  uint32_t reserved;
+
+  /**
+   * ID of a request that is being replied to.
+   * OR
+   * ID of a request that is being sent.
+   */
+  uint64_t request_id;
+
+  /* For requests - followed by a 0-terminated service name */
+};
+
+
+/**
  * Reply from ARM to client.
  */
 struct GNUNET_ARM_ResultMessage
 {
 
   /**
-   * Reply to client, of type is GNUNET_MESSAGE_TYPE_ARM_RESULT. 
+   * Reply to client, of type is #GNUNET_MESSAGE_TYPE_ARM_RESULT, with an ID.
    */
-  struct GNUNET_MessageHeader header;
-  
+  struct GNUNET_ARM_Message arm_msg;
+
   /**
-   * Status from the 'enum GNUNET_ARM_ProcessStatus'
+   * Result from the `enum GNUNET_ARM_Result`
    */
-  uint32_t status;
+  uint32_t result;
 };
 
 /**
- * Reply from ARM to client for the 
- * GNUNET_MESSAGE_TYPE_ARM_LIST request followed by count 
+ * Reply from ARM to client for the
+ * GNUNET_MESSAGE_TYPE_ARM_LIST request followed by count
  * '\0' terminated strings. header->size contains the
  * total size (including all strings).
  */
 struct GNUNET_ARM_ListResultMessage
 {
   /**
-   * Reply to client is of type GNUNET_MESSAGE_TYPE_ARM_LIST_RESULT
+   * Reply to client, of type is #GNUNET_MESSAGE_TYPE_ARM_LIST_RESULT,
+   * with an ID.
    */
-  struct GNUNET_MessageHeader header;
+  struct GNUNET_ARM_Message arm_msg;
 
   /**
    * Number of '\0' terminated strings that follow

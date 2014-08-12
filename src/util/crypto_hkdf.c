@@ -87,11 +87,11 @@ doHMAC (gcry_md_hd_t mac, const void *key, size_t key_len, const void *buf,
  * @brief Generate pseudo-random key
  * @param mac gcrypt HMAC handle
  * @param xts salt
- * @param xts_len length of the salt
+ * @param xts_len length of the @a xts salt
  * @param skm source key material
- * @param skm_len length of skm
+ * @param skm_len length of @a skm
  * @param prk result buffer (allocated by caller; at least gcry_md_dlen() bytes)
- * @return GNUNET_YES on success
+ * @return #GNUNET_YES on success
  */
 static int
 getPRK (gcry_md_hd_t mac, const void *xts, size_t xts_len, const void *skm,
@@ -131,39 +131,41 @@ dump (const char *src, const void *p, unsigned int l)
  * @param xtr_algo hash algorithm for the extraction phase, GCRY_MD_...
  * @param prf_algo hash algorithm for the expansion phase, GCRY_MD_...
  * @param xts salt
- * @param xts_len length of xts
+ * @param xts_len length of @a xts
  * @param skm source key material
- * @param skm_len length of skm
+ * @param skm_len length of @a skm
  * @param argp va_list of void * & size_t pairs for context chunks
- * @return GNUNET_YES on success
+ * @return #GNUNET_YES on success
  */
 int
 GNUNET_CRYPTO_hkdf_v (void *result, size_t out_len, int xtr_algo, int prf_algo,
                       const void *xts, size_t xts_len, const void *skm,
                       size_t skm_len, va_list argp)
 {
+  gcry_md_hd_t xtr;
+  gcry_md_hd_t prf;
   const void *hc;
-  unsigned long i, t, d;
+  unsigned long i;
+  unsigned long t;
+  unsigned long d;
   unsigned int k = gcry_md_get_algo_dlen (prf_algo);
   unsigned int xtr_len = gcry_md_get_algo_dlen (xtr_algo);
   char prk[xtr_len];
   int ret;
-  gcry_md_hd_t xtr, prf;
   size_t ctx_len;
   va_list args;
 
-  if (k == 0)
+  if (0 == k)
     return GNUNET_SYSERR;
-
-  if (gcry_md_open (&xtr, xtr_algo, GCRY_MD_FLAG_HMAC) != GPG_ERR_NO_ERROR)
+  if (GPG_ERR_NO_ERROR !=
+      gcry_md_open (&xtr, xtr_algo, GCRY_MD_FLAG_HMAC))
     return GNUNET_SYSERR;
-
-  if (gcry_md_open (&prf, prf_algo, GCRY_MD_FLAG_HMAC) != GPG_ERR_NO_ERROR)
+  if (GPG_ERR_NO_ERROR !=
+      gcry_md_open (&prf, prf_algo, GCRY_MD_FLAG_HMAC))
   {
     gcry_md_close (xtr);
     return GNUNET_SYSERR;
   }
-
   va_copy (args, argp);
 
   ctx_len = 0;
@@ -261,9 +263,8 @@ GNUNET_CRYPTO_hkdf_v (void *result, size_t out_len, int xtr_algo, int prf_algo,
 hkdf_error:
   ret = GNUNET_SYSERR;
 hkdf_ok:
-  gcry_md_close (prf);
   gcry_md_close (xtr);
-
+  gcry_md_close (prf);
   return ret;
 }
 
@@ -275,10 +276,10 @@ hkdf_ok:
  * @param xtr_algo hash algorithm for the extraction phase, GCRY_MD_...
  * @param prf_algo hash algorithm for the expansion phase, GCRY_MD_...
  * @param xts salt
- * @param xts_len length of xts
+ * @param xts_len length of @a xts
  * @param skm source key material
- * @param skm_len length of skm
- * @return GNUNET_YES on success
+ * @param skm_len length of @a skm
+ * @return #GNUNET_YES on success
  */
 int
 GNUNET_CRYPTO_hkdf (void *result, size_t out_len, int xtr_algo, int prf_algo,

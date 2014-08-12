@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -24,7 +24,7 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_common.h"
+#include "gnunet_util_lib.h"
 #if HAVE_MALLOC_H
 #include <malloc.h>
 #endif
@@ -197,6 +197,9 @@ GNUNET_xrealloc_ (void *ptr, size_t n, const char *filename, int linenumber)
 #if WINDOWS
 #define M_SIZE(p) _msize (p)
 #endif
+#ifdef FREEBSD
+#include <malloc_np.h>
+#endif
 #if HAVE_MALLOC_USABLE_SIZE
 #define M_SIZE(p) malloc_usable_size (p)
 #elif HAVE_MALLOC_SIZE
@@ -224,9 +227,9 @@ GNUNET_xfree_ (void *ptr, const char *filename, int linenumber)
   {
     const uint64_t baadfood = GNUNET_ntohll (0xBAADF00DBAADF00DLL);
     uint64_t *base = ptr;
-    size_t s = M_SIZE (ptr);  
+    size_t s = M_SIZE (ptr);
     size_t i;
-    
+
     for (i=0;i<s/8;i++)
       base[i] = baadfood;
     memcpy (&base[s/8], &baadfood, s % 8);
@@ -258,7 +261,7 @@ GNUNET_xstrdup_ (const char *str, const char *filename, int linenumber)
 
 #if ! HAVE_STRNLEN
 static size_t
-strnlen (const char *s, 
+strnlen (const char *s,
 	 size_t n)
 {
   const char *e;

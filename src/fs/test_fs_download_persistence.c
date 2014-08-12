@@ -162,12 +162,14 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
 		(unsigned long long) event->value.publish.specifics.
 		progress.offset);
     break;
+  case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
+    break;
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
     printf ("Publishing complete, %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000LL /
+            (unsigned long long) (FILESIZE * 1000000LL /
                                   (1 +
                                    GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value) / 1024LL));
+                                   (start).rel_value_us) / 1024LL));
     fn = GNUNET_DISK_mktemp ("gnunet-download-test-dst");
     start = GNUNET_TIME_absolute_get ();
     GNUNET_assert (download == NULL);
@@ -179,10 +181,10 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
   case GNUNET_FS_STATUS_DOWNLOAD_COMPLETED:
     consider_restart (event->status);
     printf ("Download complete,  %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000LL /
+            (unsigned long long) (FILESIZE * 1000000LL /
                                   (1 +
                                    GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value) / 1024LL));
+                                   (start).rel_value_us) / 1024LL));
     GNUNET_SCHEDULER_add_now (&abort_download_task, NULL);
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_PROGRESS:
@@ -276,7 +278,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
 
 
 static void
-run (void *cls, 
+run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *c,
      struct GNUNET_TESTING_Peer *peer)
 {

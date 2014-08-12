@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     (C) 2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -22,13 +22,8 @@
  * @brief testcase for namestore_api.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
 #include "gnunet_namestore_service.h"
 #include "gnunet_testing_lib.h"
-#include "namestore.h"
-#include "gnunet_signatures.h"
-
-#define RECORDS 5
 
 #define TEST_RECORD_TYPE 1234
 
@@ -36,32 +31,38 @@
 
 #define TEST_RECORD_DATA 'a'
 
-#define TEST_REMOVE_RECORD_TYPE 4321
-
-#define TEST_REMOVE_RECORD_DATALEN 255
-
-#define TEST_REMOVE_RECORD_DATA 'b'
-
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 100)
 
 
-static struct GNUNET_NAMESTORE_Handle * nsh;
+static struct GNUNET_NAMESTORE_Handle *nsh;
 
 static GNUNET_SCHEDULER_TaskIdentifier endbadly_task;
 
-static struct GNUNET_CRYPTO_RsaPrivateKey * privkey;
+static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
-static struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded pubkey;
-
-static struct GNUNET_CRYPTO_RsaSignature *s_signature;
-
-static struct GNUNET_HashCode s_zone;
-
-static struct GNUNET_NAMESTORE_RecordData *s_rd;
-
-static char *s_name;
+static struct GNUNET_CRYPTO_EcdsaPublicKey pubkey;
 
 static int res;
+
+static struct GNUNET_NAMESTORE_QueueEntry *nsqe;
+
+static char *directory;
+
+static void
+cleanup ()
+{
+  if (NULL != nsh)
+  {
+    GNUNET_NAMESTORE_disconnect (nsh);
+    nsh = NULL;
+  }
+  if (NULL != privkey)
+  {
+    GNUNET_free (privkey);
+    privkey = NULL;
+  }
+  GNUNET_SCHEDULER_shutdown ();
+}
 
 
 /**
@@ -73,105 +74,55 @@ static int res;
 static void
 endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
-  if (nsh != NULL)
-    GNUNET_NAMESTORE_disconnect (nsh);
-  nsh = NULL;
-  if (privkey != NULL)
-    GNUNET_CRYPTO_rsa_key_free (privkey);
-  privkey = NULL;
-  GNUNET_free_non_null (s_name);
+  if (NULL != nsqe)
+  {
+    GNUNET_NAMESTORE_cancel (nsqe);
+    nsqe = NULL;
+  }
+  cleanup ();
   res = 1;
 }
 
 
 static void
-end (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+end (void *cls,
+     const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
-  int c;
-
-  if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
-  {
-    GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_NO_TASK;
-  }
-  for (c = 0; c < RECORDS; c++)
-    GNUNET_free_non_null((void *) s_rd[c].data);
-  GNUNET_free (s_rd);
-
-  if (privkey != NULL)
-    GNUNET_CRYPTO_rsa_key_free (privkey);
-  privkey = NULL;
-  if (nsh != NULL)
-    GNUNET_NAMESTORE_disconnect (nsh);
-  nsh = NULL;
-  GNUNET_free_non_null (s_name);
-}
-
-
-static void
-remove_cont (void *cls, int32_t success, const char *emsg)
-{
-  char *name = cls;
-
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Remove record for `%s': %s `%s'\n", name, (success == GNUNET_YES) ? "SUCCESS" : "FAIL", emsg);
-  if (GNUNET_NO == success)
-  {
-    res = 0;
-  }
-  else
-  {
-    res = 1;
-    GNUNET_break (0);
-  }
-  GNUNET_SCHEDULER_add_now(&end, NULL);
+  cleanup ();
+  res = 0;
 }
 
 
 static void
 put_cont (void *cls, int32_t success, const char *emsg)
 {
-  char *name = cls;
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Name store added record for `%s': %s\n", name, (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
-  if (success == GNUNET_OK)
+  GNUNET_assert (NULL != cls);
+  nsqe = NULL;
+  if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
   {
-    res = 0;
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Removing non existing record for `%s'\n", name);
-
-    struct GNUNET_NAMESTORE_RecordData rd;
-    char data[TEST_REMOVE_RECORD_DATALEN];
-
-    rd.expiration_time = GNUNET_TIME_absolute_get().abs_value;
-    rd.record_type = TEST_REMOVE_RECORD_TYPE;
-    rd.data_size = TEST_REMOVE_RECORD_DATALEN;
-    rd.data = &data;
-
-    GNUNET_NAMESTORE_record_remove (nsh, privkey, name, &rd, &remove_cont, name);
+    GNUNET_SCHEDULER_cancel (endbadly_task);
+    endbadly_task = GNUNET_SCHEDULER_NO_TASK;
   }
-  else
-  {
-    res = 1;
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to put records for name `%s'\n", name);
-    GNUNET_SCHEDULER_add_now(&end, NULL);
+
+  switch (success) {
+    case GNUNET_NO:
+      /* We expected GNUNET_NO, since record was not found */
+      GNUNET_SCHEDULER_add_now (&end, NULL);
+      break;
+    case GNUNET_OK:
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  "Namestore could remove non-existing record: `%s'\n",
+                  (NULL !=emsg) ? emsg : "");
+      GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+      break;
+    case GNUNET_SYSERR:
+    default:
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  "Namestore failed: `%s'\n",
+                  (NULL !=emsg) ? emsg : "");
+      GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+      break;
   }
-}
-
-
-static struct GNUNET_NAMESTORE_RecordData *
-create_record (unsigned int count)
-{
-  unsigned int c;
-  struct GNUNET_NAMESTORE_RecordData * rd;
-
-  rd = GNUNET_malloc (count * sizeof (struct GNUNET_NAMESTORE_RecordData));
-  for (c = 0; c < count; c++)
-  {
-    rd[c].expiration_time = GNUNET_TIME_absolute_get().abs_value;
-    rd[c].record_type = TEST_RECORD_TYPE;
-    rd[c].data_size = TEST_RECORD_DATALEN;
-    rd[c].data = GNUNET_malloc(TEST_RECORD_DATALEN);
-    memset ((char *) rd[c].data, TEST_RECORD_DATA, TEST_RECORD_DATALEN);
-  }
-  return rd;
 }
 
 
@@ -181,44 +132,36 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   char *hostkey_file;
-  size_t rd_ser_len;
-  struct GNUNET_TIME_Absolute et;
+  const char * name = "dummy.dummy.gnunet";
 
-  endbadly_task = GNUNET_SCHEDULER_add_delayed(TIMEOUT,endbadly, NULL);
+  directory = NULL;
+  GNUNET_CONFIGURATION_get_value_string(cfg, "PATHS", "GNUNET_TEST_HOME", &directory);
+  GNUNET_DISK_directory_remove (directory);
 
-  /* load privat key */
-  GNUNET_asprintf(&hostkey_file,"zonefiles%s%s",DIR_SEPARATOR_STR,
-      "N0UJMP015AFUNR2BTNM3FKPBLG38913BL8IDMCO2H0A1LIB81960.zkey");
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Using zonekey file `%s' \n", hostkey_file);
-  privkey = GNUNET_CRYPTO_rsa_key_create_from_file(hostkey_file);
+  endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
+						&endbadly, NULL);
+  GNUNET_asprintf (&hostkey_file,
+		   "zonefiles%s%s",
+		   DIR_SEPARATOR_STR,
+		   "N0UJMP015AFUNR2BTNM3FKPBLG38913BL8IDMCO2H0A1LIB81960.zkey");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Using zonekey file `%s' \n",
+              hostkey_file);
+  privkey = GNUNET_CRYPTO_ecdsa_key_create_from_file (hostkey_file);
   GNUNET_free (hostkey_file);
   GNUNET_assert (privkey != NULL);
-  /* get public key */
-  GNUNET_CRYPTO_rsa_key_get_public(privkey, &pubkey);
+  GNUNET_CRYPTO_ecdsa_key_get_public (privkey, &pubkey);
 
-  /* create record */
-  s_name = GNUNET_NAMESTORE_normalize_string ("DUMMY.dummy.gnunet");
-  s_rd = create_record (RECORDS);
-
-  rd_ser_len = GNUNET_NAMESTORE_records_get_size(RECORDS, s_rd);
-  char rd_ser[rd_ser_len];
-  GNUNET_NAMESTORE_records_serialize(RECORDS, s_rd, rd_ser_len, rd_ser);
-
-  /* sign */
-  et.abs_value = s_rd[0].expiration_time;
-  s_signature = GNUNET_NAMESTORE_create_signature(privkey, et, s_name, s_rd, RECORDS);
-
-  /* create random zone hash */
-  GNUNET_CRYPTO_hash (&pubkey, sizeof (struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded), &s_zone);
-
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Name: `%s' Zone: `%s' \n", s_name, GNUNET_h2s_full(&s_zone));
   nsh = GNUNET_NAMESTORE_connect (cfg);
   GNUNET_break (NULL != nsh);
-  GNUNET_break (s_rd != NULL);
-  GNUNET_break (s_name != NULL);
-  GNUNET_NAMESTORE_record_put (nsh, &pubkey, s_name,
-                              GNUNET_TIME_UNIT_FOREVER_ABS,
-                              RECORDS, s_rd, s_signature, put_cont, s_name);
+  nsqe = GNUNET_NAMESTORE_records_store (nsh, privkey, name,
+                                         0, NULL,
+                                         &put_cont, (void *) name);
+  if (NULL == nsqe)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+  	      _("Namestore cannot store no block\n"));
+  }
 }
 
 
@@ -226,14 +169,19 @@ int
 main (int argc, char *argv[])
 {
   res = 1;
-  if (0 != 
-      GNUNET_TESTING_service_run ("test-namestore-api-remove-not-existing-record",
-				  "namestore",
-				  "test_namestore_api.conf",
-				  &run,
-				  NULL))
-    return 1;
-  GNUNET_free_non_null (s_signature);
+  if (0 !=
+      GNUNET_TESTING_peer_run ("test-namestore-api",
+                               "test_namestore_api.conf",
+                               &run,
+                               NULL))
+  {
+    res = 1;
+  }
+  if (NULL != directory)
+  {
+      GNUNET_DISK_directory_remove (directory);
+      GNUNET_free (directory);
+  }
   return res;
 }
 

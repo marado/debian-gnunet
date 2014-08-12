@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 pkgcfgdir= $(pkgdatadir)/config.d/
 
@@ -19,7 +19,7 @@ endif
 lib_LTLIBRARIES = libgnunetarm.la
 
 libgnunetarm_la_SOURCES = \
-  arm_api.c arm.h
+  arm_api.c arm_monitor_api.c arm.h
 libgnunetarm_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
@@ -29,11 +29,13 @@ libgnunetarm_la_LDFLAGS = \
 
 
 bin_PROGRAMS = \
- gnunet-arm 
+ gnunet-arm
+
+noinst_PROGRAMS = \
+ mockup-service
 
 libexec_PROGRAMS = \
- gnunet-service-arm \
- mockup-service 
+ gnunet-service-arm
 
 gnunet_arm_SOURCES = \
  gnunet-arm.c         
@@ -64,10 +66,13 @@ check_PROGRAMS = \
  test_exponential_backoff \
  test_gnunet_service_arm
 
+if HAVE_PYTHON
 check_SCRIPTS = \
  test_gnunet_arm.py
+endif
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_PROGRAMS)  $(check_SCRIPTS)
 endif
 
@@ -101,5 +106,4 @@ test_gnunet_arm.py: test_gnunet_arm.py.in Makefile
 
 EXTRA_DIST = \
   test_arm_api_data.conf \
-  test_gnunet_arm.py.in \
-  do_start_process.c
+  test_gnunet_arm.py.in 

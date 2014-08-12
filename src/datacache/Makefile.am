@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/gnunet
 
@@ -70,7 +70,7 @@ libgnunet_plugin_datacache_postgres_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_PLUGIN_LDFLAGS) $(POSTGRES_LDFLAGS) -lpq
 libgnunet_plugin_datacache_postgres_la_CPPFLAGS = \
- $(POSTGRES_CPPFLAGS)
+ $(POSTGRES_CPPFLAGS) $(AM_CPPFLAGS)
 libgnunet_plugin_datacache_postgres_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS) $(POSTGRES_LDFLAGS) -lpq
 
@@ -83,6 +83,7 @@ libgnunet_plugin_datacache_template_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 
+if HAVE_TESTING
 if HAVE_SQLITE
 if HAVE_BENCHMARKS
  SQLITE_BENCHMARKS = \
@@ -113,6 +114,7 @@ POSTGRES_TESTS = \
  test_datacache_quota_postgres \
  $(POSTGRES_BENCHMARKS)
 endif
+endif
 
 check_PROGRAMS = \
  $(SQLITE_TESTS) \
@@ -120,6 +122,7 @@ check_PROGRAMS = \
  $(POSTGRES_TESTS) 
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_PROGRAMS)
 endif
 

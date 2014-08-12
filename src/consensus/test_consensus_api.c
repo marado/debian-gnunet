@@ -32,26 +32,23 @@ static struct GNUNET_CONSENSUS_Handle *consensus;
 
 static struct GNUNET_HashCode session_id;
 
+static unsigned int elements_received;
 
-static int
-conclude_done (void *cls, const struct GNUNET_CONSENSUS_Group *group)
+
+static void
+conclude_done (void *cls)
 {
-  if (NULL == group)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "conclude over\n");
-    GNUNET_SCHEDULER_shutdown ();
-    return GNUNET_NO;
-  }
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "concluded\n");
-  return GNUNET_YES;
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "conclude over\n");
+  if (2 != elements_received)
+    GNUNET_abort ();
+  GNUNET_SCHEDULER_shutdown ();
 }
 
-static int
+static void
 on_new_element (void *cls,
-                struct GNUNET_CONSENSUS_Element *element)
+                const struct GNUNET_SET_Element *element)
 {
-  GNUNET_assert (0);
-  return GNUNET_YES;
+  elements_received++;
 }
 
 static void
@@ -62,7 +59,7 @@ insert_done (void *cls, int success)
   GNUNET_assert (GNUNET_NO == called);
   called = GNUNET_YES;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "insert done\n");
-  GNUNET_CONSENSUS_conclude (consensus, GNUNET_TIME_UNIT_SECONDS, 0, &conclude_done, NULL);
+  GNUNET_CONSENSUS_conclude (consensus, &conclude_done, NULL);
 }
 
 
@@ -85,14 +82,14 @@ on_shutdown (void *cls,
 
 
 static void
-run (void *cls, 
+run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
   char *str = "foo";
 
-  struct GNUNET_CONSENSUS_Element el1 = {"foo", 4, 0};
-  struct GNUNET_CONSENSUS_Element el2 = {"bar", 4, 0};
+  struct GNUNET_SET_Element el1 = {4, 0, "foo"};
+  struct GNUNET_SET_Element el2 = {5, 0, "quux"};
 
   GNUNET_log_setup ("test_consensus_api",
                     "INFO",
@@ -103,7 +100,10 @@ run (void *cls,
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &on_shutdown, NULL);
 
   GNUNET_CRYPTO_hash (str, strlen (str), &session_id);
-  consensus = GNUNET_CONSENSUS_create (cfg, 0, NULL, &session_id, on_new_element, &consensus);
+  consensus = GNUNET_CONSENSUS_create (cfg, 0, NULL, &session_id,
+      GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_SECONDS),
+      GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES),
+      on_new_element, &consensus);
   GNUNET_assert (consensus != NULL);
 
   GNUNET_CONSENSUS_insert (consensus, &el1, NULL, &consensus);

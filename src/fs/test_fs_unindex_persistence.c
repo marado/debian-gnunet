@@ -132,22 +132,24 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
 		(unsigned long long) event->value.publish.specifics.
 		progress.offset);
     break;
+  case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
+    break;
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
     printf ("Publishing complete, %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000 /
+            (unsigned long long) (FILESIZE * 1000000LL /
                                   (1 +
                                    GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value) / 1024));
+                                   (start).rel_value_us) / 1024));
     start = GNUNET_TIME_absolute_get ();
     unindex = GNUNET_FS_unindex_start (fs, fn, "unindex");
     GNUNET_assert (unindex != NULL);
     break;
   case GNUNET_FS_STATUS_UNINDEX_COMPLETED:
     printf ("Unindex complete,  %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000 /
+            (unsigned long long) (FILESIZE * 1000000LL /
                                   (1 +
                                    GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value) / 1024));
+                                   (start).rel_value_us) / 1024));
     GNUNET_SCHEDULER_add_continuation (&abort_unindex_task, NULL,
                                        GNUNET_SCHEDULER_REASON_PREREQ_DONE);
     break;
@@ -189,8 +191,9 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
                                        GNUNET_SCHEDULER_REASON_PREREQ_DONE);
     break;
   case GNUNET_FS_STATUS_UNINDEX_ERROR:
-    FPRINTF (stderr, "Error unindexing file: %s\n",
-             event->value.unindex.specifics.error.message);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+		"Error unindexing file: %s\n",
+		event->value.unindex.specifics.error.message);
     GNUNET_SCHEDULER_add_continuation (&abort_unindex_task, NULL,
                                        GNUNET_SCHEDULER_REASON_PREREQ_DONE);
     break;
@@ -230,7 +233,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
 
 
 static void
-run (void *cls, 
+run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *c,
      struct GNUNET_TESTING_Peer *peer)
 {

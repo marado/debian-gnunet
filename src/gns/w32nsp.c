@@ -26,19 +26,20 @@
  * "Network Programming For Microsoft Windows, 2Nd Edition".
  */
 
-#define INITGUID
-#include <windows.h>
-#include <nspapi.h>
+#define VERBOSE 0
+#if !VERBOSE
+#  define DEBUGLOG(s, ...)
+#endif
+#if VERBOSE
+#  define __printf__ printf
+#  define DEBUGLOG(s, ...) printf (s, ##__VA_ARGS__)
+#endif
+
 #include <stdint.h>
 #include <ws2tcpip.h>
 #include <ws2spi.h>
-
-#if 1
-#  define DEBUGLOG(s, ...)
-#endif
-#if 0
-#  define DEBUGLOG(s, ...) printf (s, ##__VA_ARGS__)
-#endif
+#include <windows.h>
+#include <nspapi.h>
 
 #define WINDOWS 1
 #define MINGW 1
@@ -69,32 +70,15 @@
 #endif
 #endif
 #endif
-#include "gnunet_w32nsp_lib.h"
 #include "w32resolver.h"
+#define INITGUID
+#include "gnunet_w32nsp_lib.h"
+#undef INITGUID
 
 #define NSPAPI_VERSION_MAJOR 4
 #define NSPAPI_VERSION_MINOR 4
 
-#define REPLY_LIFETIME 60*5
-
-#define STATE_BEGIN  0x01
-#define STATE_END    0x02
-#define STATE_REPLY  0x04
-#define STATE_GHBN   0x08
-
-uint64_t
-GNUNET_htonll (uint64_t n)
-{
-#if __BYTE_ORDER == __BIG_ENDIAN
-  return n;
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-  return (((uint64_t) htonl (n)) << 32) + htonl (n >> 32);
-#else
-  #error byteorder undefined
-#endif
-}
-
-CRITICAL_SECTION records_cs;
+static CRITICAL_SECTION records_cs;
 
 struct record
 {
@@ -109,7 +93,7 @@ static struct record *records = NULL;
 static size_t records_len = 0;
 static size_t records_size = 0;
 
-int
+static int
 resize_records ()
 {
   size_t new_size = records_len > 0 ? records_len * 2 : 5;
@@ -127,7 +111,7 @@ resize_records ()
   return 1;
 }
 
-int
+static int
 add_record (SOCKET s, const wchar_t *name, DWORD flags)
 {
   int res = 1;
@@ -158,14 +142,6 @@ add_record (SOCKET s, const wchar_t *name, DWORD flags)
   }
   //LeaveCriticalSection (&records_cs);
   return res;
-}
-
-void
-free_record (int i)
-{
-  if (records[i].name)
-    free (records[i].name);
-  records[i].state = 0;
 }
 
 /* These are not defined by mingw.org headers at the moment*/
@@ -226,7 +202,6 @@ send_name_to_ip_request (LPWSAQUERYSETW lpqsRestrictions,
   char *buf;
   int ret = 1;
   int i;
-  uint32_t id;
   size_t size = sizeof (struct GNUNET_W32RESOLVER_GetMessage);
   size_t namelen = 0;
   if (lpqsRestrictions->lpszServiceInstanceName)
@@ -258,16 +233,16 @@ send_name_to_ip_request (LPWSAQUERYSETW lpqsRestrictions,
   msg->sc_data1 = htonl (lpqsRestrictions->lpServiceClassId->Data1);
   msg->sc_data2 = htons (lpqsRestrictions->lpServiceClassId->Data2);
   msg->sc_data3 = htons (lpqsRestrictions->lpServiceClassId->Data3);
-  msg->sc_data4 = 0;
   for (i = 0; i < 8; i++)
-    msg->sc_data4 |= ((uint64_t) lpqsRestrictions->lpServiceClassId->Data4[i]) << ((7 - i) * 8);
-  msg->sc_data4 = GNUNET_htonll (msg->sc_data4);
+    msg->sc_data4[i] = lpqsRestrictions->lpServiceClassId->Data4[i];
   *resolver = connect_to_dns_resolver ();
   if (*resolver != INVALID_SOCKET)
   {
     if (size != send (*resolver, buf, size, 0))
     {
+#if VERBOSE
       DWORD err = GetLastError ();
+#endif
       closesocket (*resolver);
       *resolver = INVALID_SOCKET;
       DEBUGLOG ("GNUNET_W32NSP_LookupServiceBegin: failed to send request: %lu\n", err);
@@ -281,7 +256,7 @@ send_name_to_ip_request (LPWSAQUERYSETW lpqsRestrictions,
   return ret;
 }
 
-int WSPAPI
+static int WSPAPI
 NSPCleanup (LPGUID lpProviderId)
 {
   DEBUGLOG ("NSPCleanup\n");
@@ -318,7 +293,7 @@ DllMain (HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 
 
-int WSPAPI
+static int WSPAPI
 GNUNET_W32NSP_LookupServiceBegin (LPGUID lpProviderId, LPWSAQUERYSETW lpqsRestrictions,
     LPWSASERVICECLASSINFOW lpServiceClassInfo, DWORD dwControlFlags,
     LPHANDLE lphLookup)
@@ -330,23 +305,23 @@ GNUNET_W32NSP_LookupServiceBegin (LPGUID lpProviderId, LPWSAQUERYSETW lpqsRestri
     if (lpqsRestrictions->dwNameSpace != NS_DNS && lpqsRestrictions->dwNameSpace != NS_ALL)
     {
       DEBUGLOG ("GNUNET_W32NSP_LookupServiceBegin: wrong namespace\n");
-      SetLastError (WSANO_DATA);
+      SetLastError (WSAEINVAL);
       return SOCKET_ERROR;
     }
     if (lpqsRestrictions->lpszServiceInstanceName != NULL)
     {
       wchar_t *s = lpqsRestrictions->lpszServiceInstanceName;
       size_t len = wcslen (s);
-      if (len >= 4 && wcscmp (&s[len - 4], L"zkey") == 0)
+      if (len >= 5 && wcscmp (&s[len - 5], L".zkey") == 0)
       {
       }
-      else if (len >= 4 && wcscmp (&s[len - 4], L"gads") == 0)
+      else if (len >= 4 && wcscmp (&s[len - 4], L".gnu") == 0)
       {
       }
       else
       {
         DEBUGLOG ("GNUNET_W32NSP_LookupServiceBegin: unsupported TLD\n");
-        SetLastError (WSANO_DATA);
+        SetLastError (WSAEINVAL);
         return SOCKET_ERROR;
       }
     }
@@ -377,7 +352,7 @@ GNUNET_W32NSP_LookupServiceBegin (LPGUID lpProviderId, LPWSAQUERYSETW lpqsRestri
   if (ptr) \
     ptr = (ptrtype *) (base + (uintptr_t) ptr)
 
-void
+static void
 UnmarshallWSAQUERYSETW (LPWSAQUERYSETW req)
 {
   int i;
@@ -401,11 +376,11 @@ UnmarshallWSAQUERYSETW (LPWSAQUERYSETW req)
     UnmarshallPtr (req->lpBlob->pBlobData, BYTE, base);
 }
 
-int WSAAPI
+static int WSAAPI
 GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
-    LPDWORD lpdwBufferLength, LPWSAQUERYSET lpqsResults)
+    LPDWORD lpdwBufferLength, LPWSAQUERYSETW lpqsResults)
 {
-  DWORD effective_flags;
+  /*DWORD effective_flags;*/
   int i;
   struct GNUNET_MessageHeader header = {0, 0};
   int rec = -1;
@@ -438,37 +413,37 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
     //LeaveCriticalSection (&records_cs);
     return SOCKET_ERROR;
   }
-  effective_flags = dwControlFlags & records[rec].flags;
+  /*effective_flags = dwControlFlags & records[rec].flags;*/
   if (records[rec].buf)
   {
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: checking buffer\n");
     header = *((struct GNUNET_MessageHeader *) records[rec].buf);
-    if (dwControlFlags & LUP_FLUSHCACHE)
+    if (*lpdwBufferLength < header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage))
     {
-      free (records[rec].buf);
-      records[rec].buf = NULL;
-    }
-    else
-    {
-      if (*lpdwBufferLength < header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage))
-      {
-        DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: client buffer is too small\n");
-        SetLastError (WSAEFAULT);
-        //LeaveCriticalSection (&records_cs);
-        return SOCKET_ERROR;
-      }
-      memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)records[rec].buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
-      free (records[rec].buf);
-      records[rec].buf = NULL;
+      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: client buffer is too small\n");
+      SetLastError (WSAEFAULT);
       //LeaveCriticalSection (&records_cs);
-      UnmarshallWSAQUERYSETW ((LPWSAQUERYSETW) lpqsResults);
-      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: OK (from buffer)\n");
-      return NO_ERROR;
+      return SOCKET_ERROR;
     }
+    memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)records[rec].buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
+    free (records[rec].buf);
+    records[rec].buf = NULL;
+    //LeaveCriticalSection (&records_cs);
+    UnmarshallWSAQUERYSETW ((LPWSAQUERYSETW) lpqsResults);
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: OK (from buffer)\n");
+    return NO_ERROR;
   }
   records[rec].state |= 8;
   //LeaveCriticalSection (&records_cs);
   to_receive = sizeof (header);
   rc = 0;
+#if VERBOSE
+  {
+    unsigned long have;
+    int ior = ioctlsocket ((SOCKET) hLookup, FIONREAD, &have);
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: reading %d bytes as a header from %p, %lu bytes available\n", to_receive, hLookup, have);
+  }
+#endif
   while (to_receive > 0)
   {
     t = recv ((SOCKET) hLookup, &((char *) &header)[rc], to_receive, 0);
@@ -480,6 +455,13 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
     else
       break;
   }
+#if VERBOSE
+  {
+    unsigned long have;
+    int ior = ioctlsocket ((SOCKET) hLookup, FIONREAD, &have);
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: read %d bytes as a header from %p, %lu bytes available\n", rc, hLookup, have);
+  }
+#endif
   //EnterCriticalSection (&records_cs);
   records[rec].state &= ~8;
   if (rc != sizeof (header))
@@ -491,7 +473,7 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
     }
     else
     {
-      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: failed to receive enough data\n");
+      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: failed to receive enough data for a header (rc %d != %u, state is 0x%0X)\n", rc, sizeof (header), records[rec].state);
       SetLastError (WSA_E_NO_MORE);
     }
     records[rec].state |= 4;
@@ -501,12 +483,16 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
   records[rec].state &= ~8;
   header.type = ntohs (header.type);
   header.size = ntohs (header.size);
+  DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: header type %d, header size %u\n", header.type, header.size);
   if (header.type != GNUNET_MESSAGE_TYPE_W32RESOLVER_RESPONSE ||
       (header.type == GNUNET_MESSAGE_TYPE_W32RESOLVER_RESPONSE &&
       header.size == sizeof (header)))
   {
     records[rec].state |= 4;
-    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: header is wrong or type is wrong or no data\n");
+    if (header.type != GNUNET_MESSAGE_TYPE_W32RESOLVER_RESPONSE)
+      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: header type is wrong\n");
+    else
+      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: empty header - no data\n");
     //LeaveCriticalSection (&records_cs);
     SetLastError (WSA_E_NO_MORE);
     return SOCKET_ERROR;
@@ -525,9 +511,18 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
   memcpy (buf, &header, sizeof (header));
   to_receive = header.size - sizeof (header);
   rc = 0;
+#if VERBOSE
+  {
+    unsigned long have;
+    int ior = ioctlsocket ((SOCKET) hLookup, FIONREAD, &have);
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: reading %d bytes as a body from %p, %lu bytes available\n", to_receive, hLookup, have);
+  }
+#endif
   while (to_receive > 0)
   {
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: recv (%d)\n", to_receive);
     t = recv ((SOCKET) hLookup, &((char *) &((struct GNUNET_MessageHeader *) buf)[1])[rc], to_receive, 0);
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: recv returned %d\n", t);
     if (t > 0)
     {
       rc += t;
@@ -536,6 +531,13 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
     else
       break;
   }
+#if VERBOSE
+  {
+    unsigned long have;
+    int ior = ioctlsocket ((SOCKET) hLookup, FIONREAD, &have);
+    DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: read %d bytes as a body from %p, %lu bytes available\n", rc, hLookup, have);
+  }
+#endif
   //EnterCriticalSection (&records_cs);
   records[rec].state &= ~8;
   if (rc != header.size - sizeof (header))
@@ -548,7 +550,7 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
     }
     else
     {
-      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: failed to receive enough data\n");
+      DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: failed to receive enough data for the rest (rc %d != %d, state is 0x%0X)\n", rc, header.size - sizeof (header), records[rec].state);
       SetLastError (WSA_E_NO_MORE);
     }
     records[rec].state |= 4;
@@ -564,6 +566,7 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
     return SOCKET_ERROR;
   }
   //LeaveCriticalSection (&records_cs);
+  DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: writing %d bytes into result buffer\n", header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
   memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
   free (buf);
   DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: OK\n");
@@ -572,15 +575,11 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
   return NO_ERROR;
 }
 
-int WSPAPI
+static int WSPAPI
 GNUNET_W32NSP_LookupServiceEnd (HANDLE hLookup)
 {
-  DWORD effective_flags;
   int i;
-  struct GNUNET_MessageHeader header = {0, 0};
   int rec = -1;
-  int rc;
-  char *buf;
 
   DEBUGLOG ("GNUNET_W32NSP_LookupServiceEnd\n");
   //EnterCriticalSection (&records_cs);
@@ -618,7 +617,7 @@ GNUNET_W32NSP_LookupServiceEnd (HANDLE hLookup)
   return NO_ERROR;
 }
 
-int WSAAPI
+static int WSAAPI
 GNUNET_W32NSP_SetService (LPGUID lpProviderId,
     LPWSASERVICECLASSINFOW lpServiceClassInfo, LPWSAQUERYSETW lpqsRegInfo,
     WSAESETSERVICEOP essOperation, DWORD dwControlFlags)
@@ -628,7 +627,7 @@ GNUNET_W32NSP_SetService (LPGUID lpProviderId,
   return SOCKET_ERROR;
 }
 
-int WSAAPI
+static int WSAAPI
 GNUNET_W32NSP_InstallServiceClass (LPGUID lpProviderId,
     LPWSASERVICECLASSINFOW lpServiceClassInfo)
 {
@@ -638,7 +637,7 @@ GNUNET_W32NSP_InstallServiceClass (LPGUID lpProviderId,
 }
 
 
-int WSAAPI
+static int WSAAPI
 GNUNET_W32NSP_RemoveServiceClass (LPGUID lpProviderId, LPGUID lpServiceClassId)
 {
   DEBUGLOG ("GNUNET_W32NSP_RemoveServiceClass\n");
@@ -646,7 +645,7 @@ GNUNET_W32NSP_RemoveServiceClass (LPGUID lpProviderId, LPGUID lpServiceClassId)
   return SOCKET_ERROR;
 }
 
-int WSAAPI
+static int WSAAPI
 GNUNET_W32NSP_GetServiceClassInfo (LPGUID lpProviderId, LPDWORD lpdwBufSize,
   LPWSASERVICECLASSINFOW lpServiceClassInfo)
 {
@@ -655,7 +654,7 @@ GNUNET_W32NSP_GetServiceClassInfo (LPGUID lpProviderId, LPDWORD lpdwBufSize,
   return SOCKET_ERROR;
 }
 
-int WSAAPI
+static int WSAAPI
 GNUNET_W32NSP_Ioctl (HANDLE hLookup, DWORD dwControlCode, LPVOID lpvInBuffer,
     DWORD cbInBuffer, LPVOID lpvOutBuffer, DWORD cbOutBuffer,
     LPDWORD lpcbBytesReturned, LPWSACOMPLETION lpCompletion,
@@ -671,8 +670,8 @@ GNUNET_W32NSP_Ioctl (HANDLE hLookup, DWORD dwControlCode, LPVOID lpvInBuffer,
  * It is the only function that [should be/is] exported by the
  * provider. All other routines are passed as pointers in lpnspRoutines.
  */
-int WSPAPI
-NSPStartup (LPGUID lpProviderId, LPNSP_ROUTINE lpnspRoutines)
+int WSAAPI
+GNUNET_W32NSP_NSPStartup (LPGUID lpProviderId, LPNSP_ROUTINE lpnspRoutines)
 {
   if (IsEqualGUID (lpProviderId, &GNUNET_NAMESPACE_PROVIDER_DNS))
   {
@@ -684,7 +683,7 @@ NSPStartup (LPGUID lpProviderId, LPNSP_ROUTINE lpnspRoutines)
      * If it does, you need to use FIELD_OFFSET() macro to get offset of NSPIoctl
      * and use that offset as cbSize.
      */
-    lpnspRoutines->cbSize = sizeof(NSP_ROUTINE_XP);
+    lpnspRoutines->cbSize = sizeof(NSP_ROUTINE);
 
     lpnspRoutines->dwMajorVersion = NSPAPI_VERSION_MAJOR;
     lpnspRoutines->dwMinorVersion = NSPAPI_VERSION_MINOR;
@@ -696,7 +695,8 @@ NSPStartup (LPGUID lpProviderId, LPNSP_ROUTINE lpnspRoutines)
     lpnspRoutines->NSPInstallServiceClass = GNUNET_W32NSP_InstallServiceClass;
     lpnspRoutines->NSPRemoveServiceClass = GNUNET_W32NSP_RemoveServiceClass;
     lpnspRoutines->NSPGetServiceClassInfo = GNUNET_W32NSP_GetServiceClassInfo;
-    ((NSP_ROUTINE_XP *) lpnspRoutines)->NSPIoctl = GNUNET_W32NSP_Ioctl;
+    /*((NSP_ROUTINE_XP *) lpnspRoutines)->NSPIoctl = GNUNET_W32NSP_Ioctl;*/
+    lpnspRoutines->NSPIoctl = GNUNET_W32NSP_Ioctl;
     return NO_ERROR;
   }
   SetLastError (WSAEINVALIDPROVIDER);

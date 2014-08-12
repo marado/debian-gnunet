@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      (C) 2012-2014 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -55,74 +55,11 @@ struct GNUNET_GNS_Handle;
  */
 struct GNUNET_GNS_LookupRequest;
 
-/**
- * Handle to control a shorten operation.
- */
-struct GNUNET_GNS_ShortenRequest;
-
-/**
- * Handle to control a get authority operation
- */
-struct GNUNET_GNS_GetAuthRequest;
-
-/**
- * Record types
- * Based on GNUNET_DNSPARSER_TYPEs (standard DNS)
- */
-enum GNUNET_GNS_RecordType
-{
-  /* Standard DNS */
-  /* struct in_addr */
-  GNUNET_GNS_RECORD_A          = GNUNET_DNSPARSER_TYPE_A,
-
-  /* char */
-  GNUNET_GNS_RECORD_NS         = GNUNET_DNSPARSER_TYPE_NS,
-
-  /* char */
-  GNUNET_GNS_RECORD_CNAME      = GNUNET_DNSPARSER_TYPE_CNAME,
-
-  /* struct soa_data */
-  GNUNET_GNS_RECORD_SOA        = GNUNET_DNSPARSER_TYPE_SOA,
-
-  /* struct srv_data */
-  GNUNET_GNS_RECORD_SRV        = GNUNET_DNSPARSER_TYPE_SRV,
-
-  /* char */
-  GNUNET_GNS_RECORD_PTR        = GNUNET_DNSPARSER_TYPE_PTR,
-
-  /* uint16_t, char */
-  GNUNET_GNS_RECORD_MX         = GNUNET_DNSPARSER_TYPE_MX,
-
-  /* char */
-  GNUNET_GNS_RECORD_TXT        = GNUNET_DNSPARSER_TYPE_TXT,
-
-  /* struct in6_addr */
-  GNUNET_GNS_RECORD_AAAA       = GNUNET_DNSPARSER_TYPE_AAAA,
-
-  /* GNS specific */
-  /* struct GNUNET_CRYPTO_ShortHashCode */
-  GNUNET_GNS_RECORD_PKEY = GNUNET_NAMESTORE_TYPE_PKEY,
-
-  /* char */
-  GNUNET_GNS_RECORD_PSEU = GNUNET_NAMESTORE_TYPE_PSEU,
-  GNUNET_GNS_RECORD_ANY  = GNUNET_NAMESTORE_TYPE_ANY,
-
-  /* char */
-  GNUNET_GNS_RECORD_LEHO = GNUNET_NAMESTORE_TYPE_LEHO,
-
-  /* struct vpn_data */
-  GNUNET_GNS_RECORD_VPN  = GNUNET_NAMESTORE_TYPE_VPN,
-
-  /* revocation */
-  GNUNET_GNS_RECORD_REV  = GNUNET_NAMESTORE_TYPE_REV
-};
-
 
 /**
  * Initialize the connection with the GNS service.
  *
  * @param cfg configuration to use
- *
  * @return handle to the GNS service, or NULL on error
  */
 struct GNUNET_GNS_Handle *
@@ -138,70 +75,68 @@ void
 GNUNET_GNS_disconnect (struct GNUNET_GNS_Handle *handle);
 
 
-/* *************** Standard API: lookup ******************* */
-
 /**
- * Iterator called on obtained result for a GNS
- * lookup
+ * Iterator called on obtained result for a GNS lookup.
  *
  * @param cls closure
- * @param rd_count number of records
+ * @param rd_count number of records in @a rd
  * @param rd the records in reply
  */
 typedef void (*GNUNET_GNS_LookupResultProcessor) (void *cls,
 						  uint32_t rd_count,
-						  const struct GNUNET_NAMESTORE_RecordData *rd);
-
+						  const struct GNUNET_GNSRECORD_Data *rd);
 
 
 /**
- * Perform an asynchronous lookup operation on the GNS
- * in the default zone.
+ * Options for the GNS lookup.
+ */
+enum GNUNET_GNS_LocalOptions
+{
+  /**
+   * Defaults, look in cache, then in DHT.
+   */
+  GNUNET_GNS_LO_DEFAULT = 0,
+
+  /**
+   * Never look in the DHT, keep request to local cache.
+   */
+  GNUNET_GNS_LO_NO_DHT = 1,
+  
+  /**
+   * For the rightmost label, only look in the cache (it
+   * is our master zone), for the others, the DHT is OK.
+   */
+  GNUNET_GNS_LO_LOCAL_MASTER = 2
+
+};
+
+
+/**
+ * Perform an asynchronous lookup operation on the GNS.
  *
  * @param handle handle to the GNS service
  * @param name the name to look up
- * @param type the GNUNET_GNS_RecordType to look for
- * @param only_cached GNUNET_NO to only check locally not DHT for performance
- * @param shorten_key the private key of the shorten zone (can be NULL)
+ * @param zone zone to look in
+ * @param type the GNS record type to look for
+ * @param options local options for the lookup
+ * @param shorten_zone_key the private key of the shorten zone (can be NULL);
+ *                    specify to enable automatic shortening (given a PSEU
+ *                    record, if a given pseudonym is not yet used in the
+ *                    shorten zone, we automatically add the respective zone
+ *                    under that name)
  * @param proc function to call on result
  * @param proc_cls closure for processor
- *
  * @return handle to the queued request
  */
-struct GNUNET_GNS_LookupRequest*
+struct GNUNET_GNS_LookupRequest *
 GNUNET_GNS_lookup (struct GNUNET_GNS_Handle *handle,
-		   const char * name,
-		   enum GNUNET_GNS_RecordType type,
-		   int only_cached,
-		   struct GNUNET_CRYPTO_RsaPrivateKey *shorten_key,
+		   const char *name,
+		   const struct GNUNET_CRYPTO_EcdsaPublicKey *zone,
+		   uint32_t type,
+		   enum GNUNET_GNS_LocalOptions options,
+		   const struct GNUNET_CRYPTO_EcdsaPrivateKey *shorten_zone_key,
 		   GNUNET_GNS_LookupResultProcessor proc,
 		   void *proc_cls);
-
-
-/**
- * Perform an asynchronous lookup operation on the GNS
- * in the zone specified by 'zone'.
- *
- * @param handle handle to the GNS service
- * @param name the name to look up
- * @param zone the zone to start the resolution in
- * @param type the GNUNET_GNS_RecordType to look for
- * @param only_cached GNUNET_YES to only check locally not DHT for performance
- * @param shorten_key the private key of the shorten zone (can be NULL)
- * @param proc function to call on result
- * @param proc_cls closure for processor
- *
- * @return handle to the queued request
- */
-struct GNUNET_GNS_LookupRequest*
-GNUNET_GNS_lookup_zone (struct GNUNET_GNS_Handle *handle,
-			const char * name,
-			struct GNUNET_CRYPTO_ShortHashCode *zone,
-			enum GNUNET_GNS_RecordType type,
-			int only_cached,
-			struct GNUNET_CRYPTO_RsaPrivateKey *shorten_key,
-			GNUNET_GNS_LookupResultProcessor proc,
-			void *proc_cls);
 
 
 /**
@@ -210,110 +145,8 @@ GNUNET_GNS_lookup_zone (struct GNUNET_GNS_Handle *handle,
  * @param lr the lookup request to cancel
  */
 void
-GNUNET_GNS_cancel_lookup_request (struct GNUNET_GNS_LookupRequest *lr);
+GNUNET_GNS_lookup_cancel (struct GNUNET_GNS_LookupRequest *lr);
 
-/* *************** Standard API: shorten ******************* */
-
-
-/**
- * Processor called on for a name shortening result
- * called only once
- *
- * @param cls closure
- * @param short_name the shortened name or NULL if no result / error
- */
-typedef void (*GNUNET_GNS_ShortenResultProcessor) (void *cls,
-						   const char* short_name);
-
-
-/**
- * Perform a name shortening operation on the GNS.
- *
- * @param handle handle to the GNS service
- * @param name the name to look up
- * @param private_zone the public zone of the private zone
- * @param shorten_zone the public zone of the shorten zone
- * @param proc function to call on result
- * @param proc_cls closure for processor
- * @return handle to the operation
- */
-struct GNUNET_GNS_ShortenRequest*
-GNUNET_GNS_shorten (struct GNUNET_GNS_Handle *handle,
-                    const char * name,
-                    struct GNUNET_CRYPTO_ShortHashCode *private_zone,
-                    struct GNUNET_CRYPTO_ShortHashCode *shorten_zone,
-                    GNUNET_GNS_ShortenResultProcessor proc,
-                    void *proc_cls);
-
-
-/**
- * Perform a name shortening operation on the GNS.
- *
- * @param handle handle to the GNS service
- * @param name the name to look up
- * @param private_zone the public zone of the private zone
- * @param shorten_zone the public zone of the shorten zone
- * @param zone the zone to start the resolution in
- * @param proc function to call on result
- * @param proc_cls closure for processor
- * @return handle to the operation
- */
-struct GNUNET_GNS_ShortenRequest*
-GNUNET_GNS_shorten_zone (struct GNUNET_GNS_Handle *handle,
-                         const char * name,
-                         struct GNUNET_CRYPTO_ShortHashCode *private_zone,
-                         struct GNUNET_CRYPTO_ShortHashCode *shorten_zone,
-                         struct GNUNET_CRYPTO_ShortHashCode *zone,
-                         GNUNET_GNS_ShortenResultProcessor proc,
-                         void *proc_cls);
-
-
-/**
- * Cancel pending shorten request
- *
- * @param sr the lookup request to cancel
- */
-void
-GNUNET_GNS_cancel_shorten_request (struct GNUNET_GNS_ShortenRequest *sr);
-
-
-/* *************** Standard API: get authority ******************* */
-
-
-/**
- * Processor called on for a name shortening result
- * called only once
- *
- * @param cls closure
- * @param auth_name the name of the auhtority or NULL
- */
-typedef void (*GNUNET_GNS_GetAuthResultProcessor) (void *cls,
-						   const char* short_name);
-
-
-/**
- * Perform an authority lookup for a given name.
- *
- * @param handle handle to the GNS service
- * @param name the name to look up authority for
- * @param proc function to call on result
- * @param proc_cls closure for processor
- * @return handle to the operation
- */
-struct GNUNET_GNS_GetAuthRequest*
-GNUNET_GNS_get_authority (struct GNUNET_GNS_Handle *handle,
-			  const char * name,
-			  GNUNET_GNS_GetAuthResultProcessor proc,
-			  void *proc_cls);
-
-
-/**
- * Cancel pending get auth request
- *
- * @param gar the lookup request to cancel
- */
-void
-GNUNET_GNS_cancel_get_auth_request (struct GNUNET_GNS_GetAuthRequest *gar);
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

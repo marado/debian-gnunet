@@ -86,7 +86,7 @@ enum AutoPhase
    * Last phase, we're done.
    */
   AUTO_DONE
-  
+
 };
 
 
@@ -105,12 +105,12 @@ struct GNUNET_NAT_AutoHandle
    * Function to call when done.
    */
   GNUNET_NAT_AutoResultCallback fin_cb;
-  
+
   /**
-   * Closure for 'fin_cb'.
+   * Closure for @e fin_cb.
    */
   void *fin_cb_cls;
-  
+
   /**
    * Handle for active 'GNUNET_NAT_mini_get_external_ipv4'-operation.
    */
@@ -161,7 +161,8 @@ next_phase (struct GNUNET_NAT_AutoHandle *ah);
  * @param tc scheduler callback
  */
 static void
-fail_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+fail_timeout (void *cls,
+              const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_NAT_AutoHandle *ah = cls;
 
@@ -171,7 +172,7 @@ fail_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   ah->task = GNUNET_SCHEDULER_NO_TASK;
   GNUNET_NAT_test_stop (ah->tst);
   ah->tst = NULL;
-  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", 
+  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat",
 					 "ENABLE_ICMP_SERVER",
 					 "NO");
   next_phase (ah);
@@ -183,10 +184,13 @@ fail_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Clean up and update GUI (with success).
  *
  * @param cls the auto handle
- * @param success currently always GNUNET_OK
+ * @param success currently always #GNUNET_OK
+ * @param emsg NULL on success, otherwise an error message
  */
 static void
-result_callback (void *cls, int success)
+result_callback (void *cls,
+                 int success,
+                 const char *emsg)
 {
   struct GNUNET_NAT_AutoHandle *ah = cls;
 
@@ -195,22 +199,24 @@ result_callback (void *cls, int success)
   GNUNET_NAT_test_stop (ah->tst);
   ah->tst = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      success 
+	      success
 	      ? _("NAT traversal with ICMP Server succeeded.\n")
 	      : _("NAT traversal with ICMP Server failed.\n"));
-  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", "ENABLE_ICMP_SERVER", 
+  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", "ENABLE_ICMP_SERVER",
 					 success ? "YES": "NO");
   next_phase (ah);
 }
 
+
 /**
  * Main function for the connection reversal test.
  *
- * @param cls the 'int*' for the result
+ * @param cls the `struct GNUNET_NAT_AutoHandle`
  * @param tc scheduler context
  */
 static void
-reversal_test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+reversal_test (void *cls,
+               const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_NAT_AutoHandle *ah = cls;
 
@@ -247,9 +253,12 @@ test_online (struct GNUNET_NAT_AutoHandle *ah)
  *
  * @param cls closure with our setup context
  * @param addr the address, NULL on errors
+ * @param emsg NULL on success, otherwise an error message
  */
 static void
-set_external_ipv4 (void *cls, const struct in_addr *addr)
+set_external_ipv4 (void *cls,
+                   const struct in_addr *addr,
+                   const char *emsg)
 {
   struct GNUNET_NAT_AutoHandle *ah = cls;
   char buf[INET_ADDRSTRLEN];
@@ -301,18 +310,22 @@ test_external_ip (struct GNUNET_NAT_AutoHandle *ah)
  * Process list of local IP addresses.  Find and set the
  * one of the default interface.
  *
- * @param cls our NAT auto handle
+ * @param cls our `struct GNUNET_NAT_AutoHandle`
  * @param name name of the interface (can be NULL for unknown)
  * @param isDefault is this presumably the default interface
  * @param addr address of this interface (can be NULL for unknown or unassigned)
  * @param broadcast_addr the broadcast address (can be NULL for unknown or unassigned)
  * @param netmask the network mask (can be NULL for unknown or unassigned))
- * @param addrlen length of the address
- * @return GNUNET_OK to continue iteration, GNUNET_SYSERR to abort
+ * @param addrlen length of the @a addr and @a broadcast_addr
+ * @return GNUNET_OK to continue iteration, #GNUNET_SYSERR to abort
  */
 static int
-nipo (void *cls, const char *name, int isDefault, const struct sockaddr *addr,
-      const struct sockaddr *broadcast_addr, const struct sockaddr *netmask,
+nipo (void *cls,
+      const char *name,
+      int isDefault,
+      const struct sockaddr *addr,
+      const struct sockaddr *broadcast_addr,
+      const struct sockaddr *netmask,
       socklen_t addrlen)
 {
   struct GNUNET_NAT_AutoHandle *ah = cls;
@@ -352,7 +365,7 @@ nipo (void *cls, const char *name, int isDefault, const struct sockaddr *addr,
 
 
 /**
- * Determine our local IP addresses; detect internal IP & IPv6-support 
+ * Determine our local IP addresses; detect internal IP & IPv6-support
  *
  * @param ah auto setup context
  */
@@ -361,7 +374,7 @@ test_local_ip (struct GNUNET_NAT_AutoHandle *ah)
 {
   ah->have_v6 = GNUNET_NO;
   GNUNET_OS_network_interfaces_list (&nipo, ah);
-  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", "DISABLEV6", 
+  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", "DISABLEV6",
 					 (GNUNET_YES == ah->have_v6) ? "NO" : "YES");
   next_phase (ah);
 }
@@ -392,14 +405,14 @@ test_upnpc (struct GNUNET_NAT_AutoHandle *ah)
 
   /* test if upnpc is available */
   have_upnpc = (GNUNET_SYSERR !=
-		GNUNET_OS_check_helper_binary ("upnpc"));
+		GNUNET_OS_check_helper_binary ("upnpc", GNUNET_NO, NULL));
   /* FIXME: test if upnpc is actually working, that is, if transports
      start to work once we use UPnP */
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      (have_upnpc) 
+	      (have_upnpc)
 	      ? _("upnpc found, enabling its use\n")
 	      : _("upnpc not found\n"));
-  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", "ENABLE_UPNP", 
+  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", "ENABLE_UPNP",
 					 (GNUNET_YES == have_upnpc) ? "YES" : "NO");
   next_phase (ah);
 }
@@ -426,11 +439,11 @@ test_icmp_server (struct GNUNET_NAT_AutoHandle *ah)
        (GNUNET_YES ==
         GNUNET_CONFIGURATION_get_value_yesno (ah->cfg, "nat", "BEHIND_NAT")) &&
        (GNUNET_YES ==
-        GNUNET_OS_check_helper_binary (binary)));
+        GNUNET_OS_check_helper_binary (binary, GNUNET_YES, "-d 127.0.0.1" ))); // use localhost as source for that one udp-port, ok for testing
   GNUNET_free_non_null (tmp);
   GNUNET_free (binary);
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      (hns) 
+	      (hns)
 	      ? _("gnunet-helper-nat-server found, testing it\n")
 	      : _("No working gnunet-helper-nat-server found\n"));
   if (hns)
@@ -461,11 +474,11 @@ test_icmp_client (struct GNUNET_NAT_AutoHandle *ah)
        (GNUNET_YES !=
         GNUNET_CONFIGURATION_get_value_yesno (ah->cfg, "nat", "BEHIND_NAT")) &&
        (GNUNET_YES ==
-        GNUNET_OS_check_helper_binary (binary)));
+        GNUNET_OS_check_helper_binary (binary, GNUNET_YES, "-d 127.0.0.1 127.0.0.2 42"))); // none of these parameters are actually used in privilege testing mode
   GNUNET_free_non_null (tmp);
   GNUNET_free (binary);
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      (hnc) 
+	      (hnc)
 	      ? _("gnunet-helper-nat-client found, enabling it\n")
 	      : _("gnunet-helper-nat-client not found or behind NAT, disabling it\n"));
   next_phase (ah);
@@ -511,13 +524,13 @@ next_phase (struct GNUNET_NAT_AutoHandle *ah)
     diff = GNUNET_CONFIGURATION_get_diff (ah->initial_cfg,
 					  ah->cfg);
     ah->fin_cb (ah->fin_cb_cls,
-		diff);
+		diff,
+                NULL);
     GNUNET_CONFIGURATION_destroy (diff);
     GNUNET_NAT_autoconfig_cancel (ah);
     return;
   }
 }
-
 
 
 /**
@@ -526,7 +539,7 @@ next_phase (struct GNUNET_NAT_AutoHandle *ah)
  *
  * @param cfg initial configuration
  * @param cb function to call with autoconfiguration result
- * @param cb_cls closure for cb
+ * @param cb_cls closure for @a cb
  * @return handle to cancel operation
  */
 struct GNUNET_NAT_AutoHandle *
@@ -536,21 +549,21 @@ GNUNET_NAT_autoconfig_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
 {
   struct GNUNET_NAT_AutoHandle *ah;
 
-  ah = GNUNET_malloc (sizeof (struct GNUNET_NAT_AutoHandle));
+  ah = GNUNET_new (struct GNUNET_NAT_AutoHandle);
   ah->fin_cb = cb;
   ah->fin_cb_cls = cb_cls;
   ah->cfg = GNUNET_CONFIGURATION_dup (cfg);
   ah->initial_cfg = GNUNET_CONFIGURATION_dup (cfg);
 
   /* never use loopback addresses if user wanted autoconfiguration */
-  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat", 
-					 "USE_LOCALADDR", 
+  GNUNET_CONFIGURATION_set_value_string (ah->cfg, "nat",
+					 "USE_LOCALADDR",
 					 "NO");
   next_phase (ah);
   return ah;
 }
 
-			     
+
 /**
  * Abort autoconfiguration.
  *
@@ -578,7 +591,6 @@ GNUNET_NAT_autoconfig_cancel (struct GNUNET_NAT_AutoHandle *ah)
   GNUNET_CONFIGURATION_destroy (ah->initial_cfg);
   GNUNET_free (ah);
 }
-
 
 
 /* end of nat_auto.c */

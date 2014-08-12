@@ -23,6 +23,7 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
+#include "gnunet_protocols.h"
 #include "gnunet_hello_lib.h"
 
 /**
@@ -34,7 +35,7 @@ struct AddContext
    * Where to add.
    */
   char *buf;
-  
+
   /**
    * Maximum number of bytes left
    */
@@ -45,6 +46,8 @@ struct AddContext
    */
   size_t ret;
 };
+
+static int address_count;
 
 
 /**
@@ -62,13 +65,14 @@ add_to_buf (void *cls, const struct GNUNET_HELLO_Address *address,
   struct AddContext *ac = cls;
   size_t ret;
 
-  ret = GNUNET_HELLO_add_address (address, 
+  ret = GNUNET_HELLO_add_address (address,
 				  GNUNET_TIME_UNIT_FOREVER_ABS,
 				  ac->buf,
 				  ac->max);
   ac->buf += ret;
   ac->max -= ret;
-  ac->ret += ret;  
+  ac->ret += ret;
+  address_count ++;
   return GNUNET_OK;
 }
 
@@ -93,7 +97,7 @@ add_from_hello (void *cls, size_t max, void *buf)
   ac.max = max;
   ac.ret = 0;
   GNUNET_assert (NULL ==
-		 GNUNET_HELLO_iterate_addresses (*orig, 
+		 GNUNET_HELLO_iterate_addresses (*orig,
 						 GNUNET_NO, &add_to_buf,
 						 &ac));
   *orig = NULL;
@@ -107,8 +111,9 @@ main (int argc, char *argv[])
   struct GNUNET_DISK_FileHandle *fh;
   struct GNUNET_HELLO_Message *orig;
   struct GNUNET_HELLO_Message *result;
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded pk;
+  struct GNUNET_CRYPTO_EddsaPublicKey pk;
   uint64_t fsize;
+  address_count = 0;
 
   GNUNET_log_setup ("gnunet-hello", "INFO", NULL);
   if (argc != 2)
@@ -140,7 +145,7 @@ main (int argc, char *argv[])
 	     argv[1]);
     return 1;
   }
-  fh = GNUNET_DISK_file_open (argv[1], 
+  fh = GNUNET_DISK_file_open (argv[1],
 			      GNUNET_DISK_OPEN_READ,
 			      GNUNET_DISK_PERM_USER_READ);
   if (NULL == fh)
@@ -153,8 +158,8 @@ main (int argc, char *argv[])
   }
   {
     char buf[fsize] GNUNET_ALIGN;
-    
-    GNUNET_assert (fsize == 
+
+    GNUNET_assert (fsize ==
 		   GNUNET_DISK_file_read (fh, buf, fsize));
     GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fh));
     orig = (struct GNUNET_HELLO_Message *) buf;
@@ -166,9 +171,10 @@ main (int argc, char *argv[])
 	       argv[1]);
       return 1;
     }
-    result = GNUNET_HELLO_create (&pk, &add_from_hello, &orig);
+    result = GNUNET_HELLO_create (&pk, &add_from_hello, &orig,
+    		GNUNET_HELLO_is_friend_only (orig));
     GNUNET_assert (NULL != result);
-     fh = GNUNET_DISK_file_open (argv[1], 
+     fh = GNUNET_DISK_file_open (argv[1],
 				 GNUNET_DISK_OPEN_WRITE,
 				 GNUNET_DISK_PERM_USER_READ | GNUNET_DISK_PERM_USER_WRITE);
      if (NULL == fh)
@@ -194,6 +200,7 @@ main (int argc, char *argv[])
      }
     GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fh));
   }
+  FPRINTF (stderr, _("Modified %u addresses \n"), address_count);
   return 0;
 }
 

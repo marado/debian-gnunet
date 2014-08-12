@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/include
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -liconv -lstdc++ -lcomdlg32 -lgdi32
@@ -10,7 +10,7 @@ if USE_COVERAGE
 endif
 
 bin_PROGRAMS = \
- gnunet-peerinfo 
+ gnunet-peerinfo
 
 gnunet_peerinfo_SOURCES = \
  gnunet-peerinfo.c \
@@ -18,17 +18,19 @@ gnunet_peerinfo_SOURCES = \
 
 gnunet_peerinfo_LDADD = \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+  $(top_builddir)/src/nat/libgnunetnat.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la 
+  $(top_builddir)/src/util/libgnunetutil.la
 
 if HAVE_PYTHON
 check_SCRIPTS = \
- test_gnunet_peerinfo.py 
+ test_gnunet_peerinfo.py
 endif
 
 if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
 TESTS = $(check_SCRIPTS)
 endif
 

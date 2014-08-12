@@ -19,7 +19,7 @@
 */
 
 /**
- * @file exit/gnunet-helper-exit.c 
+ * @file exit/gnunet-helper-exit.c
  *
  * @brief the helper for exit nodes. Opens a virtual
  * network-interface, sends data received on the if to stdout, sends
@@ -47,6 +47,7 @@
 /**
  * Need 'struct GNUNET_MessageHeader'.
  */
+#include "gnunet_crypto_lib.h"
 #include "gnunet_common.h"
 
 /**
@@ -108,7 +109,7 @@ open_dev_null (int target_fd,
   if (fd == target_fd)
     return;
   if (-1 == dup2 (fd, target_fd))
-  {    
+  {
     (void) close (fd);
     abort ();
   }
@@ -118,13 +119,13 @@ open_dev_null (int target_fd,
 
 /**
  * Run the given command and wait for it to complete.
- * 
+ *
  * @param file name of the binary to run
  * @param cmd command line arguments (as given to 'execv')
  * @return 0 on success, 1 on any error
  */
 static int
-fork_and_exec (const char *file, 
+fork_and_exec (const char *file,
 	       char *const cmd[])
 {
   int status;
@@ -134,8 +135,8 @@ fork_and_exec (const char *file,
   pid = fork ();
   if (-1 == pid)
   {
-    fprintf (stderr, 
-	     "fork failed: %s\n", 
+    fprintf (stderr,
+	     "fork failed: %s\n",
 	     strerror (errno));
     return 1;
   }
@@ -144,25 +145,25 @@ fork_and_exec (const char *file,
     /* we are the child process */
     /* close stdin/stdout to not cause interference
        with the helper's main protocol! */
-    (void) close (0); 
+    (void) close (0);
     open_dev_null (0, O_RDONLY);
-    (void) close (1); 
+    (void) close (1);
     open_dev_null (1, O_WRONLY);
     (void) execv (file, cmd);
     /* can only get here on error */
-    fprintf (stderr, 
-	     "exec `%s' failed: %s\n", 
+    fprintf (stderr,
+	     "exec `%s' failed: %s\n",
 	     file,
 	     strerror (errno));
     _exit (1);
   }
   /* keep running waitpid as long as the only error we get is 'EINTR' */
   while ( (-1 == (ret = waitpid (pid, &status, 0))) &&
-	  (errno == EINTR) ); 
+	  (errno == EINTR) );
   if (-1 == ret)
   {
-    fprintf (stderr, 
-	     "waitpid failed: %s\n", 
+    fprintf (stderr,
+	     "waitpid failed: %s\n",
 	     strerror (errno));
     return 1;
   }
@@ -214,7 +215,7 @@ init_tun (char *dev)
 
   if (-1 == ioctl (fd, TUNSETIFF, (void *) &ifr))
   {
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "Error with ioctl on `%s': %s\n", "/dev/net/tun",
              strerror (errno));
     (void) close (fd);
@@ -254,7 +255,7 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
 
   if (-1 == (fd = socket (PF_INET6, SOCK_DGRAM, 0)))
   {
-    fprintf (stderr, "Error creating socket: %s\n", strerror (errno));    
+    fprintf (stderr, "Error creating socket: %s\n", strerror (errno));
     exit (1);
   }
 
@@ -638,7 +639,7 @@ PROCESS_BUFFER:
  * @param argc must be 6
  * @param argv 0: binary name ("gnunet-helper-exit")
  *             1: tunnel interface name ("gnunet-exit")
- *             2: IPv4 "physical" interface name ("eth0"), or "%" to not do IPv4 NAT
+ *             2: IPv4 "physical" interface name ("eth0"), or "-" to not do IPv4 NAT
  *             3: IPv6 address ("::1"), or "-" to skip IPv6
  *             4: IPv6 netmask length in bits ("64") [ignored if #4 is "-"]
  *             5: IPv4 address ("1.2.3.4"), or "-" to skip IPv4
@@ -668,7 +669,7 @@ main (int argc, char **argv)
     sbin_iptables = "/usr/sbin/iptables";
   else
   {
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "Fatal: executable iptables not found in approved directories: %s\n",
 	     strerror (errno));
     return 1;
@@ -690,7 +691,7 @@ main (int argc, char **argv)
 
   if (-1 == (fd_tun = init_tun (dev)))
   {
-    fprintf (stderr, 
+    fprintf (stderr,
 	     "Fatal: could not initialize tun-interface `%s' with IPv6 %s/%s and IPv4 %s/%s\n",
 	     dev,
 	     argv[3],
@@ -705,13 +706,13 @@ main (int argc, char **argv)
     {
       const char *address = argv[3];
       long prefix_len = atol (argv[4]);
-      
+
       if ((prefix_len < 1) || (prefix_len > 127))
       {
 	fprintf (stderr, "Fatal: prefix_len out of range\n");
 	return 1;
-      }      
-      set_address6 (dev, address, prefix_len);    
+      }
+      set_address6 (dev, address, prefix_len);
     }
     {
       char *const sysctl_args[] =
@@ -723,7 +724,7 @@ main (int argc, char **argv)
       {
 	fprintf (stderr,
 		 "Failed to enable IPv6 forwarding.  Will continue anyway.\n");
-      }    
+      }
     }
   }
 
@@ -732,7 +733,7 @@ main (int argc, char **argv)
     {
       const char *address = argv[5];
       const char *mask = argv[6];
-      
+
       set_address4 (dev, address, mask);
     }
     {
@@ -745,9 +746,9 @@ main (int argc, char **argv)
       {
 	fprintf (stderr,
 		 "Failed to enable IPv4 forwarding.  Will continue anyway.\n");
-      }    
+      }
     }
-    if (0 != strcmp (argv[2], "%"))
+    if (0 != strcmp (argv[2], "-"))
     {
       char *const iptables_args[] =
 	{
@@ -758,10 +759,10 @@ main (int argc, char **argv)
       {
 	fprintf (stderr,
 		 "Failed to enable IPv4 masquerading (NAT).  Will continue anyway.\n");
-      }    
+      }
     }
   }
-  
+
   uid_t uid = getuid ();
 #ifdef HAVE_SETRESUID
   if (0 != setresuid (uid, uid, uid))

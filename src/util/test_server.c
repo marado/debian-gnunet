@@ -22,11 +22,7 @@
  * @brief tests for server.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_client_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 #define PORT 12435
 
@@ -193,28 +189,13 @@ task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 }
 
 
-/**
- * Main method, starts scheduler with task1,
- * checks that "ok" is correct at the end.
- */
-static int
-check ()
-{
-  ok = 1;
-  GNUNET_SCHEDULER_run (&task, &ok);
-  return ok;
-}
-
-
 int
 main (int argc, char *argv[])
 {
-  int ret = 0;
-
   GNUNET_log_setup ("test_server", "WARNING", NULL);
-  ret += check ();
-
-  return ret;
+  ok = 1;
+  GNUNET_SCHEDULER_run (&task, &ok);
+  return ok;
 }
 
 /* end of test_server.c */

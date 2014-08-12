@@ -24,12 +24,10 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_client_lib.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_hello_lib.h"
 #include "gnunet_protocols.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
 #include "gnunet_transport_service.h"
 #include "transport.h"
 
@@ -258,7 +256,7 @@ GNUNET_TRANSPORT_blacklist (const struct GNUNET_CONFIGURATION_Handle *cfg,
   client = GNUNET_CLIENT_connect ("transport", cfg);
   if (NULL == client)
     return NULL;
-  ret = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_Blacklist));
+  ret = GNUNET_new (struct GNUNET_TRANSPORT_Blacklist);
   ret->client = client;
   ret->cfg = cfg;
   ret->cb = cb;

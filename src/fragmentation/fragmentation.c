@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2011 Christian Grothoff (and other contributing authors)
+     (C) 2009-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -180,7 +180,7 @@ transmit_next (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     delay = GNUNET_BANDWIDTH_tracker_get_delay (fc->tracker, fsize);
   else
     delay = GNUNET_TIME_UNIT_ZERO;
-  if (delay.rel_value > 0)
+  if (delay.rel_value_us > 0)
   {
     fc->task = GNUNET_SCHEDULER_add_delayed (delay, &transmit_next, fc);
     return;
@@ -207,7 +207,7 @@ transmit_next (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_BANDWIDTH_tracker_consume (fc->tracker, fsize);
   GNUNET_STATISTICS_update (fc->stats, _("# fragments transmitted"), 1,
                             GNUNET_NO);
-  if (0 != fc->last_round.abs_value)
+  if (0 != fc->last_round.abs_value_us)
     GNUNET_STATISTICS_update (fc->stats, _("# fragments retransmitted"), 1,
                               GNUNET_NO);
 
@@ -231,7 +231,7 @@ transmit_next (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     fc->num_rounds++;
     delay = GNUNET_TIME_relative_multiply (fc->ack_delay, 2);
     /* never use zero, need some time for ACK always */
-    delay = GNUNET_TIME_relative_max (MIN_ACK_DELAY, delay);    
+    delay = GNUNET_TIME_relative_max (MIN_ACK_DELAY, delay);
     fc->wack = GNUNET_YES;
     fc->last_round = GNUNET_TIME_absolute_get ();
     GNUNET_STATISTICS_update (fc->stats, _("# fragments wrap arounds"), 1,
@@ -277,7 +277,7 @@ GNUNET_FRAGMENT_context_create (struct GNUNET_STATISTICS_Handle *stats,
   struct GNUNET_FRAGMENT_Context *fc;
   size_t size;
   uint64_t bits;
-  
+
   GNUNET_STATISTICS_update (stats, _("# messages fragmented"), 1, GNUNET_NO);
   GNUNET_assert (mtu >= 1024 + sizeof (struct FragmentHeader));
   size = ntohs (msg->size);
@@ -367,8 +367,8 @@ GNUNET_FRAGMENT_process_ack (struct GNUNET_FRAGMENT_Context *fc,
     /* normal ACK, can update running average of delay... */
     fc->wack = GNUNET_NO;
     ndelay = GNUNET_TIME_absolute_get_duration (fc->last_round);
-    fc->ack_delay.rel_value =
-        (ndelay.rel_value / fc->num_transmissions + 3 * fc->ack_delay.rel_value) / 4;    
+    fc->ack_delay.rel_value_us =
+        (ndelay.rel_value_us / fc->num_transmissions + 3 * fc->ack_delay.rel_value_us) / 4;
     fc->num_transmissions = 0;
     /* calculate ratio msg sent vs. msg acked */
     ack_cnt = 0;
@@ -385,18 +385,18 @@ GNUNET_FRAGMENT_process_ack (struct GNUNET_FRAGMENT_Context *fc,
     if (0 == ack_cnt)
     {
       /* complete loss */
-      fc->msg_delay = GNUNET_TIME_relative_multiply (fc->msg_delay, 
-						     snd_cnt);      
+      fc->msg_delay = GNUNET_TIME_relative_multiply (fc->msg_delay,
+						     snd_cnt);
     }
     else if (snd_cnt > ack_cnt)
     {
       /* some loss, slow down proportionally */
       fprintf (stderr, "Prop loss\n");
-      fc->msg_delay.rel_value = ((fc->msg_delay.rel_value * ack_cnt) / snd_cnt);
+      fc->msg_delay.rel_value_us = ((fc->msg_delay.rel_value_us * ack_cnt) / snd_cnt);
     }
-    else if (1 < fc->msg_delay.rel_value)
+    else if (100 < fc->msg_delay.rel_value_us)
     {
-      fc->msg_delay.rel_value--; /* try a bit faster */
+      fc->msg_delay.rel_value_us -= 100; /* try a bit faster */
     }
     fc->msg_delay = GNUNET_TIME_relative_min (fc->msg_delay,
 					      GNUNET_TIME_UNIT_SECONDS);

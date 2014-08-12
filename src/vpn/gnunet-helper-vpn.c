@@ -38,6 +38,7 @@
 /**
  * Need 'struct GNUNET_MessageHeader'.
  */
+#include "gnunet_crypto_lib.h"
 #include "gnunet_common.h"
 
 /**
@@ -584,7 +585,7 @@ main (int argc, char **argv)
 
     set_address4 (dev, address, mask);
   }
-  
+
   uid_t uid = getuid ();
 #ifdef HAVE_SETRESUID
   if (0 != setresuid (uid, uid, uid))

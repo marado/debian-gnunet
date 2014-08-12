@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -26,11 +26,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_connection_lib.h"
-#include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
+#include "gnunet_util_lib.h"
 
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
@@ -131,7 +127,7 @@ GNUNET_SERVER_transmit_context_create (struct GNUNET_SERVER_Client *client)
   struct GNUNET_SERVER_TransmitContext *tc;
 
   GNUNET_assert (NULL != client);
-  tc = GNUNET_malloc (sizeof (struct GNUNET_SERVER_TransmitContext));
+  tc = GNUNET_new (struct GNUNET_SERVER_TransmitContext);
   GNUNET_SERVER_client_keep (client);
   tc->client = client;
   return tc;

@@ -1,10 +1,10 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2006, 2008, 2009, 2012 Christian Grothoff (and other contributing authors)
+     (C) 2001-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -56,7 +56,7 @@ struct GNUNET_CLIENT_TransmitHandle
   GNUNET_CONNECTION_TransmitReadyNotify notify;
 
   /**
-   * Closure for notify.
+   * Closure for @e notify.
    */
   void *notify_cls;
 
@@ -127,7 +127,7 @@ struct TransmitGetResponseContext
   GNUNET_CLIENT_MessageHandler rn;
 
   /**
-   * Closure for "rn".
+   * Closure for @e rn.
    */
   void *rn_cls;
 };
@@ -168,7 +168,7 @@ struct GNUNET_CLIENT_Connection
   GNUNET_CLIENT_MessageHandler receiver_handler;
 
   /**
-   * Closure for receiver_handler.
+   * Closure for @e receiver_handler.
    */
   void *receiver_handler_cls;
 
@@ -179,25 +179,10 @@ struct GNUNET_CLIENT_Connection
   struct GNUNET_CLIENT_TransmitHandle *th;
 
   /**
-   * Handler for service test completion (NULL unless in service_test)
-   */
-  GNUNET_SCHEDULER_Task test_cb;
-
-  /**
-   * Deadline for calling 'test_cb'.
-   */
-  struct GNUNET_TIME_Absolute test_deadline;
-
-  /**
    * If we are re-trying and are delaying to do so,
    * handle to the scheduled task managing the delay.
    */
   GNUNET_SCHEDULER_TaskIdentifier receive_task;
-
-  /**
-   * Closure for test_cb (NULL unless in service_test)
-   */
-  void *test_cb_cls;
 
   /**
    * Buffer for received message.
@@ -266,8 +251,8 @@ try_unixpath (const char *service_name,
   struct sockaddr_un s_un;
 
   unixpath = NULL;
-  if ((GNUNET_OK == GNUNET_CONFIGURATION_get_value_string (cfg, service_name, "UNIXPATH", &unixpath)) && 
-      (0 < strlen (unixpath)))     
+  if ((GNUNET_OK == GNUNET_CONFIGURATION_get_value_filename (cfg, service_name, "UNIXPATH", &unixpath)) &&
+      (0 < strlen (unixpath)))
   {
     /* We have a non-NULL unixpath, need to validate it */
     if (strlen (unixpath) >= sizeof (s_un.sun_path))
@@ -278,6 +263,8 @@ try_unixpath (const char *service_name,
       unixpath = GNUNET_NETWORK_shorten_unixpath (unixpath);
       LOG (GNUNET_ERROR_TYPE_INFO,
 	   _("Using `%s' instead\n"), unixpath);
+      if (NULL == unixpath)
+	return NULL;
     }
     connection = GNUNET_CONNECTION_create_from_connect_to_unixpath (cfg, unixpath);
     if (NULL != connection)
@@ -295,11 +282,12 @@ try_unixpath (const char *service_name,
 
 
 /**
- * Try connecting to the server using UNIX domain sockets.
+ * Test whether the configuration has proper values for connection
+ * (UNIXPATH || (PORT && HOSTNAME)).
  *
  * @param service_name name of service to connect to
  * @param cfg configuration to use
- * @return GNUNET_OK if the configuration is valid, GNUNET_SYSERR if not
+ * @return #GNUNET_OK if the configuration is valid, #GNUNET_SYSERR if not
  */
 static int
 test_service_configuration (const char *service_name,
@@ -311,8 +299,8 @@ test_service_configuration (const char *service_name,
 #if AF_UNIX
   char *unixpath = NULL;
 
-  if ((GNUNET_OK == GNUNET_CONFIGURATION_get_value_string (cfg, service_name, "UNIXPATH", &unixpath)) && 
-      (0 < strlen (unixpath)))     
+  if ((GNUNET_OK == GNUNET_CONFIGURATION_get_value_filename (cfg, service_name, "UNIXPATH", &unixpath)) &&
+      (0 < strlen (unixpath)))
     ret = GNUNET_OK;
   GNUNET_free_non_null (unixpath);
 #endif
@@ -320,7 +308,7 @@ test_service_configuration (const char *service_name,
   if ( (GNUNET_YES ==
 	GNUNET_CONFIGURATION_have_value (cfg, service_name, "PORT")) &&
        (GNUNET_OK ==
-	GNUNET_CONFIGURATION_get_value_number (cfg, service_name, "PORT", &port)) && 
+	GNUNET_CONFIGURATION_get_value_number (cfg, service_name, "PORT", &port)) &&
        (port <= 65535) && (0 != port) &&
        (GNUNET_OK ==
 	GNUNET_CONFIGURATION_get_value_string (cfg, service_name, "HOSTNAME",
@@ -342,7 +330,8 @@ test_service_configuration (const char *service_name,
  */
 static struct GNUNET_CONNECTION_Handle *
 do_connect (const char *service_name,
-            const struct GNUNET_CONFIGURATION_Handle *cfg, unsigned int attempt)
+            const struct GNUNET_CONFIGURATION_Handle *cfg,
+	    unsigned int attempt)
 {
   struct GNUNET_CONNECTION_Handle *connection;
   char *hostname;
@@ -391,7 +380,10 @@ do_connect (const char *service_name,
     /* if port is 0, try UNIX */
     connection = try_unixpath (service_name, cfg);
     if (NULL != connection)
+    {
+      GNUNET_free_non_null (hostname);
       return connection;
+    }
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Port is 0 for service `%s', UNIXPATH did not work, returning NULL!\n",
          service_name);
@@ -418,12 +410,12 @@ GNUNET_CLIENT_connect (const char *service_name,
   struct GNUNET_CLIENT_Connection *client;
   struct GNUNET_CONNECTION_Handle *connection;
 
-  if (GNUNET_OK != 
+  if (GNUNET_OK !=
       test_service_configuration (service_name,
 				  cfg))
     return NULL;
   connection = do_connect (service_name, cfg, 0);
-  client = GNUNET_malloc (sizeof (struct GNUNET_CLIENT_Connection));
+  client = GNUNET_new (struct GNUNET_CLIENT_Connection);
   client->first_message = GNUNET_YES;
   client->attempts = 1;
   client->connection = connection;
@@ -501,14 +493,14 @@ check_complete (struct GNUNET_CLIENT_Connection *client)
 
 /**
  * Callback function for data received from the network.  Note that
- * both "available" and "errCode" would be 0 if the read simply timed out.
+ * both @a available and @a errCode would be 0 if the read simply timed out.
  *
  * @param cls closure
  * @param buf pointer to received data
- * @param available number of bytes availabe in "buf",
+ * @param available number of bytes availabe in @a buf,
  *        possibly 0 (on errors)
  * @param addr address of the sender
- * @param addrlen size of addr
+ * @param addrlen size of @a addr
  * @param errCode value of errno (on errors receiving)
  */
 static void
@@ -550,11 +542,14 @@ receive_helper (void *cls, const void *buf, size_t available,
   check_complete (client);
   /* check for timeout */
   remaining = GNUNET_TIME_absolute_get_remaining (client->receive_timeout);
-  if (0 == remaining.rel_value)
+  if (0 == remaining.rel_value_us)
   {
     /* signal timeout! */
-    if (NULL != client->receiver_handler)
-      client->receiver_handler (client->receiver_handler_cls, NULL);
+    if (NULL != (receive_handler = client->receiver_handler))
+    {
+      client->receiver_handler = NULL;
+      receive_handler (client->receiver_handler_cls, NULL);
+    }
     return;
   }
   /* back to receive -- either for more data or to call callback! */
@@ -578,11 +573,14 @@ receive_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
       (const struct GNUNET_MessageHeader *) client->received_buf;
   void *handler_cls = client->receiver_handler_cls;
   uint16_t msize = ntohs (cmsg->size);
-  char mbuf[msize];
+  char mbuf[msize] GNUNET_ALIGN;
   struct GNUNET_MessageHeader *msg = (struct GNUNET_MessageHeader *) mbuf;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Received message of type %u and size %u\n",
-       ntohs (cmsg->type), msize);
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Received message of type %u and size %u from %s service.\n",
+       ntohs (cmsg->type),
+       msize,
+       client->service_name);
   client->receive_task = GNUNET_SCHEDULER_NO_TASK;
   GNUNET_assert (GNUNET_YES == client->msg_complete);
   GNUNET_assert (client->received_pos >= msize);
@@ -603,12 +601,13 @@ receive_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *
  * @param client the service
  * @param handler function to call with the message
- * @param handler_cls closure for handler
+ * @param handler_cls closure for @a handler
  * @param timeout how long to wait until timing out
  */
 void
 GNUNET_CLIENT_receive (struct GNUNET_CLIENT_Connection *client,
-                       GNUNET_CLIENT_MessageHandler handler, void *handler_cls,
+                       GNUNET_CLIENT_MessageHandler handler,
+		       void *handler_cls,
                        struct GNUNET_TIME_Relative timeout)
 {
   if (NULL == client->connection)
@@ -639,26 +638,119 @@ GNUNET_CLIENT_receive (struct GNUNET_CLIENT_Connection *client,
 
 
 /**
- * Report service unavailable.
+ * Handle for a test to check if a service is running.
+ */
+struct GNUNET_CLIENT_TestHandle
+{
+  /**
+   * Function to call with the result of the test.
+   */
+  GNUNET_CLIENT_TestResultCallback cb;
+
+  /**
+   * Closure for @e cb.
+   */
+  void *cb_cls;
+
+  /**
+   * Client connection we are using for the test, if any.
+   */
+  struct GNUNET_CLIENT_Connection *client;
+
+  /**
+   * Handle for the transmission request, if any.
+   */
+  struct GNUNET_CLIENT_TransmitHandle *th;
+
+  /**
+   * Deadline for calling @e cb.
+   */
+  struct GNUNET_TIME_Absolute test_deadline;
+
+  /**
+   * ID of task used for asynchronous operations.
+   */
+  GNUNET_SCHEDULER_TaskIdentifier task;
+
+  /**
+   * Final result to report back (once known).
+   */
+  int result;
+};
+
+
+/**
+ * Abort testing for service.
+ *
+ * @param th test handle
+ */
+void
+GNUNET_CLIENT_service_test_cancel (struct GNUNET_CLIENT_TestHandle *th)
+{
+  if (NULL != th->th)
+  {
+    GNUNET_CLIENT_notify_transmit_ready_cancel (th->th);
+    th->th = NULL;
+  }
+  if (NULL != th->client)
+  {
+    GNUNET_CLIENT_disconnect (th->client);
+    th->client = NULL;
+  }
+  if (GNUNET_SCHEDULER_NO_TASK != th->task)
+  {
+    GNUNET_SCHEDULER_cancel (th->task);
+    th->task = GNUNET_SCHEDULER_NO_TASK;
+  }
+  GNUNET_free (th);
+}
+
+
+/**
+ * Task that reports back the result by calling the callback
+ * and then cleans up.
+ *
+ * @param cls the `struct GNUNET_CLIENT_TestHandle`
+ * @param tc scheduler context
  */
 static void
-service_test_error (GNUNET_SCHEDULER_Task task, void *task_cls)
+report_result (void *cls,
+	       const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
-  GNUNET_SCHEDULER_add_continuation (task, task_cls,
-                                     GNUNET_SCHEDULER_REASON_TIMEOUT);
+  struct GNUNET_CLIENT_TestHandle *th = cls;
+
+  th->task = GNUNET_SCHEDULER_NO_TASK;
+  th->cb (th->cb_cls, th->result);
+  GNUNET_CLIENT_service_test_cancel (th);
+}
+
+
+/**
+ * Report service test result asynchronously back to callback.
+ *
+ * @param th test handle with the result and the callback
+ * @param result result to report
+ */
+static void
+service_test_report (struct GNUNET_CLIENT_TestHandle *th,
+		     int result)
+{
+  th->result = result;
+  th->task = GNUNET_SCHEDULER_add_now (&report_result,
+				       th);
 }
 
 
 /**
  * Receive confirmation from test, service is up.
  *
- * @param cls closure
+ * @param cls closure with the `struct GNUNET_CLIENT_TestHandle`
  * @param msg message received, NULL on timeout or fatal error
  */
 static void
 confirm_handler (void *cls, const struct GNUNET_MessageHeader *msg)
 {
-  struct GNUNET_CLIENT_Connection *client = cls;
+  struct GNUNET_CLIENT_TestHandle *th = cls;
 
   /* We may want to consider looking at the reply in more
    * detail in the future, for example, is this the
@@ -667,14 +759,12 @@ confirm_handler (void *cls, const struct GNUNET_MessageHeader *msg)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Received confirmation that service is running.\n");
-    GNUNET_SCHEDULER_add_continuation (client->test_cb, client->test_cb_cls,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    service_test_report (th, GNUNET_YES);
   }
   else
   {
-    service_test_error (client->test_cb, client->test_cb_cls);
+    service_test_report (th, GNUNET_NO);
   }
-  GNUNET_CLIENT_disconnect (client);
 }
 
 
@@ -682,80 +772,109 @@ confirm_handler (void *cls, const struct GNUNET_MessageHeader *msg)
  * Send the 'TEST' message to the service.  If successful, prepare to
  * receive the reply.
  *
- * @param cls the 'struct GNUNET_CLIENT_Connection' of the connection to test
- * @param size number of bytes available in buf
+ * @param cls the `struct GNUNET_CLIENT_TestHandle` of the test
+ * @param size number of bytes available in @a buf
  * @param buf where to write the message
- * @return number of bytes written to buf
+ * @return number of bytes written to @a buf
  */
 static size_t
 write_test (void *cls, size_t size, void *buf)
 {
-  struct GNUNET_CLIENT_Connection *client = cls;
+  struct GNUNET_CLIENT_TestHandle *th = cls;
   struct GNUNET_MessageHeader *msg;
 
+  th->th = NULL;
   if (size < sizeof (struct GNUNET_MessageHeader))
   {
-    LOG (GNUNET_ERROR_TYPE_DEBUG, _("Failure to transmit TEST request.\n"));
-    service_test_error (client->test_cb, client->test_cb_cls);
-    GNUNET_CLIENT_disconnect (client);
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Failed to transmit TEST request.\n");
+    service_test_report (th, GNUNET_NO);
     return 0;                   /* client disconnected */
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Transmitting `%s' request.\n", "TEST");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Transmitting `%s' request.\n",
+       "TEST");
   msg = (struct GNUNET_MessageHeader *) buf;
   msg->type = htons (GNUNET_MESSAGE_TYPE_TEST);
   msg->size = htons (sizeof (struct GNUNET_MessageHeader));
-  GNUNET_CLIENT_receive (client, &confirm_handler, client,
+  GNUNET_CLIENT_receive (th->client,
+			 &confirm_handler, th,
                          GNUNET_TIME_absolute_get_remaining
-                         (client->test_deadline));
+                         (th->test_deadline));
   return sizeof (struct GNUNET_MessageHeader);
 }
 
 
 /**
- * Test if the service is running.  If we are given a UNIXPATH or a local address,
- * we do this NOT by trying to connect to the service, but by trying to BIND to
- * the same port.  If the BIND fails, we know the service is running.
+ * Test if the service is running.  If we are given a UNIXPATH or a
+ * local address, we do this NOT by trying to connect to the service,
+ * but by trying to BIND to the same port.  If the BIND fails, we know
+ * the service is running.
  *
  * @param service name of the service to wait for
  * @param cfg configuration to use
  * @param timeout how long to wait at most
- * @param task task to run if service is running
- *        (reason will be "PREREQ_DONE" (service running)
- *         or "TIMEOUT" (service not known to be running))
- * @param task_cls closure for task
+ * @param cb function to call with the result
+ * @param cb_cls closure for @a cb
+ * @return handle to cancel the test
  */
-void
+struct GNUNET_CLIENT_TestHandle *
 GNUNET_CLIENT_service_test (const char *service,
                             const struct GNUNET_CONFIGURATION_Handle *cfg,
                             struct GNUNET_TIME_Relative timeout,
-                            GNUNET_SCHEDULER_Task task, void *task_cls)
+                            GNUNET_CLIENT_TestResultCallback cb,
+			    void *cb_cls)
 {
+  struct GNUNET_CLIENT_TestHandle *th;
   char *hostname;
   unsigned long long port;
   struct GNUNET_NETWORK_Handle *sock;
-  struct GNUNET_CLIENT_Connection *client;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Testing if service `%s' is running.\n",
+  th = GNUNET_new (struct GNUNET_CLIENT_TestHandle);
+  th->cb = cb;
+  th->cb_cls = cb_cls;
+  th->test_deadline = GNUNET_TIME_relative_to_absolute (timeout);
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Testing if service `%s' is running.\n",
        service);
 #ifdef AF_UNIX
   {
     /* probe UNIX support */
     struct sockaddr_un s_un;
-    size_t slen;
     char *unixpath;
+    int abstract;
 
     unixpath = NULL;
-    if ((GNUNET_OK == GNUNET_CONFIGURATION_get_value_string (cfg, service, "UNIXPATH", &unixpath)) && (0 < strlen (unixpath)))  /* We have a non-NULL unixpath, does that mean it's valid? */
+    if ((GNUNET_OK ==
+	 GNUNET_CONFIGURATION_get_value_filename (cfg,
+						  service,
+						  "UNIXPATH",
+						  &unixpath)) &&
+	(0 < strlen (unixpath)))  /* We have a non-NULL unixpath, does that mean it's valid? */
     {
       if (strlen (unixpath) >= sizeof (s_un.sun_path))
       {
         LOG (GNUNET_ERROR_TYPE_WARNING,
-             _("UNIXPATH `%s' too long, maximum length is %llu\n"), unixpath,
+             _("UNIXPATH `%s' too long, maximum length is %llu\n"),
+	     unixpath,
              (unsigned long long) sizeof (s_un.sun_path));
 	unixpath = GNUNET_NETWORK_shorten_unixpath (unixpath);
         LOG (GNUNET_ERROR_TYPE_INFO,
              _("Using `%s' instead\n"), unixpath);
       }
+    }
+#ifdef LINUX
+    abstract = GNUNET_CONFIGURATION_get_value_yesno (cfg,
+                                                     "TESTING",
+                                                     "USE_ABSTRACT_SOCKETS");
+#else
+    abstract = GNUNET_NO;
+#endif
+    if ((NULL != unixpath) && (GNUNET_YES != abstract))
+    {
+      if (GNUNET_SYSERR == GNUNET_DISK_directory_create_for_file (unixpath))
+        GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
+                                  "mkdir", unixpath);
     }
     if (NULL != unixpath)
     {
@@ -764,30 +883,23 @@ GNUNET_CLIENT_service_test (const char *service,
       {
 	memset (&s_un, 0, sizeof (s_un));
 	s_un.sun_family = AF_UNIX;
-	slen = strlen (unixpath) + 1;
-	if (slen >= sizeof (s_un.sun_path))
-	  slen = sizeof (s_un.sun_path) - 1;
-	memcpy (s_un.sun_path, unixpath, slen);
-	s_un.sun_path[slen] = '\0';
-	slen = sizeof (struct sockaddr_un);
-#if LINUX
-	s_un.sun_path[0] = '\0';
-#endif
+        strncpy (s_un.sun_path, unixpath, sizeof (s_un.sun_path) - 1);
+        if (GNUNET_YES == abstract)
+          s_un.sun_path[0] = '\0';
 #if HAVE_SOCKADDR_IN_SIN_LEN
-	s_un.sun_len = (u_char) slen;
+        s_un.sun_len = (u_char) sizeof (struct sockaddr_un);
 #endif
 	if (GNUNET_OK !=
 	    GNUNET_NETWORK_socket_bind (sock, (const struct sockaddr *) &s_un,
-					slen))
+					sizeof (struct sockaddr_un)))
         {
 	  /* failed to bind => service must be running */
 	  GNUNET_free (unixpath);
 	  (void) GNUNET_NETWORK_socket_close (sock);
-	  GNUNET_SCHEDULER_add_continuation (task, task_cls,
-					     GNUNET_SCHEDULER_REASON_PREREQ_DONE);
-	  return;
+	  service_test_report (th, GNUNET_YES);
+	  return th;
 	}
-	(void) GNUNET_NETWORK_socket_close (sock);        
+	(void) GNUNET_NETWORK_socket_close (sock);
         /* let's try IP */
       }
     }
@@ -804,8 +916,8 @@ GNUNET_CLIENT_service_test (const char *service,
                                               &hostname)))
   {
     /* UNIXPATH failed (if possible) AND IP failed => error */
-    service_test_error (task, task_cls);
-    return;
+    service_test_report (th, GNUNET_SYSERR);
+    return th;
   }
 
   if (0 == strcmp ("localhost", hostname)
@@ -834,9 +946,8 @@ GNUNET_CLIENT_service_test (const char *service,
         /* failed to bind => service must be running */
         GNUNET_free (hostname);
         (void) GNUNET_NETWORK_socket_close (sock);
-        GNUNET_SCHEDULER_add_continuation (task, task_cls,
-                                           GNUNET_SCHEDULER_REASON_PREREQ_DONE);
-        return;
+        service_test_report (th, GNUNET_YES);
+        return th;
       }
       (void) GNUNET_NETWORK_socket_close (sock);
     }
@@ -868,9 +979,8 @@ GNUNET_CLIENT_service_test (const char *service,
         /* failed to bind => service must be running */
         GNUNET_free (hostname);
         (void) GNUNET_NETWORK_socket_close (sock);
-        GNUNET_SCHEDULER_add_continuation (task, task_cls,
-                                           GNUNET_SCHEDULER_REASON_PREREQ_DONE);
-        return;
+        service_test_report (th, GNUNET_YES);
+        return th;
       }
       (void) GNUNET_NETWORK_socket_close (sock);
     }
@@ -885,35 +995,33 @@ GNUNET_CLIENT_service_test (const char *service,
   {
     /* all binds succeeded => claim service not running right now */
     GNUNET_free_non_null (hostname);
-    service_test_error (task, task_cls);
-    return;
+    service_test_report (th, GNUNET_NO);
+    return th;
   }
   GNUNET_free_non_null (hostname);
 
   /* non-localhost, try 'connect' method */
-  client = GNUNET_CLIENT_connect (service, cfg);
-  if (NULL == client)
+  th->client = GNUNET_CLIENT_connect (service, cfg);
+  if (NULL == th->client)
   {
     LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Could not connect to service `%s', must not be running.\n"),
+         _("Could not connect to service `%s', configuration broken.\n"),
          service);
-    service_test_error (task, task_cls);
-    return;
+    service_test_report (th, GNUNET_SYSERR);
+    return th;
   }
-  client->test_cb = task;
-  client->test_cb_cls = task_cls;
-  client->test_deadline = GNUNET_TIME_relative_to_absolute (timeout);
-  if (NULL == GNUNET_CLIENT_notify_transmit_ready (client,
-						   sizeof (struct GNUNET_MessageHeader),
-						   timeout, GNUNET_YES, &write_test,
-						   client))
+  th->th = GNUNET_CLIENT_notify_transmit_ready (th->client,
+						sizeof (struct GNUNET_MessageHeader),
+						timeout, GNUNET_YES,
+						&write_test, th);
+  if (NULL == th->th)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          _("Failure to transmit request to service `%s'\n"), service);
-    service_test_error (task, task_cls);
-    GNUNET_CLIENT_disconnect (client);
-    return;
+    service_test_report (th, GNUNET_SYSERR);
+    return th;
   }
+  return th;
 }
 
 
@@ -922,7 +1030,7 @@ GNUNET_CLIENT_service_test (const char *service,
  * a transmission request.  Either pass it on to our
  * user or, if possible, retry.
  *
- * @param cls our "struct GNUNET_CLIENT_TransmissionHandle"
+ * @param cls our `struct GNUNET_CLIENT_TransmissionHandle`
  * @param size number of bytes available for transmission
  * @param buf where to write them
  * @return number of bytes written to buf
@@ -935,15 +1043,16 @@ client_notify (void *cls, size_t size, void *buf);
  * This task is run if we should re-try connection to the
  * service after a while.
  *
- * @param cls our "struct GNUNET_CLIENT_TransmitHandle" of the request
+ * @param cls our `struct GNUNET_CLIENT_TransmitHandle` of the request
  * @param tc unused
  */
 static void
-client_delayed_retry (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+client_delayed_retry (void *cls,
+		      const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_CLIENT_TransmitHandle *th = cls;
   struct GNUNET_TIME_Relative delay;
-  
+
   th->reconnect_task = GNUNET_SCHEDULER_NO_TASK;
   if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
   {
@@ -954,7 +1063,9 @@ client_delayed_retry (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     return;
   }
   th->client->connection =
-      do_connect (th->client->service_name, th->client->cfg, th->client->attempts++);
+    do_connect (th->client->service_name,
+		th->client->cfg,
+		th->client->attempts++);
   th->client->first_message = GNUNET_YES;
   if (NULL == th->client->connection)
   {
@@ -970,6 +1081,7 @@ client_delayed_retry (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
          "Transmission failed %u times, trying again in %s.\n",
          MAX_ATTEMPTS - th->attempts_left,
          GNUNET_STRINGS_relative_time_to_string (delay, GNUNET_YES));
+    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == th->reconnect_task);
     th->reconnect_task =
         GNUNET_SCHEDULER_add_delayed (delay, &client_delayed_retry, th);
     return;
@@ -994,10 +1106,10 @@ client_delayed_retry (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Connection notifies us about failure or success of a transmission
  * request.  Either pass it on to our user or, if possible, retry.
  *
- * @param cls our "struct GNUNET_CLIENT_TransmissionHandle"
+ * @param cls our `struct GNUNET_CLIENT_TransmissionHandle`
  * @param size number of bytes available for transmission
  * @param buf where to write them
- * @return number of bytes written to buf
+ * @return number of bytes written to @a buf
  */
 static size_t
 client_notify (void *cls, size_t size, void *buf)
@@ -1007,14 +1119,16 @@ client_notify (void *cls, size_t size, void *buf)
   size_t ret;
   struct GNUNET_TIME_Relative delay;
 
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "client_notify is running\n");
   th->th = NULL;
   client->th = NULL;
   if (NULL == buf)
   {
     delay = GNUNET_TIME_absolute_get_remaining (th->timeout);
-    delay.rel_value /= 2;
+    delay.rel_value_us /= 2;
     if ((GNUNET_YES != th->auto_retry) || (0 == --th->attempts_left) ||
-        (delay.rel_value < 1)||
+        (delay.rel_value_us < 1)||
 	(0 != (GNUNET_SCHEDULER_get_reason() & GNUNET_SCHEDULER_REASON_SHUTDOWN)))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -1032,7 +1146,7 @@ client_notify (void *cls, size_t size, void *buf)
     {
       GNUNET_CONNECTION_receive_cancel (client->connection);
       client->in_receive = GNUNET_NO;
-    }    
+    }
     GNUNET_CONNECTION_destroy (client->connection);
     client->connection = NULL;
     delay = GNUNET_TIME_relative_min (delay, client->back_off);
@@ -1045,6 +1159,7 @@ client_notify (void *cls, size_t size, void *buf)
          MAX_ATTEMPTS - th->attempts_left,
          GNUNET_STRINGS_relative_time_to_string (delay, GNUNET_YES));
     client->th = th;
+    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == th->reconnect_task);
     th->reconnect_task =
         GNUNET_SCHEDULER_add_delayed (delay, &client_delayed_retry, th);
     return 0;
@@ -1052,6 +1167,14 @@ client_notify (void *cls, size_t size, void *buf)
   GNUNET_assert (size >= th->size);
   ret = th->notify (th->notify_cls, size, buf);
   GNUNET_free (th);
+  if (sizeof (struct GNUNET_MessageHeader) <= ret)
+  {
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Transmitting message of type %u and size %u to %s service.\n",
+         ntohs (((struct GNUNET_MessageHeader *) buf)->type),
+         ntohs (((struct GNUNET_MessageHeader *) buf)->size),
+         client->service_name);
+  }
   return ret;
 }
 
@@ -1071,7 +1194,7 @@ client_notify (void *cls, size_t size, void *buf)
  *        if the caller does not care about temporary connection errors,
  *        for example because the protocol is stateless
  * @param notify function to call
- * @param notify_cls closure for notify
+ * @param notify_cls closure for @a notify
  * @return NULL if our buffer will never hold size bytes,
  *         a handle if the notify callback was queued (can be used to cancel)
  */
@@ -1080,8 +1203,8 @@ GNUNET_CLIENT_notify_transmit_ready (struct GNUNET_CLIENT_Connection *client,
                                      size_t size,
                                      struct GNUNET_TIME_Relative timeout,
                                      int auto_retry,
-                                     GNUNET_CONNECTION_TransmitReadyNotify
-                                     notify, void *notify_cls)
+                                     GNUNET_CONNECTION_TransmitReadyNotify notify,
+				     void *notify_cls)
 {
   struct GNUNET_CLIENT_TransmitHandle *th;
 
@@ -1092,7 +1215,7 @@ GNUNET_CLIENT_notify_transmit_ready (struct GNUNET_CLIENT_Connection *client,
     GNUNET_break (0);
     return NULL;
   }
-  th = GNUNET_malloc (sizeof (struct GNUNET_CLIENT_TransmitHandle));
+  th = GNUNET_new (struct GNUNET_CLIENT_TransmitHandle);
   th->client = client;
   th->size = size;
   th->timeout = GNUNET_TIME_relative_to_absolute (timeout);
@@ -1105,8 +1228,10 @@ GNUNET_CLIENT_notify_transmit_ready (struct GNUNET_CLIENT_Connection *client,
   client->th = th;
   if (NULL == client->connection)
   {
+    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == th->reconnect_task);
     th->reconnect_task =
-        GNUNET_SCHEDULER_add_delayed (client->back_off, &client_delayed_retry,
+        GNUNET_SCHEDULER_add_delayed (client->back_off,
+                                      &client_delayed_retry,
                                       th);
 
   }
@@ -1133,8 +1258,7 @@ GNUNET_CLIENT_notify_transmit_ready (struct GNUNET_CLIENT_Connection *client,
  * @param th handle from the original request.
  */
 void
-GNUNET_CLIENT_notify_transmit_ready_cancel (struct GNUNET_CLIENT_TransmitHandle
-                                            *th)
+GNUNET_CLIENT_notify_transmit_ready_cancel (struct GNUNET_CLIENT_TransmitHandle *th)
 {
   if (GNUNET_SCHEDULER_NO_TASK != th->reconnect_task)
   {
@@ -1154,17 +1278,19 @@ GNUNET_CLIENT_notify_transmit_ready_cancel (struct GNUNET_CLIENT_TransmitHandle
 
 /**
  * Function called to notify a client about the socket
- * begin ready to queue the message.  "buf" will be
- * NULL and "size" zero if the socket was closed for
+ * begin ready to queue the message.  @a buf will be
+ * NULL and @a size zero if the socket was closed for
  * writing in the meantime.
  *
  * @param cls closure of type "struct TransmitGetResponseContext*"
- * @param size number of bytes available in buf
+ * @param size number of bytes available in @a buf
  * @param buf where the callee should write the message
- * @return number of bytes written to buf
+ * @return number of bytes written to @a buf
  */
 static size_t
-transmit_for_response (void *cls, size_t size, void *buf)
+transmit_for_response (void *cls,
+		       size_t size,
+		       void *buf)
 {
   struct TransmitGetResponseContext *tc = cls;
   uint16_t msize;
@@ -1206,8 +1332,8 @@ transmit_for_response (void *cls, size_t size, void *buf)
  *        if the caller does not care about temporary connection errors,
  *        for example because the protocol is stateless
  * @param rn function to call with the response
- * @param rn_cls closure for rn
- * @return GNUNET_OK on success, GNUNET_SYSERR if a request
+ * @param rn_cls closure for @a rn
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if a request
  *         is already pending
  */
 int
@@ -1243,7 +1369,6 @@ GNUNET_CLIENT_transmit_and_get_response (struct GNUNET_CLIENT_Connection *client
   client->tag = tc;
   return GNUNET_OK;
 }
-
 
 
 /*  end of client.c */

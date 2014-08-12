@@ -52,8 +52,6 @@ GSC_CLIENTS_send_to_client (struct GNUNET_SERVER_Client *client,
  *
  * @param client client to notify
  * @param neighbour identity of the neighbour that changed status
- * @param atsi performance information about neighbour
- * @param atsi_count number of entries in 'ats' array
  * @param tmap_old previous type map for the neighbour, NULL for disconnect
  * @param tmap_new updated type map for the neighbour, NULL for disconnect
  */
@@ -61,8 +59,6 @@ void
 GSC_CLIENTS_notify_client_about_neighbour (struct GSC_Client *client,
                                            const struct GNUNET_PeerIdentity
                                            *neighbour,
-                                           const struct GNUNET_ATS_Information
-                                           *atsi, unsigned int atsi_count,
                                            const struct GSC_TypeMap *tmap_old,
                                            const struct GSC_TypeMap *tmap_new);
 
@@ -73,16 +69,12 @@ GSC_CLIENTS_notify_client_about_neighbour (struct GSC_Client *client,
  * or types processed by the respective peer.
  *
  * @param neighbour identity of the neighbour that changed status
- * @param atsi performance information about neighbour
- * @param atsi_count number of entries in 'ats' array
  * @param tmap_old previous type map for the neighbour, NULL for disconnect
  * @param tmap_new updated type map for the neighbour, NULL for disconnect
  */
 void
 GSC_CLIENTS_notify_clients_about_neighbour (const struct GNUNET_PeerIdentity
                                             *neighbour,
-                                            const struct GNUNET_ATS_Information
-                                            *atsi, unsigned int atsi_count,
                                             const struct GSC_TypeMap *tmap_old,
                                             const struct GSC_TypeMap *tmap_new);
 
@@ -93,8 +85,6 @@ GSC_CLIENTS_notify_clients_about_neighbour (const struct GNUNET_PeerIdentity
  * of its types.
  *
  * @param sender peer who sent us the message
- * @param atsi performance information about neighbour
- * @param atsi_count number of entries in 'ats' array
  * @param msg the message
  * @param msize number of bytes to transmit
  * @param options options for checking which clients should
@@ -102,8 +92,6 @@ GSC_CLIENTS_notify_clients_about_neighbour (const struct GNUNET_PeerIdentity
  */
 void
 GSC_CLIENTS_deliver_message (const struct GNUNET_PeerIdentity *sender,
-                             const struct GNUNET_ATS_Information *atsi,
-                             unsigned int atsi_count,
                              const struct GNUNET_MessageHeader *msg,
                              uint16_t msize,
 			     uint32_t options);

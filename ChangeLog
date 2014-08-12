@@ -1,3 +1,6083 @@
+2013-08-27 16:35  dold
+
+	* [r28875] src/testing/gnunet-testing.c: removed unnecessary printf
+	  again
+
+2013-08-27 15:03  dold
+
+	* [r28874] src/testing/gnunet-testing.c: consistent output with
+	  gnunet-testing-run-service
+
+2013-08-27 14:52  dold
+
+	* [r28873] src/set/gnunet-service-set_union.c: doxygen typo
+
+2013-08-27 14:42  dold
+
+	* [r28872] src/testing/gnunet-testing.c: superflous printf
+
+2013-08-27 14:37  dold
+
+	* [r28871] src/testing/Makefile.am,
+	  src/testing/gnunet-testing-run-service.c,
+	  src/testing/gnunet-testing.c: merged 'gnunet-testing-run-service'
+	  into 'gnunet-testing'
+
+2013-08-27 07:29  tg
+
+	* [r28869] configure.ac, src/Makefile.am,
+	  src/include/gnunet_protocols.h,
+	  src/include/gnunet_psycstore_service.h, src/psycstore,
+	  src/psycstore/Makefile.am,
+	  src/psycstore/gnunet-service-psycstore.c,
+	  src/psycstore/psycstore.conf, src/psycstore/psycstore.h,
+	  src/psycstore/psycstore_api.c, src/psycstore/test_psycstore.c,
+	  src/psycstore/test_psycstore.conf: psycstore service skeleton
+
+2013-08-27 07:29  tg
+
+	* [r28868] src/identity/identity_api.c: identity: doc fixes
+
+2013-08-27 07:29  tg
+
+	* [r28867] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h: multicast/psyc/psycstore
+	  api: fix typos / type names
+
+2013-08-26 12:11  wachs
+
+	* [r28865] src/integration-tests/confs/c_nat_client.conf,
+	  src/integration-tests/confs/c_no_nat_client_2.conf,
+	  src/integration-tests/test_integration_connect_on_restart.py.in:
+	  more changes to configs
+
+2013-08-26 12:05  wachs
+
+	* [r28864] src/integration-tests/confs/c_no_nat_client_2.conf,
+	  src/integration-tests/hostkeys/c_no_nat_client_2,
+	  src/integration-tests/test_integration_clique.py.in: fix second
+	  peer for clique test
+
+2013-08-26 12:03  wachs
+
+	* [r28863]
+	  src/integration-tests/test_integration_bootstrap_and_connect.py.in,
+	  src/integration-tests/test_integration_bootstrap_and_connect_and_disconnect.py.in,
+	  src/integration-tests/test_integration_bootstrap_and_connect_and_disconnect_nat.py.in,
+	  src/integration-tests/test_integration_restart.py.in: cleanup
+	  service home directories since left overs can break the test
+
+2013-08-26 11:47  wachs
+
+	* [r28862] src/integration-tests/confs/c_nat_client.conf,
+	  src/integration-tests/hostkeys/c_nat_client: fix
+
+2013-08-26 11:41  wachs
+
+	* [r28861] src/integration-tests/confs/c_bootstrap_server.conf,
+	  src/integration-tests/confs/c_no_nat_client.conf,
+	  src/integration-tests/hostkeys/c_bootstrap_server,
+	  src/integration-tests/hostkeys/c_no_nat_client,
+	  src/integration-tests/test_integration_bootstrap_and_connect.py.in:
+	  fixing integration tests
+
+2013-08-26 07:59  wachs
+
+	* [r28860] src/ats/perf_ats_proportional_delay.conf: missing cfg
+	  file
+
+2013-08-26 07:45  wachs
+
+	* [r28859] src/ats/perf_ats_proportional_bandwidth.conf: missing
+	  config file
+
+2013-08-24 06:25  tg
+
+	* [r28833] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: multicast: added
+	  replay_end(), returning replay handle from join_decision();
+	  removed admitted/effective since where not needed; social:
+	  keep_active flag instead of away
+
+2013-08-23 13:56  cfuchs
+
+	* [r28822] src/vectorproduct/gnunet_vectorproduct.h,
+	  src/vectorproduct/test_vectorproduct_api_regression.c,
+	  src/vectorproduct/vectorproduct_testing.h: fixed a couple of
+	  doxygen keywords
+	  added a missing license-header
+
+2013-08-23 12:33  cfuchs
+
+	* [r28813] src/vectorproduct/gnunet-service-vectorproduct.c:
+	  removed texml-command-backslashes from comments which prodced
+	  warnings in doxygen
+
+2013-08-23 12:25  wachs
+
+	* [r28812] src/ats/perf_ats.c,
+	  src/ats/perf_ats_simplistic_bandwidth.conf: quotas + partner
+	  evaluation
+
+2013-08-23 12:20  cfuchs
+
+	* [r28810] configure.ac: added vectorproduct's config- and makefile
+	  to configure-automake-template
+
+2013-08-23 12:19  cfuchs
+
+	* [r28809] src/vectorproduct/Makefile.am: adjusted
+	  makefile-template for gnunet-mainline toolchain
+
+2013-08-23 10:01  wachs
+
+	* [r28808] src/ats/perf_ats.c: partner task
+
+2013-08-23 09:26  wachs
+
+	* [r28807] src/ats/perf_ats.c: load balancing for partner selection
+
+2013-08-23 07:51  wachs
+
+	* [r28806] src/core/test_core_api_reliability.c: how did this test
+	  ever work without assigning core handles?
+
+2013-08-23 07:36  wachs
+
+	* [r28805] src/core/test_core_api_peer1.conf,
+	  src/core/test_core_api_peer2.conf,
+	  src/core/test_core_defaults.conf: fixed core configs
+
+2013-08-23 07:25  wachs
+
+	* [r28804] src/core/core_api.c: safety checks for arguments
+
+2013-08-22 15:24  wachs
+
+	* [r28797] src/ats/perf_ats.c: communication done
+
+2013-08-22 14:14  wachs
+
+	* [r28795] src/ats/perf_ats.c: basic communications
+
+2013-08-22 13:41  cfuchs
+
+	* [r28794] doc/man/Makefile.am, doc/man/gnunet-vectorproduct.1,
+	  po/POTFILES.in, src/Makefile.am,
+	  src/include/gnunet_applications.h,
+	  src/include/gnunet_protocols.h,
+	  src/include/gnunet_vectorproduct_service.h, src/vectorproduct,
+	  src/vectorproduct/Makefile.am,
+	  src/vectorproduct/gnunet-service-vectorproduct.c,
+	  src/vectorproduct/gnunet-vectorproduct.c,
+	  src/vectorproduct/gnunet_vectorproduct.h,
+	  src/vectorproduct/test_vectorproduct_api.c,
+	  src/vectorproduct/test_vectorproduct_api_4peers.c,
+	  src/vectorproduct/test_vectorproduct_api_data.conf,
+	  src/vectorproduct/test_vectorproduct_api_regression.c,
+	  src/vectorproduct/test_vectorproduct_api_regression2.c,
+	  src/vectorproduct/vectorproduct.conf.in,
+	  src/vectorproduct/vectorproduct_api.c,
+	  src/vectorproduct/vectorproduct_testing.h: added vectorproduct
+	  protocol definitions
+	  added to be localized files to POTFILES
+	  added (inactive) changes to the src/Makefile.am
+	  added manpage for vectorproduct
+	  added apptype for vectorproduct
+	  added vectorproduct service, client, API and related sources to
+	  SVN
+
+2013-08-22 13:12  wachs
+
+	* [r28793] src/ats/perf_ats.c: planned end of test
+
+2013-08-22 11:01  LRN
+
+	* [r28792] contrib/timeout_watchdog_w32.c: Fix the use of s/S field
+	  types with ANSI-compliant wprintfs
+
+2013-08-22 09:42  wachs
+
+	* [r28789] src/gns/gnunet-service-gns_resolver.c: cannot link
+	  memrchr on OS X
+
+2013-08-22 08:51  wachs
+
+	* [r28788] src/namestore/Makefile.am,
+	  src/namestore/test_namestore_api_remove.c: test if records are
+	  removed correctly
+
+2013-08-22 08:27  wachs
+
+	* [r28787] src/namestore/plugin_namestore_postgres.c: ported
+	  postgres plugin to new API to get it to compile
+	  functionality was not adapted
+
+2013-08-22 07:52  wachs
+
+	* [r28786] src/ats/gnunet-service-ats-solver_proportional.c: remove
+	  debugging break
+
+2013-08-22 07:51  wachs
+
+	* [r28785] src/ats/gnunet-service-ats-solver_proportional.c:
+	  simplify to make reader and clang happy
+
+2013-08-21 16:12  wachs
+
+	* [r28765] src/ats/perf_ats.c: fix for all masters
+
+2013-08-21 16:03  grothoff
+
+	* [r28764] src/core/core_api.c, src/core/gnunet-core.c,
+	  src/core/test_core_api.c, src/core/test_core_api_reliability.c,
+	  src/core/test_core_api_send_to_self.c,
+	  src/core/test_core_api_start_only.c,
+	  src/core/test_core_quota_compliance.c,
+	  src/dht/gnunet-service-dht_neighbours.c,
+	  src/dv/gnunet-service-dv.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/fs/gnunet-service-fs.c,
+	  src/hostlist/gnunet-daemon-hostlist.c,
+	  src/include/gnunet_core_service.h,
+	  src/integration-tests/connection_watchdog.c,
+	  src/mesh/gnunet-service-mesh-enc.c,
+	  src/mesh/gnunet-service-mesh.c, src/nse/gnunet-service-nse.c,
+	  src/testbed/gnunet-service-testbed_cache.c,
+	  src/topology/gnunet-daemon-topology.c: removing deprecated
+	  argument in 'init' callback of GNUNET_CORE_connect
+
+2013-08-21 15:51  wachs
+
+	* [r28763] src/ats/Makefile.am: fix typo
+
+2013-08-21 15:46  wachs
+
+	* [r28760] src/ats/perf_ats.c: latest changes to support multi
+	  master
+
+2013-08-21 15:34  grothoff
+
+	* [r28758] src/core/gnunet-service-core_kx.c,
+	  src/fs/fs_publish_ublock.c, src/fs/fs_uri.c,
+	  src/fs/test_fs_namespace.c,
+	  src/fs/test_fs_namespace_list_updateable.c,
+	  src/fs/test_pseudonym.c, src/gns/gnunet-gns-helper-service-w32.c,
+	  src/gns/gnunet-gns-proxy.c, src/gns/gnunet-gns.c,
+	  src/gns/test_gns_cname_lookup.c,
+	  src/gns/test_gns_dht_three_peers.c,
+	  src/gns/test_gns_max_queries.c, src/gns/test_gns_ns_lookup.c,
+	  src/gns/test_gns_proxy.c, src/gns/test_gns_pseu_shorten.c,
+	  src/gns/test_gns_revocation.c,
+	  src/gns/test_gns_simple_delegated_lookup.c,
+	  src/gns/test_gns_simple_lookup.c,
+	  src/gns/test_gns_simple_mx_lookup.c,
+	  src/gns/test_gns_simple_shorten.c,
+	  src/gns/test_gns_simple_srv_lookup.c,
+	  src/gns/test_gns_simple_zkey_lookup.c,
+	  src/identity/gnunet-service-identity.c,
+	  src/identity/identity_api.c, src/include/gnunet_crypto_lib.h,
+	  src/namestore/gnunet-namestore-fcfsd.c,
+	  src/namestore/test_namestore_api.c,
+	  src/namestore/test_namestore_api_create.c,
+	  src/namestore/test_namestore_api_create_update.c,
+	  src/namestore/test_namestore_api_lookup.c,
+	  src/namestore/test_namestore_api_lookup_specific_type.c,
+	  src/namestore/test_namestore_api_monitoring.c,
+	  src/namestore/test_namestore_api_put.c,
+	  src/namestore/test_namestore_api_remove.c,
+	  src/namestore/test_namestore_api_remove_not_existing_record.c,
+	  src/namestore/test_namestore_api_zone_iteration.c,
+	  src/namestore/test_namestore_api_zone_iteration_specific_zone.c,
+	  src/namestore/test_namestore_api_zone_iteration_stop.c,
+	  src/namestore/test_namestore_api_zone_to_name.c,
+	  src/nse/gnunet-service-nse.c,
+	  src/peerinfo-tool/gnunet-peerinfo.c, src/pt/test_gns_vpn.c,
+	  src/regex/gnunet-daemon-regexprofiler.c,
+	  src/regex/gnunet-service-regex.c, src/testing/gnunet-testing.c,
+	  src/testing/testing.c, src/transport/gnunet-service-transport.c,
+	  src/util/crypto_ecc.c, src/util/gnunet-ecc.c,
+	  src/util/test_crypto_ecc.c: removing GNUNET_CRYPTO_ecc_key_free,
+	  use GNUNET_free directly instead
+
+2013-08-21 15:19  grothoff
+
+	* [r28754] src/gns/gnunet-dns2gns.c,
+	  src/gns/gnunet-service-gns_interceptor.c: document places where
+	  SHADOW records likely need to be handled
+
+2013-08-21 15:18  grothoff
+
+	* [r28753] src/gns/gnunet-service-gns.c: implement conversion to
+	  absolute TTL
+
+2013-08-21 15:17  grothoff
+
+	* [r28751] src/util/container_bloomfilter.c: simplified OR2 API
+
+2013-08-21 15:17  grothoff
+
+	* [r28750] src/core/Makefile.am, src/core/core_api_is_connected.c,
+	  src/core/core_api_iterate_peers.c,
+	  src/core/gnunet-service-core_clients.c,
+	  src/core/gnunet-service-core_sessions.c,
+	  src/core/gnunet-service-core_sessions.h: removing deprecated,
+	  dead test-connected API
+
+2013-08-21 14:04  wachs
+
+	* [r28744] src/ats/perf_ats.c: serialized startup
+
+2013-08-21 12:31  wachs
+
+	* [r28743] src/ats/perf_ats.c: supporting multi master/slave
+	  approach
+
+2013-08-21 11:29  wachs
+
+	* [r28741] src/ats/Makefile.am: applying new speak: proportional
+
+2013-08-21 09:53  wachs
+
+	* [r28739] src/namestore/Makefile.am,
+	  src/namestore/test_namestore_api_blocks.c,
+	  src/namestore/test_namestore_api_sign_verify.c: reorder tests:
+	  namestore_common -> plugins -> api
+	  block test
+
+2013-08-21 09:46  wachs
+
+	* [r28738] src/namestore/namestore_api_common.c: fixing memory leak
+	  caused by key derivation
+
+2013-08-21 09:38  wachs
+
+	* [r28737] src/namestore/namestore_api_common.c: missing check
+
+2013-08-21 09:22  wachs
+
+	* [r28736] src/namestore/test_namestore_api.c: log level
+
+2013-08-21 09:21  wachs
+
+	* [r28735] src/namestore/test_namestore_api.c: switched test to new
+	  api
+
+2013-08-21 09:13  wachs
+
+	* [r28734] src/namestore/namestore_api.c: fixed crash: wrong cls in
+	  api
+
+2013-08-21 08:22  wachs
+
+	* [r28733] src/namestore/test_plugin_namestore.c: remove docu
+
+2013-08-21 08:15  wachs
+
+	* [r28732] src/namestore/test_plugin_namestore.c: test compiles
+	  again, but fail to get the stored record:
+	  in sqlite:get_record_and_call_iterator:
+	  
+	  if (SQLITE_ROW == (sret = sqlite3_step (stmt)))
+	  
+	  is false
+
+2013-08-20 14:31  wachs
+
+	* [r28729] src/transport/plugin_transport_udp.c: check in wrong
+	  line
+
+2013-08-20 11:44  wachs
+
+	* [r28724] src/transport/plugin_transport_udp.c: more clang fixes
+
+2013-08-20 11:33  wachs
+
+	* [r28723] src/transport/plugin_transport_wlan.c: fix clang report
+
+2013-08-20 11:32  wachs
+
+	* [r28722] src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/plugin_transport_wlan.c: fixing clang reports
+
+2013-08-20 11:15  wachs
+
+	* [r28721] src/transport/plugin_transport_udp.c: fixing bugs found
+	  by clang
+
+2013-08-20 03:24  LRN
+
+	* [r28720] src/gns/Makefile.am: Link gns to vpn - always
+
+2013-08-20 03:24  LRN
+
+	* [r28719] src/gns/gnunet-gns-helper-service-w32.c: Remove short
+	  hashes from W32 GNS helper
+
+2013-08-19 19:56  szengel
+
+	* [r28718] src/regex/regex_internal.c,
+	  src/regex/test_regex_iterate_api.c: Fix 'way too many REGEX PUTs'
+	  issue.
+
+2013-08-19 16:26  wachs
+
+	* [r28709]
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_full.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_multiple_plugins.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_plugin.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_full.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_multiple_plugins.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_plugin.conf:
+	  fixing blacklist:
+	  peer ids for blacklisting have changed due to crypto change, so
+	  blacklisting did not work
+
+2013-08-19 16:06  wachs
+
+	* [r28708]
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_full.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_full.conf:
+	  fix peer ids
+
+2013-08-19 15:57  wachs
+
+	* [r28707] src/transport/test_plugin_transport.c: make test
+	  resistant againt duplicate notifications
+
+2013-08-19 15:47  wachs
+
+	* [r28706] src/nat/nat.conf: fixing mantis 3002
+	  
+	  timeouts were off by factor 10
+	  - fixed timeouts
+	  - changed default configuration values to fancy strings
+	  - intervalls are not corresponding to the default values used
+	  internaly in nat.c
+
+2013-08-19 14:13  harsha
+
+	* [r28705] src/testbed/gnunet-service-testbed.c,
+	  src/testbed/test_testbed_api_operations.c,
+	  src/testbed/testbed_api.c, src/testbed/testbed_api_hosts.c,
+	  src/testbed/testbed_api_hosts.h,
+	  src/testbed/testbed_api_operations.c,
+	  src/testbed/testbed_api_operations.h,
+	  src/testbed/testbed_api_peers.c, src/testbed/testbed_api_peers.h,
+	  src/testbed/testbed_api_statistics.c: fix 2893: Move adaptive
+	  parallelisation mechanism to operation queues
+
+2013-08-19 14:03  wachs
+
+	* [r28704] src/nat/nat.conf: changing to fancy string and from 3
+	  seconds to 30 seconds
+
+2013-08-19 08:27  wachs
+
+	* [r28702] src/ats/perf_ats.c: fix test result
+
+2013-08-19 08:10  wachs
+
+	* [r28701] src/transport/gnunet-transport.c: fix logical error to
+	  assure buf is never NULL
+
+2013-08-19 08:06  wachs
+
+	* [r28700] src/nat/gnunet-helper-nat-client.c: printing size to
+	  eliminate dead assignment
+
+2013-08-19 07:52  wachs
+
+	* [r28699] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_blacklist.c,
+	  src/transport/gnunet-service-transport_manipulation.c: remove
+	  dead assignments
+
+2013-08-19 07:48  wachs
+
+	* [r28698] src/ats/gnunet-service-ats_addresses.c: dead assignment
+
+2013-08-19 07:47  wachs
+
+	* [r28697] src/transport/gnunet-helper-transport-wlan-dummy.c,
+	  src/transport/gnunet-helper-transport-wlan.c,
+	  src/transport/plugin_transport_http_common.c,
+	  src/transport/plugin_transport_http_server.c,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_udp_broadcasting.c,
+	  src/transport/plugin_transport_unix.c: remove dead assignments
+
+2013-08-19 07:33  wachs
+
+	* [r28696] src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats_normalization.c: remove dead
+	  assignments
+
+2013-08-19 06:44  tg
+
+	* [r28695] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: multicast/psyc: added
+	  admitted_since arg for join_decision(); social: added nym arg for
+	  the method cb
+
+2013-08-18 10:04  tg
+
+	* [r28691] src/include/gnunet_multicast_service.h: multicast:
+	  replay functions, args, callbacks, return codes
+
+2013-08-18 10:04  tg
+
+	* [r28690] src/include/gnunet_social_service.h: social: place_look
+	  args
+
+2013-08-16 04:08  LRN
+
+	* [r28680] src/ats/perf_ats.c: Fix perf_ats to work on W32
+
+2013-08-16 04:08  LRN
+
+	* [r28679] src/mesh/Makefile.am: Link mesh tests to mesh lib, duh
+
+2013-08-16 04:08  LRN
+
+	* [r28678] src/arm/test_exponential_backoff.c: Make exponential
+	  backoff test compile again
+
+2013-08-16 04:08  LRN
+
+	* [r28677] src/gns/gnunet-gns-helper-service-w32.c: Make w32 gns
+	  helper compile again
+
+2013-08-16 04:08  LRN
+
+	* [r28676] src/gns/gnunet-service-gns_resolver.c: Fix the lack of
+	  memrchr on W32
+
+2013-08-16 04:08  LRN
+
+	* [r28675] src/util/w32cat.c: Try to fix a warning
+
+2013-08-16 04:08  LRN
+
+	* [r28674] configure.ac, src/include/plibc.h: Modernize plibc, use
+	  MinGW ANSI STDIO
+
+2013-08-16 04:08  LRN
+
+	* [r28673] src/arm/test_gnunet_arm.py.in,
+	  src/dht/test_dht_tools.py.in, src/fs/test_gnunet_fs_idx.py.in,
+	  src/fs/test_gnunet_fs_ns.py.in, src/fs/test_gnunet_fs_psd.py.in,
+	  src/fs/test_gnunet_fs_rec.py.in,
+	  src/peerinfo-tool/test_gnunet_peerinfo.py.in,
+	  src/statistics/test_gnunet_statistics.py.in: Fix invocation of
+	  just-built tools
+
+2013-08-15 19:57  tg
+
+	* [r28671] src/include/gnunet_social_service.h: social:
+	  place_enter2 arg fix
+
+2013-08-15 19:20  tg
+
+	* [r28670] src/include/gnunet_social_service.h: social: place_enter
+	  args
+
+2013-08-15 16:43  tg
+
+	* [r28668] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: multicast/psyc: transmit
+	  callbacks; social: password for home_advertise()
+
+2013-08-15 12:17  tg
+
+	* [r28654] src/include/gnunet_social_service.h: social:
+	  home_advertise() - added arg to specify peers for the entry
+
+2013-08-15 11:53  tg
+
+	* [r28651] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: moved policies from
+	  multicast to psyc layer
+
+2013-08-15 10:09  tg
+
+	* [r28644] src/include/gnunet_social_service.h: social api: use ego
+	  from identity service
+
+2013-08-15 10:09  tg
+
+	* [r28643] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: psycstore: added
+	  state_hash_update() and counters_get(); psyc: async state_get*();
+	  multicast: membership test & replay params
+
+2013-08-12 21:04  tg
+
+	* [r28548] src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: psyc/social: slave transmit
+	  & guest talk flags
+
+2013-08-12 17:45  tg
+
+	* [r28544] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: psyc/social:
+	  transmit/announcement flags; multicast: re-added sig. purpose
+
+2013-08-12 16:57  tg
+
+	* [r28543] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: psyc/store: added
+	  effective_since msg ID for specifying when a membership change
+	  went into effect; psyc/social: added state_reset/clear_objects
+	  flag for message sending functions
+
+2013-08-11 23:46  tg
+
+	* [r28513] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: social: use full pubkey as
+	  place/nym id; multicast/psyc/store: identify members by their
+	  pubkey here too
+
+2013-08-11 21:21  grothoff
+
+	* [r28501] src/arm/gnunet-arm.c, src/arm/gnunet-service-arm.c,
+	  src/arm/test_exponential_backoff.c,
+	  src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/gnunet-service-ats_reservations.c,
+	  src/ats/perf_ats_mlp.c,
+	  src/ats/test_ats_api_scheduling_block_and_reset.c,
+	  src/ats/test_ats_api_scheduling_init.c,
+	  src/core/gnunet-service-core_kx.c,
+	  src/core/gnunet-service-core_sessions.c,
+	  src/core/test_core_api_reliability.c,
+	  src/core/test_core_quota_compliance.c,
+	  src/datacache/perf_datacache.c,
+	  src/datacache/plugin_datacache_heap.c,
+	  src/datacache/plugin_datacache_postgres.c,
+	  src/datacache/plugin_datacache_sqlite.c,
+	  src/datacache/test_datacache.c,
+	  src/datacache/test_datacache_quota.c,
+	  src/datastore/datastore_api.c,
+	  src/datastore/gnunet-service-datastore.c,
+	  src/datastore/perf_datastore_api.c,
+	  src/datastore/perf_plugin_datastore.c,
+	  src/datastore/plugin_datastore_heap.c,
+	  src/datastore/plugin_datastore_mysql.c,
+	  src/datastore/plugin_datastore_postgres.c,
+	  src/datastore/plugin_datastore_sqlite.c,
+	  src/datastore/test_datastore_api.c,
+	  src/datastore/test_datastore_api_management.c,
+	  src/datastore/test_plugin_datastore.c,
+	  src/dht/gnunet-service-dht_clients.c,
+	  src/dht/gnunet-service-dht_hello.c,
+	  src/dht/gnunet-service-dht_neighbours.c,
+	  src/dht/gnunet-service-dht_routing.c, src/dns/dnsparser.c,
+	  src/dns/dnsstub.c, src/dns/gnunet-dns-monitor.c,
+	  src/dns/plugin_block_dns.c, src/exit/gnunet-daemon-exit.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/fragmentation/defragmentation.c,
+	  src/fragmentation/fragmentation.c, src/fs/fs_api.c,
+	  src/fs/fs_download.c, src/fs/fs_misc.c, src/fs/fs_search.c,
+	  src/fs/fs_uri.c, src/fs/gnunet-daemon-fsprofiler.c,
+	  src/fs/gnunet-download.c, src/fs/gnunet-fs-profiler.c,
+	  src/fs/gnunet-search.c, src/fs/gnunet-service-fs.c,
+	  src/fs/gnunet-service-fs_cp.c, src/fs/gnunet-service-fs_pe.c,
+	  src/fs/gnunet-service-fs_pr.c, src/fs/gnunet-service-fs_push.c,
+	  src/fs/perf_gnunet_service_fs_p2p.c,
+	  src/fs/perf_gnunet_service_fs_p2p_respect.c,
+	  src/fs/test_fs_download.c, src/fs/test_fs_download_persistence.c,
+	  src/fs/test_fs_list_indexed.c, src/fs/test_fs_publish.c,
+	  src/fs/test_fs_publish_persistence.c, src/fs/test_fs_unindex.c,
+	  src/fs/test_fs_unindex_persistence.c,
+	  src/fs/test_gnunet_service_fs_migration.c,
+	  src/fs/test_gnunet_service_fs_p2p.c, src/gns/gnunet-dns2gns.c,
+	  src/gns/gnunet-gns-fcfsd.c, src/gns/gnunet-gns-proxy.c,
+	  src/gns/gnunet-service-gns.c,
+	  src/gns/gnunet-service-gns_interceptor.c,
+	  src/gns/gnunet-service-gns_resolver.c,
+	  src/gns/plugin_block_gns.c, src/gns/test_gns_dht_three_peers.c,
+	  src/gns/test_gns_proxy.c, src/gns/test_gns_pseu_shorten.c,
+	  src/gns/test_gns_simple_delegated_lookup.c,
+	  src/gns/test_gns_simple_mx_lookup.c,
+	  src/gns/test_gns_simple_srv_lookup.c, src/hello/hello.c,
+	  src/hostlist/hostlist-client.c, src/hostlist/hostlist-server.c,
+	  src/identity/identity_api.c, src/include/gnunet_ats_service.h,
+	  src/include/gnunet_client_lib.h,
+	  src/include/gnunet_resolver_service.h,
+	  src/include/gnunet_scheduler_lib.h,
+	  src/include/gnunet_server_lib.h, src/include/gnunet_time_lib.h,
+	  src/mesh/gnunet-service-mesh-enc.c,
+	  src/mesh/gnunet-service-mesh.c, src/mesh/mesh_api.c,
+	  src/mesh/mesh_api_enc.c, src/mesh/test_mesh_small.c,
+	  src/namestore/gnunet-namestore.c,
+	  src/namestore/gnunet-service-namestore.c,
+	  src/namestore/namestore_api_common.c,
+	  src/namestore/plugin_namestore_postgres.c,
+	  src/namestore/plugin_namestore_sqlite.c,
+	  src/namestore/test_namestore_api.c,
+	  src/namestore/test_namestore_api_create.c,
+	  src/namestore/test_namestore_api_create_update.c,
+	  src/namestore/test_namestore_api_lookup.c,
+	  src/namestore/test_namestore_api_lookup_specific_type.c,
+	  src/namestore/test_namestore_api_monitoring.c,
+	  src/namestore/test_namestore_api_put.c,
+	  src/namestore/test_namestore_api_remove.c,
+	  src/namestore/test_namestore_api_remove_not_existing_record.c,
+	  src/namestore/test_namestore_api_sign_verify.c,
+	  src/namestore/test_namestore_api_zone_iteration.c,
+	  src/namestore/test_namestore_api_zone_iteration_specific_zone.c,
+	  src/namestore/test_namestore_api_zone_iteration_stop.c,
+	  src/namestore/test_namestore_api_zone_to_name.c,
+	  src/namestore/test_plugin_namestore.c,
+	  src/nse/gnunet-nse-profiler.c, src/nse/gnunet-service-nse.c,
+	  src/nse/nse_api.c, src/nse/perf_kdf.c,
+	  src/peerinfo/gnunet-service-peerinfo.c, src/pt/test_gns_vpn.c,
+	  src/regex/gnunet-daemon-regexprofiler.c,
+	  src/regex/plugin_block_regex.c,
+	  src/sysmon/gnunet-service-sysmon.c,
+	  src/testbed/gnunet-service-testbed_cpustatus.c,
+	  src/testbed/testbed_api_hosts.c,
+	  src/topology/gnunet-daemon-topology.c,
+	  src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/gnunet-service-transport_validation.c,
+	  src/transport/gnunet-transport.c,
+	  src/transport/plugin_transport_bluetooth.c,
+	  src/transport/plugin_transport_http.c,
+	  src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_server.c,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_unix.c,
+	  src/transport/plugin_transport_wlan.c,
+	  src/transport/test_quota_compliance.c,
+	  src/transport/test_transport_api_manipulation_cfg.c,
+	  src/transport/test_transport_api_manipulation_recv_tcp.c,
+	  src/transport/test_transport_api_manipulation_send_tcp.c,
+	  src/transport/test_transport_api_reliability.c,
+	  src/transport/test_transport_api_timeout.c,
+	  src/transport/test_transport_api_unreliability.c,
+	  src/transport/test_transport_api_unreliability_constant.c,
+	  src/transport/transport_api.c, src/util/bandwidth.c,
+	  src/util/client.c, src/util/common_logging.c,
+	  src/util/connection.c, src/util/gnunet-service-resolver.c,
+	  src/util/load.c, src/util/network.c, src/util/perf_crypto_hash.c,
+	  src/util/perf_malloc.c, src/util/resolver_api.c,
+	  src/util/scheduler.c, src/util/server.c, src/util/speedup.c,
+	  src/util/strings.c, src/util/test_common_logging_dummy.c,
+	  src/util/test_crypto_ecc.c, src/util/test_scheduler_delay.c,
+	  src/util/test_speedup.c, src/util/test_strings.c,
+	  src/util/test_time.c, src/util/time.c,
+	  src/vpn/gnunet-service-vpn.c: changing time measurement from
+	  milliseconds to microseconds
+
+2013-08-08 15:34  wachs
+
+	* [r28475] src/ats/perf_ats.c: number for peers
+
+2013-08-08 13:36  wachs
+
+	* [r28469] src/transport/plugin_transport_tcp.c: remove output
+
+2013-08-08 13:24  wachs
+
+	* [r28468] src/util/resolver_api.c: fix for resolver timeout issues
+
+2013-08-08 12:16  wachs
+
+	* [r28466] src/transport/plugin_transport_tcp.c: debugging messages
+	  due to mantis bug 2980
+
+2013-08-08 09:53  wachs
+
+	* [r28462] src/core/gnunet-service-core_kx.c: improved messages
+
+2013-08-08 09:53  wachs
+
+	* [r28461] src/transport/gnunet-service-transport_neighbours.c:
+	  improved messages
+
+2013-08-08 09:13  wachs
+
+	* [r28459]
+	  contrib/hellos/CDTU8QQ8UPLGHR3B91V0CLTDOHONLB8QGHGUEM2JM1GANTEV0O6T20SD2N2HDN2QSHDG6IDTBR48KRDCS601FI6VHG59E7DQA98JD2O,
+	  contrib/hellos/HIJN5O404QNUR37OSJUTNJ6H2KJS198DHI2J3I8SE3DMKVRG1RNQPODN1IJBF14KEMPPPRM0B9F9ILFKHOFCA655CH6M5OCNCMR0FE0:
+	  valid hellos for gnunet9 and fulcrum
+
+2013-08-08 08:54  wachs
+
+	* [r28458] src/transport/gnunet-service-transport_clients.c: added
+	  warning for self connect
+
+2013-08-08 08:50  wachs
+
+	* [r28457] src/transport/gnunet-service-transport.c: more info
+
+2013-08-08 08:44  wachs
+
+	* [r28456]
+	  contrib/hellos/M2D1DU1TBUNFTTJ19D7D2MVIILK6E9BIBUNPFS0TIVCP6TD27MJDVDU40CKKJLCJEFKFD5KTD5VO4BUC40U2S7N99KT0CUCBOBU3UMG:
+	  invalid for gnunet9
+
+2013-08-08 08:43  wachs
+
+	* [r28455]
+	  contrib/hellos/SLOSLEH4PLO4GN2BVVJIFPIGVL38L9QKTEIJ6D4UE2FAVNAD3QMVCC1330N4OGLK516T3I8TU5EE4L4AARIN405UMD8PSEI3JULB7N0:
+	  this hello causes self-connects
+
+2013-08-08 07:58  wachs
+
+	* [r28454] src/transport/plugin_transport_tcp.c: added error
+	  message
+
+2013-08-07 10:08  wachs
+
+	* [r28436]
+	  contrib/hellos/M2D1DU1TBUNFTTJ19D7D2MVIILK6E9BIBUNPFS0TIVCP6TD27MJDVDU40CKKJLCJEFKFD5KTD5VO4BUC40U2S7N99KT0CUCBOBU3UMG,
+	  contrib/hellos/SLOSLEH4PLO4GN2BVVJIFPIGVL38L9QKTEIJ6D4UE2FAVNAD3QMVCC1330N4OGLK516T3I8TU5EE4L4AARIN405UMD8PSEI3JULB7N0:
+	  new hellos for fulcrum and gnunet9
+
+2013-08-07 10:04  wachs
+
+	* [r28435] src/transport/gnunet-service-transport_validation.c:
+	  error message instead of assertion
+
+2013-08-07 09:45  wachs
+
+	* [r28434] src/hello/gnunet-hello.c: some output
+
+2013-08-07 08:09  wachs
+
+	* [r28429] src/ats/Makefile.am: core missing for one test
+
+2013-08-06 14:56  wachs
+
+	* [r28421] src/ats/perf_ats.c: ready to start with benchmarkign
+	  implementation
+
+2013-08-06 14:38  wachs
+
+	* [r28420] src/ats/Makefile.am, src/ats/perf_ats.c: core
+	  connections
+
+2013-08-06 14:18  grothoff
+
+	* [r28414] contrib/Makefile.am, src/Makefile.am,
+	  src/core/gnunet-service-core_kx.c,
+	  src/dht/gnunet-service-dht_neighbours.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/fs/fs_api.h, src/fs/fs_pseudonym.c, src/fs/fs_publish_ksk.c,
+	  src/fs/fs_uri.c, src/fs/test_fs_defaults.conf, src/gns/gns.h,
+	  src/gns/gns_api.c, src/gns/gnunet-gns-fcfsd.c,
+	  src/gns/gnunet-gns-helper-service-w32.c,
+	  src/gns/gnunet-gns-proxy.c, src/gns/gnunet-gns.c,
+	  src/gns/gnunet-service-gns.c,
+	  src/gns/gnunet-service-gns_resolver.c,
+	  src/gns/plugin_block_gns.c, src/gns/test_gns_cname_lookup.c,
+	  src/gns/test_gns_dht_delegated_lookup.c,
+	  src/gns/test_gns_dht_three_peers.c,
+	  src/gns/test_gns_max_queries.c, src/gns/test_gns_ns_lookup.c,
+	  src/gns/test_gns_pseu_shorten.c, src/gns/test_gns_revocation.c,
+	  src/gns/test_gns_simple_delegated_lookup.c,
+	  src/gns/test_gns_simple_get_authority.c,
+	  src/gns/test_gns_simple_lookup.c,
+	  src/gns/test_gns_simple_mx_lookup.c,
+	  src/gns/test_gns_simple_shorten.c,
+	  src/gns/test_gns_simple_srv_lookup.c,
+	  src/gns/test_gns_simple_zkey_lookup.c, src/hello/gnunet-hello.c,
+	  src/hello/hello.c, src/hello/test_friend_hello.c,
+	  src/hello/test_hello.c, src/identity/gnunet-service-identity.c,
+	  src/identity/identity.h, src/identity/identity_api.c,
+	  src/include/block_dns.h, src/include/block_gns.h,
+	  src/include/block_regex.h, src/include/gnunet_chat_service.h,
+	  src/include/gnunet_crypto_lib.h, src/include/gnunet_fs_service.h,
+	  src/include/gnunet_hello_lib.h,
+	  src/include/gnunet_identity_service.h,
+	  src/include/gnunet_namestore_plugin.h,
+	  src/include/gnunet_namestore_service.h,
+	  src/include/gnunet_testing_lib.h,
+	  src/mesh/gnunet-service-mesh-enc.c,
+	  src/mesh/gnunet-service-mesh.c, src/namestore/gnunet-namestore.c,
+	  src/namestore/gnunet-service-namestore.c,
+	  src/namestore/namestore.h, src/namestore/namestore_api.c,
+	  src/namestore/plugin_namestore_postgres.c,
+	  src/namestore/plugin_namestore_sqlite.c,
+	  src/namestore/test_namestore_api.c,
+	  src/namestore/test_namestore_api_create.c,
+	  src/namestore/test_namestore_api_create_update.c,
+	  src/namestore/test_namestore_api_lookup.c,
+	  src/namestore/test_namestore_api_lookup_specific_type.c,
+	  src/namestore/test_namestore_api_monitoring.c,
+	  src/namestore/test_namestore_api_put.c,
+	  src/namestore/test_namestore_api_remove.c,
+	  src/namestore/test_namestore_api_remove_not_existing_record.c,
+	  src/namestore/test_namestore_api_sign_verify.c,
+	  src/namestore/test_namestore_api_zone_iteration.c,
+	  src/namestore/test_namestore_api_zone_iteration_specific_zone.c,
+	  src/namestore/test_namestore_api_zone_iteration_stop.c,
+	  src/namestore/test_namestore_api_zone_to_name.c,
+	  src/namestore/test_plugin_namestore.c,
+	  src/nse/gnunet-service-nse.c,
+	  src/peerinfo-tool/gnunet-peerinfo.c,
+	  src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/perf_peerinfo_api.c,
+	  src/peerinfo/test_peerinfo_api.c,
+	  src/peerinfo/test_peerinfo_api_friend_only.c,
+	  src/peerinfo/test_peerinfo_api_notify_friend_only.c,
+	  src/regex/regex_internal_dht.c, src/testing/gnunet-testing.c,
+	  src/testing/testing.c, src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/gnunet-service-transport_validation.c,
+	  src/transport/gnunet-service-transport_validation.h,
+	  src/transport/test_plugin_transport.c, src/util/crypto_ecc.c,
+	  src/util/gnunet-ecc.c, src/util/test_crypto_ecc.c: moving to new,
+	  fixed-size encoding of public and private ECC keys everywhere,
+	  also improving ECC API to better support ECRS/GADS operations
+
+2013-08-06 13:47  wachs
+
+	* [r28413] src/ats/perf_ats.c: peers are connecting
+
+2013-08-06 10:31  wachs
+
+	* [r28412] src/ats/perf_ats.c: connects only with valgrind?!
+
+2013-08-06 10:15  wachs
+
+	* [r28411] src/ats/perf_ats.c: connecting
+
+2013-08-06 10:12  wachs
+
+	* [r28410] src/ats/perf_ats.c: changes to perf_ats
+
+2013-08-06 09:00  wachs
+
+	* [r28409] src/ats/perf_ats.c: initialization with ats
+
+2013-08-06 07:57  wachs
+
+	* [r28408] src/ats/perf_ats.c: variable number of peer
+
+2013-08-05 15:02  wachs
+
+	* [r28405] src/ats/Makefile.am, src/ats/perf_ats.c: intermediate
+	  commit
+
+2013-08-05 14:26  wachs
+
+	* [r28404] src/ats/Makefile.am, src/ats/perf_ats.c,
+	  src/ats/perf_ats_simplistic_bandwidth.conf,
+	  src/ats/perf_ats_simplistic_delay.conf: add testbed
+	  disable all connections in conf
+
+2013-08-05 13:32  wachs
+
+	* [r28398] src/ats/Makefile.am, src/ats/perf_ats.c,
+	  src/ats/perf_ats_simplistic_bandwidth.conf,
+	  src/ats/perf_ats_simplistic_delay.conf: confs and makefile
+
+2013-08-05 12:49  wachs
+
+	* [r28397] src/ats/Makefile.am, src/ats/perf_ats.c: basics for
+	  generic ats benchmark
+
+2013-08-05 12:38  wachs
+
+	* [r28396] src/ats/perf_ats_mlp.c: duplicate header
+
+2013-08-04 18:43  claudiu
+
+	* [r28390] src/transport/plugin_transport_bluetooth.c: Fixing the
+	  comments
+
+2013-08-04 18:37  claudiu
+
+	* [r28389] src/transport/gnunet-helper-transport-bluetooth.c:
+	  Fixing the comments
+
+2013-08-04 18:19  claudiu
+
+	* [r28388] src/transport/Makefile.am,
+	  src/transport/gnunet-helper-transport-bluetooth.c,
+	  src/transport/plugin_transport_bluetooth.c,
+	  src/transport/test_quota_compliance_bluetooth_asymmetric_peer1.conf,
+	  src/transport/test_quota_compliance_bluetooth_asymmetric_peer2.conf,
+	  src/transport/test_quota_compliance_bluetooth_peer1.conf,
+	  src/transport/test_quota_compliance_bluetooth_peer2.conf,
+	  src/transport/test_transport_api_bluetooth_peer1.conf,
+	  src/transport/test_transport_api_bluetooth_peer2.conf,
+	  src/transport/test_transport_api_reliability_bluetooth_peer1.conf,
+	  src/transport/test_transport_api_reliability_bluetooth_peer2.conf,
+	  src/transport/test_transport_api_unreliability_bluetooth_peer1.conf,
+	  src/transport/test_transport_api_unreliability_bluetooth_peer2.conf:
+	  Extending the testcases to use bluetooth
+
+2013-08-02 13:56  wachs
+
+	* [r28381] src/transport/plugin_transport_http_server.c: fix for
+	  crash on buildbots
+
+2013-08-02 12:40  wachs
+
+	* [r28380] src/include/gnunet_transport_plugin.h: fixed doxygen
+	  documentation
+
+2013-08-02 11:59  wachs
+
+	* [r28378] src/experimentation/test_experimentation_clique.conf: no
+	  valgrind
+
+2013-08-01 15:26  wachs
+
+	* [r28356] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilities.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/test_experimentation_clique_run.c: fixed stat
+	  counters
+	  reduced logging
+
+2013-08-01 14:49  wachs
+
+	* [r28355]
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/test_experimentation_clique_run.c: fixes for
+	  list queues
+
+2013-08-01 14:39  wachs
+
+	* [r28354]
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c: fixes
+
+2013-08-01 14:36  wachs
+
+	* [r28353] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/test_experimentation_clique.conf: new unified
+	  communication mechanism
+
+2013-08-01 12:25  wachs
+
+	* [r28350] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c:
+	  changes to scheduler
+
+2013-08-01 09:55  wachs
+
+	* [r28348] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c:
+	  message parsing on receive
+
+2013-08-01 08:51  wachs
+
+	* [r28346] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilities.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c:
+	  renaming stats and cfg
+
+2013-08-01 08:50  wachs
+
+	* [r28345] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilities.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/gnunet-daemon-experimentation_storage.c:
+	  refactoring since names are too long
+
+2013-08-01 08:14  wachs
+
+	* [r28344]
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c:
+	  docu and additional queue
+
+2013-08-01 07:52  wachs
+
+	* [r28342] src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/test_experimentation_clique_run.c,
+	  src/include/gnunet_protocols.h: changes for experimentation
+
+2013-07-30 12:22  wachs
+
+	* [r28337] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c:
+	  updated code
+
+2013-07-29 03:50  tg
+
+	* [r28334] src/include/gnunet_multicast_service.h: multicast: no
+	  state_delta
+
+2013-07-28 19:57  tg
+
+	* [r28333] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h: multicast/psyc: join cb for
+	  members/slaves too
+
+2013-07-28 19:30  tg
+
+	* [r28332] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: multicast: additional args
+	  for member_start, origin_start, origin_to_all; social: use
+	  private key struct instead of file
+
+2013-07-28 11:11  claudiu
+
+	* [r28329] src/transport/gnunet-helper-transport-bluetooth.c,
+	  src/transport/plugin_transport_bluetooth.c: Implementing
+	  broadcast functionality; Resolving the 'security block' errors;
+	  Handling select and send errors
+
+2013-07-26 12:56  tg
+
+	* [r28327] src/include/gnunet_social_service.h: social:
+	  home_leave()
+
+2013-07-26 12:56  tg
+
+	* [r28326] src/include/gnunet_psycstore_service.h: psycstore:
+	  state_modify()
+
+2013-07-26 12:56  tg
+
+	* [r28325] src/include/gnunet_psyc_service.h: psyc: use relays for
+	  join decision in this api too
+
+2013-07-25 14:13  durner
+
+	* [r28323] src/transport/gnunet-service-transport_manipulation.c:
+	  fix
+
+2013-07-25 13:45  tg
+
+	* [r28320] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_multicast_service.h: multicast: message_cb and
+	  last_fragment_id for origin_start(); env lib: indicating state
+	  reset
+
+2013-07-24 14:50  wachs
+
+	* [r28311] src/gns/gns_common.c, src/gns/gnunet-service-gns.c,
+	  src/namestore/gnunet-service-namestore.c: RFC new gns publishing
+
+2013-07-24 14:03  dold
+
+	* [r28307] src/dv/gnunet-service-dv.c: strange typo in dv
+
+2013-07-23 20:15  claudiu
+
+	* [r28282] src/transport/gnunet-helper-transport-bluetooth.c:
+	  skiping the broadcast messages
+
+2013-07-23 14:32  bartpolot
+
+	* [r28271] src/include/gnunet_mesh_service_enc.h,
+	  src/include/gnunet_protocols.h, src/mesh/mesh_api_enc.c: Change
+	  MESH API to use Tunnel to use Channel
+
+2013-07-23 05:38  tg
+
+	* [r28262] src/include/gnunet_multicast_service.h: multicast:
+	  group_member_remove()
+
+2013-07-23 05:38  tg
+
+	* [r28261] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h: multicast/psyc: no part cb
+	  needed
+
+2013-07-23 05:38  tg
+
+	* [r28260] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h: multicast/psyc: use start/stop
+	  naming for master/origin
+
+2013-07-23 05:38  tg
+
+	* [r28259] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: untabify
+
+2013-07-22 07:18  grothoff
+
+	* [r28232] src/include/gnunet_tun_lib.h, src/tun/regex.c,
+	  src/tun/test_regex.c, src/vpn/gnunet-service-vpn.c: rename
+	  GNUNET_TUN_ipvXtoregex to GNUNET_TUN_ipvXtoregexsearch to clarify
+	  that this is for generating the search strings
+
+2013-07-21 12:51  claudiu
+
+	* [r28223] src/transport/plugin_transport_bluetooth.c: Fixing the
+	  function called to convert a string address to a binary address
+
+2013-07-19 16:48  claudiu
+
+	* [r28205] src/transport/gnunet-helper-transport-bluetooth.c: Fixed
+	  some bugs
+
+2013-07-19 13:55  claudiu
+
+	* [r28200] src/transport/Makefile.am: Fixing dependencies for
+	  bluetooth plugin
+
+2013-07-18 14:37  wachs
+
+	* [r28171] src/transport/gnunet-service-transport_validation.c:
+	  uninitialized variable
+
+2013-07-18 13:51  wachs
+
+	* [r28169] src/transport/gnunet-service-transport_plugins.c: const
+	  was discarded
+
+2013-07-18 07:03  wachs
+
+	* [r28132] src/transport/plugin_transport_unix.c: memory leak
+
+2013-07-18 07:01  wachs
+
+	* [r28131] src/transport/gnunet-service-transport_plugins.c: bug
+	  fix
+
+2013-07-17 13:43  tg
+
+	* [r28121] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: PSYC/multicast: message
+	  parameters for join/part requests
+
+2013-07-17 07:12  wachs
+
+	* [r28102] src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c: removing breaks, adding
+	  stats
+
+2013-07-17 07:03  wachs
+
+	* [r28101] src/gns/gnunet-gns-proxy.c: broken build
+
+2013-07-16 19:08  tg
+
+	* [r28098] src/include/gnunet_social_service.h: social: finish
+	  callback for history lesson
+
+2013-07-16 12:49  bartpolot
+
+	* [r28091] src/mesh/mesh_api.c: debug tunnel destroy
+
+2013-07-16 11:21  bartpolot
+
+	* [r28086] configure.ac, src/Makefile.am,
+	  src/consensus/Makefile.am, src/fs/test_fs_defaults.conf,
+	  src/include/Makefile.am, src/set/Makefile.am, src/stream: Remove
+	  stream
+
+2013-07-16 08:42  tg
+
+	* [r28081] configure.ac, doc/doxygen, doc/doxygen/Makefile.am,
+	  doc/doxygen/gnunet.doxy: local doxygen
+
+2013-07-16 08:42  tg
+
+	* [r28080] src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: psyc/social docs
+
+2013-07-16 08:40  grothoff
+
+	* [r28079] doc/man/Makefile.am, doc/man/gnunet-identity.1,
+	  src/identity/gnunet-identity.c,
+	  src/identity/gnunet-service-identity.c,
+	  src/include/gnunet_disk_lib.h: initial version of gnunet-identity
+	  command-line tool
+
+2013-07-15 23:00  bartpolot
+
+	* [r28070] src/mesh/gnunet-service-mesh.c: - debug
+
+2013-07-15 19:05  bartpolot
+
+	* [r28057] src/mesh/gnunet-service-mesh.c: Refactored code to
+	  eliminate duplicates depending on FWD/BCK traffic
+
+2013-07-15 12:22  bartpolot
+
+	* [r28046] src/include/gnunet_mesh_service.h, src/mesh/mesh.h,
+	  src/mesh/mesh_api.c: Change get_info API
+
+2013-07-15 09:57  wachs
+
+	* [r28040] src/transport/plugin_transport_udp.c: udp returned
+	  addresses with 0-port
+
+2013-07-15 09:22  wachs
+
+	* [r28039] src/transport/gnunet-service-transport_plugins.c:
+	  improved printing
+
+2013-07-15 09:22  wachs
+
+	* [r28038] src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c: while running transport:
+	  valgrind showed memory leak due to not removed resolution
+	  processes
+	  storing pretty printer requests and removing them after timeout
+
+2013-07-15 09:13  tg
+
+	* [r28037] src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: PSYC: historic message flag
+
+2013-07-15 08:43  wachs
+
+	* [r28036] src/ats-tool/gnunet-ats.c: do not use forever
+
+2013-07-15 08:27  tg
+
+	* [r28035] src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: social: use the
+	  TransmitReadyNotify callback from the connection lib for
+	  transmissions
+
+2013-07-15 07:54  tg
+
+	* [r28034] src/include/gnunet_psyc_service.h: PSYC: move history &
+	  state functions to the common channel API
+
+2013-07-15 07:54  tg
+
+	* [r28033] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: env: doc; spaces
+
+2013-07-15 07:25  tg
+
+	* [r28032] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: PSYC API: use
+	  master/slave/channel terminology
+
+2013-07-15 07:25  tg
+
+	* [r28031] src/include/gnunet_env_lib.h,
+	  src/include/gnunet_psyc_lib.h, src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: PSYC/social: use an
+	  Environment for setting variables / state operations
+
+2013-07-15 07:25  tg
+
+	* [r28030] src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h: psyc(store): group
+	  generation only needed when storing the message
+
+2013-07-15 07:25  tg
+
+	* [r28029] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: multicast: message
+	  fragmentation
+
+2013-07-15 07:25  tg
+
+	* [r28028] src/include/gnunet_psyc_service.h: psyc api: no state
+	  events, those are handled in social
+
+2013-07-15 07:25  tg
+
+	* [r28027] src/include/gnunet_gns_service.h,
+	  src/include/gnunet_namestore_service.h: PLACE record type for gns
+	  & namestore
+
+2013-07-14 11:25  claudiu
+
+	* [r28008] src/transport/transport.conf.in: Integrating bluetooth
+	  in the configuration file
+
+2013-07-14 11:05  claudiu
+
+	* [r28007] configure.ac, src/transport/Makefile.am: Integrating
+	  bluetooth plugin
+
+2013-07-13 15:00  bartpolot
+
+	* [r27995] src/mesh/gnunet-service-mesh.c: dont skip when mid >
+	  traget
+
+2013-07-13 14:58  claudiu
+
+	* [r27994] src/transport/gnunet-helper-transport-bluetooth.c,
+	  src/transport/install-bluetooth-helper.sh,
+	  src/transport/plugin_transport_bluetooth.c: Adding a copy of wlan
+	  plugin used for bluetooth plugin
+
+2013-07-13 14:54  bartpolot
+
+	* [r27993] src/mesh/gnunet-service-mesh.c: fixes
+
+2013-07-13 12:09  bartpolot
+
+	* [r27992] src/mesh/gnunet-service-mesh.c: fixes. lunch break
+
+2013-07-13 01:20  bartpolot
+
+	* [r27972] src/mesh/gnunet-service-mesh.c: Add context to a client
+	  immediately after connection. Otherwise calling
+	  SERVER_get_client_context on a client that never sent an initial
+	  message (and didn't have a chance to receive something via
+	  SERVER_set_client_context) causes an assertion failure in
+	  server.c:355. This happens when the client can connect to the
+	  service on multiple protocols, one of the connections will be
+	  immediately closed (see bug for ghost client disconnects)
+
+2013-07-12 15:27  wachs
+
+	* [r27965]
+	  contrib/hellos/A6HJ4F4TT4OLRDBPMGJ7527JQJS1C1TPQTIHI7PCE6MD37K0GSB2U3UTP9I4JJ6C1SD2RIADU04DLM9K6QDG8IH3TU98DJ11GA8L0F8,
+	  contrib/hellos/TFRM29O2RQNKLVBQIGODJ6GD58LSQ2NM9TNFBC6N48BRJHQO38Q73N2OM3V4CLKDM6CILQV4CU8PMJDRG0FNB0PDI057DBRANMLPLRG:
+	  new hellos
+
+2013-07-12 15:04  wachs
+
+	* [r27964] src/transport/plugin_transport_template.c: template
+	  update
+
+2013-07-12 14:56  wachs
+
+	* [r27963] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_plugins.c,
+	  src/transport/plugin_transport_http_common.c,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_unix.c: using inbound string
+
+2013-07-12 14:55  wachs
+
+	* [r27962] src/include/gnunet_transport_plugin.h: String to print
+	  inbound connections
+
+2013-07-12 14:45  wachs
+
+	* [r27961] src/transport/plugin_transport_udp.c: fixing crash
+
+2013-07-12 14:42  wachs
+
+	* [r27960] src/transport/gnunet-service-transport_validation.c:
+	  unused variable
+
+2013-07-12 14:15  wachs
+
+	* [r27959] src/transport/plugin_transport_udp.c: important check
+
+2013-07-12 13:46  wachs
+
+	* [r27957] src/peerinfo-tool/gnunet-peerinfo.c: fix
+
+2013-07-12 13:43  wachs
+
+	* [r27956] src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_common.c,
+	  src/transport/plugin_transport_http_common.h,
+	  src/transport/plugin_transport_http_server.c: fix if plugin is
+	  loaded only in stub mode
+
+2013-07-12 13:28  wachs
+
+	* [r27955] src/hello/hello.c: automatically replace all server
+	  addresses with client addresses
+
+2013-07-12 13:04  wachs
+
+	* [r27954] src/peerinfo-tool/gnunet-peerinfo_plugins.c: substring
+	  search is the root of all evil:
+	  peerinfo did load wrong plugin if substring matches: used https
+	  for http address
+
+2013-07-12 09:43  tg
+
+	* [r27951] src/include/gnunet_psyc_lib.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_social_service.h: PSYC/social: header for
+	  method callbacks
+
+2013-07-12 09:15  wachs
+
+	* [r27950] src/peerinfo-tool/gnunet-peerinfo.c: fix state machine
+
+2013-07-12 08:58  wachs
+
+	* [r27949] src/transport/gnunet-service-transport_validation.c:
+	  disabling error level message, adding stats instead
+
+2013-07-12 08:51  wachs
+
+	* [r27947] src/transport/gnunet-service-transport_validation.c:
+	  fixed address validation for plugins with client server
+	  architecture
+
+2013-07-12 08:50  wachs
+
+	* [r27946] src/transport/plugin_transport_http_server.c: verified
+	  and improved address checking for external hostname and verify
+	  option
+
+2013-07-12 08:47  tg
+
+	* [r27945] AUTHORS, src/include/gnunet_crypto_lib.h,
+	  src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_protocols.h, src/include/gnunet_psyc_lib.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: PSYC APIs: added missing
+	  args and functions, more consistent naming
+	  
+	  - multicast: origin arg for join; s/leave/part/g
+	  - psyc: origin arg for join; join/part callbacks
+	  - social: enter2, home_advertise, away
+	  - psycstore/social: get latest historic message using ID 0
+	  - added PSYC lib
+
+2013-07-11 19:01  dold
+
+	* [r27939] src/util/test_mq_client.c: fixed test case
+
+2013-07-11 16:03  wachs
+
+	* [r27936] src/transport/gnunet-service-transport_validation.c,
+	  src/transport/plugin_transport_http_server.c: enabling address
+	  check in validation
+
+2013-07-11 15:24  wachs
+
+	* [r27933] src/ats/gnunet-service-ats_addresses.c: improved network
+	  switching
+
+2013-07-11 15:04  wachs
+
+	* [r27929] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h: notify ATS about a
+	  session (used for for validation) if we receive payload from a
+	  remote peer on this session
+
+2013-07-11 14:44  wachs
+
+	* [r27927] src/ats/ats_api_scheduling.c,
+	  src/include/gnunet_ats_service.h: new function to check if
+	  session is known to ats
+	  required for two reasons:
+	  we cannot update metrics for validation sessions since these are
+	  not known to ats
+	  a remote peer can decide to use an inbound validation session to
+	  transmit data, so we have to add the session to ats if we receive
+	  payload on a session
+
+2013-07-11 14:30  bartpolot
+
+	* [r27925] src/mesh/gnunet-service-mesh.c: Finishing mesh reliable:
+	  - per-tunnel retransmission, always retransmit oldest not-ACK'd
+	  message
+	  - adaptive retransmission delay
+	  -- start with 1s
+	  -- use per-message timing to update expected delay on each ACK as
+	  d = avg (d, new)
+	  -- update pending retransmissions with new values
+
+2013-07-11 14:03  wachs
+
+	* [r27924]
+	  src/transport/test_transport_api_bidirectional_connect.c: log
+	  level
+
+2013-07-11 13:50  wachs
+
+	* [r27923] src/transport/plugin_transport_unix.c: removing unwanted
+	  break
+
+2013-07-11 13:49  wachs
+
+	* [r27922] src/transport/gnunet-service-transport.c: removing
+	  general address adding
+
+2013-07-11 13:48  wachs
+
+	* [r27921] src/transport/plugin_transport_http_common.c: printing
+	  inbound addresses
+
+2013-07-11 13:48  wachs
+
+	* [r27920] src/transport/plugin_transport_http_client.c: adding
+	  debug message
+
+2013-07-11 13:48  wachs
+
+	* [r27919] src/transport/plugin_transport_http_server.c: fixed:
+	  inbound address size
+	  reporting inbound sessions
+
+2013-07-11 12:56  wachs
+
+	* [r27917] src/transport/plugin_transport_wlan.c: notification for
+	  inbound sessions
+
+2013-07-11 12:34  wachs
+
+	* [r27914] src/transport/plugin_transport_wlan.c: fix: wrong
+	  address length
+
+2013-07-11 12:06  wachs
+
+	* [r27912] src/transport/plugin_transport_udp.c: fixed:
+	  printing of inbound session
+	  size of inbound sessions
+
+2013-07-11 11:35  wachs
+
+	* [r27906] src/ats/ats.conf.in: added bt quota
+
+2013-07-11 11:29  wachs
+
+	* [r27905] src/transport/plugin_transport_unix.c: fixed:
+	  - printing inbound connections
+	  - lookup for existing sessions
+	  - notifying transport with session_start only for inbound
+	  sessions
+
+2013-07-11 09:37  wachs
+
+	* [r27902] src/transport/plugin_transport_tcp.c: fix:
+	  
+	  return address length 0 for inbound session
+	  - return session only if inbound flag is set:
+	  issue because plugin sends TCP_WELCOME messages for incoming
+	  connections not only outbount
+
+2013-07-11 09:15  wachs
+
+	* [r27901] src/transport/gnunet-service-transport_plugins.c: fix
+	  for printing
+
+2013-07-11 07:47  wachs
+
+	* [r27900] src/include/gnunet_ats_service.h: remove ,
+
+2013-07-11 07:24  wachs
+
+	* [r27899] src/ats/perf_ats_mlp.c: fixing uninitialized values
+
+2013-07-11 07:03  wachs
+
+	* [r27898] src/include/gnunet_ats_service.h: fix for header
+
+2013-07-10 12:45  wachs
+
+	* [r27880] src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_server.c: session report in
+	  http server
+
+2013-07-10 12:34  wachs
+
+	* [r27877] src/transport/plugin_transport_udp.c: report session
+
+2013-07-10 12:20  wachs
+
+	* [r27875] src/transport/gnunet-service-transport.c: unkown session
+	  reporting
+
+2013-07-10 12:20  wachs
+
+	* [r27874] src/ats/ats_api_scheduling.c: move error reporting to
+	  client, since now it's the plugins fault if sessions are unknown
+
+2013-07-10 12:01  wachs
+
+	* [r27872] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_validation.c: modified
+	  validation to use new api call to set networktype
+
+2013-07-10 10:33  wachs
+
+	* [r27868] src/peerinfo-tool/gnunet-peerinfo.c: fix: infinite loop
+	  if option was given
+
+2013-07-10 10:24  wachs
+
+	* [r27867] src/peerinfo-tool/gnunet-peerinfo.c: add default
+	  operation when no argument is given
+
+2013-07-10 10:19  wachs
+
+	* [r27866] src/peerinfo-tool/gnunet-peerinfo.c: including
+	  expiration time in output
+
+2013-07-10 08:55  wachs
+
+	* [r27865] src/transport/gnunet-service-transport.h: renaming
+	  function
+
+2013-07-10 08:53  wachs
+
+	* [r27864] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h,
+	  src/transport/gnunet-service-transport_neighbours.c: move add
+	  function directly to transport
+
+2013-07-10 08:24  wachs
+
+	* [r27863] src/transport/gnunet-service-transport_neighbours.c:
+	  code deduplication: move to function
+
+2013-07-10 07:59  wachs
+
+	* [r27862] src/transport/gnunet-service-transport_plugins.c: check
+	  implementation of api while loading plugn
+
+2013-07-10 07:48  wachs
+
+	* [r27861] src/include/gnunet_transport_plugin.h,
+	  src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_server.c,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_template.c,
+	  src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_unix.c,
+	  src/transport/plugin_transport_wlan.c: changed return type to
+	  enum
+	  added get_network to template
+
+2013-07-09 20:12  grothoff
+
+	* [r27841] src/include/gnunet_multicast_service.h: rename 'leave'
+	  to 'part' as 'part' is the better opposite of 'join'
+
+2013-07-09 15:40  wachs
+
+	* [r27840] src/transport/gnunet-service-transport_neighbours.c:
+	  adding addresses with network
+
+2013-07-09 15:39  wachs
+
+	* [r27839] src/transport/gnunet-service-transport.c: this add
+	  should not be required anymore
+
+2013-07-09 15:39  wachs
+
+	* [r27838] src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_server.c,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c: get function implementation
+	  in all plugins
+
+2013-07-09 15:28  wachs
+
+	* [r27837] src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_unix.c,
+	  src/transport/plugin_transport_wlan.c: added function
+
+2013-07-09 15:23  wachs
+
+	* [r27836] src/include/gnunet_transport_plugin.h,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/plugin_transport_tcp.c: new api function to get
+	  network for session
+
+2013-07-09 14:44  wachs
+
+	* [r27834] src/ats/gnunet-service-ats_addresses.c: do not add or
+	  update if sessions are equal
+
+2013-07-09 14:33  wachs
+
+	* [r27831] src/ats/gnunet-service-ats_addresses.c: fixed adding
+	  addresses with updated networks
+
+2013-07-09 14:19  wachs
+
+	* [r27830] src/include/gnunet_transport_plugin.h: missing file
+
+2013-07-09 13:26  grothoff
+
+	* [r27828] src/namestore/gnunet-service-namestore.c: finish
+	  implementation of monitoring, send change notifications to all
+	  clients
+
+2013-07-09 13:19  wachs
+
+	* [r27827] src/peerinfo/gnunet-service-peerinfo.c: if io is enabled
+	  and shipped hellos not, hellos from peers we created should still
+	  be read
+
+2013-07-09 12:40  wachs
+
+	* [r27826] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_plugins.c,
+	  src/transport/gnunet-service-transport_plugins.h: new function
+	  for plugins to signal inbound session,
+	  have to extend plugins
+
+2013-07-09 11:23  wachs
+
+	* [r27824] src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/peerinfo.conf.in: functionality to disable shipped
+	  hellos
+
+2013-07-09 11:23  wachs
+
+	* [r27823] src/transport/plugin_transport_tcp.c: better just a
+	  warning
+
+2013-07-09 11:22  wachs
+
+	* [r27822] src/transport/template_cfg_peer1.conf,
+	  src/transport/template_cfg_peer2.conf: do not use hellos included
+	  in gnunet with testcases
+
+2013-07-09 09:27  wachs
+
+	* [r27820] src/ats-tool/gnunet-ats.c: fixing output + additional
+	  peer id check
+
+2013-07-09 09:23  wachs
+
+	* [r27819] src/ats-tool/gnunet-ats.c: fixing ats-tool output
+
+2013-07-09 09:21  wachs
+
+	* [r27818] src/ats-tool/gnunet-ats.c: fix segfault on missing type
+
+2013-07-09 07:18  grothoff
+
+	* [r27810] doc/man/gnunet-namestore.1,
+	  src/include/gnunet_namestore_service.h,
+	  src/include/gnunet_protocols.h, src/namestore/gnunet-namestore.c,
+	  src/namestore/namestore_api_monitor.c: add '-m' option to
+	  gnunet-namestore, extend namestore monitor API with notification
+	  about being in sync
+
+2013-07-08 16:57  claudiu
+
+	* [r27801] src/transport/gnunet-helper-transport-bluetooth.c:
+	  Implementing SDP protocol
+
+2013-07-08 11:04  bartpolot
+
+	* [r27784] src/fs/gnunet-service-fs_mesh.c,
+	  src/include/gnunet_mesh_service.h,
+	  src/include/gnunet_protocols.h, src/mesh/gnunet-service-mesh.c,
+	  src/mesh/mesh.h, src/mesh/mesh_api.c, src/mesh/mesh_protocol.h,
+	  src/pt/gnunet-daemon-pt.c, src/set/gnunet-service-set.c,
+	  src/stream/stream_api.c, src/util/peer.c,
+	  src/vpn/gnunet-service-vpn.c: Added mesh reliable tunnels
+
+2013-07-08 07:16  wachs
+
+	* [r27782]
+	  src/transport/test_transport_api_bidirectional_connect.c:
+	  removing debugging breaks
+
+2013-07-07 13:43  claudiu
+
+	* [r27778] src/transport/gnunet-helper-transport-bluetooth.c:
+	  Adding a helper file for bluetooth plugin :
+	  gnunet-helper-transport-bluetooth.c
+
+2013-07-07 00:20  dold
+
+	* [r27776] src/mesh/Makefile.am, src/mesh/test_mesh_single.c: test
+	  case for single mesh handle
+
+2013-07-05 14:01  wachs
+
+	* [r27763] src/ats/gnunet-service-ats-solver_proportional.c: more
+	  doxygen documentation
+
+2013-07-05 14:00  wachs
+
+	* [r27762] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h, src/ats/perf_ats_mlp.c:
+	  doxygen documentation
+
+2013-07-05 14:00  wachs
+
+	* [r27761] src/namestore/namestore_api_common.c: doxygen fix
+
+2013-07-05 13:38  wachs
+
+	* [r27760] src/ats/gnunet-service-ats-solver_mlp.c: improved value
+	  updating for unkown values
+
+2013-07-05 12:52  wachs
+
+	* [r27759] src/ats/gnunet-service-ats-solver_mlp.c: improved
+	  network switching for ats
+
+2013-07-05 12:17  wachs
+
+	* [r27758] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats_addresses.c: documentation + remove
+	  unused code
+
+2013-07-05 12:12  wachs
+
+	* [r27757] src/ats/gnunet-service-ats_addresses.h: documentation
+	  for new solver api in header
+
+2013-07-05 11:00  wachs
+
+	* [r27756] src/ats/gnunet-service-ats-solver_proportional.c:
+	  updating now works with bulk lock
+
+2013-07-05 11:00  wachs
+
+	* [r27755] src/ats/gnunet-service-ats_addresses.c: removing
+	  debugging break
+
+2013-07-05 09:56  wachs
+
+	* [r27753] src/ats/perf_ats_mlp.c, src/ats/test_ats_mlp.c,
+	  src/ats/test_ats_simplistic_switch_networks.c: updating tests to
+	  match api
+
+2013-07-05 09:55  wachs
+
+	* [r27752] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/test_ats_mlp_update.c: split up update function and using
+	  normalized values
+
+2013-07-04 15:27  wachs
+
+	* [r27748] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h,
+	  src/ats/test_ats_api.conf: major change to solver api: split
+	  _update function since it combined 3 different functionalities
+	  proportional almost done, mlp to do
+
+2013-07-04 12:31  wachs
+
+	* [r27744] src/ats/gnunet-service-ats-solver_mlp.c: multiple fixes:
+	  - read cfg option to dump problem and solution
+	  - do not resolve if no requests or addresses
+	  - fixed address deletion
+	  - implemented function to update single value
+	  - fixed preference changes
+	  - preference changes now use normalized values
+
+2013-07-04 12:29  wachs
+
+	* [r27743] src/ats/gnunet-service-ats_addresses.c: correct order of
+	  address deletion:
+	  remove, notify, free
+
+2013-07-04 12:29  wachs
+
+	* [r27742] src/ats/gnunet-service-ats-solver_mlp.h: name now
+	  reflects function
+
+2013-07-04 07:58  wachs
+
+	* [r27741] src/ats/gnunet-service-ats-solver_mlp.c: new function to
+	  update a value in the matrix
+
+2013-07-03 15:20  wachs
+
+	* [r27736] src/ats/gnunet-service-ats-solver_proportional.c:
+	  removing breaks and output
+
+2013-07-03 15:09  wachs
+
+	* [r27735] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats_normalization.c: proportional solver
+	  uses normalized properties
+
+2013-07-03 13:40  wachs
+
+	* [r27734] src/ats/test_ats_api.conf: no valgrind
+
+2013-07-03 13:40  wachs
+
+	* [r27733] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/perf_ats_mlp.c, src/ats/test_ats_api.conf,
+	  src/ats/test_ats_mlp.c, src/ats/test_ats_mlp_update.c: changing
+	  solver api: remove address hashmap from functions and pass
+	  instead with init
+
+2013-07-03 11:55  wachs
+
+	* [r27732] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: function to get
+	  normalized properties in solver
+
+2013-07-03 11:55  wachs
+
+	* [r27731] src/ats/gnunet-service-ats_addresses.h: remove unused
+	  fields
+
+2013-07-03 06:42  wachs
+
+	* [r27730] src/ats/gnunet-service-ats-solver_proportional.c: fixing
+	  log level
+
+2013-07-02 15:08  wachs
+
+	* [r27727] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c: finished buld
+	  support
+
+2013-07-02 14:54  wachs
+
+	* [r27726] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats_addresses.c: added support for bulk
+	  operations
+
+2013-07-02 13:30  wachs
+
+	* [r27722] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h: adding functions for
+	  bulkmode
+
+2013-07-02 11:52  wachs
+
+	* [r27721] src/include/gnunet_ats_service.h: adding bluetooth
+	  network type
+
+2013-07-02 11:46  wachs
+
+	* [r27720] src/transport/plugin_transport_http_server.c: fix
+	  network type for external hostnames in http_server
+
+2013-07-02 11:44  wachs
+
+	* [r27719] src/ats/gnunet-service-ats-solver_proportional.c: fix:
+	  do not assert if plugin sends you invalid network type
+
+2013-07-02 11:39  wachs
+
+	* [r27718] src/transport/plugin_transport_http_client.c: fixed:
+	  invalid network scope for external hostname
+
+2013-07-02 11:19  wachs
+
+	* [r27717] src/transport/plugin_transport_http_server.c: fix:
+	  - empty string if no url given
+	  - print port as short
+
+2013-07-02 07:54  wachs
+
+	* [r27716] src/transport/plugin_transport_wlan.c: fix failing
+	  tests: returned wrong address size
+
+2013-07-02 07:40  wachs
+
+	* [r27715] src/transport/plugin_transport_tcp.c: fix: memory leak
+
+2013-07-02 07:39  wachs
+
+	* [r27714] src/transport/plugin_transport_udp.c: fix: memory leak
+
+2013-07-02 07:32  wachs
+
+	* [r27713] src/transport/plugin_transport_wlan.c: fixing stack
+	  corruption due to buffer overflow
+
+2013-07-01 13:15  wachs
+
+	* [r27704] src/transport/plugin_transport_unix.c: fixing size check
+	  in get_session
+
+2013-07-01 13:09  wachs
+
+	* [r27703] src/transport/plugin_transport_unix.c: fixing size check
+	  in address to string
+
+2013-07-01 09:52  wachs
+
+	* [r27701] src/integration-tests/Makefile.am: fixing extradist in
+	  makefile
+
+2013-07-01 08:12  wachs
+
+	* [r27700] src/transport/plugin_transport_wlan.c: fix address
+	  printing
+
+2013-07-01 08:10  wachs
+
+	* [r27699] src/transport/plugin_transport_http_common.c,
+	  src/transport/plugin_transport_http_common.h,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_unix.c: doxygen fixes
+
+2013-07-01 08:09  wachs
+
+	* [r27698] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: doxygen fixes
+
+2013-06-28 15:22  wachs
+
+	* [r27682]
+	  src/transport/test_transport_api_bidirectional_connect.c: fixes
+	  in tests: scheduling, removing connect request:
+
+2013-06-28 14:34  bartpolot
+
+	* [r27681] ., src/exit/gnunet-daemon-exit.c,
+	  src/fs/gnunet-service-fs_mesh.c, src/include/block_mesh.h,
+	  src/include/gnunet_mesh2_service.h,
+	  src/include/gnunet_mesh_service.h,
+	  src/include/gnunet_stream_lib.h, src/mesh/Makefile.am,
+	  src/mesh/gnunet-mesh.c, src/mesh/gnunet-service-mesh-new.c,
+	  src/mesh/gnunet-service-mesh.c, src/mesh/mesh.h,
+	  src/mesh/mesh2.h, src/mesh/mesh2_api.c,
+	  src/mesh/mesh2_protocol.h, src/mesh/mesh2_test_lib.c,
+	  src/mesh/mesh2_test_lib.h, src/mesh/mesh_api.c,
+	  src/mesh/mesh_path.c, src/mesh/mesh_path.h,
+	  src/mesh/mesh_protocol.h, src/mesh/mesh_test_lib.c,
+	  src/mesh/mesh_test_lib.h, src/mesh/plugin_block_mesh.c,
+	  src/mesh/test_mesh.conf, src/mesh/test_mesh2.conf,
+	  src/mesh/test_mesh2_local.c, src/mesh/test_mesh2_small.c,
+	  src/mesh/test_mesh_2dtorus.c, src/mesh/test_mesh_2dtorus.conf,
+	  src/mesh/test_mesh_api.c, src/mesh/test_mesh_local.c,
+	  src/mesh/test_mesh_local_1.c, src/mesh/test_mesh_local_2.c,
+	  src/mesh/test_mesh_local_traffic.c, src/mesh/test_mesh_small.c,
+	  src/mesh/test_mesh_small.conf, src/mesh/test_mesh_tree_api.c,
+	  src/pt/gnunet-daemon-pt.c, src/set/Makefile.am,
+	  src/set/gnunet-service-set.h, src/stream/stream_api.c,
+	  src/vpn/gnunet-service-vpn.c: Replace mesh with new version
+
+2013-06-28 14:16  wachs
+
+	* [r27679] src/transport/plugin_transport_template.c: updating
+	  template with address options
+
+2013-06-28 14:02  wachs
+
+	* [r27678] src/transport/plugin_transport_wlan.c: added option
+	  field for WLAN addresses
+
+2013-06-28 14:01  wachs
+
+	* [r27676] src/ats/gnunet-service-ats-solver_proportional.c: fixing
+	  memory leak: unused hashmap
+	  fixing segfault by adding NULL check
+
+2013-06-28 12:32  wachs
+
+	* [r27673] src/transport/plugin_transport_unix.c: options support
+	  for unix
+
+2013-06-28 08:26  wachs
+
+	* [r27670] src/transport/plugin_transport_http_server.c,
+	  src/transport/test_transport_api_https_peer2.conf: added: port
+	  can be automatically included in external hostname
+	  required for testing when ports are modified automatically
+
+2013-06-28 08:24  wachs
+
+	* [r27669] src/transport/transport.conf.in: new cfg option to
+	  include port in external hostname
+
+2013-06-27 15:29  wachs
+
+	* [r27662] src/transport/plugin_transport_http_client.c: printing
+	  fix
+
+2013-06-27 15:16  wachs
+
+	* [r27661] src/transport/plugin_transport_http_common.c: fix
+	  printing
+
+2013-06-27 15:16  wachs
+
+	* [r27660] src/transport/plugin_transport_http_client.c:
+	  (CURLOPT_SSL_VERIFYHOST, 1L) is not suported anymore, have to use
+	  2L
+
+2013-06-27 15:02  wachs
+
+	* [r27659] src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_common.c,
+	  src/transport/plugin_transport_http_common.h,
+	  src/transport/plugin_transport_http_server.c: Implementing bug
+	  0002910
+	  - extended plugin to contain option field in addresses
+	  Implementing bug 0002677
+	  - adding ssl verification for external hostname having
+	  - the server send the HTTP_OPTIONS_VERIFY_CERTIFICATE option
+	  - client use this option to enable ssl verification
+
+2013-06-27 14:57  wachs
+
+	* [r27658] src/transport/test_plugin_transport.c: remove log
+	  message
+
+2013-06-27 14:57  wachs
+
+	* [r27657] src/transport/test_transport_api_https_peer2.conf,
+	  src/transport/transport.conf.in: enabling certification
+	  verification in test
+	  adding cfg options for certificate verification
+
+2013-06-27 13:37  wachs
+
+	* [r27652] src/transport/plugin_transport_tcp.c: fix crash
+
+2013-06-27 10:37  tg
+
+	* [r27648] src/include/gnunet_multicast_service.h: multicast:
+	  ping/pong docs
+
+2013-06-27 10:05  tg
+
+	* [r27647] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_protocols.h: multicast: messages types;
+	  function & callback for ping/pong messages; separate join/leave
+	  callbacks
+
+2013-06-27 10:01  wachs
+
+	* [r27646] src/transport/plugin_transport_udp.h: added options in
+	  header
+
+2013-06-27 10:01  wachs
+
+	* [r27645] src/transport/plugin_transport_udp.c: added options
+	  field to addresses
+	  fixed stack allocation problem when converting string to address
+
+2013-06-27 09:20  wachs
+
+	* [r27643] src/transport/plugin_transport_tcp.c: added option field
+	  in tcp plugin
+	  + fixed bug in port map callback: stack allocated variables not
+	  zeroed out -> addresses not comparable!
+
+2013-06-27 09:14  wachs
+
+	* [r27642] src/transport/test_plugin_transport.c: updated test
+
+2013-06-27 06:11  amatus
+
+	* [r27641] configure.ac, src/Makefile.am, src/ats/Makefile.am,
+	  src/core/Makefile.am, src/datacache/Makefile.am,
+	  src/datastore/Makefile.am, src/dht/Makefile.am,
+	  src/dv/Makefile.am, src/fs/Makefile.am, src/gns/Makefile.am,
+	  src/lockmanager/Makefile.am, src/mesh/Makefile.am,
+	  src/namestore/Makefile.am, src/nse/Makefile.am,
+	  src/peerinfo/Makefile.am, src/pt/Makefile.am,
+	  src/regex/Makefile.am, src/set/Makefile.am,
+	  src/stream/Makefile.am, src/topology/Makefile.am,
+	  src/transport/Makefile.am, src/util/Makefile.am,
+	  src/util/test_mq.c: Make building gnunet-testing lib optional.
+	  
+	  This is all because emscripten doesn't have getaddrinfo.
+
+2013-06-26 17:13  tg
+
+	* [r27634] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_protocols.h: multicast message types and api
+	  docs
+
+2013-06-26 17:12  tg
+
+	* [r27633] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: psyc apis: use more doxygen
+	  syntax, added some missing docs
+
+2013-06-26 10:58  dold
+
+	* [r27619] src/set/gnunet-service-set.c: fixed duplicate tunnel
+	  creation
+
+2013-06-26 10:47  dold
+
+	* [r27618] src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_union.c: comment
+
+2013-06-26 10:16  dold
+
+	* [r27617] src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_union.c: doxygen
+
+2013-06-26 10:12  dold
+
+	* [r27615] src/util/network.c: doxygen
+
+2013-06-25 23:37  dold
+
+	* [r27598] doc/testbed_test.c, src/consensus/consensus_api.c,
+	  src/consensus/gnunet-service-consensus.c,
+	  src/include/gnunet_mq_lib.h, src/include/gnunet_set_service.h,
+	  src/include/gnunet_stream_lib.h, src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_intersection.c,
+	  src/set/gnunet-service-set_union.c,
+	  src/set/gnunet-set-profiler.c, src/set/set_api.c,
+	  src/stream/stream_api.c, src/util/mq.c: doxygen
+
+2013-06-25 20:51  dold
+
+	* [r27597] src/include/gnunet_container_lib.h: documented corner
+	  case of dll remove
+
+2013-06-25 16:52  dold
+
+	* [r27596] src/mesh/Makefile.am: testing lib missing in mesh
+	  Makefile.am
+
+2013-06-25 15:13  dold
+
+	* [r27593] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set.h, src/set/gnunet-set-profiler.c: mesh
+	  bug for bart
+
+2013-06-25 13:42  dold
+
+	* [r27591] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set.h, src/set/gnunet-service-set_union.c:
+	  commented out calls to functions not yet implemented
+
+2013-06-25 13:02  cfuchs
+
+	* [r27585] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set_intersection.c: a few more changes to
+	  the lib and the service for intersection
+
+2013-06-25 12:20  cfuchs
+
+	* [r27577] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set_intersection.c: initial modifications
+	  to the set service to support intersection
+	  added set intersection sources based upon union
+
+2013-06-25 12:15  wachs
+
+	* [r27576] src/experimentation/Makefile.am: disable unavailable
+	  test
+
+2013-06-25 12:03  wachs
+
+	* [r27575] src/include/gnunet_ats_service.h: renaming properties
+	  and adding function to print properties
+
+2013-06-25 11:25  wachs
+
+	* [r27572] src/ats/gnunet-service-ats_normalization.c: fixing
+	  coverity 10474 Unused pointer value
+
+2013-06-25 11:23  wachs
+
+	* [r27571] src/ats/test_ats_api_performance_address_info.c:
+	  reenable address suggestion in test
+
+2013-06-25 11:20  wachs
+
+	* [r27570] src/ats/ats_api_scheduling.c: fix for 10472 Structurally
+	  dead code
+
+2013-06-25 11:17  wachs
+
+	* [r27569] src/transport/test_transport_api_timeout.c: fixing
+	  coverity 10467 Resource leak
+
+2013-06-25 11:16  wachs
+
+	* [r27568] src/transport/test_transport_api_disconnect.c: fixing
+	  coverity 10466: Resource leak
+
+2013-06-25 11:14  wachs
+
+	* [r27566] src/transport/test_transport_api_disconnect.c: fixing
+	  coverity 10465: Resource leak
+
+2013-06-25 11:12  wachs
+
+	* [r27565] src/transport/test_plugin_transport.c: fixing coverity
+	  10464: Resource leak
+
+2013-06-25 11:07  wachs
+
+	* [r27562] src/transport/gnunet-service-transport_manipulation.c:
+	  workaround for coverty 10451: Unchecked return value
+
+2013-06-25 11:02  wachs
+
+	* [r27561] src/ats-tool/gnunet-ats.c: fixing coverity 10470:
+	  Uninitialized scalar variable
+
+2013-06-25 10:59  wachs
+
+	* [r27560] src/ats/gnunet-service-ats_normalization.c: fixing
+	  coverity 10444
+
+2013-06-25 10:06  grothoff
+
+	* [r27558] README, configure.ac, src/Makefile.am: fix #2901: fail
+	  hard if libidn or header are not found
+
+2013-06-25 09:58  wachs
+
+	* [r27556] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: completed normalizing
+	  with min max handlin
+
+2013-06-25 09:57  wachs
+
+	* [r27555] src/ats/test_ats_normalization_update_quality.c: fixed
+	  test
+
+2013-06-25 02:05  amatus
+
+	* [r27551] Makefile.am: Another fix for --with-included-ltdl.
+
+2013-06-24 20:07  wachs
+
+	* [r27550] src/ats/test_ats_normalization_update_quality.c: fix
+	  testname
+	  fix array out of bounds for test addresses
+
+2013-06-24 15:06  wachs
+
+	* [r27549] src/ats/Makefile.am, src/ats/ats_api_scheduling.c,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h,
+	  src/ats/perf_ats_mlp.c, src/ats/test_ats_mlp.c,
+	  src/ats/test_ats_mlp_update.c,
+	  src/ats/test_ats_normalization_update_quality.c: implemented ats
+	  property normalization with callback to address
+	  to do: recalculate min/max to prevent outdated max values have an
+	  impact on normalization
+
+2013-06-24 12:12  wachs
+
+	* [r27547] src/transport/plugin_transport_template.c: update for
+	  plugin template
+
+2013-06-24 10:56  wachs
+
+	* [r27546] src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: quality normalization
+	  without checking if min and max are given
+
+2013-06-24 09:27  wachs
+
+	* [r27544] doc/gnunet-c-tutorial.pdf, doc/gnunet-c-tutorial.tex:
+	  Updating the tutorial section in the source and including
+	  an updated version of the pdf about command line parsing.
+	  
+	  This update describes how a developer can check if a
+	  command line argument was set at all by initializing the
+	  variables storing the commandline arguments with a
+	  specific value and checking this value after the run
+	  function applied the commandline parsing.
+
+2013-06-23 18:17  amatus
+
+	* [r27543] src/include/gnunet_os_lib.h, src/util/Makefile.am,
+	  src/util/os_priority.c, src/util/test_os_priority.c: Removed
+	  GNUNET_OS_set_process_priority since it's not used.
+
+2013-06-23 16:23  amatus
+
+	* [r27542] configure.ac, contrib/Makefile.am, src/util/Makefile.am:
+	  Make --with-included-ltdl work.
+
+2013-06-21 17:32  grothoff
+
+	* [r27519] src/testbed/testbed_api.c: cleaner to not use ptr after
+	  freeing it, even for printing
+
+2013-06-21 17:30  grothoff
+
+	* [r27518] src/transport/plugin_transport_http_server.c: cleaner to
+	  not use ptr after freeing it, even for printing
+
+2013-06-21 16:15  grothoff
+
+	* [r27512] src/tun/test_regex.c: fix compile error left from
+	  renaming fest
+
+2013-06-21 15:08  wachs
+
+	* [r27511] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: basics for quality
+	  normalization
+
+2013-06-21 13:40  wachs
+
+	* [r27510] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: doxygen fixes
+
+2013-06-21 13:16  wachs
+
+	* [r27509] src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: normalization docu
+
+2013-06-21 13:06  wachs
+
+	* [r27508] src/ats/gnunet-service-ats_normalization.c: fix for
+	  crashing perf_ats_mlp
+
+2013-06-21 03:16  amatus
+
+	* [r27506] src/util/network.c: Fix non-windows non-IPv6 build.
+
+2013-06-20 21:37  grothoff
+
+	* [r27505] src/regex/Makefile.am: fix linker issues on W32 -- regex
+	  needs DHT
+
+2013-06-20 15:32  amatus
+
+	* [r27504] src/arm/gnunet-service-arm.c, src/dns/dnsstub.c,
+	  src/gns/gnunet-dns2gns.c, src/gns/gnunet-gns-proxy.c,
+	  src/gns/gnunet-service-gns_resolver.c,
+	  src/include/gnunet_network_lib.h, src/nat/nat_test.c,
+	  src/testing/testing.c, src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_unix.c, src/util/client.c,
+	  src/util/network.c, src/util/server.c,
+	  src/util/test_connection.c,
+	  src/util/test_connection_addressing.c,
+	  src/util/test_connection_receive_cancel.c,
+	  src/util/test_connection_timeout.c: Fixed
+	  GNUNET_CLIENT_service_test on FreeBSD.
+	  
+	  This should also fix any other platform with
+	  AF_UNIX that is not Linux or Mingw.
+
+2013-06-20 09:03  grothoff
+
+	* [r27502] src/exit/Makefile.am, src/mesh/Makefile.am,
+	  src/regex/Makefile.am, src/vpn/Makefile.am: renaming
+	  libgnunetregexnew to libgnunetregex
+
+2013-06-20 09:02  grothoff
+
+	* [r27501] src/regex/Makefile.am,
+	  src/regex/gnunet-daemon-regexprofiler.c,
+	  src/regex/gnunet-regex-profiler.c,
+	  src/regex/gnunet-regex-simulation-profiler.c,
+	  src/regex/gnunet-service-regex.c, src/regex/perf-regex.c,
+	  src/regex/plugin_block_regex.c, src/regex/regex_block_lib.c,
+	  src/regex/regex_block_lib.h, src/regex/regex_internal.c,
+	  src/regex/regex_internal.h, src/regex/regex_internal_dht.c,
+	  src/regex/regex_internal_lib.h, src/regex/regex_test_graph.c,
+	  src/regex/regex_test_lib.c, src/regex/regex_test_lib.h,
+	  src/regex/regex_test_random.c, src/regex/test_regex_eval_api.c,
+	  src/regex/test_regex_graph_api.c,
+	  src/regex/test_regex_iterate_api.c,
+	  src/regex/test_regex_proofs.c: renaming symbols from
+	  libgnunetregextest to have the prefix REGEX_TEST
+
+2013-06-20 08:56  grothoff
+
+	* [r27500] src/tun/regex.c: adding file that was moved here from
+	  regex.c and forgotten in earlier commit
+
+2013-06-20 08:55  grothoff
+
+	* [r27499] src/regex/Makefile.am, src/regex/regex.c,
+	  src/regex/regex_dht.c, src/regex/regex_graph.c,
+	  src/regex/regex_internal.c, src/regex/regex_internal.h,
+	  src/regex/regex_internal_dht.c, src/regex/regex_internal_lib.h,
+	  src/regex/regex_random.c, src/regex/regex_test_graph.c,
+	  src/regex/regex_test_lib.h, src/regex/regex_test_random.c,
+	  src/regex/test_regex_eval_api.c,
+	  src/regex/test_regex_graph_api.c, src/regex/test_regex_proofs.c:
+	  moving functions for testing and evaluation and experiments to
+	  the test library, minimizing the internal library, renaming files
+	  according to which library they belong to
+
+2013-06-20 08:32  grothoff
+
+	* [r27498] src/Makefile.am, src/include/Makefile.am,
+	  src/include/gnunet_regex_lib.h, src/include/gnunet_tun_lib.h,
+	  src/mesh/Makefile.am, src/mesh/gnunet-service-mesh.c,
+	  src/regex/Makefile.am, src/regex/gnunet-daemon-regexprofiler.c,
+	  src/regex/gnunet-regex-profiler.c,
+	  src/regex/gnunet-regex-simulation-profiler.c,
+	  src/regex/gnunet-service-regex.c, src/regex/perf-regex.c,
+	  src/regex/plugin_block_regex.c, src/regex/regex.c,
+	  src/regex/regex_block_lib.c, src/regex/regex_block_lib.h,
+	  src/regex/regex_dht.c, src/regex/regex_graph.c,
+	  src/regex/regex_internal.h, src/regex/regex_internal_lib.h,
+	  src/regex/regex_random.c, src/regex/regex_test_lib.c,
+	  src/regex/regex_test_lib.h, src/regex/test_regex_eval_api.c,
+	  src/regex/test_regex_graph_api.c,
+	  src/regex/test_regex_iptoregex.c,
+	  src/regex/test_regex_iterate_api.c,
+	  src/regex/test_regex_proofs.c, src/tun/Makefile.am,
+	  src/tun/test_regex.c, src/vpn/gnunet-service-vpn.c: continuing
+	  refactoring of regex library structure, disambiguating symbol
+	  names between old regex library which is now internal and the
+	  public API; moving IP-to-regex conversion functions to tun
+	  library, as only vpn is using those to begin with
+
+2013-06-19 16:09  amatus
+
+	* [r27495] src/util/disk.c: Fix windows build, statfs is broken
+	  there.
+
+2013-06-19 11:50  bartpolot
+
+	* [r27489] src/fs/gnunet-service-fs_mesh.c,
+	  src/include/gnunet_mesh2_service.h, src/mesh/mesh2_api.c: Change
+	  in mesh API: data callback no longer provides sender, user must
+	  remember tunnel<->sender if needed (fix bug #2894)
+
+2013-06-19 05:51  wachs
+
+	* [r27480] src/ats/test_ats_mlp_update.c: fix
+
+2013-06-19 05:32  wachs
+
+	* [r27479] src/ats/Makefile.am, src/ats/perf_ats_mlp.c,
+	  src/ats/test_ats_mlp_update.c: fixes
+
+2013-06-19 05:27  wachs
+
+	* [r27478] src/ats/perf_ats_mlp.c,
+	  src/ats/test_ats_change_preference.c: missing file
+
+2013-06-19 05:16  wachs
+
+	* [r27477] src/ats/Makefile.am, src/ats/test_ats_mlp.c: changes to
+	  test
+
+2013-06-19 05:11  wachs
+
+	* [r27476] src/ats/gnunet-service-ats-solver_mlp.c,
+	  src/ats/gnunet-service-ats-solver_mlp.h: renamed
+
+2013-06-19 05:11  wachs
+
+	* [r27475] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: renaming mlp solver
+	  for consistency
+
+2013-06-19 04:59  wachs
+
+	* [r27474] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: remove normalization
+	  from solvers, use in address only
+
+2013-06-19 04:21  wachs
+
+	* [r27473] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: doxygen fixes
+
+2013-06-19 02:15  amatus
+
+	* [r27472] configure.ac, src/util/disk.c: This should be a more
+	  portable GNUNET_DISK_file_get_identifiers.
+
+2013-06-18 23:46  amatus
+
+	* [r27470] src/include/gnunet_disk_lib.h, src/util/disk.c,
+	  src/util/test_disk.c: Removed GNUNET_DISK_get_blocks_available
+	  since it's not used and it would
+	  be hard to port to emscripten.
+
+2013-06-18 11:40  LRN
+
+	* [r27468] src/ats/test_ats_api_scheduling_destroy_address.c,
+	  src/ats/test_ats_api_scheduling_destroy_inbound_connection.c,
+	  src/ats/test_ats_api_scheduling_destroy_session.c: Rename
+	  WAIT_TIMEOUT (clashes with windows.h)
+
+2013-06-18 08:02  wachs
+
+	* [r27467] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/test_ats_mlp.c: changes
+
+2013-06-18 07:28  wachs
+
+	* [r27466] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: changes
+
+2013-06-18 06:47  wachs
+
+	* [r27465] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: changes
+
+2013-06-18 06:29  wachs
+
+	* [r27464] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h:
+
+2013-06-18 02:51  amatus
+
+	* [r27463] configure.ac, src/include/platform.h: Compile on
+	  platforms without netinet/ip.h. Furthur fixes to come.
+
+2013-06-18 02:49  amatus
+
+	* [r27462] configure.ac, src/util/crypto_random.c: Generalize
+	  condition for missing random/srandom.
+
+2013-06-17 14:38  wachs
+
+	* [r27460] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: proportional solver
+	  uses normalizationy
+
+2013-06-17 11:47  wachs
+
+	* [r27459] src/ats/gnunet-service-ats_normalization.c: changes
+
+2013-06-17 11:13  tg
+
+	* [r27458] src/include/gnunet_social_service.h: social api docs
+
+2013-06-15 21:32  LRN
+
+	* [r27455] src/datastore/Makefile.am: Make gnunet-datastore
+	  dependent on libgnunetdatastore
+
+2013-06-14 14:46  wachs
+
+	* [r27448] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_normalization.c,
+	  src/ats/gnunet-service-ats_normalization.h: adding generic
+	  normalization support for all solvers
+
+2013-06-14 09:45  wachs
+
+	* [r27446] src/ats/gnunet-service-ats-solver_proportional.c: rename
+
+2013-06-14 07:47  wachs
+
+	* [r27445] src/ats/gnunet-service-ats-solver_proportional.c: rename
+	  function
+
+2013-06-14 06:34  wachs
+
+	* [r27444] src/ats/gnunet-service-ats-solver_proportional.c:
+	  changes
+
+2013-06-13 11:57  tg
+
+	* [r27439] src/include/gnunet_psycstore_service.h: psycstore api
+	  docs
+
+2013-06-13 06:49  wachs
+
+	* [r27437] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: doxygen
+
+2013-06-13 06:46  wachs
+
+	* [r27436]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  doxygen
+
+2013-06-12 20:41  grothoff
+
+	* [r27434] src/include/gnunet_psycstore_service.h: first design for
+	  psycstore API
+
+2013-06-12 20:01  grothoff
+
+	* [r27432] src/include/gnunet_social_service.h: improving social
+	  API a bit more
+
+2013-06-12 19:48  grothoff
+
+	* [r27431] src/include/gnunet_social_service.h: better name for
+	  entering a home
+
+2013-06-12 19:47  grothoff
+
+	* [r27430] src/include/gnunet_gns_service.h,
+	  src/include/gnunet_social_service.h: first design for social
+	  service API
+
+2013-06-12 17:35  tg
+
+	* [r27428] src/include/gnunet_multicast_service.h,
+	  src/include/gnunet_psyc_service.h,
+	  src/include/gnunet_psycstore_service.h,
+	  src/include/gnunet_social_service.h: psyc apis
+
+2013-06-12 10:46  bartpolot
+
+	* [r27424] src/include/gnunet_mesh2_service.h: changes to MESH API:
+	  add receive_done, document end handlers
+
+2013-06-12 03:25  amatus
+
+	* [r27419] configure.ac, src/Makefile.am: Make libidn optional.
+
+2013-06-12 01:56  amatus
+
+	* [r27418] po/POTFILES.in: Removing missing source files.
+
+2013-06-11 11:44  wachs
+
+	* [r27411] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h: changes
+
+2013-06-11 08:20  wachs
+
+	* [r27406] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h: docu
+
+2013-06-09 04:46  amatus
+
+	* [r27400] configure.ac, src/core/Makefile.am,
+	  src/datastore/Makefile.am, src/dht/Makefile.am,
+	  src/testbed/Makefile.am, src/util/Makefile.am: Add
+	  --with-zlib=[DIR] configure option.
+
+2013-06-07 14:51  wachs
+
+	* [r27399] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h: changes
+
+2013-06-07 13:59  wachs
+
+	* [r27398] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c: rename
+
+2013-06-07 13:18  wachs
+
+	* [r27397] src/ats/gnunet-service-ats-solver_proportional.c:
+	  changes
+
+2013-06-07 13:13  wachs
+
+	* [r27396] src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c: restructure
+
+2013-06-07 11:59  wachs
+
+	* [r27395] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats-solver_proportional.c,
+	  src/ats/gnunet-service-ats-solver_proportional.h,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.h: rename and
+	  cleanup due to writing docu
+
+2013-06-07 11:07  wachs
+
+	* [r27393] src/ats/gnunet-service-ats_addresses_simplistic.c:
+	  reflow and docu
+
+2013-06-05 18:07  bartpolot
+
+	* [r27369] src/mesh/gnunet-service-mesh-new.c: refactor, improve
+	  debug output
+
+2013-05-30 19:10  grothoff
+
+	* [r27342] doc/man/Makefile.am, doc/man/gnunet-datastore.1,
+	  src/datastore/Makefile.am, src/datastore/gnunet-datastore.c,
+	  src/include/gnunet_datastore_service.h,
+	  src/util/gnunet-resolver.c: adding tool to convert/merge
+	  datastores (#2875)
+
+2013-05-29 13:56  wachs
+
+	* [r27329] src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c:
+	  changes
+
+2013-05-29 13:20  wachs
+
+	* [r27328] src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/test_experimentation_clique.c,
+	  src/experimentation/test_experimentation_clique_connect.c:
+	  changes
+
+2013-05-28 10:03  wachs
+
+	* [r27322] src/experimentation/test_experimentation_clique.conf: no
+	  valgrind
+
+2013-05-28 10:02  wachs
+
+	* [r27321] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/test_experimentation_clique.c,
+	  src/experimentation/test_experimentation_clique.conf: changes
+
+2013-05-28 09:52  wachs
+
+	* [r27320] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c:
+	  changes
+
+2013-05-28 09:35  wachs
+
+	* [r27319]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  changes
+
+2013-05-28 09:34  wachs
+
+	* [r27318] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c:
+	  changes``
+
+2013-05-27 23:35  bartpolot
+
+	* [r27315] src/regex/regex_test_lib.c: Fix regexes with accepting
+	  common prefix, optimize regex prefix lengths
+
+2013-05-27 15:39  wachs
+
+	* [r27312] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c:
+	  scheduling
+
+2013-05-27 15:09  wachs
+
+	* [r27311] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  experimentation timing
+
+2013-05-27 08:53  wachs
+
+	* [r27307] src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_scheduler.c,
+	  src/experimentation/gnunet-daemon-experimentation_storage.c: new
+	  components
+
+2013-05-27 08:22  wachs
+
+	* [r27306]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  docu
+
+2013-05-27 08:19  wachs
+
+	* [r27305]
+	  src/experimentation/gnunet-daemon-experimentation_capabilities.c:
+	  docu
+
+2013-05-27 08:18  wachs
+
+	* [r27304]
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c: docu
+
+2013-05-27 08:09  wachs
+
+	* [r27303] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilities.c:
+	  documentation
+
+2013-05-27 07:40  wachs
+
+	* [r27302] src/transport/plugin_transport_tcp.c: additional check
+
+2013-05-24 15:09  wachs
+
+	* [r27299]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  pubkey
+
+2013-05-24 14:44  wachs
+
+	* [r27298]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/test_experimentation_clique.c,
+	  src/experimentation/test_experimentation_clique.conf: extended
+	  test
+
+2013-05-24 14:24  wachs
+
+	* [r27296] src/experimentation/Makefile.am,
+	  src/experimentation/test_experiments.exp: test experiments
+
+2013-05-24 14:21  wachs
+
+	* [r27295]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  experiments
+
+2013-05-24 13:35  wachs
+
+	* [r27294]
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c:
+	  parsing
+
+2013-05-24 12:27  wachs
+
+	* [r27291] src/experimentation/Makefile.am,
+	  src/experimentation/experimentation.conf.in,
+	  src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilites.c,
+	  src/experimentation/gnunet-daemon-experimentation_capabilities.c,
+	  src/experimentation/gnunet-daemon-experimentation_experiments.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/test_experimentation_clique.c,
+	  src/experimentation/test_experimentation_clique.conf: issuer
+
+2013-05-24 11:25  wachs
+
+	* [r27286] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilites.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c:
+	  changes
+
+2013-05-24 09:44  wachs
+
+	* [r27283] src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilites.c:
+	  capability bit shifting
+
+2013-05-24 07:57  wachs
+
+	* [r27280] src/experimentation/Makefile.am: check experimental
+
+2013-05-24 07:50  wachs
+
+	* [r27279]
+	  src/experimentation/gnunet-daemon-experimentation_capabilites.c:
+	  no comma
+
+2013-05-23 15:25  wachs
+
+	* [r27275]
+	  src/experimentation/gnunet-daemon-experimentation_capabilites.c:
+	  changes
+
+2013-05-23 14:57  wachs
+
+	* [r27274] src/transport/gnunet-service-transport_manipulation.c:
+	  one '&' to break it all...
+
+2013-05-23 14:11  wachs
+
+	* [r27272] src/transport/gnunet-service-transport_manipulation.c:
+	  fix
+
+2013-05-23 14:01  wachs
+
+	* [r27271] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: fix for
+	  0002890
+
+2013-05-23 12:37  wachs
+
+	* [r27268] src/transport/gnunet-service-transport_validation.c:
+	  remove warn message and add documentation
+
+2013-05-23 12:22  wachs
+
+	* [r27267] src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_capabilites.c,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c: adding
+	  capabilities
+
+2013-05-23 11:38  wachs
+
+	* [r27266] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c: use
+	  GSE_stat as extern
+
+2013-05-23 11:28  wachs
+
+	* [r27265] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c:
+	  documentation
+
+2013-05-23 11:19  wachs
+
+	* [r27264] src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/gnunet-daemon-experimentation.h,
+	  src/experimentation/gnunet-daemon-experimentation_nodes.c,
+	  src/experimentation/test_experimentation_clique.c: split up code
+	  to multiple files
+
+2013-05-22 22:52  LRN
+
+	* [r27262] src/mesh/Makefile.am: Try to fix mesh dependencies
+
+2013-05-22 19:11  wachs
+
+	* [r27261] src/include/gnunet_protocols.h: message types
+
+2013-05-22 14:12  wachs
+
+	* [r27259] src/experimentation/Makefile.am,
+	  src/experimentation/test_experimentation_clique.conf: changes
+
+2013-05-22 14:11  wachs
+
+	* [r27258] src/experimentation/gnunet-daemon-experimentation.c:
+	  modifications
+
+2013-05-22 14:11  wachs
+
+	* [r27257] src/experimentation/test_experimentation_clique.c: added
+	  statistics support
+
+2013-05-22 13:01  wachs
+
+	* [r27256] src/experimentation/gnunet-daemon-experimentation.c:
+	  manage requests
+
+2013-05-22 12:19  wachs
+
+	* [r27254] src/experimentation/gnunet-daemon-experimentation.c:
+	  changes
+
+2013-05-22 06:06  LRN
+
+	* [r27239] src/arm/test_arm_api.c: Adjust test_arm_api after API
+	  changes in r27231
+
+2013-05-21 15:12  wachs
+
+	* [r27232] src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/test_experimentation_clique.conf: request
+	  management
+
+2013-05-21 15:00  grothoff
+
+	* [r27231] doc/man/gnunet-arm.1, src/arm/arm_api.c,
+	  src/arm/gnunet-arm.c: fixing ARM restarting, adding monitor mode
+	  to command line
+
+2013-05-21 14:19  wachs
+
+	* [r27230] doc/gnunet-c-tutorial.pdf, doc/gnunet-c-tutorial.tex:
+	  execute ldconfig
+
+2013-05-21 13:38  wachs
+
+	* [r27227] src/experimentation/Makefile,
+	  src/experimentation/Makefile.am,
+	  src/experimentation/gnunet-daemon-experimentation.c,
+	  src/experimentation/test_experimentation_clique.c,
+	  src/experimentation/test_experimentation_clique.conf: testcase to
+	  connect daemons in a clique
+
+2013-05-21 12:58  grothoff
+
+	* [r27221] src/dns/gnunet-helper-dns.c: keep DNS helper running if
+	  IPv6 sockets fail, then we do IPv4-only
+
+2013-05-21 12:35  wachs
+
+	* [r27216] configure.ac, src/Makefile.am, src/experimentation,
+	  src/experimentation/Makefile, src/experimentation/Makefile.am,
+	  src/experimentation/experimentation.conf.in,
+	  src/experimentation/gnunet-daemon-experimentation.c: adding
+	  experimentation daemon
+
+2013-05-17 13:11  wachs
+
+	* [r27199] src/transport/test_transport_api_manipulation_cfg.c: fix
+	  return value
+
+2013-05-17 12:59  wachs
+
+	* [r27198] src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/test_transport_api_manipulation_cfg.c,
+	  src/transport/test_transport_api_manipulation_cfg_peer2.conf:
+	  improved test
+
+2013-05-17 11:37  wachs
+
+	* [r27197] src/transport/gnunet-service-transport_manipulation.c:
+	  more dbg msg
+
+2013-05-17 11:32  wachs
+
+	* [r27196] src/transport/gnunet-service-transport_manipulation.c:
+	  already defined on OSX
+
+2013-05-17 11:29  wachs
+
+	* [r27195] src/transport/gnunet-service-transport_manipulation.c:
+	  debug msg
+
+2013-05-16 13:26  wachs
+
+	* [r27176] src/transport/plugin_transport_udp_broadcasting.c: fix
+
+2013-05-16 13:02  wachs
+
+	* [r27174] src/transport/plugin_transport_udp.c: returning here is
+	  not a good idea since:
+	  - IPv6 socket can be opened but will be not closed if IPv4 error
+	  is handled as hard error
+	  - Plugin will return correctly with IPv6 socket open but never
+	  scheduled
+
+2013-05-16 12:45  wachs
+
+	* [r27173] src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_udp.h,
+	  src/transport/plugin_transport_udp_broadcasting.c: fixing memory
+	  leaks in udp
+
+2013-05-16 11:58  wachs
+
+	* [r27171] src/transport/plugin_transport_udp.c: remove memory
+	  debug code
+
+2013-05-16 07:21  wachs
+
+	* [r27159] src/transport/test_transport_api_manipulation_cfg.c:
+	  test failing on pi
+
+2013-05-15 20:47  grothoff
+
+	* [r27155] doc/gnunet-c-tutorial.pdf, doc/testbed_test.c: improving
+	  example documentation
+
+2013-05-15 12:28  wachs
+
+	* [r27147] src/transport/transport.conf.in: docu
+
+2013-05-15 12:27  wachs
+
+	* [r27146] src/transport/test_transport_api_udp_peer1.conf: test
+	  using autodetection
+
+2013-05-15 12:05  wachs
+
+	* [r27145] src/transport/plugin_transport_udp.c: changes to binding
+	  port
+
+2013-05-15 11:35  dold
+
+	* [r27143] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set_union.c: removed unnecessary malloc
+
+2013-05-15 10:48  dold
+
+	* [r27142] src/include/gnunet_protocols.h, src/set/Makefile.am,
+	  src/set/gnunet-service-set.c, src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_union.c, src/set/gnunet-set-bug.c,
+	  src/set/gnunet-set.c, src/set/ibf.c, src/set/mq.c, src/set/mq.h,
+	  src/set/set.h, src/set/set_api.c, src/set/strata_estimator.c,
+	  src/set/test_mq.c, src/set/test_mq_client.c,
+	  src/set/test_set.conf, src/set/test_set_api.c: test cases for mq,
+	  set works
+
+2013-05-15 09:00  grothoff
+
+	* [r27139] src/nat/nat.c: do not enumerate all IP addresses from
+	  our interfaces if the plugin is bound to a specific IP address
+	  only
+
+2013-05-14 16:25  wachs
+
+	* [r27135] src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c: improved messages
+
+2013-05-14 15:50  wachs
+
+	* [r27133] src/transport/plugin_transport_udp.c,
+	  src/transport/test_transport_api_udp_peer1.conf,
+	  src/transport/test_transport_api_udp_peer2.conf: fixing udp
+	  bindto
+
+2013-05-14 14:31  wachs
+
+	* [r27128] src/transport/gnunet-service-transport_manipulation.c:
+	  fix for manipulation, machine horribly died while testing
+
+2013-05-14 08:33  wachs
+
+	* [r27112] src/transport/gnunet-service-transport_clients.c,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/plugin_transport_udp.c,
+	  src/transport/transport_api.c: compile error in udp
+	  additional debug messages for transport connections
+
+2013-05-14 08:10  wachs
+
+	* [r27111] contrib/ssh-keys: new ssh key
+
+2013-05-13 12:55  wachs
+
+	* [r27103] src/transport/plugin_transport_udp.c: bound (IPv6)
+	  socket to wrong (IPv4) address
+
+2013-05-12 11:08  dold
+
+	* [r27100] src/mesh/mesh.conf.in: missing config value
+
+2013-05-08 07:23  wachs
+
+	* [r27061] src/transport/test_transport_api_manipulation_cfg.c:
+	  missing test
+
+2013-05-07 15:57  wachs
+
+	* [r27057] src/transport/gnunet-service-transport_manipulation.c:
+	  documentation
+
+2013-05-07 15:53  wachs
+
+	* [r27056] src/transport/transport.conf.in: added warning
+
+2013-05-07 15:51  wachs
+
+	* [r27055] src/transport/Makefile.am,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/test_transport_api_manipulation_cfg_peer1.conf,
+	  src/transport/test_transport_api_manipulation_cfg_peer2.conf: fix
+	  for 0002881 + test
+
+2013-05-07 14:35  harsha
+
+	* [r27054] src/testbed, src/testbed/Makefile.am,
+	  src/testbed/gnunet-service-testbed.c,
+	  src/testbed/gnunet-service-testbed.h,
+	  src/testbed/gnunet-service-testbed_peers.c,
+	  src/testbed/test_testbed_api_peer_reconfiguration.c,
+	  src/testbed/testbed.h, src/testbed/testbed_api.c,
+	  src/testbed/testbed_api.h, src/testbed/testbed_api_peers.c,
+	  src/testbed/testbed_api_peers.h: fix #2665: peer reconfiguration
+	  now implemented
+
+2013-05-07 11:36  bartpolot
+
+	* [r27046] src/mesh/Makefile.am, src/mesh/mesh2_api.c: Initial
+	  mesh2 api import
+
+2013-05-06 12:33  wachs
+
+	* [r27036] src/transport/transport.conf.in: traffic manipulation
+	  cfg settings
+
+2013-05-02 08:07  harsha
+
+	* [r27013] src/stream/stream.h, src/stream/stream_api.c: fix #2877:
+	  stream doesn't distinguish between the application ports
+
+2013-04-30 11:53  dold
+
+	* [r27008] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set.h, src/set/gnunet-service-set_union.c:
+	  fix/docs
+
+2013-04-30 11:05  dold
+
+	* [r27007] src/set/gnunet-service-set_union.c, src/set/set.h,
+	  src/set/strata_estimator.c, src/set/strata_estimator.h: fix /
+	  documentation
+
+2013-04-30 04:38  LRN
+
+	* [r27005] src/util/test_os_start_process.c: Fix
+	  test_os_startprocess
+	  
+	  Previous code wrongly assumed that the message will be read from
+	  the pipe
+	  completely in one go. It does not happen like that _every_ time.
+
+2013-04-30 00:04  dold
+
+	* [r27004] src/include/gnunet_set_service.h,
+	  src/set/gnunet-service-set.c, src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_union.c, src/set/gnunet-set-bug.c,
+	  src/set/mq.c, src/set/mq.h, src/set/set_api.c: implemented most
+	  parts of the set service
+
+2013-04-29 09:09  dold
+
+	* [r27003] src/set/gnunet-service-set.c,
+	  src/set/gnunet-service-set_union.c, src/set/set.h: fix
+
+2013-04-27 14:24  dold
+
+	* [r27002] src/set/Makefile.am, src/set/gnunet-set-bug.c: forgot to
+	  add c file
+
+2013-04-27 14:16  dold
+
+	* [r27001] po/de.po, po/es.po, po/sv.po, po/vi.po, po/zh_CN.po,
+	  src/include/gnunet_set_service.h, src/set/Makefile.am,
+	  src/set/gnunet-service-set.c, src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_union.c, src/set/gnunet-set.c,
+	  src/set/mq.c, src/set/mq.h, src/set/set_api.c,
+	  src/util/crypto_ecc.c: work on gnunet-set, isolated bug in stream
+
+2013-04-27 11:04  dold
+
+	* [r27000] src/include/gnunet_crypto_lib.h, src/util/crypto_ecc.c:
+	  implemented GNUNET_CRYPTO_get_host_identity
+
+2013-04-26 15:43  dold
+
+	* [r26999] src/testing/Makefile.am: reverted changes to makefile,
+	  was just a problem with autotools on my system
+
+2013-04-26 14:29  dold
+
+	* [r26998] src/testing/Makefile.am: fixed compilation errors:
+	  undefined reference to `GNUNET_ARM_[...]'
+
+2013-04-24 12:05  dold
+
+	* [r26983] src/set/gnunet-service-set.h,
+	  src/set/gnunet-service-set_union.c, src/set/set_protocol.h:
+	  forgot to commit new files
+
+2013-04-24 11:48  dold
+
+	* [r26981] src/include/gnunet_applications.h,
+	  src/include/gnunet_protocols.h, src/include/gnunet_set_service.h,
+	  src/set/Makefile.am, src/set/gnunet-service-set.c,
+	  src/set/gnunet-set.c, src/set/mq.c, src/set/mq.h,
+	  src/set/set.conf.in, src/set/set.h, src/set/set_api.c,
+	  src/set/strata_estimator.c, src/set/strata_estimator.h,
+	  src/set/test_set_api.c: started implementing union operation for
+	  set
+
+2013-04-22 14:42  bartpolot
+
+	* [r26970] src/util/disk.c: Allow callback to stop a DISK_scan with
+	  no error, similar to other er APIs
+
+2013-04-22 08:10  LRN
+
+	* [r26967] src/arm/gnunet-service-arm.c: Don't start accept task
+	  twice
+
+2013-04-22 08:10  LRN
+
+	* [r26966] src/arm/arm_monitor_api.c: Correctly forget task ID once
+	  task runs
+
+2013-04-21 20:01  harsha
+
+	* [r26964] src/include/gnunet_protocols.h,
+	  src/include/gnunet_testbed_service.h,
+	  src/testbed/gnunet-service-testbed.c,
+	  src/testbed/testbed.conf.in, src/testbed/testbed.h,
+	  src/testbed/testbed_api.c: fix #2666: Implement service sharing
+	  among peers
+
+2013-04-21 17:54  LRN
+
+	* [r26962] src/chat/Makefile.am, src/chat/chat.c: Fix chat to
+	  compile and link successfully
+
+2013-04-21 17:53  LRN
+
+	* [r26961] src/gns/w32nsp-resolve.c: Better fix for w32nsp warnings
+
+2013-04-21 17:53  LRN
+
+	* [r26960] src/gns/w32nsp-resolve.c: Fix a warning - include ws2
+	  before windows.h
+
+2013-04-21 17:53  LRN
+
+	* [r26959] src/exit/gnunet-helper-exit-windows.c: Mingw-w64
+	  compatibility for W32 exit helper
+
+2013-04-21 17:53  LRN
+
+	* [r26958] src/vpn/gnunet-helper-vpn-windows.c: Mingw-w64
+	  compatibility for VPN helper
+
+2013-04-21 17:53  LRN
+
+	* [r26957] src/fs/Makefile.am: Try to fix fs block plugin deps
+
+2013-04-21 13:37  LRN
+
+	* [r26956] src/gns/w32nsp-resolve.c, src/gns/w32nsp.c,
+	  src/gns/w32nsp.def: Fix mingw-w64 warnings in w32nsp
+
+2013-04-21 13:37  LRN
+
+	* [r26955] src/util/win.c: Better mingw-w64 compatibility for win.c
+
+2013-04-21 13:36  LRN
+
+	* [r26954] contrib/timeout_watchdog_w32.c: Use safer functions in
+	  w32 watchdog
+
+2013-04-21 13:36  LRN
+
+	* [r26953] src/include/plibc.h: Update plibc header
+
+2013-04-19 14:58  cfuchs
+
+	* [r26944] src/dns/gnunet-service-dns.c, src/gns/test_gns_proxy.c,
+	  src/nat/nat.c, src/nat/nat_auto.c, src/pt/test_gns_vpn.c: added
+	  privilege testing parameters for nat-server and added parameters
+	  to currently windows-only tests (less work in the future, even if
+	  this
+	  is ATM unused)
+
+2013-04-19 14:50  cfuchs
+
+	* [r26943] src/exit/gnunet-daemon-exit.c, src/nat/nat.c,
+	  src/nat/nat_auto.c, src/pt/test_gnunet_vpn.c,
+	  src/vpn/gnunet-service-vpn.c: added privilege testing parameters
+	  for helper-vpn, exit and nat-client.
+	  todo: nat-server
+
+2013-04-18 14:48  bartpolot
+
+	* [r26935] src/include/gnunet_getopt_lib.h,
+	  src/util/getopt_helpers.c: Add filename getopt operator
+
+2013-04-17 15:32  bartpolot
+
+	* [r26925] src/arm/do_start_process.c,
+	  src/arm/gnunet-service-arm.c: Dont restart services/daemons that
+	  have exited with exit code 0.
+
+2013-04-17 12:20  grothoff
+
+	* [r26921] src/util/disk.c: set close-on-exec file for opened disk
+	  file descriptors
+
+2013-04-17 11:34  dold
+
+	* [r26920] src/set/mq.h: api fix
+
+2013-04-17 11:07  dold
+
+	* [r26919] src/set/gnunet-service-set.c, src/set/set_api.c: fix
+
+2013-04-17 10:53  dold
+
+	* [r26916] src/set/mq.h, src/set/set_api.c: fix
+
+2013-04-17 10:47  dold
+
+	* [r26914] src/set/mq.h: partial docs
+
+2013-04-17 10:41  dold
+
+	* [r26913] src/set/mq.h, src/set/set.h, src/set/set_api.c: fix
+
+2013-04-17 00:44  dold
+
+	* [r26911] src/include/gnunet_protocols.h,
+	  src/include/gnunet_set_service.h,
+	  src/include/gnunet_testing_lib.h, src/set/Makefile.am,
+	  src/set/mq.c, src/set/mq.h, src/set/set.h, src/set/set_api.c,
+	  src/set/test_set_api.c: started implementing set api, draft for
+	  mq
+
+2013-04-16 18:32  dold
+
+	* [r26909] configure.ac, po/POTFILES.in, po/de.po, po/es.po,
+	  po/sv.po, po/vi.po, po/zh_CN.po, src/Makefile.am,
+	  src/consensus/gnunet-service-consensus.c, src/set,
+	  src/set/Makefile.am, src/set/gnunet-service-set.c,
+	  src/set/gnunet-set.c, src/set/ibf.c, src/set/ibf.h,
+	  src/set/set.conf.in, src/set/set_api.c,
+	  src/set/strata_estimator.c, src/set/strata_estimator.h,
+	  src/set/test_set.conf, src/set/test_set_api.c: added skeleton for
+	  gnunet set
+
+2013-04-16 18:01  dold
+
+	* [r26908] src/chat/Makefile.am, src/chat/gnunet-chat.c: fixed
+	  compilation error in chat
+
+2013-04-16 14:53  LRN
+
+	* [r26906] contrib/timeout_watchdog_w32.c: Use a W32 constant in a
+	  pure W32 program
+
+2013-04-15 12:36  cfuchs
+
+	* [r26890] src/dns/gnunet-service-dns.c,
+	  src/exit/gnunet-daemon-exit.c,
+	  src/exit/gnunet-helper-exit-windows.c, src/gns/test_gns_proxy.c,
+	  src/include/gnunet_os_lib.h, src/nat/Makefile.am,
+	  src/nat/gnunet-helper-nat-client-windows.c,
+	  src/nat/gnunet-helper-nat-server-windows.c, src/nat/nat.c,
+	  src/nat/nat_auto.c, src/nat/nat_mini.c, src/nat/test_nat_test.c,
+	  src/pt/Makefile.am, src/pt/test_gns_vpn.c,
+	  src/pt/test_gnunet_vpn.c, src/transport/plugin_transport_wlan.c,
+	  src/util/os_installation.c, src/util/os_priority.c,
+	  src/vpn/gnunet-helper-vpn-windows.c,
+	  src/vpn/gnunet-service-vpn.c: extended the
+	  GNUNET_OS_check_helper_binary parameters to do previlege
+	  checking in windows. To do so, tested binaries must still be
+	  supplied
+	  with valid commandline arguments, but on windows gnunet will
+	  utilize the
+	  -d flag to run the programs initialization phase or privileged
+	  operations only. In these modes, a program will not enter its
+	  mainloop
+	  or communicate with the outside.
+	  
+	  updated relevant function calls gnunet-wide to meet the extended
+	  function parameters.
+	  
+	  
+
+2013-04-15 09:39  grothoff
+
+	* [r26887] doc/gnunet-c-tutorial.pdf, doc/gnunet-c-tutorial.tex:
+	  gitlibgcrypt
+
+2013-04-14 20:21  grothoff
+
+	* [r26874] src/Makefile.am, src/chat/chat.c,
+	  src/chat/gnunet-chat.c, src/fs/fs_api.h, src/fs/fs_namespace.c,
+	  src/fs/fs_pseudonym.c, src/fs/fs_publish_ksk.c,
+	  src/fs/fs_search.c, src/fs/fs_unindex.c, src/fs/fs_uri.c,
+	  src/fs/gnunet-pseudonym.c, src/fs/plugin_block_fs.c,
+	  src/fs/test_fs_namespace.c, src/fs/test_fs_uri.c,
+	  src/fs/test_pseudonym.c, src/include/block_fs.h,
+	  src/include/gnunet_fs_service.h: renaming GNUNET_PSEUDONYM_-API
+	  to GNUNET_FS_pseudonym-API
+
+2013-04-12 13:44  wachs
+
+	* [r26864] doc/figs, doc/figs/Service.pdf, doc/figs/System.pdf,
+	  doc/gnunet-c-tutorial.pdf, doc/gnunet-c-tutorial.tex: changes thx
+	  to SAP
+
+2013-04-12 12:31  wachs
+
+	* [r26861] src/transport/gnunet-service-transport_manipulation.c:
+	  uninitialized
+
+2013-04-11 14:07  wachs
+
+	* [r26854] src/transport/template_cfg_peer1.conf,
+	  src/transport/template_cfg_peer2.conf: prevent hostlist connects
+
+2013-04-11 13:30  wachs
+
+	* [r26848] src/transport/gnunet-service-transport.c: surpress core
+	  message " Unsupported message of type 16"
+
+2013-04-11 12:26  wachs
+
+	* [r26847] contrib/hellos/PIEU: new hello
+
+2013-04-11 10:08  dold
+
+	* [r26846] src/consensus/Makefile.am,
+	  src/consensus/consensus-simulation.py,
+	  src/consensus/consensus_api.c, src/consensus/consensus_flout.h,
+	  src/consensus/gnunet-consensus-ibf.c,
+	  src/consensus/gnunet-consensus.c,
+	  src/consensus/gnunet-service-consensus.c, src/consensus/ibf.c,
+	  src/consensus/ibf.h, src/consensus/strata_estimator.c,
+	  src/consensus/strata_estimator.h, src/dv/gnunet-service-dv.c,
+	  src/include/gnunet_consensus_service.h,
+	  src/include/gnunet_protocols.h: added consensus log-round
+	  simulation, work on consensus service, still problems with dv
+	  test case
+
+2013-04-11 08:51  wachs
+
+	* [r26845] contrib/hellos/02UK, contrib/hellos/1G1M,
+	  contrib/hellos/7RAV, contrib/hellos/8B4T, contrib/hellos/94CH,
+	  contrib/hellos/ATF4, contrib/hellos/F1GT, contrib/hellos/KD9V,
+	  contrib/hellos/KUPL, contrib/hellos/LJR8, contrib/hellos/R69Q,
+	  contrib/hellos/R6OV, contrib/hellos/RL7P: remove invalid HELLOs
+
+2013-04-11 08:07  wachs
+
+	* [r26844] contrib/hellos/TFRM: Added a valid HELLO for my machine
+	  - peerinfo test should pass now
+
+2013-04-11 07:13  wachs
+
+	* [r26843] src/peerinfo-tool/gnunet-peerinfo.c: fix?
+
+2013-04-10 13:29  wachs
+
+	* [r26838] src/peerinfo/gnunet-service-peerinfo.c: doxygen
+
+2013-04-10 13:03  wachs
+
+	* [r26836] src/hello/hello.c: changes
+
+2013-04-10 12:55  wachs
+
+	* [r26835] src/peerinfo-tool/gnunet-peerinfo.c: dump hello to file
+
+2013-04-10 12:16  wachs
+
+	* [r26834] src/peerinfo/gnunet-service-peerinfo.c: simplified
+	  hostfile reading
+
+2013-04-10 11:27  wachs
+
+	* [r26833] src/peerinfo-tool/gnunet-peerinfo.c: fixed friend flag
+
+2013-04-10 11:27  wachs
+
+	* [r26832] src/peerinfo/gnunet-service-peerinfo.c: fixed periodic
+	  cleanup
+
+2013-04-10 09:57  wachs
+
+	* [r26829] src/peerinfo/gnunet-service-peerinfo.c: fix
+
+2013-04-10 09:48  wachs
+
+	* [r26828] src/peerinfo/gnunet-service-peerinfo.c: fix
+
+2013-04-10 09:42  wachs
+
+	* [r26827] src/peerinfo/gnunet-service-peerinfo.c: fix mem leak and
+	  counting valid addresses
+
+2013-04-10 09:20  wachs
+
+	* [r26825] src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/test_peerinfo_api_notify_friend_only.c: fix
+
+2013-04-10 09:02  wachs
+
+	* [r26824] src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/test_peerinfo_api.c,
+	  src/peerinfo/test_peerinfo_api_friend_only.c,
+	  src/peerinfo/test_peerinfo_shipped_hellos.c: multiple major
+	  fixes:
+	  - shipped hellos were never parsed
+	  - when hello files was parsed from certain file, hello from this
+	  was ignored
+	  
+	  major changes in this commit which can break functionality atm
+
+2013-04-10 07:25  wachs
+
+	* [r26823] src/peerinfo/Makefile.am,
+	  src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/test_peerinfo_shipped_hellos.c: testing hellos
+	  shipped
+
+2013-04-09 15:24  wachs
+
+	* [r26821] src/peerinfo/gnunet-service-peerinfo.c: fixes
+
+2013-04-09 14:24  wachs
+
+	* [r26820] src/peerinfo/gnunet-service-peerinfo.c: work in progress
+
+2013-04-09 12:08  wachs
+
+	* [r26818] src/peerinfo/gnunet-service-peerinfo.c: store 2 hellos
+
+2013-04-09 08:22  wachs
+
+	* [r26814] src/peerinfo/gnunet-service-peerinfo.c: initial changes
+	  to support 2 hellos
+
+2013-04-08 15:14  wachs
+
+	* [r26812] src/peerinfo/gnunet-service-peerinfo.c: additional
+	  struct
+
+2013-04-08 13:06  wachs
+
+	* [r26811] src/integration-tests/Makefile.am,
+	  src/integration-tests/test_integration_bootstrap_and_connect.py.in,
+	  src/integration-tests/test_integration_bootstrap_and_connect_and_disconnect.py.in,
+	  src/integration-tests/test_integration_bootstrap_and_connect_and_disconnect_nat.py.in,
+	  src/integration-tests/test_integration_clique_nat.py.in: disable
+	  verbose
+
+2013-04-08 13:06  wachs
+
+	* [r26810] configure.ac, src/Makefile.am: remove sysmon and disable
+	  libgtop check since it is not working on planetlab anyway
+
+2013-04-08 11:21  wachs
+
+	* [r26807]
+	  src/integration-tests/test_integration_connect_on_restart.py.in:
+	  fix
+
+2013-04-08 11:19  wachs
+
+	* [r26806] src/integration-tests/test_integration_clique_nat.py.in:
+	  fix
+
+2013-04-08 11:17  wachs
+
+	* [r26805] src/integration-tests/test_integration_clique.py.in:
+	  change
+
+2013-04-08 11:08  wachs
+
+	* [r26804] src/integration-tests/confs/c_no_nat_client_2.conf,
+	  src/integration-tests/hostkeys/0003-hostkey,
+	  src/integration-tests/hostkeys/c_no_nat_client_2: changes
+
+2013-04-08 10:00  wachs
+
+	* [r26803] src/integration-tests/test_integration_restart.py.in:
+	  fix
+
+2013-04-08 09:56  wachs
+
+	* [r26802] src/integration-tests/test_integration_restart.py.in:
+	  cleanup
+
+2013-04-08 09:54  wachs
+
+	* [r26801] src/integration-tests/Makefile.am,
+	  src/integration-tests/confs/c_bootstrap_server.conf,
+	  src/integration-tests/confs/c_nat_client.conf,
+	  src/integration-tests/confs/c_no_nat_client.conf,
+	  src/integration-tests/hostkeys/0000-hostkey,
+	  src/integration-tests/hostkeys/0001-hostkey,
+	  src/integration-tests/hostkeys/0002-hostkey,
+	  src/integration-tests/hostkeys/c_bootstrap_server,
+	  src/integration-tests/hostkeys/c_nat_client,
+	  src/integration-tests/hostkeys/c_no_nat_client,
+	  src/integration-tests/test_integration_bootstrap_and_connect_and_disconnect_nat.py.in:
+	  changes
+
+2013-04-08 09:47  wachs
+
+	* [r26800]
+	  src/integration-tests/test_integration_bootstrap_and_connect_and_disconnect.py.in:
+	  fix
+
+2013-04-08 09:45  wachs
+
+	* [r26799]
+	  src/integration-tests/test_integration_bootstrap_and_connect.py.in:
+	  fixed cleanup
+
+2013-04-08 09:16  wachs
+
+	* [r26797] src/fs/gnunet-service-fs_cp.c: fs crashing in integraton
+	  tests
+	  added check
+
+2013-04-08 08:57  wachs
+
+	* [r26796] src/integration-tests/confs/c_bootstrap_server.conf,
+	  src/integration-tests/confs/c_no_nat_client.conf: test fix for
+	  integration tests
+
+2013-04-08 08:20  wachs
+
+	* [r26795] src/integration-tests/hostkeys/0000-hostkey: additional
+	  hostkey
+
+2013-04-08 08:07  wachs
+
+	* [r26794] src/integration-tests/hostkeys/0001-hostkey,
+	  src/integration-tests/hostkeys/0002-hostkey,
+	  src/integration-tests/hostkeys/0003-hostkey,
+	  src/integration-tests/hostkeys/0004-hostkey,
+	  src/integration-tests/hostkeys/0005-hostkey,
+	  src/integration-tests/hostkeys/0006-hostkey,
+	  src/integration-tests/hostkeys/0007-hostkey,
+	  src/integration-tests/hostkeys/0008-hostkey,
+	  src/integration-tests/hostkeys/0009-hostkey: fixing invalid
+	  hostkeys
+
+2013-04-08 07:27  wachs
+
+	* [r26793] src/peerinfo/gnunet-service-peerinfo.c: not required
+
+2013-04-08 07:19  wachs
+
+	* [r26792] src/ats/gnunet-service-ats_addresses_mlp.h: doxygen
+
+2013-04-05 15:03  wachs
+
+	* [r26785] src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/perf_peerinfo_api.c: perf test
+
+2013-04-05 14:43  wachs
+
+	* [r26784] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.h,
+	  src/peerinfo/gnunet-service-peerinfo.c: doxygen
+
+2013-04-05 14:11  cfuchs
+
+	* [r26783] src/exit/gnunet-helper-exit-windows.c: dryrun
+	  functionality added, removed irrelevant return code reset
+
+2013-04-05 14:10  cfuchs
+
+	* [r26782] src/vpn/gnunet-helper-vpn-windows.c: added dryrun
+	  functionality to helper-vpn-windows
+
+2013-04-05 14:10  cfuchs
+
+	* [r26781] src/util/os_installation.c: removed raw-pipe checking
+	  code for windows. this will always fail new
+	  windows. functionality will be replaced with windows-dryrun
+	  checking
+
+2013-04-05 14:08  cfuchs
+
+	* [r26780] src/pt/test_gnunet_vpn.c: started making test_gnunet_vpn
+	  a bit less linux-only. does not work on
+	  windows yet, though due to permissions checking, see other
+	  commits!
+
+2013-04-05 13:35  wachs
+
+	* [r26779] src/transport/gnunet-service-transport_hello.c: refresh
+	  hello fix
+
+2013-04-05 13:16  wachs
+
+	* [r26778] src/peerinfo-tool/gnunet-peerinfo.c: fix
+
+2013-04-05 13:07  wachs
+
+	* [r26777] src/peerinfo/peerinfo.conf.in: add uri info
+
+2013-04-05 13:07  LRN
+
+	* [r26776] src/util/w32cat.c: Don't wcscmp a NULL pointer
+
+2013-04-05 13:02  wachs
+
+	* [r26775] src/hello/hello.c: print hello friend type
+
+2013-04-05 12:22  wachs
+
+	* [r26773] src/ats/gnunet-service-ats_addresses.c: fix
+
+2013-04-05 11:38  grothoff
+
+	* [r26771] src/nse/gnunet-service-nse.c, src/nse/nse.conf.in,
+	  src/nse/perf_kdf.c: use SCRYPT - fixing # 2685, needs LATEST
+	  libgcrypt (Git from today)
+
+2013-04-05 09:26  wachs
+
+	* [r26770] src/peerinfo/Makefile.am,
+	  src/peerinfo/test_peerinfo_api_notify_friend_only.c: test
+
+2013-04-05 08:52  wachs
+
+	* [r26769] src/peerinfo/gnunet-service-peerinfo.c: wrong log type
+
+2013-04-05 08:51  wachs
+
+	* [r26768] src/peerinfo/gnunet-service-peerinfo.c: fixed client
+	  notifications
+
+2013-04-05 08:51  wachs
+
+	* [r26767] src/peerinfo/peerinfo_api_notify.c: wrong struct
+
+2013-04-05 07:51  wachs
+
+	* [r26764] doc/gnunet-c-tutorial.pdf, doc/gnunet-c-tutorial.tex: c
+	  tutorial
+
+2013-04-04 13:56  wachs
+
+	* [r26760] src/peerinfo/Makefile.am,
+	  src/peerinfo/test_peerinfo_api_friend_only.c: test
+
+2013-04-04 13:41  wachs
+
+	* [r26759] src/peerinfo/gnunet-service-peerinfo.c: peerinfo get
+	  implementation
+
+2013-04-04 13:08  wachs
+
+	* [r26756] src/hostlist/hostlist-server.c,
+	  src/peerinfo/gnunet-service-peerinfo.c: implement peerinfo
+	  notification api
+
+2013-04-04 12:02  wachs
+
+	* [r26754] src/dht/gnunet-service-dht_hello.c,
+	  src/hostlist/hostlist-server.c,
+	  src/include/gnunet_peerinfo_service.h,
+	  src/peerinfo-tool/gnunet-peerinfo.c,
+	  src/peerinfo/gnunet-service-peerinfo.c, src/peerinfo/peerinfo.h,
+	  src/peerinfo/peerinfo_api.c, src/peerinfo/peerinfo_api_notify.c,
+	  src/peerinfo/test_peerinfo_api.c,
+	  src/topology/gnunet-daemon-topology.c,
+	  src/transport/gnunet-service-transport_validation.c: peerinfo API
+	  change + changes in code using api
+
+2013-04-04 09:43  wachs
+
+	* [r26751] src/hello/gnunet-hello.c, src/hello/hello.c,
+	  src/include/gnunet_hello_lib.h, src/include/gnunet_protocols.h,
+	  src/peerinfo/gnunet-service-peerinfo.c,
+	  src/peerinfo/peerinfo.conf.in,
+	  src/testbed/gnunet-service-testbed_oc.c,
+	  src/topology/gnunet-daemon-topology.c,
+	  src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_clients.c,
+	  src/transport/gnunet-service-transport_validation.c,
+	  src/transport/plugin_transport_udp_broadcasting.c,
+	  src/transport/plugin_transport_wlan.c,
+	  src/transport/transport_api.c: changes for mantis 0002676
+
+2013-04-04 08:21  wachs
+
+	* [r26749] src/ats/gnunet-service-ats_addresses.c: use after free
+
+2013-04-04 08:07  wachs
+
+	* [r26748] src/ats/gnunet-service-ats_addresses.c: uninitialized
+	  value causing segfault
+
+2013-04-03 16:04  wachs
+
+	* [r26744] src/transport/plugin_transport_http_server.c,
+	  src/transport/transport.conf.in: initial server side change for
+	  MITM ssl validation
+
+2013-04-03 15:49  wachs
+
+	* [r26742] src/transport/gnunet-service-transport_manipulation.c:
+	  generic ats support
+
+2013-04-03 15:18  wachs
+
+	* [r26741] src/transport/gnunet-service-transport_manipulation.c:
+	  changes
+
+2013-04-03 14:59  wachs
+
+	* [r26740] src/transport/gnunet-service-transport_manipulation.c:
+	  generic ats manipulation
+
+2013-04-03 14:22  wachs
+
+	* [r26739] src/include/gnunet_ats_service.h: docu fix
+
+2013-04-03 14:18  wachs
+
+	* [r26738] src/transport/gnunet-service-transport_manipulation.c:
+	  docu
+
+2013-04-03 14:11  wachs
+
+	* [r26737] src/transport/gnunet-service-transport_manipulation.c:
+	  docu
+
+2013-04-03 12:22  wachs
+
+	* [r26735] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/test_ats_mlp_update.c, src/include/gnunet_ats_service.h:
+	  ats change, done
+
+2013-04-03 11:12  wachs
+
+	* [r26733] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c: fixed network
+	  switching
+
+2013-04-03 10:56  wachs
+
+	* [r26732] src/ats/gnunet-service-ats_addresses.c: delta support
+	  for disassemble
+
+2013-04-03 09:30  wachs
+
+	* [r26731] src/ats/test_ats_api_common.c: fix
+
+2013-04-03 09:24  wachs
+
+	* [r26730] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.h,
+	  src/ats/perf_ats_mlp.c,
+	  src/ats/test_ats_api_scheduling_update_address.c,
+	  src/ats/test_ats_mlp.c, src/ats/test_ats_mlp_update.c: api
+	  change, fix and improvements
+
+2013-04-03 07:59  wachs
+
+	* [r26729] src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/test_ats_api_scheduling_check_min_bw_alt.c: test
+
+2013-04-03 07:37  wachs
+
+	* [r26728] src/ats/gnunet-service-ats_addresses_mlp.c: fixed mlp
+
+2013-04-03 07:25  wachs
+
+	* [r26727] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c: changes
+
+2013-04-02 15:39  wachs
+
+	* [r26724] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c: breaks tests
+
+2013-04-02 14:48  wachs
+
+	* [r26722] src/ats/gnunet-service-ats_addresses.h: docue
+
+2013-04-02 14:39  wachs
+
+	* [r26721] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-04-02 14:25  wachs
+
+	* [r26720] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h: documentation
+
+2013-04-02 09:02  wachs
+
+	* [r26716] src/ats/gnunet-service-ats_addresses.h: some
+	  documentation
+
+2013-03-31 20:48  harsha
+
+	* [r26704] src/include/gnunet_testing_lib.h,
+	  src/testing/test_testing_peerstartup2.c, src/testing/testing.c:
+	  support for asynchronous peer start/stop and service start/stop
+	  using ARM API
+
+2013-03-31 01:24  LRN
+
+	* [r26689] src/integration-tests/Makefile.am,
+	  src/integration-tests/test_buildslave_hangup.py: Remove temporary
+	  W32 buildslave test
+
+2013-03-31 01:23  LRN
+
+	* [r26688] contrib/buildslave-0.8.5-gnunet-w32.patch,
+	  contrib/buildslave-0.8.6p1-gnunet-w32.patch: Update w32
+	  buildslave patch to 0.8.6p1, and FINALLY FIX THE DAMN THING
+
+2013-03-30 16:31  LRN
+
+	* [r26684] src/integration-tests/Makefile.am: ARGH. Automake and
+	  its special variables...
+
+2013-03-30 16:18  LRN
+
+	* [r26678] src/integration-tests/Makefile.am,
+	  src/integration-tests/test_buildslave_hangup.py: A temporary test
+	  for buildslave process killing
+
+2013-03-30 15:29  harsha
+
+	* [r26674] contrib/infiniband_cluster.hosts: current working
+	  infiniband hosts
+
+2013-03-28 16:47  harsha
+
+	* [r26650] src/ats/gnunet-service-ats_addresses.c,
+	  src/consensus/gnunet-consensus-start-peers.c,
+	  src/consensus/gnunet-consensus.c, src/dht/dht_test_lib.c,
+	  src/dv/test_transport_blacklist.c, src/dv/test_transport_dv.c,
+	  src/fs/gnunet-fs-profiler.c, src/fs/perf_gnunet_service_fs_p2p.c,
+	  src/fs/perf_gnunet_service_fs_p2p_respect.c,
+	  src/fs/test_fs_test_lib.c,
+	  src/fs/test_gnunet_service_fs_migration.c,
+	  src/fs/test_gnunet_service_fs_p2p.c,
+	  src/gns/test_gns_dht_three_peers.c,
+	  src/include/gnunet_testbed_service.h, src/mesh/mesh_test_lib.c,
+	  src/nse/gnunet-nse-profiler.c, src/nse/test_nse_multipeer.c,
+	  src/stream/perf_stream_api.c, src/stream/test_stream_2peers.c,
+	  src/stream/test_stream_2peers_halfclose.c,
+	  src/testbed/gnunet-testbed-profiler.c,
+	  src/testbed/test_testbed_api_statistics.c,
+	  src/testbed/test_testbed_api_test.c,
+	  src/testbed/test_testbed_api_test_timeout.c,
+	  src/testbed/test_testbed_api_testbed_run.c,
+	  src/testbed/test_testbed_api_topology.c,
+	  src/testbed/test_testbed_api_topology_clique.c,
+	  src/testbed/testbed_api_testbed.c,
+	  src/topology/test_gnunet_daemon_topology.c: provide how many
+	  links succeeded and how many failed in test master callback
+	  from GNUNET_TESTBED_run() and GNUNET_TESTBED_test_run() functions
+
+2013-03-28 15:59  wachs
+
+	* [r26648] src/peerinfo/gnunet-service-peerinfo.c,
+	  src/testbed/gnunet-service-testbed_oc.c,
+	  src/topology/gnunet-daemon-topology.c: support for FRIEND_HELLO
+
+2013-03-28 15:43  wachs
+
+	* [r26647] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_clients.c,
+	  src/transport/gnunet-service-transport_hello.c,
+	  src/transport/gnunet-service-transport_hello.h,
+	  src/transport/gnunet-service-transport_validation.c,
+	  src/transport/plugin_transport_wlan.c,
+	  src/transport/transport_api.c: support for FRIEND_HELLO messages
+
+2013-03-28 15:24  wachs
+
+	* [r26646] src/hello/hello.c, src/include/gnunet_hello_lib.h:
+	  change type
+
+2013-03-28 15:14  wachs
+
+	* [r26645] src/hello/Makefile.am, src/hello/gnunet-hello.c,
+	  src/hello/hello.c, src/hello/test_friend_hello.c,
+	  src/hello/test_hello.c, src/include/gnunet_hello_lib.h,
+	  src/include/gnunet_protocols.h, src/peerinfo/perf_peerinfo_api.c,
+	  src/peerinfo/test_peerinfo_api.c,
+	  src/transport/gnunet-service-transport_hello.c,
+	  src/transport/gnunet-service-transport_validation.c,
+	  src/transport/test_plugin_transport.c: new friend only HELLO type
+	  GNUNET_MESSAGE_TYPE_FRIEND_HELLO
+
+2013-03-28 14:28  cfuchs
+
+	* [r26644] src/pt/test_gnunet_vpn.c: some fixes to the pt/vpn
+	  testcase.
+
+2013-03-28 13:54  wachs
+
+	* [r26641] src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: more docu
+
+2013-03-28 13:49  wachs
+
+	* [r26640] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: docu
+
+2013-03-28 13:26  wachs
+
+	* [r26639] src/transport/gnunet-service-transport_blacklist.c,
+	  src/transport/test_transport_blacklisting.c: docu
+
+2013-03-28 12:37  wachs
+
+	* [r26638]
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_multiple_plugins.conf:
+	  fix
+
+2013-03-28 12:29  wachs
+
+	* [r26637] src/transport/Makefile.am,
+	  src/transport/test_transport_blacklisting.c,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_multiple_plugins.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_multiple_plugins.conf:
+	  additional test
+
+2013-03-28 12:15  wachs
+
+	* [r26633] src/transport/Makefile.am,
+	  src/transport/gnunet-service-transport_blacklist.c,
+	  src/transport/test_transport_blacklisting_cfg.c,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1.conf:
+	  fixes to blacklisting
+
+2013-03-28 12:14  wachs
+
+	* [r26632] src/transport/test_transport_blacklisting.c,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2.conf:
+	  modified test
+
+2013-03-28 12:13  wachs
+
+	* [r26631]
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_full.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1_plugin.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_full.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2_plugin.conf:
+	  confs
+
+2013-03-28 09:50  wachs
+
+	* [r26628] src/transport/test_transport_blacklisting_cfg.c: missing
+	  test
+
+2013-03-28 09:18  harsha
+
+	* [r26624] src/nse/nse_infiniband.conf: infiniband nse evaluation
+	  config
+
+2013-03-27 16:31  wachs
+
+	* [r26619] src/transport/Makefile.am,
+	  src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_blacklist.c,
+	  src/transport/gnunet-service-transport_blacklist.h,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer1.conf,
+	  src/transport/test_transport_blacklisting_cfg_blp_peer2.conf,
+	  src/transport/test_transport_blacklisting_cfg_peer1.conf,
+	  src/transport/test_transport_blacklisting_cfg_peer2.conf:
+	  transport cfg based blacklisting
+
+2013-03-27 08:30  wachs
+
+	* [r26615] src/ats/gnunet-service-ats_addresses.c,
+	  src/dv/gnunet-service-dv.c, src/fs/gnunet-service-fs.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: fix
+
+2013-03-26 15:02  wachs
+
+	* [r26612] src/ats-tool/gnunet-ats.c, src/ats/Makefile.am,
+	  src/ats/ats_api_performance.c,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/test_ats_api_performance_address_info.c,
+	  src/ats/test_ats_api_performance_list_addresses.c,
+	  src/ats/test_ats_api_performance_monitor.c,
+	  src/ats/test_ats_simplistic_change_preference.c,
+	  src/ats/test_ats_simplistic_pref_aging.c,
+	  src/dht/gnunet-service-dht_neighbours.c,
+	  src/dv/gnunet-service-dv.c, src/fs/gnunet-service-fs.c,
+	  src/include/gnunet_ats_service.h: api change
+
+2013-03-26 13:03  wachs
+
+	* [r26610] src/dv/gnunet-service-dv.c: fix
+
+2013-03-26 12:52  wachs
+
+	* [r26609] src/ats/test_ats_api_performance_address_info.c: test
+
+2013-03-26 12:37  wachs
+
+	* [r26608] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/test_ats_api_performance_monitor.c: test
+
+2013-03-26 10:50  wachs
+
+	* [r26606] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/gnunet-service-ats_performance.h,
+	  src/ats/test_ats_api_performance_monitor.c: changes
+
+2013-03-26 10:07  wachs
+
+	* [r26604] src/ats/test_ats_api_performance_monitor.c: preliminary
+	  change
+
+2013-03-26 08:30  wachs
+
+	* [r26602] src/ats/ats_api_scheduling.c: fix if cb == NULL
+
+2013-03-26 08:11  wachs
+
+	* [r26601] src/ats/Makefile.am, src/ats/test_ats_api_performance.c,
+	  src/ats/test_ats_api_performance_list_addresses.c: rename test
+
+2013-03-26 08:07  wachs
+
+	* [r26600] src/ats/ats.h, src/ats/gnunet-service-ats_performance.c:
+	  unused
+
+2013-03-25 16:10  wachs
+
+	* [r26599] src/transport/test_plugin_transport.c: fix
+
+2013-03-25 16:06  wachs
+
+	* [r26598] src/ats-tool/gnunet-ats.c,
+	  src/ats/ats_api_performance.c, src/ats/gnunet-service-ats.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/test_ats_api_performance.c,
+	  src/ats/test_ats_api_performance_monitor.c,
+	  src/ats/test_ats_simplistic_change_preference.c,
+	  src/ats/test_ats_simplistic_pref_aging.c,
+	  src/dht/gnunet-service-dht_neighbours.c,
+	  src/fs/gnunet-service-fs.c, src/include/gnunet_ats_service.h,
+	  src/include/gnunet_protocols.h: ats api change
+
+2013-03-25 14:23  wachs
+
+	* [r26597] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: ATS
+	  manipulation
+
+2013-03-25 09:41  wachs
+
+	* [r26592] src/fs/gnunet-service-fs_cp.c: doxygen
+
+2013-03-25 09:41  wachs
+
+	* [r26591] src/ats/ats_api_performance.c,
+	  src/core/gnunet-service-core_neighbours.c,
+	  src/include/gnunet_ats_service.h,
+	  src/include/gnunet_transport_plugin.h,
+	  src/testbed/gnunet-service-testbed_cache.c,
+	  src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h,
+	  src/transport/gnunet-service-transport_manipulation.c: doxygen
+
+2013-03-25 09:40  wachs
+
+	* [r26590] src/hostlist/gnunet-daemon-hostlist.c,
+	  src/transport/gnunet-service-transport_blacklist.c,
+	  src/transport/gnunet-service-transport_clients.c,
+	  src/transport/gnunet-service-transport_manipulation.h: doxygen
+
+2013-03-25 09:39  wachs
+
+	* [r26589] src/core/test_core_api.c,
+	  src/core/test_core_api_reliability.c: ftb
+
+2013-03-22 17:29  harsha
+
+	* [r26578] src/testbed/gnunet-helper-testbed.c: fix: 2839
+
+2013-03-22 17:02  cfuchs
+
+	* [r26577] src/Makefile.am, src/exit/Makefile.am,
+	  src/exit/gnunet-helper-exit-windows.c,
+	  src/vpn/gnunet-helper-vpn-windows.c: * added vpn and exit to the
+	  default build options for mingw/windows builds. This code is
+	  considered experimental
+	  and has not yet undergone intensive testing. Use it at your own
+	  peril, but we would still be really glad for
+	  feedback and bug reports! (thanks!)
+	  * fixed a typo in the exit-makefile (buildflags)
+	  * adjusted output of gnunet-helper-exit-windows to properly
+	  identify itself
+	  * updated driver-paths for looking for tap32/tap64
+
+2013-03-22 15:51  cfuchs
+
+	* [r26574] contrib/Makefile.am, contrib/openvpn-tap32/tapw32,
+	  contrib/openvpn-tap32/tapw32/OemWin2k.inf,
+	  contrib/openvpn-tap32/tapw32/tap0901.cat,
+	  contrib/openvpn-tap32/tapw32/tap0901.sys,
+	  contrib/openvpn-tap32/tapw64,
+	  contrib/openvpn-tap32/tapw64/OemWin2k.inf,
+	  contrib/openvpn-tap32/tapw64/tap0901.cat,
+	  contrib/openvpn-tap32/tapw64/tap0901.sys: added 32 and 64bit
+	  tapw32 drivers for exit and vpn helpers in windows
+
+2013-03-22 15:50  wachs
+
+	* [r26573] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/test_plugin_transport.c: fixing ATS data
+
+2013-03-22 14:53  wachs
+
+	* [r26572] src/topology/gnunet-daemon-topology.c: fix
+
+2013-03-22 11:08  wachs
+
+	* [r26570] src/util/test_strings_to_data.c: more check
+
+2013-03-22 11:01  wachs
+
+	* [r26569] src/util/Makefile.am, src/util/test_strings_to_data.c:
+	  failing test
+
+2013-03-22 09:09  wachs
+
+	* [r26566] src/dv/gnunet-service-dv.c: fix
+
+2013-03-22 08:25  wachs
+
+	* [r26564] src/nse/gnunet-service-nse.c: fix
+
+2013-03-22 06:07  LRN
+
+	* [r26563] contrib/buildslave-0.8.5-gnunet-w32.patch: Fix the
+	  buildslave patch
+
+2013-03-21 17:27  cfuchs
+
+	* [r26562] src/exit/gnunet-helper-exit-windows.c,
+	  src/vpn/gnunet-helper-vpn-windows.c: * fixed incorrect doxygen
+	  commant fields in exit and vpn-helper-windows
+
+2013-03-21 17:16  cfuchs
+
+	* [r26561] src/exit/gnunet-helper-exit-windows.c: * adde ipv6
+	  forwarding functionality for helper-exit-windows
+
+2013-03-21 16:44  cfuchs
+
+	* [r26559] src/exit/gnunet-daemon-exit.c,
+	  src/exit/gnunet-helper-exit-windows.c,
+	  src/exit/gnunet-helper-exit.c: * replaced no-nat delimiter which
+	  was % (reserved char on windows) with - for exit-helper-windows
+	  and exit-helper.
+	  * added ipv4 NAPT and removal functionality to
+	  exit-helper-windows
+	  * moved a few variables
+	  * next todo: ipv6 forwarding rules for netsh
+
+2013-03-21 15:26  wachs
+
+	* [r26557] src/fs/gnunet-service-fs.c,
+	  src/fs/gnunet-service-fs_cp.c: fs using ats data
+
+2013-03-21 15:18  wachs
+
+	* [r26556] src/peerinfo/test_peerinfo_api.c: fix
+
+2013-03-21 15:02  wachs
+
+	* [r26555] src/nse/gnunet-service-nse.c,
+	  src/testbed/gnunet-service-testbed_cache.c,
+	  src/topology/gnunet-daemon-topology.c: fixes
+
+2013-03-21 14:57  wachs
+
+	* [r26554] src/mesh/gnunet-service-mesh-new.c,
+	  src/mesh/gnunet-service-mesh.c: fix core api
+
+2013-03-21 14:51  wachs
+
+	* [r26552] src/integration-tests/connection_watchdog.c: api change
+
+2013-03-21 14:49  wachs
+
+	* [r26551] src/hostlist/gnunet-daemon-hostlist.c,
+	  src/hostlist/hostlist-client.c, src/hostlist/hostlist-server.c,
+	  src/hostlist/test_gnunet_daemon_hostlist.c,
+	  src/hostlist/test_gnunet_daemon_hostlist_learning.c,
+	  src/hostlist/test_gnunet_daemon_hostlist_reconnect.c: fix core
+	  api changes
+
+2013-03-21 14:43  wachs
+
+	* [r26548] src/chat/gnunet-service-chat.c, src/core/core_api.c,
+	  src/core/core_api_is_connected.c,
+	  src/core/core_api_iterate_peers.c, src/core/gnunet-core.c,
+	  src/core/test_core_api.c, src/core/test_core_api_reliability.c,
+	  src/core/test_core_api_send_to_self.c,
+	  src/core/test_core_api_start_only.c,
+	  src/core/test_core_quota_compliance.c,
+	  src/dht/gnunet-service-dht_neighbours.c,
+	  src/fs/gnunet-service-fs.c, src/fs/gnunet-service-fs_cp.c,
+	  src/fs/gnunet-service-fs_cp.h, src/include/gnunet_core_service.h:
+	  change to core pai
+
+2013-03-21 14:08  wachs
+
+	* [r26545] src/include/gnunet_transport_service.h,
+	  src/transport/gnunet-transport.c,
+	  src/transport/test_quota_compliance.c,
+	  src/transport/test_transport_api.c,
+	  src/transport/test_transport_api_bidirectional_connect.c,
+	  src/transport/test_transport_api_blacklisting.c,
+	  src/transport/test_transport_api_disconnect.c,
+	  src/transport/test_transport_api_limited_sockets.c,
+	  src/transport/test_transport_api_manipulation_recv_tcp.c,
+	  src/transport/test_transport_api_manipulation_send_tcp.c,
+	  src/transport/test_transport_api_reliability.c,
+	  src/transport/test_transport_api_restart_1peer.c,
+	  src/transport/test_transport_api_restart_2peers.c,
+	  src/transport/test_transport_api_timeout.c,
+	  src/transport/test_transport_api_unreliability.c,
+	  src/transport/test_transport_api_unreliability_constant.c,
+	  src/transport/test_transport_startonly.c,
+	  src/transport/test_transport_testing.c,
+	  src/transport/transport-testing.c, src/transport/transport_api.c:
+	  api fix
+
+2013-03-21 14:08  wachs
+
+	* [r26544] src/testbed/gnunet-service-testbed_cache.c: fix
+
+2013-03-21 14:06  wachs
+
+	* [r26543] src/core/gnunet-service-core_neighbours.c: fix
+
+2013-03-21 13:45  wachs
+
+	* [r26541] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_blacklist.c,
+	  src/transport/gnunet-service-transport_clients.c,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/gnunet-service-transport_neighbours.h,
+	  src/transport/test_transport_startonly.c,
+	  src/transport/transport.h, src/transport/transport_api.c: changes
+	  to connect_cb
+
+2013-03-21 13:33  wachs
+
+	* [r26540] src/transport/test_transport_testing.c: fix test
+
+2013-03-21 13:31  wachs
+
+	* [r26539] src/include/gnunet_transport_service.h: changes
+
+2013-03-21 13:31  wachs
+
+	* [r26538] src/core/core.h, src/core/core_api.c,
+	  src/core/core_api_is_connected.c,
+	  src/core/core_api_iterate_peers.c,
+	  src/core/gnunet-service-core_clients.c,
+	  src/core/gnunet-service-core_clients.h,
+	  src/core/gnunet-service-core_kx.c,
+	  src/core/gnunet-service-core_kx.h,
+	  src/core/gnunet-service-core_neighbours.c,
+	  src/core/gnunet-service-core_sessions.c: ats related changes in
+	  core
+
+2013-03-21 13:30  wachs
+
+	* [r26537] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/gnunet-service-transport_neighbours.h,
+	  src/transport/gnunet-transport.c,
+	  src/transport/transport-testing.c, src/transport/transport.h,
+	  src/transport/transport_api.c: ats related changes in transport
+
+2013-03-21 12:33  wachs
+
+	* [r26535] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/gnunet-service-transport_neighbours.h: removing ats
+
+2013-03-21 12:09  wachs
+
+	* [r26534] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: ats
+	  manipulation
+
+2013-03-21 11:01  wachs
+
+	* [r26533] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: ats
+	  manipulation
+
+2013-03-21 01:53  dold
+
+	* [r26529] src/consensus/gnunet-service-consensus.c: fix
+
+2013-03-21 01:39  dold
+
+	* [r26528] src/consensus/gnunet-service-consensus.c: fix
+
+2013-03-21 01:27  dold
+
+	* [r26527] src/consensus/gnunet-service-consensus.c: fix
+
+2013-03-21 01:06  dold
+
+	* [r26526] src/consensus/consensus_flout.h,
+	  src/consensus/consensus_protocol.h,
+	  src/consensus/gnunet-consensus-ibf.c,
+	  src/consensus/gnunet-consensus.c,
+	  src/consensus/gnunet-service-consensus.c, src/consensus/ibf.c,
+	  src/consensus/ibf.h, src/consensus/test_consensus.conf,
+	  src/include/gnunet_container_lib.h: fixed consensus multi-peer
+	  communication, memory leaks, various bugs
+
+2013-03-20 19:15  LRN
+
+	* [r26525] src/util/network.c: Fix warnings and fix/improve logging
+	  in network.c
+
+2013-03-20 18:50  LRN
+
+	* [r26524] src/arm/arm_api.c, src/arm/arm_monitor_api.c,
+	  src/arm/gnunet-arm.c, src/arm/test_arm_api.c,
+	  src/arm/test_exponential_backoff.c,
+	  src/arm/test_gnunet_service_arm.c,
+	  src/include/gnunet_arm_service.h,
+	  src/regex/gnunet-regex-profiler.c: Simplify ARM alloc/connect
+
+2013-03-20 18:50  LRN
+
+	* [r26523] src/arm/arm_api.c, src/arm/gnunet-arm.c,
+	  src/arm/test_arm_api.c, src/arm/test_exponential_backoff.c,
+	  src/arm/test_gnunet_service_arm.c,
+	  src/include/gnunet_arm_service.h,
+	  src/regex/gnunet-regex-profiler.c: disconnect ->
+	  disconnect_and_free rename
+
+2013-03-20 16:15  wachs
+
+	* [r26522] src/ats/test_ats_api_performance_monitor.c: return
+
+2013-03-20 12:37  wachs
+
+	* [r26513] src/ats/ats_api_performance.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/test_ats_api_performance_monitor.c: test
+
+2013-03-20 09:33  wachs
+
+	* [r26507] src/ats/ats_api_performance.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/test_ats_api_performance_monitor.c: initial cb
+
+2013-03-20 09:13  wachs
+
+	* [r26506] src/ats/gnunet-service-ats_performance.c,
+	  src/ats/test_ats_api_performance_monitor.c: changes
+
+2013-03-20 08:17  wachs
+
+	* [r26504] src/ats/ats_api_performance.c: mod
+
+2013-03-20 08:14  wachs
+
+	* [r26503] src/transport/gnunet-service-transport_manipulation.c:
+	  fixed delay manipulation
+
+2013-03-19 16:48  wachs
+
+	* [r26502] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_performance.c: changes
+
+2013-03-19 16:34  dold
+
+	* [r26501] src/consensus/gnunet-service-consensus.c,
+	  src/consensus/test_consensus.conf: fix for for multi-peer
+	  consensus, non-power-of-two consensus now works
+
+2013-03-19 14:53  wachs
+
+	* [r26499] src/ats/gnunet-service-ats_performance.c,
+	  src/ats/test_ats_api_performance_monitor.c: changes
+
+2013-03-19 14:06  LRN
+
+	* [r26495] contrib/buildslave-0.8.5-gnunet-w32.patch: A buildslave
+	  patch for our W32 slaves
+	  
+	  * Safe process termination
+	  * Use BUILDSLAVE_SHELL, if defined, to run commands
+	  (Define it to something like
+	  %SLAVEDIR%/dir-where-msys-is/bin/sh.exe --login -c
+	  to be able to configure buildmaster with POSIX shell commands for
+	  all
+	  platforms)
+	  * Use temporary script files to change current directory when
+	  running MSYS
+
+2013-03-19 12:58  wachs
+
+	* [r26492] src/ats/gnunet-service-ats_performance.c,
+	  src/ats/gnunet-service-ats_performance.h: changes
+
+2013-03-19 12:21  wachs
+
+	* [r26491] src/ats/gnunet-service-ats_performance.c: changes
+
+2013-03-19 11:56  wachs
+
+	* [r26489] src/ats/ats_api_scheduling.c: remove break until
+	  fixeremove break until fixedd
+
+2013-03-19 11:01  wachs
+
+	* [r26488] src/include/gnunet_protocols.h: commit
+
+2013-03-19 11:01  wachs
+
+	* [r26487] src/ats/ats.h, src/ats/ats_api_performance.c,
+	  src/ats/gnunet-service-ats.c,
+	  src/ats/gnunet-service-ats_performance.c,
+	  src/ats/gnunet-service-ats_performance.h,
+	  src/ats/test_ats_api_performance_monitor.c: pre lunch commit
+
+2013-03-19 10:05  wachs
+
+	* [r26486] src/ats/Makefile.am,
+	  src/ats/test_ats_api_performance_monitor.c: test
+
+2013-03-19 10:04  wachs
+
+	* [r26485] src/ats/ats_api_performance.c,
+	  src/include/gnunet_ats_service.h: performance monitor API +
+	  rename
+
+2013-03-19 09:33  wachs
+
+	* [r26483] src/dv/plugin_transport_dv.c: dv plugin
+
+2013-03-19 02:09  dold
+
+	* [r26482] src/consensus/consensus.h,
+	  src/consensus/consensus_api.c,
+	  src/consensus/consensus_protocol.h,
+	  src/consensus/gnunet-consensus.c,
+	  src/consensus/gnunet-service-consensus.c, src/consensus/ibf.c,
+	  src/dv/gnunet-service-dv.c,
+	  src/include/gnunet_consensus_service.h,
+	  src/include/gnunet_protocols.h: fixed consensus for two peers,
+	  added log-rounds, started implementing freeze, multiple peers
+	  still buggy
+
+2013-03-18 17:03  harsha
+
+	* [r26480] src/nse/gnunet-nse-profiler.c: use testbed helper
+	  functions and lose old code
+
+2013-03-18 16:10  wachs
+
+	* [r26479] src/include/gnunet_transport_plugin.h,
+	  src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h,
+	  src/transport/gnunet-service-transport_plugins.c,
+	  src/transport/gnunet-service-transport_plugins.h,
+	  src/transport/plugin_transport_http_client.c,
+	  src/transport/plugin_transport_http_server.c,
+	  src/transport/plugin_transport_tcp.c,
+	  src/transport/plugin_transport_udp.c,
+	  src/transport/plugin_transport_udp_broadcasting.c,
+	  src/transport/plugin_transport_unix.c,
+	  src/transport/plugin_transport_wlan.c,
+	  src/transport/test_plugin_transport.c: transport plugin api
+	  change: split of address receive and ats updates
+
+2013-03-18 13:11  harsha
+
+	* [r26474] src/include/gnunet_testbed_service.h,
+	  src/testbed/gnunet-service-testbed.c,
+	  src/testbed/test_testbed_api.c,
+	  src/testbed/test_testbed_api_2peers_1controller.c,
+	  src/testbed/test_testbed_api_3peers_3controllers.c,
+	  src/testbed/test_testbed_api_controllerlink.c,
+	  src/testbed/test_testbed_api_testbed_run.c,
+	  src/testbed/testbed_api.c, src/testbed/testbed_api_peers.c,
+	  src/testbed/testbed_api_services.c,
+	  src/testbed/testbed_api_testbed.c: expose Operation and
+	  associated closure in every event
+
+2013-03-15 16:09  wachs
+
+	* [r26464] src/transport/plugin_transport_tcp.c: unused
+
+2013-03-15 14:27  wachs
+
+	* [r26462] src/include/gnunet_transport_service.h: clean up
+
+2013-03-15 14:27  wachs
+
+	* [r26461] src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h,
+	  src/transport/test_transport_api_manipulation_recv_tcp.c,
+	  src/transport/test_transport_api_manipulation_send_tcp.c,
+	  src/transport/transport_api.c: clean up
+
+2013-03-15 14:00  wachs
+
+	* [r26460] src/transport/gnunet-service-transport_manipulation.c:
+	  unused
+
+2013-03-15 13:42  wachs
+
+	* [r26459] src/transport/gnunet-service-transport_manipulation.c:
+	  changes
+
+2013-03-15 12:34  wachs
+
+	* [r26456] src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/plugin_transport_tcp.c: manipulation recv side
+
+2013-03-15 09:53  wachs
+
+	* [r26443] src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport_manipulation.c,
+	  src/transport/gnunet-service-transport_manipulation.h: changes to
+	  manipulation
+
+2013-03-15 09:37  harsha
+
+	* [r26441] src/include/gnunet_testbed_service.h, src/testbed,
+	  src/testbed/Makefile.am,
+	  src/testbed/test_testbed_api_test_timeout.c,
+	  src/testbed/test_testbed_api_test_timeout.conf,
+	  src/testbed/testbed.conf.in, src/testbed/testbed_api_testbed.c:
+	  Call TestMaster callback upon timeout set through configuration
+	  fixes #2833
+
+2013-03-15 09:07  wachs
+
+	* [r26439] src/include/gnunet_transport_service.h,
+	  src/transport/gnunet-transport.c, src/transport/transport_api.c:
+	  doxygen
+
+2013-03-15 09:01  wachs
+
+	* [r26438] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c: doxygen
+
+2013-03-15 07:05  LRN
+
+	* [r26434] src/arm/gnunet-arm.c, src/arm/gnunet-service-arm.c,
+	  src/include/gnunet_disk_lib.h, src/util/pseudonym.c: Docfixes
+
+2013-03-14 12:06  cfuchs
+
+	* [r26418] contrib/ssh-keys: added my ssh public-key
+
+2013-03-14 06:52  LRN
+
+	* [r26414] src/arm/gnunet-arm.c: Correct %s in some cases
+
+2013-03-14 06:49  LRN
+
+	* [r26413] src/arm/gnunet-service-arm.c: Use correct size for
+	  messages. Again. D'oh.
+
+2013-03-14 06:49  LRN
+
+	* [r26412] src/util/server.c: Do log messages with wrong size
+
+2013-03-13 21:17  LRN
+
+	* [r26408] src/arm/gnunet-arm.c: Continue processing after listing
+	  services
+
+2013-03-13 21:01  LRN
+
+	* [r26407] src/arm/test_gnunet_service_arm.c: Modify one of the
+	  tests to check service list
+
+2013-03-13 21:01  LRN
+
+	* [r26406] src/arm/gnunet-service-arm.c: Fix arm service message
+	  handler declaration
+
+2013-03-13 21:01  LRN
+
+	* [r26405] src/arm/gnunet-service-arm.c: Use correct argument for
+	  receive_done
+
+2013-03-13 19:50  LRN
+
+	* [r26404] src/arm/gnunet-service-arm.c: Receive_done in monitor
+	  hanlding
+
+2013-03-13 18:03  LRN
+
+	* [r26403] src/arm/arm_monitor_api.c: Forgot to add the file...
+
+2013-03-13 17:49  LRN
+
+	* [r26402] src/arm/Makefile.am, src/arm/arm.h, src/arm/arm_api.c,
+	  src/arm/gnunet-arm.c, src/arm/gnunet-service-arm.c,
+	  src/arm/mockup-service.c, src/arm/test_arm_api.c,
+	  src/arm/test_exponential_backoff.c,
+	  src/arm/test_gnunet_service_arm.c,
+	  src/include/gnunet_arm_service.h, src/include/gnunet_protocols.h,
+	  src/include/gnunet_server_lib.h,
+	  src/regex/gnunet-regex-profiler.c, src/regex/regex_test_lib.c,
+	  src/util/client.c, src/util/connection.c, src/util/server.c:
+	  All-encompassing ARM update
+
+2013-03-13 17:49  LRN
+
+	* [r26401] src/arm/arm_api.c: Correctly destroy OS_Process
+	  (cosmetic fix)
+
+2013-03-13 10:51  harsha
+
+	* [r26395] src/include/gnunet_testbed_service.h,
+	  src/testbed/Makefile.am,
+	  src/testbed/test_testbed_api_statistics.conf,
+	  src/testbed/testbed_api.c, src/testbed/testbed_api_operations.c,
+	  src/testbed/testbed_api_operations.h,
+	  src/testbed/testbed_api_statistics.c,
+	  src/testbed/testbed_api_testbed.c: Implement
+	  GNUNET_TESTBED_get_statistics() - resolves #2662
+	  Test case for testing GNUNET_TESTBED_get_statistics()
+	  Fix waiting for SHUTDOWN_PEERS reply when controller crashes
+
+2013-03-12 13:49  wachs
+
+	* [r26391] src/ats/gnunet-service-ats_addresses_mlp.c: disable
+	  output
+
+2013-03-11 16:02  wachs
+
+	* [r26385] src/ats/perf_ats_mlp.c: perf test done /w update
+
+2013-03-11 15:37  bartpolot
+
+	* [r26384] src/dht/gnunet-service-dht_neighbours.c: BLOCK_EVALUATE
+	  regex PUT messages
+	  - reorder debug info for easier following
+
+2013-03-11 14:46  wachs
+
+	* [r26380] src/ats/perf_ats_mlp.c: implemented ats info updates +
+	  initial address update (fixing issue of execution time peaks)
+
+2013-03-11 13:23  wachs
+
+	* [r26377] src/ats/perf_ats_mlp.c: updating addresses
+
+2013-03-08 16:37  wachs
+
+	* [r26370] src/core/gnunet-service-core_neighbours.c: fix cast
+
+2013-03-08 15:10  wachs
+
+	* [r26363] src/ats/gnunet-service-ats_addresses_mlp.c: address
+	  specific names
+
+2013-03-08 15:01  wachs
+
+	* [r26362] src/ats/perf_ats_mlp.c: changes
+
+2013-03-08 14:51  wachs
+
+	* [r26361] src/ats/test_ats_mlp.c: test should not dump
+
+2013-03-08 14:26  wachs
+
+	* [r26360] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/test_ats_mlp.c: writing solutions and MPS dumps
+
+2013-03-08 10:22  harsha
+
+	* [r26356] src/include/gnunet_protocols.h,
+	  src/include/gnunet_testbed_service.h, src/testbed/testbed.h,
+	  src/testbed/testbed_api.c, src/testbed/testbed_api.h: testbed API
+	  function to shutdown (stop + destroy) all peers. Client side
+	  functionality only.
+
+2013-03-07 14:12  dold
+
+	* [r26350] src/consensus/consensus_api.c,
+	  src/consensus/consensus_protocol.h,
+	  src/consensus/gnunet-consensus-ibf.c,
+	  src/consensus/gnunet-consensus.c,
+	  src/consensus/gnunet-service-consensus.c, src/consensus/ibf.c,
+	  src/consensus/ibf.h, src/include/gnunet_consensus_service.h,
+	  src/include/gnunet_protocols.h: consensus now implemented with
+	  primitive conclusion group selection
+
+2013-03-06 17:24  bartpolot
+
+	* [r26343] src/dht/gnunet-service-dht_neighbours.c: fix
+
+2013-03-06 15:17  harsha
+
+	* [r26340] src/testbed/gnunet-helper-testbed.c,
+	  src/testbed/test_gnunet_helper_testbed.c: Don't call gnunet
+	  scheduler from signal handler. Instead, write to a pipe
+	  (ARM-style) to run a scheduler task when signal is received.
+
+2013-03-06 12:47  harsha
+
+	* [r26337] src/testbed/gnunet_testbed_mpi_spawn.c: clean the lock
+	  file
+
+2013-03-06 11:02  harsha
+
+	* [r26334] contrib/testbed_infiniband.conf,
+	  contrib/testbed_supermuc.conf: SuperMUC testbed config
+
+2013-03-06 10:52  harsha
+
+	* [r26333] src/testbed/gnunet_testbed_mpi_spawn.c: Remove MPI code
+	  Starts the child process only in one instance (checks for lowest
+	  host ip; and
+	  that host ensures all instances co-ordinate via explicit lock
+	  file creation)
+	  Implemented basic ARM-like functionality for dealing with child
+	  processes
+
+2013-03-06 08:40  wachs
+
+	* [r26331] src/transport/gnunet-service-transport_validation.c:
+	  print warning only on failure
+
+2013-03-06 08:22  LRN
+
+	* [r26328] src/include/gnunet_pseudonym_lib.h,
+	  src/util/pseudonym.c: Pseudonym-removal function
+
+2013-03-06 03:37  LRN
+
+	* [r26327] src/testbed/Makefile.am: Correct testbed dependencies
+
+2013-03-05 16:10  grothoff
+
+	* [r26326] src/fs/Makefile.am, src/fs/fs.h, src/fs/fs_api.h,
+	  src/fs/fs_namespace.c, src/fs/fs_namespace_advertise.c,
+	  src/fs/fs_publish_ksk.c, src/fs/fs_search.c, src/fs/fs_unindex.c,
+	  src/fs/fs_uri.c, src/fs/gnunet-pseudonym.c,
+	  src/fs/gnunet-service-fs.c, src/fs/gnunet-service-fs.h,
+	  src/fs/gnunet-service-fs_cp.c, src/fs/gnunet-service-fs_lc.c,
+	  src/fs/gnunet-service-fs_pr.c, src/fs/gnunet-service-fs_pr.h,
+	  src/fs/gnunet-service-fs_put.c, src/fs/plugin_block_fs.c,
+	  src/fs/test_fs_namespace.c, src/fs/test_fs_uri.c,
+	  src/include/block_fs.h, src/include/gnunet_block_lib.h,
+	  src/include/gnunet_fs_service.h,
+	  src/include/gnunet_pseudonym_lib.h,
+	  src/include/gnunet_signatures.h, src/util/pseudonym.c,
+	  src/util/strings.c, src/util/test_pseudonym.c: starting major
+	  change towards implementing #2564, this breaks some FS tests and
+	  FS APIs
+
+2013-03-05 13:40  wachs
+
+	* [r26322] src/transport/gnunet-service-transport_validation.c:
+	  changes
+
+2013-03-05 12:38  harsha
+
+	* [r26319] src/testbed/gnunet-service-testbed.c,
+	  src/testbed/gnunet-service-testbed_oc.c: be verbose while sending
+	  error message instead of emitting a warning
+
+2013-03-04 20:33  LRN
+
+	* [r26312] src/include/gnunet_crypto_lib.h: Increase
+	  GNUNET_CRYPTO_ECC_MAX_PUBLIC_KEY_LENGTH
+
+2013-03-04 15:25  wachs
+
+	* [r26310] src/transport/gnunet-service-transport_validation.c:
+	  disable message
+
+2013-03-04 14:50  wachs
+
+	* [r26308] src/transport/gnunet-service-transport_validation.c:
+	  error msg
+
+2013-03-04 14:50  wachs
+
+	* [r26307] src/transport/gnunet-service-transport_validation.c:
+	  validation fast start and throttling
+
+2013-03-04 14:24  harsha
+
+	* [r26300] src/include/gnunet_testing_lib.h, src/testing/testing.c:
+	  cache peer identities
+
+2013-03-04 14:09  grothoff
+
+	* [r26299] src/gns/gns.conf.in, src/include/gnunet_crypto_lib.h,
+	  src/testing/testing.c, src/util/crypto_ecc.c: add argument to
+	  GNUNET_CRYPTO_ecc_decode_key to allow testing to disable key
+	  validation
+
+2013-03-04 13:19  wachs
+
+	* [r26295] src/transport/gnunet-service-transport_validation.c:
+	  implementing pong singature caching
+
+2013-03-04 08:28  LRN
+
+	* [r26290] src/util/strings.c, src/util/test_strings.c: Accept time
+	  strings where number and unit are not separated by a space
+	  
+	  Fixes #2806
+
+2013-03-04 02:42  grothoff
+
+	* [r26282] doc/man/gnunet-peerinfo.1: fix #2811 - missing options
+	  in gnunet-peerinfo man page
+
+2013-03-04 01:20  LRN
+
+	* [r26281] src/fs/fs_namespace_advertise.c,
+	  src/include/gnunet_fs_service.h: Implement
+	  GNUNET_FS_namespace_insert_advertisement_into_metadata
+
+2013-03-04 01:20  LRN
+
+	* [r26280] src/fs/fs_uri.c: Add error messages to
+	  GNUNET_FS_uri_sks_create
+
+2013-03-03 11:33  LRN
+
+	* [r26271] src/fs/fs_namespace.c, src/include/gnunet_fs_service.h:
+	  Make 2nd and 3rd arguments of GNUNET_FS_namespace_rename constant
+	  pointers
+
+2013-03-03 08:14  grothoff
+
+	* [r26268] src/core/gnunet-service-core_kx.c,
+	  src/core/gnunet-service-core_sessions.c,
+	  src/core/gnunet-service-core_typemap.c: reduce messages in
+	  initial KX
+
+2013-03-03 01:57  LRN
+
+	* [r26265] src/fs/fs_namespace.c, src/include/gnunet_fs_service.h:
+	  GNUNET_FS_namespace_rename
+
+2013-03-03 01:57  LRN
+
+	* [r26264] src/fs/fs_namespace.c, src/include/gnunet_fs_service.h:
+	  Be able to open existing namespaces
+
+2013-03-03 01:57  LRN
+
+	* [r26263] src/include/gnunet_crypto_lib.h, src/util/crypto_rsa.c:
+	  Be able to only-read-not-create RSA keys
+
+2013-03-03 01:57  LRN
+
+	* [r26262] src/fs/fs_namespace.c, src/fs/fs_uri.c,
+	  src/include/gnunet_fs_service.h: Implement and use
+	  GNUNET_FS_namespace_get_public_key_hash
+
+2013-03-03 01:57  LRN
+
+	* [r26261] src/fs/fs_namespace.c, src/fs/fs_search.c,
+	  src/fs/fs_unindex.c, src/include/gnunet_crypto_lib.h,
+	  src/util/crypto_rsa.c: Implement and use
+	  GNUNET_CRYPTO_rsa_get_public_key_hash
+
+2013-03-02 22:40  grothoff
+
+	* [r26260] src/core/gnunet-service-core_kx.c: do not verify an
+	  ephemeral key again if it is the same as the previous key
+
+2013-03-02 22:19  grothoff
+
+	* [r26259] src/core/core.conf.in,
+	  src/core/gnunet-service-core_kx.c: adding option to disable use
+	  of ephemeral keys for HPC testing
+
+2013-03-01 14:32  harsha
+
+	* [r26250] src/testbed/gnunet_testbed_mpi_spawn.c: finish off with
+	  MPI before spawning
+
+2013-03-01 12:47  bartpolot
+
+	* [r26246] src/dht/gnunet-service-dht_neighbours.c: Remove CORE
+	  corking from DHT traffic
+
+2013-03-01 06:55  LRN
+
+	* [r26242] src/util/os_priority.c: Silence a warning
+
+2013-02-28 13:28  harsha
+
+	* [r26231] contrib/testbed_setup_pre_ecc_tree.sh: update
+	  configure.ac to HEAD
+
+2013-02-28 11:55  harsha
+
+	* [r26230] src/testbed/gnunet_testbed_mpi_spawn.c: not using
+	  GNUNET_PROGRAM_run() as it is eating away the trailing command
+	  arguments
+
+2013-02-28 10:09  wachs
+
+	* [r26229] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: changes
+
+2013-02-27 23:13  LRN
+
+	* [r26228] src/fs/test_fs_namespace.c: NS test: Use different URIs
+	  for different phases
+
+2013-02-27 21:24  harsha
+
+	* [r26227] configure.ac: define WITH_LL only if libllapi is found
+
+2013-02-27 17:23  harsha
+
+	* [r26223] src/testbed/gnunet-testbed-profiler.c,
+	  src/testbed/testbed_api_testbed.c: get hosts from loadleveler
+	  instead of reading them from hostlist
+
+2013-02-27 17:05  harsha
+
+	* [r26222] src/testbed/testbed_api_hosts.c:
+	  GNUNET_TESTBED_hosts_load_from_loadleveler() function available
+	  only when
+	  --with-ll is specified
+
+2013-02-27 16:58  harsha
+
+	* [r26221] contrib/testbed_setup_pre_ecc_tree.sh: script to prepare
+	  tree for pre-ecc testbed compilation
+
+2013-02-27 16:46  harsha
+
+	* [r26220] src/include/gnunet_protocols.h: reverting back to the
+	  previous working version
+
+2013-02-27 16:43  harsha
+
+	* [r26219] src/include/gnunet_protocols.h: version to make updated
+	  testbed compile with pre-ecc age code.
+
+2013-02-27 16:39  wachs
+
+	* [r26218] src/ats/gnunet-service-ats_addresses_mlp.c: switching
+	  networks
+
+2013-02-27 16:10  wachs
+
+	* [r26217] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp_update.c: quality update
+
+2013-02-27 15:04  wachs
+
+	* [r26216] src/ats/gnunet-service-ats_addresses_mlp.c: quality
+	  update
+
+2013-02-27 14:22  harsha
+
+	* [r26215] src/include/gnunet_testbed_service.h,
+	  src/testbed/gnunet_testbed_mpi_spawn.c,
+	  src/testbed/testbed_api_hosts.c: Parsing LoadLeveler allocated
+	  hosts and creating testbed hosts from them
+
+2013-02-27 14:12  wachs
+
+	* [r26214] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp_update.c: changes
+
+2013-02-27 13:43  harsha
+
+	* [r26213] src/testbed/Makefile.am,
+	  src/testbed/gnunet_testbed_mpi_spawn.c: checkpoint save
+
+2013-02-27 13:43  wachs
+
+	* [r26212] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp_update.c: new test
+
+2013-02-27 09:59  wachs
+
+	* [r26211] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: changes
+
+2013-02-26 15:26  wachs
+
+	* [r26209] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/perf_ats_mlp.c: changes
+
+2013-02-26 15:07  wachs
+
+	* [r26208] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/perf_ats_mlp.c: performance analysis
+
+2013-02-26 13:31  wachs
+
+	* [r26207] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/perf_ats_mlp.c, src/ats/test_ats_mlp.conf: perf
+
+2013-02-26 09:04  wachs
+
+	* [r26206] src/ats/test_ats_mlp.c: fix for test
+
+2013-02-25 16:27  wachs
+
+	* [r26205] src/ats/Makefile.am, src/ats/perf_ats_mlp.c: changes to
+	  perf
+
+2013-02-25 15:51  wachs
+
+	* [r26204] src/ats/test_ats_mlp.c: memory leak
+
+2013-02-25 15:38  wachs
+
+	* [r26203] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp.c: changes
+
+2013-02-25 14:58  wachs
+
+	* [r26202] src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/test_ats_mlp.c: old code
+
+2013-02-25 14:53  wachs
+
+	* [r26201] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses.h,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.h: code cleanup +
+	  api extension
+
+2013-02-25 13:08  wachs
+
+	* [r26200] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp.c: fixes
+
+2013-02-25 10:43  wachs
+
+	* [r26199] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp.c: fixes
+
+2013-02-25 10:02  wachs
+
+	* [r26198] src/ats/gnunet-service-ats_addresses_mlp.c: changes
+
+2013-02-22 16:24  wachs
+
+	* [r26196] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: modifications
+
+2013-02-22 15:45  wachs
+
+	* [r26195] src/ats/gnunet-service-ats_addresses_mlp.c: create
+	  constrain function
+
+2013-02-22 15:36  wachs
+
+	* [r26194] src/ats/gnunet-service-ats_addresses_mlp.c: simplify
+
+2013-02-22 15:21  wachs
+
+	* [r26193] src/ats/gnunet-service-ats_addresses_mlp.c: simplyfiying
+	  code
+
+2013-02-22 14:53  harsha
+
+	* [r26192] src/testbed/gnunet-service-testbed.c,
+	  src/testbed/gnunet-service-testbed.h,
+	  src/testbed/gnunet-service-testbed_oc.c,
+	  src/testbed/testbed_api.c: Use a sub operation while forwarding
+	  controller link operations. This helps to
+	  propagate the change in a host's configuration along the
+	  controller tree's
+	  branch back to root.
+
+2013-02-22 14:37  wachs
+
+	* [r26191] src/ats/gnunet-service-ats_addresses_mlp.c: changes
+
+2013-02-22 14:28  wachs
+
+	* [r26190] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: create set_value
+	  function
+
+2013-02-22 14:17  wachs
+
+	* [r26189] src/ats/gnunet-service-ats_addresses_mlp.c: changes
+
+2013-02-22 13:32  wachs
+
+	* [r26188] src/ats/gnunet-service-ats_addresses_mlp.c: implementing
+	  restructured problem creation
+
+2013-02-22 08:47  wachs
+
+	* [r26186] src/ats/test_ats_api_common.c,
+	  src/ats/test_ats_api_common.h,
+	  src/ats/test_ats_simplistic_pref_aging.c: fix test
+
+2013-02-21 17:06  harsha
+
+	* [r26182] src/testbed/gnunet-service-testbed.c,
+	  src/testbed/gnunet-service-testbed.h, src/testbed/testbed.h,
+	  src/testbed/testbed_api.c, src/testbed/testbed_api.h,
+	  src/testbed/testbed_api_hosts.c, src/testbed/testbed_api_hosts.h:
+	  send configurations of newly started slave controllers as part of
+	  controller link operations
+
+2013-02-21 15:50  wachs
+
+	* [r26180] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: auto_solve
+
+2013-02-21 15:12  wachs
+
+	* [r26179] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: result propagation
+
+2013-02-21 14:38  wachs
+
+	* [r26178] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: changes
+
+2013-02-21 14:20  harsha
+
+	* [r26177] src/testbed/testbed_api_hosts.c: host locking; warn upon
+	  API violation
+
+2013-02-21 13:18  wachs
+
+	* [r26176] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: refactoring
+
+2013-02-21 12:14  wachs
+
+	* [r26174] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: changes
+
+2013-02-21 11:32  harsha
+
+	* [r26173] src/testbed/gnunet-service-testbed.c,
+	  src/testbed/testbed.h, src/testbed/testbed_api.c,
+	  src/testbed/testbed_api.h, src/testbed/testbed_api_hosts.c,
+	  src/testbed/testbed_api_hosts.h: M testbed/testbed.h
+	  naming consistency
+	  include uncompressed config size
+	  
+	  M testbed/testbed_api_hosts.c
+	  pulled host registration functions from testbed_api.c
+	  
+	  M testbed/testbed_api_hosts.h
+	  export handler to handle ADD_HOST confirmation messages
+	  
+	  M testbed/gnunet-service-testbed.c
+	  parse the modified ADD_HOST message
+	  
+	  M testbed/testbed_api.c
+	  lose host registration code
+	  extract configuration from ADD_HOST messages
+	  
+	  M testbed/testbed_api.h
+	  include hacks
+
+2013-02-21 10:51  wachs
+
+	* [r26172] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/perf_ats_mlp.c, src/ats/test_ats_mlp.c,
+	  src/ats/test_ats_mlp_averaging.c: clean up of MLP_Handle
+
+2013-02-20 17:53  wachs
+
+	* [r26169] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h: changes
+
+2013-02-20 16:24  wachs
+
+	* [r26168] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/test_ats_mlp.c: changes
+
+2013-02-20 15:15  harsha
+
+	* [r26167] contrib/testbed_infiniband.conf,
+	  src/include/gnunet_testbed_service.h,
+	  src/nse/gnunet-nse-profiler.c, src/regex/gnunet-regex-profiler.c,
+	  src/testbed/Makefile.am, src/testbed/gnunet-service-testbed.c,
+	  src/testbed/test_testbed_api.c,
+	  src/testbed/test_testbed_api_2peers_1controller.c,
+	  src/testbed/test_testbed_api_3peers_3controllers.c,
+	  src/testbed/test_testbed_api_controllerlink.c,
+	  src/testbed/test_testbed_api_hosts.c, src/testbed/testbed.h,
+	  src/testbed/testbed_api.c, src/testbed/testbed_api_hosts.c,
+	  src/testbed/testbed_api_hosts.h,
+	  src/testbed/testbed_api_testbed.c: Assosiate a configuration
+	  template while creating hosts. This paves a way to
+	  manage the configurations of controllers running on a host
+	  automatically.
+	  
+	  modified ADD_HOST message structure to have host configuration.
+	  This feature is
+	  yet to be implemented. The idea is that
+	  GNUNET_TESTBED_link_controllers()
+	  should take no configuration when hosts automatically update
+	  configuration when
+	  a new configuration is generated from a template.
+
+2013-02-20 13:20  wachs
+
+	* [r26166] src/ats/gnunet-service-ats_addresses_mlp.c: changes
+
+2013-02-19 16:46  wachs
+
+	* [r26162] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp.c: changes
+
+2013-02-19 15:37  wachs
+
+	* [r26161] src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/test_ats_mlp.c: changes
+
+2013-02-19 13:39  wachs
+
+	* [r26160] src/ats/gnunet-service-ats_addresses_mlp.c:
+	  documentation
+
+2013-02-19 13:37  wachs
+
+	* [r26159] src/ats/ats.conf.in,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/test_ats_mlp.c, src/ats/test_ats_mlp.conf: changes
+
+2013-02-19 12:52  wachs
+
+	* [r26158] src/ats/Makefile.am, src/ats/ats.conf.in,
+	  src/ats/gnunet-service-ats_addresses_mlp.c,
+	  src/ats/gnunet-service-ats_addresses_mlp.h,
+	  src/ats/test_ats_api_common.h, src/ats/test_ats_mlp.c:
+	  refactoring and renaming
+
+2013-02-19 09:31  wachs
+
+	* [r26157] src/ats/test_ats_mlp.c: test
+
+2013-02-19 04:04  LRN
+
+	* [r26156] src/fs/fs_namespace.c, src/fs/test_fs_namespace.c,
+	  src/include/gnunet_fs_service.h: Asynchronous namespace creation.
+	  With a test.
+
+2013-02-19 04:04  LRN
+
+	* [r26155] src/fs/fs_namespace.c: Don't generate namespace key
+	  files in the root dir...
+
+2013-02-19 04:04  LRN
+
+	* [r26154] configure.ac: Fix git version detection in configure
+	  (D'oh...)
+
+2013-02-18 16:11  wachs
+
+	* [r26152] src/ats/gnunet-service-ats_addresses_simplistic.c: docu
+
+2013-02-18 15:39  wachs
+
+	* [r26151] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-18 15:07  wachs
+
+	* [r26150] src/ats/gnunet-service-ats_addresses_simplistic.c: docu
+
+2013-02-18 10:01  LRN
+
+	* [r26148] src/util/os_priority.c: It's on stack...
+
+2013-02-18 09:35  wachs
+
+	* [r26147] src/peerinfo-tool/gnunet-peerinfo.c: does not terminate
+	  on invalid uri
+
+2013-02-18 09:22  wachs
+
+	* [r26146] src/peerinfo-tool/gnunet-peerinfo.c: memory corruption
+
+2013-02-18 08:35  wachs
+
+	* [r26145] src/util/crypto_ecc.c: break
+
+2013-02-16 16:16  LRN
+
+	* [r26144] src/util/os_priority.c: Make pipe sanity check work on
+	  W32 too
+
+2013-02-15 16:06  wachs
+
+	* [r26142] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.h,
+	  src/include/gnunet_ats_service.h, src/util/crypto_ecc.c: changes
+
+2013-02-15 15:04  wachs
+
+	* [r26141] src/ats/gnunet-service-ats_addresses.c: auto generation
+	  note
+
+2013-02-15 14:30  harsha
+
+	* [r26140] contrib/testbed_perfhacks.patch: Hacks to reduce
+	  per-peer load on CPU by increasing transport retransmission
+	  timeouts. This helps to keep the load on testbed node low.
+	  
+	  Thanks Bart!
+
+2013-02-15 14:01  wachs
+
+	* [r26139] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.c: more docu
+
+2013-02-15 13:05  wachs
+
+	* [r26136] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-15 12:12  wachs
+
+	* [r26135] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-15 11:21  LRN
+
+	* [r26134] src/util/os_priority.c: Detect bad control pipes earlier
+
+2013-02-15 10:51  wachs
+
+	* [r26133] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-15 10:49  wachs
+
+	* [r26132] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-15 10:32  wachs
+
+	* [r26130] src/ats/gnunet-service-ats_addresses.c: more docu
+
+2013-02-15 10:03  LRN
+
+	* [r26129] src/util/os_priority.c: Try to fix process spawning
+
+2013-02-15 09:52  wachs
+
+	* [r26128] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-15 09:47  LRN
+
+	* [r26127] src/util/test_os_start_process.c: Another highly
+	  temporary fix to make os_start_process pass
+
+2013-02-15 09:32  wachs
+
+	* [r26126] src/ats/gnunet-service-ats_addresses.c: more docu
+
+2013-02-15 09:23  wachs
+
+	* [r26125] src/ats/gnunet-service-ats_addresses.c: docu
+
+2013-02-15 09:18  wachs
+
+	* [r26124] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/test_ats_simplistic_switch_networks.c: remove static
+	  function
+
+2013-02-14 18:33  LRN
+
+	* [r26122] src/util/test_os_start_process.c: Temporary fix to make
+	  test_os_start_process pass again
+
+2013-02-14 17:20  LRN
+
+	* [r26120] src/util/os_priority.c: Oops
+
+2013-02-14 16:46  harsha
+
+	* [r26119] src/testbed/gnunet-service-testbed.c,
+	  src/testbed/gnunet-service-testbed.h,
+	  src/testbed/gnunet-service-testbed_oc.c,
+	  src/testbed/testbed.conf.in: fix 2793: Testbed does not allow to
+	  set TIMEOUT for operations
+
+2013-02-14 16:15  LRN
+
+	* [r26118] src/util/w32cat.c: Make w32cat pipe-controllable
+
+2013-02-14 16:15  LRN
+
+	* [r26117] src/util/disk.c, src/util/os_priority.c: Use
+	  passed-by-fd pipe to control chilren
+	  
+	  Removes npipe_*() functions.
+	  Uses normal GNUnet pipe for child control (the pipe is
+	  anonymous on *nix, named-with-unique-name on W32).
+	  
+	  Also tighten W32 code (close pipes correctly on errors).
+	  Remove some FIXME NILS comments.
+	  Convert #if MINGW -> #if defined (WINDOWS) in some places.
+	  
+	  Better start_process() debug logging on W32
+
+2013-02-14 16:15  LRN
+
+	* [r26116] src/util/disk.c: Minimal W32 version to XP, use
+	  uniqueness flag
+
+2013-02-14 16:15  LRN
+
+	* [r26115] src/include/gnunet_disk_lib.h, src/util/disk.c: More
+	  flexible native->GNUnet_handle file opening
+	  
+	  Can now open not just FILEs, but also integer fds and
+	  native Windows handles.
+	  The last two will be used later by the new pipe control code.
+
+2013-02-14 16:15  LRN
+
+	* [r26114] src/util/disk.c: Fix file close to work on pipe ends
+	  correctly
+
+2013-02-14 16:15  LRN
+
+	* [r26113] src/include/gnunet_disk_lib.h, src/util/disk.c: Make
+	  pipe ends detachable, fix W32 corner-cases
+	  
+	  Now pipe ends are fully-functional FileHandles. You can detach
+	  them from the pipe, and closing pipe will not affect them
+	  afterwards.
+	  
+	  Tightened W32 implementation (make it close events!)
+
+2013-02-14 16:15  LRN
+
+	* [r26112] src/util/os_priority.c: W32: Don't leak stdin/stdout
+	  when spawning
+	  
+	  If stdin/stdout pipe is provided by us, AND we tell
+	  start_process() to
+	  pass along our own current stdin/stdout, our current stdin/stdout
+	  will
+	  be leaked to the child (child will have a copy, but won't know
+	  about it).
+
+2013-02-14 15:01  wachs
+
+	* [r26110] src/hostlist/hostlist-client.c: change to WARNING
+
+2013-02-14 14:39  wachs
+
+	* [r26107] src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/gnunet-service-ats_addresses_simplistic.h: docu
+
+2013-02-14 13:36  wachs
+
+	* [r26106] src/ats/test_ats_mlp.c: mod test
+
+2013-02-14 13:28  wachs
+
+	* [r26105] src/ats/test_ats_api_common.c,
+	  src/ats/test_ats_api_common.h, src/ats/test_ats_mlp.c: mod
+
+2013-02-14 12:42  wachs
+
+	* [r26102] src/ats/Makefile.am,
+	  src/ats/gnunet-service-ats_addresses.c,
+	  src/ats/test_ats_api_common.c, src/ats/test_ats_api_common.h,
+	  src/ats/test_ats_mlp.c, src/ats/test_ats_mlp.conf: modifications
+
+2013-02-14 12:33  harsha
+
+	* [r26101] src/testbed/testbed_api.c, src/testbed/testbed_api.h,
+	  src/testbed/testbed_api_hosts.c, src/testbed/testbed_api_hosts.h,
+	  src/testbed/testbed_api_peers.c: move parallel overlay connect
+	  operation queue from controller handle to host handle
+
+2013-02-14 12:10  wachs
+
+	* [r26100] src/ats/Makefile.am, src/ats/test_ats_mlp.c: active test
+
+2013-02-14 12:06  wachs
+
+	* [r26099] src/ats/test_ats_mlp.c: change in test
+
+2013-02-14 12:05  wachs
+
+	* [r26098] src/ats/Makefile.am, src/ats/test_ats_mlp.conf: new
+	  config file
+
+2013-02-14 10:41  harsha
+
+	* [r26097] src/testbed, src/testbed/Makefile.am,
+	  src/testbed/standard_deviation.c,
+	  src/testbed/test_testbed_api_sd.c, src/testbed/testbed_api.c,
+	  src/testbed/testbed_api.c.new, src/testbed/testbed_api_sd.c,
+	  src/testbed/testbed_api_sd.h: separate SD calculations
+
+2013-02-14 10:34  wachs
+
+	* [r26096] src/util/os_installation.c: fix for 0002797
+
+2013-02-12 17:14  harsha
+
+	* [r26081] src/testbed/testbed_api.c: fix 2780: Testbed doesn't
+	  clean up properly on error
+
+2013-02-12 16:48  harsha
+
+	* [r26079] src/include/gnunet_helper_lib.h, src/util/helper.c: stop
+	  helpers by closing stdin
+
+2013-02-11 08:49  wachs
+
+	* [r26062] src/transport/plugin_transport_http_client.c: hotfix for
+	  curl vulnerability: libcurl SASL buffer overflow vulnerability
+	  CVE-2013-0249
+
+2013-02-05 20:49  grothoff
+
+	* [r26035] NEWS, README, README.1st, src/core/Makefile.am,
+	  src/core/gnunet-service-core.c,
+	  src/core/gnunet-service-core_kx.c,
+	  src/core/gnunet-service-core_kx.h,
+	  src/core/gnunet-service-core_neighbours.c,
+	  src/hello/gnunet-hello.c, src/hello/hello.c,
+	  src/hello/test_hello.c, src/include/gnunet_crypto_lib.h,
+	  src/include/gnunet_hello_lib.h, src/include/gnunet_protocols.h,
+	  src/include/gnunet_signatures.h,
+	  src/include/gnunet_testing_lib.h,
+	  src/peerinfo-tool/gnunet-peerinfo.c,
+	  src/testing/gnunet-testing.c, src/testing/testing.c,
+	  src/transport/gnunet-service-transport.c,
+	  src/transport/gnunet-service-transport.h,
+	  src/transport/gnunet-service-transport_hello.c,
+	  src/transport/gnunet-service-transport_hello.h,
+	  src/transport/gnunet-service-transport_neighbours.c,
+	  src/transport/gnunet-service-transport_validation.c,
+	  src/transport/gnunet-service-transport_validation.h,
+	  src/transport/test_plugin_transport.c, src/util/crypto_aes.c,
+	  src/util/crypto_hash.c, src/util/gnunet-ecc.c,
+	  src/util/gnunet-rsa.c, src/util/test_crypto_aes.c,
+	  src/util/test_crypto_aes_weak.c: switching to ECDHE cryptography
+	  f, implementation is incomplete and INSECURE, do not use for
+	  anything but testing
+
+2013-02-05 20:48  grothoff
+
+	* [r26034] configure.ac, po/POTFILES.in, po/de.po, po/es.po,
+	  po/sv.po, po/vi.po, po/zh_CN.po, src/arm/Makefile.am,
+	  src/mesh/Makefile.am, src/regex/Makefile.am,
+	  src/transport/Makefile.am: 095a
+
 2013-02-05 16:06  wachs
 
 	* [r26026] src/transport/gnunet-service-transport_manipulation.c,

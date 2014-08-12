@@ -1,6 +1,6 @@
 /*
   This file is part of GNUnet
-  (C) 2008--2012 Christian Grothoff (and other contributing authors)
+  (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
   GNUnet is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published
@@ -25,7 +25,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_testbed_service.h"
 
 /**
@@ -51,12 +51,17 @@ static GNUNET_SCHEDULER_TaskIdentifier abort_task;
 /**
  * Current peer id
  */
-unsigned int peer_id;
+static unsigned int peer_id;
 
 /**
  * Testing result
  */
 static int result;
+
+/**
+ * Should we wait forever after testbed is initialized?
+ */
+static int wait_forever;
 
 
 /**
@@ -85,7 +90,7 @@ do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Test timedout -- Aborting\n");
   abort_task = GNUNET_SCHEDULER_NO_TASK;
-  GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+  (void) GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
 }
 
 
@@ -93,16 +98,35 @@ do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Signature of a main function for a testcase.
  *
  * @param cls closure
+ * @param h the run handle
  * @param num_peers number of peers in 'peers'
- * @param peers handle to peers run in the testbed
+ * @param peers_ handle to peers run in the testbed
+ * @param links_succeeded the number of overlay link connection attempts that
+ *          succeeded
+ * @param links_failed the number of overlay link connection attempts that
+ *          failed
  */
 static void
-test_master (void *cls, unsigned int num_peers,
-             struct GNUNET_TESTBED_Peer **peers_)
+test_master (void *cls,
+             struct GNUNET_TESTBED_RunHandle *h,
+             unsigned int num_peers,
+             struct GNUNET_TESTBED_Peer **peers_,
+             unsigned int links_succeeded,
+             unsigned int links_failed)
 {
   result = GNUNET_OK;
+  if (GNUNET_YES == wait_forever)
+  {
+    if (GNUNET_SCHEDULER_NO_TASK == abort_task)
+      return;                   /* abort already scheduled */
+    GNUNET_SCHEDULER_cancel (abort_task);
+    abort_task = GNUNET_SCHEDULER_NO_TASK;
+    (void) GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
+                                         &do_shutdown, NULL);
+    return;
+  }
   GNUNET_assert (NULL != peers[0]);
-  op = GNUNET_TESTBED_peer_stop (peers[0], NULL, NULL);
+  op = GNUNET_TESTBED_peer_stop (NULL, peers[0], NULL, NULL);
   GNUNET_assert (NULL != op);
 }
 
@@ -200,7 +224,9 @@ main (int argc, char **argv)
       GNUNET_break (0);         /* Windows with no .exe? */
   }
 #endif
-  if (0 != strcmp ("run", testname))
+  if (0 == strcmp ("waitforever", testname))
+    wait_forever = GNUNET_YES;
+  if ( (GNUNET_YES != wait_forever) && (0 != strcmp ("run", testname)) )
   {
     GNUNET_asprintf (&config_filename, "test_testbed_api_testbed_run_%s.conf",
                      testname);

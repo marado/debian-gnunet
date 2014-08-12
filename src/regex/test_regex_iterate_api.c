@@ -25,7 +25,8 @@
 #include <regex.h>
 #include <time.h>
 #include "platform.h"
-#include "gnunet_regex_lib.h"
+#include "regex_internal_lib.h"
+#include "regex_block_lib.h"
 #include "regex_internal.h"
 
 /**
@@ -36,7 +37,7 @@
 /**
  * Set to GNUNET_YES to save a debug graph.
  */
-#define GNUNET_REGEX_ITERATE_SAVE_DEBUG_GRAPH GNUNET_NO
+#define REGEX_INTERNAL_ITERATE_SAVE_DEBUG_GRAPH GNUNET_NO
 
 static unsigned int transition_counter;
 
@@ -59,9 +60,10 @@ struct RegexStringPair
 
 
 static void
-key_iterator (void *cls, const struct GNUNET_HashCode *key, const char *proof,
+key_iterator (void *cls, const struct GNUNET_HashCode *key,
+	      const char *proof,
               int accepting, unsigned int num_edges,
-              const struct GNUNET_REGEX_Edge *edges)
+              const struct REGEX_BLOCK_Edge *edges)
 {
   unsigned int i;
   struct IteratorContext *ctx = cls;
@@ -101,15 +103,15 @@ key_iterator (void *cls, const struct GNUNET_HashCode *key, const char *proof,
       ctx->match_count++;
   }
 
-  if (GNUNET_OK != GNUNET_REGEX_check_proof (proof, key))
+  if (GNUNET_OK != REGEX_BLOCK_check_proof (proof, strlen (proof), key))
   {
     ctx->error++;
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Proof check failed: proof: %s key: %s\n", proof, state_id);
   }
-
   GNUNET_free (state_id);
 }
+
 
 int
 main (int argc, char *argv[])
@@ -117,7 +119,7 @@ main (int argc, char *argv[])
   GNUNET_log_setup ("test-regex", "WARNING", NULL);
 
   int error;
-  struct GNUNET_REGEX_Automaton *dfa;
+  struct REGEX_INTERNAL_Automaton *dfa;
   unsigned int i;
   unsigned int num_transitions;
   char *filename = NULL;
@@ -161,7 +163,7 @@ main (int argc, char *argv[])
 
 
     /* Create graph */
-    if (GNUNET_YES == GNUNET_REGEX_ITERATE_SAVE_DEBUG_GRAPH)
+    if (GNUNET_YES == REGEX_INTERNAL_ITERATE_SAVE_DEBUG_GRAPH)
     {
       GNUNET_asprintf (&filename, "iteration_graph_%u.dot", i);
       ctx.graph_filep = fopen (filename, "w");
@@ -191,10 +193,10 @@ main (int argc, char *argv[])
     ctx.strings = rxstr[i].strings;
     ctx.match_count = 0;
     dfa =
-        GNUNET_REGEX_construct_dfa (rxstr[i].regex, strlen (rxstr[i].regex), 0);
-    GNUNET_REGEX_iterate_all_edges (dfa, key_iterator, &ctx);
+        REGEX_INTERNAL_construct_dfa (rxstr[i].regex, strlen (rxstr[i].regex), 0);
+    REGEX_INTERNAL_iterate_all_edges (dfa, key_iterator, &ctx);
     num_transitions =
-        GNUNET_REGEX_get_transition_count (dfa) - dfa->start->transition_count;
+        REGEX_INTERNAL_get_transition_count (dfa) - dfa->start->transition_count;
 
     if (transition_counter < num_transitions)
     {
@@ -218,7 +220,7 @@ main (int argc, char *argv[])
       error += (ctx.string_count - ctx.match_count);
     }
 
-    GNUNET_REGEX_automaton_destroy (dfa);
+    REGEX_INTERNAL_automaton_destroy (dfa);
 
     /* Finish graph */
     if (GNUNET_YES == ctx.should_save_graph)
@@ -238,9 +240,9 @@ main (int argc, char *argv[])
     ctx.match_count = 0;
 
     dfa =
-        GNUNET_REGEX_construct_dfa (rxstr[i].regex, strlen (rxstr[i].regex), 0);
-    GNUNET_REGEX_dfa_add_multi_strides (NULL, dfa, 2);
-    GNUNET_REGEX_iterate_all_edges (dfa, key_iterator, &ctx);
+        REGEX_INTERNAL_construct_dfa (rxstr[i].regex, strlen (rxstr[i].regex), 0);
+    REGEX_INTERNAL_dfa_add_multi_strides (NULL, dfa, 2);
+    REGEX_INTERNAL_iterate_all_edges (dfa, key_iterator, &ctx);
 
     if (ctx.match_count < ctx.string_count)
     {
@@ -249,7 +251,7 @@ main (int argc, char *argv[])
       error += (ctx.string_count - ctx.match_count);
     }
 
-    GNUNET_REGEX_automaton_destroy (dfa);
+    REGEX_INTERNAL_automaton_destroy (dfa);
   }
 
   error += ctx.error;

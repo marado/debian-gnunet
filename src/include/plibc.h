@@ -22,7 +22,7 @@
  * @brief PlibC header
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision: 84 $
+ * @version $Revision$
  */
 
 #ifndef _PLIBC_H_
@@ -70,8 +70,8 @@ extern "C" {
 /* Convert LARGE_INTEGER to double */
 #define Li2Double(x) ((double)((x).HighPart) * 4.294967296E9 + \
   (double)((x).LowPart))
-#ifndef __MINGW64__
-struct stat64
+#ifndef HAVE_DECL__STATI64
+struct _stati64
 {
     _dev_t st_dev;
     _ino_t st_ino;
@@ -81,9 +81,9 @@ struct stat64
     short st_gid;
     _dev_t st_rdev;
     __int64 st_size;
-    __time64_t st_atime;
-    __time64_t st_mtime;
-    __time64_t st_ctime;
+    time_t st_atime;
+    time_t st_mtime;
+    time_t st_ctime;
 };
 #endif
 typedef unsigned int sa_family_t;
@@ -115,102 +115,259 @@ enum
   _SC_PAGE_SIZE = 30
 };
 
+#if !defined(EACCESS)
+#  define EACCESS EACCES
+#endif
+
 /* Thanks to the Cygwin project */
-#define ENOCSI 43	/* No CSI structure available */
-#define EL2HLT 44	/* Level 2 halted */
-#ifndef  EDEADLK
-	#define EDEADLK 45	/* Deadlock condition */
+#if !defined(ENOCSI)
+#  define ENOCSI 43	/* No CSI structure available */
 #endif
-#ifndef  ENOLCK
-	#define ENOLCK 46	/* No record locks available */
+#if !defined(EL2HLT)
+#  define EL2HLT 44	/* Level 2 halted */
 #endif
-#define EBADE 50	/* Invalid exchange */
-#define EBADR 51	/* Invalid request descriptor */
-#define EXFULL 52	/* Exchange full */
-#define ENOANO 53	/* No anode */
-#define EBADRQC 54	/* Invalid request code */
-#define EBADSLT 55	/* Invalid slot */
-#ifndef  EDEADLOCK
-	#define EDEADLOCK EDEADLK	/* File locking deadlock error */
+#if !defined(EDEADLK)
+#  define EDEADLK 45	/* Deadlock condition */
 #endif
-#define EBFONT 57	/* Bad font file fmt */
-#define ENOSTR 60	/* Device not a stream */
-#define ENODATA 61	/* No data (for no delay io) */
-#define ETIME 62	/* Timer expired */
-#define ENOSR 63	/* Out of streams resources */
-#define ENONET 64	/* Machine is not on the network */
-#define ENOPKG 65	/* Package not installed */
-#define EREMOTE 66	/* The object is remote */
-#define ENOLINK 67	/* The link has been severed */
-#define EADV 68		/* Advertise error */
-#define ESRMNT 69	/* Srmount error */
-#define ECOMM 70	/* Communication error on send */
-#define EPROTO 71	/* Protocol error */
-#define EMULTIHOP 74	/* Multihop attempted */
-#define ELBIN 75	/* Inode is remote (not really error) */
-#define EDOTDOT 76	/* Cross mount point (not really error) */
-#define EBADMSG 77	/* Trying to read unreadable message */
-#define ENOTUNIQ 80	/* Given log. name not unique */
-#define EBADFD 81	/* f.d. invalid for this operation */
-#define EREMCHG 82	/* Remote address changed */
-#define ELIBACC 83	/* Can't access a needed shared lib */
-#define ELIBBAD 84	/* Accessing a corrupted shared lib */
-#define ELIBSCN 85	/* .lib section in a.out corrupted */
-#define ELIBMAX 86	/* Attempting to link in too many libs */
-#define ELIBEXEC 87	/* Attempting to exec a shared library */
-#ifndef  ENOSYS
-	#define ENOSYS 88	/* Function not implemented */
+#if !defined(ENOLCK)
+#  define ENOLCK 46	/* No record locks available */
 #endif
-#define ENMFILE 89      /* No more files */
-#ifndef  ENOTEMPTY
-	#define ENOTEMPTY 90	/* Directory not empty */
+#if !defined(EBADE)
+#  define EBADE 50	/* Invalid exchange */
 #endif
-#ifndef  ENAMETOOLONG
-	#define ENAMETOOLONG 91	/* File or path name too long */
+#if !defined(EBADR)
+#  define EBADR 51	/* Invalid request descriptor */
 #endif
-#define ELOOP 92	/* Too many symbolic links */
-#define EOPNOTSUPP 95	/* Operation not supported on transport endpoint */
-#define EPFNOSUPPORT 96 /* Protocol family not supported */
-#define ECONNRESET 104  /* Connection reset by peer */
-#define ENOBUFS 105	/* No buffer space available */
-#define EAFNOSUPPORT 106 /* Address family not supported by protocol family */
-#define EPROTOTYPE 107	/* Protocol wrong type for socket */
-#define ENOTSOCK 108	/* Socket operation on non-socket */
-#define ENOPROTOOPT 109	/* Protocol not available */
-#define ESHUTDOWN 110	/* Can't send after socket shutdown */
-#define ECONNREFUSED 111	/* Connection refused */
-#define EADDRINUSE 112		/* Address already in use */
-#define ECONNABORTED 113	/* Connection aborted */
-#define ENETUNREACH 114		/* Network is unreachable */
-#define ENETDOWN 115		/* Network interface is not configured */
-#ifndef  ETIMEDOUT
-	#define ETIMEDOUT 116		/* Connection timed out */
+#if !defined(EXFULL)
+#  define EXFULL 52	/* Exchange full */
 #endif
-#define EHOSTDOWN 117		/* Host is down */
-#define EHOSTUNREACH 118	/* Host is unreachable */
-#define EINPROGRESS 119		/* Connection already in progress */
-#define EALREADY 120		/* Socket already connected */
-#define EDESTADDRREQ 121	/* Destination address required */
-#define EMSGSIZE 122		/* Message too long */
-#define EPROTONOSUPPORT 123	/* Unknown protocol */
-#define ESOCKTNOSUPPORT 124	/* Socket type not supported */
-#define EADDRNOTAVAIL 125	/* Address not available */
-#define ENETRESET 126		/* Connection aborted by network */
-#define EISCONN 127		    /* Socket is already connected */
-#define ENOTCONN 128		/* Socket is not connected */
-#define ETOOMANYREFS 129	/* Too many references: cannot splice */
-#define EPROCLIM 130		/* Too many processes */
-#define EUSERS 131			/* Too many users */
-#define EDQUOT 132			/* Disk quota exceeded */
-#define ESTALE 133          /* Unknown error */
-#ifndef  ENOTSUP
-	#define ENOTSUP 134		    /* Not supported */
+#if !defined(ENOANO)
+#  define ENOANO 53	/* No anode */
 #endif
-#define ENOMEDIUM 135       /* No medium (in tape drive) */
-#define ENOSHARE 136        /* No such host or network path */
-#define ECASECLASH 137      /* Filename exists with different case */
-#define EWOULDBLOCK EAGAIN	/* Operation would block */
-#define EOVERFLOW 139 /* Value too large for defined data type */
+#if !defined(EBADRQC)
+#  define EBADRQC 54	/* Invalid request code */
+#endif
+#if !defined(EBADSLT)
+#  define EBADSLT 55	/* Invalid slot */
+#endif
+#if !defined(EDEADLOCK)
+#  define EDEADLOCK EDEADLK	/* File locking deadlock error */
+#endif
+#if !defined(EBFONT)
+#  define EBFONT 57	/* Bad font file fmt */
+#endif
+#if !defined(ENOSTR)
+#  define ENOSTR 60	/* Device not a stream */
+#endif
+#if !defined(ENODATA)
+#  define ENODATA 61	/* No data (for no delay io) */
+#endif
+#if !defined(ETIME)
+#  define ETIME 62	/* Timer expired */
+#endif
+#if !defined(ENOSR)
+#  define ENOSR 63	/* Out of streams resources */
+#endif
+#if !defined(ENONET)
+#  define ENONET 64	/* Machine is not on the network */
+#endif
+#if !defined(ENOPKG)
+#  define ENOPKG 65	/* Package not installed */
+#endif
+#if !defined(EREMOTE)
+#  define EREMOTE 66	/* The object is remote */
+#endif
+#if !defined(ENOLINK)
+#  define ENOLINK 67	/* The link has been severed */
+#endif
+#if !defined(EADV)
+#  define EADV 68		/* Advertise error */
+#endif
+#if !defined(ESRMNT)
+#  define ESRMNT 69	/* Srmount error */
+#endif
+#if !defined(ECOMM)
+#  define ECOMM 70	/* Communication error on send */
+#endif
+#if !defined(EMULTIHOP)
+#  define EMULTIHOP 74	/* Multihop attempted */
+#endif
+#if !defined(ELBIN)
+#  define ELBIN 75	/* Inode is remote (not really error) */
+#endif
+#if !defined(EDOTDOT)
+#  define EDOTDOT 76	/* Cross mount point (not really error) */
+#endif
+#if !defined(EBADMSG)
+#  define EBADMSG 77	/* Trying to read unreadable message */
+#endif
+#if !defined(ENOTUNIQ)
+#  define ENOTUNIQ 80	/* Given log. name not unique */
+#endif
+#if !defined(EBADFD)
+#  define EBADFD 81	/* f.d. invalid for this operation */
+#endif
+#if !defined(EREMCHG)
+#  define EREMCHG 82	/* Remote address changed */
+#endif
+#if !defined(ELIBACC)
+#  define ELIBACC 83	/* Can't access a needed shared lib */
+#endif
+#if !defined(ELIBBAD)
+#  define ELIBBAD 84	/* Accessing a corrupted shared lib */
+#endif
+#if !defined(ELIBSCN)
+#  define ELIBSCN 85	/* .lib section in a.out corrupted */
+#endif
+#if !defined(ELIBMAX)
+#  define ELIBMAX 86	/* Attempting to link in too many libs */
+#endif
+#if !defined(ELIBEXEC)
+#  define ELIBEXEC 87	/* Attempting to exec a shared library */
+#endif
+#if !defined(ENOSYS)
+#  define ENOSYS 88	/* Function not implemented */
+#endif
+#if !defined(ENMFILE)
+#  define ENMFILE 89      /* No more files */
+#endif
+#if !defined(ENOTEMPTY)
+#  define ENOTEMPTY 90	/* Directory not empty */
+#endif
+#if !defined(ENAMETOOLONG)
+#  define ENAMETOOLONG 91	/* File or path name too long */
+#endif
+#if !defined(EPFNOSUPPORT)
+#  define EPFNOSUPPORT 96 /* Protocol family not supported */
+#endif
+#if !defined(ENOSHARE)
+#  define ENOSHARE 97        /* No such host or network path */
+#endif
+#if !defined(ENOMEDIUM)
+#  define ENOMEDIUM 98       /* No medium (in tape drive) */
+#endif
+#if !defined(ESHUTDOWN)
+#  define ESHUTDOWN 99	/* Can't send after socket shutdown */
+#endif
+#if !defined(EADDRINUSE)
+#  define EADDRINUSE 100		/* Address already in use */
+#endif
+#if !defined(EADDRNOTAVAIL)
+#  define EADDRNOTAVAIL 101	/* Address not available */
+#endif
+#if !defined(EAFNOSUPPORT)
+#  define EAFNOSUPPORT 102 /* Address family not supported by protocol family */
+#endif
+#if !defined(EALREADY)
+#  define EALREADY 103		/* Socket already connected */
+#endif
+#if !defined(ECANCELED)
+#  define ECANCELED 105	/* Connection cancelled */
+#endif
+#if !defined(ECONNABORTED)
+#  define ECONNABORTED 106	/* Connection aborted */
+#endif
+#if !defined(ECONNREFUSED)
+#  define ECONNREFUSED 107	/* Connection refused */
+#endif
+#if !defined(ECONNRESET)
+#  define ECONNRESET 108  /* Connection reset by peer */
+#endif
+#if !defined(EDESTADDRREQ)
+#  define EDESTADDRREQ 109	/* Destination address required */
+#endif
+#if !defined(EHOSTUNREACH)
+#  define EHOSTUNREACH 110	/* Host is unreachable */
+#endif
+#if !defined(ECONNABORTED)
+#  define ECONNABORTED 111	/* Connection aborted */
+#endif
+#if !defined(EINPROGRESS)
+#  define EINPROGRESS 112		/* Connection already in progress */
+#endif
+#if !defined(EISCONN)
+#  define EISCONN 113		    /* Socket is already connected */
+#endif
+#if !defined(ELOOP)
+#  define ELOOP 114	/* Too many symbolic links */
+#endif
+#if !defined(EMSGSIZE)
+#  define EMSGSIZE 115		/* Message too long */
+#endif
+#if !defined(ENETDOWN)
+#  define ENETDOWN 116		/* Network interface is not configured */
+#endif
+#if !defined(ENETRESET)
+#  define ENETRESET 117		/* Connection aborted by network */
+#endif
+#if !defined(ENETUNREACH)
+#  define ENETUNREACH 118		/* Network is unreachable */
+#endif
+#if !defined(ENOBUFS)
+#  define ENOBUFS 119	/* No buffer space available */
+#endif
+#if !defined(EHOSTDOWN)
+#  define EHOSTDOWN 120		/* Host is down */
+#endif
+#if !defined(EPROCLIM)
+#  define EPROCLIM 121		/* Too many processes */
+#endif
+#if !defined(EDQUOT)
+#  define EDQUOT 122			/* Disk quota exceeded */
+#endif
+#if !defined(ENOPROTOOPT)
+#  define ENOPROTOOPT 123	/* Protocol not available */
+#endif
+#if !defined(ESOCKTNOSUPPORT)
+#  define ESOCKTNOSUPPORT 124	/* Socket type not supported */
+#endif
+#if !defined(ESTALE)
+#  define ESTALE 125          /* Unknown error */
+#endif
+#if !defined(ENOTCONN)
+#  define ENOTCONN 126		/* Socket is not connected */
+#endif
+#if !defined(ETOOMANYREFS)
+#  define ETOOMANYREFS 127	/* Too many references: cannot splice */
+#endif
+#if !defined(ENOTSOCK)
+#  define ENOTSOCK 128	/* Socket operation on non-socket */
+#endif
+#if !defined(ENOTSUP)
+#  define ENOTSUP 129		    /* Not supported */
+#endif
+#if !defined(EOPNOTSUPP)
+#  define EOPNOTSUPP 130	/* Operation not supported on transport endpoint */
+#endif
+#if !defined(EUSERS)
+#  define EUSERS 131			/* Too many users */
+#endif
+#if !defined(EOVERFLOW)
+#  define EOVERFLOW 132 /* Value too large for defined data type */
+#endif
+#if !defined(EOWNERDEAD)
+#  define EOWNERDEAD 133          /* Unknown error */
+#endif
+#if !defined(EPROTO)
+#  define EPROTO 134	/* Protocol error */
+#endif
+#if !defined(EPROTONOSUPPORT)
+#  define EPROTONOSUPPORT 135	/* Unknown protocol */
+#endif
+#if !defined(EPROTOTYPE)
+#  define EPROTOTYPE 136	/* Protocol wrong type for socket */
+#endif
+#if !defined(ECASECLASH)
+#  define ECASECLASH 137      /* Filename exists with different case */
+#endif
+#if !defined(ETIMEDOUT)
+/* Make sure it's the same as WSATIMEDOUT */
+#  define ETIMEDOUT 138		/* Connection timed out */
+#endif
+#if !defined(EWOULDBLOCK) || EWOULDBLOCK == 140
+#  undef EWOULDBLOCK /* MinGW-w64 defines it as 140, but we want it as EAGAIN */
+#  define EWOULDBLOCK EAGAIN	/* Operation would block */
+#endif
 
 #undef HOST_NOT_FOUND
 #define HOST_NOT_FOUND 1
@@ -246,52 +403,6 @@ struct statfs
   long f_namelen;               /* maximum length of filenames */
   long f_spare[6];              /* spare for later */
 };
-
-extern const struct in6_addr in6addr_any;        /* :: */
-extern const struct in6_addr in6addr_loopback;   /* ::1 */
-
-/* Taken from the Wine project <http://www.winehq.org>
-    /wine/include/winternl.h */
-enum SYSTEM_INFORMATION_CLASS
-{
-  SystemBasicInformation = 0,
-  Unknown1,
-  SystemPerformanceInformation = 2,
-  SystemTimeOfDayInformation = 3, /* was SystemTimeInformation */
-  Unknown4,
-  SystemProcessInformation = 5,
-  Unknown6,
-  Unknown7,
-  SystemProcessorPerformanceInformation = 8,
-  Unknown9,
-  Unknown10,
-  SystemDriverInformation,
-  Unknown12,
-  Unknown13,
-  Unknown14,
-  Unknown15,
-  SystemHandleList,
-  Unknown17,
-  Unknown18,
-  Unknown19,
-  Unknown20,
-  SystemCacheInformation,
-  Unknown22,
-  SystemInterruptInformation = 23,
-  SystemExceptionInformation = 33,
-  SystemRegistryQuotaInformation = 37,
-  SystemLookasideInformation = 45
-};
-
-typedef struct
-{
-    LARGE_INTEGER IdleTime;
-    LARGE_INTEGER KernelTime;
-    LARGE_INTEGER UserTime;
-    LARGE_INTEGER Reserved1[2];
-    ULONG Reserved2;
-} SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
-
 #define sleep(secs) (Sleep(secs * 1000))
 
 /*********************** statfs *****************************/
@@ -363,6 +474,8 @@ unsigned plibc_get_handle_count();
 
 typedef void (*TPanicProc) (int, char *);
 void plibc_set_panic_proc(TPanicProc proc);
+void plibc_set_stat_size_size(int iLength);
+void plibc_set_stat_time_size(int iLength);
 
 int flock(int fd, int operation);
 int fsync(int fildes);
@@ -371,13 +484,14 @@ int inet_pton4(const char *src, u_char *dst, int pton);
 #if USE_IPV6
 int inet_pton6(const char *src, u_char *dst);
 #endif
-int truncate(const char *fname, int distance);
 int statfs(const char *path, struct statfs *buf);
 const char *hstrerror(int err);
 int mkstemp(char *tmplate);
 char *strptime (const char *buf, const char *format, struct tm *tm);
 const char *inet_ntop(int af, const void *src, char *dst, size_t size);
+#ifndef gmtime_r
 struct tm *gmtime_r(const time_t *clock, struct tm *result);
+#endif
 
 int plibc_init(char *pszOrg, char *pszApp);
 int plibc_init_utf8(char *pszOrg, char *pszApp, int utf8_mode);
@@ -405,9 +519,10 @@ char *_win_ctime(const time_t *clock);
 char *_win_ctime_r(const time_t *clock, char *buf);
 int _win_fstat(int handle, struct stat *buffer);
 int _win_ftruncate(int fildes, off_t length);
-void _win_gettimeofday(struct timeval *tp, void *tzp);
+int _win_truncate(const char *fname, int distance);
 int _win_kill(pid_t pid, int sig);
 int _win_pipe(int *phandles);
+intptr_t _win_mkfifo(const char *path, mode_t mode);
 int _win_rmdir(const char *path);
 int _win_access( const char *path, int mode );
 int _win_chmod(const char *filename, int pmode);
@@ -417,7 +532,7 @@ void _win_srandom(unsigned int seed);
 int _win_remove(const char *path);
 int _win_rename(const char *oldname, const char *newname);
 int _win_stat(const char *path, struct stat *buffer);
-int _win_stat64(const char *path, struct stat64 *buffer);
+int _win_stati64(const char *path, struct _stati64 *buffer);
 long _win_sysconf(int name);
 int _win_unlink(const char *filename);
 int _win_write(int fildes, const void *buf, size_t nbyte);
@@ -430,52 +545,9 @@ void *_win_mmap(void *start, size_t len, int access, int flags, int fd,
 int _win_msync(void *start, size_t length, int flags);
 int _win_munmap(void *start, size_t length);
 int _win_lstat(const char *path, struct stat *buf);
-int _win_lstat64(const char *path, struct stat64 *buf);
+int _win_lstati64(const char *path, struct _stati64 *buf);
 int _win_readlink(const char *path, char *buf, size_t bufsize);
 int _win_accept(int s, struct sockaddr *addr, int *addrlen);
-
-int _win_printf(const char *format,...);
-int _win_wprintf(const wchar_t *format, ...);
-
-int _win_fprintf(FILE *f,const char *format,...);
-int _win_fwprintf(FILE *f,const wchar_t *format, ...);
-
-int _win_vprintf(const char *format, va_list ap);
-int _win_vfwprintf(FILE *stream, const wchar_t *format, va_list arg_ptr);
-
-int _win_vfprintf(FILE *stream, const char *format, va_list arg_ptr);
-int _win_vwprintf(const wchar_t *format, va_list ap);
-
-int _win_vsprintf(char *dest,const char *format, va_list arg_ptr);
-int _win_vswprintf(wchar_t *dest, const wchar_t *format, va_list arg_ptr);
-
-int _win_vsnprintf(char* str, size_t size, const char *format, va_list arg_ptr);
-int _win_vsnwprintf(wchar_t* wstr, size_t size, const wchar_t *format, va_list arg_ptr);
-
-int _win_snprintf(char *str,size_t size,const char *format,...);
-int _win_snwprintf(wchar_t *str, size_t size, const wchar_t *format, ...);
-
-int _win_sprintf(char *dest,const char *format,...);
-int _win_swprintf(wchar_t *dest, const wchar_t *format, ...);
-
-int _win_vsscanf(const char* str, const char* format, va_list arg_ptr);
-int _win_vswscanf(const wchar_t* wstr, const wchar_t* format, va_list arg_ptr);
-
-int _win_sscanf(const char *str, const char *format, ...);
-int _win_swscanf(const wchar_t *wstr, const wchar_t *format, ...);
-
-int _win_vfscanf(FILE *stream, const char *format, va_list arg_ptr);
-int _win_vfwscanf(FILE *stream, const wchar_t *format, va_list arg_ptr);
-
-int _win_vscanf(const char *format, va_list arg_ptr);
-int _win_vwscanf(const wchar_t *format, va_list arg_ptr);
-
-int _win_scanf(const char *format, ...);
-int _win_wscanf(const wchar_t *format, ...);
-
-int _win_fscanf(FILE *stream, const char *format, ...);
-int _win_fwscanf(FILE *stream, const wchar_t *format, ...);
-
 
 pid_t _win_waitpid(pid_t pid, int *stat_loc, int options);
 int _win_bind(int s, const struct sockaddr *name, int namelen);
@@ -499,26 +571,35 @@ int _win_setsockopt(int s, int level, int optname, const void *optval,
                     int optlen);
 int _win_shutdown(int s, int how);
 int _win_socket(int af, int type, int protocol);
+int _win_socketpair(int af, int type, int protocol, int socket_vector[2]);
 struct hostent *_win_gethostbyaddr(const char *addr, int len, int type);
 struct hostent *_win_gethostbyname(const char *name);
 struct hostent *gethostbyname2(const char *name, int af);
 char *_win_strerror(int errnum);
 int IsWinNT();
 char *index(const char *s, int c);
+char *_win_strtok_r (char *ptr, const char *sep, char **end);
 
 #if !HAVE_STRNDUP
 char *strndup (const char *s, size_t n);
 #endif
-#if !HAVE_STRNLEN
+#if !HAVE_STRNLEN && (!defined(__MINGW64_VERSION_MAJOR) || !defined(_INC_STRING))
 size_t strnlen (const char *str, size_t maxlen);
 #endif
 char *stpcpy(char *dest, const char *src);
 char *strcasestr(const char *haystack_start, const char *needle_start);
-#ifndef __MINGW64__
+#ifndef __MINGW64_VERSION_MAJOR
 #define strcasecmp(a, b) stricmp(a, b)
-#define wcscasecmp(a, b) wcsicmp(a, b)
 #define strncasecmp(a, b, c) strnicmp(a, b, c)
+#endif
+#ifndef wcscasecmp
+#define wcscasecmp(a, b) wcsicmp(a, b)
+#endif
+#ifndef wcsncasecmp
 #define wcsncasecmp(a, b, c) wcsnicmp(a, b, c)
+#endif
+#ifndef strtok_r /* winpthreads defines it in pthread.h */
+#define strtok_r _win_strtok_r
 #endif
 #endif /* WINDOWS */
 
@@ -539,6 +620,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define FOPEN(f, m) fopen(f, m)
  #define FCLOSE(f) fclose(f)
  #define FTRUNCATE(f, l) ftruncate(f, l)
+ #define TRUNCATE(f, l) truncate(f, l)
  #define OPENDIR(d) opendir(d)
  #define CLOSEDIR(d) closedir(d)
  #define READDIR(d) readdir(d)
@@ -603,7 +685,8 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define SETSOCKOPT(s, l, o, v, n) setsockopt(s, l, o, v, n)
  #define SHUTDOWN(s, h) shutdown(s, h)
  #define SOCKET(a, t, p) socket(a, t, p)
- #define GETHOSTBYADDR(a, l, t) gethostbyname(a, l, t)
+ #define SOCKETPAIR(a, t, p, v) socketpair(a, t, p, v)
+ #define GETHOSTBYADDR(a, l, t) gethostbyaddr(a, l, t)
  #define GETHOSTBYNAME(n) gethostbyname(n)
  #define GETTIMEOFDAY(t, n) gettimeofday(t, n)
  #define INSQUE(e, p) insque(e, p)
@@ -621,6 +704,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define TDESTROY(r, f) tdestroy(r, f)
  #define LFIND(k, b, n, s, c) lfind(k, b, n, s, c)
  #define LSEARCH(k, b, n, s, c) lsearch(k, b, n, s, c)
+ #define STRUCT_STAT64 struct stat64
 #else
  #define DIR_SEPARATOR '\\'
  #define DIR_SEPARATOR_STR "\\"
@@ -637,6 +721,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define FOPEN(f, m) _win_fopen(f, m)
  #define FCLOSE(f) _win_fclose(f)
  #define FTRUNCATE(f, l) _win_ftruncate(f, l)
+ #define TRUNCATE(f, l) _win_truncate(f, l)
  #define OPENDIR(d) _win_opendir(d)
  #define CLOSEDIR(d) _win_closedir(d)
  #define READDIR(d) _win_readdir(d)
@@ -644,7 +729,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define CHDIR(d) _win_chdir(d)
  #define CLOSE(f) _win_close(f)
  #define PLIBC_KILL(p, s) _win_kill(p, s)
- #define LSEEK(f, o, w) _win_lseek(f, o, w)
+ #define LSEEK(f, o, w) lseek(f, o, w)
  #define FSTAT(h, b) _win_fstat(h, b)
  #define RMDIR(f) _win_rmdir(f)
  #define ACCESS(p, m) _win_access(p, m)
@@ -655,7 +740,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define REMOVE(p) _win_remove(p)
  #define RENAME(o, n) _win_rename(o, n)
  #define STAT(p, b) _win_stat(p, b)
- #define STAT64(p, b) _win_stat64(p, b)
+ #define STAT64(p, b) _win_stati64(p, b)
  #define SYSCONF(n) _win_sysconf(n)
  #define UNLINK(f) _win_unlink(f)
  #define WRITE(f, b, n) _win_write(f, b, n)
@@ -670,21 +755,21 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define STRERROR(i) _win_strerror(i)
  #define READLINK(p, b, s) _win_readlink(p, b, s)
  #define LSTAT(p, b) _win_lstat(p, b)
- #define LSTAT64(p, b) _win_lstat64(p, b)
- #define PRINTF(f, ...) _win_printf(f , __VA_ARGS__)
- #define FPRINTF(fil, fmt, ...) _win_fprintf(fil, fmt, __VA_ARGS__)
- #define VPRINTF(f, a) _win_vprintf(f, a)
- #define VFPRINTF(s, f, a) _win_vfprintf(s, f, a)
- #define VSPRINTF(d, f, a) _win_vsprintf(d, f, a)
- #define VSNPRINTF(str, size, fmt, a) _win_vsnprintf(str, size, fmt, a)
- #define _REAL_SNPRINTF(str, size, fmt, ...) _win_snprintf(str, size, fmt, __VA_ARGS__)
- #define SPRINTF(d, f, ...) _win_sprintf(d, f, __VA_ARGS__)
- #define VSSCANF(s, f, a) _win_vsscanf(s, f, a)
- #define SSCANF(s, f, ...) _win_sscanf(s, f, __VA_ARGS__)
- #define VFSCANF(s, f, a) _win_vfscanf(s, f, a)
- #define VSCANF(f, a) _win_vscanf(f, a)
- #define SCANF(f, ...) _win_scanf(f, __VA_ARGS__)
- #define FSCANF(s, f, ...) _win_fscanf(s, f, __VA_ARGS__)
+ #define LSTAT64(p, b) _win_lstati64(p, b)
+ #define PRINTF printf
+ #define FPRINTF fprintf
+ #define VPRINTF(f, a) vprintf(f, a)
+ #define VFPRINTF(s, f, a) vfprintf(s, f, a)
+ #define VSPRINTF(d, f, a) vsprintf(d, f, a)
+ #define VSNPRINTF(str, size, fmt, a) vsnprintf(str, size, fmt, a)
+ #define _REAL_SNPRINTF snprintf
+ #define SPRINTF sprintf
+ #define VSSCANF(s, f, a) vsscanf(s, f, a)
+ #define SSCANF sscanf
+ #define VFSCANF(s, f, a) vfscanf(s, f, a)
+ #define VSCANF(f, a) vscanf(f, a)
+ #define SCANF scanf
+ #define FSCANF fscanf
  #define WAITPID(p, s, o) _win_waitpid(p, s, o)
  #define ACCEPT(s, a, l) _win_accept(s, a, l)
  #define BIND(s, n, l) _win_bind(s, n, l)
@@ -701,9 +786,10 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define SETSOCKOPT(s, l, o, v, n) _win_setsockopt(s, l, o, v, n)
  #define SHUTDOWN(s, h) _win_shutdown(s, h)
  #define SOCKET(a, t, p) _win_socket(a, t, p)
- #define GETHOSTBYADDR(a, l, t) _win_gethostbyname(a, l, t)
+ #define SOCKETPAIR(a, t, p, v) _win_socketpair(a, t, p, v)
+ #define GETHOSTBYADDR(a, l, t) _win_gethostbyaddr(a, l, t)
  #define GETHOSTBYNAME(n) _win_gethostbyname(n)
- #define GETTIMEOFDAY(t, n) _win_gettimeofday(t, n)
+ #define GETTIMEOFDAY(t, n) gettimeofday(t, n)
  #define INSQUE(e, p) _win_insque(e, p)
  #define REMQUE(e) _win_remque(e)
  #define HSEARCH(i, a) _win_hsearch(i, a)
@@ -719,6 +805,7 @@ char *strcasestr(const char *haystack_start, const char *needle_start);
  #define TDESTROY(r, f) _win_tdestroy(r, f)
  #define LFIND(k, b, n, s, c) _win_lfind(k, b, n, s, c)
  #define LSEARCH(k, b, n, s, c) _win_lsearch(k, b, n, s, c)
+ #define STRUCT_STAT64 struct _stati64
 #endif
 
 /* search.h */

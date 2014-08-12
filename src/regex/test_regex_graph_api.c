@@ -25,7 +25,8 @@
 #include <regex.h>
 #include <time.h>
 #include "platform.h"
-#include "gnunet_regex_lib.h"
+#include "regex_internal_lib.h"
+#include "regex_test_lib.h"
 #include "regex_internal.h"
 
 #define KEEP_FILES 1
@@ -73,7 +74,7 @@ int
 main (int argc, char *argv[])
 {
   int error;
-  struct GNUNET_REGEX_Automaton *a;
+  struct REGEX_INTERNAL_Automaton *a;
   unsigned int i;
   const char *filename = "test_graph.dot";
 
@@ -97,58 +98,58 @@ main (int argc, char *argv[])
   for (i = 0; i < 12; i++)
   {
     /* Check NFA graph creation */
-    a = GNUNET_REGEX_construct_nfa (regex[i], strlen (regex[i]));
-    GNUNET_REGEX_automaton_save_graph (a, filename, GNUNET_REGEX_GRAPH_DEFAULT);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
+    REGEX_TEST_automaton_save_graph (a, filename, REGEX_TEST_GRAPH_DEFAULT);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
-    a = GNUNET_REGEX_construct_nfa (regex[i], strlen (regex[i]));
-    GNUNET_REGEX_automaton_save_graph (a, filename,
-                                       GNUNET_REGEX_GRAPH_DEFAULT |
-                                       GNUNET_REGEX_GRAPH_VERBOSE);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
+    REGEX_TEST_automaton_save_graph (a, filename,
+                                       REGEX_TEST_GRAPH_DEFAULT |
+                                       REGEX_TEST_GRAPH_VERBOSE);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
-    a = GNUNET_REGEX_construct_nfa (regex[i], strlen (regex[i]));
-    GNUNET_REGEX_automaton_save_graph (a, filename,
-                                       GNUNET_REGEX_GRAPH_DEFAULT |
-                                       GNUNET_REGEX_GRAPH_COLORING);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
+    REGEX_TEST_automaton_save_graph (a, filename,
+                                       REGEX_TEST_GRAPH_DEFAULT |
+                                       REGEX_TEST_GRAPH_COLORING);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
-    a = GNUNET_REGEX_construct_nfa (regex[i], strlen (regex[i]));
-    GNUNET_REGEX_automaton_save_graph (a, filename,
-                                       GNUNET_REGEX_GRAPH_DEFAULT |
-                                       GNUNET_REGEX_GRAPH_VERBOSE |
-                                       GNUNET_REGEX_GRAPH_COLORING);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
+    REGEX_TEST_automaton_save_graph (a, filename,
+                                       REGEX_TEST_GRAPH_DEFAULT |
+                                       REGEX_TEST_GRAPH_VERBOSE |
+                                       REGEX_TEST_GRAPH_COLORING);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
 
     /* Check DFA graph creation */
-    a = GNUNET_REGEX_construct_dfa (regex[i], strlen (regex[i]), 0);
-    GNUNET_REGEX_automaton_save_graph (a, filename, GNUNET_REGEX_GRAPH_DEFAULT);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 0);
+    REGEX_TEST_automaton_save_graph (a, filename, REGEX_TEST_GRAPH_DEFAULT);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
-    a = GNUNET_REGEX_construct_dfa (regex[i], strlen (regex[i]), 0);
-    GNUNET_REGEX_automaton_save_graph (a, filename,
-                                       GNUNET_REGEX_GRAPH_DEFAULT |
-                                       GNUNET_REGEX_GRAPH_VERBOSE);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 0);
+    REGEX_TEST_automaton_save_graph (a, filename,
+                                       REGEX_TEST_GRAPH_DEFAULT |
+                                       REGEX_TEST_GRAPH_VERBOSE);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
-    a = GNUNET_REGEX_construct_dfa (regex[i], strlen (regex[i]), 0);
-    GNUNET_REGEX_automaton_save_graph (a, filename,
-                                       GNUNET_REGEX_GRAPH_DEFAULT |
-                                       GNUNET_REGEX_GRAPH_COLORING);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 0);
+    REGEX_TEST_automaton_save_graph (a, filename,
+                                       REGEX_TEST_GRAPH_DEFAULT |
+                                       REGEX_TEST_GRAPH_COLORING);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
 
-    a = GNUNET_REGEX_construct_dfa (regex[i], strlen (regex[i]), 4);
-    GNUNET_REGEX_automaton_save_graph (a, filename, GNUNET_REGEX_GRAPH_DEFAULT);
-    GNUNET_REGEX_automaton_destroy (a);
+    a = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 4);
+    REGEX_TEST_automaton_save_graph (a, filename, REGEX_TEST_GRAPH_DEFAULT);
+    REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
   }

@@ -24,9 +24,7 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_disk_lib.h"
-#include "gnunet_scheduler_lib.h"
+#include "gnunet_util_lib.h"
 
 #define TESTSTRING "Hello World\0"
 
@@ -86,7 +84,6 @@ testOpenClose ()
 {
   struct GNUNET_DISK_FileHandle *fh;
   uint64_t size;
-  long avail;
 
   fh = GNUNET_DISK_file_open (".testfile",
                               GNUNET_DISK_OPEN_READWRITE |
@@ -100,27 +97,6 @@ testOpenClose ()
                 GNUNET_DISK_file_size (".testfile", &size, GNUNET_NO, GNUNET_YES));
   if (size != 5)
     return 1;
-  GNUNET_break (0 == UNLINK (".testfile"));
-
-  /* test that avail goes down as we fill the disk... */
-  GNUNET_log_skip (1, GNUNET_NO);
-  avail = GNUNET_DISK_get_blocks_available (".testfile");
-  GNUNET_log_skip (0, GNUNET_NO);
-  fh = GNUNET_DISK_file_open (".testfile",
-                              GNUNET_DISK_OPEN_READWRITE |
-                              GNUNET_DISK_OPEN_CREATE,
-                              GNUNET_DISK_PERM_USER_WRITE |
-                              GNUNET_DISK_PERM_USER_READ);
-  GNUNET_assert (GNUNET_NO == GNUNET_DISK_handle_invalid (fh));
-  while ((avail == GNUNET_DISK_get_blocks_available (".testfile")) &&
-         (avail != -1))
-    if (16 != GNUNET_DISK_file_write (fh, "HelloWorld123456", 16))
-    {
-      GNUNET_DISK_file_close (fh);
-      GNUNET_break (0 == UNLINK (".testfile"));
-      return 1;
-    }
-  GNUNET_DISK_file_close (fh);
   GNUNET_break (0 == UNLINK (".testfile"));
 
   return 0;
@@ -193,27 +169,6 @@ testDirIter ()
 
 
 static int
-testGetHome ()
-{
-  struct GNUNET_CONFIGURATION_Handle *cfg;
-  char *fn;
-  int ret;
-
-  cfg = GNUNET_CONFIGURATION_create ();
-  GNUNET_assert (cfg != NULL);
-  GNUNET_CONFIGURATION_set_value_string (cfg, "service", "HOME",
-                                         "/tmp/test-gnunet-disk-a/b/c");
-  fn = GNUNET_DISK_get_home_filename (cfg, "service", "d", "e", NULL);
-  GNUNET_assert (fn != NULL);
-  GNUNET_CONFIGURATION_destroy (cfg);
-  ret = strcmp ("/tmp/test-gnunet-disk-a/b/c/d/e", fn);
-  GNUNET_free (fn);
-  GNUNET_break (GNUNET_OK ==
-                GNUNET_DISK_directory_remove ("/tmp/test-gnunet-disk-a"));
-  return ret;
-}
-
-static int
 testCanonicalize ()
 {
   char *fn = GNUNET_strdup ("ab?><|cd*ef:/g\"");
@@ -231,9 +186,11 @@ testCanonicalize ()
 static int
 testChangeOwner ()
 {
+#ifndef WINDOWS
   GNUNET_log_skip (1, GNUNET_NO);
   if (GNUNET_OK == GNUNET_DISK_file_change_owner ("/dev/null", "unknownuser"))
     return 1;
+#endif
   return 0;
 }
 
@@ -270,7 +227,6 @@ main (int argc, char *argv[])
   failureCount += testOpenClose ();
   failureCount += testDirScan ();
   failureCount += testDirIter ();
-  failureCount += testGetHome ();
   failureCount += testCanonicalize ();
   failureCount += testChangeOwner ();
   failureCount += testDirMani ();

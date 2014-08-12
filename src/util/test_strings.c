@@ -22,8 +22,7 @@
  * @brief testcase for strings.c
  */
 #include "platform.h"
-#include "gnunet_common.h"
-#include "gnunet_strings_lib.h"
+#include "gnunet_util_lib.h"
 
 
 #define WANT(a,b) if (0 != strcmp(a,b)) { fprintf(stderr, "Got `%s', wanted `%s'\n", b, a); GNUNET_free(b); GNUNET_break(0); return 1;} else { GNUNET_free (b); }
@@ -39,6 +38,8 @@ main (int argc, char *argv[])
   const char *bc;
   struct GNUNET_TIME_Absolute at;
   struct GNUNET_TIME_Absolute atx;
+  struct GNUNET_TIME_Relative rt;
+  struct GNUNET_TIME_Relative rtx;
   const char *hdir;
 
   GNUNET_log_setup ("test_strings", "ERROR", NULL);
@@ -85,7 +86,7 @@ main (int argc, char *argv[])
   WANT ("btx", b);
   if (0 != GNUNET_STRINGS_buffer_tokenize (buf, 2, 2, &r, &b))
     return 1;
-  at.abs_value = 5000;
+  at.abs_value_us = 5000000;
   bc = GNUNET_STRINGS_absolute_time_to_string (at);
   /* bc should be something like "Wed Dec 31 17:00:05 1969"
    * where the details of the day and hour depend on the timezone;
@@ -98,17 +99,47 @@ main (int argc, char *argv[])
   }
   b = GNUNET_STRINGS_to_utf8 ("TEST", 4, "ASCII");
   WANT ("TEST", b);
-  
+
   at = GNUNET_TIME_UNIT_FOREVER_ABS;
   bc = GNUNET_STRINGS_absolute_time_to_string (at);
   GNUNET_assert (GNUNET_OK ==
 		 GNUNET_STRINGS_fancy_time_to_absolute (bc, &atx));
-  GNUNET_assert (atx.abs_value == at.abs_value);
+  GNUNET_assert (atx.abs_value_us == at.abs_value_us);
+
+  at.abs_value_us = 50000000000;
+  bc = GNUNET_STRINGS_absolute_time_to_string (at);
+
+  GNUNET_assert (GNUNET_OK ==
+                 GNUNET_STRINGS_fancy_time_to_absolute (bc, &atx));
+
+  if (atx.abs_value_us != at.abs_value_us)
+  {
+#ifdef WINDOWS
+    DWORD tzv;
+    TIME_ZONE_INFORMATION tzi;
+    tzv = GetTimeZoneInformation (&tzi);
+    if (TIME_ZONE_ID_INVALID != tzv)
+    {
+      atx.abs_value_us -= 1000LL * 1000LL * tzi.Bias * 60LL;
+    }
+    if (atx.abs_value_us == at.abs_value_us)
+      fprintf (stderr,
+               "WARNING:  GNUNET_STRINGS_fancy_time_to_absolute() miscalculates timezone!\n");
+#endif
+    GNUNET_assert (0);
+  }
 
   GNUNET_log_skip (2, GNUNET_NO);
   b = GNUNET_STRINGS_to_utf8 ("TEST", 4, "unknown");
   GNUNET_log_skip (0, GNUNET_YES);
   WANT ("TEST", b);
+
+  GNUNET_assert (GNUNET_OK ==
+      GNUNET_STRINGS_fancy_time_to_relative ("15m", &rt));
+  GNUNET_assert (GNUNET_OK ==
+      GNUNET_STRINGS_fancy_time_to_relative ("15 m", &rtx));
+  GNUNET_assert (rt.rel_value_us == rtx.rel_value_us);
+
   return 0;
 }
 

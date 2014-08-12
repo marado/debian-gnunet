@@ -72,6 +72,7 @@ GAS_handle_reset_backoff (void *cls,
  * @param plugin_addr binary address for the plugin to use
  * @param plugin_addr_len number of bytes in plugin_addr
  * @param session_id session ID to use
+ * @param local_address_info the local address for the address
  * @param atsi performance data for the address
  * @param atsi_count number of performance records in 'ats'
  * @param bandwidth_out assigned outbound bandwidth
@@ -79,16 +80,16 @@ GAS_handle_reset_backoff (void *cls,
  */
 void
 GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity
-                                            *peer, const char *plugin_name,
-                                            const void *plugin_addr,
-                                            size_t plugin_addr_len,
-                                            uint32_t session_id,
-                                            const struct GNUNET_ATS_Information
-                                            *atsi, uint32_t atsi_count,
-                                            struct GNUNET_BANDWIDTH_Value32NBO
-                                            bandwidth_out,
-                                            struct GNUNET_BANDWIDTH_Value32NBO
-                                            bandwidth_in);
+                                *peer,
+                                const char *plugin_name,
+                                const void *plugin_addr,
+                                size_t plugin_addr_len,
+                                uint32_t local_address_info,
+                                uint32_t session_id,
+                                const struct GNUNET_ATS_Information *atsi,
+                                uint32_t atsi_count,
+                                struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
+                                struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in);
 
 
 /**

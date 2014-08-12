@@ -105,13 +105,18 @@ struct Neighbour
    */
   GNUNET_SCHEDULER_TaskIdentifier retry_plaintext_task;
 
+  /**
+   * #GNUNET_YES if this peer currently has excess bandwidth.
+   */
+  int has_excess_bandwidth;
+
 };
 
 
 /**
  * Map of peer identities to 'struct Neighbour'.
  */
-static struct GNUNET_CONTAINER_MultiHashMap *neighbours;
+static struct GNUNET_CONTAINER_MultiPeerMap *neighbours;
 
 /**
  * Transport service.
@@ -131,7 +136,7 @@ find_neighbour (const struct GNUNET_PeerIdentity *peer)
 {
   if (NULL == neighbours)
     return NULL;
-  return GNUNET_CONTAINER_multihashmap_get (neighbours, &peer->hashPubKey);
+  return GNUNET_CONTAINER_multipeermap_get (neighbours, peer);
 }
 
 
@@ -162,7 +167,6 @@ free_neighbour (struct Neighbour *n)
                             gettext_noop
                             ("# sessions terminated by transport disconnect"),
                             1, GNUNET_NO);
-  GSC_SESSIONS_end (&n->peer);
   if (NULL != n->kxinfo)
   {
     GSC_KX_stop (n->kxinfo);
@@ -174,11 +178,11 @@ free_neighbour (struct Neighbour *n)
     n->retry_plaintext_task = GNUNET_SCHEDULER_NO_TASK;
   }
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multihashmap_remove (neighbours,
-                                                       &n->peer.hashPubKey, n));
+                 GNUNET_CONTAINER_multipeermap_remove (neighbours,
+                                                       &n->peer, n));
   GNUNET_STATISTICS_set (GSC_stats,
                          gettext_noop ("# neighbour entries allocated"),
-                         GNUNET_CONTAINER_multihashmap_size (neighbours),
+                         GNUNET_CONTAINER_multipeermap_size (neighbours),
                          GNUNET_NO);
   GNUNET_free (n);
 }
@@ -214,13 +218,13 @@ transmit_ready (void *cls, size_t size, void *buf)
 
   n->th = NULL;
   m = n->message_head;
-  if (m == NULL)
+  if (NULL == m)
   {
     GNUNET_break (0);
     return 0;
   }
   GNUNET_CONTAINER_DLL_remove (n->message_head, n->message_tail, m);
-  if (buf == NULL)
+  if (NULL == buf)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Transmission of message of type %u and size %u failed\n",
@@ -241,6 +245,7 @@ transmit_ready (void *cls, size_t size, void *buf)
               ntohs (((struct GNUNET_MessageHeader *) &m[1])->type),
               (unsigned int) ret, GNUNET_i2s (&n->peer));
   GNUNET_free (m);
+  n->has_excess_bandwidth = GNUNET_NO;
   process_queue (n);
   GNUNET_STATISTICS_update (GSC_stats,
                             gettext_noop
@@ -272,12 +277,11 @@ process_queue (struct Neighbour *n)
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Asking transport for transmission of %u bytes to `%4s' in next %llu ms\n",
+              "Asking transport for transmission of %u bytes to `%4s' in next %s\n",
               (unsigned int) m->size, GNUNET_i2s (&n->peer),
-              (unsigned long long)
-              GNUNET_TIME_absolute_get_remaining (m->deadline).rel_value);
+              GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (m->deadline), GNUNET_NO));
   n->th =
-      GNUNET_TRANSPORT_notify_transmit_ready (transport, &n->peer, m->size, 0,
+      GNUNET_TRANSPORT_notify_transmit_ready (transport, &n->peer, m->size,
                                               GNUNET_TIME_absolute_get_remaining
                                               (m->deadline), &transmit_ready,
                                               n);
@@ -299,14 +303,10 @@ process_queue (struct Neighbour *n)
  *
  * @param cls closure
  * @param peer the peer that connected
- * @param atsi performance data
- * @param atsi_count number of entries in ats (excluding 0-termination)
  */
 static void
 handle_transport_notify_connect (void *cls,
-                                 const struct GNUNET_PeerIdentity *peer,
-                                 const struct GNUNET_ATS_Information *atsi,
-                                 uint32_t atsi_count)
+                                 const struct GNUNET_PeerIdentity *peer)
 {
   struct Neighbour *n;
 
@@ -322,17 +322,18 @@ handle_transport_notify_connect (void *cls,
     GNUNET_break (0);
     return;
   }
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received connection from `%4s'.\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Received connection from `%4s'.\n",
               GNUNET_i2s (peer));
-  n = GNUNET_malloc (sizeof (struct Neighbour));
+  n = GNUNET_new (struct Neighbour);
   n->peer = *peer;
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multihashmap_put (neighbours,
-                                                    &n->peer.hashPubKey, n,
+                 GNUNET_CONTAINER_multipeermap_put (neighbours,
+                                                    &n->peer, n,
                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   GNUNET_STATISTICS_set (GSC_stats,
                          gettext_noop ("# neighbour entries allocated"),
-                         GNUNET_CONTAINER_multihashmap_size (neighbours),
+                         GNUNET_CONTAINER_multipeermap_size (neighbours),
                          GNUNET_NO);
   n->kxinfo = GSC_KX_start (peer);
 }
@@ -370,14 +371,10 @@ handle_transport_notify_disconnect (void *cls,
  * @param cls closure
  * @param peer (claimed) identity of the other peer
  * @param message the message
- * @param atsi performance data
- * @param atsi_count number of entries in ats (excluding 0-termination)
  */
 static void
 handle_transport_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                          const struct GNUNET_MessageHeader *message,
-                          const struct GNUNET_ATS_Information *atsi,
-                          uint32_t atsi_count)
+                          const struct GNUNET_MessageHeader *message)
 {
   struct Neighbour *n;
   uint16_t type;
@@ -400,8 +397,8 @@ handle_transport_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
   type = ntohs (message->type);
   switch (type)
   {
-  case GNUNET_MESSAGE_TYPE_CORE_SET_KEY:
-    GSC_KX_handle_set_key (n->kxinfo, message);
+  case GNUNET_MESSAGE_TYPE_CORE_EPHEMERAL_KEY:
+    GSC_KX_handle_ephemeral_key (n->kxinfo, message);
     break;
   case GNUNET_MESSAGE_TYPE_CORE_PING:
     GSC_KX_handle_ping (n->kxinfo, message);
@@ -410,13 +407,13 @@ handle_transport_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
     GSC_KX_handle_pong (n->kxinfo, message);
     break;
   case GNUNET_MESSAGE_TYPE_CORE_ENCRYPTED_MESSAGE:
-    GSC_KX_handle_encrypted_message (n->kxinfo, message, atsi, atsi_count);
+    GSC_KX_handle_encrypted_message (n->kxinfo, message);
     break;
   case GNUNET_MESSAGE_TYPE_DUMMY:
     /*  Dummy messages for testing / benchmarking, just discard */
     break;
   default:
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 _
                 ("Unsupported message of type %u (%u bytes) received from peer `%s'\n"),
                 (unsigned int) type, (unsigned int) ntohs (message->size),
@@ -459,20 +456,69 @@ GSC_NEIGHBOURS_transmit (const struct GNUNET_PeerIdentity *target,
 
 
 /**
+ * One of our neighbours has excess bandwidth,
+ * remember this.
+ *
+ * @param cls NULL
+ * @param pid identity of the peer with excess bandwidth
+ */
+static void
+handle_transport_notify_excess_bw (void *cls,
+                                   const struct GNUNET_PeerIdentity *pid)
+{
+  struct Neighbour *n;
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Peer %s has excess bandwidth available\n",
+              GNUNET_i2s (pid));
+  n = find_neighbour (pid);
+  if (NULL == n)
+  {
+    GNUNET_break (0);
+    return;
+  }
+  n->has_excess_bandwidth = GNUNET_YES;
+  GSC_SESSIONS_solicit (pid);
+}
+
+
+/**
+ * Check if the given neighbour has excess bandwidth available.
+ *
+ * @param target neighbour to check
+ * @return #GNUNET_YES if excess bandwidth is available, #GNUNET_NO if not
+ */
+int
+GSC_NEIGHBOURS_check_excess_bandwidth (const struct GNUNET_PeerIdentity *target)
+{
+  struct Neighbour *n;
+
+  n = find_neighbour (target);
+  if (NULL == n)
+  {
+    GNUNET_break (0);
+    return GNUNET_SYSERR;
+  }
+  return n->has_excess_bandwidth;
+}
+
+
+/**
  * Initialize neighbours subsystem.
  */
 int
 GSC_NEIGHBOURS_init ()
 {
-  neighbours = GNUNET_CONTAINER_multihashmap_create (128, GNUNET_NO);
+  neighbours = GNUNET_CONTAINER_multipeermap_create (128, GNUNET_NO);
   transport =
-      GNUNET_TRANSPORT_connect (GSC_cfg, &GSC_my_identity, NULL,
-                                &handle_transport_receive,
-                                &handle_transport_notify_connect,
-                                &handle_transport_notify_disconnect);
+      GNUNET_TRANSPORT_connect2 (GSC_cfg, &GSC_my_identity, NULL,
+                                 &handle_transport_receive,
+                                 &handle_transport_notify_connect,
+                                 &handle_transport_notify_disconnect,
+                                 &handle_transport_notify_excess_bw);
   if (NULL == transport)
   {
-    GNUNET_CONTAINER_multihashmap_destroy (neighbours);
+    GNUNET_CONTAINER_multipeermap_destroy (neighbours);
     neighbours = NULL;
     return GNUNET_SYSERR;
   }
@@ -485,11 +531,13 @@ GSC_NEIGHBOURS_init ()
  *
  * @param cls unused
  * @param key peer identity
- * @param value the 'struct Neighbour' to free
- * @return GNUNET_OK (continue to iterate)
+ * @param value the `struct Neighbour` to free
+ * @return #GNUNET_OK (continue to iterate)
  */
 static int
-free_neighbour_helper (void *cls, const struct GNUNET_HashCode * key, void *value)
+free_neighbour_helper (void *cls,
+		       const struct GNUNET_PeerIdentity * key,
+		       void *value)
 {
   struct Neighbour *n = value;
 
@@ -513,9 +561,9 @@ GSC_NEIGHBOURS_done ()
   }
   if (NULL != neighbours)
   {
-    GNUNET_CONTAINER_multihashmap_iterate (neighbours, &free_neighbour_helper,
+    GNUNET_CONTAINER_multipeermap_iterate (neighbours, &free_neighbour_helper,
 					   NULL);
-    GNUNET_CONTAINER_multihashmap_destroy (neighbours);
+    GNUNET_CONTAINER_multipeermap_destroy (neighbours);
     neighbours = NULL;
   }
 }

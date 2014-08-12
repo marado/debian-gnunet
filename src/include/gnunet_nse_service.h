@@ -4,7 +4,7 @@
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -26,8 +26,9 @@
  * @brief API to retrieve the current network size estimate,
  *        also to register for notifications whenever a new
  *        network size estimate is calculated.
- *
  * @author Nathan Evans
+ * @defgroup nse network size estimation service
+ * @{
  */
 
 #ifdef __cplusplus
@@ -38,9 +39,7 @@ extern "C"
 #endif
 #endif
 
-#include "gnunet_common.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_scheduler_lib.h"
+#include "gnunet_util_lib.h"
 
 /**
  * Version of the network size estimation API.
@@ -75,14 +74,14 @@ typedef void (*GNUNET_NSE_Callback) (void *cls,
  */
 #define GNUNET_NSE_log_estimate_to_n(loge) pow(2.0, (loge))
 
+
 /**
  * Connect to the network size estimation service.
  *
  * @param cfg the configuration to use
  * @param func funtion to call with network size estimate
- * @param func_cls closure to pass for network size estimate callback
- *
- * @return handle to use
+ * @param func_cls closure to pass to @a func
+ * @return handle to use in #GNUNET_NSE_disconnect to stop NSE from invoking the callbacks
  */
 struct GNUNET_NSE_Handle *
 GNUNET_NSE_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
@@ -93,7 +92,6 @@ GNUNET_NSE_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * Disconnect from network size estimation service
  *
  * @param h handle to destroy
- *
  */
 void
 GNUNET_NSE_disconnect (struct GNUNET_NSE_Handle *h);
@@ -105,5 +103,7 @@ GNUNET_NSE_disconnect (struct GNUNET_NSE_Handle *h);
 #ifdef __cplusplus
 }
 #endif
+
+/** @} */ /* end of group nse */
 
 #endif /* GNUNET_NSE_SERVICE_H_ */

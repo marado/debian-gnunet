@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -70,6 +70,17 @@ GNUNET_SIGNAL_handler_install (int signal, GNUNET_SIGNAL_Handler handler);
  */
 void
 GNUNET_SIGNAL_handler_uninstall (struct GNUNET_SIGNAL_Context *ctx);
+
+
+/**
+ * Raise the given signal by calling the installed signal handlers.  This will
+ * not use the @em raise() system call but only calls the handlers registered
+ * through GNUNET_SIGNAL_handler_install().
+ *
+ * @param sig the signal to raise
+ */
+void
+GNUNET_SIGNAL_raise (const int sig);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

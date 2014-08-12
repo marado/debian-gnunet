@@ -329,6 +329,7 @@ score_content (struct MigrationReadyPeer *peer,
   unsigned int i;
   struct GSF_PeerPerformanceData *ppd;
   struct GNUNET_PeerIdentity id;
+  struct GNUNET_HashCode hc;
   uint32_t dist;
 
   ppd = GSF_get_peer_performance_data_ (peer->peer);
@@ -337,7 +338,8 @@ score_content (struct MigrationReadyPeer *peer,
       return -1;
   GNUNET_assert (0 != ppd->pid);
   GNUNET_PEER_resolve (ppd->pid, &id);
-  dist = GNUNET_CRYPTO_hash_distance_u32 (&block->query, &id.hashPubKey);
+  GNUNET_CRYPTO_hash (&id, sizeof (struct GNUNET_PeerIdentity), &hc);
+  dist = GNUNET_CRYPTO_hash_distance_u32 (&block->query, &hc);
   /* closer distance, higher score: */
   return UINT32_MAX - dist;
 }
@@ -482,8 +484,8 @@ process_migration_content (void *cls, const struct GNUNET_HashCode * key, size_t
     consider_gathering ();
     return;
   }
-  if (GNUNET_TIME_absolute_get_remaining (expiration).rel_value <
-      MIN_MIGRATION_CONTENT_LIFETIME.rel_value)
+  if (GNUNET_TIME_absolute_get_remaining (expiration).rel_value_us <
+      MIN_MIGRATION_CONTENT_LIFETIME.rel_value_us)
   {
     /* content will expire soon, don't bother */
     consider_gathering ();
@@ -567,7 +569,7 @@ GSF_push_start_ (struct GSF_ConnectedPeer *peer)
 
   if (GNUNET_YES != enabled)
     return;
-  mrp = GNUNET_malloc (sizeof (struct MigrationReadyPeer));
+  mrp = GNUNET_new (struct MigrationReadyPeer);
   mrp->peer = peer;
   find_content (mrp);
   GNUNET_CONTAINER_DLL_insert (peer_head, peer_tail, mrp);

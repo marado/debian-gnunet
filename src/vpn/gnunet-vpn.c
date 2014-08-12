@@ -26,6 +26,7 @@
 
 #include "platform.h"
 #include "gnunet_util_lib.h"
+#include "gnunet_tun_lib.h"
 #include "gnunet_vpn_service.h"
 
 
@@ -80,11 +81,6 @@ static int udp;
 static int verbosity;
 
 /**
- * Option '-a':  Notify only once the tunnel is connected?
- */
-static int nac;
-
-/**
  * Global return value.
  */
 static int ret;
@@ -127,7 +123,7 @@ do_disconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *                will match 'result_af' from the request
  * @param address IP address (struct in_addr or struct in_addr6, depending on 'af')
  *                that the VPN allocated for the redirection;
- *                traffic to this IP will now be redirected to the 
+ *                traffic to this IP will now be redirected to the
  *                specified target peer; NULL on error
  */
 static void
@@ -172,7 +168,7 @@ run (void *cls, char *const *args, const char *cfgfile,
 {
   int dst_af;
   int req_af;
-  struct GNUNET_PeerIdentity peer; 
+  struct GNUNET_PeerIdentity peer;
   struct GNUNET_HashCode sd;
   const void *addr;
   struct in_addr v4;
@@ -199,7 +195,7 @@ run (void *cls, char *const *args, const char *cfgfile,
   }
   if (ipv6)
     req_af = AF_INET6;
-  
+
   if (NULL == target_ip)
   {
     if (NULL == service_name)
@@ -231,22 +227,22 @@ run (void *cls, char *const *args, const char *cfgfile,
     if (udp)
       protocol = IPPROTO_UDP;
     if (GNUNET_OK !=
-	GNUNET_CRYPTO_hash_from_string (peer_id,
-					&peer.hashPubKey))
+	GNUNET_CRYPTO_eddsa_public_key_from_string (peer_id,
+                                                    strlen (peer_id),
+                                                    &peer.public_key))
     {
-      FPRINTF (stderr, _("`%s' is not a valid peer identifier.\n"),
+      FPRINTF (stderr,
+               _("`%s' is not a valid peer identifier.\n"),
                peer_id);
       goto error;
-    }    
-    GNUNET_CRYPTO_hash (service_name,
-			strlen (service_name),
-			&sd);
+    }
+    GNUNET_TUN_service_name_to_hash (service_name,
+                                     &sd);
     request = GNUNET_VPN_redirect_to_peer (handle,
 					   req_af,
 					   protocol,
 					   &peer,
 					   &sd,
-					   nac,
 					   etime,
 					   &allocation_cb, NULL);
   }
@@ -270,12 +266,11 @@ run (void *cls, char *const *args, const char *cfgfile,
     {
       dst_af = AF_INET6;
       addr = &v6;
-    }    
+    }
     request = GNUNET_VPN_redirect_to_ip (handle,
 					 req_af,
 					 dst_af,
 					 addr,
-					 nac,
 					 etime,
 					 &allocation_cb, NULL);
   }
@@ -296,9 +291,6 @@ main (int argc, char *const *argv)
      0, &GNUNET_GETOPT_set_one, &ipv4},
     {'6', "ipv6", NULL,
      gettext_noop ("request that result should be an IPv6 address"),
-     0, &GNUNET_GETOPT_set_one, &ipv6},
-    {'a', "after-connect", NULL,
-     gettext_noop ("print IP address only after mesh tunnel has been created"),
      0, &GNUNET_GETOPT_set_one, &ipv6},
     {'d', "duration", "TIME",
      gettext_noop ("how long should the mapping be valid for new tunnels?"),

@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -24,12 +24,9 @@
  *
  * @author Matthias Wachs
  */
-
 #include "platform.h"
-#include "gnunet_common.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_hello_lib.h"
-#include "gnunet_program_lib.h"
-#include "gnunet_container_lib.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_testing_lib.h"
 

@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     (C) 2011-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -22,6 +22,7 @@
  * @file namestore/namestore.h
  * @brief common internal definitions for namestore service
  * @author Matthias Wachs
+ * @author Christian Grothoff
  */
 #ifndef NAMESTORE_H
 #define NAMESTORE_H
@@ -31,102 +32,7 @@
  */
 #define MAX_NAME_LEN 256
 
-/**
- * Convert a UTF-8 string to UTF-8 lowercase
- * @param src source string
- * @return converted result
- */
-char *
-GNUNET_NAMESTORE_normalize_string (const char *src);
-
-/**
- * Convert a short hash to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
- *
- * @param hc the short hash code
- * @return string form; will be overwritten by next call to GNUNET_h2s.
- */
-const char *
-GNUNET_short_h2s (const struct GNUNET_CRYPTO_ShortHashCode * hc);
-
-
-/**
- * Sign name and records
- *
- * @param key the private key
- * @param expire block expiration
- * @param name the name
- * @param rd record data
- * @param rd_count number of records
- *
- * @return the signature
- */
-struct GNUNET_CRYPTO_RsaSignature *
-GNUNET_NAMESTORE_create_signature (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
-    struct GNUNET_TIME_Absolute expire,
-    const char *name,
-    const struct GNUNET_NAMESTORE_RecordData *rd,
-    unsigned int rd_count);
-
-
-/**
- * Compares if two records are equal
- *
- * @param a Record a
- * @param b Record b
- *
- * @return GNUNET_YES or GNUNET_NO
- */
-int
-GNUNET_NAMESTORE_records_cmp (const struct GNUNET_NAMESTORE_RecordData *a,
-                              const struct GNUNET_NAMESTORE_RecordData *b);
-
-
 GNUNET_NETWORK_STRUCT_BEGIN
-/**
- * A GNS record serialized for network transmission.
- *
- * Layout is [struct GNUNET_NAMESTORE_NetworkRecord][char[data_size] data]
- */
-struct GNUNET_NAMESTORE_NetworkRecord
-{
-  /**
-   * Expiration time for the DNS record.
-   */
-  struct GNUNET_TIME_AbsoluteNBO expiration;
-
-  /**
-   * Number of bytes in 'data'.
-   */
-  uint32_t data_size;
-
-  /**
-   * Type of the GNS/DNS record.
-   */
-  uint32_t record_type;
-
-  /**
-   * Flags for the record.
-   */
-  uint32_t flags;
-};
-
-
-
-/**
- * Connect to namestore service.  FIXME: UNNECESSARY.
- */
-struct StartMessage
-{
-
-  /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_START
-   */
-  struct GNUNET_MessageHeader header;
-
-};
-
 
 /**
  * Generic namestore message with op id
@@ -142,43 +48,17 @@ struct GNUNET_NAMESTORE_Header
   /**
    * Request ID in NBO
    */
-  uint32_t r_id;
+  uint32_t r_id GNUNET_PACKED;
 };
 
 
 /**
- * Lookup a name in the namestore
+ * Store a record to the namestore (as authority).
  */
-struct LookupNameMessage
-{
-  struct GNUNET_NAMESTORE_Header gns_header;
-
-  /**
-   * The zone 
-   */
-  struct GNUNET_CRYPTO_ShortHashCode zone;
-
-  /**
-   * Requested record type 
-   */
-  uint32_t record_type;
-
-  /**
-   * Length of the name
-   */
-  uint32_t name_len;
-
-  /* 0-terminated name here */
-};
-
-
-/**
- * Lookup response
- */
-struct LookupNameResponseMessage
+struct RecordStoreMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_LOOKUP_NAME_RESPONSE
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_STORE
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 
@@ -187,267 +67,123 @@ struct LookupNameResponseMessage
    */
   struct GNUNET_TIME_AbsoluteNBO expire;
 
-
   /**
    * Name length
    */
-  uint16_t name_len;
+  uint16_t name_len GNUNET_PACKED;
 
   /**
-   * Bytes of serialized record data
+   * Length of serialized record data
    */
-  uint16_t rd_len;
+  uint16_t rd_len GNUNET_PACKED;
 
   /**
    * Number of records contained
    */
-  uint16_t rd_count;
-
-  /**
-   * Is the signature valid
-   * GNUNET_YES or GNUNET_NO
-   */
-  int16_t contains_sig;
-
-  /**
-   * All zeros if 'contains_sig' is GNUNET_NO.
-   */
-  struct GNUNET_CRYPTO_RsaSignature signature;
-
-  /**
-   * The public key for the name
-   */
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded public_key;
-
-  /* 0-terminated name and serialized record data */
-  /* rd_len bytes serialized record data */
-};
-
-
-/**
- * Put a record to the namestore
- */
-struct RecordPutMessage
-{
-  /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_LOOKUP_RECORD_PUT
-   */
-  struct GNUNET_NAMESTORE_Header gns_header;
-
-  /**
-   * Expiration time
-   */
-  struct GNUNET_TIME_AbsoluteNBO expire;
-
-  /**
-   * Name length
-   */
-  uint16_t name_len;
-
-  /**
-   * Length of serialized record data
-   */
-  uint16_t rd_len;
-
-  /**
-   * Number of records contained 
-   */
-  uint16_t rd_count;
+  uint16_t rd_count GNUNET_PACKED;
 
   /**
    * always zero (for alignment)
    */
-  uint16_t reserved;
+  uint16_t reserved GNUNET_PACKED;
 
   /**
-   * The signature
+   * The private key of the authority.
    */
-  struct GNUNET_CRYPTO_RsaSignature signature;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey private_key;
 
-  /**
-   * The public key
+  /* followed by:
+   * name with length name_len
+   * serialized record data with rd_count records
    */
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded public_key;
-
-  /* name (0-terminated) followed by "rd_count" serialized records */
-
 };
 
 
 /**
- * Put a record to the namestore response
+ * Response to a record storage request.
  */
-struct RecordPutResponseMessage
+struct RecordStoreResponseMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_PUT_RESPONSE
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_STORE_RESPONSE
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 
   /**
-   * result:
-   * GNUNET_SYSERR on failure
-   * GNUNET_OK on success
+   * #GNUNET_SYSERR on failure, #GNUNET_OK on success
    */
-  int32_t op_result;
+  int32_t op_result GNUNET_PACKED;
 };
 
 
 /**
- * Create a record and put it to the namestore
- * Memory layout:
+ * Lookup a label
  */
-struct RecordCreateMessage
+struct LabelLookupMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_CREATE
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_LOOKUP
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 
-  struct GNUNET_TIME_AbsoluteNBO expire;
+  /**
+   * Length of the name
+   */
+  uint32_t label_len GNUNET_PACKED;
+
+  /**
+   * The private key of the zone to look up in
+   */
+  struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
+
+  /* followed by:
+   * name with length name_len
+   */
+};
+
+
+/**
+ * Lookup a label
+ */
+struct LabelLookupResponseMessage
+{
+  /**
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_LOOKUP_RESPONSE
+   */
+  struct GNUNET_NAMESTORE_Header gns_header;
 
   /**
    * Name length
    */
-  uint16_t name_len;
+  uint16_t name_len GNUNET_PACKED;
 
   /**
    * Length of serialized record data
    */
-  uint16_t rd_len;
+  uint16_t rd_len GNUNET_PACKED;
 
   /**
-   * Record count 
+   * Number of records contained
    */
-  uint16_t rd_count;
+  uint16_t rd_count GNUNET_PACKED;
 
   /**
-   * private key length 
+   * Was the label found in the database??
+   * GNUNET_YES or GNUNET_NO
    */
-  uint16_t pkey_len;
+  uint16_t found GNUNET_PACKED;
+
+  /**
+   * The private key of the authority.
+   */
+  struct GNUNET_CRYPTO_EcdsaPrivateKey private_key;
 
   /* followed by:
-   * GNUNET_CRYPTO_RsaPrivateKeyBinaryEncoded private key with length pkey_len
    * name with length name_len
-   * serialized record data with length rd_len
-   * */
+   * serialized record data with rd_count records
+   */
 };
 
-
-/**
- * Create a record to the namestore response
- */
-struct RecordCreateResponseMessage
-{
-  /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_CREATE_RESPONSE
-   */
-  struct GNUNET_NAMESTORE_Header gns_header;
-
-  /**
-   *  name length: GNUNET_NO already exists, GNUNET_YES on success, GNUNET_SYSERR error
-   */
-  int32_t op_result;
-};
-
-
-/**
- * Remove a record from the namestore
- * Memory layout:
- */
-struct RecordRemoveMessage
-{
-  /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_REMOVE
-   */
-  struct GNUNET_NAMESTORE_Header gns_header;
-
-  /**
-   * Name length 
-   */
-  uint16_t name_len;
-
-  /**
-   * Length of serialized rd data 
-   */
-  uint16_t rd_len;
-
-  /**
-   * Number of records contained 
-   */
-  uint16_t rd_count;
-
-  /**
-   * Length of private key
-   */
-  uint16_t pkey_len;
-
-  /* followed by:
-   * GNUNET_CRYPTO_RsaPrivateKeyBinaryEncoded private key with length pkey_len
-   * name with length name_len
-   * serialized record data with length rd_len
-   * */
-};
-
-
-/**
- * Removal of the record succeeded.
- */
-#define RECORD_REMOVE_RESULT_SUCCESS 0
-
-/**
- * There are NO records for the given name.
- */
-#define RECORD_REMOVE_RESULT_NO_RECORDS 1
-
-/**
- * The specific record that was to be removed was
- * not found.
- */
-#define RECORD_REMOVE_RESULT_RECORD_NOT_FOUND 2
-
-/**
- * Internal error, failed to sign the remaining records.
- * (Note: not used?)
- */
-#define RECORD_REMOVE_RESULT_FAILED_TO_SIGN 3
-
-/**
- * Internal error, failed to store the updated record set
- */
-#define RECORD_REMOVE_RESULT_FAILED_TO_PUT_UPDATE 4
-
-/**
- * Internal error, failed to remove records from database
- */
-#define RECORD_REMOVE_RESULT_FAILED_TO_REMOVE 5
-
-/**
- * Internal error, failed to access database
- */
-#define RECORD_REMOVE_RESULT_FAILED_ACCESS_DATABASE 6
-
-/**
- * Internal error, failed to access database
- */
-#define RECORD_REMOVE_RESULT_FAILED_INTERNAL_ERROR 7
-
-
-/**
- * Remove a record from the namestore response
- */
-struct RecordRemoveResponseMessage
-{
-  /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_REMOVE_RESPONSE
-   */
-  struct GNUNET_NAMESTORE_Header gns_header;
-
-  /**
-   * Result code (see RECORD_REMOVE_RESULT_*).  In network byte order.
-   */
-  int32_t op_result;
-};
 
 
 /**
@@ -456,20 +192,21 @@ struct RecordRemoveResponseMessage
 struct ZoneToNameMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 
   /**
-   * The hash of public key of the zone to look up in 
+   * The private key of the zone to look up in
    */
-  struct GNUNET_CRYPTO_ShortHashCode zone;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
 
   /**
-   * The  hash of the public key of the target zone  
+   * The public key of the target zone
    */
-  struct GNUNET_CRYPTO_ShortHashCode value_zone;
+  struct GNUNET_CRYPTO_EcdsaPublicKey value_zone;
 };
+
 
 /**
  * Respone for zone to name lookup
@@ -477,45 +214,108 @@ struct ZoneToNameMessage
 struct ZoneToNameResponseMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME_RESPONSE
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME_RESPONSE
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 
   /**
-   * Record block expiration
-   */
-  struct GNUNET_TIME_AbsoluteNBO expire;
-
-  /**
    * Length of the name
    */
-  uint16_t name_len;
+  uint16_t name_len GNUNET_PACKED;
 
   /**
    * Length of serialized record data
    */
-  uint16_t rd_len;
+  uint16_t rd_len GNUNET_PACKED;
 
   /**
    * Number of records contained
    */
-  uint16_t rd_count;
-
-  /* result in NBO: GNUNET_OK on success, GNUNET_NO if there were no results, GNUNET_SYSERR on error */
-  int16_t res;
+  uint16_t rd_count GNUNET_PACKED;
 
   /**
-   * Signature
+   * result in NBO: #GNUNET_OK on success, #GNUNET_NO if there were no
+   * results, #GNUNET_SYSERR on error
    */
-  struct GNUNET_CRYPTO_RsaSignature signature;
+  int16_t res GNUNET_PACKED;
 
   /**
-   * Publik key
+   * The private key of the zone that contained the name.
    */
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded zone_key;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
+
+  /* followed by:
+   * name with length name_len
+   * serialized record data with rd_count records
+   */
 
 };
 
+
+/**
+ * Record is returned from the namestore (as authority).
+ */
+struct RecordResultMessage
+{
+  /**
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT
+   */
+  struct GNUNET_NAMESTORE_Header gns_header;
+
+  /**
+   * Name length
+   */
+  uint16_t name_len GNUNET_PACKED;
+
+  /**
+   * Length of serialized record data
+   */
+  uint16_t rd_len GNUNET_PACKED;
+
+  /**
+   * Number of records contained
+   */
+  uint16_t rd_count GNUNET_PACKED;
+
+  /**
+   * always zero (for alignment)
+   */
+  uint16_t reserved GNUNET_PACKED;
+
+  /**
+   * The private key of the authority.
+   */
+  struct GNUNET_CRYPTO_EcdsaPrivateKey private_key;
+
+  /* followed by:
+   * name with length name_len
+   * serialized record data with rd_count records
+   */
+};
+
+
+/**
+ * Start monitoring a zone.
+ */
+struct ZoneMonitorStartMessage
+{
+  /**
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_MONITOR_START
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * #GNUNET_YES to first iterate over all records,
+   * #GNUNET_NO to only monitor changes.o
+   */
+  uint32_t iterate_first GNUNET_PACKED;
+
+  /**
+   * Zone key.
+   */
+  struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
+
+};
 
 
 /**
@@ -524,24 +324,15 @@ struct ZoneToNameResponseMessage
 struct ZoneIterationStartMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_START
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_START
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 
   /**
-   * Zone hash
+   * Zone key.  All zeros for "all zones".
    */
-  struct GNUNET_CRYPTO_ShortHashCode zone;
+  struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
 
-  /**
-   * Which flags must be included
-   */
-  uint16_t must_have_flags;
-
-  /**
-   * Which flags must not be included
-   */
-  uint16_t must_not_have_flags;
 };
 
 
@@ -551,7 +342,7 @@ struct ZoneIterationStartMessage
 struct ZoneIterationNextMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_NEXT
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_NEXT
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 };
@@ -563,53 +354,12 @@ struct ZoneIterationNextMessage
 struct ZoneIterationStopMessage
 {
   /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_STOP
+   * Type will be #GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_STOP
    */
   struct GNUNET_NAMESTORE_Header gns_header;
 };
 
-/**
- * Next result of zone iteration for the given operation
- * // FIXME: use 'struct LookupResponseMessage' instead? (identical except
- * for having 'contains_sig' instead of 'reserved', but fully compatible otherwise).
- */
-struct ZoneIterationResponseMessage
-{
-  /**
-   * Type will be GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_RESPONSE
-   */
-  struct GNUNET_NAMESTORE_Header gns_header;
 
-  struct GNUNET_TIME_AbsoluteNBO expire;
-
-  uint16_t name_len;
-
-  /* Record data length */
-  uint16_t rd_len;
-
-  /**
-   * Number of records contained 
-   */
-  uint16_t rd_count;
-
-  /**
-   * always zero (for alignment)
-   */
-  uint16_t reserved;
-
-  /**
-   * All zeros if 'contains_sig' is GNUNET_NO.
-   */
-  struct GNUNET_CRYPTO_RsaSignature signature;
-
-  /**
-   * The public key
-   */
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded public_key;
-
- 
- 
-};
 GNUNET_NETWORK_STRUCT_END
 
 

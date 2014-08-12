@@ -29,7 +29,8 @@
  */
 #include "platform.h"
 #include "gnunet_util_lib.h"
-#include "gnunet_regex_lib.h"
+#include "regex_internal_lib.h"
+#include "regex_test_lib.h"
 #include "gnunet_dht_service.h"
 #include "gnunet_statistics_service.h"
 
@@ -56,12 +57,7 @@ static struct GNUNET_DHT_Handle *dht_handle;
 /**
  * Peer's regex announce handle.
  */
-static struct GNUNET_REGEX_announce_handle *announce_handle;
-
-/**
- * Hostkey generation context
- */
-static struct GNUNET_CRYPTO_RsaKeyGenerationContext *keygen;
+static struct REGEX_INTERNAL_Announcement *announce_handle;
 
 /**
  * Periodically reannounce regex.
@@ -69,19 +65,9 @@ static struct GNUNET_CRYPTO_RsaKeyGenerationContext *keygen;
 static GNUNET_SCHEDULER_TaskIdentifier reannounce_task;
 
 /**
- * How often reannounce regex.
+ * What's the maximum reannounce period.
  */
-static struct GNUNET_TIME_Relative reannounce_freq;
-
-/**
- * Random delay to spread out load on the DHT.
- */
-static struct GNUNET_TIME_Relative announce_delay;
-
-/**
- * Local peer's PeerID.
- */
-static struct GNUNET_PeerIdentity my_full_id;
+static struct GNUNET_TIME_Relative reannounce_period_max;
 
 /**
  * Maximal path compression length for regex announcing.
@@ -104,6 +90,17 @@ static char * regex_prefix;
  */
 static char *rx_with_pfx;
 
+/**
+ * How many put rounds should we do.
+ */
+static unsigned int rounds = 3;
+
+/**
+ * Private key for this peer.
+ */
+static struct GNUNET_CRYPTO_EddsaPrivateKey *my_private_key;
+
+
 
 /**
  * Task run during shutdown.
@@ -116,14 +113,9 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "shutting down\n");
 
-  if (NULL != keygen)
-  {
-    GNUNET_CRYPTO_rsa_key_create_stop (keygen);
-    keygen = NULL;
-  }
   if (NULL != announce_handle)
   {
-    GNUNET_REGEX_announce_cancel (announce_handle);
+    REGEX_INTERNAL_announce_cancel (announce_handle);
     announce_handle = NULL;
   }
 
@@ -132,21 +124,27 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_DHT_disconnect (dht_handle);
     dht_handle = NULL;
   }
+  GNUNET_free (my_private_key);
+  my_private_key = NULL;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "shut down\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+              "Daemon for %s shutting down\n",
+              policy_filename);
 }
 
 
 /**
  * Announce a previously announced regex re-using cached data.
- * 
+ *
  * @param cls Closure (regex to announce if needed).
  * @param tc TaskContext.
  */
 static void
 reannounce_regex (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
+  struct GNUNET_TIME_Relative random_delay;
   char *regex = cls;
+
   reannounce_task = GNUNET_SCHEDULER_NO_TASK;
   if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
   {
@@ -154,6 +152,13 @@ reannounce_regex (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     return;
   }
 
+  if (0 == rounds--)
+  {
+    global_ret = 0;
+    GNUNET_SCHEDULER_shutdown ();
+    GNUNET_free (regex);
+    return;
+  }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Announcing regex: %s\n", regex);
   GNUNET_STATISTICS_update (stats_handle, "# regexes announced", 1, GNUNET_NO);
   if (NULL == announce_handle && NULL != regex)
@@ -161,33 +166,30 @@ reannounce_regex (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "First time, creating regex: %s\n",
                 regex);
-    announce_handle = GNUNET_REGEX_announce (dht_handle,
-                                            &my_full_id,
-                                            regex,
-                                            (unsigned int) max_path_compression,
-                                            stats_handle);
+    announce_handle = REGEX_INTERNAL_announce (dht_handle,
+					       my_private_key,
+					       regex,
+					       (unsigned int) max_path_compression,
+					       stats_handle);
   }
   else
   {
     GNUNET_assert (NULL != announce_handle);
-    GNUNET_REGEX_reannounce (announce_handle);
+    REGEX_INTERNAL_reannounce (announce_handle);
   }
 
-  reannounce_task = 
-    GNUNET_SCHEDULER_add_delayed (
-      GNUNET_TIME_relative_add (reannounce_freq,
-                                GNUNET_TIME_relative_multiply (
-                                  GNUNET_TIME_UNIT_SECONDS,
-                                  GNUNET_CRYPTO_random_u32 (
-                                    GNUNET_CRYPTO_QUALITY_WEAK,
-                                    600))),
-      &reannounce_regex,
-      cls);
+  random_delay =
+    GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MICROSECONDS,
+                                   GNUNET_CRYPTO_random_u32 (
+                                     GNUNET_CRYPTO_QUALITY_WEAK,
+                                     reannounce_period_max.rel_value_us));
+  reannounce_task = GNUNET_SCHEDULER_add_delayed (random_delay,
+                                                  &reannounce_regex, cls);
 }
 
 
 /**
- * Announce the given regular expression using Mesh and the path compression
+ * Announce the given regular expression using regex and the path compression
  * length read from config.
  *
  * @param regex regular expression to announce on this peer's mesh.
@@ -203,108 +205,36 @@ announce_regex (const char * regex)
     return;
   }
 
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+              "Daemon for %s starting\n",
+              policy_filename);
   GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == reannounce_task);
   copy = GNUNET_strdup (regex);
-  reannounce_task = GNUNET_SCHEDULER_add_delayed (announce_delay,
-                                                  reannounce_regex,
-                                                  (void *) copy);
+  reannounce_task = GNUNET_SCHEDULER_add_now (reannounce_regex, (void *) copy);
 }
 
 
 /**
- * Load regular expressions from filename into 'rxes' array. Array needs to be freed.
+ * Scan through the policy_dir looking for the n-th filename.
  *
- * @param filename filename of the file containing the regexes, one per line.
- * @param rx string with the union of all regular expressions.
- *
- * @return number of regular expressions read from filename and in rxes array.
- * FIXME use load regex lib function
+ * @param cls Closure (target number n).
+ * @param filename complete filename (absolute path).
+ * @return GNUNET_OK to continue to iterate,
+ *  GNUNET_NO to stop when found
  */
-static unsigned int
-load_regexes (const char *filename, char **rx)
+static int
+scan (void *cls, const char *filename)
 {
-  char *data;
-  char *buf;
-  uint64_t filesize;
-  unsigned int offset;
-  unsigned int rx_cnt;
+  long n = (long) cls;
+  static long c = 0;
 
-  if (GNUNET_YES != GNUNET_DISK_file_test (policy_filename))
+  if (c == n)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                "Could not find policy file %s\n", policy_filename);
-    return 0;
+    policy_filename = GNUNET_strdup (filename);
+    return GNUNET_NO;
   }
-  if (GNUNET_OK != GNUNET_DISK_file_size (policy_filename, &filesize, GNUNET_YES, GNUNET_YES))
-    filesize = 0;
-  if (0 == filesize)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Policy file %s is empty.\n", policy_filename);
-    return 0;
-  }
-  data = GNUNET_malloc (filesize);
-  if (filesize != GNUNET_DISK_fn_read (policy_filename, data, filesize))
-  {
-    GNUNET_free (data);
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Could not read policy file %s.\n",
-                policy_filename);
-    return 0;
-  }
-  buf = data;
-  offset = 0;
-  rx_cnt = 0;
-  while (offset < (filesize - 1))
-  {
-    offset++;
-    if ((data[offset] == '\n') && (buf != &data[offset]))
-    {
-      data[offset] = '|';
-      buf = &data[offset + 1];
-      rx_cnt++;
-    }
-    else if ((data[offset] == '\n') || (data[offset] == '\0'))
-      buf = &data[offset + 1];
-  }
-  data[offset] = '\0';
-  *rx = data;
-
-  return rx_cnt;
-}
-
-
-/**
- * Callback for hostkey read/generation
- *
- * @param cls Closure (not used).
- * @param pk The private key of the local peer.
- * @param emsg Error message if applicable.
- */
-static void
-key_generation_cb (void *cls,
-                   struct GNUNET_CRYPTO_RsaPrivateKey *pk,
-                   const char *emsg)
-{
-  struct GNUNET_CRYPTO_RsaPublicKeyBinaryEncoded my_public_key;
-
-  keygen = NULL;
-  if (NULL == pk)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Regexprofiler could not access hostkey: %s. Exiting.\n"),
-                emsg);
-    GNUNET_SCHEDULER_shutdown ();
-    return;
-  }
-
-  GNUNET_CRYPTO_rsa_key_get_public (pk, &my_public_key);
-  GNUNET_CRYPTO_hash (&my_public_key, sizeof (my_public_key),
-                      &my_full_id.hashPubKey);
-
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              "Regexprofiler for peer [%s] starting\n",
-              GNUNET_i2s(&my_full_id));
-  announce_regex (rx_with_pfx);
-  GNUNET_free (rx_with_pfx);
+  c++;
+  return GNUNET_OK;
 }
 
 
@@ -322,24 +252,17 @@ run (void *cls, char *const *args GNUNET_UNUSED,
      const struct GNUNET_CONFIGURATION_Handle *cfg_)
 {
   char *regex = NULL;
-  char *keyfile;
+  char **components;
+  char *policy_dir;
+  long long unsigned int peer_id;
 
   cfg = cfg_;
 
+  my_private_key = GNUNET_CRYPTO_eddsa_key_create_from_configuration (cfg);
+  GNUNET_assert (NULL != my_private_key);
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (cfg, "GNUNETD", "HOSTKEY",
-                                               &keyfile))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _
-                ("%s service is lacking key configuration settings (%s).  Exiting.\n"),
-                "regexprofiler", "hostkey");
-    GNUNET_SCHEDULER_shutdown ();
-    return;
-  }
-
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_number (cfg, "REGEXPROFILER", "MAX_PATH_COMPRESSION",
+      GNUNET_CONFIGURATION_get_value_number (cfg, "REGEXPROFILER",
+                                             "MAX_PATH_COMPRESSION",
                                              &max_path_compression))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -350,16 +273,22 @@ run (void *cls, char *const *args GNUNET_UNUSED,
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (cfg, "REGEXPROFILER",
-                                               "POLICY_FILE", &policy_filename))
+      GNUNET_CONFIGURATION_get_value_string (cfg, "REGEXPROFILER",
+                                             "POLICY_DIR", &policy_dir))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _
-                ("%s service is lacking key configuration settings (%s).  Exiting.\n"),
-                "regexprofiler", "policy_file");
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR, "REGEXPROFILER", "POLICY_DIR");
     global_ret = GNUNET_SYSERR;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_get_value_number (cfg, "TESTBED",
+                                             "PEERID", &peer_id))
+  {
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR, "TESTBED", "PEERID");
+    global_ret = GNUNET_SYSERR;
+    GNUNET_free (policy_dir);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -368,28 +297,23 @@ run (void *cls, char *const *args GNUNET_UNUSED,
       GNUNET_CONFIGURATION_get_value_string (cfg, "REGEXPROFILER",
                                              "REGEX_PREFIX", &regex_prefix))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _
-                ("%s service is lacking key configuration settings (%s).  Exiting.\n"),
-                "regexprofiler", "regex_prefix");
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR, "REGEXPROFILER", "REGEX_PREFIX");
     global_ret = GNUNET_SYSERR;
+    GNUNET_free (policy_dir);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_time (cfg, "REGEXPROFILER",
-                                           "REANNOUNCE_FREQ", &reannounce_freq))
+                                           "REANNOUNCE_PERIOD_MAX",
+                                           &reannounce_period_max))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, 
-                "reannounce_freq not given. Using 10 minutes.\n");
-    reannounce_freq =
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "reannounce_period_max not given. Using 10 minutes.\n");
+    reannounce_period_max =
       GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 10);
-
   }
-    announce_delay =
-    GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                   GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 600));
 
   stats_handle = GNUNET_STATISTICS_create ("regexprofiler", cfg);
 
@@ -400,29 +324,33 @@ run (void *cls, char *const *args GNUNET_UNUSED,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Could not acquire dht handle. Exiting.\n");
     global_ret = GNUNET_SYSERR;
+    GNUNET_free (policy_dir);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
 
   /* Read regexes from policy files */
-  if (0 == load_regexes (policy_filename, &regex))
+  GNUNET_assert (-1 != GNUNET_DISK_directory_scan (policy_dir, &scan,
+                                                   (void *) (long) peer_id));
+  if (NULL == (components = REGEX_TEST_read_from_file (policy_filename)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Policy file %s contains no policies. Exiting.\n",
                 policy_filename);
     global_ret = GNUNET_SYSERR;
+    GNUNET_free (policy_dir);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
+  GNUNET_free (policy_dir);
+  regex = REGEX_TEST_combine (components);
+  REGEX_TEST_free_from_file (components);
 
   /* Announcing regexes from policy_filename */
-  GNUNET_asprintf (&rx_with_pfx, "%s(%s)", regex_prefix, regex);
+  GNUNET_asprintf (&rx_with_pfx, "%s(%s)(0|1|2|3|4|5|6|7|8|9|a|b|c|d|e|f)*", regex_prefix, regex);
+  announce_regex (rx_with_pfx);
   GNUNET_free (regex);
-
-  keygen = GNUNET_CRYPTO_rsa_key_create_start (keyfile,
-                                               &key_generation_cb,
-                                               NULL);
-  GNUNET_free (keyfile);
+  GNUNET_free (rx_with_pfx);
 
   /* Scheduled the task to clean up when shutdown is called */
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,

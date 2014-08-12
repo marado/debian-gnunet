@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -27,9 +27,10 @@
 #ifndef TESTBED_API_H
 #define TESTBED_API_H
 
+#include "gnunet_util_lib.h"
 #include "gnunet_testbed_service.h"
 #include "testbed.h"
-
+#include "testbed_helper.h"
 
 /**
  * Testbed Helper binary name
@@ -67,6 +68,11 @@ enum OperationType
      */
   OP_PEER_INFO,
 
+  /**
+   * Reconfigure a peer
+   */
+  OP_PEER_RECONFIGURE,
+
     /**
      * Overlay connection operation
      */
@@ -85,7 +91,17 @@ enum OperationType
   /**
    * Get slave config operation
    */
-  OP_GET_SLAVE_CONFIG
+  OP_GET_SLAVE_CONFIG,
+
+  /**
+   * Stop and destroy all peers
+   */
+  OP_SHUTDOWN_PEERS,
+
+  /**
+   * Start/stop service at a peer
+   */
+  OP_MANAGE_SERVICE
 };
 
 
@@ -93,11 +109,6 @@ enum OperationType
  * The message queue for sending messages to the controller service
  */
 struct MessageQueue;
-
-/**
- * Structure for a controller link
- */
-struct ControllerLink;
 
 
 /**
@@ -130,16 +141,6 @@ enum OperationContextState
  */
 struct OperationContext
 {
-  /**
-   * next ptr for DLL
-   */
-  struct OperationContext *next;
-
-  /**
-   * prev ptr for DLL
-   */
-  struct OperationContext *prev;
-
   /**
    * The controller to which this operation context belongs to
    */
@@ -178,31 +179,11 @@ struct OperationContext
 
 
 /**
- * Opaque handle for SD calculations
+ * Operation empty callback
+ *
+ * @param cls closure
  */
-struct SDHandle;
-
-
-/**
- * A slot to record time taken by an overlay connect operation
- */
-struct TimeSlot
-{
-  /**
-   * A key to identify this timeslot
-   */
-  void *key;
-
-  /**
-   * Time
-   */
-  struct GNUNET_TIME_Relative time;
-
-  /**
-   * Number of timing values accumulated
-   */
-  unsigned int nvals;
-};
+typedef void (*TESTBED_opcq_empty_cb) (void *cls);
 
 
 /**
@@ -252,16 +233,6 @@ struct GNUNET_TESTBED_Controller
   struct MessageQueue *mq_tail;
 
   /**
-   * The head of the ControllerLink list
-   */
-  struct ControllerLink *cl_head;
-
-  /**
-   * The tail of the ControllerLink list
-   */
-  struct ControllerLink *cl_tail;
-
-  /**
    * The client transmit handle
    */
   struct GNUNET_CLIENT_TransmitHandle *th;
@@ -273,14 +244,19 @@ struct GNUNET_TESTBED_Controller
   struct GNUNET_TESTBED_HostRegistrationHandle *rh;
 
   /**
-   * The head of the opeartion context queue
+   * The map of active operation contexts
    */
-  struct OperationContext *ocq_head;
+  struct GNUNET_CONTAINER_MultiHashMap32 *opc_map;
 
   /**
-   * The tail of the operation context queue
+   * If this callback is not NULL, schedule it as a task when opc_map gets empty
    */
-  struct OperationContext *ocq_tail;
+  TESTBED_opcq_empty_cb opcq_empty_cb;
+
+  /**
+   * Closure for the above task
+   */
+  void *opcq_empty_cls;
 
   /**
    * Operation queue for simultaneous operations
@@ -298,23 +274,6 @@ struct GNUNET_TESTBED_Controller
   struct OperationQueue *opq_parallel_topology_config_operations;
 
   /**
-   * Operation queue for simultaneous overlay connect operations
-   */
-  struct OperationQueue *opq_parallel_overlay_connect_operations;
-
-  /**
-   * An array of timing slots; size should be equal to the current number of parallel
-   * overlay connects
-   */
-  struct TimeSlot *tslots;
-
-  /**
-   * Handle for SD calculations amount parallel overlay connect operation finish
-   * times
-   */
-  struct SDHandle *poc_sd;
-
-  /**
    * The controller event mask
    */
   uint64_t event_mask;
@@ -323,21 +282,6 @@ struct GNUNET_TESTBED_Controller
    * Did we start the receive loop yet?
    */
   int in_receive;
-
-  /**
-   * Did we create the host for this?
-   */
-  int aux_host;
-
-  /**
-   * The number of parallel overlay connects we do currently
-   */
-  unsigned int num_parallel_connects;
-
-  /**
-   * Counter to indicate when all the available time slots are filled
-   */
-  unsigned int tslots_filled;
 
   /**
    * The operation id counter. use current value and increment
@@ -359,6 +303,31 @@ GNUNET_TESTBED_queue_message_ (struct GNUNET_TESTBED_Controller *controller,
 
 
 /**
+ * Inserts the given operation context into the operation context map of the
+ * given controller.  Creates the operation context map if one does not exist
+ * for the controller
+ *
+ * @param c the controller
+ * @param opc the operation context to be inserted
+ */
+void
+GNUNET_TESTBED_insert_opc_ (struct GNUNET_TESTBED_Controller *c,
+                            struct OperationContext *opc);
+
+
+/**
+ * Removes the given operation context from the operation context map of the
+ * given controller
+ *
+ * @param c the controller
+ * @param opc the operation context to remove
+ */
+void
+GNUNET_TESTBED_remove_opc_ (const struct GNUNET_TESTBED_Controller *c,
+                            struct OperationContext *opc);
+
+
+/**
  * Compresses given configuration using zlib compress
  *
  * @param config the serialized configuration
@@ -373,12 +342,17 @@ GNUNET_TESTBED_compress_config_ (const char *config, size_t size,
 
 
 /**
- * Adds an operation to the queue of operations
+ * Function to serialize and compress using zlib a configuration through a
+ * configuration handle
  *
- * @param op the operation to add
+ * @param cfg the configuration
+ * @param size the size of configuration when serialize.  Will be set on success.
+ * @param xsize the sizeo of the compressed configuration.  Will be set on success.
+ * @return the serialized and compressed configuration
  */
-void
-GNUNET_TESTBED_operation_add_ (struct GNUNET_TESTBED_Operation *op);
+char *
+GNUNET_TESTBED_compress_cfg_ (const struct GNUNET_CONFIGURATION_Handle *cfg,
+                              size_t *size, size_t *xsize);
 
 
 /**
@@ -487,101 +461,19 @@ GNUNET_TESTBED_get_slave_config_ (void *op_cls,
 
 
 /**
- * Same as the GNUNET_TESTBED_controller_link_2, but with ids for delegated host
- * and slave host
+ * Handler for GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS messages.  This
+ * function is defined in @file testbed_api_barriers.c
  *
- * @param op_cls the operation closure for the event which is generated to
- *          signal success or failure of this operation
- * @param master handle to the master controller who creates the association
- * @param delegated_host_id id of the host to which requests should be delegated
- * @param slave_host_id id of the host which is used to run the slave controller
- * @param sxcfg serialized and compressed configuration
- * @param sxcfg_size the size sxcfg
- * @param scfg_size the size of uncompressed serialized configuration
- * @param is_subordinate GNUNET_YES if the controller at delegated_host should
- *          be started by the slave controller; GNUNET_NO if the slave
- *          controller has to connect to the already started delegated
- *          controller via TCP/IP
- * @return the operation handle
- */
-struct GNUNET_TESTBED_Operation *
-GNUNET_TESTBED_controller_link_2_ (void *op_cls,
-                                   struct GNUNET_TESTBED_Controller *master,
-                                   uint32_t delegated_host_id,
-                                   uint32_t slave_host_id, const char *sxcfg,
-                                   size_t sxcfg_size, size_t scfg_size,
-                                   int is_subordinate);
-
-
-/**
- * Same as the GNUNET_TESTBED_controller_link, but with ids for delegated host
- * and slave host
- *
- * @param op_cls the operation closure for the event which is generated to
- *          signal success or failure of this operation
- * @param master handle to the master controller who creates the association
- * @param delegated_host_id id of the host to which requests should be
- *          delegated; cannot be NULL
- * @param slave_host_id id of the host which should connect to controller
- *          running on delegated host ; use NULL to make the master controller
- *          connect to the delegated host
- * @param slave_cfg configuration to use for the slave controller
- * @param is_subordinate GNUNET_YES if the controller at delegated_host should
- *          be started by the slave controller; GNUNET_NO if the slave
- *          controller has to connect to the already started delegated
- *          controller via TCP/IP
- * @return the operation handle
- */
-struct GNUNET_TESTBED_Operation *
-GNUNET_TESTBED_controller_link_ (void *op_cls,
-                                 struct GNUNET_TESTBED_Controller *master,
-                                 uint32_t delegated_host_id,
-                                 uint32_t slave_host_id,
-                                 const struct GNUNET_CONFIGURATION_Handle
-                                 *slave_cfg, int is_subordinate);
-
-
-/**
- * Returns a timing slot which will be exclusively locked
- *
- * @param c the controller handle
- * @param key a pointer which is associated to the returned slot; should not be
- *          NULL. It serves as a key to determine the correct owner of the slot
- * @return the time slot index in the array of time slots in the controller
- *           handle
- */
-unsigned int
-GNUNET_TESTBED_get_tslot_ (struct GNUNET_TESTBED_Controller *c, void *key);
-
-
-/**
- * Function to update a time slot
- *
- * @param c the controller handle
- * @param index the index of the time slot to update
- * @param key the key to identify ownership of the slot
- * @param time the new time
- * @param failed should this reading be treated as coming from a fail event
- */
-void
-GNUNET_TESTBED_update_time_slot_ (struct GNUNET_TESTBED_Controller *c,
-                                  unsigned int index, void *key,
-                                  struct GNUNET_TIME_Relative time, int failed);
-
-
-/**
- * Releases a time slot thus making it available for be used again
- *
- * @param c the controller handle
- * @param index the index of the the time slot
- * @param key the key to prove ownership of the timeslot
- * @return GNUNET_YES if the time slot is successfully removed; GNUNET_NO if the
- *           time slot cannot be removed - this could be because of the index
- *           greater than existing number of time slots or `key' being different
+ * @param c the controller handle to determine the connection this message
+ *   belongs to
+ * @param msg the barrier status message
+ * @return GNUNET_OK to keep the connection active; GNUNET_SYSERR to tear it
+ *   down signalling an error
  */
 int
-GNUNET_TESTBED_release_time_slot_ (struct GNUNET_TESTBED_Controller *c,
-                                   unsigned int index, void *key);
+GNUNET_TESTBED_handle_barrier_status_ (struct GNUNET_TESTBED_Controller *c,
+                                       const struct GNUNET_TESTBED_BarrierStatusMsg
+                                       *msg);
 
 
 

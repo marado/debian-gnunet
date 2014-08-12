@@ -129,8 +129,8 @@ end ()
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Stopping peers\n");
 
-  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value;
-  datarate = (total_bytes_sent * 1000) / delta;
+  delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
+  datarate = (total_bytes_sent * 1000 * 1000) / delta;
 
   FPRINTF (stderr, "Throughput was %llu b/s\n", datarate);
 
@@ -213,8 +213,7 @@ get_size (unsigned int iter)
 
 static void
 notify_receive (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_MessageHeader *message,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+                const struct GNUNET_MessageHeader *message)
 {
   static int n;
   unsigned int s;
@@ -337,7 +336,7 @@ notify_ready (void *cls, size_t size, void *buf)
   if (n < TOTAL_MSGS)
   {
     if (th == NULL)
-      th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, s, 0,
+      th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, s,
                                                    TIMEOUT_TRANSMIT,
                                                    &notify_ready, NULL);
     msg_scheduled = n;
@@ -358,8 +357,7 @@ notify_ready (void *cls, size_t size, void *buf)
 
 
 static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer,
-                const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
+notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
 
   struct PeerContext *p = cls;
@@ -386,7 +384,7 @@ static void
 sendtask ()
 {
   start_time = GNUNET_TIME_absolute_get ();
-  th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, get_size (0), 0,
+  th = GNUNET_TRANSPORT_notify_transmit_ready (p2->th, &p1->id, get_size (0),
                                                TIMEOUT_TRANSMIT, &notify_ready,
                                                NULL);
 }
@@ -400,7 +398,7 @@ measure (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   measure_task = GNUNET_SCHEDULER_NO_TASK;
 
   counter++;
-  if ((DURATION.rel_value / 1000) < counter)
+  if ((DURATION.rel_value_us / 1000 / 1000LL) < counter)
   {
     FPRINTF (stderr, "%s",  ".\n");
     GNUNET_SCHEDULER_add_now (&end, NULL);

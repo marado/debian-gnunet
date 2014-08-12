@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -144,8 +144,8 @@ configuration_receiver (void *cls, const struct GNUNET_MessageHeader *msg)
   mtype = ntohs (msg->type);
   emsg = NULL;
   info.type = GNUNET_TESTBED_ET_OPERATION_FINISHED;
-  info.details.operation_finished.operation = data->operation;
-  info.details.operation_finished.op_cls = data->op_cls;
+  info.op = data->operation;
+  info.op_cls = data->op_cls;
   if (GNUNET_MESSAGE_TYPE_TESTBED_OPERATION_FAIL_EVENT == mtype)
   {
     emsg =
@@ -239,7 +239,7 @@ oprelease_service_connect (void *cls)
  * callback.  The 'ca' callback is used to create the connection
  * when the time is right; the 'da' callback will be used to
  * destroy the connection (upon 'GNUNET_TESTBED_operation_done').
- * 'GNUNET_TESTBED_operation_cancel' can be used to abort this
+ * 'GNUNET_TESTBED_operation_done' can be used to abort this
  * operation until the event callback has been called.
  *
  * @param op_cls closure to pass in operation event
@@ -263,7 +263,7 @@ GNUNET_TESTBED_service_connect (void *op_cls, struct GNUNET_TESTBED_Peer *peer,
 {
   struct ServiceConnectData *data;
 
-  data = GNUNET_malloc (sizeof (struct ServiceConnectData));
+  data = GNUNET_new (struct ServiceConnectData);
   data->ca = ca;
   data->da = da;
   data->cada_cls = cada_cls;

@@ -38,16 +38,15 @@ GNUNET_NETWORK_STRUCT_BEGIN
 struct RedirectToIpRequestMessage
 {
   /**
-   * Type is  GNUNET_MESSAGE_TYPE_VPN_CLIENT_REDIRECT_TO_IP
+   * Type is #GNUNET_MESSAGE_TYPE_VPN_CLIENT_REDIRECT_TO_IP
    */
   struct GNUNET_MessageHeader header;
 
   /**
-   * GNUNET_YES to notify only after completion of the mesh-level connection,
-   * GNUNET_NO to notify as soon as an address was allocated (in nbo).
+   * Always zero.
    */
-  int32_t nac GNUNET_PACKED;
-  
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * How long should the redirection be maintained at most?
    */
@@ -70,7 +69,7 @@ struct RedirectToIpRequestMessage
   uint64_t request_id GNUNET_PACKED;
 
   /* followed by destination address ('struct in_addr' or 'struct in6_addr') */
-  
+
 };
 
 
@@ -82,16 +81,15 @@ struct RedirectToIpRequestMessage
 struct RedirectToServiceRequestMessage
 {
   /**
-   * Type is  GNUNET_MESSAGE_TYPE_VPN_CLIENT_REDIRECT_TO_SERVICE
+   * Type is #GNUNET_MESSAGE_TYPE_VPN_CLIENT_REDIRECT_TO_SERVICE
    */
   struct GNUNET_MessageHeader header;
 
   /**
-   * GNUNET_YES to notify only after completion of the mesh-level connection,
-   * GNUNET_NO to notify as soon as an address was allocated (in nbo).
+   * Always zero.
    */
-  int32_t nac GNUNET_PACKED;
-  
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * How long should the redirection be maintained at most?
    */
@@ -101,7 +99,7 @@ struct RedirectToServiceRequestMessage
    * Desired protocol (IPPROTO_UDP or IPPROTO_TCP)
    */
   int32_t protocol GNUNET_PACKED;
-  
+
   /**
    * Address family desired for the result (AF_INET or AF_INET6 or AF_UNSPEC, in nbo)
    */
@@ -132,9 +130,9 @@ struct RedirectToServiceRequestMessage
  */
 struct RedirectToIpResponseMessage
 {
-  
+
   /**
-   * Type is  GNUNET_MESSAGE_TYPE_VPN_CLIENT_USE_IP
+   * Type is #GNUNET_MESSAGE_TYPE_VPN_CLIENT_USE_IP
    */
   struct GNUNET_MessageHeader header;
 
@@ -150,7 +148,7 @@ struct RedirectToIpResponseMessage
   uint64_t request_id GNUNET_PACKED;
 
   /* followed by destination address ('struct in_addr' or 'struct in6_addr') */
-  
+
 };
 
 GNUNET_NETWORK_STRUCT_END

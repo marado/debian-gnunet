@@ -4,7 +4,7 @@
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 2, or (at your
+      by the Free Software Foundation; either version 3, or (at your
       option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
@@ -23,7 +23,6 @@
  * @brief peer-ID table that assigns integer IDs to peer-IDs to save memory
  * @author Christian Grothoff
  */
-
 #include "platform.h"
 #include "gnunet_peer_lib.h"
 
@@ -56,11 +55,11 @@ struct PeerEntry
 static struct PeerEntry **table;
 
 /**
- * Hashmap of PeerIdentities to "struct PeerEntry"
+ * Peermap of PeerIdentities to "struct PeerEntry"
  * (for fast lookup).  NULL until the library
  * is actually being used.
  */
-static struct GNUNET_CONTAINER_MultiHashMap *map;
+static struct GNUNET_CONTAINER_MultiPeerMap *map;
 
 /**
  * Size of the "table".
@@ -89,7 +88,7 @@ GNUNET_PEER_search (const struct GNUNET_PeerIdentity *pid)
     return 0;
   if (NULL == map)
     return 0;
-  e = GNUNET_CONTAINER_multihashmap_get (map, &pid->hashPubKey);
+  e = GNUNET_CONTAINER_multipeermap_get (map, pid);
   if (NULL == e)
     return 0;
   GNUNET_assert (e->rc > 0);
@@ -114,8 +113,8 @@ GNUNET_PEER_intern (const struct GNUNET_PeerIdentity *pid)
   if (NULL == pid)
     return 0;
   if (NULL == map)
-    map = GNUNET_CONTAINER_multihashmap_create (32, GNUNET_YES);
-  e = GNUNET_CONTAINER_multihashmap_get (map, &pid->hashPubKey);
+    map = GNUNET_CONTAINER_multipeermap_create (32, GNUNET_YES);
+  e = GNUNET_CONTAINER_multipeermap_get (map, pid);
   if (NULL != e)
   {
     GNUNET_assert (e->rc > 0);
@@ -128,7 +127,7 @@ GNUNET_PEER_intern (const struct GNUNET_PeerIdentity *pid)
     GNUNET_array_grow (table, size, size + 16);
     for (i = ret; i < size; i++)
     {
-      table[i] = GNUNET_malloc (sizeof (struct PeerEntry));
+      table[i] = GNUNET_new (struct PeerEntry);
       table[i]->pid = i + 1;
     }
   }
@@ -145,8 +144,8 @@ GNUNET_PEER_intern (const struct GNUNET_PeerIdentity *pid)
   table[ret]->rc = 1;
   table[ret]->pid = ret;
   GNUNET_break (GNUNET_OK ==
-                GNUNET_CONTAINER_multihashmap_put (map, 
-						   &table[ret]->id.hashPubKey,
+                GNUNET_CONTAINER_multipeermap_put (map,
+						   &table[ret]->id,
                                                    table[ret],
                                                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   return ret;
@@ -178,8 +177,8 @@ GNUNET_PEER_decrement_rcs (const GNUNET_PEER_Id *ids, unsigned int count)
     if (0 == table[id]->rc)
     {
       GNUNET_break (GNUNET_OK ==
-                    GNUNET_CONTAINER_multihashmap_remove (map,
-                                                          &table[id]->id.hashPubKey,
+                    GNUNET_CONTAINER_multipeermap_remove (map,
+                                                          &table[id]->id,
                                                           table[id]));
       table[id]->pid = free_list_start;
       free_list_start = id;
@@ -206,8 +205,8 @@ GNUNET_PEER_change_rc (GNUNET_PEER_Id id, int delta)
   if (0 == table[id]->rc)
   {
     GNUNET_break (GNUNET_OK ==
-                  GNUNET_CONTAINER_multihashmap_remove (map,
-                                                        &table[id]->id.hashPubKey,
+                  GNUNET_CONTAINER_multipeermap_remove (map,
+                                                        &table[id]->id,
                                                         table[id]));
     table[id]->pid = free_list_start;
     free_list_start = id;
@@ -227,7 +226,6 @@ GNUNET_PEER_resolve (GNUNET_PEER_Id id, struct GNUNET_PeerIdentity *pid)
   if (0 == id)
   {
     memset (pid, 0, sizeof (struct GNUNET_PeerIdentity));
-    GNUNET_break (0);
     return;
   }
   GNUNET_assert (id < size);

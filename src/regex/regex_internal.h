@@ -25,7 +25,7 @@
 #ifndef REGEX_INTERNAL_H
 #define REGEX_INTERNAL_H
 
-#include "gnunet_regex_lib.h"
+#include "regex_internal_lib.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -47,17 +47,17 @@ extern "C"
  * which they origin ('from_state'). Each state can have 0-n transitions.
  * If label is NULL, this is considered to be an epsilon transition.
  */
-struct GNUNET_REGEX_Transition
+struct REGEX_INTERNAL_Transition
 {
   /**
    * This is a linked list.
    */
-  struct GNUNET_REGEX_Transition *prev;
+  struct REGEX_INTERNAL_Transition *prev;
 
   /**
    * This is a linked list.
    */
-  struct GNUNET_REGEX_Transition *next;
+  struct REGEX_INTERNAL_Transition *next;
 
   /**
    * Unique id of this transition.
@@ -72,30 +72,30 @@ struct GNUNET_REGEX_Transition
   /**
    * State to which this transition leads.
    */
-  struct GNUNET_REGEX_State *to_state;
+  struct REGEX_INTERNAL_State *to_state;
 
   /**
    * State from which this transition origins.
    */
-  struct GNUNET_REGEX_State *from_state;
+  struct REGEX_INTERNAL_State *from_state;
 };
 
 
 /**
  * A state. Can be used in DFA and NFA automatons.
  */
-struct GNUNET_REGEX_State;
+struct REGEX_INTERNAL_State;
 
 
 /**
  * Set of states.
  */
-struct GNUNET_REGEX_StateSet
+struct REGEX_INTERNAL_StateSet
 {
   /**
    * Array of states.
    */
-  struct GNUNET_REGEX_State **states;
+  struct REGEX_INTERNAL_State **states;
 
   /**
    * Number of entries in *use* in the 'states' array.
@@ -112,37 +112,37 @@ struct GNUNET_REGEX_StateSet
 /**
  * A state. Can be used in DFA and NFA automatons.
  */
-struct GNUNET_REGEX_State
+struct REGEX_INTERNAL_State
 {
   /**
    * This is a linked list to keep states in an automaton.
    */
-  struct GNUNET_REGEX_State *prev;
+  struct REGEX_INTERNAL_State *prev;
 
   /**
    * This is a linked list to keep states in an automaton.
    */
-  struct GNUNET_REGEX_State *next;
+  struct REGEX_INTERNAL_State *next;
 
   /**
    * This is a multi DLL for StateSet_MDLL.
    */
-  struct GNUNET_REGEX_State *prev_SS;
+  struct REGEX_INTERNAL_State *prev_SS;
 
   /**
    * This is a multi DLL for StateSet_MDLL.
    */
-  struct GNUNET_REGEX_State *next_SS;
+  struct REGEX_INTERNAL_State *next_SS;
 
   /**
    * This is a multi DLL for StateSet_MDLL Stack.
    */
-  struct GNUNET_REGEX_State *prev_ST;
+  struct REGEX_INTERNAL_State *prev_ST;
 
   /**
    * This is a multi DLL for StateSet_MDLL Stack.
    */
-  struct GNUNET_REGEX_State *next_ST;
+  struct REGEX_INTERNAL_State *next_ST;
 
   /**
    * Unique state id.
@@ -222,12 +222,12 @@ struct GNUNET_REGEX_State
   /**
    * DLL of transitions.
    */
-  struct GNUNET_REGEX_Transition *transitions_head;
+  struct REGEX_INTERNAL_Transition *transitions_head;
 
   /**
    * DLL of transitions.
    */
-  struct GNUNET_REGEX_Transition *transitions_tail;
+  struct REGEX_INTERNAL_Transition *transitions_tail;
 
   /**
    * Number of incoming transitions. Used for compressing DFA paths.
@@ -238,14 +238,14 @@ struct GNUNET_REGEX_State
    * Set of states on which this state is based on. Used when creating a DFA out
    * of several NFA states.
    */
-  struct GNUNET_REGEX_StateSet nfa_set;
+  struct REGEX_INTERNAL_StateSet nfa_set;
 };
 
 
 /**
  * Type of an automaton.
  */
-enum GNUNET_REGEX_AutomatonType
+enum REGEX_INTERNAL_AutomatonType
 {
   NFA,
   DFA
@@ -255,28 +255,28 @@ enum GNUNET_REGEX_AutomatonType
 /**
  * Automaton representation.
  */
-struct GNUNET_REGEX_Automaton
+struct REGEX_INTERNAL_Automaton
 {
   /**
    * Linked list of NFAs used for partial NFA creation.
    */
-  struct GNUNET_REGEX_Automaton *prev;
+  struct REGEX_INTERNAL_Automaton *prev;
 
   /**
    * Linked list of NFAs used for partial NFA creation.
    */
-  struct GNUNET_REGEX_Automaton *next;
+  struct REGEX_INTERNAL_Automaton *next;
 
   /**
    * First state of the automaton. This is mainly used for constructing an NFA,
    * where each NFA itself consists of one or more NFAs linked together.
    */
-  struct GNUNET_REGEX_State *start;
+  struct REGEX_INTERNAL_State *start;
 
   /**
    * End state of the partial NFA. This is undefined for DFAs
    */
-  struct GNUNET_REGEX_State *end;
+  struct REGEX_INTERNAL_State *end;
 
   /**
    * Number of states in the automaton.
@@ -286,17 +286,17 @@ struct GNUNET_REGEX_Automaton
   /**
    * DLL of states.
    */
-  struct GNUNET_REGEX_State *states_head;
+  struct REGEX_INTERNAL_State *states_head;
 
   /**
    * DLL of states
    */
-  struct GNUNET_REGEX_State *states_tail;
+  struct REGEX_INTERNAL_State *states_tail;
 
   /**
    * Type of the automaton.
    */
-  enum GNUNET_REGEX_AutomatonType type;
+  enum REGEX_INTERNAL_AutomatonType type;
 
   /**
    * Regex
@@ -321,10 +321,10 @@ struct GNUNET_REGEX_Automaton
  * @param regex regular expression string.
  * @param len length of the string.
  *
- * @return NFA, needs to be freed using GNUNET_REGEX_automaton_destroy.
+ * @return NFA, needs to be freed using REGEX_INTERNAL_automaton_destroy.
  */
-struct GNUNET_REGEX_Automaton *
-GNUNET_REGEX_construct_nfa (const char *regex, const size_t len);
+struct REGEX_INTERNAL_Automaton *
+REGEX_INTERNAL_construct_nfa (const char *regex, const size_t len);
 
 
 /**
@@ -339,9 +339,9 @@ GNUNET_REGEX_construct_nfa (const char *regex, const size_t len);
  *
  * @return GNUNET_YES to proceed traversal, GNUNET_NO to stop.
  */
-typedef int (*GNUNET_REGEX_traverse_check) (void *cls,
-                                            struct GNUNET_REGEX_State * s,
-                                            struct GNUNET_REGEX_Transition * t);
+typedef int (*REGEX_INTERNAL_traverse_check) (void *cls,
+                                            struct REGEX_INTERNAL_State * s,
+                                            struct REGEX_INTERNAL_Transition * t);
 
 
 /**
@@ -351,9 +351,9 @@ typedef int (*GNUNET_REGEX_traverse_check) (void *cls,
  * @param count current count of the state, from 0 to a->state_count -1.
  * @param s state.
  */
-typedef void (*GNUNET_REGEX_traverse_action) (void *cls,
+typedef void (*REGEX_INTERNAL_traverse_action) (void *cls,
                                               const unsigned int count,
-                                              struct GNUNET_REGEX_State * s);
+                                              struct REGEX_INTERNAL_State * s);
 
 
 /**
@@ -370,11 +370,11 @@ typedef void (*GNUNET_REGEX_traverse_action) (void *cls,
  * @param action_cls closure for action
  */
 void
-GNUNET_REGEX_automaton_traverse (const struct GNUNET_REGEX_Automaton *a,
-                                 struct GNUNET_REGEX_State *start,
-                                 GNUNET_REGEX_traverse_check check,
+REGEX_INTERNAL_automaton_traverse (const struct REGEX_INTERNAL_Automaton *a,
+                                 struct REGEX_INTERNAL_State *start,
+                                 REGEX_INTERNAL_traverse_check check,
                                  void *check_cls,
-                                 GNUNET_REGEX_traverse_action action,
+                                 REGEX_INTERNAL_traverse_action action,
                                  void *action_cls);
 
 /**
@@ -389,7 +389,7 @@ GNUNET_REGEX_automaton_traverse (const struct GNUNET_REGEX_Automaton *a,
  * @return canonical regex string.
  */
 const char *
-GNUNET_REGEX_get_canonical_regex (struct GNUNET_REGEX_Automaton *a);
+REGEX_INTERNAL_get_canonical_regex (struct REGEX_INTERNAL_Automaton *a);
 
 
 /**
@@ -400,14 +400,14 @@ GNUNET_REGEX_get_canonical_regex (struct GNUNET_REGEX_Automaton *a);
  * @return number of transitions in the given automaton.
  */
 unsigned int
-GNUNET_REGEX_get_transition_count (struct GNUNET_REGEX_Automaton *a);
+REGEX_INTERNAL_get_transition_count (struct REGEX_INTERNAL_Automaton *a);
 
 
 /**
  * Context that contains an id counter for states and transitions as well as a
  * DLL of automatons used as a stack for NFA construction.
  */
-struct GNUNET_REGEX_Context
+struct REGEX_INTERNAL_Context
 {
   /**
    * Unique state id.
@@ -420,14 +420,14 @@ struct GNUNET_REGEX_Context
   unsigned int transition_id;
 
   /**
-   * DLL of GNUNET_REGEX_Automaton's used as a stack.
+   * DLL of REGEX_INTERNAL_Automaton's used as a stack.
    */
-  struct GNUNET_REGEX_Automaton *stack_head;
+  struct REGEX_INTERNAL_Automaton *stack_head;
 
   /**
-   * DLL of GNUNET_REGEX_Automaton's used as a stack.
+   * DLL of REGEX_INTERNAL_Automaton's used as a stack.
    */
-  struct GNUNET_REGEX_Automaton *stack_tail;
+  struct REGEX_INTERNAL_Automaton *stack_tail;
 };
 
 
@@ -439,39 +439,10 @@ struct GNUNET_REGEX_Context
  * @param stride_len length of the strides.
  */
 void
-GNUNET_REGEX_dfa_add_multi_strides (struct GNUNET_REGEX_Context *regex_ctx,
-                                    struct GNUNET_REGEX_Automaton *dfa,
+REGEX_INTERNAL_dfa_add_multi_strides (struct REGEX_INTERNAL_Context *regex_ctx,
+                                    struct REGEX_INTERNAL_Automaton *dfa,
                                     const unsigned int stride_len);
 
-
-/**
- * Generate a (pseudo) random regular expression of length 'rx_length', as well
- * as a (optional) string that will be matched by the generated regex. The
- * returned regex needs to be freed.
- *
- * @param rx_length length of the random regex.
- * @param matching_str (optional) pointer to a string that will contain a string
- *                     that will be matched by the generated regex, if
- *                     'matching_str' pointer was not NULL.
- *
- * @return NULL if 'rx_length' is 0, a random regex of length 'rx_length', which
- *         needs to be freed, otherwise.
- */
-char *
-GNUNET_REGEX_generate_random_regex (size_t rx_length, char *matching_str);
-
-
-/**
- * Generate a random string of maximum length 'max_len' that only contains literals allowed
- * in a regular expression. The string might be 0 chars long but is garantueed
- * to be shorter or equal to 'max_len'.
- *
- * @param max_len maximum length of the string that should be generated.
- *
- * @return random string that needs to be freed.
- */
-char *
-GNUNET_REGEX_generate_random_string (size_t max_len);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

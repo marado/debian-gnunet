@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -366,6 +366,8 @@ run (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg,
   mhd =
       MHD_start_daemon (flags, PORT, NULL, NULL, &mhd_ahc, NULL,
                         MHD_OPTION_END);
+
+
   GNUNET_assert (NULL != mhd);
   mhd_main ();
   addr = NULL;
@@ -382,7 +384,7 @@ run (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg,
   default:
     GNUNET_assert (0);
   }
-  rr = GNUNET_VPN_redirect_to_ip (vpn, src_af, dest_af, addr, GNUNET_YES,
+  rr = GNUNET_VPN_redirect_to_ip (vpn, src_af, dest_af, addr,
                                   GNUNET_TIME_UNIT_FOREVER_ABS, &allocation_cb,
                                   NULL);
   ctrl_c_task_id =
@@ -397,7 +399,9 @@ main (int argc, char *const *argv)
   const char *bin;
   char *vpn_binary;
   char *exit_binary;
+  int ret=0;
 
+#ifndef MINGW
   if (0 != ACCESS ("/dev/net/tun", R_OK))
   {
     GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR, "access",
@@ -405,20 +409,23 @@ main (int argc, char *const *argv)
     fprintf (stderr, "WARNING: System unable to run test, skipping.\n");
     return 0;
   }
+#endif
   vpn_binary = GNUNET_OS_get_libexec_binary_path ("gnunet-helper-vpn");
   exit_binary = GNUNET_OS_get_libexec_binary_path ("gnunet-helper-exit");
-  if ((GNUNET_YES != GNUNET_OS_check_helper_binary (vpn_binary)) ||
-      (GNUNET_YES != GNUNET_OS_check_helper_binary (exit_binary)))
+  fprintf (stderr,"%s\n", vpn_binary);
+  fprintf (stderr,"%s\n", exit_binary);
+  if ((GNUNET_YES != (ret = GNUNET_OS_check_helper_binary (vpn_binary, GNUNET_YES, "-d gnunet-vpn - - 169.1.3.3.7 255.255.255.0"))) || //ipv4 only please!
+      (GNUNET_YES != (ret = GNUNET_OS_check_helper_binary (exit_binary, GNUNET_YES, "-d gnunet-vpn - - - 169.1.3.3.7 255.255.255.0")))) //no nat, ipv4 only
   {
     GNUNET_free (vpn_binary);
     GNUNET_free (exit_binary);
     fprintf (stderr,
-             "WARNING: gnunet-helper-{exit,vpn} binaries are not SUID, refusing to run test (as it would have to fail).\n");
+             "WARNING: gnunet-helper-{exit,vpn} binaries are not SUID, refusing to run test (as it would have to fail). %d\n", ret);
     return 0;
   }
+
   GNUNET_free (vpn_binary);
   GNUNET_free (exit_binary);
-  GNUNET_CRYPTO_rsa_setup_hostkey ("test_gnunet_vpn.conf");
   bin = argv[0];
   if (NULL != strstr (bin, "lt-"))
     bin = strstr (bin, "lt-") + 4;
@@ -429,25 +436,28 @@ main (int argc, char *const *argv)
     return 1;
   }
   type++;
-  if (0 == strcmp (type, "4_to_6"))
+  /* on Windows, .exe is suffixed to these binaries,
+   * thus cease comparison after the 6th char.
+   */
+  if (0 == strncmp (type, "4_to_6",6))
   {
     dest_ip = "FC5A:04E1:C2BA::1";
     dest_af = AF_INET6;
     src_af = AF_INET;
   }
-  else if (0 == strcmp (type, "6_to_4"))
+  else if (0 == strncmp (type, "6_to_4",6))
   {
     dest_ip = "169.254.86.1";
     dest_af = AF_INET;
     src_af = AF_INET6;
   }
-  else if (0 == strcmp (type, "4_over"))
+  else if (0 == strncmp (type, "4_over",6))
   {
     dest_ip = "169.254.86.1";
     dest_af = AF_INET;
     src_af = AF_INET;
   }
-  else if (0 == strcmp (type, "6_over"))
+  else if (0 == strncmp (type, "6_over",6))
   {
     dest_ip = "FC5A:04E1:C2BA::1";
     dest_af = AF_INET6;
@@ -458,7 +468,7 @@ main (int argc, char *const *argv)
     fprintf (stderr, "invalid binary suffix `%s'\n", type);
     return 1;
   }
-  if ((GNUNET_OK != GNUNET_NETWORK_test_pf (src_af)) || 
+  if ((GNUNET_OK != GNUNET_NETWORK_test_pf (src_af)) ||
       (GNUNET_OK != GNUNET_NETWORK_test_pf (dest_af)))
   {
     fprintf (stderr,

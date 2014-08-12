@@ -1,6 +1,6 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2012 Christian Grothoff (and other contributing authors)
+      (C) 2008--2013 Christian Grothoff (and other contributing authors)
 
       GNUnet is free software; you can redistribute it and/or modify
       it under the terms of the GNU General Public License as published
@@ -166,6 +166,7 @@ enum Stage
  */
 static enum Stage result;
 
+
 /**
  * shortcut to exit during failure
  */
@@ -179,6 +180,7 @@ static enum Stage result;
       return;                                                   \
     }                                                          \
   } while (0)
+
 
 /**
  * Shutdown nicely
@@ -292,16 +294,16 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
   {
   case GNUNET_TESTBED_ET_OPERATION_FINISHED:   /* Will be reached when we destroy peers */
     FAIL_TEST (PEERS_STOPPED == result);
-    FAIL_TEST (NULL == event->details.operation_finished.op_cls);
+    FAIL_TEST (NULL == event->op_cls);
     FAIL_TEST (NULL == event->details.operation_finished.emsg);
     FAIL_TEST (NULL == event->details.operation_finished.generic);
-    if (event->details.operation_finished.operation == peer1.operation)
+    if (event->op == peer1.operation)
     {
       GNUNET_TESTBED_operation_done (peer1.operation);
       peer1.operation = NULL;
       peer1.peer = NULL;
     }
-    else if (event->details.operation_finished.operation == peer2.operation)
+    else if (event->op == peer2.operation)
     {
       GNUNET_TESTBED_operation_done (peer2.operation);
       peer2.operation = NULL;
@@ -384,8 +386,8 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       common_operation = NULL;
       result = PEERS_CONNECTED_2;
       LOG (GNUNET_ERROR_TYPE_DEBUG, "Peers connected again\n");
-      peer1.operation = GNUNET_TESTBED_peer_stop (peer1.peer, NULL, NULL);
-      peer2.operation = GNUNET_TESTBED_peer_stop (peer2.peer, NULL, NULL);
+      peer1.operation = GNUNET_TESTBED_peer_stop (NULL, peer1.peer, NULL, NULL);
+      peer2.operation = GNUNET_TESTBED_peer_stop (NULL, peer2.peer, NULL, NULL);
       break;
     default:
       FAIL_TEST (0);
@@ -452,7 +454,7 @@ registration_comp (void *cls, const char *emsg)
  *          GNUNET_TESTBED_controller_stop() shouldn't be called in this case
  */
 static void
-status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg, int status)
+status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg_, int status)
 {
   uint64_t event_mask;
 
@@ -467,10 +469,10 @@ status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg, int status)
   event_mask |= (1L << GNUNET_TESTBED_ET_CONNECT);
   event_mask |= (1L << GNUNET_TESTBED_ET_OPERATION_FINISHED);
   controller =
-      GNUNET_TESTBED_controller_connect (cfg, host, event_mask, &controller_cb,
+      GNUNET_TESTBED_controller_connect (host, event_mask, &controller_cb,
                                          NULL);
   FAIL_TEST (NULL != controller);
-  neighbour = GNUNET_TESTBED_host_create ("localhost", NULL, 0);
+  neighbour = GNUNET_TESTBED_host_create ("localhost", NULL, cfg, 0);
   FAIL_TEST (NULL != neighbour);
   reg_handle =
       GNUNET_TESTBED_register_host (controller, neighbour, &registration_comp,
@@ -492,10 +494,10 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *config)
 {
-  host = GNUNET_TESTBED_host_create (NULL, NULL, 0);
-  FAIL_TEST (NULL != host);
   cfg = GNUNET_CONFIGURATION_dup (config);
-  cp = GNUNET_TESTBED_controller_start ("127.0.0.1", host, cfg, status_cb,
+  host = GNUNET_TESTBED_host_create (NULL, NULL, cfg, 0);
+  FAIL_TEST (NULL != host);
+  cp = GNUNET_TESTBED_controller_start ("127.0.0.1", host, status_cb,
                                         NULL);
   abort_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply

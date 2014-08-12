@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -25,7 +25,7 @@
  */
 
 #include "platform.h"
-#include "gnunet_common.h"
+#include "gnunet_util_lib.h"
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util",__VA_ARGS__)
 
@@ -59,8 +59,8 @@ GNUNET_htonll (uint64_t n)
  * @param d the value in network byte order
  * @return the same value in host byte order
  */
-double 
-GNUNET_hton_double (double d) 
+double
+GNUNET_hton_double (double d)
 {
   double res;
   uint64_t *in = (uint64_t *) &d;
@@ -77,15 +77,15 @@ GNUNET_hton_double (double d)
  * @param d the value in network byte order
  * @return the same value in host byte order
  */
-double 
-GNUNET_ntoh_double (double d) 
+double
+GNUNET_ntoh_double (double d)
 {
   double res;
   uint64_t *in = (uint64_t *) &d;
   uint64_t *out = (uint64_t *) &res;
 
   out[0] = GNUNET_ntohll(in[0]);
- 
+
   return res;
 }
 

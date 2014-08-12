@@ -1,6 +1,6 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010, 2011 Christian Grothoff (and other contributing authors)
+     (C) 2009-2013 Christian Grothoff (and other contributing authors)
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -24,21 +24,14 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - adjust testcases to use new 'try connect' style (should be easy, breaks API compatibility!)
- * - adjust core service to use new 'try connect' style (should be MUCH nicer there as well!)
  * - test test test
  */
 #include "platform.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_constants.h"
-#include "gnunet_bandwidth_lib.h"
-#include "gnunet_client_lib.h"
-#include "gnunet_constants.h"
-#include "gnunet_container_lib.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_hello_lib.h"
 #include "gnunet_protocols.h"
-#include "gnunet_server_lib.h"
-#include "gnunet_time_lib.h"
 #include "gnunet_transport_service.h"
 #include "transport.h"
 
@@ -75,7 +68,7 @@ struct GNUNET_TRANSPORT_TransmitHandle
    * Function to call when notify_size bytes are available
    * for transmission.
    */
-  GNUNET_CONNECTION_TransmitReadyNotify notify;
+  GNUNET_TRANSPORT_TransmitReadyNotify notify;
 
   /**
    * Closure for notify.
@@ -97,11 +90,6 @@ struct GNUNET_TRANSPORT_TransmitHandle
    * How many bytes is our notify callback waiting for?
    */
   size_t notify_size;
-
-  /**
-   * How important is this message? Not used for control messages.
-   */
-  uint32_t priority;
 
 };
 
@@ -186,7 +174,7 @@ struct GNUNET_TRANSPORT_GetHelloHandle
   GNUNET_SCHEDULER_TaskIdentifier notify_task;
 
   /**
-   * Closure for rec.
+   * Closure for @e rec.
    */
   void *rec_cls;
 
@@ -197,14 +185,29 @@ struct GNUNET_TRANSPORT_GetHelloHandle
  */
 struct GNUNET_TRANSPORT_TryConnectHandle
 {
+  /**
+   * For the DLL.
+   */
   struct GNUNET_TRANSPORT_TryConnectHandle *prev;
+
+  /**
+   * For the DLL.
+   */
   struct GNUNET_TRANSPORT_TryConnectHandle *next;
 
   struct GNUNET_PeerIdentity pid;
 
   struct GNUNET_TRANSPORT_Handle *th;
+
   struct GNUNET_TRANSPORT_TransmitHandle *tth;
+
   GNUNET_TRANSPORT_TryConnectCallback cb;
+
+  int connect;
+
+  /**
+   * Closure for @e cb.
+   */
   void *cb_cls;
 };
 
@@ -214,14 +217,25 @@ struct GNUNET_TRANSPORT_TryConnectHandle
  */
 struct GNUNET_TRANSPORT_OfferHelloHandle
 {
+  /**
+   * For the DLL.
+   */
   struct GNUNET_TRANSPORT_OfferHelloHandle *prev;
+
+  /**
+   * For the DLL.
+   */
   struct GNUNET_TRANSPORT_OfferHelloHandle *next;
 
   struct GNUNET_TRANSPORT_Handle *th;
 
   struct GNUNET_TRANSPORT_TransmitHandle *tth;
+
   GNUNET_SCHEDULER_Task cont;
 
+  /**
+   * Closure for @e cont
+   */
   void *cls;
 
   struct GNUNET_MessageHeader *msg;
@@ -254,6 +268,11 @@ struct GNUNET_TRANSPORT_Handle
    * function to call on disconnect events
    */
   GNUNET_TRANSPORT_NotifyDisconnect nd_cb;
+
+  /**
+   * function to call on excess bandwidth events
+   */
+  GNUNET_TRANSPORT_NotifyExcessBandwidth neb_cb;
 
   /**
    * Head of DLL of control messages.
@@ -320,7 +339,7 @@ struct GNUNET_TRANSPORT_Handle
    * Hash map of the current connected neighbours of this peer.
    * Maps peer identities to 'struct Neighbour' entries.
    */
-  struct GNUNET_CONTAINER_MultiHashMap *neighbours;
+  struct GNUNET_CONTAINER_MultiPeerMap *neighbours;
 
   /**
    * Heap sorting peers with pending messages by the timestamps that
@@ -354,8 +373,8 @@ struct GNUNET_TRANSPORT_Handle
   struct GNUNET_TIME_Relative reconnect_delay;
 
   /**
-   * Should we check that 'self' matches what the service thinks?
-   * (if GNUNET_NO, then 'self' is all zeros!).
+   * Should we check that @e self matches what the service thinks?
+   * (if #GNUNET_NO, then @e self is all zeros!).
    */
   int check_self;
 
@@ -398,7 +417,51 @@ static struct Neighbour *
 neighbour_find (struct GNUNET_TRANSPORT_Handle *h,
                 const struct GNUNET_PeerIdentity *peer)
 {
-  return GNUNET_CONTAINER_multihashmap_get (h->neighbours, &peer->hashPubKey);
+  return GNUNET_CONTAINER_multipeermap_get (h->neighbours, peer);
+}
+
+
+/**
+ * The outbound quota has changed in a way that may require
+ * us to reset the timeout.  Update the timeout.
+ *
+ * @param cls the `struct Neighbour` for which the timeout changed
+ */
+static void
+outbound_bw_tracker_update (void *cls)
+{
+  struct Neighbour *n = cls;
+  struct GNUNET_TIME_Relative delay;
+
+  if (NULL == n->hn)
+    return;
+  delay = GNUNET_BANDWIDTH_tracker_get_delay (&n->out_tracker,
+      n->th->notify_size + n->traffic_overhead);
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "New outbound delay %llu us\n",
+       GNUNET_STRINGS_relative_time_to_string (delay,
+                                               GNUNET_NO));
+  GNUNET_CONTAINER_heap_update_cost (n->h->ready_heap,
+      n->hn, delay.rel_value_us);
+  schedule_transmission (n->h);
+}
+
+
+/**
+ * Function called by the bandwidth tracker if we have excess
+ * bandwidth.
+ *
+ * @param cls the `struct Neighbour` that has excess bandwidth
+ */
+static void
+notify_excess_cb (void *cls)
+{
+  struct Neighbour *n = cls;
+  struct GNUNET_TRANSPORT_Handle *h = n->h;
+
+  if (NULL != h->neb_cb)
+    h->neb_cb (h->cls,
+               &n->id);
 }
 
 
@@ -413,19 +476,23 @@ neighbour_add (struct GNUNET_TRANSPORT_Handle *h,
 {
   struct Neighbour *n;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Creating entry for neighbour `%4s'.\n",
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Creating entry for neighbour `%4s'.\n",
        GNUNET_i2s (pid));
-  n = GNUNET_malloc (sizeof (struct Neighbour));
+  n = GNUNET_new (struct Neighbour);
   n->id = *pid;
   n->h = h;
   n->is_ready = GNUNET_YES;
   n->traffic_overhead = 0;
-  GNUNET_BANDWIDTH_tracker_init (&n->out_tracker,
-                                 GNUNET_CONSTANTS_DEFAULT_BW_IN_OUT,
-                                 MAX_BANDWIDTH_CARRY_S);
+  GNUNET_BANDWIDTH_tracker_init2 (&n->out_tracker,
+                                  &outbound_bw_tracker_update, n,
+                                  GNUNET_CONSTANTS_DEFAULT_BW_IN_OUT,
+                                  MAX_BANDWIDTH_CARRY_S,
+                                  &notify_excess_cb,
+                                  n);
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multihashmap_put (h->neighbours,
-                                                    &n->id.hashPubKey, n,
+                 GNUNET_CONTAINER_multipeermap_put (h->neighbours,
+                                                    &n->id, n,
                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   return n;
 }
@@ -434,15 +501,16 @@ neighbour_add (struct GNUNET_TRANSPORT_Handle *h,
 /**
  * Iterator over hash map entries, for deleting state of a neighbour.
  *
- * @param cls the 'struct GNUNET_TRANSPORT_Handle*'
+ * @param cls the `struct GNUNET_TRANSPORT_Handle *`
  * @param key peer identity
  * @param value value in the hash map, the neighbour entry to delete
- * @return GNUNET_YES if we should continue to
+ * @return #GNUNET_YES if we should continue to
  *         iterate,
- *         GNUNET_NO if not.
+ *         #GNUNET_NO if not.
  */
 static int
-neighbour_delete (void *cls, const struct GNUNET_HashCode * key, void *value)
+neighbour_delete (void *cls,
+		  const struct GNUNET_PeerIdentity *key, void *value)
 {
   struct GNUNET_TRANSPORT_Handle *handle = cls;
   struct Neighbour *n = value;
@@ -452,8 +520,9 @@ neighbour_delete (void *cls, const struct GNUNET_HashCode * key, void *value)
   GNUNET_assert (NULL == n->th);
   GNUNET_assert (NULL == n->hn);
   GNUNET_assert (GNUNET_YES ==
-                 GNUNET_CONTAINER_multihashmap_remove (handle->neighbours, key,
+                 GNUNET_CONTAINER_multipeermap_remove (handle->neighbours, key,
                                                        n));
+  GNUNET_BANDWIDTH_tracker_notification_stop (&n->out_tracker);
   GNUNET_free (n);
   return GNUNET_YES;
 }
@@ -462,7 +531,7 @@ neighbour_delete (void *cls, const struct GNUNET_HashCode * key, void *value)
 /**
  * Function we use for handling incoming messages.
  *
- * @param cls closure (struct GNUNET_TRANSPORT_Handle *)
+ * @param cls closure, a `struct GNUNET_TRANSPORT_Handle *`
  * @param msg message received, NULL on timeout or fatal error
  */
 static void
@@ -475,21 +544,24 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
   const struct GNUNET_MessageHeader *imm;
   const struct SendOkMessage *okm;
   const struct QuotaSetMessage *qm;
-  const struct GNUNET_ATS_Information *ats;
   struct GNUNET_TRANSPORT_GetHelloHandle *hwl;
   struct GNUNET_TRANSPORT_GetHelloHandle *next_hwl;
   struct Neighbour *n;
   struct GNUNET_PeerIdentity me;
   uint16_t size;
-  uint32_t ats_count;
   uint32_t bytes_msg;
   uint32_t bytes_physical;
 
-  GNUNET_assert (h->client != NULL);
-  if (msg == NULL)
+  GNUNET_assert (NULL != h->client);
+  if (GNUNET_YES == h->reconnecting)
+  {
+    return;
+  }
+  if (NULL == msg)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Error receiving from transport service, disconnecting temporarily.\n");
+    h->reconnecting = GNUNET_YES;
     disconnect_and_schedule_reconnect (h);
     return;
   }
@@ -533,29 +605,30 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
       break;
     }
     cim = (const struct ConnectInfoMessage *) msg;
-    ats_count = ntohl (cim->ats_count);
     if (size !=
-        sizeof (struct ConnectInfoMessage) +
-        ats_count * sizeof (struct GNUNET_ATS_Information))
+        sizeof (struct ConnectInfoMessage))
     {
       GNUNET_break (0);
       break;
     }
-    ats = (const struct GNUNET_ATS_Information *) &cim[1];
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message for `%4s'.\n",
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving `%s' message for `%4s'.\n",
          "CONNECT", GNUNET_i2s (&cim->id));
     n = neighbour_find (h, &cim->id);
-    if (n != NULL)
+    if (NULL != n)
     {
       GNUNET_break (0);
       break;
     }
     n = neighbour_add (h, &cim->id);
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message for `%4s' with quota %u\n",
-         "CONNECT", GNUNET_i2s (&cim->id), ntohl (cim->quota_out.value__));
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving `%s' message for `%4s' with quota %u\n",
+         "CONNECT",
+         GNUNET_i2s (&cim->id),
+         ntohl (cim->quota_out.value__));
     GNUNET_BANDWIDTH_tracker_update_quota (&n->out_tracker, cim->quota_out);
     if (h->nc_cb != NULL)
-      h->nc_cb (h->cls, &n->id, ats, ats_count);
+      h->nc_cb (h->cls, &n->id);
     break;
   case GNUNET_MESSAGE_TYPE_TRANSPORT_DISCONNECT:
     if (size != sizeof (struct DisconnectInfoMessage))
@@ -565,15 +638,16 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
     }
     dim = (const struct DisconnectInfoMessage *) msg;
     GNUNET_break (ntohl (dim->reserved) == 0);
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message for `%4s'.\n",
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving `%s' message for `%4s'.\n",
          "DISCONNECT", GNUNET_i2s (&dim->peer));
     n = neighbour_find (h, &dim->peer);
-    if (n == NULL)
+    if (NULL == n)
     {
       GNUNET_break (0);
       break;
     }
-    neighbour_delete (h, &dim->peer.hashPubKey, n);
+    neighbour_delete (h, &dim->peer, n);
     break;
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_OK:
     if (size != sizeof (struct SendOkMessage))
@@ -584,22 +658,24 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
     okm = (const struct SendOkMessage *) msg;
     bytes_msg = ntohl (okm->bytes_msg);
     bytes_physical = ntohl (okm->bytes_physical);
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message, transmission %s.\n",
-         "SEND_OK", ntohl (okm->success) == GNUNET_OK ? "succeeded" : "failed");
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving SEND_OK message, transmission %s.\n",
+         ntohl (okm->success) == GNUNET_OK ? "succeeded" : "failed");
 
     n = neighbour_find (h, &okm->peer);
-    if (n == NULL)
+    if (NULL == n)
       break;
 
     if (bytes_physical >= bytes_msg)
     {
-        LOG (GNUNET_ERROR_TYPE_DEBUG, "Overhead for %u byte message: %u \n",
+        LOG (GNUNET_ERROR_TYPE_DEBUG,
+             "Overhead for %u byte message: %u\n",
             bytes_msg, bytes_physical - bytes_msg);
       n->traffic_overhead += bytes_physical - bytes_msg;
     }
     GNUNET_break (GNUNET_NO == n->is_ready);
     n->is_ready = GNUNET_YES;
-    if ((n->th != NULL) && (n->hn == NULL))
+    if ((NULL != n->th) && (NULL == n->hn))
     {
       GNUNET_assert (GNUNET_SCHEDULER_NO_TASK != n->th->timeout_task);
       GNUNET_SCHEDULER_cancel (n->th->timeout_task);
@@ -611,7 +687,9 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
     }
     break;
   case GNUNET_MESSAGE_TYPE_TRANSPORT_RECV:
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message.\n", "RECV");
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving `%s' message.\n",
+         "RECV");
     if (size <
         sizeof (struct InboundMessage) + sizeof (struct GNUNET_MessageHeader))
     {
@@ -619,28 +697,27 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
       break;
     }
     im = (const struct InboundMessage *) msg;
-    ats_count = ntohl (im->ats_count);
-    ats = (const struct GNUNET_ATS_Information *) &im[1];
-    imm = (const struct GNUNET_MessageHeader *) &ats[ats_count];
-    if (ntohs (imm->size) + sizeof (struct InboundMessage) +
-        ats_count * sizeof (struct GNUNET_ATS_Information) != size)
+    imm = (const struct GNUNET_MessageHeader *) &im[1];
+    if (ntohs (imm->size) + sizeof (struct InboundMessage) != size)
     {
       GNUNET_break (0);
       break;
     }
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Received message of type %u from `%4s'.\n",
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Received message of type %u from `%4s'.\n",
          ntohs (imm->type), GNUNET_i2s (&im->peer));
     n = neighbour_find (h, &im->peer);
-    if (n == NULL)
+    if (NULL == n)
     {
       GNUNET_break (0);
       break;
     }
-    if (h->rec != NULL)
-      h->rec (h->cls, &im->peer, imm, ats, ats_count);
+    if (NULL != h->rec)
+      h->rec (h->cls, &im->peer, imm);
     break;
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SET_QUOTA:
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message.\n", "SET_QUOTA");
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving `%s' message.\n", "SET_QUOTA");
     if (size != sizeof (struct QuotaSetMessage))
     {
       GNUNET_break (0);
@@ -648,10 +725,13 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
     }
     qm = (const struct QuotaSetMessage *) msg;
     n = neighbour_find (h, &qm->peer);
-    if (n == NULL)
+    if (NULL == n)
       break;
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Receiving `%s' message for `%4s' with quota %u\n",
-         "SET_QUOTA", GNUNET_i2s (&qm->peer), ntohl (qm->quota.value__));
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Receiving `%s' message for `%4s' with quota %u\n",
+         "SET_QUOTA",
+         GNUNET_i2s (&qm->peer),
+         ntohl (qm->quota.value__));
     GNUNET_BANDWIDTH_tracker_update_quota (&n->out_tracker, qm->quota);
     break;
   default:
@@ -668,13 +748,12 @@ demultiplexer (void *cls, const struct GNUNET_MessageHeader *msg)
  * A transmission request could not be satisfied because of
  * network congestion.  Notify the initiator and clean up.
  *
- * @param cls the 'struct GNUNET_TRANSPORT_TransmitHandle'
+ * @param cls the `struct GNUNET_TRANSPORT_TransmitHandle`
  * @param tc scheduler context
  */
 static void
 timeout_request_due_to_congestion (void *cls,
-                                   const struct GNUNET_SCHEDULER_TaskContext
-                                   *tc)
+                                   const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_TRANSPORT_TransmitHandle *th = cls;
   struct Neighbour *n = th->neighbour;
@@ -692,9 +771,9 @@ timeout_request_due_to_congestion (void *cls,
  * Transmit message(s) to service.
  *
  * @param cls handle to transport
- * @param size number of bytes available in buf
+ * @param size number of bytes available in @a buf
  * @param buf where to copy the message
- * @return number of bytes copied to buf
+ * @return number of bytes copied to @a buf
  */
 static size_t
 transport_notify_ready (void *cls, size_t size, void *buf)
@@ -724,7 +803,8 @@ transport_notify_ready (void *cls, size_t size, void *buf)
   {
     GNUNET_CONTAINER_DLL_remove (h->control_head, h->control_tail, th);
     nret = th->notify (th->notify_cls, size, &cbuf[ret]);
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Added %u bytes of control message at %u\n",
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Added %u bytes of control message at %u\n",
          nret, ret);
     GNUNET_free (th);
     ret += nret;
@@ -752,7 +832,7 @@ transport_notify_ready (void *cls, size_t size, void *buf)
     if (th->notify_size + sizeof (struct OutboundMessage) > size)
       break;                    /* does not fit */
     if (GNUNET_BANDWIDTH_tracker_get_delay
-        (&n->out_tracker, th->notify_size).rel_value > 0)
+        (&n->out_tracker, th->notify_size).rel_value_us > 0)
       break;                    /* too early */
     GNUNET_assert (n == GNUNET_CONTAINER_heap_remove_root (h->ready_heap));
     n->hn = NULL;
@@ -769,7 +849,7 @@ transport_notify_ready (void *cls, size_t size, void *buf)
                      GNUNET_SERVER_MAX_MESSAGE_SIZE);
       obm.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_SEND);
       obm.header.size = htons (mret + sizeof (struct OutboundMessage));
-      obm.priority = htonl (th->priority);
+      obm.reserved = htonl (0);
       obm.timeout =
           GNUNET_TIME_relative_hton (GNUNET_TIME_absolute_get_remaining
                                      (th->timeout));
@@ -783,7 +863,8 @@ transport_notify_ready (void *cls, size_t size, void *buf)
   }
   /* if there are more pending messages, try to schedule those */
   schedule_transmission (h);
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Transmitting %u bytes to transport service\n",
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Transmitting %u bytes to transport service\n",
        ret);
   return ret;
 }
@@ -809,7 +890,7 @@ schedule_transmission_task (void *cls,
   GNUNET_assert (NULL != h->client);
   /* destroy all requests that have timed out */
   while ((NULL != (n = GNUNET_CONTAINER_heap_peek (h->ready_heap))) &&
-         (GNUNET_TIME_absolute_get_remaining (n->th->timeout).rel_value == 0))
+         (0 == GNUNET_TIME_absolute_get_remaining (n->th->timeout).rel_value_us))
   {
     /* notify client that the request could not be satisfied within
      * the given time constraints */
@@ -836,7 +917,8 @@ schedule_transmission_task (void *cls,
       return;                   /* no pending messages */
     size = n->th->notify_size + sizeof (struct OutboundMessage);
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Calling notify_transmit_ready\n");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Calling notify_transmit_ready\n");
   h->cth =
       GNUNET_CLIENT_notify_transmit_ready (h->client, size,
                                            GNUNET_TIME_UNIT_FOREVER_REL,
@@ -876,8 +958,8 @@ schedule_transmission (struct GNUNET_TRANSPORT_Handle *h)
   else
     return;                     /* no work to be done */
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Scheduling next transmission to service in %llu ms\n",
-       (unsigned long long) delay.rel_value);
+       "Scheduling next transmission to service in %s\n",
+       GNUNET_STRINGS_relative_time_to_string (delay, GNUNET_YES));
   h->quota_task =
       GNUNET_SCHEDULER_add_delayed (delay, &schedule_transmission_task, h);
 }
@@ -890,19 +972,20 @@ schedule_transmission (struct GNUNET_TRANSPORT_Handle *h)
  * @param h handle to the transport service
  * @param size number of bytes to be transmitted
  * @param notify function to call to get the content
- * @param notify_cls closure for notify
- * @return a GNUNET_TRANSPORT_TransmitHandle
+ * @param notify_cls closure for @a notify
+ * @return a `struct GNUNET_TRANSPORT_TransmitHandle`
  */
 static struct GNUNET_TRANSPORT_TransmitHandle *
 schedule_control_transmit (struct GNUNET_TRANSPORT_Handle *h, size_t size,
-                           GNUNET_CONNECTION_TransmitReadyNotify notify,
+                           GNUNET_TRANSPORT_TransmitReadyNotify notify,
                            void *notify_cls)
 {
   struct GNUNET_TRANSPORT_TransmitHandle *th;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Control transmit of %u bytes requested\n",
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Control transmit of %u bytes requested\n",
        size);
-  th = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_TransmitHandle));
+  th = GNUNET_new (struct GNUNET_TRANSPORT_TransmitHandle);
   th->notify = notify;
   th->notify_cls = notify_cls;
   th->notify_size = size;
@@ -916,9 +999,9 @@ schedule_control_transmit (struct GNUNET_TRANSPORT_Handle *h, size_t size,
  * Transmit START message to service.
  *
  * @param cls unused
- * @param size number of bytes available in buf
+ * @param size number of bytes available in @a buf
  * @param buf where to copy the message
- * @return number of bytes copied to buf
+ * @return number of bytes copied to @a buf
  */
 static size_t
 send_start (void *cls, size_t size, void *buf)
@@ -927,14 +1010,17 @@ send_start (void *cls, size_t size, void *buf)
   struct StartMessage s;
   uint32_t options;
 
-  if (buf == NULL)
+  if (NULL == buf)
   {
     /* Can only be shutdown, just give up */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "Shutdown while trying to transmit `%s' request.\n", "START");
+         "Shutdown while trying to transmit `%s' request.\n",
+         "START");
     return 0;
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Transmitting `%s' request.\n", "START");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Transmitting `%s' request.\n",
+       "START");
   GNUNET_assert (size >= sizeof (struct StartMessage));
   s.header.size = htons (sizeof (struct StartMessage));
   s.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_START);
@@ -959,23 +1045,28 @@ send_start (void *cls, size_t size, void *buf)
  * @param tc scheduler context
  */
 static void
-reconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+reconnect (void *cls,
+           const struct GNUNET_SCHEDULER_TaskContext *tc)
 {
   struct GNUNET_TRANSPORT_Handle *h = cls;
 
   h->reconnect_task = GNUNET_SCHEDULER_NO_TASK;
-  if ((tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN) != 0)
+  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
   {
     /* shutdown, just give up */
     return;
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Connecting to transport service.\n");
-  GNUNET_assert (h->client == NULL);
-  GNUNET_assert (h->control_head == NULL);
-  GNUNET_assert (h->control_tail == NULL);
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Connecting to transport service.\n");
+  GNUNET_assert (NULL == h->client);
+  GNUNET_assert (NULL == h->control_head);
+  GNUNET_assert (NULL == h->control_tail);
+  h->reconnecting = GNUNET_NO;
   h->client = GNUNET_CLIENT_connect ("transport", h->cfg);
-  GNUNET_assert (h->client != NULL);
-  schedule_control_transmit (h, sizeof (struct StartMessage), &send_start, h);
+
+  GNUNET_assert (NULL != h->client);
+  schedule_control_transmit (h, sizeof (struct StartMessage),
+                             &send_start, h);
 }
 
 
@@ -1000,9 +1091,12 @@ disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_Handle *h)
   {
     GNUNET_CLIENT_disconnect (h->client);
     h->client = NULL;
+/*    LOG (GNUNET_ERROR_TYPE_ERROR,
+         "Client disconnect done \n");*/
   }
   /* Forget about all neighbours that we used to be connected to */
-  GNUNET_CONTAINER_multihashmap_iterate (h->neighbours, &neighbour_delete, h);
+  GNUNET_CONTAINER_multipeermap_iterate (h->neighbours,
+                                         &neighbour_delete, h);
   if (h->quota_task != GNUNET_SCHEDULER_NO_TASK)
   {
     GNUNET_SCHEDULER_cancel (h->quota_task);
@@ -1015,8 +1109,8 @@ disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_Handle *h)
     GNUNET_free (th);
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Scheduling task to reconnect to transport service in %llu ms.\n",
-       h->reconnect_delay.rel_value);
+       "Scheduling task to reconnect to transport service in %s.\n",
+       GNUNET_STRINGS_relative_time_to_string(h->reconnect_delay, GNUNET_YES));
   h->reconnect_task =
       GNUNET_SCHEDULER_add_delayed (h->reconnect_delay, &reconnect, h);
   h->reconnect_delay = GNUNET_TIME_STD_BACKOFF (h->reconnect_delay);
@@ -1030,13 +1124,11 @@ disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_Handle *h)
  * @param tth transmit handle to cancel
  */
 static void
-cancel_control_transmit (struct GNUNET_TRANSPORT_Handle *th, struct GNUNET_TRANSPORT_TransmitHandle *tth)
+cancel_control_transmit (struct GNUNET_TRANSPORT_Handle *th,
+                         struct GNUNET_TRANSPORT_TransmitHandle *tth)
 {
-  GNUNET_assert (NULL != th);
-  GNUNET_assert (NULL != tth);
-
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Canceling transmit of contral transmission requested\n");
-
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Canceling transmit of contral transmission requested\n");
   GNUNET_CONTAINER_DLL_remove (th->control_head, th->control_tail, tth);
   GNUNET_free (tth);
 }
@@ -1046,10 +1138,10 @@ cancel_control_transmit (struct GNUNET_TRANSPORT_Handle *th, struct GNUNET_TRANS
 /**
  * Send REQUEST_CONNECT message to the service.
  *
- * @param cls the 'struct GNUNET_PeerIdentity'
- * @param size number of bytes available in buf
+ * @param cls the `struct GNUNET_PeerIdentity`
+ * @param size number of bytes available in @a buf
  * @param buf where to copy the message
- * @return number of bytes copied to buf
+ * @return number of bytes copied to @a buf
  */
 static size_t
 send_try_connect (void *cls, size_t size, void *buf)
@@ -1057,21 +1149,26 @@ send_try_connect (void *cls, size_t size, void *buf)
   struct GNUNET_TRANSPORT_TryConnectHandle *tch = cls;
   struct TransportRequestConnectMessage msg;
 
-  if (buf == NULL)
+  if (NULL == buf)
   {
     if (NULL != tch->cb)
       tch->cb (tch->cb_cls, GNUNET_SYSERR);
     GNUNET_CONTAINER_DLL_remove (tch->th->tc_head, tch->th->tc_tail, tch);
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+         "Discarding  `%s' request to `%4s' due to error in transport service connection.\n",
+         "REQUEST_CONNECT",
+         GNUNET_i2s (&tch->pid));
     GNUNET_free (tch);
     return 0;
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Transmitting `%s' request with respect to `%4s'.\n", "REQUEST_CONNECT",
+       "Transmitting `%s' request with respect to `%4s'.\n",
+       "REQUEST_CONNECT",
        GNUNET_i2s (&tch->pid));
   GNUNET_assert (size >= sizeof (struct TransportRequestConnectMessage));
   msg.header.size = htons (sizeof (struct TransportRequestConnectMessage));
   msg.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_REQUEST_CONNECT);
-  msg.reserved = htonl (0);
+  msg.connect = htonl (tch->connect);
   msg.peer = tch->pid;
   memcpy (buf, &msg, sizeof (msg));
   if (NULL != tch->cb)
@@ -1090,7 +1187,7 @@ send_try_connect (void *cls, size_t size, void *buf)
  * @param cb callback to be called when request was transmitted to transport
  *         service
  * @param cb_cls closure for the callback
- * @return a GNUNET_TRANSPORT_TryConnectHandle handle or
+ * @return a `struct GNUNET_TRANSPORT_TryConnectHandle` handle or
  *         NULL on failure (cb will not be called)
  */
 struct GNUNET_TRANSPORT_TryConnectHandle *
@@ -1103,15 +1200,15 @@ GNUNET_TRANSPORT_try_connect (struct GNUNET_TRANSPORT_Handle *handle,
 
   if (NULL == handle->client)
       return NULL;
-
-  tch = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_TryConnectHandle));
+  tch = GNUNET_new (struct GNUNET_TRANSPORT_TryConnectHandle);
   tch->th = handle;
   tch->pid = *(target);
   tch->cb = cb;
   tch->cb_cls = cb_cls;
+  tch->connect = GNUNET_YES;
   tch->tth = schedule_control_transmit (handle,
-                             sizeof (struct TransportRequestConnectMessage),
-                             &send_try_connect, tch);
+                                        sizeof (struct TransportRequestConnectMessage),
+                                        &send_try_connect, tch);
   GNUNET_CONTAINER_DLL_insert(handle->tc_head, handle->tc_tail, tch);
   return tch;
 }
@@ -1121,13 +1218,13 @@ GNUNET_TRANSPORT_try_connect (struct GNUNET_TRANSPORT_Handle *handle,
  * Cancel the request to transport to try a connect
  * Callback will not be called
  *
- * @param tch GNUNET_TRANSPORT_TryConnectHandle handle to cancel
+ * @param tch the handle to cancel
  */
 void
 GNUNET_TRANSPORT_try_connect_cancel (struct GNUNET_TRANSPORT_TryConnectHandle *tch)
 {
   struct GNUNET_TRANSPORT_Handle *th;
-  GNUNET_assert (NULL != tch);
+  GNUNET_assert (GNUNET_YES == tch->connect);
 
   th = tch->th;
   cancel_control_transmit (th, tch->tth);
@@ -1136,12 +1233,69 @@ GNUNET_TRANSPORT_try_connect_cancel (struct GNUNET_TRANSPORT_TryConnectHandle *t
 }
 
 /**
+ * Ask the transport service to shutdown a connection to
+ * the given peer.
+ *
+ * @param handle connection to transport service
+ * @param target who we should try to connect to
+ * @param cb callback to be called when request was transmitted to transport
+ *         service
+ * @param cb_cls closure for the callback
+ * @return a `struct GNUNET_TRANSPORT_TryConnectHandle` handle or
+ *         NULL on failure (cb will not be called)
+ */
+struct GNUNET_TRANSPORT_TryConnectHandle *
+GNUNET_TRANSPORT_try_disconnect (struct GNUNET_TRANSPORT_Handle *handle,
+                              const struct GNUNET_PeerIdentity *target,
+                              GNUNET_TRANSPORT_TryConnectCallback cb,
+                              void *cb_cls)
+{
+  struct GNUNET_TRANSPORT_TryConnectHandle *tch = NULL;
+
+  if (NULL == handle->client)
+      return NULL;
+  tch = GNUNET_new (struct GNUNET_TRANSPORT_TryConnectHandle);
+  tch->th = handle;
+  tch->pid = *(target);
+  tch->cb = cb;
+  tch->cb_cls = cb_cls;
+  tch->connect = GNUNET_NO;
+  tch->tth = schedule_control_transmit (handle,
+                                        sizeof (struct TransportRequestConnectMessage),
+                                        &send_try_connect, tch);
+  GNUNET_CONTAINER_DLL_insert(handle->tc_head, handle->tc_tail, tch);
+  return tch;
+}
+
+
+/**
+ * Cancel the request to transport to try a disconnect
+ * Callback will not be called
+ *
+ * @param tch the handle to cancel
+ */
+void
+GNUNET_TRANSPORT_try_disconnect_cancel (struct GNUNET_TRANSPORT_TryConnectHandle *tch)
+{
+  struct GNUNET_TRANSPORT_Handle *th;
+  GNUNET_assert (GNUNET_NO == tch->connect);
+
+  th = tch->th;
+  cancel_control_transmit (th, tch->tth);
+  GNUNET_CONTAINER_DLL_remove (th->tc_head, th->tc_tail, tch);
+  GNUNET_free (tch);
+}
+
+
+
+
+/**
  * Send HELLO message to the service.
  *
  * @param cls the HELLO message to send
- * @param size number of bytes available in buf
+ * @param size number of bytes available in @a buf
  * @param buf where to copy the message
- * @return number of bytes copied to buf
+ * @return number of bytes copied to @a buf
  */
 static size_t
 send_hello (void *cls, size_t size, void *buf)
@@ -1150,14 +1304,15 @@ send_hello (void *cls, size_t size, void *buf)
   struct GNUNET_MessageHeader *msg = ohh->msg;
   uint16_t ssize;
   struct GNUNET_SCHEDULER_TaskContext tc;
+
   tc.read_ready = NULL;
   tc.write_ready = NULL;
   tc.reason = GNUNET_SCHEDULER_REASON_TIMEOUT;
-
-  if (buf == NULL)
+  if (NULL == buf)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "Timeout while trying to transmit `%s' request.\n", "HELLO");
+         "Timeout while trying to transmit `%s' request.\n",
+         "HELLO");
     if (NULL != ohh->cont)
       ohh->cont (ohh->cls, &tc);
     GNUNET_free (msg);
@@ -1165,7 +1320,9 @@ send_hello (void *cls, size_t size, void *buf)
     GNUNET_free (ohh);
     return 0;
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Transmitting `%s' request.\n", "HELLO");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Transmitting `%s' request.\n",
+       "HELLO");
   ssize = ntohs (msg->size);
   GNUNET_assert (size >= ssize);
   memcpy (buf, msg, ssize);
@@ -1183,23 +1340,27 @@ send_hello (void *cls, size_t size, void *buf)
  * Send traffic metric message to the service.
  *
  * @param cls the message to send
- * @param size number of bytes available in buf
+ * @param size number of bytes available in @a buf
  * @param buf where to copy the message
- * @return number of bytes copied to buf
+ * @return number of bytes copied to @a buf
  */
 static size_t
 send_metric (void *cls, size_t size, void *buf)
 {
-	struct TrafficMetricMessage *msg = cls;
+  struct TrafficMetricMessage *msg = cls;
   uint16_t ssize;
-  if (buf == NULL)
+
+  if (NULL == buf)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "Timeout while trying to transmit `%s' request.\n", "TRAFFIC_METRIC");
+         "Timeout while trying to transmit `%s' request.\n",
+         "TRAFFIC_METRIC");
     GNUNET_free (msg);
     return 0;
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Transmitting `%s' request.\n", "TRAFFIC_METRIC");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Transmitting `%s' request.\n",
+       "TRAFFIC_METRIC");
   ssize = ntohs (msg->header.size);
   GNUNET_assert (size >= ssize);
   memcpy (buf, msg, ssize);
@@ -1213,56 +1374,57 @@ send_metric (void *cls, size_t size, void *buf)
  *
  * @param handle transport handle
  * @param peer the peer to set the metric for
- * @param direction can be: TM_SEND, TM_RECV, TM_BOTH
+ * @param inbound set inbound direction (#GNUNET_YES or #GNUNET_NO)
+ * @param outbound set outbound direction (#GNUNET_YES or #GNUNET_NO)
  * @param ats the metric as ATS information
  * @param ats_count the number of metrics
  *
  * Supported ATS values:
- * GNUNET_ATS_QUALITY_NET_DELAY  (value in ms)
- * GNUNET_ATS_QUALITY_NET_DISTANCE (value in #hops)
+ * #GNUNET_ATS_QUALITY_NET_DELAY  (value in ms)
+ * #GNUNET_ATS_QUALITY_NET_DISTANCE (value in count(hops))
  *
- * Example
+ * Example:
  * To enforce a delay of 10 ms for peer p1 in sending direction use:
- *
+ * <code>
  * struct GNUNET_ATS_Information ats;
  * ats.type = ntohl (GNUNET_ATS_QUALITY_NET_DELAY);
  * ats.value = ntohl (10);
  * GNUNET_TRANSPORT_set_traffic_metric (th, p1, TM_SEND, &ats, 1);
- *
+ * </code>
  * Note:
  * Delay restrictions in receiving direction will be enforced with
  * 1 message delay.
  */
 void
 GNUNET_TRANSPORT_set_traffic_metric (struct GNUNET_TRANSPORT_Handle *handle,
-																		const struct GNUNET_PeerIdentity *peer,
-																		int direction,
-																		const struct GNUNET_ATS_Information *ats,
-																		size_t ats_count)
+                                     const struct GNUNET_PeerIdentity *peer,
+                                     int inbound,
+                                     int outbound,
+                                     const struct GNUNET_ATS_Information *ats,
+                                     size_t ats_count)
 {
   struct TrafficMetricMessage *msg;
 
-  GNUNET_assert (NULL != handle);
-  GNUNET_assert (NULL != peer);
-  GNUNET_assert (direction >= TM_SEND);
-  GNUNET_assert (direction <= TM_BOTH);
-
+  GNUNET_assert ((outbound == GNUNET_YES) || (outbound == GNUNET_NO));
+  GNUNET_assert ((inbound == GNUNET_YES) || (inbound == GNUNET_NO));
+  if ((GNUNET_NO == inbound) && (GNUNET_NO == outbound))
+    return;
   if (0 == ats_count)
-  	return;
+    return;
 
   size_t len = sizeof (struct TrafficMetricMessage) +
-  						 ats_count * sizeof (struct GNUNET_ATS_Information);
+    ats_count * sizeof (struct GNUNET_ATS_Information);
 
   msg = GNUNET_malloc (len);
   msg->header.size = htons (len);
   msg->header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_TRAFFIC_METRIC);
-  msg->direction = htons (direction);
+  msg->direction = htons (0 + outbound + 2 * inbound);
   msg->ats_count = htons (ats_count);
   msg->peer = (*peer);
   memcpy (&msg[1], ats, ats_count * sizeof (struct GNUNET_ATS_Information));
-  schedule_control_transmit (handle, len, &send_metric, msg);
+  schedule_control_transmit (handle, len,
+                             &send_metric, msg);
 }
-
 
 
 /**
@@ -1273,10 +1435,10 @@ GNUNET_TRANSPORT_set_traffic_metric (struct GNUNET_TRANSPORT_Handle *handle,
  * @param handle connection to transport service
  * @param hello the hello message
  * @param cont continuation to call when HELLO has been sent,
- * 	tc reason GNUNET_SCHEDULER_REASON_TIMEOUT for fail
- * 	tc reasong GNUNET_SCHEDULER_REASON_READ_READY for success
+ * 	tc reason #GNUNET_SCHEDULER_REASON_TIMEOUT for fail
+ * 	tc reasong #GNUNET_SCHEDULER_REASON_READ_READY for success
  * @param cls closure for continuation
- * @return a GNUNET_TRANSPORT_OfferHelloHandle handle or NULL on failure,
+ * @return a `struct GNUNET_TRANSPORT_OfferHelloHandle` handle or NULL on failure,
  *      in case of failure cont will not be called
  *
  */
@@ -1290,12 +1452,8 @@ GNUNET_TRANSPORT_offer_hello (struct GNUNET_TRANSPORT_Handle *handle,
   struct GNUNET_PeerIdentity peer;
   uint16_t size;
 
-  GNUNET_assert (NULL != handle);
-  GNUNET_assert (NULL != hello);
-
   if (NULL == handle->client)
     return NULL;
-
   GNUNET_break (ntohs (hello->type) == GNUNET_MESSAGE_TYPE_HELLO);
   size = ntohs (hello->size);
   GNUNET_break (size >= sizeof (struct GNUNET_MessageHeader));
@@ -1312,12 +1470,13 @@ GNUNET_TRANSPORT_offer_hello (struct GNUNET_TRANSPORT_Handle *handle,
        "Offering `%s' message of `%4s' to transport for validation.\n", "HELLO",
        GNUNET_i2s (&peer));
 
-  ohh = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_OfferHelloHandle));
+  ohh = GNUNET_new (struct GNUNET_TRANSPORT_OfferHelloHandle);
   ohh->th = handle;
   ohh->cont = cont;
   ohh->cls = cls;
   ohh->msg = msg;
-  ohh->tth = schedule_control_transmit (handle, size, &send_hello, ohh);
+  ohh->tth = schedule_control_transmit (handle, size,
+                                        &send_hello, ohh);
   GNUNET_CONTAINER_DLL_insert (handle->oh_head, handle->oh_tail, ohh);
   return ohh;
 }
@@ -1332,7 +1491,6 @@ void
 GNUNET_TRANSPORT_offer_hello_cancel (struct GNUNET_TRANSPORT_OfferHelloHandle *ohh)
 {
   struct GNUNET_TRANSPORT_Handle *th = ohh->th;
-  GNUNET_assert (NULL != ohh);
 
   cancel_control_transmit (ohh->th, ohh->tth);
   GNUNET_CONTAINER_DLL_remove (th->oh_head, th->oh_tail, ohh);
@@ -1340,24 +1498,30 @@ GNUNET_TRANSPORT_offer_hello_cancel (struct GNUNET_TRANSPORT_OfferHelloHandle *o
   GNUNET_free (ohh);
 }
 
-int
-GNUNET_TRANSPORT_check_neighbour_connected (struct GNUNET_TRANSPORT_Handle *handle,
-                              					const struct GNUNET_PeerIdentity *peer)
-{
-	GNUNET_assert (NULL != handle);
-	GNUNET_assert (NULL != peer);
 
-	if (GNUNET_YES == GNUNET_CONTAINER_multihashmap_contains(handle->neighbours, &peer->hashPubKey))
-			return GNUNET_YES;
-	else
-		return GNUNET_NO;
+/**
+ * Checks if a given peer is connected to us
+ *
+ * @param handle connection to transport service
+ * @param peer the peer to check
+ * @return #GNUNET_YES (connected) or #GNUNET_NO (disconnected)
+ */
+int
+GNUNET_TRANSPORT_check_peer_connected (struct GNUNET_TRANSPORT_Handle *handle,
+                                       const struct GNUNET_PeerIdentity *peer)
+{
+  if (GNUNET_YES ==
+      GNUNET_CONTAINER_multipeermap_contains (handle->neighbours,
+                                              peer))
+    return GNUNET_YES;
+  return GNUNET_NO;
 }
 
 
 /**
  * Task to call the HelloUpdateCallback of the GetHelloHandle
  *
- * @param cls the GetHelloHandle
+ * @param cls the `struct GNUNET_TRANSPORT_GetHelloHandle`
  * @param tc the scheduler task context
  */
 static void
@@ -1369,7 +1533,7 @@ call_hello_update_cb_async (void *cls,
   GNUNET_assert (NULL != ghh->handle->my_hello);
   GNUNET_assert (GNUNET_SCHEDULER_NO_TASK != ghh->notify_task);
   ghh->notify_task = GNUNET_SCHEDULER_NO_TASK;
-  ghh->rec (ghh->rec_cls, 
+  ghh->rec (ghh->rec_cls,
             (const struct GNUNET_MessageHeader *) ghh->handle->my_hello);
 }
 
@@ -1383,7 +1547,7 @@ call_hello_update_cb_async (void *cls,
  *            identity; message and sender will be NULL on timeout
  *            (handshake with transport service pending/failed).
  *             cost estimate will be 0.
- * @param rec_cls closure for rec
+ * @param rec_cls closure for @a rec
  * @return handle to cancel the operation
  */
 struct GNUNET_TRANSPORT_GetHelloHandle *
@@ -1393,7 +1557,7 @@ GNUNET_TRANSPORT_get_hello (struct GNUNET_TRANSPORT_Handle *handle,
 {
   struct GNUNET_TRANSPORT_GetHelloHandle *hwl;
 
-  hwl = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_GetHelloHandle));
+  hwl = GNUNET_new (struct GNUNET_TRANSPORT_GetHelloHandle);
   hwl->rec = rec;
   hwl->rec_cls = rec_cls;
   hwl->handle = handle;
@@ -1433,6 +1597,7 @@ GNUNET_TRANSPORT_get_hello_cancel (struct GNUNET_TRANSPORT_GetHelloHandle *ghh)
  * @param rec receive function to call
  * @param nc function to call on connect events
  * @param nd function to call on disconnect events
+ * @return NULL on error
  */
 struct GNUNET_TRANSPORT_Handle *
 GNUNET_TRANSPORT_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
@@ -1441,10 +1606,37 @@ GNUNET_TRANSPORT_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
                           GNUNET_TRANSPORT_NotifyConnect nc,
                           GNUNET_TRANSPORT_NotifyDisconnect nd)
 {
+  return GNUNET_TRANSPORT_connect2 (cfg, self, cls,
+                                    rec, nc, nd, NULL);
+}
+
+
+/**
+ * Connect to the transport service.  Note that the connection may
+ * complete (or fail) asynchronously.
+ *
+ * @param cfg configuration to use
+ * @param self our own identity (API should check that it matches
+ *             the identity found by transport), or NULL (no check)
+ * @param cls closure for the callbacks
+ * @param rec receive function to call
+ * @param nc function to call on connect events
+ * @param nd function to call on disconnect events
+ * @param neb function to call if we have excess bandwidth to a peer
+ * @return NULL on error
+ */
+struct GNUNET_TRANSPORT_Handle *
+GNUNET_TRANSPORT_connect2 (const struct GNUNET_CONFIGURATION_Handle *cfg,
+                           const struct GNUNET_PeerIdentity *self, void *cls,
+                           GNUNET_TRANSPORT_ReceiveCallback rec,
+                           GNUNET_TRANSPORT_NotifyConnect nc,
+                           GNUNET_TRANSPORT_NotifyDisconnect nd,
+                           GNUNET_TRANSPORT_NotifyExcessBandwidth neb)
+{
   struct GNUNET_TRANSPORT_Handle *ret;
 
-  ret = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_Handle));
-  if (self != NULL)
+  ret = GNUNET_new (struct GNUNET_TRANSPORT_Handle);
+  if (NULL != self)
   {
     ret->self = *self;
     ret->check_self = GNUNET_YES;
@@ -1454,19 +1646,23 @@ GNUNET_TRANSPORT_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
   ret->rec = rec;
   ret->nc_cb = nc;
   ret->nd_cb = nd;
+  ret->neb_cb = neb;
   ret->reconnect_delay = GNUNET_TIME_UNIT_ZERO;
-  ret->neighbours =
-    GNUNET_CONTAINER_multihashmap_create (STARTING_NEIGHBOURS_SIZE, GNUNET_YES);
-  ret->ready_heap =
-      GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Connecting to transport service.\n");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Connecting to transport service.\n");
   ret->client = GNUNET_CLIENT_connect ("transport", cfg);
-  if (ret->client == NULL)
+  if (NULL == ret->client)
   {
     GNUNET_free (ret);
     return NULL;
   }
-  schedule_control_transmit (ret, sizeof (struct StartMessage), &send_start, ret);
+  ret->neighbours =
+    GNUNET_CONTAINER_multipeermap_create (STARTING_NEIGHBOURS_SIZE,
+                                          GNUNET_YES);
+  ret->ready_heap =
+      GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
+ schedule_control_transmit (ret, sizeof (struct StartMessage),
+                            &send_start, ret);
   return ret;
 }
 
@@ -1474,12 +1670,13 @@ GNUNET_TRANSPORT_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
 /**
  * Disconnect from the transport service.
  *
- * @param handle handle to the service as returned from GNUNET_TRANSPORT_connect
+ * @param handle handle to the service as returned from #GNUNET_TRANSPORT_connect()
  */
 void
 GNUNET_TRANSPORT_disconnect (struct GNUNET_TRANSPORT_Handle *handle)
 {
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Transport disconnect called!\n");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Transport disconnect called!\n");
   /* this disconnects all neighbours... */
   if (handle->reconnect_task == GNUNET_SCHEDULER_NO_TASK)
     disconnect_and_schedule_reconnect (handle);
@@ -1489,7 +1686,7 @@ GNUNET_TRANSPORT_disconnect (struct GNUNET_TRANSPORT_Handle *handle)
     GNUNET_SCHEDULER_cancel (handle->reconnect_task);
     handle->reconnect_task = GNUNET_SCHEDULER_NO_TASK;
   }
-  GNUNET_CONTAINER_multihashmap_destroy (handle->neighbours);
+  GNUNET_CONTAINER_multipeermap_destroy (handle->neighbours);
   handle->neighbours = NULL;
   if (handle->quota_task != GNUNET_SCHEDULER_NO_TASK)
   {
@@ -1498,10 +1695,10 @@ GNUNET_TRANSPORT_disconnect (struct GNUNET_TRANSPORT_Handle *handle)
   }
   GNUNET_free_non_null (handle->my_hello);
   handle->my_hello = NULL;
-  GNUNET_assert (handle->tc_head == NULL);
-  GNUNET_assert (handle->tc_tail == NULL);
-  GNUNET_assert (handle->hwl_head == NULL);
-  GNUNET_assert (handle->hwl_tail == NULL);
+  GNUNET_assert (NULL == handle->tc_head);
+  GNUNET_assert (NULL == handle->tc_tail);
+  GNUNET_assert (NULL == handle->hwl_head);
+  GNUNET_assert (NULL == handle->hwl_tail);
   GNUNET_CONTAINER_heap_destroy (handle->ready_heap);
   handle->ready_heap = NULL;
   GNUNET_free (handle);
@@ -1517,23 +1714,22 @@ GNUNET_TRANSPORT_disconnect (struct GNUNET_TRANSPORT_Handle *handle)
  * @param handle connection to transport service
  * @param target who should receive the message
  * @param size how big is the message we want to transmit?
- * @param priority how important is the message?
  * @param timeout after how long should we give up (and call
  *        notify with buf NULL and size 0)?
  * @param notify function to call when we are ready to
  *        send such a message
- * @param notify_cls closure for notify
+ * @param notify_cls closure for @a notify
  * @return NULL if someone else is already waiting to be notified
  *         non-NULL if the notify callback was queued (can be used to cancel
- *         using GNUNET_TRANSPORT_notify_transmit_ready_cancel)
+ *         using #GNUNET_TRANSPORT_notify_transmit_ready_cancel)
  */
 struct GNUNET_TRANSPORT_TransmitHandle *
 GNUNET_TRANSPORT_notify_transmit_ready (struct GNUNET_TRANSPORT_Handle *handle,
-                                        const struct GNUNET_PeerIdentity
-                                        *target, size_t size, uint32_t priority,
+                                        const struct GNUNET_PeerIdentity *target,
+                                        size_t size,
                                         struct GNUNET_TIME_Relative timeout,
-                                        GNUNET_CONNECTION_TransmitReadyNotify
-                                        notify, void *notify_cls)
+                                        GNUNET_TRANSPORT_TransmitReadyNotify notify,
+                                        void *notify_cls)
 {
   struct Neighbour *n;
   struct GNUNET_TRANSPORT_TransmitHandle *th;
@@ -1554,23 +1750,23 @@ GNUNET_TRANSPORT_notify_transmit_ready (struct GNUNET_TRANSPORT_Handle *handle,
     return NULL;
   }
   GNUNET_assert (NULL == n->hn);
-  th = GNUNET_malloc (sizeof (struct GNUNET_TRANSPORT_TransmitHandle));
+  th = GNUNET_new (struct GNUNET_TRANSPORT_TransmitHandle);
   th->neighbour = n;
   th->notify = notify;
   th->notify_cls = notify_cls;
   th->timeout = GNUNET_TIME_relative_to_absolute (timeout);
   th->notify_size = size;
-  th->priority = priority;
   n->th = th;
   /* calculate when our transmission should be ready */
   delay = GNUNET_BANDWIDTH_tracker_get_delay (&n->out_tracker, size + n->traffic_overhead);
   n->traffic_overhead = 0;
-  if (delay.rel_value > timeout.rel_value)
-    delay.rel_value = 0;        /* notify immediately (with failure) */
+  if (delay.rel_value_us > timeout.rel_value_us)
+    delay.rel_value_us = 0;        /* notify immediately (with failure) */
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Bandwidth tracker allows next transmission to peer %s in %llu ms\n",
-       GNUNET_i2s (target), (unsigned long long) delay.rel_value);
-  n->hn = GNUNET_CONTAINER_heap_insert (handle->ready_heap, n, delay.rel_value);
+       "Bandwidth tracker allows next transmission to peer %s in %s\n",
+       GNUNET_i2s (target),
+       GNUNET_STRINGS_relative_time_to_string (delay, GNUNET_YES));
+  n->hn = GNUNET_CONTAINER_heap_insert (handle->ready_heap, n, delay.rel_value_us);
   schedule_transmission (handle);
   return th;
 }
@@ -1579,12 +1775,10 @@ GNUNET_TRANSPORT_notify_transmit_ready (struct GNUNET_TRANSPORT_Handle *handle,
 /**
  * Cancel the specified transmission-ready notification.
  *
- * @param th handle returned from GNUNET_TRANSPORT_notify_transmit_ready
+ * @param th handle returned from #GNUNET_TRANSPORT_notify_transmit_ready()
  */
 void
-GNUNET_TRANSPORT_notify_transmit_ready_cancel (struct
-                                               GNUNET_TRANSPORT_TransmitHandle
-                                               *th)
+GNUNET_TRANSPORT_notify_transmit_ready_cancel (struct GNUNET_TRANSPORT_TransmitHandle *th)
 {
   struct Neighbour *n;
 
@@ -1593,7 +1787,7 @@ GNUNET_TRANSPORT_notify_transmit_ready_cancel (struct
   n = th->neighbour;
   GNUNET_assert (th == n->th);
   n->th = NULL;
-  if (n->hn != NULL)
+  if (NULL != n->hn)
   {
     GNUNET_CONTAINER_heap_remove_node (n->hn);
     n->hn = NULL;

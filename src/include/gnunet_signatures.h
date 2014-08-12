@@ -4,7 +4,7 @@
 
      GNUnet is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 2, or (at your
+     by the Free Software Foundation; either version 3, or (at your
      option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
@@ -53,9 +53,9 @@ extern "C"
 #define GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DISCONNECT 2
 
 /**
- * Purpose is to set a session key.
+ * Signature for confirming a key revocation.
  */
-#define GNUNET_SIGNATURE_PURPOSE_SET_KEY 3
+#define GNUNET_SIGNATURE_PURPOSE_REVOCATION 3
 
 /**
  * Signature for a namespace/pseudonym advertisement (by
@@ -71,22 +71,22 @@ extern "C"
 #define GNUNET_SIGNATURE_PURPOSE_PEER_PLACEMENT 5
 
 /**
- * Signature in a KBlock of the FS module.
+ * Obsolete, legacy value.
  */
 #define GNUNET_SIGNATURE_PURPOSE_FS_KBLOCK 6
 
 /**
- * Signature of content URI placed into a namespace.
+ * Obsolete, legacy value.
  */
 #define GNUNET_SIGNATURE_PURPOSE_FS_SBLOCK 7
 
 /**
- * Signature of advertisment for a namespace.
+ * Obsolete, legacy value.
  */
 #define GNUNET_SIGNATURE_PURPOSE_FS_NBLOCK 8
 
 /**
- * Keyword-based signature of advertisment for a namespace.
+ * Obsolete, legacy value.
  */
 #define GNUNET_SIGNATURE_PURPOSE_FS_NBLOCK_KSIG 9
 
@@ -96,7 +96,7 @@ extern "C"
 #define GNUNET_SIGNATURE_PURPOSE_RESOLVER_RESPONSE 10
 
 /**
- * Signature of an GNUNET_DNS_Record
+ * Signature of an GNUNET_DNS_Advertisement
  */
 #define GNUNET_SIGNATURE_PURPOSE_DNS_RECORD 11
 
@@ -115,11 +115,57 @@ extern "C"
  */
 #define GNUNET_SIGNATURE_PURPOSE_NSE_SEND 14
 
-
 /**
  * Signature of a gnunet naming system record block
  */
 #define GNUNET_SIGNATURE_PURPOSE_GNS_RECORD_SIGN 15
+
+/**
+ * Purpose is to set a session key.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_SET_ECC_KEY 16
+
+/**
+ * UBlock Signature, done using DSS, not ECC
+ */
+#define GNUNET_SIGNATURE_PURPOSE_FS_UBLOCK 17
+
+/**
+ * Accept state in regex DFA.  Peer affirms that
+ * he offers the matching service.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_REGEX_ACCEPT 18
+
+/**
+ * Signature of a multicast message.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_MULTICAST_MESSAGE 19
+
+/**
+ * Signature of a conversation ring.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_CONVERSATION_RING 20
+
+/**
+ * Key exchange in MESH
+ */
+#define GNUNET_SIGNATURE_PURPOSE_MESH_KX                21
+
+/**
+ * Signature for the first round of distributed key generation.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG1 22
+
+/**
+ * Signature for the second round of distributed key generation.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG2 23
+
+/**
+ * Signature for cooperatice decryption.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DECRYPTION 23
+
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
