@@ -1,4 +1,3 @@
 usr/include
 usr/lib/*/*.so
 usr/lib/*/pkgconfig
-usr/share/gnunet/testing_hostkeys.dat

@@ -43,7 +43,7 @@ ifneq ($(DEB_HOST_ARCH_OS),linux)
 	find debian/tmp -name '*gns*' -print -delete
 endif
 
-override_dh_install: debian/gnunet-server.init debian/gnunet-server.install.kfreebsd debian/gnunet-server.install.hurd
+override_dh_install: debian/gnunet.init
 	dh_install -a --fail-missing
 
 override_dh_strip:
@@ -51,17 +51,9 @@ override_dh_strip:
 
 override_dh_auto_clean:
 	dh_auto_clean
-	rm -rf debian/gnunet-server.init
+	rm -rf debian/gnunet.init
 	rm -rf contrib/gnunet_janitor.py contrib/gnunet_pyexpect.py libltdl/ \
 		src/integration-tests/*.py
-	rm -f debian/gnunet-server.install.kfreebsd debian/gnunet-server.install.hurd
 
-debian/gnunet-server.init: debian/gnunet-server.init.in
+debian/gnunet.init: debian/gnunet.init.in
 	sed 's/@DEB_HOST_MULTIARCH@/$(DEB_HOST_MULTIARCH)/g' $< > $@
-
-debian/gnunet-server.install.kfreebsd debian/gnunet-server.install.hurd: debian/gnunet-server.install
-	cat debian/gnunet-server.install \
-	  | grep -v gnunet-dns | grep -v gnunetdns \
-	  | grep -v gns \
-	  | grep -v gnunet-vpn | grep -v gnunetvpn \
-	  > $@

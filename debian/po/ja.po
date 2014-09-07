@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnunet 0.8.0c-8\n"
 "Report-Msgid-Bugs-To: gnunet@packages.debian.org\n"
-"POT-Creation-Date: 2009-08-05 10:52+0200\n"
+"POT-Creation-Date: 2014-09-07 11:29+0200\n"
 "PO-Revision-Date: 2009-11-07 06:52+0900\n"
 "Last-Translator: Hideki Yamane (Debian-JP) <henrich@debian.or.jp>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
@@ -17,19 +17,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:1001
+#: ../gnunet.templates:1001
 msgid "GNUnet user:"
 msgstr "GNUnet のユーザ:"
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:1001
+#: ../gnunet.templates:1001
 msgid "Please choose the user that the GNUnet server process will run as."
 msgstr "GNUnet サーバのプロセスを動作させるユーザを選んでください。"
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:1001
+#: ../gnunet.templates:1001
 msgid ""
 "This should be a dedicated account. If the specified account does not "
 "already exist, it will automatically be created, with no login shell."
@@ -39,19 +39,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:2001
+#: ../gnunet.templates:2001
 msgid "GNUnet group:"
 msgstr "GNUnet のグループ:"
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:2001
+#: ../gnunet.templates:2001
 msgid "Please choose the group that the GNUnet server process will run as."
 msgstr "GNUnet サーバのプロセスを動作させるグループを選んでください。"
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:2001
+#: ../gnunet.templates:2001
 msgid ""
 "This should be a dedicated group, not one that already owns data. Only the "
 "members of this group will have access to GNUnet data, and be allowed to "
@@ -63,13 +63,13 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../gnunet-server.templates:3001
+#: ../gnunet.templates:3001
 msgid "Should the GNUnet server be launched on boot?"
 msgstr "GNUnet サーバをシステム起動時に開始しますか?"
 
 #. Type: boolean
 #. Description
-#: ../gnunet-server.templates:3001
+#: ../gnunet.templates:3001
 msgid ""
 "If you choose this option, a GNUnet server will be launched each time the "
 "system is started. Otherwise, you will need to launch GNUnet each time you "

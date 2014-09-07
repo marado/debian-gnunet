@@ -1,1 +1,8 @@
-usr/share/doc/gnunet/README
+etc/gnunet.conf
+lib/
+usr/bin/
+usr/lib/*/gnunet/
+usr/lib/*/*.so.*
+usr/share/
+debian/man/* usr/share/man/man1/
+

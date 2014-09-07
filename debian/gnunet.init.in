@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          gnunet-server
+# Provides:          gnunet
 # Required-Start:    $remote_fs $syslog $network
 # Required-Stop:     $remote_fs $syslog $network
 # Default-Start:     2 3 4 5
@@ -11,7 +11,7 @@
 
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="GNUnet"
-NAME=gnunet-server
+NAME=gnunet
 DAEMON=/usr/lib/@DEB_HOST_MULTIARCH@/gnunet/libexec/gnunet-service-arm
 LOGFILE=/var/log/gnunetd/gnunetd.log
 DAEMON_ARGS="-c /etc/gnunet.conf -d -l $LOGFILE"

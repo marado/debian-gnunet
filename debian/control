@@ -17,52 +17,39 @@ Vcs-browser: http://anonscm.debian.org/gitweb/?p=collab-maint/gnunet.git
 Homepage: http://www.gnunet.org/
 
 Package: gnunet
-Architecture: all
-Depends: ${misc:Depends}, gnunet-client, gnunet-server
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}, adduser, netbase, lsb-base
+Recommends: openssl, libnss3-tools
+Suggests: miniupnpc, texlive (>=2012)
+Breaks: gnunet-fuse (<<0.10), gnunet-client (<<0.10), gnunet-server (<<0.10),
+ gnunet-common (<<0.10)
+Replaces: gnunet-fuse (<<0.10), gnunet-client (<<0.10), gnunet-server (<<0.10),
+ gnunet-common (<<0.10)
 Description: secure, trust-based peer-to-peer framework (meta)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
  link-to-link messages in the network are confidential and authenticated. The
  framework provides a transport abstraction layer and can currently encapsulate
  the peer-to-peer traffic in UDP, TCP, or SMTP messages.
- .
- This package is a metapackage depending on gnunet-client, gnunet-server and
- gnunet-tools.
 
 Package: gnunet-client
-Architecture: any
-Pre-Depends: ${misc:Pre-Depends}
-Depends:
- ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version})
-Suggests: gnunet-server, guile-2.0
-Description: secure, trust-based peer-to-peer framework (client)
- GNUnet is a peer-to-peer framework which focuses on providing security. All
- link-to-link messages in the network are confidential and authenticated. The
- framework provides a transport abstraction layer and can currently encapsulate
- the peer-to-peer traffic in UDP, TCP, or SMTP messages.
- .
- This package contains the command line client applications, such as
- gnunet-search and gnunet-download. In order use GNUnet, you also need
- gnunet-server either on your server or on your local machine.
+Architecture: all
+Depends: ${misc:Depends}, gnunet
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
 
 Package: gnunet-common
-Architecture: any
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: secure, trust-based peer-to-peer framework (common)
- GNUnet is a peer-to-peer framework which focuses on providing security. All
- link-to-link messages in the network are confidential and authenticated. The
- framework provides a transport abstraction layer and can currently encapsulate
- the peer-to-peer traffic in UDP, TCP, or SMTP messages.
- .
- This package contains the common files.
+Architecture: all
+Depends: ${misc:Depends}, gnunet
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
 
 Package: gnunet-dbg
 Section: debug
 Priority: extra
 Architecture: any
 Depends:
- gnunet-common (= ${binary:Version}) | gnunet-server (= ${binary:Version}) |
- gnunet-client (= ${binary:Version}), ${misc:Depends}
+ gnunet (= ${binary:Version}), ${misc:Depends}
 Description: secure, trust-based peer-to-peer framework (debug)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
  link-to-link messages in the network are confidential and authenticated. The
@@ -72,29 +59,16 @@ Description: secure, trust-based peer-to-peer framework (debug)
  This package contains the debugging symbols.
 
 Package: gnunet-server
-Architecture: any
-Pre-Depends: ${misc:Pre-Depends}
-Depends:
- ${misc:Depends}, ${shlibs:Depends}, gnunet-common (= ${binary:Version}),
- adduser, netbase, lsb-base
-Recommends: openssl, libnss3-tools
-Suggests: miniupnpc, python-zbar (>=0.10), texlive (>=2012)
-Breaks: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
-Replaces: gnunet-fuse (<<0.9), gnunet-client (<<0.9)
-Description: secure, trust-based peer-to-peer framework (server)
- GNUnet is a peer-to-peer framework which focuses on providing security. All
- link-to-link messages in the network are confidential and authenticated. The
- framework provides a transport abstraction layer and can currently encapsulate
- the peer-to-peer traffic in UDP, TCP, or SMTP messages.
- .
- This package contains the server, needed to run a GNUnet node.
+Architecture: all
+Depends: ${misc:Depends}, gnunet
+Description: transitional dummy package
+ This is a transitional dummy package. It can safely be removed.
 
 Package: gnunet-dev
 Section: libdevel
 Architecture: any
 Depends:
- ${misc:Depends}, gnunet-server (= ${binary:Version}),
- gnunet-client (= ${binary:Version}),  libextractor-dev (>=1:0.6.3),
+ ${misc:Depends}, gnunet (= ${binary:Version}), libextractor-dev (>=1:0.6.3),
  libmicrohttpd-dev (>=0.9.33)
 Description: secure, trust-based peer-to-peer framework (development)
  GNUnet is a peer-to-peer framework which focuses on providing security. All

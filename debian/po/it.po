@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnunet 0.8.1b-5\n"
 "Report-Msgid-Bugs-To: gnunet@packages.debian.org\n"
-"POT-Creation-Date: 2009-08-05 10:52+0200\n"
+"POT-Creation-Date: 2014-09-07 11:29+0200\n"
 "PO-Revision-Date: 2012-03-11 10:07+0200\n"
 "Last-Translator: Beatrice Torracca <beatricet@libero.it>\n"
 "Language-Team: Italian <debian-l10n-italian@lists.debian.org>\n"
@@ -19,20 +19,20 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:1001
+#: ../gnunet.templates:1001
 msgid "GNUnet user:"
 msgstr "Utente GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:1001
+#: ../gnunet.templates:1001
 msgid "Please choose the user that the GNUnet server process will run as."
 msgstr ""
 "Scegliere l'utente con cui verrà eseguito il processo del server GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:1001
+#: ../gnunet.templates:1001
 msgid ""
 "This should be a dedicated account. If the specified account does not "
 "already exist, it will automatically be created, with no login shell."
@@ -42,20 +42,20 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:2001
+#: ../gnunet.templates:2001
 msgid "GNUnet group:"
 msgstr "Gruppo GNUnet:"
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:2001
+#: ../gnunet.templates:2001
 msgid "Please choose the group that the GNUnet server process will run as."
 msgstr ""
 "Scegliere il gruppo con cui verrà eseguito il processo del server GNUnet."
 
 #. Type: string
 #. Description
-#: ../gnunet-server.templates:2001
+#: ../gnunet.templates:2001
 msgid ""
 "This should be a dedicated group, not one that already owns data. Only the "
 "members of this group will have access to GNUnet data, and be allowed to "
@@ -67,13 +67,13 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../gnunet-server.templates:3001
+#: ../gnunet.templates:3001
 msgid "Should the GNUnet server be launched on boot?"
 msgstr "Far partire il server GNUnet all'avvio?"
 
 #. Type: boolean
 #. Description
-#: ../gnunet-server.templates:3001
+#: ../gnunet.templates:3001
 msgid ""
 "If you choose this option, a GNUnet server will be launched each time the "
 "system is started. Otherwise, you will need to launch GNUnet each time you "

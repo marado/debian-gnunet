@@ -1,7 +1,7 @@
-gnunet-server
--------------
+gnunet
+------
 
-By default, the gnunet-server starts automatically when the system is booted.
+By default, the gnunet server starts automatically when the system is booted.
 If you prefere to start it manually when you use it, change its configuration
 with:
 
@@ -9,8 +9,8 @@ with:
 
 In order to start, stop or restart manually the server, use:
 
-  # /etc/init.d/gnunet-server
+  # /etc/init.d/gnunet
 
 with the parameter start, stop or restart.
 
- -- Daniel Baumann <daniel.baumann@progress-technologies.net>  Thu, 13 Aug 2009 17:29:12 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Sun, 21 Sep 2014 15:39:12 +0200
