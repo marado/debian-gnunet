@@ -45,6 +45,10 @@ endif
 
 override_dh_install: debian/gnunet.init
 	dh_install -a --fail-missing
+	dh_link -pgnunet-dev \
+		lib/$(DEB_HOST_MULTIARCH)/libnss_gns.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns.so \
+		lib/$(DEB_HOST_MULTIARCH)/libnss_gns4.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns4.so \
+		lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so
 
 override_dh_strip:
 	dh_strip --dbg-package=gnunet-dbg
