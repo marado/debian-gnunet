@@ -21,7 +21,7 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends}, adduser, netbase, lsb-base
 Recommends: openssl, libnss3-tools
-Suggests: miniupnpc, texlive (>=2012)
+Suggests: miniupnpc, texlive (>=2012), python, python-zbar
 Breaks: gnunet-fuse (<<0.10), gnunet-client (<<0.10), gnunet-server (<<0.10),
  gnunet-common (<<0.10)
 Replaces: gnunet-fuse (<<0.10), gnunet-client (<<0.10), gnunet-server (<<0.10),
