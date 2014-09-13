@@ -1,0 +1,88 @@
+--- a/po/de.po
++++ b/po/de.po
+@@ -7372,7 +7372,7 @@
+ 
+ #: src/transport/gnunet-transport.c:1480
+ #, fuzzy
+-msgid "print information for all pending validations continously"
++msgid "print information for all pending validations continuously"
+ msgstr "Informationen über andere GNUnet Knoten ausgeben."
+ 
+ #: src/transport/gnunet-transport.c:1483
+--- a/po/es.po
++++ b/po/es.po
+@@ -7444,7 +7444,7 @@
+ # Miguel: ¿Quizá continuamente fuese mejor?
+ #: src/transport/gnunet-transport.c:1480
+ #, fuzzy
+-msgid "print information for all pending validations continously"
++msgid "print information for all pending validations continuously"
+ msgstr ""
+ "provee información sobre todas las conexiones actuales (de forma continua)"
+ 
+--- a/po/gnunet.pot
++++ b/po/gnunet.pot
+@@ -6921,7 +6921,7 @@
+ msgstr ""
+ 
+ #: src/transport/gnunet-transport.c:1480
+-msgid "print information for all pending validations continously"
++msgid "print information for all pending validations continuously"
+ msgstr ""
+ 
+ #: src/transport/gnunet-transport.c:1483
+--- a/po/sv.po
++++ b/po/sv.po
+@@ -7296,7 +7296,7 @@
+ 
+ #: src/transport/gnunet-transport.c:1480
+ #, fuzzy
+-msgid "print information for all pending validations continously"
++msgid "print information for all pending validations continuously"
+ msgstr "Skriv ut information om GNUnets motparter."
+ 
+ #: src/transport/gnunet-transport.c:1483
+--- a/po/vi.po
++++ b/po/vi.po
+@@ -7368,7 +7368,7 @@
+ 
+ #: src/transport/gnunet-transport.c:1480
+ #, fuzzy
+-msgid "print information for all pending validations continously"
++msgid "print information for all pending validations continuously"
+ msgstr "In ra thông tin về các đồng đẳng GNUnet."
+ 
+ #: src/transport/gnunet-transport.c:1483
+--- a/po/zh_CN.po
++++ b/po/zh_CN.po
+@@ -7076,7 +7076,7 @@
+ 
+ #: src/transport/gnunet-transport.c:1480
+ #, fuzzy
+-msgid "print information for all pending validations continously"
++msgid "print information for all pending validations continuously"
+ msgstr "无法获取有关用户“%s”的信息：%s\n"
+ 
+ #: src/transport/gnunet-transport.c:1483
+--- a/src/transport/gnunet-transport.c
++++ b/src/transport/gnunet-transport.c
+@@ -1477,7 +1477,7 @@
+               gettext_noop ("print information for all pending validations "),
+               0, &GNUNET_GETOPT_set_one, &iterate_validation },
+           { 'f', "monitorvalidation", NULL,
+-              gettext_noop ("print information for all pending validations continously"),
++              gettext_noop ("print information for all pending validations continuously"),
+               0, &GNUNET_GETOPT_set_one, &monitor_validation },
+           { 'i', "information", NULL,
+               gettext_noop ("provide information about all current connections (once)"),
+--- a/doc/man/gnunet.conf.5
++++ b/doc/man/gnunet.conf.5
+@@ -76,7 +76,7 @@
+ This example is a simple way to get started, using a server that has a known list of peers to get you started. Most users will be behind a firewal on IPv4, as such NAT is enabled.  Please rememeber to change your IP address to the actual external address for your usage.
+ .PP
+     [hostlist]
+-    OPTIONS = -b
++    OPTIONS = \-b
+     SERVERS = http://v9.gnunet.org:58080/
+ 
+     [arm]
