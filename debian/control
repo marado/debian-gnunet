@@ -69,7 +69,7 @@ Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends}, gnunet (= ${binary:Version}), libextractor-dev (>=1:0.6.3),
- libmicrohttpd-dev (>=0.9.33)
+ libmicrohttpd-dev (>=0.9.33), libgcrypt20-dev (>=1.6)
 Description: secure, trust-based peer-to-peer framework (development)
  GNUnet is a peer-to-peer framework which focuses on providing security. All
  link-to-link messages in the network are confidential and authenticated. The
