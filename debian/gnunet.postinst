@@ -126,6 +126,7 @@ EOF
 		# Cleaning old config file
 		if dpkg-maintscript-helper supports rm_conffile 2>/dev/null; then
 			dpkg-maintscript-helper rm_conffile /etc/gnunetd.conf 0.9.2-1~ -- "$@"
+			dpkg-maintscript-helper rm_conffile /etc/default/gnunet-server 0.10.1-1~ -- "$@"
 		fi
 		
 		# Cleaning
