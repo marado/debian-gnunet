@@ -1,3 +1,36 @@
+gnunet (0.10.1-1) unstable; urgency=medium
+
+  * Imported Upstream version 0.10.1
+  * Remove patches:
+    + multiarch_support.diff, included upstream.
+    + update-default-hostlist-servers.patch, not needed anymore.
+    + typos.patch, included upstream.
+    + add_shebang.patch, included upstream.
+  * Add patches:
+    + from upstream SVN to build against libcurl instead of libgnurl
+      (Closes: #758937).
+    + to fix the installation directory of GNUnet conversation.
+    + to fix a few typos and make lintian happy.
+  * debian/control:
+    + update build-dependencies and recommends according to README.
+    + make gnunet-dev depend on libgcrypt20-dev (>=1.6) as headers include
+      gcrypt.h.
+    + breaks gnunet-gtk (<<0.10).
+    + suggests: python and python-zbar for gnunet-qr.
+  * Merge gnunet-server, gnunet-client and gnunet-common into the gnunet binary
+    package. The split was unnecessary hard to maintain for too little gain.
+  * Remove properly the old config file /etc/default/gnunet-server in
+    gnunet.postinst.
+  * Add symlinks to libnss_gns* for gnunet-dev in debian/rules.
+  * Remove manpages for gns-import, mesh, resolver, testing-run-service and
+    transport-certificate-creation, they are included upstream.
+  * Add manpages for bcd, nse, qr, scrypt, set-ibf-profiler, set-profiler and
+    testbed-profiler.
+  * Update gnunet.conf with the new settings from gnunet.org. Replace
+    SERVICEHOME with GNUNET_HOME also in gnunet.postinst.
+
+ -- Bertrand Marc <beberking@gmail.com>  Tue, 23 Sep 2014 21:31:29 +0200
+
 gnunet (0.9.5a-4) unstable; urgency=medium
 
   [ Pino Toscano ]
