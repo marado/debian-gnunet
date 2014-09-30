@@ -1,3 +1,13 @@
+libextractor (1:1.3-2) unstable; urgency=medium
+
+  * Build-depend on libmagic-dev and libavresample-dev to enable additional
+    plugins, thanks to Andreas Cadhalpun and update libexctractor3.symbols
+    accordingly (Closes: #755810).
+  * Build-depend on libjpeg-dev instead of libjpeg8-dev, thanks to Ondřej Surý
+    (Closes: #763478).
+
+ -- Bertrand Marc <beberking@gmail.com>  Tue, 30 Sep 2014 22:56:51 +0200
+
 libextractor (1:1.3-1) unstable; urgency=medium
 
   * Make uscan check the archive signature:
