@@ -8,7 +8,8 @@ Build-Depends:
  libexiv2-dev, libflac-dev, libgif-dev, libgsf-1-dev, libglib2.0-dev,
  libgtk-3-dev, libgtk2.0-dev, libgstreamer-plugins-base1.0-dev, libjpeg8-dev,
  libmagick-dev, libmpeg2-4-dev, libmp4v2-dev, librpm-dev, libsmf-dev,
- libtidy-dev, libtiff-dev, libvorbis-dev, libogg-dev, zlib1g-dev, texinfo
+ libtidy-dev, libtiff-dev, libvorbis-dev, libogg-dev, zlib1g-dev, texinfo,
+ libmagic-dev, libavresample-dev
 Standards-Version: 3.9.5
 Vcs-Git: git://anonscm.debian.org/collab-maint/libextractor.git
 Vcs-browser: http://anonscm.debian.org/gitweb/?p=collab-maint/libextractor.git

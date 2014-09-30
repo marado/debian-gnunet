@@ -60,6 +60,8 @@ libextractor_gif.so libextractor3 #MINVER#
  EXTRACTOR_gif_extract_method@Base 1:1.0.1
 libextractor_gstreamer.so libextractor3 #MINVER#
  EXTRACTOR_gstreamer_extract_method@Base 1:1.0.1
+libextractor_html.so libextractor3 #MINVER#
+ EXTRACTOR_html_extract_method@Base 1:1.3-2~
 libextractor_it.so libextractor3 #MINVER#
  EXTRACTOR_it_extract_method@Base 1:1.0.1
 libextractor_jpeg.so libextractor3 #MINVER#
@@ -68,6 +70,8 @@ libextractor_man.so libextractor3 #MINVER#
  EXTRACTOR_man_extract_method@Base 1:1.0.1
 libextractor_midi.so libextractor3 #MINVER#
  EXTRACTOR_midi_extract_method@Base 1:1.0.1
+libextractor_mime.so libextractor3 #MINVER#
+ EXTRACTOR_mime_extract_method@Base 1:1.3-2~
 libextractor_mpeg.so libextractor3 #MINVER#
  EXTRACTOR_mpeg_extract_method@Base 1:1.0.1
 libextractor_nsf.so libextractor3 #MINVER#
@@ -82,6 +86,8 @@ libextractor_ole2.so libextractor3 #MINVER#
  EXTRACTOR_ole2_extract_method@Base 1:1.0.1
 libextractor_png.so libextractor3 #MINVER#
  EXTRACTOR_png_extract_method@Base 1:1.0.1
+libextractor_previewopus.so libextractor3 #MINVER#
+ EXTRACTOR_previewopus_extract_method@Base 1:1.3-2~
 libextractor_ps.so libextractor3 #MINVER#
  EXTRACTOR_ps_extract_method@Base 1:1.0.1
 libextractor_riff.so libextractor3 #MINVER#
@@ -92,6 +98,12 @@ libextractor_s3m.so libextractor3 #MINVER#
  EXTRACTOR_s3m_extract_method@Base 1:1.0.1
 libextractor_sid.so libextractor3 #MINVER#
  EXTRACTOR_sid_extract_method@Base 1:1.0.1
+libextractor_thumbnailffmpeg.so libextractor3 #MINVER#
+ EXTRACTOR_thumbnail_extract_method@Base 1:1.3-2~
+ EXTRACTOR_thumbnailffmpeg_extract_method@Base 1:1.3-2~
+libextractor_thumbnailgtk.so libextractor3 #MINVER#
+ EXTRACTOR_thumbnail_extract_method@Base 1:1.3-2~
+ EXTRACTOR_thumbnailgtk_extract_method@Base 1:1.3-2~
 libextractor_tiff.so libextractor3 #MINVER#
  EXTRACTOR_tiff_extract_method@Base 1:1.0.1
 libextractor_wav.so libextractor3 #MINVER#
