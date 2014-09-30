@@ -6,7 +6,7 @@ Build-Depends:
  debhelper (>= 9), autopoint, dh-autoreconf, pkg-config, libarchive-dev,
  libavutil-dev, libavformat-dev, libavcodec-dev, libswscale-dev, libbz2-dev,
  libexiv2-dev, libflac-dev, libgif-dev, libgsf-1-dev, libglib2.0-dev,
- libgtk-3-dev, libgtk2.0-dev, libgstreamer-plugins-base1.0-dev, libjpeg8-dev,
+ libgtk-3-dev, libgtk2.0-dev, libgstreamer-plugins-base1.0-dev, libjpeg-dev,
  libmagick-dev, libmpeg2-4-dev, libmp4v2-dev, librpm-dev, libsmf-dev,
  libtidy-dev, libtiff-dev, libvorbis-dev, libogg-dev, zlib1g-dev, texinfo,
  libmagic-dev, libavresample-dev
