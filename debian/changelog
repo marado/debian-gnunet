@@ -29,8 +29,9 @@ gnunet (0.10.1-1) unstable; urgency=medium
   * Add manpages for bcd, nse, qr, scrypt and testbed-profiler.
   * Update gnunet.conf with the new settings from gnunet.org. Replace
     SERVICEHOME with GNUNET_HOME also in gnunet.postinst.
+  * Standards-version: 3.9.6, no changes needed.
 
- -- Bertrand Marc <beberking@gmail.com>  Sat, 04 Oct 2014 09:59:46 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Sat, 04 Oct 2014 12:23:33 +0200
 
 gnunet (0.9.5a-4) unstable; urgency=medium
 
