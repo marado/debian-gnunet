@@ -1,6 +1,6 @@
 gnunet (0.10.1-1) unstable; urgency=medium
 
-  * Imported Upstream version 0.10.1
+  * Imported Upstream version 0.10.1 (Closes: #719255, #702101).
   * Remove patches:
     + multiarch_support.diff, included upstream.
     + update-default-hostlist-servers.patch, not needed anymore.
@@ -31,7 +31,7 @@ gnunet (0.10.1-1) unstable; urgency=medium
     SERVICEHOME with GNUNET_HOME also in gnunet.postinst.
   * Standards-version: 3.9.6, no changes needed.
 
- -- Bertrand Marc <beberking@gmail.com>  Sat, 04 Oct 2014 12:23:33 +0200
+ -- Bertrand Marc <beberking@gmail.com>  Sat, 04 Oct 2014 12:51:21 +0200
 
 gnunet (0.9.5a-4) unstable; urgency=medium
 
