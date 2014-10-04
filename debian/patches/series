@@ -1,3 +1,4 @@
 build_against_libcurl
 conversation_libexecdir
 typos.diff
+noinst_set.diff

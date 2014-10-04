@@ -1,0 +1,14 @@
+Description: do not install gnunet-set* binaries.
+Origin: commits:r34315
+Author: Christian Grothoff <christian@grothoff.org>
+--- a/src/set/Makefile.am
++++ b/src/set/Makefile.am
+@@ -15,7 +15,7 @@
+   AM_CFLAGS = -fprofile-arcs -ftest-coverage
+ endif
+ 
+-bin_PROGRAMS = \
++noinst_PROGRAMS = \
+  gnunet-set-profiler gnunet-set-ibf-profiler
+ 
+ libexec_PROGRAMS = \
