@@ -3,7 +3,6 @@
 SHELL := sh -e
 
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
-DEB_HOST_ARCH_OS ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_OS)
 
 %:
 	dh ${@} --with autoreconf
@@ -35,13 +34,6 @@ override_dh_auto_install:
 		debian/tmp/usr/bin/gnunet-service-template \
 		debian/tmp/usr/bin/gnunet-template \
 		debian/tmp/usr/bin/gnunet-helper-transport-wlan-dummy
-
-ifneq ($(DEB_HOST_ARCH_OS),linux)
-	# Remove files related to the libraries/tools not built
-	find debian/tmp -name '*gnunet*vpn*' -print -delete
-	find debian/tmp -name '*gnunet*dns*' -print -delete
-	find debian/tmp -name '*gns*' -print -delete
-endif
 
 override_dh_install: debian/gnunet.init
 	dh_install -a --fail-missing
