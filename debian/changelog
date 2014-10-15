@@ -1,3 +1,18 @@
+gnunet (0.10.1-2) unstable; urgency=medium
+
+  * Put the upstream signing key in debian/upstream/signing-key.asc and remove
+    debian/source/include-binaries.
+  * debian/control: update homepage as www.gnunet.org does not work anymore.
+  * Fix FTBFS on kfreebsd (Closes: #765293). Thanks to Steven Chamberlain for
+    testing it.
+    + Add a patch to check properly the existence of malloc_np.h.
+    + debian/rules: remove the file selection on kfreebsd as all binaries are
+      built now.
+  * debian/rules: use debhelpers -indep and -arch targets to make sure nothing
+    is built unnecessary on an arch-indep build.
+
+ -- Bertrand Marc <beberking@gmail.com>  Wed, 15 Oct 2014 21:44:26 +0200
+
 gnunet (0.10.1-1) unstable; urgency=medium
 
   * Imported Upstream version 0.10.1 (Closes: #719255, #702101).
