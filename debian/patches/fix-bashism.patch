@@ -1,0 +1,54 @@
+Description: fix bashisms
+Bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=772233
+Author: Raphael Geissert <geissert@debian.org>
+Forwarded: https://gnunet.org/bugs/view.php?id=3588
+
+Index: gnunet-0.10.1-2/src/gns/gnunet-gns-proxy-setup-ca
+===================================================================
+--- gnunet-0.10.1-2/src/gns/gnunet-gns-proxy-setup-ca
++++ gnunet-0.10.1-2/src/gns/gnunet-gns-proxy-setup-ca
+@@ -7,9 +7,9 @@
+ options=''
+ while getopts "c:" opt; do
+   case $opt in
+     c)
++      options="$options -c $OPTARG"
+-      options+="-c $OPTARG"
+       ;;
+     \?)
+       echo "Invalid option: -$OPTARG" >&2
+       exit 1
+@@ -38,16 +38,16 @@
+ for f in ~/.mozilla/firefox/*.default
+ do
+   if [ -d $f ]; then
+     echo "Importing CA info Firefox $f"
++    certutil -D -n "GNS Proxy CA" -d ~/.mozilla/firefox/*.default >/dev/null 2>&1
+-    certutil -D -n "GNS Proxy CA" -d ~/.mozilla/firefox/*.default >/dev/null 2&>1
+     certutil -A -n "GNS Proxy CA" -t CT,, -d ~/.mozilla/firefox/*.default < $GNSCERT
+   fi
+ done
+ 
+ if [ -d ~/.pki/nssdb ]; then
+   echo "Importing CA into Chrome"
++  certutil -D -n "GNS Proxy CA" -d ~/.pki/nssdb >/dev/null 2>&1
+-  certutil -D -n "GNS Proxy CA" -d ~/.pki/nssdb >/dev/null 2&>1
+   certutil -A -n "GNS Proxy CA" -t CT,, -d ~/.pki/nssdb < $GNSCERT
+ fi
+ 
+ 
+Index: gnunet-0.10.1-2/contrib/gnunet-gns-import.sh
+===================================================================
+--- gnunet-0.10.1-2/contrib/gnunet-gns-import.sh
++++ gnunet-0.10.1-2/contrib/gnunet-gns-import.sh
+@@ -25,9 +25,9 @@
+ 
+ while getopts "c:" opt; do
+   case $opt in
+     c)
++      options="$options -c $OPTARG"
+-      options+="-c $OPTARG"
+       ;;
+     \?)
+       echo "Invalid option: -$OPTARG" >&2
+       exit 1

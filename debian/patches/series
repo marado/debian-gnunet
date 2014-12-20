@@ -3,3 +3,4 @@ conversation_libexecdir
 typos.diff
 noinst_set.diff
 kfreebsd_malloc_np.patch
+fix-bashism.patch
