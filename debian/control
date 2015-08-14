@@ -38,18 +38,6 @@ Description: GNU's framework for secure peer-to-peer networking (meta)
  includes the GNU Name System, a privacy-preserving, decentralized public key
  infrastructure.
 
-Package: gnunet-client
-Architecture: all
-Depends: ${misc:Depends}, gnunet
-Description: transitional dummy package
- This is a transitional dummy package. It can safely be removed.
-
-Package: gnunet-common
-Architecture: all
-Depends: ${misc:Depends}, gnunet
-Description: transitional dummy package
- This is a transitional dummy package. It can safely be removed.
-
 Package: gnunet-dbg
 Section: debug
 Priority: extra
@@ -69,12 +57,6 @@ Description: GNU's framework for secure peer-to-peer networking (debug)
  infrastructure.
  .
  This package contains the debugging symbols.
-
-Package: gnunet-server
-Architecture: all
-Depends: ${misc:Depends}, gnunet
-Description: transitional dummy package
- This is a transitional dummy package. It can safely be removed.
 
 Package: gnunet-dev
 Section: libdevel
