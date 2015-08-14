@@ -23,7 +23,7 @@ case "${1}" in
 		
 		# Read default values
 		GNUNET_HOME="/var/lib/gnunet"
-		eval $(grep GNUNET_HOME /etc/gnunet.conf | tr -d [:blank:])
+		eval $(grep GNUNET_HOME /etc/gnunet.conf | tr -d '[:blank:]')
 
 		# Creating gnunet group if needed
 		if ! getent group ${_GROUPNAME} > /dev/null
