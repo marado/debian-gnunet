@@ -2,6 +2,19 @@
 
 set -e
 
+pathfind() {
+	OLDIFS="$IFS"
+	IFS=:
+	for p in $PATH; do
+		if [ -x "$p/$*" ]; then
+			IFS="$OLDIFS"
+			return 0
+		fi
+	done
+	IFS="$OLDIFS"
+	return 1
+}
+
 case "${1}" in
 	purge)
 		if [ -e /usr/share/debconf/confmodule ]
@@ -21,12 +34,12 @@ case "${1}" in
 
 		GNUNETDNS_GROUP="gnunetdns"
 
-		if [ -x /usr/sbin/deluser ]
+		if pathfind deluser
 		then
 			deluser --quiet --system ${_USERNAME} || true
 		fi
 
-		if [ -x /usr/sbin/delgroup ]
+		if pathfind delgroup
 		then
 			delgroup --quiet --system --only-if-empty ${_GROUPNAME} || true
 			delgroup --quiet --system --only-if-empty ${GNUNETDNS_GROUP} || true
