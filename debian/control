@@ -26,11 +26,17 @@ Breaks: gnunet-fuse (<<0.10), gnunet-client (<<0.10), gnunet-server (<<0.10),
  gnunet-common (<<0.10), gnunet-gtk (<<0.10)
 Replaces: gnunet-fuse (<<0.10), gnunet-client (<<0.10), gnunet-server (<<0.10),
  gnunet-common (<<0.10)
-Description: secure, trust-based peer-to-peer framework (meta)
- GNUnet is a peer-to-peer framework which focuses on providing security. All
- link-to-link messages in the network are confidential and authenticated. The
- framework provides a transport abstraction layer and can currently encapsulate
- the peer-to-peer traffic in UDP, TCP, or SMTP messages.
+Description: GNU's framework for secure peer-to-peer networking (meta)
+ GNUnet is a framework for secure peer-to-peer networking that does not use any
+ centralized or otherwise trusted services. Its high-level goal is to provide a
+ strong free software foundation for a global network that provides security
+ and in particular respects privacy.
+ .
+ GNUnet started with an idea for anonymous censorship-resistant file-sharing,
+ but has grown to incorporate other applications as well as many generic
+ building blocks for secure networking applications. In particular, GNUnet now
+ includes the GNU Name System, a privacy-preserving, decentralized public key
+ infrastructure.
 
 Package: gnunet-client
 Architecture: all
@@ -50,11 +56,17 @@ Priority: extra
 Architecture: any
 Depends:
  gnunet (= ${binary:Version}), ${misc:Depends}
-Description: secure, trust-based peer-to-peer framework (debug)
- GNUnet is a peer-to-peer framework which focuses on providing security. All
- link-to-link messages in the network are confidential and authenticated. The
- framework provides a transport abstraction layer and can currently encapsulate
- the peer-to-peer traffic in UDP, TCP, or SMTP messages.
+Description: GNU's framework for secure peer-to-peer networking (debug)
+ GNUnet is a framework for secure peer-to-peer networking that does not use any
+ centralized or otherwise trusted services. Its high-level goal is to provide a
+ strong free software foundation for a global network that provides security
+ and in particular respects privacy.
+ .
+ GNUnet started with an idea for anonymous censorship-resistant file-sharing,
+ but has grown to incorporate other applications as well as many generic
+ building blocks for secure networking applications. In particular, GNUnet now
+ includes the GNU Name System, a privacy-preserving, decentralized public key
+ infrastructure.
  .
  This package contains the debugging symbols.
 
@@ -70,10 +82,16 @@ Architecture: any
 Depends:
  ${misc:Depends}, gnunet (= ${binary:Version}), libextractor-dev (>=1:0.6.3),
  libmicrohttpd-dev (>=0.9.33), libgcrypt20-dev (>=1.6)
-Description: secure, trust-based peer-to-peer framework (development)
- GNUnet is a peer-to-peer framework which focuses on providing security. All
- link-to-link messages in the network are confidential and authenticated. The
- framework provides a transport abstraction layer and can currently encapsulate
- the peer-to-peer traffic in UDP, TCP, or SMTP messages.
+Description: GNU's framework for secure peer-to-peer networking (development)
+ GNUnet is a framework for secure peer-to-peer networking that does not use any
+ centralized or otherwise trusted services. Its high-level goal is to provide a
+ strong free software foundation for a global network that provides security
+ and in particular respects privacy.
+ .
+ GNUnet started with an idea for anonymous censorship-resistant file-sharing,
+ but has grown to incorporate other applications as well as many generic
+ building blocks for secure networking applications. In particular, GNUnet now
+ includes the GNU Name System, a privacy-preserving, decentralized public key
+ infrastructure.
  .
  This package contains the development files.
