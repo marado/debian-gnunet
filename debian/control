@@ -27,10 +27,12 @@ Description: extracts meta-data from files of arbitrary type (library)
  GNU libextractor provides developers of file-sharing networks, file managers,
  and WWW-indexing bots with a universal library to obtain meta-data about files.
  .
- Currently, libextractor supports the following formats: HTML, PDF, PS, OLE2
- (DOC, XLS, PPT), OpenOffice (sxw), StarOffice (sdw), DVI, MAN, MKV, MP3 (ID3v1
- and ID3v2), OGG, WAV, EXIV2, JPEG, GIF, PNG, TIFF, DEB, RPM, TAR(.GZ), ZIP,
- ELF, REAL, RIFF (AVI), MPEG, QT and ASF.
+ Currently, libextractor supports the following formats: HTML, MAN, PS, DVI,
+ OLE2 (DOC, XLS, PPT), OpenOffice (sxw), StarOffice (sdw), FLAC,
+ MP3 (ID3v1 and ID3v2), OGG, WAV, S3M (Scream Tracker 3), XM (eXtended Module),
+ IT (Impulse Tracker), NSF(E) (NES music), SID (C64 music), EXIV2, JPEG, GIF,
+ PNG, TIFF, DEB, RPM, TAR(.GZ), LZH, LHA, RAR, ZIP, CAB, 7-ZIP, AR, MTREE, PAX,
+ CPIO, ISO9660, SHAR, RAW, XAR FLV, REAL, RIFF (AVI), MPEG, QT and ASF.
  .
  Also, various additional MIME types are detected. It can also be used to
  compute hash functions (SHA-1, MD5, ripemd160).
@@ -70,10 +72,12 @@ Description: displays meta-data from files of arbitrary type
  Similar to the well-known "file" command, extract can display meta-data from a
  file and print the results to stdout.
  .
- Currently, libextractor supports the following formats: HTML, PDF, PS, OLE2
- (DOC, XLS, PPT), OpenOffice (sxw), StarOffice (sdw), DVI, MAN, MKV, MP3 (ID3v1
- and ID3v2), OGG, WAV, EXIV2, JPEG, GIF, PNG, TIFF, DEB, RPM, TAR(.GZ), ZIP,
- ELF, REAL, RIFF (AVI), MPEG, QT and ASF.
+ Currently, libextractor supports the following formats: HTML, MAN, PS, DVI,
+ OLE2 (DOC, XLS, PPT), OpenOffice (sxw), StarOffice (sdw), FLAC,
+ MP3 (ID3v1 and ID3v2), OGG, WAV, S3M (Scream Tracker 3), XM (eXtended Module),
+ IT (Impulse Tracker), NSF(E) (NES music), SID (C64 music), EXIV2, JPEG, GIF,
+ PNG, TIFF, DEB, RPM, TAR(.GZ), LZH, LHA, RAR, ZIP, CAB, 7-ZIP, AR, MTREE, PAX,
+ CPIO, ISO9660, SHAR, RAW, XAR FLV, REAL, RIFF (AVI), MPEG, QT and ASF.
  .
  Also, various additional MIME types are detected. It can also be used to
  compute hash functions (SHA-1, MD5, ripemd160).
