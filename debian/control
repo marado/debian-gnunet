@@ -17,7 +17,7 @@ Homepage: http://www.gnu.org/software/libextractor/
 
 Package: libextractor3
 Architecture: any
-Pre-Depends: multiarch-support
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Conflicts: libextractor1c2a
 Replaces: libextractor1c2a, libextractor-plugins (<< 1:1.0.1-1)
