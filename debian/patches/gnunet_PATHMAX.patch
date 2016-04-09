@@ -1,0 +1,134 @@
+Description: fix FTBFS on GNU/Hurd due to a missing definition of PATH_MAX.
+Origin: commits:r36664:36665
+Author: Christian Grothoff <christian@grothoff.org>
+
+--- a/src/arm/test_exponential_backoff.c
++++ b/src/arm/test_exponential_backoff.c
+@@ -416,6 +416,14 @@
+ }
+ 
+ 
++#ifndef PATH_MAX
++/**
++ * Assumed maximum path length (for the log file name).
++ */
++#define PATH_MAX 4096
++#endif
++
++
+ static int
+ init ()
+ {
+--- a/src/testbed/gnunet-helper-testbed.c
++++ b/src/testbed/gnunet-helper-testbed.c
+@@ -420,13 +420,16 @@
+   if (NULL != evstr)
+   {
+ #ifdef WINDOWS
+-    GNUNET_assert (0 != SetEnvironmentVariable (GNUNET_TESTING_PREFIX, evstr));
++    GNUNET_assert (0 != SetEnvironmentVariable (GNUNET_TESTING_PREFIX,
++                                                evstr));
+ #else
+-    static char evar[2* PATH_MAX];
++    char *evar;
+ 
+-    GNUNET_assert (0 < GNUNET_snprintf (evar, sizeof (evar),
+-                                        GNUNET_TESTING_PREFIX "=%s", evstr));
+-    putenv (evar);
++    GNUNET_asprintf (&evar,
++                     GNUNET_TESTING_PREFIX "=%s",
++                     evstr);
++    GNUNET_assert (0 == putenv (evar)); /* consumes 'evar',
++                                           see putenv(): becomes part of envrionment! */
+ #endif
+     GNUNET_free (evstr);
+     evstr = NULL;
+@@ -451,12 +454,15 @@
+   LOG_DEBUG ("Staring testbed with config: %s\n", config);
+   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-testbed");
+   {
+-    static char evar[2 * PATH_MAX];
++    char *evar;
+ 
+     /* expose testbed configuration through env variable */
+-    GNUNET_assert (0 < GNUNET_snprintf (evar, sizeof (evar),
+-                                        "%s=%s", ENV_TESTBED_CONFIG, config));
+-    GNUNET_assert (0 == putenv (evar));
++    GNUNET_asprintf (&evar,
++                     "%s=%s",
++                     ENV_TESTBED_CONFIG,
++                     config));
++    GNUNET_assert (0 == putenv (evar));  /* consumes 'evar',
++                                            see putenv(): becomes part of envrionment! */
+     evstr = NULL;
+   }
+   testbed =
+--- a/src/testbed/test_testbed_api_barriers.c
++++ b/src/testbed/test_testbed_api_barriers.c
+@@ -167,6 +167,14 @@
+ }
+ 
+ 
++#ifndef PATH_MAX
++/**
++ * Assumed maximum path length (for the log file name).
++ */
++#define PATH_MAX 4096
++#endif
++
++
+ /**
+  * Main function
+  */
+--- a/src/testbed/test_testbed_underlay.c
++++ b/src/testbed/test_testbed_underlay.c
+@@ -124,6 +124,14 @@
+ }
+ 
+ 
++#ifndef PATH_MAX
++/**
++ * Assumed maximum path length (for the log file name).
++ */
++#define PATH_MAX 4096
++#endif
++
++
+ /**
+  * Main function
+  */
+--- a/src/testbed/gnunet-daemon-testbed-blacklist.c
++++ b/src/testbed/gnunet-daemon-testbed-blacklist.c
+@@ -212,7 +212,7 @@
+      const struct GNUNET_CONFIGURATION_Handle *c)
+ {
+   char *shome;
+-  char fname[PATH_MAX];
++  char *fname;
+ 
+   if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_filename (c, "PATHS",
+                                                             "GNUNET_HOME",
+@@ -221,15 +221,21 @@
+     GNUNET_break (0);
+     return;
+   }
+-  GNUNET_assert (0 < GNUNET_snprintf (fname, PATH_MAX, "%s/whitelist", shome));
++  GNUNET_asprintf (&fname,
++                   "%s/whitelist",
++                   shome);
+   if (GNUNET_YES == GNUNET_DISK_file_test (fname))
+   {
+     mode = ACCESS_ALLOW;
+     setup_ac (fname, c);
+     GNUNET_free (shome);
++    GNUNET_free (fname);
+     return;
+   }
+-  GNUNET_assert (0 < GNUNET_snprintf (fname, PATH_MAX, "%s/blacklist", shome));
++  GNUNET_asprintf (&fname,
++                   "%s/blacklist",
++                   shome);
++  GNUNET_free (fname);
+   if (GNUNET_YES == GNUNET_DISK_file_test (fname))
+   {
+     mode = ACCESS_DENY;
