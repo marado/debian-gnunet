@@ -1,3 +1,20 @@
+gnunet (0.10.1-3) unstable; urgency=medium
+
+  * Acknowledge NMU. Thanks to Raphael Geissert and Balint Reczey.
+  * debian/gnunet.postinst: add quotes to the tr argument to make it work with
+    zsh (Closes: #779259).
+  * debian/control: update description according to upstream website.
+  * Remove old transitional dummy packages gnunet-server, gnunet-client,
+    gnunet-common.
+  * debian/gnunet.postrm: check binaries existence without full path, the
+    POSIX way.
+  * Add a patch taken upstream to fix FTBFS on GNU/Hurd due to a missing
+    definition of PATH_MAX (Closes: #805013).
+  * Standards-version: 3.9.8, no changes needed.
+  * debian/control: use secure uri in Vcs-* fields.
+
+ -- Bertrand Marc <beberking@gmail.com>  Sat, 09 Apr 2016 17:07:29 +0200
+
 gnunet (0.10.1-2.1) unstable; urgency=medium
 
   * Non-maintainer upload.
