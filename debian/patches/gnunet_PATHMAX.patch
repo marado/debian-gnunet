@@ -1,5 +1,5 @@
 Description: fix FTBFS on GNU/Hurd due to a missing definition of PATH_MAX.
-Origin: commits:r36664:36665
+Origin: commits:r36664:36666
 Author: Christian Grothoff <christian@grothoff.org>
 
 --- a/src/arm/test_exponential_backoff.c
@@ -57,7 +57,7 @@ Author: Christian Grothoff <christian@grothoff.org>
 +    GNUNET_asprintf (&evar,
 +                     "%s=%s",
 +                     ENV_TESTBED_CONFIG,
-+                     config));
++                     config);
 +    GNUNET_assert (0 == putenv (evar));  /* consumes 'evar',
 +                                            see putenv(): becomes part of envrionment! */
      evstr = NULL;
