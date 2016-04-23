@@ -1,9 +1,49 @@
 Description: update to new API in FFmpeg 2.9, fix FTBS
 Origin: upstream
-Applied-Upstream: commit: r35548:r35549
+Applied-Upstream: commit: r35548:r35549 and r36975
 --- a/src/plugins/thumbnailffmpeg_extractor.c
 +++ b/src/plugins/thumbnailffmpeg_extractor.c
-@@ -199,7 +199,12 @@
+@@ -59,6 +59,20 @@
+ #include <ffmpeg/swscale.h>
+ #endif
+ 
++#if USE_JPEG
++#ifdef PIX_FMT_YUVJ420P
++#define PIX_OUTPUT_FORMAT PIX_FMT_YUVJ420P
++#else
++#define PIX_OUTPUT_FORMAT AV_PIX_FMT_YUVJ420P
++#endif
++#else
++#ifdef PIX_FMT_RGB24
++#define PIX_OUTPUT_FORMAT PIX_FMT_RGB24
++#else
++#define PIX_OUTPUT_FORMAT AV_PIX_FMT_RGB24
++#endif
++#endif
++
+ /**
+  * Set to 1 to enable debug output.
+  */ 
+@@ -153,7 +167,7 @@
+ static size_t 
+ create_thumbnail (int src_width, int src_height, 
+ 		  int src_stride[],
+-		  enum PixelFormat src_pixfmt, 
++		  enum AVPixelFormat src_pixfmt, 
+ 		  const uint8_t * const src_data[],
+ 		  int dst_width, int dst_height,
+ 		  uint8_t **output_data, 
+@@ -189,7 +203,8 @@
+   if (NULL == 
+       (scaler_ctx =
+        sws_getContext (src_width, src_height, src_pixfmt,
+-		       dst_width, dst_height, PIX_FMT_RGB24, 
++		       dst_width, dst_height,
++		       PIX_OUTPUT_FORMAT, 
+ 		       SWS_BILINEAR, NULL, NULL, NULL)))
+     {
+ #if DEBUG
+@@ -199,7 +214,12 @@
        return 0;
      }
  
@@ -17,7 +57,15 @@ Applied-Upstream: commit: r35548:r35549
      {
  #if DEBUG
        fprintf (stderr,
-@@ -215,7 +220,11 @@
+@@ -209,18 +229,24 @@
+       return 0;
+     }
+   if (NULL == (dst_buffer =
+-	       av_malloc (avpicture_get_size (PIX_FMT_RGB24, dst_width, dst_height))))
++	       av_malloc (avpicture_get_size (PIX_OUTPUT_FORMAT,
++                                              dst_width, dst_height))))
+     {
+ #if DEBUG
        fprintf (stderr,
                 "Failed to allocate the destination image buffer\n");
  #endif
@@ -30,7 +78,14 @@ Applied-Upstream: commit: r35548:r35549
        sws_freeContext (scaler_ctx);
        return 0;
      }
-@@ -236,7 +245,11 @@
+   avpicture_fill ((AVPicture *) dst_frame, dst_buffer,
+-                  PIX_FMT_RGB24, dst_width, dst_height);
++                  PIX_OUTPUT_FORMAT,
++                  dst_width, dst_height);
+   sws_scale (scaler_ctx,
+              src_data, 
+              src_stride,
+@@ -236,7 +262,11 @@
                 "Failed to allocate the encoder output buffer\n");
  #endif
        av_free (dst_buffer);
@@ -43,7 +98,7 @@ Applied-Upstream: commit: r35548:r35549
        sws_freeContext (scaler_ctx);
        return 0;
      }
-@@ -249,7 +262,11 @@
+@@ -249,13 +279,17 @@
  #endif
        av_free (encoder_output_buffer);
        av_free (dst_buffer);
@@ -56,7 +111,14 @@ Applied-Upstream: commit: r35548:r35549
        sws_freeContext (scaler_ctx);
        return 0;
      }
-@@ -263,10 +280,14 @@
+   encoder_codec_ctx->width = dst_width;
+   encoder_codec_ctx->height = dst_height;
+-  encoder_codec_ctx->pix_fmt = PIX_FMT_RGB24;
++  encoder_codec_ctx->pix_fmt = PIX_OUTPUT_FORMAT;
+   opts = NULL;
+   if (avcodec_open2 (encoder_codec_ctx, encoder_codec, &opts) < 0)
+     {
+@@ -263,10 +297,14 @@
        fprintf (stderr,
                 "Failed to open the encoder\n");
  #endif
@@ -73,7 +135,7 @@ Applied-Upstream: commit: r35548:r35549
        sws_freeContext  (scaler_ctx);
        return 0;
      }
-@@ -295,9 +316,13 @@
+@@ -295,9 +333,13 @@
  cleanup:
    av_dict_free (&opts);
    avcodec_close (encoder_codec_ctx);
@@ -89,7 +151,7 @@ Applied-Upstream: commit: r35548:r35549
    sws_freeContext (scaler_ctx);
    *output_data = encoder_output_buffer;
  
-@@ -406,18 +431,23 @@
+@@ -406,18 +448,23 @@
        fprintf (stderr,
  	       "Failed to open image codec\n");
  #endif
@@ -116,7 +178,7 @@ Applied-Upstream: commit: r35548:r35549
        return;
      }
  
-@@ -441,9 +471,13 @@
+@@ -441,9 +488,13 @@
        fprintf (stderr,
  	       "Failed to decode a complete frame\n");
  #endif
@@ -132,7 +194,7 @@ Applied-Upstream: commit: r35548:r35549
        return;
      }
    calculate_thumbnail_dimensions (codec_ctx->width, codec_ctx->height,
-@@ -467,9 +501,13 @@
+@@ -467,9 +518,13 @@
  		err);
        av_free (encoded_thumbnail);
      }
@@ -148,7 +210,7 @@ Applied-Upstream: commit: r35548:r35549
  }
  
  
-@@ -563,7 +601,12 @@
+@@ -563,7 +618,12 @@
        return;
      }
  
@@ -162,7 +224,7 @@ Applied-Upstream: commit: r35548:r35549
      {
  #if DEBUG
        fprintf (stderr,
-@@ -616,7 +659,11 @@
+@@ -616,7 +676,11 @@
        fprintf (stderr,
  	       "Failed to decode a complete frame\n");
  #endif
@@ -175,7 +237,7 @@ Applied-Upstream: commit: r35548:r35549
        avcodec_close (codec_ctx);
        avformat_close_input (&format_ctx);
        av_free (io_ctx);
-@@ -643,7 +690,11 @@
+@@ -643,7 +707,11 @@
  		err);
        av_free (encoded_thumbnail);
      }
