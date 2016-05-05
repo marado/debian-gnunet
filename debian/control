@@ -11,7 +11,7 @@ Build-Depends:
  libtidy-dev, libtiff-dev, libvorbis-dev, libogg-dev, zlib1g-dev, texinfo,
  libmagic-dev, libavresample-dev
 Standards-Version: 3.9.8
-Vcs-Git: https://anonscm.debian.org/collab-maint/libextractor.git
+Vcs-Git: https://anonscm.debian.org/git/collab-maint/libextractor.git
 Vcs-browser: https://anonscm.debian.org/gitweb/?p=collab-maint/libextractor.git
 Homepage: http://www.gnu.org/software/libextractor/
 
