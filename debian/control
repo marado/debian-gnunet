@@ -1,7 +1,7 @@
 Source: libextractor
 Section: libs
 Priority: optional
-Maintainer: Bertrand Marc <beberking@gmail.com>
+Maintainer: Bertrand Marc <bmarc@debian.org>
 Build-Depends:
  debhelper (>= 9), autopoint, dh-autoreconf, pkg-config, libarchive-dev,
  libavutil-dev, libavformat-dev, libavcodec-dev, libswscale-dev, libbz2-dev,
