@@ -1,7 +1,7 @@
 Source: gnunet
 Section: net
 Priority: optional
-Maintainer: Bertrand Marc <beberking@gmail.com>
+Maintainer: Bertrand Marc <bmarc@debian.org>
 Build-Depends:
  debhelper (>= 9), po-debconf, gettext, dh-autoreconf, autopoint, autoconf (>=2.59),
  automake (>=1.11.1), libextractor-dev (>=1:0.6.3), libmicrohttpd-dev (>=0.9.33),
