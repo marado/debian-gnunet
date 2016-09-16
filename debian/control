@@ -39,19 +39,6 @@ Description: extracts meta-data from files of arbitrary type (library)
  .
  This package contains the library and all plugins.
 
-Package: libextractor-dbg
-Section: debug
-Priority: extra
-Architecture: any
-Depends:
- ${misc:Depends}, libextractor3 (= ${binary:Version}),
- libextractor-dev (= ${binary:Version}), extract (= ${binary:Version})
-Description: extracts meta-data from files of arbitrary type (debug)
- GNU libextractor provides developers of file-sharing networks, file managers,
- and WWW-indexing bots with a universal library to obtain meta-data about files.
- .
- This package contains the debugging symbols.
-
 Package: libextractor-dev
 Section: libdevel
 Architecture: any

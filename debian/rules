@@ -24,5 +24,6 @@ override_dh_install:
 	dh_install --fail-missing
 
 override_dh_strip:
-	dh_strip --dbg-package=libextractor-dbg
+	dh_strip -dbgsym-migration='libextractor-dbg (<< 1:1.3-5~)'
+
 
