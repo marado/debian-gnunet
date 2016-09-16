@@ -17,6 +17,7 @@ Homepage: http://www.gnu.org/software/libextractor/
 
 Package: libextractor3
 Architecture: any
+Multi-Arch: same
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Conflicts: libextractor1c2a
@@ -42,6 +43,7 @@ Description: extracts meta-data from files of arbitrary type (library)
 Package: libextractor-dev
 Section: libdevel
 Architecture: any
+Multi-Arch: same
 Depends:
  ${misc:Depends}, libextractor3 (= ${binary:Version})
 Description: extracts meta-data from files of arbitrary type (development)
