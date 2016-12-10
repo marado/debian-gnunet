@@ -1,3 +1,14 @@
+gnunet (0.10.1-4) unstable; urgency=medium
+
+  * Use my @debian.org address for the maintainer field and in debian/copyright.
+  * debian/control: fix Vcs-git and Vcs-browser URIs.
+  * Build-depend on default-libmysqlclient-dev instead of libmysqlclient-dev
+    (Closes: #845850).
+  * Add a lintian override for python-script-but-no-python-dep, as a suggests
+    relationship is more appropriate.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sat, 10 Dec 2016 11:12:02 +0100
+
 gnunet (0.10.1-3) unstable; urgency=medium
 
   * Acknowledge NMU. Thanks to Raphael Geissert and Balint Reczey.
