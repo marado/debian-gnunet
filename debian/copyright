@@ -6,13 +6,13 @@ License: GPL-3+
 
 Files: *
 Copyright:
- (C) 2002-2013 Christian Grothoff <christian@grothoff.org>
+ (C) 2002-2017 Christian Grothoff <christian@grothoff.org>
  (C) 2002-2005 Vidyut Samanta <vids@cs.purdue.edu>
 License: GPL-3+
 
 Files: debian/*
 Copyright:
- (C) 2012-2016 Bertrand Marc <bmarc@debian.org>
+ (C) 2012-2017 Bertrand Marc <bmarc@debian.org>
  (C) 2004-2012 Daniel Baumann <daniel.baumann@progress-technologies.net>
 License: GPL-3+
 
