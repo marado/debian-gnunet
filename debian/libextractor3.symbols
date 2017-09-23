@@ -84,6 +84,8 @@ libextractor_ogg.so libextractor3 #MINVER#
  EXTRACTOR_ogg_extract_method@Base 1:1.0.1
 libextractor_ole2.so libextractor3 #MINVER#
  EXTRACTOR_ole2_extract_method@Base 1:1.0.1
+libextractor_pdf.so libextractor3 #MINVER#
+ EXTRACTOR_pdf_extract_method@Base 1:1.4
 libextractor_png.so libextractor3 #MINVER#
  EXTRACTOR_png_extract_method@Base 1:1.0.1
 libextractor_previewopus.so libextractor3 #MINVER#
