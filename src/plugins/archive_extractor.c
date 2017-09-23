@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2012 Christian Grothoff
+     Copyright (C) 2012 Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 /**
  * @file plugins/archive_extractor.c
@@ -99,7 +99,11 @@ EXTRACTOR_archive_extract_method (struct EXTRACTOR_ExtractContext *ec)
 
   format = NULL;
   a = archive_read_new ();
+#if ARCHIVE_VERSION_NUMBER >= 3000000
+  archive_read_support_filter_all (a);
+#else
   archive_read_support_compression_all (a);
+#endif
   archive_read_support_format_all (a);
   if(archive_read_open2 (a, ec, NULL, &read_cb, &skip_cb, NULL)!= ARCHIVE_OK)
 	return;
@@ -118,7 +122,11 @@ EXTRACTOR_archive_extract_method (struct EXTRACTOR_ExtractContext *ec)
 			 s, strlen (s) + 1))
 	break;
     }
+#if ARCHIVE_VERSION_NUMBER >= 3000000
+  archive_read_free (a);
+#else
   archive_read_finish (a);
+#endif
   if (NULL != format)
     {
       if (0 != ec->proc (ec->cls, 

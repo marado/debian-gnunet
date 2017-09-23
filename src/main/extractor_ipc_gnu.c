@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 /**
  * @file main/extractor_ipc_gnu.c
@@ -35,7 +35,9 @@
 #include <sys/wait.h>
 #include <sys/shm.h>
 #include <signal.h>
-
+#if HAVE_SYS_APPARMOR_H
+#include <sys/apparmor.h>
+#endif
 
 /**
  * A shared memory resource (often shared with several
@@ -323,6 +325,20 @@ EXTRACTOR_IPC_channel_create_ (struct EXTRACTOR_PluginList *plugin,
       (void) close (p2[0]);
       free (channel->mdata);
       free (channel);
+#if HAVE_SYS_APPARMOR_H
+#if HAVE_APPARMOR
+      if (0 > aa_change_profile("libextractor"))
+      {
+        if (EINVAL != errno)
+        {
+          fprintf (stderr,
+                   "Failure changing profile: %s",
+                   strerror (errno));
+	  _exit(1);
+	}
+      }
+#endif
+#endif
       EXTRACTOR_plugin_main_ (plugin, p1[0], p2[1]);
       _exit (0);
     }

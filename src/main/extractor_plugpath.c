@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2002, 2003, 2004, 2005, 2006, 2009, 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2002, 2003, 2004, 2005, 2006, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 /**
  * @file main/extractor_plugpath.c
@@ -507,7 +507,7 @@ get_installation_paths (EXTRACTOR_PathProcessor pp,
 
 
 /**
- * Closure for 'find_plugin_in_path'.
+ * Closure for #find_plugin_in_path().
  */
 struct SearchContext
 {
@@ -596,7 +596,7 @@ EXTRACTOR_find_plugin_ (const char *short_name)
 
 
 /**
- * Closure for 'load_plugins_from_dir'.
+ * Closure for #load_plugins_from_dir().
  */
 struct DefaultLoaderContext
 {
@@ -666,7 +666,7 @@ load_plugins_from_dir (void *cls,
  * Load the default set of plugins. The default can be changed
  * by setting the LIBEXTRACTOR_LIBRARIES environment variable.
  * If it is set to "env", then this function will return
- * EXTRACTOR_plugin_add_config (NULL, env, flags).  Otherwise,
+ * #EXTRACTOR_plugin_add_config(NULL, env, flags).  Otherwise,
  * it will load all of the installed plugins and return them.
  *
  * @param flags options for all of the plugins loaded

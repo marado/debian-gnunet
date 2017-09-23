@@ -1,7 +1,7 @@
-This is libextractor.info, produced by makeinfo version 4.13 from
+This is libextractor.info, produced by makeinfo version 6.3 from
 libextractor.texi.
 
-This manual is for GNU libextractor (version 1.2, 9 October 2012), a
+This manual is for GNU libextractor (version 1.4, 12 October 2016), a
 library for metadata extraction.
 
    Copyright (C) 2007, 2010, 2012 Christian Grothoff
@@ -12,7 +12,6 @@ library for metadata extraction.
      Foundation; with no Invariant Sections, no Front-Cover Texts, and
      no Back-Cover Texts.  A copy of the license is included in the
      section entitled "GNU Free Documentation License".
-
 INFO-DIR-SECTION Software libraries
 START-INFO-DIR-ENTRY
 * Libextractor: (libextractor).    Metadata extraction library.
@@ -24,7 +23,7 @@ File: libextractor.info,  Node: Top,  Next: Introduction,  Up: (dir)
 The GNU libextractor Reference Manual
 *************************************
 
-This manual is for GNU libextractor (version 1.2, 9 October 2012), a
+This manual is for GNU libextractor (version 1.4, 12 October 2016), a
 library for metadata extraction.
 
    Copyright (C) 2007, 2010, 2012 Christian Grothoff
@@ -68,24 +67,24 @@ Meta data includes format information (such as mime type, image
 dimensions, color depth, recording frequency), content descriptions
 (such as document title or document description) and copyright
 information (such as license, author and contributors).  Meta data
-extraction is an inherently uncertain business -- a parse error can be
-a corrupt file, an incompatibility in the file format version, an
-entirely different file format or a bug in the parser.  As a result of
-this uncertainty, GNU libextractor deliberately avoids to ever report
-any errors.  Unexpected file contents simply result in less or possibly
-no meta data being extracted.
+extraction is an inherently uncertain business -- a parse error can be a
+corrupt file, an incompatibility in the file format version, an entirely
+different file format or a bug in the parser.  As a result of this
+uncertainty, GNU libextractor deliberately avoids to ever report any
+errors.  Unexpected file contents simply result in less or possibly no
+meta data being extracted.
 
    GNU libextractor uses plugins to handle various file formats.
 Technically a plugin can support multiple file formats; however, most
 plugins only support one particular format.  By default, GNU
 libextractor will use all plugins that are available and found in the
-plugin installation directory.  Applications can request the use of
-only specific plugins or the exclusion of certain plugins.
+plugin installation directory.  Applications can request the use of only
+specific plugins or the exclusion of certain plugins.
 
-   GNU libextractor is distributed with the `extract' command(1) which
-is a command-line tool for extracting meta data.  `extract' is given a
+   GNU libextractor is distributed with the 'extract' command(1) which
+is a command-line tool for extracting meta data.  'extract' is given a
 list of filenames and prints the resulting meta data to the console.
-The `extract' source code also serves as an advanced example for how to
+The 'extract' source code also serves as an advanced example for how to
 use GNU libextractor.
 
    This manual focuses on providing documentation for writing software
@@ -93,7 +92,7 @@ with GNU libextractor.  The only relevant parts for end-users are the
 chapter on compiling and installing GNU libextractor (*Note
 Preparation::.).  Also, the chapter on existing plugins maybe of
 interest (*Note Existing Plugins::.).  Additional documentation for
-end-users can be find in the man page on `extract' (using man extract).
+end-users can be find in the man page on 'extract' (using man extract).
 
    GNU libextractor is licensed under the GNU General Public License,
 specifically, since version 0.7, GNU libextractor is licensed under
@@ -101,7 +100,7 @@ GPLv3 _or any later version_.
 
    ---------- Footnotes ----------
 
-   (1) Some distributions ship `extract' in a seperate package.
+   (1) Some distributions ship 'extract' in a seperate package.
 
 
 File: libextractor.info,  Node: Preparation,  Next: Generalities,  Prev: Introduction,  Up: Top
@@ -115,8 +114,8 @@ particular platforms are then described in individual sections
 afterwards.
 
    Compiling GNU libextractor follows the standard GNU autotools build
-process using `configure' and `make'.  For details on the GNU autotools
-build process, read the `INSTALL' file and query ./configure --help for
+process using 'configure' and 'make'.  For details on the GNU autotools
+build process, read the 'INSTALL' file and query ./configure --help for
 additional options.
 
    GNU libextractor has various dependencies, most of which are
@@ -127,51 +126,31 @@ will give the list in terms of the names of the respective Debian
    You absolutely need:
 
    * libtool
-
    * gcc
-
    * make
-
    * g++
-
    * libltdl7-dev
 
    Recommended dependencies are:
    * zlib1g-dev
-
    * libbz2-dev
-
    * libgif-dev
-
    * libvorbis-dev
-
    * libflac-dev
-
    * libmpeg2-4-dev
-
    * librpm-dev
-
    * libgtk2.0-dev or libgtk3.0-dev
-
    * libgsf-1-dev
-
    * libqt4-dev
-
    * libpoppler-dev
-
    * libexiv2-dev
-
    * libavformat-dev
-
    * libswscale-dev
-
    * libgstreamer1.0-dev
 
    For Subversion access and compilation one also needs:
    * subversion
-
    * autoconf
-
    * automake
 
    Please notify us if we missed some dependencies (note that the list
@@ -179,16 +158,16 @@ is supposed to only list direct dependencies, not transitive
 dependencies).
 
    Once you have compiled and installed GNU libextractor, you should
-have a file `extractor.h' installed in your `include/' directory.  This
+have a file 'extractor.h' installed in your 'include/' directory.  This
 file should be the starting point for your C and C++ development with
-GNU libextractor.  The build process also installs the `extract' binary
-and man pages for `extract' and GNU libextractor.  The `extract' man
-page documents the `extract' tool.  The GNU libextractor man page gives
+GNU libextractor.  The build process also installs the 'extract' binary
+and man pages for 'extract' and GNU libextractor.  The 'extract' man
+page documents the 'extract' tool.  The GNU libextractor man page gives
 a brief summary of the C API for GNU libextractor.
 
    When you install GNU libextractor, various plugins will be installed
-in the `lib/libextractor/' directory.  The main library will be
-installed as `lib/libextractor.so'.  Note that GNU libextractor will
+in the 'lib/libextractor/' directory.  The main library will be
+installed as 'lib/libextractor.so'.  Note that GNU libextractor will
 attempt to find the plugins relative to the path of the main library.
 Consequently, a package manager can move the library and its plugins to
 a different location later -- as long as the relative path between the
@@ -210,7 +189,7 @@ Should work using the standard instructions without problems.
 2.3 Installation on OpenBSD
 ===========================
 
-OpenBSD 3.8 also doesn't have CODESET in `langinfo.h'.  CODESET is used
+OpenBSD 3.8 also doesn't have CODESET in 'langinfo.h'.  CODESET is used
 in GNU libextractor in about three places.  This causes problems during
 compilation.
 
@@ -223,9 +202,9 @@ No reports so far.
 ============================
 
 Linking -lstdc++ with the provided libtool fails on Cygwin, this is a
-problem with libtool, there is unfortunately no flag to tell libtool
-how to do its job on Cygwin and it seems that it cannot be the default
-to set the library check to 'pass_all'.  Patching libtool may help.
+problem with libtool, there is unfortunately no flag to tell libtool how
+to do its job on Cygwin and it seems that it cannot be the default to
+set the library check to 'pass_all'.  Patching libtool may help.
 
    Note: this is a rather dated report and may no longer apply.
 
@@ -233,33 +212,33 @@ to set the library check to 'pass_all'.  Patching libtool may help.
 ========================
 
 libextractor has two installation methods on Mac OS X: it can be
-installed as a Mac OS X framework or with the standard `./configure;
-make; make install' shell commands. The framework package is
+installed as a Mac OS X framework or with the standard './configure;
+make; make install' shell commands.  The framework package is
 self-contained, but currently omits some of the extractor plugins that
-can be compiled in if libextractor is installed with `./configure;
-make; make install' (provided that the required dependencies exist.)
+can be compiled in if libextractor is installed with './configure; make;
+make install' (provided that the required dependencies exist.)
 
 2.6.1 Installing and uninstalling the framework
 -----------------------------------------------
 
 The binary framework is distributed as a disk image
-(`Extractor-x.x.xx.dmg').  Installation is done by opening the disk
-image and clicking `Extractor.pkg' inside it. The Mac OS X installer
-application will then run. The framework is installed to the root
-volume's `/Library/Frameworks' folder and installing will require admin
+('Extractor-x.x.xx.dmg').  Installation is done by opening the disk
+image and clicking 'Extractor.pkg' inside it.  The Mac OS X installer
+application will then run.  The framework is installed to the root
+volume's '/Library/Frameworks' folder and installing will require admin
 privileges.
 
    The framework can be uninstalled by dragging
-`/Library/Frameworks/Extractor.framework' to the `Trash'.
+'/Library/Frameworks/Extractor.framework' to the 'Trash'.
 
 2.6.2 Using the framework
 -------------------------
 
-In the framework, the `extract' command line tool can be found at
-`/Library/Frameworks/Extractor.framework/Versions/Current/bin/extract'
+In the framework, the 'extract' command line tool can be found at
+'/Library/Frameworks/Extractor.framework/Versions/Current/bin/extract'
 
-   The framework can be used in software projects as a framework or as
-a dynamic library.
+   The framework can be used in software projects as a framework or as a
+dynamic library.
 
    When using the framework as a dynamic library in projects using
 autotools, one would most likely want to add
@@ -309,7 +288,7 @@ $ gcc -I/Library/Frameworks/Extractor.framework/Versions/Current/include \
   -L/Library/Frameworks/Extractor.framework/Versions/Current/lib \
   -lextractor
 
-   Notice the difference in the `#include' line.
+   Notice the difference in the '#include' line.
 
 2.7 Note to package maintainers
 ===============================
@@ -319,28 +298,22 @@ roughly the following binary packages:
 
    * libextractor (main library only, only hard dependency for other
      packages depending on GNU libextractor)
-
    * extract (command-line tool and man page extract.1)
-
    * libextractor-dev (extractor.h header and man page libextractor.3)
-
    * libextractor-doc (this manual)
-
    * libextractor-plugins (plugins without external dependencies;
      recommended but not required by extract and libextractor package)
-
    * libextractor-plugin-XXX (plugin with dependency on libXXX, for
-     example for XXX=mpeg this would be `libextractor_mpeg.so')
-
+     example for XXX=mpeg this would be 'libextractor_mpeg.so')
    * libextractor-plugins-all (meta package that requires all plugins
      except experimental plugins)
 
-   This would enable minimal installations (i.e. for embedded systems)
+   This would enable minimal installations (i.e.  for embedded systems)
 to not include any plugins, as well as moderate-size installations (that
 do not trigger GTK and X11) for systems that have limited resources.
 Right now, the MP4 plugin is experimental and does nothing and should
-thus never be included at all.  The gstreamer plugin is experimental
-but largely works with the correct version of gstreamer and can thus be
+thus never be included at all.  The gstreamer plugin is experimental but
+largely works with the correct version of gstreamer and can thus be
 packaged (especially if the dependency is available on the target
 system) but should probably not be part of libextractor-plugins-all.
 
@@ -353,22 +326,22 @@ File: libextractor.info,  Node: Generalities,  Next: Extracting meta data,  Prev
 3.1 Introduction to the "extract" command
 =========================================
 
-The `extract' command takes a list of file names as arguments, extracts
-meta data from each of those files and prints the result to the
-console.  By default, `extract' will use all available plugins and
-print all (non-binary) meta data that is found.
+The 'extract' command takes a list of file names as arguments, extracts
+meta data from each of those files and prints the result to the console.
+By default, 'extract' will use all available plugins and print all
+(non-binary) meta data that is found.
 
-   The set of plugins used by `extract' can be controlled using the
-"-l" and "-n" options.  Use "-n" to not load all of the default
-plugins.  Use "-l NAME" to specifically load a certain plugin.  For
-example, specify "-n -l mime" to only use the MIME plugin.
+   The set of plugins used by 'extract' can be controlled using the "-l"
+and "-n" options.  Use "-n" to not load all of the default plugins.  Use
+"-l NAME" to specifically load a certain plugin.  For example, specify
+"-n -l mime" to only use the MIME plugin.
 
-   Using the "-p" option the output of `extract' can be limited to only
+   Using the "-p" option the output of 'extract' can be limited to only
 certain keyword types.  Similarly, using the "-x" option, certain
-keyword types can be excluded.  A list of all known keyword types can
-be obtained using the "-L" option.
+keyword types can be excluded.  A list of all known keyword types can be
+obtained using the "-L" option.
 
-   The output format of `extract' can be influenced with the "-V" (more
+   The output format of 'extract' can be influenced with the "-V" (more
 verbose, lists filenames), "-g" (grep-friendly, all meta data on a
 single line per file) and "-b" (bibTeX style) options.
 
@@ -421,11 +394,11 @@ for writing new plugins is described in chapter *Note Writing new
 Plugins::.
 
    Note that it is possible for GNU libextractor to encounter a
-`SIGPIPE' during its execution.  GNU libextractor -- as it is a library
+'SIGPIPE' during its execution.  GNU libextractor -- as it is a library
 and as such should not interfere with your main application -- does NOT
-install a signal handler for `SIGPIPE'.  You thus need to install a
-signal handler (or at least tell your system to ignore `SIGPIPE') if you
-want to avoid unexpected problems during calls to GNU libextractor.  
+install a signal handler for 'SIGPIPE'.  You thus need to install a
+signal handler (or at least tell your system to ignore 'SIGPIPE') if you
+want to avoid unexpected problems during calls to GNU libextractor.
 
 
 File: libextractor.info,  Node: Extracting meta data,  Next: Language bindings,  Prev: Generalities,  Up: Top
@@ -435,8 +408,8 @@ File: libextractor.info,  Node: Extracting meta data,  Next: Language bindings, 
 
 In order to extract meta data with GNU libextractor you first need to
 load the respective plugins and then call the extraction API with the
-plugins and the data to process.  This section documents how to load
-and unload plugins, the various types and formats in which meta data is
+plugins and the data to process.  This section documents how to load and
+unload plugins, the various types and formats in which meta data is
 returned to the application and finally the extraction API itself.
 
 * Menu:
@@ -458,7 +431,7 @@ starts sub-processes for the actual extraction work.  This is useful to
 isolate the parent process from potential bugs; however, it can cause
 problems if the parent process is multi-threaded.  The issue is that at
 the time of the fork, another thread of the application may hold a lock
-(i.e. in gettext or libc).  That lock would then never be released in
+(i.e.  in gettext or libc).  That lock would then never be released in
 the child process (as the other thread is not present in the child
 process).  As a result, the child process would then deadlock on trying
 to acquire the lock and never terminate.  This has actually been
@@ -466,7 +439,7 @@ observed with a lock in GNU gettext that is triggered by the plugin
 startup code when it interacts with libltdl.
 
    The problem can be solved by loading the plugins using the
-`EXTRACTOR_OPTION_IN_PROCESS' option, which will run GNU libextractor
+'EXTRACTOR_OPTION_IN_PROCESS' option, which will run GNU libextractor
 in-process and thus avoid the locking issue.  In this case, all of the
 functions for loading and unloading plugins, including
 EXTRACTOR_plugin_add_defaults and EXTRACTOR_plugin_remove_all, are
@@ -478,6 +451,7 @@ but due to the extensive use of 3rd party libraries this cannot be
 guaranteed.
 
  -- C Struct: EXTRACTOR_PluginList
+
      A plugin list represents a set of GNU libextractor plugins.  Most
      of the GNU libextractor API is concerned with either constructing a
      plugin list or using it to extract meta data.  The internal
@@ -486,36 +460,41 @@ guaranteed.
 
  -- Function: void EXTRACTOR_plugin_remove_all (struct
           EXTRACTOR_PluginList *plugins)
+
      Unload all of the plugins in the given list.
 
  -- Function: struct EXTRACTOR_PluginList * EXTRACTOR_plugin_remove
           (struct EXTRACTOR_PluginList *plugins, const char*name)
+
      Unloads a particular plugin.  The given name should be the short
      name of the plugin, for example "mime" for the mime-type extractor
      or "mpeg" for the MPEG extractor.
 
- -- Function: struct EXTRACTOR_PluginList * EXTRACTOR_plugin_add
-          (struct EXTRACTOR_PluginList *plugins, const char* name,const
-          char* options, enum EXTRACTOR_Options flags)
+ -- Function: struct EXTRACTOR_PluginList * EXTRACTOR_plugin_add (struct
+          EXTRACTOR_PluginList *plugins, const char* name,const char*
+          options, enum EXTRACTOR_Options flags)
+
      Loads a particular plugin.  The plugin is added to the existing
-     list, which can be `NULL'.  The second argument specifies the name
-     of the plugin (i.e. "ogg").  The third argument can be `NULL' and
+     list, which can be 'NULL'.  The second argument specifies the name
+     of the plugin (i.e.  "ogg").  The third argument can be 'NULL' and
      specifies plugin-specific options.  Finally, the last argument
      specifies if the plugin should be executed out-of-process
-     (`EXTRACTOR_OPTION_DEFAULT_POLICY') or not.
+     ('EXTRACTOR_OPTION_DEFAULT_POLICY') or not.
 
  -- Function: struct EXTRACTOR_PluginList * EXTRACTOR_plugin_add_config
           (struct EXTRACTOR_PluginList *plugins, const char* config,
           enum EXTRACTOR_Options flags)
+
      Loads and unloads plugins based on a configuration string,
-     modifying the existing list, which can be `NULL'.  The string has
+     modifying the existing list, which can be 'NULL'.  The string has
      the format "[-]NAME(OPTIONS){:[-]NAME(OPTIONS)}*".  Prefixing the
      plugin name with a "-" means that the plugin should be unloaded.
 
  -- Function: struct EXTRACTOR_PluginList *
-EXTRACTOR_plugin_add_defaults (enum EXTRACTOR_Options flags)
-     Loads all of the plugins in the plugin directory.  This function
-     is what most GNU libextractor applications should use to setup the
+          EXTRACTOR_plugin_add_defaults (enum EXTRACTOR_Options flags)
+
+     Loads all of the plugins in the plugin directory.  This function is
+     what most GNU libextractor applications should use to setup the
      plugins.
 
 
@@ -532,21 +511,22 @@ All values in this enumeration are of the form EXTRACTOR_METATYPE_XXX.
 
  -- Function: const char * EXTRACTOR_metatype_to_string (enum
           EXTRACTOR_MetaType type)
+
      The function EXTRACTOR_metatype_to_string can be used to obtain a
-     short English string `s' describing the meta data type.  The
-     string can be translated into other languages using GNU gettext
-     with the domain set to GNU libextractor (dgettext("libextractor",
-     s)).
+     short English string 's' describing the meta data type.  The string
+     can be translated into other languages using GNU gettext with the
+     domain set to GNU libextractor (dgettext("libextractor", s)).
 
  -- Function: const char * EXTRACTOR_metatype_to_description (enum
           EXTRACTOR_MetaType type)
+
      The function EXTRACTOR_metatype_to_description can be used to
-     obtain a longer English string `s' describing the meta data type.
+     obtain a longer English string 's' describing the meta data type.
      The description may be empty if the short description returned by
-     `EXTRACTOR_metatype_to_string' is already comprehensive.  The
+     'EXTRACTOR_metatype_to_string' is already comprehensive.  The
      string can be translated into other languages using GNU gettext
-     with the domain set to GNU libextractor (dgettext("libextractor",
-     s)).
+     with the domain set to GNU libextractor
+     (dgettext("libextractor", s)).
 
 
 File: libextractor.info,  Node: Meta formats,  Next: Extracting,  Prev: Meta types,  Up: Extracting meta data
@@ -557,17 +537,17 @@ File: libextractor.info,  Node: Meta formats,  Next: Extracting,  Prev: Meta typ
 enum EXTRACTOR_MetaFormat is a C enum which defines on a high level how
 the extracted meta data is represented.  Currently, the library uses
 three formats: UTF-8 strings, C strings and binary data.  A fourth
-value, `EXTRACTOR_METAFORMAT_UNKNOWN' is defined but not used.  UTF-8
-strings are 0-terminated strings that have been converted to UTF-8.
-The format code is `EXTRACTOR_METAFORMAT_UTF8'. Ideally, most text meta
+value, 'EXTRACTOR_METAFORMAT_UNKNOWN' is defined but not used.  UTF-8
+strings are 0-terminated strings that have been converted to UTF-8.  The
+format code is 'EXTRACTOR_METAFORMAT_UTF8'.  Ideally, most text meta
 data will be of this format.  Some file formats fail to specify the
 encoding used for the text.  In this case, the text cannot be converted
 to UTF-8.  However, the meta data is still known to be 0-terminated and
 presumably human-readable.  In this case, the format code used is
-`EXTRACTOR_METAFORMAT_C_STRING'; however, this should not be understood
+'EXTRACTOR_METAFORMAT_C_STRING'; however, this should not be understood
 to mean that the encoding is the same as that used by the C compiler.
 Finally, for binary data (mostly images), the format
-`EXTRACTOR_METAFORMAT_BINARY' is used.
+'EXTRACTOR_METAFORMAT_BINARY' is used.
 
    Naturally this is not a precise description of the meta format.
 Plugins can provide a more precise description (if known) by providing
@@ -583,64 +563,65 @@ File: libextractor.info,  Node: Extracting,  Prev: Meta formats,  Up: Extracting
 
  -- Function Pointer: int (*EXTRACTOR_MetaDataProcessor)(void *cls,
           const char *plugin_name, enum EXTRACTOR_MetaType type, enum
-          EXTRACTOR_MetaFormat format, const char *data_mime_type,
-          const char *data, size_t data_len)
+          EXTRACTOR_MetaFormat format, const char *data_mime_type, const
+          char *data, size_t data_len)
+
      Type of a function that libextractor calls for each meta data item
      found.
 
-    CLS
+     CLS
           closure (user-defined)
 
-    PLUGIN_NAME
+     PLUGIN_NAME
           name of the plugin that produced this value; special values
-          can be used (i.e. '<zlib>' for zlib being used in the main
+          can be used (i.e.  '<zlib>' for zlib being used in the main
           libextractor library and yielding meta data);
 
-    TYPE
+     TYPE
           libextractor-type describing the meta data;
 
-    FORMAT BASIC
+     FORMAT BASIC
           format information about data
 
-    DATA_MIME_TYPE
-          mime-type of data (not of the original file); can be `NULL'
+     DATA_MIME_TYPE
+          mime-type of data (not of the original file); can be 'NULL'
           (if mime-type is not known);
 
-    DATA
+     DATA
           actual meta-data found
 
-    DATA_LEN
+     DATA_LEN
           number of bytes in data
-
 
      Return 0 to continue extracting, 1 to abort.
 
  -- Function: void EXTRACTOR_extract (struct EXTRACTOR_PluginList
-          *plugins, const char *filename, const void *data, size_t
-          size, EXTRACTOR_MetaDataProcessor proc, void *proc_cls)
+          *plugins, const char *filename, const void *data, size_t size,
+          EXTRACTOR_MetaDataProcessor proc, void *proc_cls)
+
      This is the main function for extracting keywords with GNU
      libextractor.  The first argument is a plugin list which specifies
      the set of plugins that should be used for extracting meta data.
-     The `filename' argument is optional and can be used to specify the
-     name of a file to process.  If `filename' is `NULL', then the
-     `data' argument must point to the in-memory data to extract meta
-     data from.  If `filename' is non-`NULL', `data' can be `NULL'.  If
-     `data' is non-null, then `size' is the size of `data' in bytes.
-     Otherwise `size' should be zero.  For each meta data item found,
-     GNU libextractor will call the `proc' function, passing `proc_cls'
-     as the first argument to `proc'.  The other arguments to `proc'
+     The 'filename' argument is optional and can be used to specify the
+     name of a file to process.  If 'filename' is 'NULL', then the
+     'data' argument must point to the in-memory data to extract meta
+     data from.  If 'filename' is non-'NULL', 'data' can be 'NULL'.  If
+     'data' is non-null, then 'size' is the size of 'data' in bytes.
+     Otherwise 'size' should be zero.  For each meta data item found,
+     GNU libextractor will call the 'proc' function, passing 'proc_cls'
+     as the first argument to 'proc'.  The other arguments to 'proc'
      depend on the specific meta data found.
 
      Meta data extraction should never really fail -- at worst, GNU
-     libextractor should not call `proc' with any meta data. By design,
+     libextractor should not call 'proc' with any meta data.  By design,
      GNU libextractor should never crash or leak memory, even given
      corrupt files as input.  Note however, that running GNU
-     libextractor on a corrupt file system (or incorrectly mmaped
-     files) can result in the operating system sending a SIGBUS (bus
-     error) to the process.  As GNU libextractor typically runs plugins
+     libextractor on a corrupt file system (or incorrectly mmaped files)
+     can result in the operating system sending a SIGBUS (bus error) to
+     the process.  As GNU libextractor typically runs plugins
      out-of-process, it first maps the file into memory and then
      attempts to decompress it.  During decompression it is possible to
-     encounter a SIGBUS.   GNU libextractor will _not_ attempt to catch
+     encounter a SIGBUS. GNU libextractor will _not_ attempt to catch
      this signal and your application is likely to crash.  Note again
      that this should only happen if the file _system_ is corrupt (not
      if individual files are corrupt).  If this is not acceptable, you
@@ -648,27 +629,26 @@ File: libextractor.info,  Node: Extracting,  Prev: Meta formats,  Up: Extracting
      out-of-process (as done, for example, by doodle
      (http://grothoff.org/christian/doodle/)).
 
-
 
 File: libextractor.info,  Node: Language bindings,  Next: Utility functions,  Prev: Extracting meta data,  Up: Top
 
 5 Language bindings
 *******************
 
-GNU libextractor works immediately with C and C++ code. Bindings for
+GNU libextractor works immediately with C and C++ code.  Bindings for
 Java, Mono, Ruby, Perl, PHP and Python are available for download from
-the main GNU libextractor website.  Documentation for these bindings
-(if available) is part of the downloads for the respective binding.  In
-all cases, a full installation of the C library is required before the
+the main GNU libextractor website.  Documentation for these bindings (if
+available) is part of the downloads for the respective binding.  In all
+cases, a full installation of the C library is required before the
 binding can be installed.
 
 5.1 Java
 ========
 
 Compiling the GNU libextractor Java binding follows the usual process of
-running `configure' and `make'.  The result will be a shared C library
-`libextractor_java.so' with the native code and a JAR file (installed
-to `$PREFIX/share/java/libextractor.java').
+running 'configure' and 'make'.  The result will be a shared C library
+'libextractor_java.so' with the native code and a JAR file (installed to
+'$PREFIX/share/java/libextractor.java').
 
    A minimal example for using GNU libextractor's Java binding would
 look like this:
@@ -685,9 +665,9 @@ public static void main(String[] args) {
   }
 }
 
-   The GNU libextractor library and the `libextractor_java.so' JNI
+   The GNU libextractor library and the 'libextractor_java.so' JNI
 binding have to be in the library search path for this to work.
-Furthermore, the `libextractor.jar' file should be on the classpath.
+Furthermore, the 'libextractor.jar' file should be on the classpath.
 
    Note that the API does not use Java 5 style generics in order to work
 with older versions of Java.
@@ -724,7 +704,7 @@ File: libextractor.info,  Node: Utility functions,  Next: Existing Plugins,  Pre
 *******************
 
 This chapter describes various utility functions for GNU libextractor
-usage. All of the functions are reentrant.
+usage.  All of the functions are reentrant.
 
 * Menu:
 
@@ -739,11 +719,11 @@ File: libextractor.info,  Node: Utility Constants,  Next: Meta data printing,  U
 
 The constant EXTRACTOR_VERSION is a hexadecimal representation of the
 version number of the installed libextractor header.  The hexadecimal
-format is 0xAABBCCDD where AA is the major version (so far always 0),
-BB is the minor version, CC is the revision and DD the patch number.
-For example, for version 0.5.18, we would have AA=0, BB=5, CC=18 and
-DD=0.  Minor releases such as 0.5.18a or significant changes in
-unreleased versions would be marked with DD=1 or higher.
+format is 0xAABBCCDD where AA is the major version (so far always 0), BB
+is the minor version, CC is the revision and DD the patch number.  For
+example, for version 0.5.18, we would have AA=0, BB=5, CC=18 and DD=0.
+Minor releases such as 0.5.18a or significant changes in unreleased
+versions would be marked with DD=1 or higher.
 
 
 File: libextractor.info,  Node: Meta data printing,  Prev: Utility Constants,  Up: Utility functions
@@ -751,12 +731,12 @@ File: libextractor.info,  Node: Meta data printing,  Prev: Utility Constants,  U
 6.2 Meta data printing
 ======================
 
-The EXTRACTOR_meta_data_print is a simple function which prints the
-meta data found with libextractor to a file.  The function is mostly
-useful for debugging and as an example for how to manipulate the
-keyword list and can be passed as the `proc' argument to
-`EXTRACTOR_extract'.  The file to print to should be passed as
-`proc_cls' (which must be of type `FILE *'), for example `stdout'.
+The EXTRACTOR_meta_data_print is a simple function which prints the meta
+data found with libextractor to a file.  The function is mostly useful
+for debugging and as an example for how to manipulate the keyword list
+and can be passed as the 'proc' argument to 'EXTRACTOR_extract'.  The
+file to print to should be passed as 'proc_cls' (which must be of type
+'FILE *'), for example 'stdout'.
 
 
 File: libextractor.info,  Node: Existing Plugins,  Next: Writing new Plugins,  Prev: Utility functions,  Up: Top
@@ -765,68 +745,39 @@ File: libextractor.info,  Node: Existing Plugins,  Next: Writing new Plugins,  P
 ******************
 
    * ARCHIVE (using libarchive)
-
    * DVI
-
    * EXIV2 (using libexiv2, 0.23 or later preferred)
-
    * FLAC (using libFLAC)
-
    * GIF (using libgif)
-
    * GSTREAMER (using libgstreamer v1.0 or later)
-
    * HTML (using libtidy)
-
    * IT
-
    * JPEG (using libjpeg v8 or later)
-
    * MAN
-
    * MIDI (using libsmf)
-
    * MIME (using libmagic)
-
    * MPEG (using libmpeg2)
-
    * NSF
-
    * NSFE
-
    * ODF
-
    * OLE2 (with libgsf)
-
    * OGG (with libogg)
-
    * PNG
-
    * PS
-
    * RIFF
-
    * RPM (using librpm)
-
    * S3M
-
    * SID
-
    * ThumbnailFFMPEG (using libavformat and related libav-libraries,
      including libswscale)
-
    * ThumbnailGtk (using libgtk)
-
    * TIFF (with libtiff, tested with v4)
-
    * WAV
-
    * XM
-
    * ZIP
 
-   `gzip' and `bzip2' compressed versions of these formats are also
-supported (as well as meta data embedded by `gzip' itself) if zlib or
+   'gzip' and 'bzip2' compressed versions of these formats are also
+supported (as well as meta data embedded by 'gzip' itself) if zlib or
 libbz2 are available.
 
 
@@ -838,8 +789,8 @@ File: libextractor.info,  Node: Writing new Plugins,  Next: Internal utility fun
 Writing a new plugin for libextractor usually requires writing of or
 interfacing with an actual parser for a specific format.  How this is
 can be accomplished depends on the format and cannot be specified in
-general.  However, care should be taken for the code to be reentrant
-and highly fault-tolerant, especially with respect to malformed inputs.
+general.  However, care should be taken for the code to be reentrant and
+highly fault-tolerant, especially with respect to malformed inputs.
 
    Plugins should start by verifying that the header of the data matches
 the specific format and immediately return if that is not the case.
@@ -847,20 +798,19 @@ Even if the header matches the expected file format, plugins must not
 assume that the remainder of the file is well formed.
 
    The plugin library must be called libextractor_XXX.so, where XXX
-denotes the file format of the plugin. The library must export a method
+denotes the file format of the plugin.  The library must export a method
 libextractor_XXX_extract_method, with the following signature:
 void
 EXTRACTOR_XXX_extract_method (struct EXTRACTOR_ExtractContext *ec);
 
-   `ec' contains various information the plugin may need for its
-execution.  Most importantly, it contains functions for reading
-("read") and seeking ("seek") the input data and for returning
-extracted data ("proc").  The "config" member can contain additional
-configuration options.  "proc" should be called on each meta data item
-found.  If "proc" returns non-zero, processing should be aborted (if
-possible).
+   'ec' contains various information the plugin may need for its
+execution.  Most importantly, it contains functions for reading ("read")
+and seeking ("seek") the input data and for returning extracted data
+("proc").  The "config" member can contain additional configuration
+options.  "proc" should be called on each meta data item found.  If
+"proc" returns non-zero, processing should be aborted (if possible).
 
-   In order to test new plugins, the `extract' command can be run with
+   In order to test new plugins, the 'extract' command can be run with
 the options "-ni" and "-l XXX" .  This will run the plugin in-process
 (making it easier to debug) and without any of the other plugins.
 
@@ -898,7 +848,7 @@ File: libextractor.info,  Node: Internal utility functions,  Next: Reporting bug
 9 Internal utility functions
 ****************************
 
-Some plugins link against the `libextractor_common' library which
+Some plugins link against the 'libextractor_common' library which
 provides common abstractions needed by many plugins.  This section
 documents this internal API for plugin developers.  Note that the
 headers for this library are (intentionally) not installed: we do not
@@ -906,40 +856,40 @@ consider this API stable and it should hence only be used by plugins
 that are build and shipped with GNU libextractor.  Third-party plugins
 should not use it.
 
-   `convert_numeric.h' defines various conversion functions for numbers
+   'convert_numeric.h' defines various conversion functions for numbers
 (in particular, byte-order conversion for floating point numbers).
 
-   `unzip.h' defines an API for accessing compressed files.
+   'unzip.h' defines an API for accessing compressed files.
 
-   `pack.h' provides an interpreter for unpacking structs of integer
+   'pack.h' provides an interpreter for unpacking structs of integer
 numbers from streams and converting from big or little endian to host
 byte order at the same time.
 
-   `convert.h' provides a function for character set conversion
+   'convert.h' provides a function for character set conversion
 described below.
 
  -- Function: char * EXTRACTOR_common_convert_to_utf8 (const char
           *input, size_t len, const char *charset)
      Various GNU libextractor plugins make use of the internal
-     `convert.h' header which defines a function
+     'convert.h' header which defines a function
 
      EXTRACTOR_common_convert_to_utf8 which can be used to easily
      convert text from any character set to UTF-8.  This conversion is
-     important since the linked list of keywords that is returned by
-     GNU libextractor is expected to contain only UTF-8 strings.
-     Naturally, proper conversion may not always be possible since some
-     file formats fail to specify the character set.  In that case, it
-     is often better to not convert at all.
+     important since the linked list of keywords that is returned by GNU
+     libextractor is expected to contain only UTF-8 strings.  Naturally,
+     proper conversion may not always be possible since some file
+     formats fail to specify the character set.  In that case, it is
+     often better to not convert at all.
 
      The arguments to EXTRACTOR_common_convert_to_utf8 are the input
-     string (which does _not_ have to be zero-terminated), the length
-     of the input string, and the character set (which _must_ be
+     string (which does _not_ have to be zero-terminated), the length of
+     the input string, and the character set (which _must_ be
      zero-terminated).  Which character sets are supported depends on
-     the platform, a list can generally be obtained using the `iconv
-     -l' command.  The return value from
-     EXTRACTOR_common_convert_to_utf8 is a zero-terminated string in
-     UTF-8 format.  The responsibility to free the string is with the
-     caller, so storing the string in the keyword list is acceptable.
+     the platform, a list can generally be obtained using the 'iconv -l'
+     command.  The return value from EXTRACTOR_common_convert_to_utf8 is
+     a zero-terminated string in UTF-8 format.  The responsibility to
+     free the string is with the caller, so storing the string in the
+     keyword list is acceptable.
 
 
 File: libextractor.info,  Node: Reporting bugs,  Next: GNU Free Documentation License,  Prev: Internal utility functions,  Up: Top
@@ -948,9 +898,9 @@ File: libextractor.info,  Node: Reporting bugs,  Next: GNU Free Documentation Li
 *****************
 
 GNU libextractor uses the Mantis bugtracking system
-(https://gnunet.org/bugs/).  If possible, please report bugs there.
-You can also e-mail the GNU libextractor mailinglist at
-`libextractor@gnu.org'.
+(https://gnunet.org/bugs/).  If possible, please report bugs there.  You
+can also e-mail the GNU libextractor mailinglist at
+<libextractor@gnu.org>.
 
 
 File: libextractor.info,  Node: GNU Free Documentation License,  Next: Index,  Prev: Reporting bugs,  Up: Top
@@ -961,7 +911,7 @@ Appendix A GNU Free Documentation License
                      Version 1.3, 3 November 2008
 
      Copyright (C) 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
-     `http://fsf.org/'
+     <http://fsf.org/>
 
      Everyone is permitted to copy and distribute verbatim copies
      of this license document, but changing it is not allowed.
@@ -986,21 +936,21 @@ Appendix A GNU Free Documentation License
      free program should come with manuals providing the same freedoms
      that the software does.  But this License is not limited to
      software manuals; it can be used for any textual work, regardless
-     of subject matter or whether it is published as a printed book.
-     We recommend this License principally for works whose purpose is
+     of subject matter or whether it is published as a printed book.  We
+     recommend this License principally for works whose purpose is
      instruction or reference.
 
   1. APPLICABILITY AND DEFINITIONS
 
      This License applies to any manual or other work, in any medium,
-     that contains a notice placed by the copyright holder saying it
-     can be distributed under the terms of this License.  Such a notice
+     that contains a notice placed by the copyright holder saying it can
+     be distributed under the terms of this License.  Such a notice
      grants a world-wide, royalty-free license, unlimited in duration,
      to use that work under the conditions stated herein.  The
      "Document", below, refers to any such manual or work.  Any member
-     of the public is a licensee, and is addressed as "you".  You
-     accept the license if you copy, modify or distribute the work in a
-     way requiring permission under copyright law.
+     of the public is a licensee, and is addressed as "you".  You accept
+     the license if you copy, modify or distribute the work in a way
+     requiring permission under copyright law.
 
      A "Modified Version" of the Document means any work containing the
      Document or a portion of it, either copied verbatim, or with
@@ -1018,12 +968,12 @@ Appendix A GNU Free Documentation License
      regarding them.
 
      The "Invariant Sections" are certain Secondary Sections whose
-     titles are designated, as being those of Invariant Sections, in
-     the notice that says that the Document is released under this
-     License.  If a section does not fit the above definition of
-     Secondary then it is not allowed to be designated as Invariant.
-     The Document may contain zero Invariant Sections.  If the Document
-     does not identify any Invariant Sections then there are none.
+     titles are designated, as being those of Invariant Sections, in the
+     notice that says that the Document is released under this License.
+     If a section does not fit the above definition of Secondary then it
+     is not allowed to be designated as Invariant.  The Document may
+     contain zero Invariant Sections.  If the Document does not identify
+     any Invariant Sections then there are none.
 
      The "Cover Texts" are certain short passages of text that are
      listed, as Front-Cover Texts or Back-Cover Texts, in the notice
@@ -1034,27 +984,27 @@ Appendix A GNU Free Documentation License
      A "Transparent" copy of the Document means a machine-readable copy,
      represented in a format whose specification is available to the
      general public, that is suitable for revising the document
-     straightforwardly with generic text editors or (for images
-     composed of pixels) generic paint programs or (for drawings) some
-     widely available drawing editor, and that is suitable for input to
-     text formatters or for automatic translation to a variety of
-     formats suitable for input to text formatters.  A copy made in an
-     otherwise Transparent file format whose markup, or absence of
-     markup, has been arranged to thwart or discourage subsequent
-     modification by readers is not Transparent.  An image format is
-     not Transparent if used for any substantial amount of text.  A
-     copy that is not "Transparent" is called "Opaque".
+     straightforwardly with generic text editors or (for images composed
+     of pixels) generic paint programs or (for drawings) some widely
+     available drawing editor, and that is suitable for input to text
+     formatters or for automatic translation to a variety of formats
+     suitable for input to text formatters.  A copy made in an otherwise
+     Transparent file format whose markup, or absence of markup, has
+     been arranged to thwart or discourage subsequent modification by
+     readers is not Transparent.  An image format is not Transparent if
+     used for any substantial amount of text.  A copy that is not
+     "Transparent" is called "Opaque".
 
      Examples of suitable formats for Transparent copies include plain
      ASCII without markup, Texinfo input format, LaTeX input format,
-     SGML or XML using a publicly available DTD, and
-     standard-conforming simple HTML, PostScript or PDF designed for
-     human modification.  Examples of transparent image formats include
-     PNG, XCF and JPG.  Opaque formats include proprietary formats that
-     can be read and edited only by proprietary word processors, SGML or
-     XML for which the DTD and/or processing tools are not generally
-     available, and the machine-generated HTML, PostScript or PDF
-     produced by some word processors for output purposes only.
+     SGML or XML using a publicly available DTD, and standard-conforming
+     simple HTML, PostScript or PDF designed for human modification.
+     Examples of transparent image formats include PNG, XCF and JPG.
+     Opaque formats include proprietary formats that can be read and
+     edited only by proprietary word processors, SGML or XML for which
+     the DTD and/or processing tools are not generally available, and
+     the machine-generated HTML, PostScript or PDF produced by some word
+     processors for output purposes only.
 
      The "Title Page" means, for a printed book, the title page itself,
      plus such following pages as are needed to hold, legibly, the
@@ -1092,8 +1042,8 @@ Appendix A GNU Free Documentation License
      may not use technical measures to obstruct or control the reading
      or further copying of the copies you make or distribute.  However,
      you may accept compensation in exchange for copies.  If you
-     distribute a large enough number of copies you must also follow
-     the conditions in section 3.
+     distribute a large enough number of copies you must also follow the
+     conditions in section 3.
 
      You may also lend copies, under the same conditions stated above,
      and you may publicly display copies.
@@ -1107,12 +1057,11 @@ Appendix A GNU Free Documentation License
      these Cover Texts: Front-Cover Texts on the front cover, and
      Back-Cover Texts on the back cover.  Both covers must also clearly
      and legibly identify you as the publisher of these copies.  The
-     front cover must present the full title with all words of the
-     title equally prominent and visible.  You may add other material
-     on the covers in addition.  Copying with changes limited to the
-     covers, as long as they preserve the title of the Document and
-     satisfy these conditions, can be treated as verbatim copying in
-     other respects.
+     front cover must present the full title with all words of the title
+     equally prominent and visible.  You may add other material on the
+     covers in addition.  Copying with changes limited to the covers, as
+     long as they preserve the title of the Document and satisfy these
+     conditions, can be treated as verbatim copying in other respects.
 
      If the required texts for either cover are too voluminous to fit
      legibly, you should put the first ones listed (as many as fit
@@ -1120,40 +1069,39 @@ Appendix A GNU Free Documentation License
      adjacent pages.
 
      If you publish or distribute Opaque copies of the Document
-     numbering more than 100, you must either include a
-     machine-readable Transparent copy along with each Opaque copy, or
-     state in or with each Opaque copy a computer-network location from
-     which the general network-using public has access to download
-     using public-standard network protocols a complete Transparent
-     copy of the Document, free of added material.  If you use the
-     latter option, you must take reasonably prudent steps, when you
-     begin distribution of Opaque copies in quantity, to ensure that
-     this Transparent copy will remain thus accessible at the stated
-     location until at least one year after the last time you
-     distribute an Opaque copy (directly or through your agents or
-     retailers) of that edition to the public.
+     numbering more than 100, you must either include a machine-readable
+     Transparent copy along with each Opaque copy, or state in or with
+     each Opaque copy a computer-network location from which the general
+     network-using public has access to download using public-standard
+     network protocols a complete Transparent copy of the Document, free
+     of added material.  If you use the latter option, you must take
+     reasonably prudent steps, when you begin distribution of Opaque
+     copies in quantity, to ensure that this Transparent copy will
+     remain thus accessible at the stated location until at least one
+     year after the last time you distribute an Opaque copy (directly or
+     through your agents or retailers) of that edition to the public.
 
      It is requested, but not required, that you contact the authors of
-     the Document well before redistributing any large number of
-     copies, to give them a chance to provide you with an updated
-     version of the Document.
+     the Document well before redistributing any large number of copies,
+     to give them a chance to provide you with an updated version of the
+     Document.
 
   4. MODIFICATIONS
 
      You may copy and distribute a Modified Version of the Document
      under the conditions of sections 2 and 3 above, provided that you
-     release the Modified Version under precisely this License, with
-     the Modified Version filling the role of the Document, thus
-     licensing distribution and modification of the Modified Version to
-     whoever possesses a copy of it.  In addition, you must do these
-     things in the Modified Version:
+     release the Modified Version under precisely this License, with the
+     Modified Version filling the role of the Document, thus licensing
+     distribution and modification of the Modified Version to whoever
+     possesses a copy of it.  In addition, you must do these things in
+     the Modified Version:
 
        A. Use in the Title Page (and on the covers, if any) a title
-          distinct from that of the Document, and from those of
-          previous versions (which should, if there were any, be listed
-          in the History section of the Document).  You may use the
-          same title as a previous version if the original publisher of
-          that version gives permission.
+          distinct from that of the Document, and from those of previous
+          versions (which should, if there were any, be listed in the
+          History section of the Document).  You may use the same title
+          as a previous version if the original publisher of that
+          version gives permission.
 
        B. List on the Title Page, as authors, one or more persons or
           entities responsible for authorship of the modifications in
@@ -1183,31 +1131,30 @@ Appendix A GNU Free Documentation License
 
        I. Preserve the section Entitled "History", Preserve its Title,
           and add to it an item stating at least the title, year, new
-          authors, and publisher of the Modified Version as given on
-          the Title Page.  If there is no section Entitled "History" in
-          the Document, create one stating the title, year, authors,
-          and publisher of the Document as given on its Title Page,
-          then add an item describing the Modified Version as stated in
-          the previous sentence.
+          authors, and publisher of the Modified Version as given on the
+          Title Page.  If there is no section Entitled "History" in the
+          Document, create one stating the title, year, authors, and
+          publisher of the Document as given on its Title Page, then add
+          an item describing the Modified Version as stated in the
+          previous sentence.
 
        J. Preserve the network location, if any, given in the Document
           for public access to a Transparent copy of the Document, and
           likewise the network locations given in the Document for
-          previous versions it was based on.  These may be placed in
-          the "History" section.  You may omit a network location for a
-          work that was published at least four years before the
-          Document itself, or if the original publisher of the version
-          it refers to gives permission.
+          previous versions it was based on.  These may be placed in the
+          "History" section.  You may omit a network location for a work
+          that was published at least four years before the Document
+          itself, or if the original publisher of the version it refers
+          to gives permission.
 
        K. For any section Entitled "Acknowledgements" or "Dedications",
-          Preserve the Title of the section, and preserve in the
-          section all the substance and tone of each of the contributor
+          Preserve the Title of the section, and preserve in the section
+          all the substance and tone of each of the contributor
           acknowledgements and/or dedications given therein.
 
-       L. Preserve all the Invariant Sections of the Document,
-          unaltered in their text and in their titles.  Section numbers
-          or the equivalent are not considered part of the section
-          titles.
+       L. Preserve all the Invariant Sections of the Document, unaltered
+          in their text and in their titles.  Section numbers or the
+          equivalent are not considered part of the section titles.
 
        M. Delete any section Entitled "Endorsements".  Such a section
           may not be included in the Modified Version.
@@ -1220,11 +1167,11 @@ Appendix A GNU Free Documentation License
 
      If the Modified Version includes new front-matter sections or
      appendices that qualify as Secondary Sections and contain no
-     material copied from the Document, you may at your option
-     designate some or all of these sections as invariant.  To do this,
-     add their titles to the list of Invariant Sections in the Modified
-     Version's license notice.  These titles must be distinct from any
-     other section titles.
+     material copied from the Document, you may at your option designate
+     some or all of these sections as invariant.  To do this, add their
+     titles to the list of Invariant Sections in the Modified Version's
+     license notice.  These titles must be distinct from any other
+     section titles.
 
      You may add a section Entitled "Endorsements", provided it contains
      nothing but endorsements of your Modified Version by various
@@ -1233,15 +1180,15 @@ Appendix A GNU Free Documentation License
      definition of a standard.
 
      You may add a passage of up to five words as a Front-Cover Text,
-     and a passage of up to 25 words as a Back-Cover Text, to the end
-     of the list of Cover Texts in the Modified Version.  Only one
-     passage of Front-Cover Text and one of Back-Cover Text may be
-     added by (or through arrangements made by) any one entity.  If the
-     Document already includes a cover text for the same cover,
-     previously added by you or by arrangement made by the same entity
-     you are acting on behalf of, you may not add another; but you may
-     replace the old one, on explicit permission from the previous
-     publisher that added the old one.
+     and a passage of up to 25 words as a Back-Cover Text, to the end of
+     the list of Cover Texts in the Modified Version.  Only one passage
+     of Front-Cover Text and one of Back-Cover Text may be added by (or
+     through arrangements made by) any one entity.  If the Document
+     already includes a cover text for the same cover, previously added
+     by you or by arrangement made by the same entity you are acting on
+     behalf of, you may not add another; but you may replace the old
+     one, on explicit permission from the previous publisher that added
+     the old one.
 
      The author(s) and publisher(s) of the Document do not by this
      License give permission to use their names for publicity for or to
@@ -1251,8 +1198,8 @@ Appendix A GNU Free Documentation License
 
      You may combine the Document with other documents released under
      this License, under the terms defined in section 4 above for
-     modified versions, provided that you include in the combination
-     all of the Invariant Sections of all of the original documents,
+     modified versions, provided that you include in the combination all
+     of the Invariant Sections of all of the original documents,
      unmodified, and list them all as Invariant Sections of your
      combined work in its license notice, and that you preserve all
      their Warranty Disclaimers.
@@ -1279,20 +1226,20 @@ Appendix A GNU Free Documentation License
      documents released under this License, and replace the individual
      copies of this License in the various documents with a single copy
      that is included in the collection, provided that you follow the
-     rules of this License for verbatim copying of each of the
-     documents in all other respects.
+     rules of this License for verbatim copying of each of the documents
+     in all other respects.
 
      You may extract a single document from such a collection, and
      distribute it individually under this License, provided you insert
-     a copy of this License into the extracted document, and follow
-     this License in all other respects regarding verbatim copying of
-     that document.
+     a copy of this License into the extracted document, and follow this
+     License in all other respects regarding verbatim copying of that
+     document.
 
   7. AGGREGATION WITH INDEPENDENT WORKS
 
      A compilation of the Document or its derivatives with other
-     separate and independent documents or works, in or on a volume of
-     a storage or distribution medium, is called an "aggregate" if the
+     separate and independent documents or works, in or on a volume of a
+     storage or distribution medium, is called an "aggregate" if the
      copyright resulting from the compilation is not used to limit the
      legal rights of the compilation's users beyond what the individual
      works permit.  When the Document is included in an aggregate, this
@@ -1337,8 +1284,8 @@ Appendix A GNU Free Documentation License
 
      However, if you cease all violation of this License, then your
      license from a particular copyright holder is reinstated (a)
-     provisionally, unless and until the copyright holder explicitly
-     and finally terminates your license, and (b) permanently, if the
+     provisionally, unless and until the copyright holder explicitly and
+     finally terminates your license, and (b) permanently, if the
      copyright holder fails to notify you of the violation by some
      reasonable means prior to 60 days after the cessation.
 
@@ -1350,33 +1297,33 @@ Appendix A GNU Free Documentation License
      after your receipt of the notice.
 
      Termination of your rights under this section does not terminate
-     the licenses of parties who have received copies or rights from
-     you under this License.  If your rights have been terminated and
-     not permanently reinstated, receipt of a copy of some or all of
-     the same material does not give you any rights to use it.
+     the licenses of parties who have received copies or rights from you
+     under this License.  If your rights have been terminated and not
+     permanently reinstated, receipt of a copy of some or all of the
+     same material does not give you any rights to use it.
 
- 10. FUTURE REVISIONS OF THIS LICENSE
+  10. FUTURE REVISIONS OF THIS LICENSE
 
      The Free Software Foundation may publish new, revised versions of
      the GNU Free Documentation License from time to time.  Such new
      versions will be similar in spirit to the present version, but may
      differ in detail to address new problems or concerns.  See
-     `http://www.gnu.org/copyleft/'.
+     <http://www.gnu.org/copyleft/>.
 
      Each version of the License is given a distinguishing version
      number.  If the Document specifies that a particular numbered
      version of this License "or any later version" applies to it, you
      have the option of following the terms and conditions either of
      that specified version or of any later version that has been
-     published (not as a draft) by the Free Software Foundation.  If
-     the Document does not specify a version number of this License,
-     you may choose any version ever published (not as a draft) by the
-     Free Software Foundation.  If the Document specifies that a proxy
-     can decide which future versions of this License can be used, that
+     published (not as a draft) by the Free Software Foundation.  If the
+     Document does not specify a version number of this License, you may
+     choose any version ever published (not as a draft) by the Free
+     Software Foundation.  If the Document specifies that a proxy can
+     decide which future versions of this License can be used, that
      proxy's public statement of acceptance of a version permanently
      authorizes you to choose that version for the Document.
 
- 11. RELICENSING
+  11. RELICENSING
 
      "Massive Multiauthor Collaboration Site" (or "MMC Site") means any
      World Wide Web server that publishes copyrightable works and also
@@ -1406,7 +1353,6 @@ Appendix A GNU Free Documentation License
      site under CC-BY-SA on the same site at any time before August 1,
      2009, provided the MMC is eligible for relicensing.
 
-
 ADDENDUM: How to use this License for your documents
 ====================================================
 
@@ -1423,7 +1369,7 @@ notices just after the title page:
        Free Documentation License''.
 
    If you have Invariant Sections, Front-Cover Texts and Back-Cover
-Texts, replace the "with...Texts." line with this:
+Texts, replace the "with...Texts."  line with this:
 
          with the Invariant Sections being LIST THEIR TITLES, with
          the Front-Cover Texts being LIST, and with the Back-Cover Texts
@@ -1434,9 +1380,9 @@ combination of the three, merge those two alternatives to suit the
 situation.
 
    If your document contains nontrivial examples of program code, we
-recommend releasing these examples in parallel under your choice of
-free software license, such as the GNU General Public License, to
-permit their use in free software.
+recommend releasing these examples in parallel under your choice of free
+software license, such as the GNU General Public License, to permit
+their use in free software.
 
 
 File: libextractor.info,  Node: Index,  Prev: GNU Free Documentation License,  Up: Top
@@ -1447,85 +1393,97 @@ Index
  [index ]
 * Menu:
 
-* (:                                     Extracting.           (line 10)
+* (*EXTRACTOR_MetaDataProcessor)(void:   Extracting.           (line  6)
 * bug:                                   Reporting bugs.       (line  6)
-* bus error:                             Extracting.           (line 56)
+* bus error:                             Extracting.           (line 57)
 * character set:                         Internal utility functions.
                                                                (line 28)
-* concurrency <1>:                       Utility functions.    (line  6)
-* concurrency <2>:                       Extracting.           (line 43)
 * concurrency:                           Plugin management.    (line  6)
-* directory structure:                   Preparation.          (line 83)
+* concurrency <1>:                       Extracting.           (line 43)
+* concurrency <2>:                       Utility functions.    (line  6)
+* directory structure:                   Preparation.          (line 63)
 * enum EXTRACTOR_MetaFormat:             Meta formats.         (line  6)
 * enum EXTRACTOR_MetaType:               Meta types.           (line  6)
 * enum EXTRACTOR_Options:                Plugin management.    (line  6)
-* environment variables:                 Preparation.          (line 83)
+* environment variables:                 Preparation.          (line 63)
 * error handling:                        Introduction.         (line  6)
 * EXTRACTOR_common_convert_to_utf8:      Internal utility functions.
+                                                               (line 26)
+* EXTRACTOR_common_convert_to_utf8 <1>:  Internal utility functions.
                                                                (line 28)
-* EXTRACTOR_extract:                     Extracting.           (line 43)
-* EXTRACTOR_meta_data_print:             Meta data printing.   (line  6)
+* EXTRACTOR_extract:                     Extracting.           (line 40)
+* EXTRACTOR_extract <1>:                 Extracting.           (line 43)
 * EXTRACTOR_MetaDataProcessor:           Extracting.           (line 10)
 * EXTRACTOR_metatype_get_max:            Meta types.           (line  6)
-* EXTRACTOR_metatype_to_description:     Meta types.           (line 22)
-* EXTRACTOR_metatype_to_string:          Meta types.           (line 14)
+* EXTRACTOR_metatype_to_description:     Meta types.           (line 20)
+* EXTRACTOR_metatype_to_description <1>: Meta types.           (line 22)
+* EXTRACTOR_metatype_to_string:          Meta types.           (line 12)
+* EXTRACTOR_metatype_to_string <1>:      Meta types.           (line 14)
+* EXTRACTOR_meta_data_print:             Meta data printing.   (line  6)
+* EXTRACTOR_PluginList:                  Plugin management.    (line 31)
 * EXTRACTOR_plugin_add:                  Plugin management.    (line 51)
-* EXTRACTOR_plugin_add_config:           Plugin management.    (line 61)
-* EXTRACTOR_plugin_add_defaults:         Plugin management.    (line 68)
+* EXTRACTOR_plugin_add <1>:              Plugin management.    (line 54)
+* EXTRACTOR_plugin_add_config:           Plugin management.    (line 62)
+* EXTRACTOR_plugin_add_config <1>:       Plugin management.    (line 65)
+* EXTRACTOR_plugin_add_defaults:         Plugin management.    (line 71)
+* EXTRACTOR_plugin_add_defaults <1>:     Plugin management.    (line 73)
 * EXTRACTOR_plugin_remove:               Plugin management.    (line 44)
-* EXTRACTOR_plugin_remove_all:           Plugin management.    (line 40)
-* EXTRACTOR_PluginList:                  Plugin management.    (line 32)
+* EXTRACTOR_plugin_remove <1>:           Plugin management.    (line 46)
+* EXTRACTOR_plugin_remove_all:           Plugin management.    (line 39)
+* EXTRACTOR_plugin_remove_all <1>:       Plugin management.    (line 41)
 * EXTRACTOR_VERSION:                     Utility Constants.    (line  6)
 * gettext:                               Meta types.           (line 14)
+* gettext <1>:                           Meta types.           (line 22)
 * internationalization:                  Meta types.           (line 14)
+* internationalization <1>:              Meta types.           (line 22)
 * Java:                                  Language bindings.    (line  6)
-* LIBEXTRACTOR_PREFIX:                   Preparation.          (line 83)
+* LIBEXTRACTOR_PREFIX:                   Preparation.          (line 63)
 * license:                               Introduction.         (line 38)
 * Mono:                                  Language bindings.    (line  6)
-* packageing:                            Preparation.          (line 83)
+* packageing:                            Preparation.          (line 63)
 * Perl:                                  Language bindings.    (line  6)
 * PHP:                                   Language bindings.    (line  6)
-* plugin <1>:                            Preparation.          (line 83)
 * plugin:                                Introduction.         (line 18)
+* plugin <1>:                            Preparation.          (line 63)
 * Python:                                Language bindings.    (line  6)
-* reentrant <1>:                         Utility functions.    (line  6)
-* reentrant <2>:                         Extracting.           (line 43)
 * reentrant:                             Plugin management.    (line  6)
+* reentrant <1>:                         Extracting.           (line 43)
+* reentrant <2>:                         Utility functions.    (line  6)
 * Ruby:                                  Language bindings.    (line  6)
-* SIGBUS:                                Extracting.           (line 56)
+* SIGBUS:                                Extracting.           (line 57)
 * SIGPIPE:                               Generalities.         (line 81)
 * struct EXTRACTOR_PluginList:           Plugin management.    (line 32)
-* thread-safety <1>:                     Utility functions.    (line  6)
-* thread-safety <2>:                     Extracting.           (line 43)
 * thread-safety:                         Plugin management.    (line  6)
-* threads <1>:                           Utility functions.    (line  6)
-* threads <2>:                           Extracting.           (line 43)
+* thread-safety <1>:                     Extracting.           (line 43)
+* thread-safety <2>:                     Utility functions.    (line  6)
 * threads:                               Plugin management.    (line  6)
+* threads <1>:                           Extracting.           (line 43)
+* threads <2>:                           Utility functions.    (line  6)
 * UTF-8:                                 Internal utility functions.
                                                                (line 28)
 
 
 
 Tag Table:
-Node: Top784
+Node: Top783
 Node: Introduction2384
 Ref: Introduction-Footnote-14531
 Node: Preparation4596
-Node: Generalities12212
-Node: Extracting meta data15446
-Node: Plugin management16158
-Node: Meta types19811
-Node: Meta formats21226
-Node: Extracting22619
-Node: Language bindings25803
+Node: Generalities12190
+Node: Extracting meta data15421
+Node: Plugin management16133
+Node: Meta types19804
+Node: Meta formats21216
+Node: Extracting22611
+Node: Language bindings25802
 Node: Utility functions27700
-Node: Utility Constants28024
-Node: Meta data printing28643
-Node: Existing Plugins29184
-Node: Writing new Plugins30224
-Node: Internal utility functions32848
-Node: Reporting bugs35194
-Node: GNU Free Documentation License35566
-Node: Index60740
+Node: Utility Constants28025
+Node: Meta data printing28644
+Node: Existing Plugins29185
+Node: Writing new Plugins30196
+Node: Internal utility functions32821
+Node: Reporting bugs35168
+Node: GNU Free Documentation License35541
+Node: Index60696
 
 End Tag Table

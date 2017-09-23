@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     Copyright (C) 2008, 2013 Bruno Cabral and Christian Grothoff
+     Copyright Copyright (C) 2008, 2013 Bruno Cabral and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 /**
  * @file previewopus_extractor.c
@@ -230,7 +230,7 @@ static int open_output_file(
     /** Guess the desired container format based on the file extension. */
     if (!((*output_format_context)->oformat = av_guess_format(NULL, "file.ogg",
                                                               NULL))) {
- #if DEBUG															  
+#if DEBUG															  
         fprintf(stderr, "Could not find output file format\n");
 #endif
         goto cleanup;
@@ -239,7 +239,7 @@ static int open_output_file(
 
     /** Find the encoder to be used by its name. */
     if (!(output_codec = avcodec_find_encoder(AV_CODEC_ID_OPUS))) {
- #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not find an OPUS encoder.\n");
 #endif
         goto cleanup;
@@ -247,7 +247,7 @@ static int open_output_file(
 
     /** Create a new audio stream in the output file container. */
     if (!(stream = avformat_new_stream(*output_format_context, output_codec))) {
- #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not create new stream\n");
 #endif
         error = AVERROR(ENOMEM);
@@ -271,7 +271,7 @@ static int open_output_file(
 	
     /** Open the encoder for the audio stream to use it later. */
     if ((error = avcodec_open2(*output_codec_context, output_codec, NULL)) < 0) {
- #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not open output codec (error '%s')\n",
                 get_error_text(error));
 #endif
@@ -296,8 +296,13 @@ static void init_packet(AVPacket *packet)
 /** Initialize one audio frame for reading from the input file */
 static int init_input_frame(AVFrame **frame)
 {
-    if (!(*frame = avcodec_alloc_frame())) {
- #if DEBUG
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+    *frame = av_frame_alloc ();
+#else
+    *frame = avcodec_alloc_frame();
+#endif
+    if (NULL == *frame) {
+#if DEBUG
         fprintf(stderr, "Could not allocate input frame\n");
 #endif
         return AVERROR(ENOMEM);
@@ -324,9 +329,9 @@ static int init_resampler(AVCodecContext *input_codec_context,
 		
 		      /** Create a resampler context for the conversion. */
        if (!(*resample_context = avresample_alloc_context())) {
-	    #if DEBUG
+#if DEBUG
            fprintf(stderr, "Could not allocate resample context\n");
-		#endif
+#endif
            return AVERROR(ENOMEM);
        }
 	   
@@ -352,9 +357,9 @@ static int init_resampler(AVCodecContext *input_codec_context,
 
         /** Open the resampler with the specified parameters. */
         if ((error = avresample_open(*resample_context)) < 0) {
-		 #if DEBUG
+#if DEBUG
             fprintf(stderr, "Could not open resample context\n");
-		#endif
+#endif
             avresample_free(resample_context);
             return error;
         }
@@ -367,9 +372,9 @@ static int init_fifo(AVAudioFifo **fifo)
 {
     /** Create the FIFO buffer based on the specified output sample format. */
     if (!(*fifo = av_audio_fifo_alloc(OUTPUT_SAMPLE_FORMAT, OUTPUT_CHANNELS, 1))) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not allocate FIFO\n");
-	#endif
+#endif
         return AVERROR(ENOMEM);
     }
     return 0;
@@ -380,10 +385,10 @@ static int write_output_file_header(AVFormatContext *output_format_context)
 {
     int error;
     if ((error = avformat_write_header(output_format_context, NULL)) < 0) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not write output file header (error '%s')\n",
                 get_error_text(error));
-	  #endif
+#endif
         return error;
     }
     return 0;
@@ -405,16 +410,16 @@ static int decode_audio_frame(AVFrame *frame,
 		if ((error = av_read_frame(input_format_context, &input_packet)) < 0) {
 			/** If we are the the end of the file, flush the decoder below. */
 			if (error == AVERROR_EOF){
-			 #if DEBUG
+#if DEBUG
 				fprintf(stderr, "EOF in decode_audio\n");
-			  #endif
+#endif
 				*finished = 1;
 				}
 			else {
-			 #if DEBUG
+#if DEBUG
 				fprintf(stderr, "Could not read frame (error '%s')\n",
 						get_error_text(error));
-			 #endif
+#endif
 				return error;
 			}
 		}
@@ -431,10 +436,10 @@ static int decode_audio_frame(AVFrame *frame,
      */
     if ((error = avcodec_decode_audio4(input_codec_context, frame,
                                        data_present, &input_packet)) < 0) {
-	#if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not decode frame (error '%s')\n",
                 get_error_text(error));
-	 #endif
+#endif
         av_free_packet(&input_packet);
         return error;
     }
@@ -467,9 +472,9 @@ static int init_converted_samples(uint8_t ***converted_input_samples, int* out_l
      */
     if (!(*converted_input_samples = calloc(output_codec_context->channels,
                                             sizeof(**converted_input_samples)))) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not allocate converted input sample pointers\n");
-	  #endif
+#endif
         return AVERROR(ENOMEM);
     }
 
@@ -481,11 +486,11 @@ static int init_converted_samples(uint8_t ***converted_input_samples, int* out_l
                                   output_codec_context->channels,
                                   frame_size,
                                   output_codec_context->sample_fmt, 0)) < 0) {
-	#if DEBUG
+#if DEBUG
         fprintf(stderr,
                 "Could not allocate converted input samples (error '%s')\n",
                 get_error_text(error));
-	 #endif
+#endif
         av_freep(&(*converted_input_samples)[0]);
         free(*converted_input_samples);
         return error;
@@ -507,10 +512,10 @@ static int convert_samples(uint8_t **input_data,
     /** Convert the samples using the resampler. */
    if ((error = avresample_convert(resample_context, converted_data, out_linesize,
                                    out_sample, input_data, 0, in_sample)) < 0) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not convert input samples (error '%s')\n",
                 get_error_text(error));
-	  #endif
+#endif
         return error;
     }
 	
@@ -521,9 +526,9 @@ static int convert_samples(uint8_t **input_data,
      * If the sample rates differ, this case has to be handled differently
      */
     if (avresample_available(resample_context)) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "%i Converted samples left over\n",avresample_available(resample_context));
-	 #endif
+#endif
     }
 
 
@@ -542,18 +547,18 @@ static int add_samples_to_fifo(AVAudioFifo *fifo,
      * the old and the new samples.
      */
     if ((error = av_audio_fifo_realloc(fifo, av_audio_fifo_size(fifo) + frame_size)) < 0) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not reallocate FIFO\n");
-	 #endif
+#endif
         return error;
     }
 
     /** Store the new samples in the FIFO buffer. */
     if (av_audio_fifo_write(fifo, (void **)converted_input_samples,
                             frame_size) < frame_size) {
-	 #if DEBUG
+#if DEBUG
         fprintf(stderr, "Could not write data to FIFO\n");
-	 #endif
+#endif
         return AVERROR_EXIT;
     }
     return 0;
@@ -579,18 +584,18 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo,
 
     /** Initialize temporary storage for one input frame. */
     if (init_input_frame(&input_frame)){
-    #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Failed at init frame\n");
-	#endif
+#endif
 		goto cleanup;
 		
 		}
     /** Decode one frame worth of audio samples. */
     if (decode_audio_frame(input_frame, input_format_context,
                            input_codec_context, audio_stream_index,  &data_present,  finished)){
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Failed at decode audio\n");
-		#endif
+#endif
 		
 		goto cleanup;
 		
@@ -602,9 +607,9 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo,
      */
     if (*finished && !data_present) {
         ret = 0;
-		#if DEBUG
+#if DEBUG
 		fprintf(stderr, "Failed at finished or no data\n");
-		#endif
+#endif
         goto cleanup;
     }
     /** If there is decoded data, convert and store it */
@@ -619,9 +624,9 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo,
         /** Initialize the temporary storage for the converted input samples. */
         if (init_converted_samples(&converted_input_samples, &out_linesize, output_codec_context, 
                                    out_samples)){
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Failed at init_converted_samples\n");
-		#endif
+#endif
             goto cleanup;
 			}
 
@@ -633,17 +638,17 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo,
                             input_frame->nb_samples, out_samples, out_linesize ,resampler_context)){
 							
 							
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Failed at convert_samples, input frame %i \n",input_frame->nb_samples);
-		#endif
+#endif
             goto cleanup;
 			}
         /** Add the converted input samples to the FIFO buffer for later processing. */
         if (add_samples_to_fifo(fifo, converted_input_samples,
                                 out_samples)){
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Failed at add_samples_to_fifo\n");
-		#endif
+#endif
             goto cleanup;
 			}
         ret = 0;
@@ -655,7 +660,11 @@ cleanup:
         av_freep(&converted_input_samples[0]);
         free(converted_input_samples);
     }
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+    av_frame_free (&input_frame);
+#else
     avcodec_free_frame(&input_frame);
+#endif
 
     return ret;
 }
@@ -671,10 +680,15 @@ static int init_output_frame(AVFrame **frame,
     int error;
 
     /** Create a new frame to store the audio samples. */
-    if (!(*frame = avcodec_alloc_frame())) {
-        #if DEBUG
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+    *frame = av_frame_alloc ();
+#else
+    *frame = avcodec_alloc_frame();
+#endif
+    if (NULL == *frame) {
+#if DEBUG
 		fprintf(stderr, "Could not allocate output frame\n");
-		#endif
+#endif
         return AVERROR_EXIT;
     }
 
@@ -699,10 +713,14 @@ static int init_output_frame(AVFrame **frame,
      * sure that the audio frame can hold as many samples as specified.
      */
     if ((error = av_frame_get_buffer(*frame, 0)) < 0) {
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Could allocate output frame samples (error '%s')\n", get_error_text(error));
-		#endif
+#endif
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+        av_frame_free (frame);
+#else
         avcodec_free_frame(frame);
+#endif
         return error;
     }
 
@@ -726,10 +744,10 @@ static int encode_audio_frame(AVFrame *frame,
      */
     if ((error = avcodec_encode_audio2(output_codec_context, &output_packet,
                                        frame, data_present)) < 0) {
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Could not encode frame (error '%s')\n",            
 		get_error_text(error));
-		#endif
+#endif
         av_free_packet(&output_packet);
         return error;
     }
@@ -737,10 +755,10 @@ static int encode_audio_frame(AVFrame *frame,
     /** Write one audio frame from the temporary packet to the output file. */
     if (*data_present) {
         if ((error = av_write_frame(output_format_context, &output_packet)) < 0) {
-            #if DEBUG
+#if DEBUG
 			fprintf(stderr, "Could not write frame (error '%s')\n",
 			get_error_text(error));
-			#endif
+#endif
                     
             av_free_packet(&output_packet);
             return error;
@@ -780,20 +798,32 @@ static int load_encode_and_write(AVAudioFifo *fifo,
      * The samples are stored in the frame temporarily.
      */
     if (av_audio_fifo_read(fifo, (void **)output_frame->data, frame_size) < frame_size) {
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Could not read data from FIFO\n");
-		#endif
+#endif
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+        av_frame_free (&output_frame);
+#else
         avcodec_free_frame(&output_frame);
+#endif
         return AVERROR_EXIT;
     }
 
     /** Encode one frame worth of audio samples. */
     if (encode_audio_frame(output_frame, output_format_context,
                            output_codec_context, &data_written)) {
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+        av_frame_free (&output_frame);
+#else
         avcodec_free_frame(&output_frame);
+#endif
         return AVERROR_EXIT;
     }
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+    av_frame_free (&output_frame);
+#else
     avcodec_free_frame(&output_frame);
+#endif
     return 0;
 }
 /** Write the trailer of the output file container. */
@@ -801,10 +831,10 @@ static int write_output_file_trailer(AVFormatContext *output_format_context)
 {
     int error;
     if ((error = av_write_trailer(output_format_context)) < 0) {
-        #if DEBUG
+#if DEBUG
 		fprintf(stderr, "Could not write output file trailer (error '%s')\n",    
 		get_error_text(error));
-		#endif
+#endif
         return error;
     }
     return 0;
@@ -865,7 +895,7 @@ extract_audio (struct EXTRACTOR_ExtractContext *ec)
   av_dict_free (&options);  
   if (0 > avformat_find_stream_info (format_ctx, NULL))
     {
- #if DEBUG
+#if DEBUG
       fprintf (stderr,
                "Failed to read stream info\n");
 #endif
@@ -907,7 +937,12 @@ extract_audio (struct EXTRACTOR_ExtractContext *ec)
       return;
     }
 
-  if (NULL == (frame = avcodec_alloc_frame ()))
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+  frame = av_frame_alloc ();
+#else
+  frame = avcodec_alloc_frame();
+#endif
+  if (NULL == frame)
     {
 #if DEBUG
       fprintf (stderr,
@@ -950,7 +985,7 @@ extract_audio (struct EXTRACTOR_ExtractContext *ec)
 	}
   else
   {
- #if DEBUG
+#if DEBUG
 	duration = format_ctx->duration;
     fprintf (stderr,
 	     "Duration: %lld\n", 

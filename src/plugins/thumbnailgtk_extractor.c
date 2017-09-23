@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2005, 2009, 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2005, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 /**
  * @file plugins/thumbnailgtk_extractor.c
@@ -25,7 +25,7 @@
  * of the file includes a decoder method that can be used
  * to reproduce the 128x128 PNG thumbnails.  We use
  * libmagic to test if the input data is actually an
- * image before trying to give it to gtk.
+ * image before trying to give it to gdk-pixbuf.
  */
 #include "platform.h"
 #include "extractor.h"
@@ -210,7 +210,9 @@ EXTRACTOR_thumbnail_extract_method (struct EXTRACTOR_ExtractContext *ec)
 void __attribute__ ((constructor)) 
 thumbnailgtk_gobject_init ()
 {
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init ();
+#endif
   magic = magic_open (MAGIC_MIME_TYPE);
   if (0 != magic_load (magic, NULL))
     {
