@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 /**
  * @file plugins/gif_extractor.c
@@ -78,7 +78,11 @@ EXTRACTOR_gif_extract_method (struct EXTRACTOR_ExtractContext *ec)
   if (gif_file == NULL || gif_error != 0)
   {
     if (gif_file != NULL)
+#if GIFLIB_MAJOR < 5 || GIFLIB_MINOR < 1
       EGifCloseFile (gif_file);
+#else
+      EGifCloseFile (gif_file, NULL);
+#endif
     return; /* not a GIF */
   }
 #endif
@@ -133,7 +137,11 @@ EXTRACTOR_gif_extract_method (struct EXTRACTOR_ExtractContext *ec)
 	       DGifGetExtensionNext(gif_file, &ext)) &&
 	      (NULL != ext) ) ; /* keep going */
     }
+#if defined (GIF_LIB_VERSION) || GIFLIB_MAJOR < 5 || GIFLIB_MINOR < 1
   DGifCloseFile (gif_file);
+#else
+  DGifCloseFile (gif_file, NULL);
+#endif
 }
 
 /* end of gif_extractor.c */

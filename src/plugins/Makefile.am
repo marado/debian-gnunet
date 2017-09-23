@@ -1,6 +1,7 @@
-INCLUDES = \
+# This Makefile.am is in the public domain
+AM_CPPFLAGS = \
  -I$(top_srcdir)/src/include \
- -I$(top_srcdir)/src/common 
+ -I$(top_srcdir)/src/common
 
 
 # install plugins under:
@@ -17,7 +18,7 @@ endif
 
 PLUGINFLAGS = $(makesymbolic) $(LE_PLUGIN_LDFLAGS)
 
-SUBDIRS = . 
+SUBDIRS = .
 
 EXTRA_DIST = \
   fuzz_default.sh \
@@ -59,7 +60,8 @@ EXTRA_DIST = \
   testdata/wav_noise.wav \
   testdata/wav_alert.wav \
   testdata/xm_diesel.xm \
-  testdata/zip_test.zip
+  testdata/zip_test.zip \
+  testdata/README
 
 
 if HAVE_MAGIC
@@ -77,8 +79,8 @@ PLUGIN_PREVIEWOPUS=libextractor_previewopus.la
 TEST_PREVIEWOPUS=test_previewopus
 endif
 
-if HAVE_GTK
-# Gtk-thumbnailer requires MAGIC and GTK
+if HAVE_GDK_PIXBUF
+# Gtk-thumbnailer requires MAGIC and GDK_PIXBUF
 PLUGIN_GTK=libextractor_thumbnailgtk.la
 TEST_GTK=test_thumbnailgtk
 endif
@@ -158,6 +160,9 @@ PLUGIN_OGG=libextractor_ogg.la
 TEST_OGG=test_ogg
 endif
 
+if ! WINDOWS
+PLUGIN_PDF=libextractor_pdf.la
+endif
 
 if HAVE_ZLIB
 PLUGIN_ZLIB= \
@@ -196,13 +201,14 @@ plugin_LTLIBRARIES = \
   $(PLUGIN_MP4) \
   $(PLUGIN_MPEG) \
   $(PLUGIN_OGG) \
+  $(PLUGIN_PDF) \
   $(PLUGIN_PREVIEWOPUS) \
   $(PLUGIN_RPM) \
   $(PLUGIN_TIFF) \
-  $(PLUGIN_ZLIB) 
+  $(PLUGIN_ZLIB)
 
 if HAVE_ZZUF
-  fuzz_tests=fuzz_default.sh 
+  fuzz_tests=fuzz_default.sh
 endif
 
 check_PROGRAMS = \
@@ -237,7 +243,7 @@ check_PROGRAMS = \
   $(TEST_OGG) \
   $(TEST_RPM) \
   $(TEST_TIFF) \
-  $(TEST_ZLIB) 
+  $(TEST_ZLIB)
 
 if ENABLE_TEST_RUN
 TESTS = \
@@ -251,7 +257,7 @@ noinst_LTLIBRARIES = \
 libtest_la_SOURCES = \
   test_lib.c test_lib.h
 libtest_la_LIBADD = \
-  $(top_builddir)/src/main/libextractor.la $(XLIB) 
+  $(top_builddir)/src/main/libextractor.la $(XLIB)
 
 
 libextractor_archive_la_SOURCES = \
@@ -259,7 +265,7 @@ libextractor_archive_la_SOURCES = \
 libextractor_archive_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_archive_la_LIBADD = \
-  -larchive $(XLIB) 
+  -larchive $(XLIB)
 
 test_archive_SOURCES = \
   test_archive.c
@@ -272,7 +278,7 @@ libextractor_deb_la_SOURCES = \
 libextractor_deb_la_LDFLAGS = \
   $(PLUGINFLAGS) -lz
 libextractor_deb_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_deb_SOURCES = \
   test_deb.c
@@ -311,7 +317,7 @@ libextractor_flac_la_SOURCES = \
 libextractor_flac_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_flac_la_LIBADD = \
-  -lFLAC $(XLIB) $(LE_LIBINTL) 
+  -lFLAC $(XLIB) $(LE_LIBINTL)
 
 test_flac_SOURCES = \
   test_flac.c
@@ -339,7 +345,7 @@ libextractor_gstreamer_la_LDFLAGS = \
 libextractor_gstreamer_la_LIBADD = \
   $(GSTREAMER_LIBS) $(GSTREAMER_PBUTILS_LIBS) $(GSTREAMER_TAG_LIBS) $(GSTREAMER_APP_LIBS) $(XLIB) -lpthread
 libextractor_gstreamer_la_CFLAGS = \
-  $(GSTREAMER_CFLAGS) $(GSTREAMER_PBUTILS_CFLAGS) $(GSTREAMER_TAG_CFLAGS) $(GSTREAMER_APP_CFALGS) 
+  $(GSTREAMER_CFLAGS) $(GSTREAMER_PBUTILS_CFLAGS) $(GSTREAMER_TAG_CFLAGS) $(GSTREAMER_APP_CFALGS)
 
 test_gstreamer_SOURCES = \
   test_gstreamer.c
@@ -368,7 +374,7 @@ libextractor_it_la_SOURCES = \
 libextractor_it_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_it_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_it_SOURCES = \
   test_it.c
@@ -394,13 +400,13 @@ libextractor_man_la_SOURCES = \
 libextractor_man_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_man_la_LIBADD = \
- $(XLIB) $(LE_LIBINTL) 
+ $(XLIB) $(LE_LIBINTL)
 
 test_man_SOURCES = \
   test_man.c
 test_man_LDADD = \
   $(top_builddir)/src/plugins/libtest.la \
-  $(LE_LIBINTL) 
+  $(LE_LIBINTL)
 
 
 libextractor_midi_la_SOURCES = \
@@ -434,7 +440,7 @@ test_mime_LDADD = \
 libextractor_mp4_la_SOURCES = \
   mp4_extractor.c
 libextractor_mp4_la_LDFLAGS = \
-  $(PLUGINFLAGS) 
+  $(PLUGINFLAGS)
 libextractor_mp4_la_LIBADD = \
   -lmp4v2 $(XLIB)
 
@@ -457,7 +463,7 @@ libextractor_nsf_la_SOURCES = \
 libextractor_nsf_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_nsf_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_nsf_SOURCES = \
   test_nsf.c
@@ -470,7 +476,7 @@ libextractor_nsfe_la_SOURCES = \
 libextractor_nsfe_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_nsfe_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_nsfe_SOURCES = \
   test_nsfe.c
@@ -496,12 +502,12 @@ libextractor_ole2_la_SOURCES = \
 libextractor_ole2_la_CFLAGS = \
   $(GSF_CFLAGS)
 libextractor_ole2_la_CPPFLAGS = \
-  $(GSF_CFLAGS)
+  $(GSF_CFLAGS) $(AM_CPPFLAGS)
 libextractor_ole2_la_LDFLAGS = \
-  $(PLUGINFLAGS) 
+  $(PLUGINFLAGS)
 libextractor_ole2_la_LIBADD = \
   $(top_builddir)/src/common/libextractor_common.la \
-  $(GSF_LIBS) $(XLIB)  $(LE_LIBINTL) 
+  $(GSF_LIBS) $(XLIB)  $(LE_LIBINTL)
 
 test_ole2_SOURCES = \
   test_ole2.c
@@ -522,6 +528,14 @@ test_ogg_LDADD = \
   $(top_builddir)/src/plugins/libtest.la
 
 
+libextractor_pdf_la_SOURCES = \
+  pdf_extractor.c
+libextractor_pdf_la_LDFLAGS = \
+  $(PLUGINFLAGS)
+libextractor_pdf_la_LIBADD = \
+  $(top_builddir)/src/common/libextractor_common.la $(XLIB)  $(SOCKET_LIBS)
+
+
 libextractor_png_la_SOURCES = \
   png_extractor.c
 libextractor_png_la_LDFLAGS = \
@@ -540,7 +554,7 @@ libextractor_ps_la_SOURCES = \
 libextractor_ps_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_ps_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_ps_SOURCES = \
   test_ps.c
@@ -553,7 +567,7 @@ libextractor_riff_la_SOURCES = \
 libextractor_riff_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_riff_la_LIBADD = \
-  -lm $(XLIB)  $(LE_LIBINTL) 
+  -lm $(XLIB)  $(LE_LIBINTL)
 
 
 test_riff_SOURCES = \
@@ -580,7 +594,7 @@ libextractor_s3m_la_SOURCES = \
 libextractor_s3m_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_s3m_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_s3m_SOURCES = \
   test_s3m.c
@@ -593,7 +607,7 @@ libextractor_sid_la_SOURCES = \
 libextractor_sid_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_sid_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_sid_SOURCES = \
   test_sid.c
@@ -619,9 +633,9 @@ libextractor_thumbnailgtk_la_SOURCES = \
 libextractor_thumbnailgtk_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_thumbnailgtk_la_CFLAGS = \
-  $(GTK_CFLAGS)
+  $(GDK_PIXBUF_CFLAGS)
 libextractor_thumbnailgtk_la_LIBADD = \
-  -lmagic $(GTK_LIBS) $(XLIB)
+  -lmagic $(GDK_PIXBUF_LIBS) $(XLIB)
 
 test_thumbnailgtk_SOURCES = \
   test_thumbnailgtk.c
@@ -634,13 +648,13 @@ libextractor_previewopus_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_previewopus_la_LIBADD = \
   -lavutil -lavformat -lavcodec -lswscale -lavresample  -lmagic $(XLIB)
-  
+
 test_previewopus_SOURCES = \
   test_previewopus.c
 test_previewopus_LDADD = \
   $(top_builddir)/src/plugins/libtest.la
 
-  
+
 libextractor_tiff_la_SOURCES = \
   tiff_extractor.c
 libextractor_tiff_la_LDFLAGS = \
@@ -659,7 +673,7 @@ libextractor_wav_la_SOURCES = \
 libextractor_wav_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_wav_la_LIBADD = \
- $(XLIB) $(LE_LIBINTL) 
+ $(XLIB) $(LE_LIBINTL)
 
 test_wav_SOURCES = \
   test_wav.c
@@ -672,7 +686,7 @@ libextractor_xm_la_SOURCES = \
 libextractor_xm_la_LDFLAGS = \
   $(PLUGINFLAGS)
 libextractor_xm_la_LIBADD = \
- $(XLIB) 
+ $(XLIB)
 
 test_xm_SOURCES = \
   test_xm.c
@@ -691,4 +705,3 @@ test_zip_SOURCES = \
   test_zip.c
 test_zip_LDADD = \
   $(top_builddir)/src/plugins/libtest.la
-

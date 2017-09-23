@@ -21,6 +21,9 @@
 /* We hope this is a GNU/Linux-compatible system */
 #undef GNU_LINUX
 
+/* lacking apparmor */
+#undef HAVE_APPARMOR
+
 /* Have libarchive */
 #undef HAVE_ARCHIVE
 
@@ -89,6 +92,9 @@
 /* Define to 1 if you have the `ftruncate' function. */
 #undef HAVE_FTRUNCATE
 
+/* We have Gdk-pixbuf */
+#undef HAVE_GDK_PIXBUF
+
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
 
@@ -107,11 +113,11 @@
 /* Have gsf */
 #undef HAVE_GSF
 
+/* gsf_doc_meta_data_read_from_msole supported */
+#undef HAVE_GSF_DOC_META_DATA_READ_FROM_MSOLE
+
 /* gsf_init supported */
 #undef HAVE_GSF_INIT
-
-/* We have GTK */
-#undef HAVE_GTK
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
@@ -288,6 +294,9 @@
 /* Define to 1 if you have the `strtoul' function. */
 #undef HAVE_STRTOUL
 
+/* Define to 1 if you have the <sys/apparmor.h> header file. */
+#undef HAVE_SYS_APPARMOR_H
+
 /* Define to 1 if you have the <sys/dir.h> header file, and it defines `DIR'.
    */
 #undef HAVE_SYS_DIR_H
@@ -351,15 +360,11 @@
    slash. */
 #undef LSTAT_FOLLOWS_SLASHED_SYMLINK
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
 /* This is a MinGW system */
 #undef MINGW
-
-/* Define to 1 if your C compiler doesn't accept -c and -o together. */
-#undef NO_MINUS_C_MINUS_O
 
 /* Some strange OS */
 #undef OTHEROS

@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2004, 2005, 2006, 2007, 2009, 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2004, 2005, 2006, 2007, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,12 +14,12 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
 
      This code makes extensive use of libgsf
      -- the Gnome Structured File Library
-     Copyright (C) 2002-2004 Jody Goldberg (jody@gnome.org)
+     Copyright Copyright (C) 2002-2004 Jody Goldberg (jody@gnome.org)
 
      Part of this code was adapted from wordleaker.
 */
@@ -283,16 +283,26 @@ process (GsfInput *in,
 {
   struct ProcContext pc;
   GsfDocMetaData *sections;
+  GError *error;
 
   pc.proc = proc;
   pc.proc_cls = proc_cls;
   pc.ret = 0;
   sections = gsf_doc_meta_data_new ();
-  if (NULL == gsf_msole_metadata_read (in, sections))
+#ifdef HAVE_GSF_DOC_META_DATA_READ_FROM_MSOLE
+  error = gsf_doc_meta_data_read_from_msole (sections, in);
+#else
+  error = gsf_msole_metadata_read (in, sections);
+#endif
+  if (NULL == error)
     {
       gsf_doc_meta_data_foreach (sections,
 				 &process_metadata,
 				 &pc);
+    }
+  else
+    {
+      g_error_free (error);
     }
   g_object_unref (G_OBJECT (sections));
   return pc.ret;
@@ -997,7 +1007,9 @@ nolog (const gchar *log_domain,
 void __attribute__ ((constructor)) 
 ole2_ltdl_init() 
 {
-  g_type_init();
+#if !GLIB_CHECK_VERSION(2, 35, 0)
+  g_type_init ();
+#endif
 #ifdef HAVE_GSF_INIT
   gsf_init();
 #endif

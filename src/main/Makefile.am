@@ -1,6 +1,7 @@
+# This Makefile.am is in the public domain
 SUBDIRS  = .
 
-INCLUDES = -I$(top_srcdir)/src/include 
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 LIBS = \
  @LE_LIBINTL@ @LE_LIB_LIBS@
@@ -11,7 +12,7 @@ if USE_COVERAGE
 endif
 
 lib_LTLIBRARIES = \
-  libextractor.la 
+  libextractor.la
 
 bin_PROGRAMS = extract
 
@@ -23,7 +24,9 @@ if HAVE_BZ2
 bz2lib = -lbz2
 TEST_BZIP2 = test_bzip2
 endif
-
+if HAVE_APPARMOR
+apparmor=-lapparmor
+endif
 
 if WINDOWS
 EXTRACTOR_IPC=extractor_ipc_w32.c
@@ -34,6 +37,9 @@ endif
 if HAVE_GNU_LD
  makesymbolic=-Wl,-Bsymbolic
 endif
+
+# install plugins under:
+plugindir = $(libdir)/@RPLUGINDIR@
 
 PLUGINFLAGS = $(makesymbolic) $(LE_PLUGIN_LDFLAGS)
 
@@ -59,11 +65,11 @@ libextractor_la_SOURCES = \
 libextractor_la_LDFLAGS = \
   $(LE_LIB_LDFLAGS) -version-info @LIB_VERSION_CURRENT@:@LIB_VERSION_REVISION@:@LIB_VERSION_AGE@
 libextractor_la_LIBADD = \
-  -lltdl $(zlib) $(bz2lib) $(LTLIBICONV) $(XLIB) $(LE_LIBINTL)
+  -lltdl $(zlib) $(bz2lib) $(LTLIBICONV) $(XLIB) $(LE_LIBINTL) $(apparmor)
 
 extract_SOURCES = \
   extract.c \
-  getopt.c getopt.h getopt1.c 
+  getopt.c getopt.h getopt1.c
 extract_DEPENDENCIES = \
   libextractor.la
 extract_LDADD = \
@@ -74,17 +80,17 @@ TESTS_ENVIRONMENT += bindir=${bindir}
 
 noinst_LTLIBRARIES = \
   libextractor_test.la \
-  libextractor_test2.la 
+  libextractor_test2.la
 
 libextractor_test_la_SOURCES = \
-  test_extractor.c 
+  test_extractor.c
 libextractor_test_la_LDFLAGS = \
   $(PLUGINFLAGS) -rpath /nowhere
 libextractor_test_la_LIBADD = \
   $(LE_LIBINTL) $(XLIB)
 
 libextractor_test2_la_SOURCES = \
-  test2_extractor.c 
+  test2_extractor.c
 libextractor_test2_la_LDFLAGS = \
   $(PLUGINFLAGS) -rpath /nowhere
 libextractor_test2_la_LIBADD = \
@@ -105,37 +111,36 @@ TESTS = $(check_PROGRAMS)
 endif
 
 test_trivial_SOURCES = \
- test_trivial.c 
+ test_trivial.c
 test_trivial_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
+ $(top_builddir)/src/main/libextractor.la
 
 test_plugin_loading_SOURCES = \
- test_plugin_loading.c 
+ test_plugin_loading.c
 test_plugin_loading_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
+ $(top_builddir)/src/main/libextractor.la
 
 test_plugin_load_multi_SOURCES = \
- test_plugin_load_multi.c 
+ test_plugin_load_multi.c
 test_plugin_load_multi_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
+ $(top_builddir)/src/main/libextractor.la
 
 test_ipc_SOURCES = \
- test_ipc.c 
+ test_ipc.c
 test_ipc_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
+ $(top_builddir)/src/main/libextractor.la
 
 test_file_SOURCES = \
- test_file.c 
+ test_file.c
 test_file_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
+ $(top_builddir)/src/main/libextractor.la
 
 test_gzip_SOURCES = \
- test_gzip.c 
+ test_gzip.c
 test_gzip_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
+ $(top_builddir)/src/main/libextractor.la
 
 test_bzip2_SOURCES = \
- test_bzip2.c 
+ test_bzip2.c
 test_bzip2_LDADD = \
- $(top_builddir)/src/main/libextractor.la  
-
+ $(top_builddir)/src/main/libextractor.la

@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2002, 2003, 2004, 2005, 2006, 2009, 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2002, 2003, 2004, 2005, 2006, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 
 #include "platform.h"
@@ -39,7 +39,7 @@
 
 
 /**
- * Closure for 'process_plugin_reply'
+ * Closure for #process_plugin_reply()
  */
 struct PluginReplyProcessor
 {
@@ -49,7 +49,7 @@ struct PluginReplyProcessor
   EXTRACTOR_MetaDataProcessor proc;
 
   /**
-   * Closure for 'proc'.
+   * Closure for @e proc.
    */
   void *proc_cls;
 
@@ -295,7 +295,7 @@ in_process_seek (void *cls,
  * Determine the overall size of the file.
  * Callback used for in-process plugins.
  *
- * @param cls a 'struct InProcessContext'
+ * @param cls a `struct InProcessContext`
  * @return overall file size, UINT64_MAX on error (i.e. IPC failure)
  */
 static uint64_t
@@ -593,7 +593,7 @@ do_extract (struct EXTRACTOR_PluginList *plugins,
  *        case libextractor will open file) if filename is not NULL
  * @param size number of bytes in data, ignored if data is NULL
  * @param proc function to call for each meta data item found
- * @param proc_cls cls argument to proc
+ * @param proc_cls cls argument to @a proc
  */
 void
 EXTRACTOR_extract (struct EXTRACTOR_PluginList *plugins,

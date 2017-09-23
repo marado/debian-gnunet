@@ -1,4 +1,5 @@
-INCLUDES = -I$(top_srcdir)/src/include
+# This Makefile.am is in the public domain
+AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 LIBS = \
  @LE_LIBINTL@ @LIBS@
@@ -25,4 +26,4 @@ libextractor_common_la_LIBADD = \
 libextractor_common_la_SOURCES = \
   le_architecture.h \
   $(LINK_UNZIP) \
-  convert.c convert.h 
+  convert.c convert.h

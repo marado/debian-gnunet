@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2002-2013 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2002-2013 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
  */
 
 #ifndef EXTRACTOR_H
@@ -35,7 +35,7 @@ extern "C" {
  * 0.2.6-1 => 0x00020601
  * 4.5.2-0 => 0x04050200
  */
-#define EXTRACTOR_VERSION 0x01030000
+#define EXTRACTOR_VERSION 0x01030002
 
 #include <stdio.h>
 
@@ -382,8 +382,8 @@ enum EXTRACTOR_MetaType
     EXTRACTOR_METATYPE_VIDEO_DURATION = 225,
     EXTRACTOR_METATYPE_AUDIO_DURATION = 226,
     EXTRACTOR_METATYPE_SUBTITLE_DURATION = 227,
-	
-	EXTRACTOR_METATYPE_AUDIO_PREVIEW = 228,
+
+    EXTRACTOR_METATYPE_AUDIO_PREVIEW = 228,
 
     EXTRACTOR_METATYPE_LAST = 229
   };
@@ -443,13 +443,14 @@ EXTRACTOR_metatype_get_max (void);
  * @param data_len number of bytes in @a data
  * @return 0 to continue extracting, 1 to abort
  */
-typedef int (*EXTRACTOR_MetaDataProcessor) (void *cls,
-					    const char *plugin_name,
-					    enum EXTRACTOR_MetaType type,
-					    enum EXTRACTOR_MetaFormat format,
-					    const char *data_mime_type,
-					    const char *data,
-					    size_t data_len);
+typedef int
+(*EXTRACTOR_MetaDataProcessor) (void *cls,
+                                const char *plugin_name,
+                                enum EXTRACTOR_MetaType type,
+                                enum EXTRACTOR_MetaFormat format,
+                                const char *data_mime_type,
+                                const char *data,
+                                size_t data_len);
 
 
 /**
@@ -519,7 +520,8 @@ struct EXTRACTOR_ExtractContext
  *
  * @param ec extraction context provided to the plugin
  */
-typedef void (*EXTRACTOR_extract_method) (struct EXTRACTOR_ExtractContext *ec);
+typedef void
+(*EXTRACTOR_extract_method) (struct EXTRACTOR_ExtractContext *ec);
 
 
 /**

@@ -1,6 +1,22 @@
 # Process this file with autoconf to produce a configure script.
+#
+#  This file is part of GNU libextractor
+#  Copyright (C) 2014, 2017 GNUnet e.V.
+#
+#  GNU libextractor is free software; you can redistribute it and/or modify it under the
+#  terms of the GNU General Public License as published by the Free Software
+#  Foundation; either version 3, or (at your option) any later version.
+#
+#  GNU libextractor is distributed in the hope that it will be useful, but WITHOUT ANY
+#  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+#  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along with
+#  GNU libextractor; see the file COPYING.  If not, If not, see <http://www.gnu.org/license>
+#
+#
 AC_PREREQ(2.61)
-AC_INIT([libextractor], [1.3], [bug-libextractor@gnu.org])
+AC_INIT([libextractor], [1.4], [bug-libextractor@gnu.org])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AH_TOP([#define _GNU_SOURCE  1])
@@ -9,7 +25,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_SYSTEM
 
 LIB_VERSION_CURRENT=4
-LIB_VERSION_REVISION=3
+LIB_VERSION_REVISION=4
 LIB_VERSION_AGE=1
 AC_SUBST(LIB_VERSION_CURRENT)
 AC_SUBST(LIB_VERSION_REVISION)
@@ -32,7 +48,6 @@ AC_CANONICAL_HOST
 AC_PROG_LIBTOOL
 # save LIBS, libtool does a AC_SEARCH_LIBS(dlopen, dl), but plugins
 # need not have -ldl added
-LIBSOLD=$LIBS
 LT_INIT([disable-static dlopen win32-dll])
 AC_SUBST(MKDIR_P)
 
@@ -82,7 +97,7 @@ netbsd*)
      AM_CONDITIONAL(HAVE_GNU_LD, false)
      AM_CONDITIONAL(SOMEBSD, false)
      AM_CONDITIONAL(WINDOWS, false)
-     CFLAGS="-D_POSIX_PTHREAD_SEMANTICS $CFLAGS"
+     AM_CFLAGS="-D_POSIX_PTHREAD_SEMANTICS $AM_CFLAGS"
      LIBEXT=.so
      ;;
 darwin*)
@@ -90,12 +105,11 @@ darwin*)
      AM_CONDITIONAL(HAVE_GNU_LD, false)
      AM_CONDITIONAL(SOMEBSD, false)
      AM_CONDITIONAL(WINDOWS, false)
-     CFLAGS="-fno-common $CFLAGS"
+     AM_CFLAGS="-fno-common $AM_CFLAGS"
      LIBEXT=.so
      ;;
 cygwin*)
      AC_DEFINE_UNQUOTED(CYGWIN,1,[This is a CYGWIN system])
-     LDFLAGS="$LDFLAGS -no-undefined"
      AM_CONDITIONAL(SOMEBSD, false)
      AM_CONDITIONAL(HAVE_GNU_LD, false)
      AM_CONDITIONAL(WINDOWS, false)
@@ -106,8 +120,8 @@ mingw*)
      AC_DEFINE_UNQUOTED(WINDOWS,1,[This is a Windows system])
      AC_CHECK_LIB(intl, gettext)
      # Sufficiently new Windows XP
-     CFLAGS="-D__MSVCRT_VERSION__=0x0601 $CFLAGS"
-     CPPFLAGS="-DFTRUNCATE_DEFINED=1 $CPPFLAGS"
+     AM_CFLAGS="-D__MSVCRT_VERSION__=0x0601 $AM_CFLAGS"
+     AM_CPPFLAGS="-DFTRUNCATE_DEFINED=1 $AM_CPPFLAGS"
 
     AC_MSG_CHECKING(for PlibC)
     plibc=0
@@ -123,8 +137,8 @@ mingw*)
                 plibc=1))
             ;;
           *)
-            LDFLAGS="-L$with_plibc/lib $LDFLAGS"
-            CPPFLAGS="-I$with_plibc/include $CPPFLAGS"
+            AM_LDFLAGS="-L$with_plibc/lib $AM_LDFLAGS"
+            AM_CPPFLAGS="-I$with_plibc/include $AM_CPPFLAGS"
             AC_CHECK_HEADERS([plibc.h],
               AC_CHECK_LIB([plibc], [plibc_init],
                 EXT_LIB_PATH="-L$with_plibc/lib $EXT_LIB_PATH"
@@ -133,8 +147,8 @@ mingw*)
         esac
        ],
        [AC_MSG_RESULT([--with-plibc not specified])
-        LDFLAGS="-L/usr/lib $LDFLAGS"
-        CPPFLAGS="-I/usr/include $CPPFLAGS"
+        AM_LDFLAGS="-L/usr/lib $AM_LDFLAGS"
+        AM_CPPFLAGS="-I/usr/include $AM_CPPFLAGS"
         AC_CHECK_HEADERS([plibc.h],
               AC_CHECK_LIB([plibc], [plibc_init],
                 EXT_LIB_PATH="-L$with_plibc/lib $EXT_LIB_PATH"
@@ -147,8 +161,7 @@ mingw*)
         LIBS="$LIBS -lplibc"
      fi
 
-     LDFLAGS="$LDFLAGS -Wl,-no-undefined -Wl,--export-all-symbols"
-		 LIBSOLD=$LIBS
+     AM_LDFLAGS="$AM_LDFLAGS -Wl,--export-all-symbols"
      AM_CONDITIONAL(HAVE_GNU_LD, true)
      AM_CONDITIONAL(SOMEBSD, false)
      AM_CONDITIONAL(WINDOWS, true)
@@ -199,7 +212,7 @@ AM_CONDITIONAL(MINGW, test "$build_os" = "mingw32")
 # use '-fno-strict-aliasing', but only if the compiler can take it
 if gcc -fno-strict-aliasing -S -o /dev/null -xc /dev/null >/dev/null 2>&1;
 then
- CFLAGS="-fno-strict-aliasing $CFLAGS"
+ AM_CFLAGS="-fno-strict-aliasing $AM_CFLAGS"
 fi
 
 AM_CONDITIONAL(HAVE_CXX, test "x$HAVE_CXX" = "xyes")
@@ -210,10 +223,10 @@ AM_CONDITIONAL(HAVE_CXX, test "x$HAVE_CXX" = "xyes")
 AC_ARG_ENABLE(gcc-hardening,
    AS_HELP_STRING(--enable-gcc-hardening, enable compiler security checks),
 [if test x$enableval = xyes; then
-    CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=2 -fstack-protector-all"
-    CFLAGS="$CFLAGS -fwrapv -fPIE -Wstack-protector"
-    CFLAGS="$CFLAGS --param ssp-buffer-size=1"
-    LDFLAGS="$LDFLAGS -pie"
+    AM_CFLAGS="$AM_CFLAGS -D_FORTIFY_SOURCE=2 -fstack-protector-all"
+    AM_CFLAGS="$AM_CFLAGS -fwrapv -fPIE -Wstack-protector"
+    AM_CFLAGS="$AM_CFLAGS --param ssp-buffer-size=1"
+    AM_LDFLAGS="$AM_LDFLAGS -pie"
 fi])
 
 
@@ -222,7 +235,7 @@ fi])
 AC_ARG_ENABLE(linker-hardening,
   AS_HELP_STRING(--enable-linker-hardening, enable linker security fixups),
 [if test x$enableval = xyes; then
-   LDFLAGS="$LDFLAGS -z relro -z now"
+   AM_LDFLAGS="$AM_LDFLAGS -z relro -z now"
 fi])
 
 
@@ -245,12 +258,14 @@ AC_ARG_WITH(ltdl,
             ltdl=1))
         ;;
       *)
-        LDFLAGS="-L$with_ltdl/lib $LDFLAGS"
-        CPPFLAGS="-I$with_ltdl/include $CPPFLAGS"
+        OLD_LIBS="$LIBS"
+        LIBS="-L$with_ltdl/lib $LIBS"
+        AM_CPPFLAGS="-I$with_ltdl/include $AM_CPPFLAGS"
         AC_CHECK_HEADERS(ltdl.h,
           AC_CHECK_LIB([ltdl], [lt_dlopenext],
             EXT_LIB_PATH="-L$with_ltdl/lib $EXT_LIB_PATH"
             ltdl=1))
+        LIBS="$OLD_LIBS"
         ;;
     esac
    ],
@@ -265,8 +280,16 @@ else
  AC_MSG_ERROR([libextractor requires libltdl (from GNU libtool), try installing libltdl-dev])
 fi
 
-# restore LIBS
-LIBS=$LIBSOLD
+# check for apparmor
+AC_CHECK_LIB(apparmor, aa_change_profile,
+        [AC_CHECK_HEADERS([sys/apparmor.h],
+          AM_CONDITIONAL(HAVE_APPARMOR, true)
+          AC_DEFINE(HAVE_APPARMOR,1,[Have apparmor]),
+          AM_CONDITIONAL(HAVE_APPARMOR, false)
+          AC_DEFINE(HAVE_APPARMOR,0,[lacking apparmor]))],
+        AM_CONDITIONAL(HAVE_APPARMOR, false),
+        -lapparmor)
+
 # FIXME: allow --with-oggvorbis=PFX
 
 # test if we have vorbisfile
@@ -365,8 +388,8 @@ AM_CONDITIONAL([HAVE_EXPERIMENTAL], [test "x$enable_experimental" = "xyes"])
 
 AC_MSG_CHECKING(for ImageFactory::iptcData in -lexiv2)
 AC_LANG_PUSH(C++)
-SAVED_LDFLAGS=$LDFLAGS
-LDFLAGS="$LDFLAGS -lexiv2"
+SAVED_AM_LDFLAGS=$AM_LDFLAGS
+AM_LDFLAGS="$AM_LDFLAGS -lexiv2"
 AC_LINK_IFELSE(
   [AC_LANG_PROGRAM([[#include <iostream>
 #include <exiv2/exif.hpp>
@@ -378,12 +401,12 @@ AC_LINK_IFELSE(
    AC_DEFINE(HAVE_EXIV2,1,[Have exifData in libexiv2])],
   [AC_MSG_RESULT(no)
    AM_CONDITIONAL(HAVE_EXIV2, false)])
-LDFLAGS=$SAVED_LDFLAGS
+AM_LDFLAGS=$SAVED_AM_LDFLAGS
 AC_LANG_POP(C++)
 
 
 AC_MSG_CHECKING(for DGifOpen -lgif)
-SAVED_LDFLAGS=$LDFLAGS
+SAVED_AM_LDFLAGS=$AM_LDFLAGS
 AC_CHECK_LIB(gif, DGifOpen,
   [AC_CHECK_HEADERS([gif_lib.h],
    AM_CONDITIONAL(HAVE_GIF, true),
@@ -391,7 +414,7 @@ AC_CHECK_LIB(gif, DGifOpen,
   AM_CONDITIONAL(HAVE_GIF, false))
 
 AC_MSG_CHECKING(for magic_open -lmagic)
-SAVED_LDFLAGS=$LDFLAGS
+SAVED_AM_LDFLAGS=$AM_LDFLAGS
 AC_CHECK_LIB(magic, magic_open,
   [AC_CHECK_HEADERS([magic.h],
    AM_CONDITIONAL(HAVE_MAGIC, true),
@@ -570,8 +593,8 @@ fi
 # smf requires glib.h
 CFLAGS_OLD="$CFLAGS"
 CPPFLAGS_OLD="$CPPFLAGS"
-CFLAGS="$CFLAGS $GLIB_CFLAGS"
-CPPFLAGS="$CPPFLAGS $GLIB_CFLAGS"
+CFLAGS="$AM_CFLAGS $GLIB_CFLAGS"
+CPPFLAGS="$AM_CPPFLAGS $GLIB_CFLAGS"
 
 AC_CHECK_LIB(smf, smf_load_from_memory,
         [AC_CHECK_HEADERS([smf.h],
@@ -579,54 +602,24 @@ AC_CHECK_LIB(smf, smf_load_from_memory,
            AC_DEFINE(HAVE_MPEG2,1,[Have libsmf]),
          AM_CONDITIONAL(HAVE_SMF, false))],
          AM_CONDITIONAL(HAVE_SMF, false))
-CFLAGS="$CFLAGS_OLD"
-CPPFLAGS="$CPPFLAGS_OLD"
 
-# check for gtk >= 2.6.0
-AC_MSG_CHECKING(for gtk)
-check_for_3=3.0.0
-check_for_2=2.6.0
-AC_ARG_WITH(gtk_version,
-   [  --with-gtk-version=VERSION    version number of gtk to use (>=3.0.0 by default)],
-   [AC_MSG_RESULT([$with_gtk_version])
-    case $with_gtk_version in
-      *)
-        if test "x${with_gtk_version:0:1}" == "x2"
-        then
-          check_for_3=false
-          check_for_2=$with_gtk_version
-        elif test "x${with_gtk_version:0:1}" == "x3"
-        then
-          check_for_3=$with_gtk_version
-          check_for_2=false
-        fi
-        ;;
-    esac
-   ],
-   [AC_MSG_RESULT([--with-gtk-version not specified])])
+# check for gdk-pixbuf >= 2.4
+AC_MSG_CHECKING(for gdk-pixbuf)
+PKG_CHECK_MODULES([GDK_PIXBUF], [gdk-pixbuf-2.0 >= 2.4], [have_gdk_pixbuf=yes], [have_gdk_pixbuf=no])
 
-without_gtk=false
-if test "x$check_for_3" != "xfalse"
+AM_CONDITIONAL(HAVE_GDK_PIXBUF, test x$have_gdk_pixbuf != xno)
+if test $have_gdk_pixbuf != no
 then
-  AM_PATH_GTK_3_0([$check_for_3],without_gtk=false,without_gtk=true)
-fi
-
-if test "x$without_gtk" == "xtrue" -a "x$check_for_2" != "xfalse"
-then
-  AM_PATH_GTK_2_0([$check_for_2],without_gtk=false,without_gtk=true)
-fi
-
-AM_CONDITIONAL(HAVE_GTK, test x$without_gtk != xtrue)
-if test $without_gtk != true
-then
-  AC_DEFINE_UNQUOTED([HAVE_GTK], 1, [We have GTK])
+  have_gdk_pixbuf=1
 else
-  AC_MSG_NOTICE([Cannot find GTK: Is pkg-config in path?])
+  have_gdk_pixbuf=0
+  AC_MSG_NOTICE([Cannot find Gdk-pixbuf: Is pkg-config in path?])
 fi
+AC_DEFINE_UNQUOTED([HAVE_GDK_PIXBUF], [$have_gdk_pixbuf], [We have Gdk-pixbuf])
 
-CFLAGS="$CFLAGS $GTK_CFLAGS"
-CPPFLAGS="$CPPFLAGS $GTK_CFLAGS"
-LIBS="$LIBS $GTK_LIBS"
+CFLAGS="$CFLAGS $GDK_PIXBUF_CFLAGS"
+CPPFLAGS="$CPPFLAGS $GDK_PIXBUF_CFLAGS"
+LIBS="$LIBS $GDK_PIXBUF_LIBS"
 
 
 AC_ARG_WITH([gstreamer], AS_HELP_STRING([--with-gstreamer], [Build with the GStreamer plugin]), [], [with_gstreamer=yes])
@@ -651,6 +644,12 @@ AM_CONDITIONAL(HAVE_GSF, test "x$have_gsf" = "xtrue")
 # produce new line
 echo ""
 AC_CHECK_LIB(gsf-1, gsf_init, AC_DEFINE(HAVE_GSF_INIT,1,[gsf_init supported]))
+AC_CHECK_LIB(gsf-1, gsf_doc_meta_data_read_from_msole, AC_DEFINE(HAVE_GSF_DOC_META_DATA_READ_FROM_MSOLE,1,[gsf_doc_meta_data_read_from_msole supported]))
+
+
+CFLAGS="$CFLAGS_OLD"
+CPPFLAGS="$CPPFLAGS_OLD"
+
 
 AC_CHECK_PROG([HAVE_ZZUF],[zzuf], 1, 0)
 AM_CONDITIONAL(HAVE_ZZUF, test 0 != $HAVE_ZZUF)
@@ -678,7 +677,7 @@ then
     AC_CHECK_HEADERS([libavresample/avresample.h],
       AC_CHECK_LIB(avutil, av_audio_fifo_alloc,
         new_ffmpeg=1)))
-  
+
   AC_CHECK_LIB(swscale, sws_getContext,
     AC_CHECK_LIB(avcodec, avcodec_alloc_context3,
       ffmpeg_enabled=1))
@@ -697,7 +696,7 @@ then
   AC_DEFINE([FRAMEWORK_BUILD], 1, [Build a Mac OS X Framework])
   LE_INTLINCL='-I$(top_srcdir)/src/intlemu'
   LE_LIBINTL='$(top_builddir)/src/intlemu/libintlemu.la -framework CoreFoundation'
-  AC_LIB_APPENDTOVAR([CPPFLAGS], [$LE_INTLINCL])
+  AC_LIB_APPENDTOVAR([AM_CPPFLAGS], [$LE_INTLINCL])
 fi
 
 
@@ -729,8 +728,6 @@ AC_SUBST(LE_INTLINCL)
 AC_SUBST(LE_LIBINTL)
 AC_SUBST(LE_LIB_LIBS)
 
-AC_SUBST(CPPFLAGS)
-AC_SUBST(LDFLAGS)
 AC_SUBST(QT_CPPFLAGS)
 AC_SUBST(QT_LDFLAGS)
 AC_SUBST(XTRA_CPPLIBS)
@@ -814,9 +811,9 @@ then
  AC_MSG_NOTICE([NOTICE: FFmpeg/opus audio preview plugin disabled, It needs libav >= 10, or a FFmpeg with --enable-libavresample])
 fi
 
-if test "x$without_gtk" = "xtrue"
+if test "x$have_gdk_pixbuf" = "x0"
 then
- AC_MSG_NOTICE([NOTICE: libgtk3+ not found, gtk thumbnail support disabled])
+ AC_MSG_NOTICE([NOTICE: libgdk-pixbuf not found, gtk thumbnail support disabled])
 fi
 
 if test "x$HAVE_VORBISFILE_TRUE" = "x#"
@@ -859,3 +856,7 @@ else
  AC_MSG_NOTICE([NOTICE: gstreamer not found, gstreamer support disabled])
 fi
 
+if test "x$HAVE_APPARMOR_TRUE" = "x#"
+then
+ AC_MSG_NOTICE([NOTICE: libapparmor not found, apparmor support disabled])
+fi

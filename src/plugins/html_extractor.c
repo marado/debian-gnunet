@@ -1,6 +1,6 @@
 /*
      This file is part of libextractor.
-     (C) 2002, 2003, 2004, 2005, 2009, 2012 Vidyut Samanta and Christian Grothoff
+     Copyright (C) 2002, 2003, 2004, 2005, 2009, 2012 Vidyut Samanta and Christian Grothoff
 
      libextractor is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published
@@ -14,8 +14,8 @@
 
      You should have received a copy of the GNU General Public License
      along with libextractor; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+     Boston, MA 02110-1301, USA.
 
  */
 /**
@@ -27,7 +27,7 @@
 #include "extractor.h"
 #include <magic.h>
 #include <tidy/tidy.h>
-#include <tidy/buffio.h>
+#include <tidy/tidybuffio.h>
 
 /**
  * Mapping of HTML META names to LE types.
@@ -59,7 +59,7 @@ static struct
   { "rights", EXTRACTOR_METATYPE_RIGHTS },
   { "dc.rights", EXTRACTOR_METATYPE_RIGHTS },
   { "copyright", EXTRACTOR_METATYPE_COPYRIGHT },
-  { "language", EXTRACTOR_METATYPE_LANGUAGE },  
+  { "language", EXTRACTOR_METATYPE_LANGUAGE },
   { "keywords", EXTRACTOR_METATYPE_KEYWORDS },
   { "abstract", EXTRACTOR_METATYPE_ABSTRACT },
   { "formatter", EXTRACTOR_METATYPE_CREATED_BY_SOFTWARE },
@@ -82,7 +82,7 @@ static magic_t magic;
  * @param tag tag to map
  * @return EXTRACTOR_METATYPE_RESERVED if the type was not found
  */
-static enum EXTRACTOR_MetaType 
+static enum EXTRACTOR_MetaType
 tag_to_type (const char *tag)
 {
   unsigned int i;
@@ -105,7 +105,7 @@ tag_to_type (const char *tag)
  * @param mssg message
  * @return FALSE (no output)
  */
-static Bool
+static Bool TIDY_CALL
 report_cb (TidyDoc doc,
 	   TidyReportLevel lvl,
 	   uint line,
@@ -122,7 +122,7 @@ report_cb (TidyDoc doc,
  * @param sourceData our 'struct EXTRACTOR_ExtractContext'
  * @return next byte of input, EndOfStream on errors and EOF
  */
-static int
+static int TIDY_CALL
 get_byte_cb (void *sourceData)
 {
   struct EXTRACTOR_ExtractContext *ec = sourceData;
@@ -142,11 +142,11 @@ get_byte_cb (void *sourceData)
  * @param sourceData our 'struct EXTRACTOR_ExtractContext'
  * @param bt byte to unget (ignored)
  */
-static void
+static void TIDY_CALL
 unget_byte_cb (void *sourceData, byte bt)
 {
   struct EXTRACTOR_ExtractContext *ec = sourceData;
-  
+
   (void) ec->seek (ec->cls, -1, SEEK_CUR);
 }
 
@@ -157,7 +157,7 @@ unget_byte_cb (void *sourceData, byte bt)
  * @param sourceData our 'struct EXTRACTOR_ExtractContext'
  * @return true if we are at the EOF
  */
-static Bool
+static Bool TIDY_CALL
 eof_cb (void *sourceData)
 {
   struct EXTRACTOR_ExtractContext *ec = sourceData;
@@ -167,11 +167,11 @@ eof_cb (void *sourceData)
 
 
 /**
- * Main entry method for the 'text/html' extraction plugin.  
+ * Main entry method for the 'text/html' extraction plugin.
  *
  * @param ec extraction context provided to the plugin
  */
-void 
+void
 EXTRACTOR_html_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
   TidyDoc doc;
@@ -250,9 +250,9 @@ EXTRACTOR_html_extract_method (struct EXTRACTOR_ExtractContext *ec)
 	case TidyNode_Php:
 	  break;
 	case TidyNode_XmlDecl:
-	  break;	  
+	  break;
 	case TidyNode_Start:
-	case TidyNode_StartEnd:	
+	case TidyNode_StartEnd:
 	  name = tidyNodeGetName (child);
 	  if ( (0 == strcasecmp (name, "title")) &&
 	       (NULL != (title = tidyGetChild (child))) )
@@ -278,13 +278,13 @@ EXTRACTOR_html_extract_method (struct EXTRACTOR_ExtractContext *ec)
 	    }
 	  if (0 == strcasecmp (name, "meta"))
 	    {
-	      if (NULL == (attr = tidyAttrGetById (child, 
+	      if (NULL == (attr = tidyAttrGetById (child,
 						   TidyAttr_NAME)))
 		break;
-	      if (EXTRACTOR_METATYPE_RESERVED == 
+	      if (EXTRACTOR_METATYPE_RESERVED ==
 		  (type = tag_to_type (tidyAttrValue (attr))))
 		break;
-	      if (NULL == (attr = tidyAttrGetById (child, 
+	      if (NULL == (attr = tidyAttrGetById (child,
 						   TidyAttr_CONTENT)))
 		break;
 	      name = tidyAttrValue (attr);
@@ -297,14 +297,14 @@ EXTRACTOR_html_extract_method (struct EXTRACTOR_ExtractContext *ec)
 			    name,
 			    strlen (name) + 1))
 		goto CLEANUP;
-	      break;	
+	      break;
 	    }
 	  break;
 	case TidyNode_End:
-	  break;	  
+	  break;
 	default:
 	  break;
-	}      
+	}
     }
  CLEANUP:
   tidyRelease (doc);
@@ -463,7 +463,7 @@ findInTags (struct TagInfo * t,
 
 
 /* mimetype = text/html */
-int 
+int
 EXTRACTOR_html_extract (const char *data,
 			size_t size,
 			EXTRACTOR_MetaDataProcessor proc,
@@ -562,7 +562,7 @@ EXTRACTOR_html_extract (const char *data,
          if text/html is present, we take that as the mime-type; if charset=
          is present, we try to use that for character set conversion. */
       if (0 == strncasecmp (tmp, "text/html", strlen ("text/html")))
-        ret = proc (proc_cls, 
+        ret = proc (proc_cls,
 		    "html",
 		    EXTRACTOR_METATYPE_MIMETYPE,
 		    EXTRACTOR_METAFORMAT_UTF8,
@@ -613,7 +613,7 @@ EXTRACTOR_html_extract (const char *data,
 	free (tmp);
       i++;
     }
-  while (tags != NULL) 
+  while (tags != NULL)
     {
       t = tags;
       if ( (tagMatch ("title", t->tagStart, t->tagEnd)) &&
@@ -667,7 +667,7 @@ EXTRACTOR_html_extract (const char *data,
 /**
  * Initialize glib and load magic file.
  */
-void __attribute__ ((constructor)) 
+void __attribute__ ((constructor))
 html_gobject_init ()
 {
   magic = magic_open (MAGIC_MIME_TYPE);
@@ -681,8 +681,8 @@ html_gobject_init ()
 /**
  * Destructor for the library, cleans up.
  */
-void __attribute__ ((destructor)) 
-html_ltdl_fini () 
+void __attribute__ ((destructor))
+html_ltdl_fini ()
 {
   if (NULL != magic)
     {
