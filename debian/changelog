@@ -1,3 +1,24 @@
+libextractor (1:1.4-1) unstable; urgency=medium
+
+  * debian/control: fix Vcs-git and Vcs-browser fields.
+  * Use my @debian.org address for the maintainer field and in debian/copyright.
+  * Migrate from a manual "-dbg" package to an automatic generated debug symbol
+    package:
+    + debian/control: remove libextractor-dbg.
+    + debian/rules: use --dbgsym-migration in override_dh_strip.
+  * Make libextractor3 and libextractor-dev multiarch: same.
+  * Use an armored upstream signing key and add the new upstream key in
+    debian/upstream/signing-key.asc.
+  * New upstream version 1.4.
+  * debian/copyright:
+    + use copyright format 1.0.
+    + update years.
+  * Standards-version: 4.1.0.
+  * Remove ffmpeg2.9 and libgiflib5.1 patches, applied upstream.
+  * Add one new symbol to debian/libextractor3.symbols.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sat, 23 Sep 2017 10:32:22 +0200
+
 libextractor (1:1.3-4) unstable; urgency=medium
 
   * Update debian/patches/ffmpeg2.9.patch with a new commit taken from upstream
