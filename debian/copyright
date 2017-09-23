@@ -1,3 +1,9 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Libextractor
+Upstream-Contact: Christian Grothoff <christian@grothoff.org>
+Source: https://www.gnu.org/software/libextractor/
+License: GPL-3+
+
 Files: *
 Copyright:
  (C) 2002-2013 Christian Grothoff <christian@grothoff.org>
