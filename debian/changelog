@@ -1,3 +1,12 @@
+libextractor (1:1.6-1) unstable; urgency=medium
+
+  * New upstream version 1.6: fixes CVE-2017-15266, CVE-2017-15267,
+    CVE-2017-15600, CVE-2017-15601, CVE-2017-15602 (Closes: #878314).
+  * Standards-version: 4.1.1.
+  * Use https instead of ftp in debian/watch.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sat, 21 Oct 2017 19:21:55 +0200
+
 libextractor (1:1.4-1) unstable; urgency=medium
 
   * debian/control: fix Vcs-git and Vcs-browser fields.
