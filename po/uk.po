@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libextractor 1.0.0-pre1\n"
 "Report-Msgid-Bugs-To: libextractor@gnu.org\n"
-"POT-Creation-Date: 2017-06-10 14:17+0200\n"
+"POT-Creation-Date: 2017-10-15 21:38+0200\n"
 "PO-Revision-Date: 2012-09-05 22:36+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
@@ -105,7 +105,7 @@ msgstr "Видобути метадані з файлів."
 msgid "Found by `%s' plugin:\n"
 msgstr "Знайдено додатком «%s»:\n"
 
-#: src/main/extract.c:291 src/main/extract.c:378
+#: src/main/extract.c:291 src/main/extract.c:380
 #: src/main/extractor_metatypes.c:145 src/main/extractor_print.c:86
 #: src/main/extractor_print.c:96
 msgid "unknown"
@@ -116,42 +116,42 @@ msgstr "невідомий"
 msgid "%s - (unknown, %u bytes)\n"
 msgstr "%s — (невідомий, %u байтів)\n"
 
-#: src/main/extract.c:325
+#: src/main/extract.c:327
 #, c-format
 msgid "%s - (binary, %u bytes)\n"
 msgstr "%s — (бінарний, %u байтів)\n"
 
-#: src/main/extract.c:809 src/main/extract.c:821
+#: src/main/extract.c:815 src/main/extract.c:827
 msgid ""
 "Illegal combination of options, cannot combine multiple styles of printing.\n"
 msgstr ""
 "Некоректне поєднання параметрів, не можна визначати декілька стилів "
 "виведення даних.\n"
 
-#: src/main/extract.c:854
+#: src/main/extract.c:860
 #, c-format
 msgid "You must specify an argument for the `%s' option (option ignored).\n"
 msgstr ""
 "Параметр «%s» можна використовувати лише з додатковим аргументом (параметр "
 "проігноровано).\n"
 
-#: src/main/extract.c:923
+#: src/main/extract.c:929
 msgid "Use --help to get a list of options.\n"
 msgstr ""
 "Скористайтеся параметром --help для отримання списку можливих параметрів "
 "командного рядка.\n"
 
-#: src/main/extract.c:964
+#: src/main/extract.c:970
 #, fuzzy
 msgid "% BiBTeX file\n"
 msgstr "%% файл BiBTeX\n"
 
-#: src/main/extract.c:972
+#: src/main/extract.c:978
 #, c-format
 msgid "Keywords for file %s:\n"
 msgstr "Ключові слова для файла %s:\n"
 
-#: src/main/extractor.c:676
+#: src/main/extractor.c:687
 #, c-format
 msgid "Initialization of plugin mechanism failed: %s!\n"
 msgstr "Помилка під час спроби ініціалізації механізму додатків: %s!\n"
@@ -1871,7 +1871,25 @@ msgstr "бітова швидкість звуку"
 msgid "a preview of the file audio stream"
 msgstr "частота дискретизації звукових даних"
 
-#: src/main/extractor_metatypes.c:554 src/main/extractor_metatypes.c:555
+#: src/main/extractor_metatypes.c:554
+msgid "narinfo"
+msgstr ""
+
+#: src/main/extractor_metatypes.c:555
+msgid ""
+"file containing information about contents of a normalized archive (nar)"
+msgstr ""
+
+#: src/main/extractor_metatypes.c:557
+#, fuzzy
+msgid "nar"
+msgstr "керівник"
+
+#: src/main/extractor_metatypes.c:558
+msgid "normalized archive"
+msgstr ""
+
+#: src/main/extractor_metatypes.c:560 src/main/extractor_metatypes.c:561
 msgid "last"
 msgstr "тривалість"
 
@@ -2047,7 +2065,7 @@ msgstr "Сербо-хорватська (кирилиця)"
 msgid "Farsi"
 msgstr "Фарсі"
 
-#: src/plugins/ole2_extractor.c:588
+#: src/plugins/ole2_extractor.c:593
 #, c-format
 msgid "Revision #%u: Author `%s' worked on `%s'"
 msgstr "Модифікація %u: автор «%s», співробітник «%s»"
@@ -2057,11 +2075,11 @@ msgstr "Модифікація %u: автор «%s», співробітник �
 msgid "codec: %s, %u fps, %u ms"
 msgstr "кодек: %s, %u кд/с, %u мс"
 
-#: src/plugins/wav_extractor.c:120
+#: src/plugins/wav_extractor.c:122
 msgid "mono"
 msgstr "моно"
 
-#: src/plugins/wav_extractor.c:120
+#: src/plugins/wav_extractor.c:122
 msgid "stereo"
 msgstr "стерео"
 

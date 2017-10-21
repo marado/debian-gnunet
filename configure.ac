@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 #
 #  This file is part of GNU libextractor
-#  Copyright (C) 2014, 2017 GNUnet e.V.
+#  Copyright (C) 2003-2017 Christian Grothoff
 #
 #  GNU libextractor is free software; you can redistribute it and/or modify it under the
 #  terms of the GNU General Public License as published by the Free Software
@@ -16,7 +16,7 @@
 #
 #
 AC_PREREQ(2.61)
-AC_INIT([libextractor], [1.4], [bug-libextractor@gnu.org])
+AC_INIT([libextractor], [1.6], [bug-libextractor@gnu.org])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AH_TOP([#define _GNU_SOURCE  1])
@@ -25,7 +25,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_SYSTEM
 
 LIB_VERSION_CURRENT=4
-LIB_VERSION_REVISION=4
+LIB_VERSION_REVISION=5
 LIB_VERSION_AGE=1
 AC_SUBST(LIB_VERSION_CURRENT)
 AC_SUBST(LIB_VERSION_REVISION)

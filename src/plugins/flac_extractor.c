@@ -339,6 +339,8 @@ flac_metadata (const FLAC__StreamDecoder *decoder,
 	  {
 	    entry = &vc->comments[count];
 	    eq = (const char*) entry->entry;
+            if (NULL == eq)
+              break;
 	    len = entry->length;
 	    ilen = 0;
 	    while ( ('=' != *eq) && ('\0' != *eq) &&
@@ -407,11 +409,7 @@ flac_metadata (const FLAC__StreamDecoder *decoder,
 		  metadata->data.picture.data_length);
 	break;
       }
-    case FLAC__METADATA_TYPE_PADDING:
-    case FLAC__METADATA_TYPE_SEEKTABLE:
-    case FLAC__METADATA_TYPE_CUESHEET:
-    case FLAC__METADATA_TYPE_UNDEFINED:
-    case FLAC__MAX_METADATA_TYPE:
+    default:
       break;
     }
 }
