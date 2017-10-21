@@ -360,7 +360,7 @@ in_process_proc (void *cls,
  *        all plugins are in-process)
  * @param ds data to process
  * @param proc function to call for each meta data item found
- * @param proc_cls cls argument to proc
+ * @param proc_cls cls argument to @a proc
  */
 static void
 do_extract (struct EXTRACTOR_PluginList *plugins,
@@ -387,9 +387,14 @@ do_extract (struct EXTRACTOR_PluginList *plugins,
   for (pos = plugins; NULL != pos; pos = pos->next)
     plugin_count++;
   if (NULL != shm)
-    ready = EXTRACTOR_IPC_shared_memory_set_ (shm, ds, 0, DEFAULT_SHM_SIZE);
+    ready = EXTRACTOR_IPC_shared_memory_set_ (shm,
+                                              ds,
+                                              0,
+                                              DEFAULT_SHM_SIZE);
   else
     ready = 0;
+  if (-1 == ready)
+    return; /* failed to ready _any_ data!? */
   have_in_memory = 0;
   prp.file_finished = 0;
   prp.proc = proc;
@@ -500,7 +505,8 @@ do_extract (struct EXTRACTOR_PluginList *plugins,
 	}
       data_available = -1;
       if ( (1 == done) &&
-	   (-1 != min_seek) )
+	   (-1 != min_seek) &&
+           (NULL != shm) )
 	{
 	  /* current position done, but seek requested */
 	  done = 0;
@@ -642,6 +648,7 @@ EXTRACTOR_extract (struct EXTRACTOR_PluginList *plugins,
     }
   for (pos = plugins; NULL != pos; pos = pos->next)
     if ( (NULL == pos->channel) &&
+         (NULL != shm) &&
 	 (EXTRACTOR_OPTION_IN_PROCESS != pos->flags) )
       {
 	if (NULL == pos->shm)
@@ -652,7 +659,11 @@ EXTRACTOR_extract (struct EXTRACTOR_PluginList *plugins,
 	pos->channel = EXTRACTOR_IPC_channel_create_ (pos,
 						      shm);
       }
-  do_extract (plugins, shm, datasource, proc, proc_cls);
+  do_extract (plugins,
+              shm,
+              datasource,
+              proc,
+              proc_cls);
   EXTRACTOR_datasource_destroy_ (datasource);
 }
 

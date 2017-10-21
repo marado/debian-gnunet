@@ -348,12 +348,15 @@ EXTRACTOR_rpm_extract_method (struct EXTRACTOR_ExtractContext *ec)
 	    {
 	      if (p->tag == RPMTAG_BUILDTIME)
 		{
-		  char tmp[30];
+		  char tmp[80];
 		  uint32_t *v = rpmtdNextUint32 (p);
 		  time_t tp = (time_t) *v;
 
-		  ctime_r (&tp, tmp);
-		  tmp[strlen (tmp) - 1] = '\0';   /* eat linefeed */
+                  if (NULL == ctime_r (&tp, tmp))
+                    break;
+                  if ( (strlen (tmp) > 0) &&
+                       (isspace ((unsigned char) tmp[strlen(tmp)-1])) )
+                    tmp[strlen (tmp) - 1] = '\0';   /* eat linefeed */
 		  pthread_mutex_lock (&parg.lock);
 		  if (0 != ec->proc (ec->cls,
 				     "rpm",

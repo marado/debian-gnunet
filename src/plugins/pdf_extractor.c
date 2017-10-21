@@ -100,7 +100,7 @@ process_stdout (FILE *fout,
       if (NULL == colon)
         break;
       psuffix = colon + 1;
-      while (isblank ((int) psuffix[0]))
+      while (isblank ((unsigned char) psuffix[0]))
         psuffix++;
       if (0 == strlen (psuffix))
         continue;
@@ -178,8 +178,9 @@ EXTRACTOR_pdf_extract_method (struct EXTRACTOR_ExtractContext *ec)
       /* am child, exec 'pdfinfo' */
       close (0);
       close (1);
-      dup2 (in[0], 0);
-      dup2 (out[1], 1);
+      if ( (-1 == dup2 (in[0], 0)) ||
+           (-1 == dup2 (out[1], 1)) )
+        exit (1);
       close (in[0]);
       close (in[1]);
       close (out[0]);
@@ -191,7 +192,14 @@ EXTRACTOR_pdf_extract_method (struct EXTRACTOR_ExtractContext *ec)
   close (in[0]);
   close (out[1]);
   fout = fdopen (out[0], "r");
-
+  if (NULL == fout)
+    {
+      close (in[1]);
+      close (out[0]);
+      kill (pid, SIGKILL);
+      waitpid (pid, NULL, 0);
+      return;
+    }
   pos = 0;
   while (pos < fsize)
     {
