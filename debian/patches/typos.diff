@@ -1,5 +1,14 @@
 --- a/po/de.po
 +++ b/po/de.po
+@@ -7243,7 +7243,7 @@
+ 
+ #: src/transport/gnunet-transport.c:438
+ #, fuzzy
+-msgid "Failed to list connections, timeout occured\n"
++msgid "Failed to list connections, timeout occurred\n"
+ msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden."
+ 
+ #: src/transport/gnunet-transport.c:559
 @@ -7372,7 +7372,7 @@
  
  #: src/transport/gnunet-transport.c:1480
@@ -11,6 +20,15 @@
  #: src/transport/gnunet-transport.c:1483
 --- a/po/es.po
 +++ b/po/es.po
+@@ -7308,7 +7308,7 @@
+ # Miguel: La traducción no es literal, pero me parece más correcta
+ # en castellano.
+ #: src/transport/gnunet-transport.c:438
+-msgid "Failed to list connections, timeout occured\n"
++msgid "Failed to list connections, timeout occurred\n"
+ msgstr "No se pudieron listar las conexiones, expiró el plazo\n"
+ 
+ #: src/transport/gnunet-transport.c:559
 @@ -7444,7 +7444,7 @@
  # Miguel: ¿Quizá continuamente fuese mejor?
  #: src/transport/gnunet-transport.c:1480
@@ -22,6 +40,15 @@
  
 --- a/po/gnunet.pot
 +++ b/po/gnunet.pot
+@@ -6800,7 +6800,7 @@
+ msgstr ""
+ 
+ #: src/transport/gnunet-transport.c:438
+-msgid "Failed to list connections, timeout occured\n"
++msgid "Failed to list connections, timeout occurred\n"
+ msgstr ""
+ 
+ #: src/transport/gnunet-transport.c:559
 @@ -6921,7 +6921,7 @@
  msgstr ""
  
@@ -33,6 +60,15 @@
  #: src/transport/gnunet-transport.c:1483
 --- a/po/sv.po
 +++ b/po/sv.po
+@@ -7167,7 +7167,7 @@
+ 
+ #: src/transport/gnunet-transport.c:438
+ #, fuzzy
+-msgid "Failed to list connections, timeout occured\n"
++msgid "Failed to list connections, timeout occurred\n"
+ msgstr "Misslyckades att ansluta till gnunetd.\n"
+ 
+ #: src/transport/gnunet-transport.c:559
 @@ -7296,7 +7296,7 @@
  
  #: src/transport/gnunet-transport.c:1480
@@ -44,6 +80,15 @@
  #: src/transport/gnunet-transport.c:1483
 --- a/po/vi.po
 +++ b/po/vi.po
+@@ -7239,7 +7239,7 @@
+ 
+ #: src/transport/gnunet-transport.c:438
+ #, fuzzy
+-msgid "Failed to list connections, timeout occured\n"
++msgid "Failed to list connections, timeout occurred\n"
+ msgstr "Không kết nối được đến trình nền gnunetd."
+ 
+ #: src/transport/gnunet-transport.c:559
 @@ -7368,7 +7368,7 @@
  
  #: src/transport/gnunet-transport.c:1480
@@ -55,6 +100,15 @@
  #: src/transport/gnunet-transport.c:1483
 --- a/po/zh_CN.po
 +++ b/po/zh_CN.po
+@@ -6947,7 +6947,7 @@
+ 
+ #: src/transport/gnunet-transport.c:438
+ #, fuzzy
+-msgid "Failed to list connections, timeout occured\n"
++msgid "Failed to list connections, timeout occurred\n"
+ msgstr "初始化“%s”服务失败。\n"
+ 
+ #: src/transport/gnunet-transport.c:559
 @@ -7076,7 +7076,7 @@
  
  #: src/transport/gnunet-transport.c:1480
@@ -66,6 +120,15 @@
  #: src/transport/gnunet-transport.c:1483
 --- a/src/transport/gnunet-transport.c
 +++ b/src/transport/gnunet-transport.c
+@@ -435,7 +435,7 @@
+       GNUNET_free(cur);
+ 
+     }
+-    FPRINTF (stdout, "%s", _("Failed to list connections, timeout occured\n") );
++    FPRINTF (stdout, "%s", _("Failed to list connections, timeout occurred\n") );
+     if (GNUNET_SCHEDULER_NO_TASK != end)
+       GNUNET_SCHEDULER_cancel (end);
+     end = GNUNET_SCHEDULER_add_now (&shutdown_task, NULL );
 @@ -1477,7 +1477,7 @@
                gettext_noop ("print information for all pending validations "),
                0, &GNUNET_GETOPT_set_one, &iterate_validation },
@@ -86,3 +149,69 @@
      SERVERS = http://v9.gnunet.org:58080/
  
      [arm]
+--- a/src/include/gnunet_testbed_service.h
++++ b/src/include/gnunet_testbed_service.h
+@@ -480,7 +480,7 @@
+ 
+ /**
+  * Connect to a controller process.  The configuration to use for the connection
+- * is retreived from the given host where a controller is started using
++ * is retrieved from the given host where a controller is started using
+  * GNUNET_TESTBED_controller_start().
+  *
+  * @param host host to run the controller on; This should be the same host if
+--- a/src/mesh/gnunet-mesh.c
++++ b/src/mesh/gnunet-mesh.c
+@@ -798,7 +798,7 @@
+ main (int argc, char *const *argv)
+ {
+   int res;
+-  const char helpstr[] = "Create channels and retreive info about meshs status.";
++  const char helpstr[] = "Create channels and retrieve info about meshs status.";
+   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
+ //     {'a', "channel", "TUNNEL_ID:CHANNEL_ID",
+ //      gettext_noop ("provide information about a particular channel"),
+--- a/src/util/configuration.c
++++ b/src/util/configuration.c
+@@ -499,7 +499,7 @@
+     GNUNET_free (fn);
+     GNUNET_free (cfg_buf);
+     LOG (GNUNET_ERROR_TYPE_WARNING,
+-	 "Writing configration to file: %s failed\n", filename);
++	 "Writing configuration to file: %s failed\n", filename);
+     cfg->dirty = GNUNET_SYSERR; /* last write failed */
+     return GNUNET_SYSERR;
+   }
+--- a/src/include/gnunet_consensus_service.h
++++ b/src/include/gnunet_consensus_service.h
+@@ -43,7 +43,7 @@
+ 
+ 
+ /**
+- * Called when a new element was received from another peer, or an error occured.
++ * Called when a new element was received from another peer, or an error occurred.
+  * May deliver duplicate values.
+  * Elements given to a consensus operation by the local peer are NOT given
+  * to this callback.
+--- a/src/include/gnunet_transport_service.h
++++ b/src/include/gnunet_transport_service.h
+@@ -200,7 +200,7 @@
+   /**
+    * Timeout for validation entry
+    *
+-   * A timeout occured during the validation process
++   * A timeout occurred during the validation process
+    */
+   GNUNET_TRANSPORT_VS_TIMEOUT,
+ 
+--- a/src/namestore/namestore_api.c
++++ b/src/namestore/namestore_api.c
+@@ -454,7 +454,7 @@
+   {
+   case GNUNET_SYSERR:
+     LOG (GNUNET_ERROR_TYPE_DEBUG,
+-	 "An error occured during zone to name operation\n");
++	 "An error occurred during zone to name operation\n");
+     break;
+   case GNUNET_NO:
+     LOG (GNUNET_ERROR_TYPE_DEBUG,
