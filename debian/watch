@@ -1,2 +1,2 @@
 version=3
-opts=pgpsigurlmangle=s/$/.sig/ ftp://ftp.gnu.org/gnu/gnunet/gnunet-(\d.+).tar.gz
+opts=pgpsigurlmangle=s/$/.sig/ https://ftp.gnu.org/gnu/gnunet/gnunet-(\d.+).tar.gz
