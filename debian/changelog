@@ -1,3 +1,17 @@
+gnunet (0.10.1-5) unstable; urgency=medium
+
+  * Migrate from a manual "-dbg" package to an automatic generated debug symbol
+    package:
+    + debian/control: remove gnunet-dbg.
+    + debian/rules: use --dbgsym-migration in override_dh_strip.
+  * Standards-version: 4.1.1.
+  * debian/gnunet.postinst: remove rm_conffile for old config files from before
+    oldstable.
+  * Use https instead of ftp in debian/watch.
+  * Fix more typos in debian/patches/typos.diff.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sun, 22 Oct 2017 11:56:03 +0200
+
 gnunet (0.10.1-4) unstable; urgency=medium
 
   * Use my @debian.org address for the maintainer field and in debian/copyright.
