@@ -49,7 +49,7 @@ override_dh_install-arch: debian/gnunet.init
 		lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so
 
 override_dh_strip:
-	dh_strip --dbg-package=gnunet-dbg
+	dh_strip --dbgsym-migration='gnunet-dbg (<< 0.10.1-5~)'
 
 override_dh_auto_clean:
 	dh_auto_clean
