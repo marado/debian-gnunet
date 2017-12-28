@@ -10,7 +10,7 @@ Build-Depends:
  libmagick-dev, libmpeg2-4-dev, libmp4v2-dev, librpm-dev, libsmf-dev,
  libtidy-dev, libtiff-dev, libvorbis-dev, libogg-dev, zlib1g-dev, texinfo,
  libmagic-dev, libavresample-dev
-Standards-Version: 4.1.1
+Standards-Version: 4.1.3
 Vcs-Git: https://anonscm.debian.org/git/collab-maint/libextractor.git
 Vcs-browser: https://anonscm.debian.org/git/collab-maint/libextractor.git
 Homepage: http://www.gnu.org/software/libextractor/
