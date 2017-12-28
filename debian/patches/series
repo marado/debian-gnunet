@@ -1,1 +1,3 @@
 update_old_m4_macro.patch
+CVE-2017-15922.patch
+CVE-2017-17440.patch
