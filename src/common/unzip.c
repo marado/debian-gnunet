@@ -1347,7 +1347,7 @@ ec_read_file_func (voidpf opaque,
     {
       ret = ec->read (ec->cls,
 		      &ptr,
-		      size);
+		      size - done);
       if (ret <= 0)
 	return done;
       memcpy (buf + done, ptr, ret);

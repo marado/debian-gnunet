@@ -217,7 +217,7 @@ struct InProcessContext
   EXTRACTOR_MetaDataProcessor proc;
 
   /**
-   * Closure for 'proc'.
+   * Closure for @e proc.
    */
   void *proc_cls;
 
@@ -234,15 +234,14 @@ struct InProcessContext
 
 
 /**
- * Obtain a pointer to up to 'size' bytes of data from the file to process.
+ * Obtain a pointer to up to @a size bytes of data from the file to process.
  * Callback used for in-process plugins.
  *
- * @param cls a 'struct InProcessContext'
+ * @param cls a `struct InProcessContext`
  * @param data pointer to set to the file data, set to NULL on error
  * @param size maximum number of bytes requested
- * @return number of bytes now available in data (can be smaller than 'size'),
+ * @return number of bytes now available in data (can be smaller than @a size),
  *         -1 on error
- *
  */
 static ssize_t
 in_process_read (void *cls,
@@ -268,7 +267,7 @@ in_process_read (void *cls,
 
 
 /**
- * Seek in the file.  Use 'SEEK_CUR' for whence and 'pos' of 0 to
+ * Seek in the file.  Use 'SEEK_CUR' for @a whence and @a pos of 0 to
  * obtain the current position in the file.
  * Callback used for in-process plugins.
  *

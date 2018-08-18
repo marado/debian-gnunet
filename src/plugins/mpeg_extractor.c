@@ -42,7 +42,7 @@
  *
  * @param ec extraction context provided to the plugin
  */
-void 
+void
 EXTRACTOR_mpeg_extract_method (struct EXTRACTOR_ExtractContext *ec)
 {
   mpeg2dec_t *handle;
@@ -51,10 +51,19 @@ EXTRACTOR_mpeg_extract_method (struct EXTRACTOR_ExtractContext *ec)
   ssize_t avail;
   mpeg2_state_t state;
   char format[256];
+  char lformat[256];
   char gop_format[256];
   int have_gop;
   uint64_t fsize;
   unsigned int fail_count;
+  int did_seek;
+  int fmt1;
+  int fmt2;
+  int mime;
+  int fpal;
+  int fntsc;
+  int fsecam;
+  int fmac;
 
   if (NULL == (handle = mpeg2_init ()))
     return;
@@ -63,10 +72,19 @@ EXTRACTOR_mpeg_extract_method (struct EXTRACTOR_ExtractContext *ec)
       mpeg2_close (handle);
       return;
     }
-  fsize = ec->get_size (ec->cls);  
+  fsize = ec->get_size (ec->cls);
   buf = NULL;
   have_gop = 0;
   fail_count = 0;
+  did_seek = 0;
+  fmt1 = 0;
+  fmt2 = 0;
+  mime = 0;
+  fpal = 0;
+  fntsc = 0;
+  fsecam = 0;
+  fmac = 0;
+  lformat[0] = '\0';
   while (1)
     {
       state = mpeg2_parse (handle);
@@ -86,36 +104,76 @@ EXTRACTOR_mpeg_extract_method (struct EXTRACTOR_ExtractContext *ec)
 	  fail_count = 0;
 	  format[0] = fsize;
 	  format[0]++;
-	  ADD ("video/mpeg", EXTRACTOR_METATYPE_MIMETYPE);
-	  snprintf (format, 
+          if (0 == mime)
+          {
+            mime = 1;
+            ADD ("video/mpeg", EXTRACTOR_METATYPE_MIMETYPE);
+          }
+	  snprintf (format,
 		    sizeof(format), "%ux%u",
 		    info->sequence->width, info->sequence->height);
-	  ADD (format, EXTRACTOR_METATYPE_IMAGE_DIMENSIONS);
+          if (0 != strcmp (lformat,
+                           format))
+          {
+            strcpy (lformat,
+                    format);
+            ADD (format, EXTRACTOR_METATYPE_IMAGE_DIMENSIONS);
+          }
 	  switch (info->sequence->flags & SEQ_VIDEO_FORMAT_UNSPECIFIED)
 	    {
 	    case SEQ_VIDEO_FORMAT_PAL:
-	      ADD ("PAL", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              if (0 == fpal)
+              {
+                fpal = 1;
+                ADD ("PAL", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              }
 	      break;
 	    case SEQ_VIDEO_FORMAT_NTSC:
-	      ADD ("NTSC", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              if (0 == fntsc)
+              {
+                fntsc = 1;
+                ADD ("NTSC", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              }
 	      break;
 	    case SEQ_VIDEO_FORMAT_SECAM:
-	      ADD ("SECAM", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              if (0 == fsecam)
+              {
+                fsecam = 1;
+                ADD ("SECAM", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              }
 	      break;
 	    case SEQ_VIDEO_FORMAT_MAC:
-	      ADD ("MAC", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              if (0 == fmac)
+              {
+                fmac = 1;
+                ADD ("MAC", EXTRACTOR_METATYPE_BROADCAST_TELEVISION_SYSTEM);
+              }
 	      break;
 	    default:
 	      break;
 	    }
 	  if ((info->sequence->flags & SEQ_FLAG_MPEG2) > 0)
-	    ADD ("MPEG2", EXTRACTOR_METATYPE_FORMAT_VERSION);
+          {
+            if (0 == fmt1)
+            {
+              fmt1 = 1;
+              ADD ("MPEG2", EXTRACTOR_METATYPE_FORMAT_VERSION);
+            }
+          }
 	  else
-	    ADD ("MPEG1", EXTRACTOR_METATYPE_FORMAT_VERSION);
-	  if ( (fsize != -1) &&
+          {
+            if (0 == fmt2)
+            {
+              fmt2 = 1;
+              ADD ("MPEG1", EXTRACTOR_METATYPE_FORMAT_VERSION);
+            }
+          }
+	  if ( (0 == did_seek) &&
+               (fsize != -1) &&
 	       (fsize > 1024 * 256 * 2) )
 	    {
 	      /* skip to the end of the mpeg for speed */
+              did_seek = 1;
 	      ec->seek (ec->cls,
 			fsize - 256 * 1024,
 			SEEK_SET);
@@ -126,10 +184,12 @@ EXTRACTOR_mpeg_extract_method (struct EXTRACTOR_ExtractContext *ec)
 	  if ( (NULL != info->gop) &&
 	       (0 != info->gop->pictures) )
 	    {
-	      snprintf (gop_format, 
+	      snprintf (gop_format,
 			sizeof (gop_format),
 			"%02u:%02u:%02u (%u frames)",
-			info->gop->hours, info->gop->minutes, info->gop->seconds,
+			info->gop->hours,
+                        info->gop->minutes,
+                        info->gop->seconds,
 			info->gop->pictures);
 	      have_gop = 1;
 	    }
@@ -148,7 +208,7 @@ EXTRACTOR_mpeg_extract_method (struct EXTRACTOR_ExtractContext *ec)
     }
  EXIT:
   if (1 == have_gop)
-    ADD (gop_format, EXTRACTOR_METATYPE_DURATION);    
+    ADD (gop_format, EXTRACTOR_METATYPE_DURATION);
   mpeg2_close (handle);
 }
 

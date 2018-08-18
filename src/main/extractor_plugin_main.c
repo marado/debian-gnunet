@@ -50,7 +50,7 @@
 /**
  * Closure we use for processing requests inside the helper process.
  */
-struct ProcessingContext 
+struct ProcessingContext
 {
   /**
    * Our plugin handle.
@@ -81,7 +81,7 @@ struct ProcessingContext
    * Handle to the shared memory.
    */
   SHM_ID shm_id;
-  
+
   /**
    * Size of the shared memory map.
    */
@@ -96,10 +96,10 @@ struct ProcessingContext
    * Input stream.
    */
   int in;
-  
+
   /**
    * Output stream.
-   */ 
+   */
   int out;
 };
 
@@ -116,7 +116,7 @@ struct ProcessingContext
  */
 static int64_t
 plugin_env_seek (void *cls,
-		 int64_t pos, 
+		 int64_t pos,
 		 int whence)
 {
   struct ProcessingContext *pc = cls;
@@ -205,7 +205,7 @@ plugin_env_seek (void *cls,
 	   pc->plugin->short_libname);
       return -1;
     }
-  if (MESSAGE_UPDATED_SHM != reply)    
+  if (MESSAGE_UPDATED_SHM != reply)
     {
       LOG ("Unexpected reply %d to seek\n", reply);
       return -1; /* was likely a MESSAGE_DISCARD_STATE */
@@ -243,31 +243,32 @@ plugin_env_seek (void *cls,
 
 
 /**
- * Fills 'data' with a pointer to the data buffer.
+ * Fills @a data with a pointer to the data buffer.
  *
  * @param plugin plugin context
  * @param data location to store data pointer
  * @param count number of bytes to read
- * @return number of bytes (<= count) avalable in 'data', -1 on error
+ * @return number of bytes (<= count) avalable in @a data, -1 on error
  */
 static ssize_t
 plugin_env_read (void *cls,
-		 void **data, size_t count)
+		 void **data,
+                 size_t count)
 {
   struct ProcessingContext *pc = cls;
   unsigned char *dp;
-  
+
   *data = NULL;
   if ( (count + pc->read_position > pc->file_size) ||
        (count + pc->read_position < pc->read_position) )
     count = pc->file_size - pc->read_position;
-  if ((((pc->read_position >= pc->shm_off + pc->shm_ready_bytes) &&
-      (pc->read_position < pc->file_size)) ||
-      (pc->read_position < pc->shm_off)) &&
-      (-1 == plugin_env_seek (pc, pc->read_position, SEEK_SET)))
+  if ( ( ( (pc->read_position >= pc->shm_off + pc->shm_ready_bytes) &&
+           (pc->read_position < pc->file_size)) ||
+         (pc->read_position < pc->shm_off) ) &&
+       (-1 == plugin_env_seek (pc, pc->read_position, SEEK_SET) ) )
     {
       LOG ("Failed to seek to satisfy read\n");
-      return -1; 
+      return -1;
     }
   if (pc->read_position + count > pc->shm_off + pc->shm_ready_bytes)
     count = pc->shm_off + pc->shm_ready_bytes - pc->read_position;
@@ -303,13 +304,13 @@ plugin_env_get_size (void *cls)
  *        used in the main libextractor library and yielding
  *        meta data).
  * @param type libextractor-type describing the meta data
- * @param format basic format information about data 
+ * @param format basic format information about data
  * @param data_mime_type mime-type of data (not of the original file);
  *        can be NULL (if mime-type is not known)
  * @param data actual meta-data found
  * @param data_len number of bytes in data
  * @return 0 to continue extracting, 1 to abort (transmission error)
- */ 
+ */
 static int
 plugin_env_send_proc (void *cls,
 		      const char *plugin_name,
@@ -338,14 +339,14 @@ plugin_env_send_proc (void *cls,
   mm.meta_format = (uint16_t) format;
   mm.mime_length = (uint16_t) mime_len;
   mm.value_size = (uint32_t) data_len;
-  if ( (sizeof (mm) != 
+  if ( (sizeof (mm) !=
 	EXTRACTOR_write_all_ (pc->out,
 			      &mm, sizeof (mm))) ||
        (mime_len !=
-	EXTRACTOR_write_all_ (pc->out, 
+	EXTRACTOR_write_all_ (pc->out,
 			      data_mime_type, mime_len)) ||
        (data_len !=
-	EXTRACTOR_write_all_ (pc->out, 
+	EXTRACTOR_write_all_ (pc->out,
 			      data, data_len)) )
     {
       LOG ("Failed to send meta message\n");
@@ -401,7 +402,7 @@ handle_init_message (struct ProcessingContext *pc)
   {
     char shm_name[init.shm_name_length + 1];
 
-    if (init.shm_name_length 
+    if (init.shm_name_length
 	!= EXTRACTOR_read_all_ (pc->in,
 		     shm_name,
 		     init.shm_name_length))
@@ -505,7 +506,7 @@ handle_start_message (struct ProcessingContext *pc)
  * input pipe and acts on it.
  *
  * @param pc processing context
- */ 
+ */
 static void
 process_requests (struct ProcessingContext *pc)
 {
@@ -596,7 +597,7 @@ open_dev_null (int target_fd,
  * @param out stream to write to
  */
 void
-EXTRACTOR_plugin_main_ (struct EXTRACTOR_PluginList *plugin, 
+EXTRACTOR_plugin_main_ (struct EXTRACTOR_PluginList *plugin,
 			int in, int out)
 {
   struct ProcessingContext pc;
@@ -604,11 +605,11 @@ EXTRACTOR_plugin_main_ (struct EXTRACTOR_PluginList *plugin,
   if (0 != EXTRACTOR_plugin_load_ (plugin))
     {
 #if DEBUG
-      fprintf (stderr, "Plugin `%s' failed to load!\n", 
+      fprintf (stderr, "Plugin `%s' failed to load!\n",
 	       plugin->short_libname);
 #endif
       return;
-    }  
+    }
   if ( (NULL != plugin->specials) &&
        (NULL != strstr (plugin->specials, "close-stderr")))
     {
@@ -657,7 +658,7 @@ EXTRACTOR_plugin_main_ (struct EXTRACTOR_PluginList *plugin,
  *
  * @param fd the pipe to read from
  * @return newly allocated plugin context
- */ 
+ */
 static struct EXTRACTOR_PluginList *
 read_plugin_data (int fd)
 {
@@ -713,10 +714,10 @@ read_plugin_data (int fd)
 /**
  * FIXME: document.
  */
-void CALLBACK 
-RundllEntryPoint (HWND hwnd, 
-		  HINSTANCE hinst, 
-		  LPSTR lpszCmdLine, 
+void CALLBACK
+RundllEntryPoint (HWND hwnd,
+		  HINSTANCE hinst,
+		  LPSTR lpszCmdLine,
 		  int nCmdShow)
 {
   struct EXTRACTOR_PluginList *plugin;
@@ -752,10 +753,10 @@ RundllEntryPoint (HWND hwnd,
 /**
  * FIXME: document.
  */
-void CALLBACK 
-RundllEntryPointA (HWND hwnd, 
-		   HINSTANCE hinst, 
-		   LPSTR lpszCmdLine, 
+void CALLBACK
+RundllEntryPointA (HWND hwnd,
+		   HINSTANCE hinst,
+		   LPSTR lpszCmdLine,
 		   int nCmdShow)
 {
   return RundllEntryPoint (hwnd, hinst, lpszCmdLine, nCmdShow);

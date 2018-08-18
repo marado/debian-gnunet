@@ -339,11 +339,14 @@ EXTRACTOR_IPC_channel_create_ (struct EXTRACTOR_PluginList *plugin,
 #if HAVE_APPARMOR
       if (0 > aa_change_profile("libextractor"))
       {
-        if (EINVAL != errno)
-        {
-          fprintf (stderr,
-                   "Failure changing profile: %s",
-                   strerror (errno));
+	int eno = errno;
+	
+        if ( (EINVAL != eno) &&
+	     (ENOENT != eno) )
+	{
+	  fprintf (stderr,
+		   "Failure changing AppArmor profile: %s\n",
+		   strerror (errno));
 	  _exit(1);
 	}
       }

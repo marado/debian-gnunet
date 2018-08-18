@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libextractor 1.0.0-pre1\n"
 "Report-Msgid-Bugs-To: libextractor@gnu.org\n"
-"POT-Creation-Date: 2017-10-15 21:38+0200\n"
+"POT-Creation-Date: 2018-07-12 22:32+0200\n"
 "PO-Revision-Date: 2017-04-29 22:30+0200\n"
 "Last-Translator: Stéphane Aulery <lkppo@free.fr>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -147,7 +147,7 @@ msgstr "%% fichier BiBTeX\n"
 msgid "Keywords for file %s:\n"
 msgstr "Mots-clés pour le fichier %s:\n"
 
-#: src/main/extractor.c:687
+#: src/main/extractor.c:686
 #, c-format
 msgid "Initialization of plugin mechanism failed: %s!\n"
 msgstr "Echec de l’initialisation du module %s !\n"

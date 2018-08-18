@@ -368,6 +368,8 @@ EXTRACTOR_plugin_remove (struct EXTRACTOR_PluginList *prev,
   if ( (NULL != pos->shm) &&
        (0 == EXTRACTOR_IPC_shared_memory_change_rc_ (pos->shm, -1)) )
     EXTRACTOR_IPC_shared_memory_destroy_ (pos->shm);
+  if (NULL != pos->short_libname)
+    free (pos->short_libname);
   if (NULL != pos->libname)
     free (pos->libname);
   free (pos->plugin_options);

@@ -1,7 +1,7 @@
 This is libextractor.info, produced by makeinfo version 6.5 from
 libextractor.texi.
 
-This manual is for GNU libextractor (version 1.6, 9 October 2017), a
+This manual is for GNU libextractor (version 1.7, 20 June 2018), a
 library for metadata extraction.
 
    Copyright (C) 2007, 2010, 2012 Christian Grothoff
@@ -23,7 +23,7 @@ File: libextractor.info,  Node: Top,  Next: Introduction,  Up: (dir)
 The GNU libextractor Reference Manual
 *************************************
 
-This manual is for GNU libextractor (version 1.6, 9 October 2017), a
+This manual is for GNU libextractor (version 1.7, 20 June 2018), a
 library for metadata extraction.
 
    Copyright (C) 2007, 2010, 2012 Christian Grothoff
@@ -1465,25 +1465,25 @@ Index
 
 
 Tag Table:
-Node: Top782
-Node: Introduction2382
-Ref: Introduction-Footnote-14529
-Node: Preparation4594
-Node: Generalities12193
-Node: Extracting meta data15427
-Node: Plugin management16139
-Node: Meta types19810
-Node: Meta formats21222
-Node: Extracting22617
-Node: Language bindings25808
-Node: Utility functions27706
-Node: Utility Constants28031
-Node: Meta data printing28650
-Node: Existing Plugins29191
-Node: Writing new Plugins30202
-Node: Internal utility functions32833
-Node: Reporting bugs35180
-Node: GNU Free Documentation License35553
-Node: Index60708
+Node: Top780
+Node: Introduction2378
+Ref: Introduction-Footnote-14525
+Node: Preparation4590
+Node: Generalities12189
+Node: Extracting meta data15423
+Node: Plugin management16135
+Node: Meta types19806
+Node: Meta formats21218
+Node: Extracting22613
+Node: Language bindings25804
+Node: Utility functions27702
+Node: Utility Constants28027
+Node: Meta data printing28646
+Node: Existing Plugins29187
+Node: Writing new Plugins30198
+Node: Internal utility functions32829
+Node: Reporting bugs35176
+Node: GNU Free Documentation License35549
+Node: Index60704
 
 End Tag Table

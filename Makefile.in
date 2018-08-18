@@ -204,8 +204,8 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/contrib/macosx/Info.plist.in \
 	$(top_srcdir)/contrib/macosx/Pkg-Info.plist.in ABOUT-NLS \
 	AUTHORS COPYING ChangeLog INSTALL NEWS README TODO compile \
-	config.guess config.rpath config.sub depcomp install-sh \
-	ltmain.sh missing
+	config.guess config.rpath config.sub install-sh ltmain.sh \
+	missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)

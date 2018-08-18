@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libextractor-1.0.0-pre1\n"
 "Report-Msgid-Bugs-To: libextractor@gnu.org\n"
-"POT-Creation-Date: 2017-10-15 21:38+0200\n"
+"POT-Creation-Date: 2018-07-12 22:32+0200\n"
 "PO-Revision-Date: 2017-01-05 06:41+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
@@ -140,7 +140,7 @@ msgstr "%% БиБТеКс датотека\n"
 msgid "Keywords for file %s:\n"
 msgstr "Кључне речи за датотеку „%s“:\n"
 
-#: src/main/extractor.c:687
+#: src/main/extractor.c:686
 #, c-format
 msgid "Initialization of plugin mechanism failed: %s!\n"
 msgstr "Покретање механизма прикључка није успело: %s!\n"

@@ -60,8 +60,9 @@ static uint32_t
 nsfeuint (const char *data)
 {
   uint32_t value = 0;
+  int i;
 
-  for (int i = 3; i > 0; i--)
+  for (i = 3; i > 0; i--)
     {
       value += (unsigned char) data[i];
       value *= 0x100;
@@ -175,7 +176,7 @@ info_extract (struct EXTRACTOR_ExtractContext *ec,
 
   if (size < 8)
     return 0;
-  if (size >
+  if ((ssize_t) size >
       ec->read (ec->cls,
 		&data,
 		size))
@@ -243,7 +244,7 @@ tlbl_extract (struct EXTRACTOR_ExtractContext *ec,
   void *data;
   const char *cdata;
 
-  if (size >
+  if ((ssize_t) size >
       ec->read (ec->cls,
 		&data,
 		size))
@@ -285,7 +286,7 @@ auth_extract (struct EXTRACTOR_ExtractContext *ec,
 
   if (left < 1)
     return 0;
-  if (size >
+  if ((ssize_t) size >
       ec->read (ec->cls,
 		&data,
 		size))
@@ -342,7 +343,7 @@ EXTRACTOR_nsfe_extract_method (struct EXTRACTOR_ExtractContext *ec)
   uint32_t chunksize;
   int ret;
 
-  if (sizeof (struct header) >
+  if ((ssize_t) sizeof (struct header) >
       ec->read (ec->cls,
 		&data,
 		sizeof (struct header)))
