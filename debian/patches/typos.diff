@@ -1,157 +1,137 @@
 --- a/po/de.po
 +++ b/po/de.po
-@@ -7243,7 +7243,7 @@
+@@ -2078,7 +2078,7 @@
+ msgstr "Verbindung zum DHT-Dienst ist fehlgeschlagen!\n"
  
- #: src/transport/gnunet-transport.c:438
+ #: src/dht/gnunet-dht-get.c:214
+-msgid "Issueing DHT GET with key"
++msgid "Issuing DHT GET with key"
+ msgstr ""
+ 
+ #: src/dht/gnunet-dht-get.c:243 src/dht/gnunet-dht-monitor.c:302
+@@ -7467,7 +7467,7 @@
+ 
+ #: src/transport/gnunet-transport.c:489
  #, fuzzy
 -msgid "Failed to list connections, timeout occured\n"
 +msgid "Failed to list connections, timeout occurred\n"
- msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden."
+ msgstr "Es konnte keine Verbindung mit gnunetd hergestellt werden.\n"
  
- #: src/transport/gnunet-transport.c:559
-@@ -7372,7 +7372,7 @@
- 
- #: src/transport/gnunet-transport.c:1480
- #, fuzzy
--msgid "print information for all pending validations continously"
-+msgid "print information for all pending validations continuously"
- msgstr "Informationen über andere GNUnet Knoten ausgeben."
- 
- #: src/transport/gnunet-transport.c:1483
+ #: src/transport/gnunet-transport.c:522
 --- a/po/es.po
 +++ b/po/es.po
-@@ -7308,7 +7308,7 @@
+@@ -2168,7 +2168,7 @@
+ msgstr "¡Se produjo un fallo al conectar con el servicio DHT!\n"
+ 
+ #: src/dht/gnunet-dht-get.c:214
+-msgid "Issueing DHT GET with key"
++msgid "Issuing DHT GET with key"
+ msgstr "Enviando un «GET» DHT con clave"
+ 
+ #: src/dht/gnunet-dht-get.c:243 src/dht/gnunet-dht-monitor.c:302
+@@ -7728,7 +7728,7 @@
  # Miguel: La traducción no es literal, pero me parece más correcta
  # en castellano.
- #: src/transport/gnunet-transport.c:438
+ #: src/transport/gnunet-transport.c:489
 -msgid "Failed to list connections, timeout occured\n"
 +msgid "Failed to list connections, timeout occurred\n"
  msgstr "No se pudieron listar las conexiones, expiró el plazo\n"
  
- #: src/transport/gnunet-transport.c:559
-@@ -7444,7 +7444,7 @@
- # Miguel: ¿Quizá continuamente fuese mejor?
- #: src/transport/gnunet-transport.c:1480
- #, fuzzy
--msgid "print information for all pending validations continously"
-+msgid "print information for all pending validations continuously"
- msgstr ""
- "provee información sobre todas las conexiones actuales (de forma continua)"
- 
+ #: src/transport/gnunet-transport.c:522
 --- a/po/gnunet.pot
 +++ b/po/gnunet.pot
-@@ -6800,7 +6800,7 @@
+@@ -7137,7 +7137,7 @@
  msgstr ""
  
- #: src/transport/gnunet-transport.c:438
+ #: src/transport/gnunet-transport.c:489
 -msgid "Failed to list connections, timeout occured\n"
 +msgid "Failed to list connections, timeout occurred\n"
  msgstr ""
  
- #: src/transport/gnunet-transport.c:559
-@@ -6921,7 +6921,7 @@
- msgstr ""
- 
- #: src/transport/gnunet-transport.c:1480
--msgid "print information for all pending validations continously"
-+msgid "print information for all pending validations continuously"
- msgstr ""
- 
- #: src/transport/gnunet-transport.c:1483
+ #: src/transport/gnunet-transport.c:522
 --- a/po/sv.po
 +++ b/po/sv.po
-@@ -7167,7 +7167,7 @@
+@@ -2113,7 +2113,7 @@
+ msgstr "Misslyckades att ansluta till gnunetd.\n"
  
- #: src/transport/gnunet-transport.c:438
+ #: src/dht/gnunet-dht-get.c:214
+-msgid "Issueing DHT GET with key"
++msgid "Issuing DHT GET with key"
+ msgstr ""
+ 
+ #: src/dht/gnunet-dht-get.c:243 src/dht/gnunet-dht-monitor.c:302
+@@ -7542,7 +7542,7 @@
+ 
+ #: src/transport/gnunet-transport.c:489
  #, fuzzy
 -msgid "Failed to list connections, timeout occured\n"
 +msgid "Failed to list connections, timeout occurred\n"
  msgstr "Misslyckades att ansluta till gnunetd.\n"
  
- #: src/transport/gnunet-transport.c:559
-@@ -7296,7 +7296,7 @@
- 
- #: src/transport/gnunet-transport.c:1480
- #, fuzzy
--msgid "print information for all pending validations continously"
-+msgid "print information for all pending validations continuously"
- msgstr "Skriv ut information om GNUnets motparter."
- 
- #: src/transport/gnunet-transport.c:1483
+ #: src/transport/gnunet-transport.c:522
 --- a/po/vi.po
 +++ b/po/vi.po
-@@ -7239,7 +7239,7 @@
+@@ -2135,7 +2135,7 @@
+ msgstr "Lỗi kết nối đến gnunetd.\n"
  
- #: src/transport/gnunet-transport.c:438
+ #: src/dht/gnunet-dht-get.c:214
+-msgid "Issueing DHT GET with key"
++msgid "Issuing DHT GET with key"
+ msgstr ""
+ 
+ #: src/dht/gnunet-dht-get.c:243 src/dht/gnunet-dht-monitor.c:302
+@@ -7605,7 +7605,7 @@
+ 
+ #: src/transport/gnunet-transport.c:489
  #, fuzzy
 -msgid "Failed to list connections, timeout occured\n"
 +msgid "Failed to list connections, timeout occurred\n"
  msgstr "Không kết nối được đến trình nền gnunetd."
  
- #: src/transport/gnunet-transport.c:559
-@@ -7368,7 +7368,7 @@
- 
- #: src/transport/gnunet-transport.c:1480
- #, fuzzy
--msgid "print information for all pending validations continously"
-+msgid "print information for all pending validations continuously"
- msgstr "In ra thông tin về các đồng đẳng GNUnet."
- 
- #: src/transport/gnunet-transport.c:1483
+ #: src/transport/gnunet-transport.c:522
 --- a/po/zh_CN.po
 +++ b/po/zh_CN.po
-@@ -6947,7 +6947,7 @@
+@@ -2055,7 +2055,7 @@
+ msgstr "初始化“%s”服务失败。\n"
  
- #: src/transport/gnunet-transport.c:438
+ #: src/dht/gnunet-dht-get.c:214
+-msgid "Issueing DHT GET with key"
++msgid "Issuing DHT GET with key"
+ msgstr ""
+ 
+ #: src/dht/gnunet-dht-get.c:243 src/dht/gnunet-dht-monitor.c:302
+@@ -7324,7 +7324,7 @@
+ 
+ #: src/transport/gnunet-transport.c:489
  #, fuzzy
 -msgid "Failed to list connections, timeout occured\n"
 +msgid "Failed to list connections, timeout occurred\n"
  msgstr "初始化“%s”服务失败。\n"
  
- #: src/transport/gnunet-transport.c:559
-@@ -7076,7 +7076,7 @@
- 
- #: src/transport/gnunet-transport.c:1480
- #, fuzzy
--msgid "print information for all pending validations continously"
-+msgid "print information for all pending validations continuously"
- msgstr "无法获取有关用户“%s”的信息：%s\n"
- 
- #: src/transport/gnunet-transport.c:1483
+ #: src/transport/gnunet-transport.c:522
 --- a/src/transport/gnunet-transport.c
 +++ b/src/transport/gnunet-transport.c
-@@ -435,7 +435,7 @@
-       GNUNET_free(cur);
- 
+@@ -486,7 +486,7 @@
      }
--    FPRINTF (stdout, "%s", _("Failed to list connections, timeout occured\n") );
-+    FPRINTF (stdout, "%s", _("Failed to list connections, timeout occurred\n") );
-     if (GNUNET_SCHEDULER_NO_TASK != end)
-       GNUNET_SCHEDULER_cancel (end);
-     end = GNUNET_SCHEDULER_add_now (&shutdown_task, NULL );
-@@ -1477,7 +1477,7 @@
-               gettext_noop ("print information for all pending validations "),
-               0, &GNUNET_GETOPT_set_one, &iterate_validation },
-           { 'f', "monitorvalidation", NULL,
--              gettext_noop ("print information for all pending validations continously"),
-+              gettext_noop ("print information for all pending validations continuously"),
-               0, &GNUNET_GETOPT_set_one, &monitor_validation },
-           { 'i', "information", NULL,
-               gettext_noop ("provide information about all current connections (once)"),
---- a/doc/man/gnunet.conf.5
-+++ b/doc/man/gnunet.conf.5
-@@ -76,7 +76,7 @@
- This example is a simple way to get started, using a server that has a known list of peers to get you started. Most users will be behind a firewal on IPv4, as such NAT is enabled.  Please rememeber to change your IP address to the actual external address for your usage.
- .PP
-     [hostlist]
--    OPTIONS = -b
-+    OPTIONS = \-b
-     SERVERS = http://v9.gnunet.org:58080/
- 
-     [arm]
+     FPRINTF (stdout,
+              "%s",
+-             _("Failed to list connections, timeout occured\n"));
++             _("Failed to list connections, timeout occurred\n"));
+     GNUNET_SCHEDULER_shutdown ();
+     ret = 1;
+     return;
 --- a/src/include/gnunet_testbed_service.h
 +++ b/src/include/gnunet_testbed_service.h
-@@ -480,7 +480,7 @@
+@@ -440,7 +440,7 @@
+ 
+ 
+ /**
+- * Starts a controller process at the given host.  The given host's configration
++ * Starts a controller process at the given host.  The given host's configuration
+  * is used as a Template configuration to use for the remote controller; the
+  * remote controller will be started with a slightly modified configuration
+  * (port numbers, unix domain sockets and service home values are changed as per
+@@ -483,7 +483,7 @@
  
  /**
   * Connect to a controller process.  The configuration to use for the connection
@@ -160,31 +140,9 @@
   * GNUNET_TESTBED_controller_start().
   *
   * @param host host to run the controller on; This should be the same host if
---- a/src/mesh/gnunet-mesh.c
-+++ b/src/mesh/gnunet-mesh.c
-@@ -798,7 +798,7 @@
- main (int argc, char *const *argv)
- {
-   int res;
--  const char helpstr[] = "Create channels and retreive info about meshs status.";
-+  const char helpstr[] = "Create channels and retrieve info about meshs status.";
-   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
- //     {'a', "channel", "TUNNEL_ID:CHANNEL_ID",
- //      gettext_noop ("provide information about a particular channel"),
---- a/src/util/configuration.c
-+++ b/src/util/configuration.c
-@@ -499,7 +499,7 @@
-     GNUNET_free (fn);
-     GNUNET_free (cfg_buf);
-     LOG (GNUNET_ERROR_TYPE_WARNING,
--	 "Writing configration to file: %s failed\n", filename);
-+	 "Writing configuration to file: %s failed\n", filename);
-     cfg->dirty = GNUNET_SYSERR; /* last write failed */
-     return GNUNET_SYSERR;
-   }
 --- a/src/include/gnunet_consensus_service.h
 +++ b/src/include/gnunet_consensus_service.h
-@@ -43,7 +43,7 @@
+@@ -50,7 +50,7 @@
  
  
  /**
@@ -193,20 +151,9 @@
   * May deliver duplicate values.
   * Elements given to a consensus operation by the local peer are NOT given
   * to this callback.
---- a/src/include/gnunet_transport_service.h
-+++ b/src/include/gnunet_transport_service.h
-@@ -200,7 +200,7 @@
-   /**
-    * Timeout for validation entry
-    *
--   * A timeout occured during the validation process
-+   * A timeout occurred during the validation process
-    */
-   GNUNET_TRANSPORT_VS_TIMEOUT,
- 
 --- a/src/namestore/namestore_api.c
 +++ b/src/namestore/namestore_api.c
-@@ -454,7 +454,7 @@
+@@ -718,7 +718,7 @@
    {
    case GNUNET_SYSERR:
      LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -215,3 +162,137 @@
      break;
    case GNUNET_NO:
      LOG (GNUNET_ERROR_TYPE_DEBUG,
+--- a/src/cadet/gnunet-service-cadet_paths.c
++++ b/src/cadet/gnunet-service-cadet_paths.c
+@@ -351,7 +351,7 @@
+        (off + 1 != cm_ctx->cpath_length) )
+   {
+     LOG (GNUNET_ERROR_TYPE_DEBUG,
+-         "check_match missmatch because path %s is too long (%u vs. %u vs. %u)\n",
++         "check_match mismatch because path %s is too long (%u vs. %u vs. %u)\n",
+          GCPP_2s (path),
+          path->entries_length,
+          off + 1,
+@@ -364,10 +364,10 @@
+                                  i))
+     {
+       LOG (GNUNET_ERROR_TYPE_DEBUG,
+-           "check_match path %s missmatches at offset %u\n",
++           "check_match path %s mismatches at offset %u\n",
+            GCPP_2s (path),
+            i);
+-      return GNUNET_YES; /* missmatch, ignore */
++      return GNUNET_YES; /* mismatch, ignore */
+     }
+   LOG (GNUNET_ERROR_TYPE_DEBUG,
+        "check_match found match with path %s\n",
+--- a/src/cadet/gnunet-service-cadet_tunnels.c
++++ b/src/cadet/gnunet-service-cadet_tunnels.c
+@@ -1980,7 +1980,7 @@
+                               1,
+                               GNUNET_NO);
+     LOG (GNUNET_ERROR_TYPE_WARNING,
+-         "KX AUTH missmatch!\n");
++         "KX AUTH mismatch!\n");
+ #if DEBUG_KX
+     {
+       struct GNUNET_CRYPTO_EcdhePublicKey ephemeral_key;
+--- a/src/dht/gnunet-service-dht_clients.c
++++ b/src/dht/gnunet-service-dht_clients.c
+@@ -1015,7 +1015,7 @@
+        (record->type != frc->type))
+   {
+     LOG (GNUNET_ERROR_TYPE_DEBUG,
+-         "Record type missmatch, not passing request for key %s to local client\n",
++         "Record type mismatch, not passing request for key %s to local client\n",
+          GNUNET_h2s (key));
+     GNUNET_STATISTICS_update (GDS_stats,
+                               gettext_noop
+--- a/src/fs/gnunet-service-fs.c
++++ b/src/fs/gnunet-service-fs.c
+@@ -1229,7 +1229,7 @@
+                                             my_identity))
+   {
+     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+-                "Peer identity missmatch, refusing to start!\n");
++                "Peer identity mismatch, refusing to start!\n");
+     GNUNET_SCHEDULER_shutdown ();
+   }
+ }
+--- a/src/my/my.c
++++ b/src/my/my.c
+@@ -156,7 +156,7 @@
+   if (mysql_stmt_field_count (stmt) != num_fields)
+   {
+     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+-                "Number of fields missmatch between SQL result and result specification\n");
++                "Number of fields mismatch between SQL result and result specification\n");
+     return GNUNET_SYSERR;
+   }
+ 
+--- a/src/namestore/gnunet-zoneimport.c
++++ b/src/namestore/gnunet-zoneimport.c
+@@ -1153,7 +1153,7 @@
+     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                 "DNS ID did not match request, ignoring reply\n");
+     GNUNET_STATISTICS_update (stats,
+-			      "# DNS ID missmatches",
++			      "# DNS ID mismatches",
+ 			      1,
+ 			      GNUNET_NO);
+     return;
+--- a/src/dht/gnunet-dht-get.c
++++ b/src/dht/gnunet-dht-get.c
+@@ -211,7 +211,7 @@
+   GNUNET_CRYPTO_hash (query_key, strlen (query_key), &key);
+   if (verbose)
+     FPRINTF (stderr, "%s `%s' \n",
+-             _("Issueing DHT GET with key"),
++             _("Issuing DHT GET with key"),
+              GNUNET_h2s_full (&key));
+   GNUNET_SCHEDULER_add_shutdown (&cleanup_task, NULL);
+   tt = GNUNET_SCHEDULER_add_delayed (timeout_request,
+--- a/po/fr.po
++++ b/po/fr.po
+@@ -2014,7 +2014,7 @@
+ msgstr ""
+ 
+ #: src/dht/gnunet-dht-get.c:214
+-msgid "Issueing DHT GET with key"
++msgid "Issuing DHT GET with key"
+ msgstr ""
+ 
+ #: src/dht/gnunet-dht-get.c:243 src/dht/gnunet-dht-monitor.c:302
+--- a/src/testbed/testbed.h
++++ b/src/testbed/testbed.h
+@@ -98,7 +98,7 @@
+   /* followed by non 0-terminated host name */
+ 
+   /* followed by gzip compressed configuration to start or connect to a
+-     controller on this host.  While starting the controller this configration
++     controller on this host.  While starting the controller this configuration
+      is used as a template */
+ 
+ };
+--- a/src/testbed/testbed_api_hosts.c
++++ b/src/testbed/testbed_api_hosts.c
+@@ -1038,7 +1038,7 @@
+ 
+ 
+ /**
+- * Starts a controller process at the given host.  The given host's configration
++ * Starts a controller process at the given host.  The given host's configuration
+  * is used as a Template configuration to use for the remote controller; the
+  * remote controller will be started with a slightly modified configuration
+  * (port numbers, unix domain sockets and service home values are changed as per
+--- a/src/util/configuration.c
++++ b/src/util/configuration.c
+@@ -519,7 +519,7 @@
+     GNUNET_free (fn);
+     GNUNET_free (cfg_buf);
+     LOG (GNUNET_ERROR_TYPE_WARNING,
+-	 "Writing configration to file `%s' failed\n",
++	 "Writing configuration to file `%s' failed\n",
+          filename);
+     cfg->dirty = GNUNET_SYSERR; /* last write failed */
+     return GNUNET_SYSERR;
