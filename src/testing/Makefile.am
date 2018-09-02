@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
@@ -15,13 +16,13 @@ dist_pkgcfg_DATA = \
   testing.conf
 
 lib_LTLIBRARIES = \
-  libgnunettesting.la 
+  libgnunettesting.la
 
 libgnunettesting_la_SOURCES = \
-  testing.c  
+  testing.c
 libgnunettesting_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/arm/libgnunetarm.la \
+ $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL)
 libgnunettesting_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS) \
@@ -34,13 +35,11 @@ noinst_PROGRAMS = \
  list-keys
 
 gnunet_testing_SOURCES = \
- gnunet-testing.c         
+ gnunet-testing.c
 gnunet_testing_LDADD = \
- $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(GN_LIBINTL)
-gnunet_testing_DEPENDENCIES = \
- libgnunettesting.la
 
 list_keys_SOURCES = \
  list-keys.c
@@ -56,8 +55,8 @@ check_PROGRAMS = \
  test_testing_peerstartup2 \
  test_testing_sharedservices
 
-if ENABLE_TEST_RUN 
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = \
  test_testing_portreservation \
  test_testing_peerstartup \
@@ -68,33 +67,32 @@ endif
 test_testing_portreservation_SOURCES = \
  test_testing_portreservation.c
 test_testing_portreservation_LDADD = \
- $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 test_testing_peerstartup_SOURCES = \
  test_testing_peerstartup.c
 test_testing_peerstartup_LDADD = \
- $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 test_testing_peerstartup2_SOURCES = \
  test_testing_peerstartup2.c
 test_testing_peerstartup2_LDADD = \
- $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 test_testing_servicestartup_SOURCES = \
  test_testing_servicestartup.c
 test_testing_servicestartup_LDADD = \
- $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 test_testing_sharedservices_SOURCES = \
  test_testing_sharedservices.c
 test_testing_sharedservices_LDADD = \
- $(top_builddir)/src/testing/libgnunettesting.la \
+ libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 EXTRA_DIST = \
   test_testing_defaults.conf
-

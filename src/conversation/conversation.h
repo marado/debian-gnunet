@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013-2016 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -37,6 +32,16 @@ extern "C"
 
 
 #define MAX_TRANSMIT_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 60)
+
+
+/**
+ * Highest bit in a 32-bit unsigned integer,
+ * bit set if we are making an outgoing call,
+ * bit unset for local lines.
+ */
+#define HIGH_BIT ((uint32_t) (1LL << 31))
+
+GNUNET_NETWORK_STRUCT_BEGIN
 
 
 /**
@@ -65,9 +70,14 @@ struct ClientPhoneRegisterMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * Phone line to register.
+   * Always zero.
    */
-  uint32_t line GNUNET_PACKED;
+  uint32_t reserved GNUNET_PACKED;
+
+  /**
+   * Phone line / CADET port to register.
+   */
+  struct GNUNET_HashCode line_port;
 };
 
 
@@ -82,8 +92,8 @@ struct ClientPhoneRingMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * CID, internal caller ID to identify which active call we are
-   * talking about.
+   * CID, internal caller ID number used in the future to identify
+   * which active call we are talking about.
    */
   uint32_t cid GNUNET_PACKED;
 
@@ -173,7 +183,7 @@ struct ClientPhoneHangupMessage
 
 
 /**
- * Message Client <->Service to transmit the audio.
+ * Message Client <-> Service to transmit the audio.
  */
 struct ClientAudioMessage
 {
@@ -204,14 +214,19 @@ struct ClientCallMessage
   struct GNUNET_MessageHeader header;
 
   /**
-   * Which phone line to call at the peer?
+   * Always zero.
    */
-  uint32_t line GNUNET_PACKED;
+  uint32_t reserved GNUNET_PACKED;
 
   /**
    * Which peer is hosting the line?
    */
   struct GNUNET_PeerIdentity target;
+
+  /**
+   * Which phone line to call at the peer?
+   */
+  struct GNUNET_HashCode line_port;
 
   /**
    * Identity of the caller.
@@ -231,28 +246,59 @@ struct ClientPhonePickedupMessage
    */
   struct GNUNET_MessageHeader header;
 
+  /**
+   * Call ID of the corresponding
+   * #GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_CALL
+   */
+  uint32_t cid GNUNET_PACKED;
+
 };
 
 
 /**
- * Mesh message for phone is ringing.
+ * Information signed in a `struct CadetPhoneRingMessage`
+ * whereby the caller self-identifies to the receiver.
  */
-struct MeshPhoneRingMessage
+struct CadetPhoneRingInfoPS
 {
   /**
-   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_RING
+   * Purpose for the signature, must be
+   * #GNUNET_SIGNATURE_PURPOSE_CONVERSATION_RING.
+   */
+  struct GNUNET_CRYPTO_EccSignaturePurpose purpose;
+
+  /**
+   * Which port did the call go to?
+   */
+  struct GNUNET_HashCode line_port;
+
+  /**
+   * Which peer is the call for?
+   */
+  struct GNUNET_PeerIdentity target_peer;
+
+  /**
+   * When does the signature expire?
+   */
+  struct GNUNET_TIME_AbsoluteNBO expiration_time;
+};
+
+
+/**
+ * Cadet message to make a phone ring.  Sent to the port
+ * of the respective phone.
+ */
+struct CadetPhoneRingMessage
+{
+  /**
+   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_RING
    */
   struct GNUNET_MessageHeader header;
 
   /**
-   * Desired target line.
+   * Always zero.
    */
-  uint32_t remote_line GNUNET_PACKED;
-
-  /**
-   * Purpose for the signature.
-   */
-  struct GNUNET_CRYPTO_EccSignaturePurpose purpose;
+  uint32_t reserved GNUNET_PACKED;
 
   /**
    * Who is calling us? (also who is signing).
@@ -260,40 +306,25 @@ struct MeshPhoneRingMessage
   struct GNUNET_CRYPTO_EcdsaPublicKey caller_id;
 
   /**
-   * Who are we calling?
-   */
-  struct GNUNET_PeerIdentity target;
-
-  /**
-   * From where are we calling?
-   */
-  struct GNUNET_PeerIdentity source;
-
-  /**
    * When does the signature expire?
    */
   struct GNUNET_TIME_AbsoluteNBO expiration_time;
 
   /**
-   * Signature on the above.
+   * Signature over a `struct CadetPhoneRingInfoPS`
    */
   struct GNUNET_CRYPTO_EcdsaSignature signature;
 
-  /**
-   * Source line for audio data in the other direction.
-   */
-  uint32_t source_line GNUNET_PACKED;
-
 };
 
 
 /**
- * Mesh message for hanging up.
+ * Cadet message for hanging up.
  */
-struct MeshPhoneHangupMessage
+struct CadetPhoneHangupMessage
 {
   /**
-   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_HANG_UP
+   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_HANG_UP
    */
   struct GNUNET_MessageHeader header;
 
@@ -301,12 +332,12 @@ struct MeshPhoneHangupMessage
 
 
 /**
- * Mesh message for picking up.
+ * Cadet message for picking up.
  */
-struct MeshPhonePickupMessage
+struct CadetPhonePickupMessage
 {
   /**
-   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_PICK_UP
+   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_PICK_UP
    */
   struct GNUNET_MessageHeader header;
 
@@ -314,12 +345,12 @@ struct MeshPhonePickupMessage
 
 
 /**
- * Mesh message for phone suspended.
+ * Cadet message for phone suspended.
  */
-struct MeshPhoneSuspendMessage
+struct CadetPhoneSuspendMessage
 {
   /**
-   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_SUSPEND
+   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_SUSPEND
    */
   struct GNUNET_MessageHeader header;
 
@@ -327,12 +358,12 @@ struct MeshPhoneSuspendMessage
 
 
 /**
- * Mesh message for phone resumed.
+ * Cadet message for phone resumed.
  */
-struct MeshPhoneResumeMessage
+struct CadetPhoneResumeMessage
 {
   /**
-   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_PHONE_RESUME
+   * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_RESUME
    */
   struct GNUNET_MessageHeader header;
 
@@ -340,29 +371,21 @@ struct MeshPhoneResumeMessage
 
 
 /**
- * Mesh message to transmit the audio.
+ * Cadet message to transmit the audio.
  */
-struct MeshAudioMessage
+struct CadetAudioMessage
 {
   /**
-   * Type is #GNUNET_MESSAGE_TYPE_CONVERSATION_MESH_AUDIO
+   * Type is #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_AUDIO
    */
   struct GNUNET_MessageHeader header;
-
-  /**
-   * Target line on the receiving end.
-   */
-  uint32_t remote_line GNUNET_PACKED;
-
-  /**
-   * The source line sending this data
-   */
-  uint32_t source_line GNUNET_PACKED;
 
   /* followed by audio data */
 
 };
 
+
+GNUNET_NETWORK_STRUCT_END
 
 
 #if 0				/* keep Emacsens' auto-indent happy */

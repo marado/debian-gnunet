@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2007, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2004, 2005, 2007, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -29,7 +24,7 @@
 #include "gnunet_protocols.h"
 #include "peerinfo.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "nse-api",__VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "peerinfo-api",__VA_ARGS__)
 
 /**
  * Context for the info handler.
@@ -40,7 +35,7 @@ struct GNUNET_PEERINFO_NotifyContext
   /**
    * Our connection to the PEERINFO service.
    */
-  struct GNUNET_CLIENT_Connection *client;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * Function to call with information.
@@ -48,15 +43,9 @@ struct GNUNET_PEERINFO_NotifyContext
   GNUNET_PEERINFO_Processor callback;
 
   /**
-   * Closure for callback.
+   * Closure for @e callback.
    */
   void *callback_cls;
-
-  /**
-   * Handle to our initial request for message transmission to
-   * the peerinfo service.
-   */
-  struct GNUNET_CLIENT_TransmitHandle *init;
 
   /**
    * Configuration.
@@ -66,176 +55,170 @@ struct GNUNET_PEERINFO_NotifyContext
   /**
    * Tasked used for delayed re-connection attempt.
    */
-  GNUNET_SCHEDULER_TaskIdentifier task;
+  struct GNUNET_SCHEDULER_Task *task;
 
   /**
    * Include friend only HELLOs in callbacks
    */
-
   int include_friend_only;
 };
 
 
 /**
- * Send a request to the peerinfo service to start being
- * notified about all changes to peer information.
- *
- * @param nc our context
- */
-static void
-request_notifications (struct GNUNET_PEERINFO_NotifyContext *nc);
-
-
-/**
- * Read notifications from the client handle and pass them
- * to the callback.
- *
- * @param nc our context
- */
-static void
-receive_notifications (struct GNUNET_PEERINFO_NotifyContext *nc);
-
-
-/**
  * Task to re-try connecting to peerinfo.
  *
- * @param cls the 'struct GNUNET_PEERINFO_NotifyContext'
- * @param tc scheduler context
+ * @param cls the `struct GNUNET_PEERINFO_NotifyContext *`
  */
 static void
-reconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
-{
-  struct GNUNET_PEERINFO_NotifyContext *nc = cls;
+reconnect (void *cls);
 
-  nc->task = GNUNET_SCHEDULER_NO_TASK;
-  nc->client = GNUNET_CLIENT_connect ("peerinfo", nc->cfg);
-  if (NULL == nc->client)
-  {
-    /* ugh */
-    nc->task =
-        GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS, &reconnect, nc);
-    return;
-  }
-  request_notifications (nc);
+
+/**
+ * We encountered an error, reconnect to the service.
+ *
+ * @param nc context to reconnect
+ */
+static void
+do_reconnect (struct GNUNET_PEERINFO_NotifyContext *nc)
+{
+  GNUNET_MQ_destroy (nc->mq);
+  nc->mq = NULL;
+  nc->task = GNUNET_SCHEDULER_add_now (&reconnect,
+                                       nc);
 }
 
 
 /**
- * Receive a peerinfo information message, process it and
- * go for more.
+ * We got a disconnect after asking regex to do the announcement.
+ * Retry.
+ *
+ * @param cls the `struct GNUNET_PEERINFO_NotifyContext` to retry
+ * @param error error code
+ */
+static void
+mq_error_handler (void *cls,
+                  enum GNUNET_MQ_Error error)
+{
+  struct GNUNET_PEERINFO_NotifyContext *nc = cls;
+
+  do_reconnect (nc);
+}
+
+
+/**
+ * Check that a peerinfo information message is well-formed.
+ *
+ * @param cls closure
+ * @param im message received
+ * @return #GNUNET_OK if the message is well-formed
+ */
+static int
+check_notification (void *cls,
+                    const struct InfoMessage *im)
+{
+  uint16_t ms = ntohs (im->header.size) - sizeof (*im);
+
+  if (ms >= sizeof (struct GNUNET_MessageHeader))
+  {
+    const struct GNUNET_HELLO_Message *hello;
+
+    hello = (const struct GNUNET_HELLO_Message *) &im[1];
+    if (ms != GNUNET_HELLO_size (hello))
+    {
+      GNUNET_break (0);
+      return GNUNET_SYSERR;
+    }
+    return GNUNET_OK;
+  }
+  if (0 != ms)
+  {
+    GNUNET_break (0);
+    return GNUNET_SYSERR;
+  }
+  return GNUNET_OK;  /* odd... */
+}
+
+
+/**
+ * Receive a peerinfo information message, process it.
+ *
+ * @param cls closure
+ * @param im message received
+ */
+static void
+handle_notification (void *cls,
+                     const struct InfoMessage *im)
+{
+  struct GNUNET_PEERINFO_NotifyContext *nc = cls;
+  const struct GNUNET_HELLO_Message *hello;
+  uint16_t ms = ntohs (im->header.size) - sizeof (struct InfoMessage);
+
+  if (0 == ms)
+    return;
+  hello = (const struct GNUNET_HELLO_Message *) &im[1];
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Received information about peer `%s' from peerinfo database\n",
+       GNUNET_i2s (&im->peer));
+  nc->callback (nc->callback_cls,
+                &im->peer,
+                hello,
+                NULL);
+}
+
+
+/**
+ * Type of a function to call when we receive a message from the
+ * service.  Call the iterator with the result and (if applicable)
+ * continue to receive more messages or trigger processing the next
+ * event (if applicable).
  *
  * @param cls closure
  * @param msg message received, NULL on timeout or fatal error
  */
 static void
-process_notification (void *cls, const struct GNUNET_MessageHeader *msg)
+handle_end_iteration (void *cls,
+                      const struct GNUNET_MessageHeader *msg)
 {
-  struct GNUNET_PEERINFO_NotifyContext *nc = cls;
-  const struct InfoMessage *im;
-  const struct GNUNET_HELLO_Message *hello;
-  uint16_t ms;
-
-  if (msg == NULL)
-  {
-    GNUNET_CLIENT_disconnect (nc->client);
-    reconnect (nc, NULL);
-    return;
-  }
-  ms = ntohs (msg->size);
-  if ((ms < sizeof (struct InfoMessage)) ||
-      (ntohs (msg->type) != GNUNET_MESSAGE_TYPE_PEERINFO_INFO))
-  {
-    GNUNET_break (0);
-    GNUNET_CLIENT_disconnect (nc->client);
-    nc->client = GNUNET_CLIENT_connect ("peerinfo", nc->cfg);
-    request_notifications (nc);
-    return;
-  }
-  im = (const struct InfoMessage *) msg;
-  hello = NULL;
-  if (ms > sizeof (struct InfoMessage) + sizeof (struct GNUNET_MessageHeader))
-  {
-    hello = (const struct GNUNET_HELLO_Message *) &im[1];
-    if (ms != sizeof (struct InfoMessage) + GNUNET_HELLO_size (hello))
-    {
-      GNUNET_break (0);
-      GNUNET_CLIENT_disconnect (nc->client);
-      nc->client = GNUNET_CLIENT_connect ("peerinfo", nc->cfg);
-      request_notifications (nc);
-      return;
-    }
-  }
-
-  LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Received information about peer `%s' from peerinfo database\n",
-       GNUNET_i2s (&im->peer));
-  nc->callback (nc->callback_cls, &im->peer, hello, NULL);
-  receive_notifications (nc);
+  /* these are ignored by the notify API */
 }
 
 
 /**
- * Read notifications from the client handle and pass them
- * to the callback.
+ * Task to re-try connecting to peerinfo.
  *
- * @param nc our context
+ * @param cls the `struct GNUNET_PEERINFO_NotifyContext *`
  */
 static void
-receive_notifications (struct GNUNET_PEERINFO_NotifyContext *nc)
-{
-  GNUNET_CLIENT_receive (nc->client, &process_notification, nc,
-                         GNUNET_TIME_UNIT_FOREVER_REL);
-}
-
-
-/**
- * Transmit our init-notify request, start receiving.
- *
- * @param cls closure (our 'struct GNUNET_PEERINFO_NotifyContext')
- * @param size number of bytes available in buf
- * @param buf where the callee should write the message
- * @return number of bytes written to buf
- */
-static size_t
-transmit_notify_request (void *cls, size_t size, void *buf)
+reconnect (void *cls)
 {
   struct GNUNET_PEERINFO_NotifyContext *nc = cls;
-  struct NotifyMessage nm;
+  struct GNUNET_MQ_MessageHandler handlers[] = {
+    GNUNET_MQ_hd_var_size (notification,
+                           GNUNET_MESSAGE_TYPE_PEERINFO_INFO,
+                           struct InfoMessage,
+                           nc),
+    GNUNET_MQ_hd_fixed_size (end_iteration,
+                             GNUNET_MESSAGE_TYPE_PEERINFO_INFO_END,
+                             struct GNUNET_MessageHeader,
+                             nc),
+    GNUNET_MQ_handler_end ()
+  };
+  struct GNUNET_MQ_Envelope *env;
+  struct NotifyMessage *nm;
 
-  nc->init = NULL;
-  if (buf == NULL)
-  {
-    GNUNET_CLIENT_disconnect (nc->client);
-    nc->client = GNUNET_CLIENT_connect ("peerinfo", nc->cfg);
-    request_notifications (nc);
-    return 0;
-  }
-  GNUNET_assert (size >= sizeof (struct NotifyMessage));
-  nm.header.type = htons (GNUNET_MESSAGE_TYPE_PEERINFO_NOTIFY);
-  nm.header.size = htons (sizeof (struct NotifyMessage));
-  nm.include_friend_only = htonl (nc->include_friend_only);
-  memcpy (buf, &nm, sizeof (struct NotifyMessage));
-  receive_notifications (nc);
-  return sizeof (struct NotifyMessage);
-}
-
-
-/**
- * Send a request to the peerinfo service to start being
- * notified about all changes to peer information.
- *
- * @param nc our context
- */
-static void
-request_notifications (struct GNUNET_PEERINFO_NotifyContext *nc)
-{
-  GNUNET_assert (NULL == nc->init);
-  nc->init =
-      GNUNET_CLIENT_notify_transmit_ready (nc->client,
-                                           sizeof (struct NotifyMessage),
-                                           GNUNET_TIME_UNIT_FOREVER_REL,
-                                           GNUNET_YES, &transmit_notify_request,
-                                           nc);
+  nc->task = NULL;
+  nc->mq = GNUNET_CLIENT_connect (nc->cfg,
+                                  "peerinfo",
+                                  handlers,
+                                  &mq_error_handler,
+                                  nc);
+  if (NULL == nc->mq)
+    return;
+  env = GNUNET_MQ_msg (nm,
+                       GNUNET_MESSAGE_TYPE_PEERINFO_NOTIFY);
+  nm->include_friend_only = htonl (nc->include_friend_only);
+  GNUNET_MQ_send (nc->mq,
+                  env);
 }
 
 
@@ -244,38 +227,37 @@ request_notifications (struct GNUNET_PEERINFO_NotifyContext *nc)
  * changes.  Initially calls the given function for all known
  * peers and then only signals changes.
  *
- * If include_friend_only is set to GNUNET_YES peerinfo will include HELLO
+ * If @a include_friend_only is set to #GNUNET_YES peerinfo will include HELLO
  * messages which are intended for friend to friend mode and which do not
  * have to be gossiped. Otherwise these messages are skipped.
  *
  * @param cfg configuration to use
  * @param include_friend_only include HELLO messages for friends only
  * @param callback the method to call for each peer
- * @param callback_cls closure for callback
+ * @param callback_cls closure for @a callback
  * @return NULL on error
  */
 struct GNUNET_PEERINFO_NotifyContext *
 GNUNET_PEERINFO_notify (const struct GNUNET_CONFIGURATION_Handle *cfg,
-												int include_friend_only,
-                        GNUNET_PEERINFO_Processor callback, void *callback_cls)
+                        int include_friend_only,
+                        GNUNET_PEERINFO_Processor callback,
+                        void *callback_cls)
 {
   struct GNUNET_PEERINFO_NotifyContext *nc;
-  struct GNUNET_CLIENT_Connection *client;
 
-  client = GNUNET_CLIENT_connect ("peerinfo", cfg);
-  if (client == NULL)
-  {
-    LOG (GNUNET_ERROR_TYPE_WARNING, _("Could not connect to `%s' service.\n"),
-         "peerinfo");
-    return NULL;
-  }
   nc = GNUNET_new (struct GNUNET_PEERINFO_NotifyContext);
   nc->cfg = cfg;
-  nc->client = client;
   nc->callback = callback;
   nc->callback_cls = callback_cls;
   nc->include_friend_only = include_friend_only;
-  request_notifications (nc);
+  reconnect (nc);
+  if (NULL == nc->mq)
+  {
+    LOG (GNUNET_ERROR_TYPE_WARNING,
+         "Could not connect to PEERINFO service.\n");
+    GNUNET_free (nc);
+    return NULL;
+  }
   return nc;
 }
 
@@ -288,15 +270,16 @@ GNUNET_PEERINFO_notify (const struct GNUNET_CONFIGURATION_Handle *cfg,
 void
 GNUNET_PEERINFO_notify_cancel (struct GNUNET_PEERINFO_NotifyContext *nc)
 {
-  if (NULL != nc->init)
+  if (NULL != nc->mq)
   {
-    GNUNET_CLIENT_notify_transmit_ready_cancel (nc->init);
-    nc->init = NULL;
+    GNUNET_MQ_destroy (nc->mq);
+    nc->mq = NULL;
   }
-  if (NULL != nc->client)
-    GNUNET_CLIENT_disconnect (nc->client);
-  if (GNUNET_SCHEDULER_NO_TASK != nc->task)
+  if (NULL != nc->task)
+  {
     GNUNET_SCHEDULER_cancel (nc->task);
+    nc->task = NULL;
+  }
   GNUNET_free (nc);
 }
 

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2012 Christian Grothoff
+     Copyright (C) 2010, 2012 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
  */
 /**
  * @file vpn/gnunet-helper-vpn-windows.c
@@ -77,7 +72,7 @@
 static boolean privilege_testing = FALSE;
 
 /**
- * Maximum size of a GNUnet message (GNUNET_SERVER_MAX_MESSAGE_SIZE)
+ * Maximum size of a GNUnet message (GNUNET_MAX_MESSAGE_SIZE)
  */
 #define MAX_SIZE 65536
 
@@ -922,7 +917,7 @@ attempt_read_tap (struct io_facility * input_facility,
                 hdr = (struct GNUNET_MessageHeader *) output_facility->buffer;
                 size = input_facility->buffer_size + sizeof (struct GNUNET_MessageHeader);
 
-                memcpy (output_facility->buffer + sizeof (struct GNUNET_MessageHeader),
+                GNUNET_memcpy (output_facility->buffer + sizeof (struct GNUNET_MessageHeader),
                         input_facility->buffer,
                         input_facility->buffer_size);
 
@@ -978,7 +973,7 @@ attempt_read_tap (struct io_facility * input_facility,
                 hdr = (struct GNUNET_MessageHeader *) output_facility->buffer;
                 size = input_facility->buffer_size + sizeof (struct GNUNET_MessageHeader);
 
-                memcpy (output_facility->buffer + sizeof (struct GNUNET_MessageHeader),
+                GNUNET_memcpy (output_facility->buffer + sizeof (struct GNUNET_MessageHeader),
                         input_facility->buffer,
                         input_facility->buffer_size);
 
@@ -1012,7 +1007,7 @@ attempt_read_tap (struct io_facility * input_facility,
       hdr = (struct GNUNET_MessageHeader *) output_facility->buffer;
       size = input_facility->buffer_size + sizeof (struct GNUNET_MessageHeader);
 
-      memcpy (output_facility->buffer + sizeof (struct GNUNET_MessageHeader),
+      GNUNET_memcpy (output_facility->buffer + sizeof (struct GNUNET_MessageHeader),
               input_facility->buffer,
               input_facility->buffer_size);
 
@@ -1105,7 +1100,7 @@ partial_read_iostate_ready:
              * send it our via STDOUT. Is that possible at the moment? */
 
                 /* hand over this buffers content and strip gnunet message header */
-                memcpy (output_facility->buffer,
+                GNUNET_memcpy (output_facility->buffer,
                         input_facility->buffer + sizeof (struct GNUNET_MessageHeader),
                         input_facility->buffer_size - sizeof (struct GNUNET_MessageHeader));
                 output_facility->buffer_size = input_facility->buffer_size - sizeof (struct GNUNET_MessageHeader);
@@ -1169,7 +1164,7 @@ partial_read_iostate_ready:
                  IOSTATE_WAITING == output_facility->facility_state)
                 && input_facility->buffer_size > sizeof(struct GNUNET_MessageHeader))
               { /* hand over this buffers content and strip gnunet message header */
-                memcpy (output_facility->buffer,
+                GNUNET_memcpy (output_facility->buffer,
                         input_facility->buffer + sizeof(struct GNUNET_MessageHeader),
                         input_facility->buffer_size - sizeof(struct GNUNET_MessageHeader));
                 output_facility->buffer_size = input_facility->buffer_size - sizeof(struct GNUNET_MessageHeader);
@@ -1196,7 +1191,7 @@ partial_read_iostate_ready:
       }
       return TRUE;
     case IOSTATE_RESUME: /* Our buffer was filled already but our write facility was busy. */
-      memcpy (output_facility->buffer,
+      GNUNET_memcpy (output_facility->buffer,
               input_facility->buffer + sizeof (struct GNUNET_MessageHeader),
               input_facility->buffer_size - sizeof (struct GNUNET_MessageHeader));
       output_facility->buffer_size = input_facility->buffer_size - sizeof (struct GNUNET_MessageHeader);

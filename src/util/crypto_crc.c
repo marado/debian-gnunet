@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2006 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2004, 2006 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 
      For the actual CRC-32 code:
      Copyright abandoned; this code is in the public domain.
@@ -28,9 +23,9 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_util_lib.h"
+#include "gnunet_crypto_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-crc", __VA_ARGS__)
 
 /* Avoid wasting space on 8-byte longs. */
 #if UINT_MAX >= 0xffffffff
@@ -118,7 +113,7 @@ GNUNET_CRYPTO_crc32_n (const void *buf, size_t len)
  * @param sum current sum, initially 0
  * @param buf buffer to calculate CRC over (must be 16-bit aligned)
  * @param len number of bytes in hdr, must be multiple of 2
- * @return updated crc sum (must be subjected to GNUNET_CRYPTO_crc16_finish to get actual crc16)
+ * @return updated crc sum (must be subjected to #GNUNET_CRYPTO_crc16_finish() to get actual crc16)
  */
 uint32_t
 GNUNET_CRYPTO_crc16_step (uint32_t sum, const void *buf, size_t len)
@@ -133,7 +128,7 @@ GNUNET_CRYPTO_crc16_step (uint32_t sum, const void *buf, size_t len)
 
 
 /**
- * Convert results from GNUNET_CRYPTO_crc16_step to final crc16.
+ * Convert results from #GNUNET_CRYPTO_crc16_step() to final crc16.
  *
  * @param sum cummulative sum
  * @return crc16 value
@@ -164,6 +159,36 @@ GNUNET_CRYPTO_crc16_n (const void *buf, size_t len)
   return GNUNET_CRYPTO_crc16_finish (sum);
 }
 
+
+/**
+ * @ingroup hash
+ * Calculate the checksum of a buffer in one step.
+ *
+ * @param buf buffer to calculate CRC over
+ * @param len number of bytes in @a buf
+ * @return crc8 value
+ */
+uint8_t
+GNUNET_CRYPTO_crc8_n (const void *buf,
+                      size_t len)
+{
+  const uint8_t *data = buf;
+  unsigned int crc = 0;
+  int i;
+  int j;
+
+  for (j = len; 0 != j; j--)
+  {
+    crc ^= (*data++ << 8);
+    for (i = 8; 0 != i; i--)
+    {
+      if (0 != (crc & 0x8000))
+        crc ^= (0x1070 << 3);
+      crc <<= 1;
+    }
+  }
+  return (uint8_t) (crc >> 8);
+}
 
 
 /* end of crypto_crc.c */

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010,2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010,2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -50,13 +45,9 @@
  */
 void
 GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
-                  GNUNET_TRANSPORT_RegisterQuotaNotification register_quota_cb,
-                  GNUNET_TRANSPORT_UnregisterQuotaNotification unregister_quota_cb,
                   GNUNET_TRANSPORT_AddressNotification address_cb,
                   GNUNET_TRANSPORT_SessionStart session_start_cb,
-                  GNUNET_TRANSPORT_SessionEnd session_end_cb,
-                  GNUNET_TRANSPORT_AddressToType address_type_cb,
-                  GNUNET_TRANSPORT_UpdateAddressMetrics metric_update_cb);
+                  GNUNET_TRANSPORT_SessionEnd session_end_cb);
 
 /**
  * Unload all plugins
@@ -98,6 +89,17 @@ GST_plugins_printer_find (const char *name);
  */
 const char *
 GST_plugins_a2s (const struct GNUNET_HELLO_Address *address);
+
+
+/**
+ * Register callback with all plugins to monitor their status.
+ *
+ * @param cb callback to register, NULL to unsubscribe
+ * @param cb_cls closure for @a cb
+ */
+void
+GST_plugins_monitor_subscribe (GNUNET_TRANSPORT_SessionInfoCallback cb,
+			       void *cb_cls);
 
 
 #endif

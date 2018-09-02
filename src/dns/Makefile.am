@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
@@ -20,7 +21,7 @@ pkgcfg_DATA = \
 if LINUX
 HIJACKBIN = gnunet-helper-dns
 install-exec-hook:
-	$(top_srcdir)/src/dns/install-dns-helper.sh $(libexecdir) $(GNUNETDNS_GROUP) $(SUDO_BINARY) || true
+	$(top_srcdir)/src/dns/install-dns-helper.sh $(DESTDIR)$(libexecdir) $(GNUNETDNS_GROUP) $(SUDO_BINARY) || true
 else
 install-exec-hook:
 endif
@@ -34,15 +35,20 @@ libexec_PROGRAMS = \
   gnunet-service-dns $(HIJACKBIN)
 
 noinst_PROGRAMS = \
-  gnunet-dns-monitor gnunet-dns-redirector
+  gnunet-dns-monitor \
+  gnunet-dns-redirector \
+  gnunet-zonewalk
 
 plugin_LTLIBRARIES = \
-  libgnunet_plugin_block_dns.la 
+  libgnunet_plugin_block_dns.la
 
 if LINUX
 check_SCRIPTS = \
  test_gnunet_dns.sh
 endif
+
+check_PROGRAMS = \
+ test_hexcoder
 
 gnunet_helper_dns_SOURCES = \
  gnunet-helper-dns.c
@@ -51,38 +57,38 @@ gnunet_helper_dns_SOURCES = \
 gnunet_dns_monitor_SOURCES = \
  gnunet-dns-monitor.c
 gnunet_dns_monitor_LDADD = \
-  $(top_builddir)/src/dns/libgnunetdnsparser.la \
-  $(top_builddir)/src/dns/libgnunetdns.la \
+  libgnunetdnsparser.la \
+  libgnunetdns.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
-gnunet_dns_monitor_DEPENDENCIES = \
+
+gnunet_zonewalk_SOURCES = \
+ gnunet-zonewalk.c
+gnunet_zonewalk_LDADD = \
   libgnunetdnsparser.la \
-  libgnunetdns.la
+  libgnunetdnsstub.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
 
 gnunet_dns_redirector_SOURCES = \
  gnunet-dns-redirector.c
 gnunet_dns_redirector_LDADD = \
-  $(top_builddir)/src/dns/libgnunetdnsparser.la \
-  $(top_builddir)/src/dns/libgnunetdns.la \
+  libgnunetdnsparser.la \
+  libgnunetdns.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
-gnunet_dns_redirector_DEPENDENCIES = \
-  libgnunetdnsparser.la \
-  libgnunetdns.la
 
 gnunet_service_dns_SOURCES = \
- gnunet-service-dns.c 
+ gnunet-service-dns.c
 gnunet_service_dns_LDADD = \
-  $(top_builddir)/src/dns/libgnunetdnsstub.la \
+  libgnunetdnsstub.la \
   $(top_builddir)/src/tun/libgnunettun.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
-gnunet_service_dns_DEPENDENCIES = \
-  libgnunetdnsstub.la
 
 libgnunetdnsparser_la_SOURCES = \
- dnsparser.c 
+ dnsparser.c
 libgnunetdnsparser_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la $(XLIB) \
   -lidn
@@ -91,8 +97,9 @@ libgnunetdnsparser_la_LDFLAGS = \
   -version-info 1:0:1
 
 libgnunetdnsstub_la_SOURCES = \
- dnsstub.c 
+ dnsstub.c
 libgnunetdnsstub_la_LIBADD = \
+  $(top_builddir)/src/tun/libgnunettun.la \
  $(top_builddir)/src/util/libgnunetutil.la $(XLIB)
 libgnunetdnsstub_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
@@ -109,15 +116,23 @@ libgnunetdns_la_LDFLAGS = \
 libgnunet_plugin_block_dns_la_SOURCES = \
   plugin_block_dns.c
 libgnunet_plugin_block_dns_la_LIBADD = \
+  $(top_builddir)/src/block/libgnunetblockgroup.la \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunet_plugin_block_dns_la_LDFLAGS = \
   $(top_builddir)/src/block/$(GN_PLUGIN_LDFLAGS)
 
 
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = $(check_PROGRAMS)  $(check_SCRIPTS)
 endif
 
 EXTRA_DIST = \
-  $(check_SCRIPTS) 
+  $(check_SCRIPTS)
+
+
+test_hexcoder_SOURCES = \
+ test_hexcoder.c
+test_hexcoder_LDADD = \
+ libgnunetdnsparser.la \
+ $(top_builddir)/src/util/libgnunetutil.la

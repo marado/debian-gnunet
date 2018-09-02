@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -26,10 +21,10 @@
  */
 
 #include "platform.h"
-#include "gnunet_util_lib.h"
+#include "gnunet_crypto_lib.h"
 #include <gcrypt.h>
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-symmetric", __VA_ARGS__)
 
 /**
  * Create a new SessionKey (for symmetric encryption).
@@ -158,7 +153,8 @@ GNUNET_CRYPTO_symmetric_encrypt (const void *block,
  *         this size should be the same as @c size.
  */
 ssize_t
-GNUNET_CRYPTO_symmetric_decrypt (const void *block, size_t size,
+GNUNET_CRYPTO_symmetric_decrypt (const void *block,
+                                 size_t size,
                                  const struct GNUNET_CRYPTO_SymmetricSessionKey *sessionkey,
                                  const struct GNUNET_CRYPTO_SymmetricInitializationVector *iv,
                                  void *result)
@@ -190,8 +186,10 @@ GNUNET_CRYPTO_symmetric_decrypt (const void *block, size_t size,
  */
 void
 GNUNET_CRYPTO_symmetric_derive_iv (struct GNUNET_CRYPTO_SymmetricInitializationVector *iv,
-                             const struct GNUNET_CRYPTO_SymmetricSessionKey *skey,
-                             const void *salt, size_t salt_len, ...)
+                                   const struct GNUNET_CRYPTO_SymmetricSessionKey *skey,
+                                   const void *salt,
+                                   size_t salt_len,
+                                   ...)
 {
   va_list argp;
 
@@ -212,24 +210,32 @@ GNUNET_CRYPTO_symmetric_derive_iv (struct GNUNET_CRYPTO_SymmetricInitializationV
  */
 void
 GNUNET_CRYPTO_symmetric_derive_iv_v (struct GNUNET_CRYPTO_SymmetricInitializationVector *iv,
-                               const struct GNUNET_CRYPTO_SymmetricSessionKey *skey,
-                               const void *salt, size_t salt_len, va_list argp)
+                                     const struct GNUNET_CRYPTO_SymmetricSessionKey *skey,
+                                     const void *salt,
+                                     size_t salt_len,
+                                     va_list argp)
 {
   char aes_salt[salt_len + 4];
   char twofish_salt[salt_len + 4];
 
-  memcpy (aes_salt, salt, salt_len);
-  memcpy (&aes_salt[salt_len], "AES!", 4);
-  memcpy (twofish_salt, salt, salt_len);
-  memcpy (&twofish_salt[salt_len], "FISH", 4);
-  GNUNET_CRYPTO_kdf_v (iv->aes_iv, sizeof (iv->aes_iv),
-                       aes_salt, salt_len + 4,
-                       skey->aes_key, sizeof (skey->aes_key),
+  GNUNET_memcpy (aes_salt, salt, salt_len);
+  GNUNET_memcpy (&aes_salt[salt_len], "AES!", 4);
+  GNUNET_memcpy (twofish_salt, salt, salt_len);
+  GNUNET_memcpy (&twofish_salt[salt_len], "FISH", 4);
+  GNUNET_CRYPTO_kdf_v (iv->aes_iv,
+                       sizeof (iv->aes_iv),
+                       aes_salt,
+                       salt_len + 4,
+                       skey->aes_key,
+                       sizeof (skey->aes_key),
                        argp);
-  GNUNET_CRYPTO_kdf_v (iv->twofish_iv, sizeof (iv->twofish_iv),
-                       twofish_salt, salt_len + 4,
-                       skey->twofish_key, sizeof (skey->twofish_key),
+  GNUNET_CRYPTO_kdf_v (iv->twofish_iv,
+                       sizeof (iv->twofish_iv),
+                       twofish_salt,
+                       salt_len + 4,
+                       skey->twofish_key,
+                       sizeof (skey->twofish_key),
                        argp);
 }
 
-/* end of crypto_aes.c */
+/* end of crypto_symmetric.c */

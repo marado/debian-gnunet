@@ -1,21 +1,16 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
@@ -115,7 +110,7 @@ struct GNUNET_TESTBED_Operation *op9;
 /**
  * The delay task identifier
  */
-GNUNET_SCHEDULER_TaskIdentifier step_task;
+struct GNUNET_SCHEDULER_Task * step_task;
 
 
 /**
@@ -262,13 +257,12 @@ release_cb (void *cls);
  * Task to simulate artificial delay and change the test stage
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-step (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+step (void *cls)
 {
-  GNUNET_assert (GNUNET_SCHEDULER_NO_TASK != step_task);
-  step_task = GNUNET_SCHEDULER_NO_TASK;
+  GNUNET_assert (NULL != step_task);
+  step_task = NULL;
   switch (result)
   {
   case TEST_OP1_STARTED:
@@ -344,28 +338,28 @@ start_cb (void *cls)
   case TEST_INIT:
     GNUNET_assert (&op1 == cls);
     result = TEST_OP1_STARTED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     step_task =
         GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
   case TEST_PAUSE:
     GNUNET_assert (&op2 == cls);
     result = TEST_OP2_STARTED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     step_task =
         GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
   case TEST_OP2_RELEASED:
     GNUNET_assert (&op3 == cls);
     result = TEST_OP3_STARTED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     step_task =
         GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
   case TEST_OP3_RELEASED:
     GNUNET_assert (&op4 == cls);
     result = TEST_OP4_STARTED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     step_task =
         GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
@@ -422,17 +416,17 @@ release_cb (void *cls)
   case TEST_OP2_STARTED:
     GNUNET_assert (&op2 == cls);
     result = TEST_OP2_RELEASED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     break;
   case TEST_OP3_STARTED:
     GNUNET_assert (&op3 == cls);
     result = TEST_OP3_RELEASED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     break;
   case TEST_OP4_STARTED:
     GNUNET_assert (&op4 == cls);
     result = TEST_OP4_RELEASED;
-    GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == step_task);
+    GNUNET_assert (NULL == step_task);
     op5 = GNUNET_TESTBED_operation_create_ (&op5, &start_cb, &release_cb);
     GNUNET_TESTBED_operation_queue_insert2_ (q1, op5, 1);
     GNUNET_TESTBED_operation_begin_wait_ (op5);

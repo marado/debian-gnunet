@@ -1,21 +1,16 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
@@ -202,8 +197,7 @@ GNUNET_TESTBED_host_lookup_by_id_ (uint32_t id)
  */
 struct GNUNET_TESTBED_Host *
 GNUNET_TESTBED_host_create_by_id_ (uint32_t id,
-                                   const struct GNUNET_CONFIGURATION_Handle
-                                   *cfg)
+                                   const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   return GNUNET_TESTBED_host_create_with_id (id, NULL, NULL, cfg, 0);
 }
@@ -395,7 +389,6 @@ GNUNET_TESTBED_hosts_load_from_file (const char *filename,
                                      *cfg,
                                      struct GNUNET_TESTBED_Host ***hosts)
 {
-  //struct GNUNET_TESTBED_Host **host_array;
   struct GNUNET_TESTBED_Host *starting_host;
   char *data;
   char *buf;
@@ -500,8 +493,9 @@ GNUNET_TESTBED_hosts_load_from_file (const char *filename,
   if (NULL == starting_host)
     return 0;
   *hosts = GNUNET_malloc (sizeof (struct GNUNET_TESTBED_Host *) * count);
-  memcpy (*hosts, &host_list[GNUNET_TESTBED_host_get_id_ (starting_host)],
-          sizeof (struct GNUNET_TESTBED_Host *) * count);
+  GNUNET_memcpy (*hosts,
+                 &host_list[GNUNET_TESTBED_host_get_id_ (starting_host)],
+                 sizeof (struct GNUNET_TESTBED_Host *) * count);
   return count;
 }
 
@@ -765,7 +759,7 @@ copy_argv (const char *const *argv)
   for (argp = 0; NULL != argv[argp]; argp++) ;
   argv_dup = GNUNET_malloc (sizeof (char *) * (argp + 1));
   for (argp = 0; NULL != argv[argp]; argp++)
-    argv_dup[argp] = strdup (argv[argp]);
+    argv_dup[argp] = GNUNET_strdup (argv[argp]);
   return argv_dup;
 }
 
@@ -824,7 +818,8 @@ free_argv (char **argv)
  * should not mention `-p' (port) option and destination address as these will
  * be set locally in the function from its parameteres. If the environmental
  * variable is not found then it defaults to `ssh -o BatchMode=yes -o
- * NoHostAuthenticationForLocalhost=yes'
+ * NoHostAuthenticationForLocalhost=yes -o StrictHostkeyChecking=no -o
+ * PasswordAuthentication=noc'
  *
  * @param port the destination port number
  * @param hostname the hostname of the target host
@@ -840,6 +835,10 @@ gen_rsh_args (const char *port, const char *hostname, const char *username)
     "BatchMode=yes",
     "-o",
     "NoHostAuthenticationForLocalhost=yes",
+    "-o",
+    "StrictHostKeyChecking=no",
+    "-o",
+    "PasswordAuthentication=no",
     "%h",
     NULL
   };
@@ -948,10 +947,11 @@ gen_rsh_suffix_args (const char * const *append_args)
  * @param client identification of the client
  * @param message the actual message
  *
- * @return GNUNET_OK on success, GNUNET_SYSERR to stop further processing
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR to stop further processing
  */
 static int
-helper_mst (void *cls, void *client, const struct GNUNET_MessageHeader *message)
+helper_mst (void *cls,
+            const struct GNUNET_MessageHeader *message)
 {
   struct GNUNET_TESTBED_ControllerProc *cp = cls;
   const struct GNUNET_TESTBED_HelperReply *msg;
@@ -978,7 +978,10 @@ helper_mst (void *cls, void *client, const struct GNUNET_MessageHeader *message)
   GNUNET_CONFIGURATION_destroy (cp->host->cfg);
   cp->host->cfg = GNUNET_CONFIGURATION_create ();
   GNUNET_assert (GNUNET_CONFIGURATION_deserialize
-                 (cp->host->cfg, config, config_size, GNUNET_NO));
+                 (cp->host->cfg,
+		  config,
+		  config_size,
+		  NULL));
   GNUNET_free (config);
   if (NULL == (hostname = GNUNET_TESTBED_host_get_hostname (cp->host)))
     hostname = "localhost";
@@ -1239,7 +1242,7 @@ struct GNUNET_TESTBED_HostHabitableCheckHandle
   /**
    * Task id for the habitability check task
    */
-  GNUNET_SCHEDULER_TaskIdentifier habitability_check_task;
+  struct GNUNET_SCHEDULER_Task * habitability_check_task;
 
   /**
    * How long we wait before checking the process status. Should grow
@@ -1254,10 +1257,9 @@ struct GNUNET_TESTBED_HostHabitableCheckHandle
  * Task for checking whether a host is habitable or not
  *
  * @param cls GNUNET_TESTBED_HostHabitableCheckHandle
- * @param tc the scheduler task context
  */
 static void
-habitability_check (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+habitability_check (void *cls)
 {
   struct GNUNET_TESTBED_HostHabitableCheckHandle *h = cls;
   void *cb_cls;
@@ -1267,7 +1269,7 @@ habitability_check (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   enum GNUNET_OS_ProcessStatusType type;
   int ret;
 
-  h->habitability_check_task = GNUNET_SCHEDULER_NO_TASK;
+  h->habitability_check_task = NULL;
   ret = GNUNET_OS_process_status (h->auxp, &type, &code);
   if (GNUNET_SYSERR == ret)
   {
@@ -1383,33 +1385,6 @@ GNUNET_TESTBED_is_host_habitable_cancel (struct
 
 
 /**
- * handle for host registration
- */
-struct GNUNET_TESTBED_HostRegistrationHandle
-{
-  /**
-   * The host being registered
-   */
-  struct GNUNET_TESTBED_Host *host;
-
-  /**
-   * The controller at which this host is being registered
-   */
-  struct GNUNET_TESTBED_Controller *c;
-
-  /**
-   * The Registartion completion callback
-   */
-  GNUNET_TESTBED_HostRegistrationCompletion cc;
-
-  /**
-   * The closure for above callback
-   */
-  void *cc_cls;
-};
-
-
-/**
  * Register a host with the controller
  *
  * @param controller the controller handle
@@ -1479,14 +1454,14 @@ GNUNET_TESTBED_register_host (struct GNUNET_TESTBED_Controller *controller,
   if (NULL != username)
   {
     msg->username_length = htons (username_length);
-    ptr = memcpy (ptr, username, username_length);
+    GNUNET_memcpy (ptr, username, username_length);
     ptr += username_length;
   }
   msg->hostname_length = htons (hostname_length);
-  ptr = memcpy (ptr, hostname, hostname_length);
+  GNUNET_memcpy (ptr, hostname, hostname_length);
   ptr += hostname_length;
   msg->config_size = htons (config_size);
-  ptr = memcpy (ptr, cconfig, cc_size);
+  GNUNET_memcpy (ptr, cconfig, cc_size);
   ptr += cc_size;
   GNUNET_assert ((ptr - (void *) msg) == msg_size);
   GNUNET_free (cconfig);
@@ -1531,63 +1506,6 @@ GNUNET_TESTBED_host_queue_oc_ (struct GNUNET_TESTBED_Host *h,
 {
   GNUNET_TESTBED_operation_queue_insert_
       (h->opq_parallel_overlay_connect_operations, op);
-}
-
-
-/**
- * Handler for GNUNET_MESSAGE_TYPE_TESTBED_ADDHOSTCONFIRM message from
- * controller (testbed service)
- *
- * @param c the controller handler
- * @param msg message received
- * @return GNUNET_YES if we can continue receiving from service; GNUNET_NO if
- *           not
- */
-int
-GNUNET_TESTBED_host_handle_addhostconfirm_ (struct GNUNET_TESTBED_Controller *c,
-                                            const struct
-                                            GNUNET_TESTBED_HostConfirmedMessage
-                                            *msg)
-{
-  struct GNUNET_TESTBED_HostRegistrationHandle *rh;
-  char *emsg;
-  uint16_t msg_size;
-
-  rh = c->rh;
-  if (NULL == rh)
-  {
-    return GNUNET_OK;
-  }
-  if (GNUNET_TESTBED_host_get_id_ (rh->host) != ntohl (msg->host_id))
-  {
-    LOG_DEBUG ("Mismatch in host id's %u, %u of host confirm msg\n",
-               GNUNET_TESTBED_host_get_id_ (rh->host), ntohl (msg->host_id));
-    return GNUNET_OK;
-  }
-  c->rh = NULL;
-  msg_size = ntohs (msg->header.size);
-  if (sizeof (struct GNUNET_TESTBED_HostConfirmedMessage) == msg_size)
-  {
-    LOG_DEBUG ("Host %u successfully registered\n", ntohl (msg->host_id));
-    GNUNET_TESTBED_mark_host_registered_at_ (rh->host, c);
-    rh->cc (rh->cc_cls, NULL);
-    GNUNET_free (rh);
-    return GNUNET_OK;
-  }
-  /* We have an error message */
-  emsg = (char *) &msg[1];
-  if ('\0' !=
-      emsg[msg_size - sizeof (struct GNUNET_TESTBED_HostConfirmedMessage)])
-  {
-    GNUNET_break (0);
-    GNUNET_free (rh);
-    return GNUNET_NO;
-  }
-  LOG (GNUNET_ERROR_TYPE_ERROR, _("Adding host %u failed with error: %s\n"),
-       ntohl (msg->host_id), emsg);
-  rh->cc (rh->cc_cls, emsg);
-  GNUNET_free (rh);
-  return GNUNET_OK;
 }
 
 

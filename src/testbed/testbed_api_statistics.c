@@ -1,21 +1,16 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
@@ -94,7 +89,7 @@ struct GetStatsContext
   /**
    * The task for calling the continuation callback
    */
-  GNUNET_SCHEDULER_TaskIdentifier call_completion_task_id;
+  struct GNUNET_SCHEDULER_Task * call_completion_task_id;
 
   /**
    * The number of peers present in the peers array.  This number also
@@ -128,7 +123,7 @@ struct PeerGetStatsContext
   /**
    * Task to mark the statistics service connect operation as done
    */
-  GNUNET_SCHEDULER_TaskIdentifier op_done_task_id;
+  struct GNUNET_SCHEDULER_Task * op_done_task_id;
 
   /**
    * The index of this peer in the peers array of GetStatsContext
@@ -150,15 +145,14 @@ static struct OperationQueue *no_wait_queue;
  * get_statistics operation.
  *
  * @param cls the GetStatsContext
- * @param tc the scheduler task context
  */
 static void
-call_completion_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+call_completion_task (void *cls)
 {
   struct GetStatsContext *sc = cls;
 
-  GNUNET_assert (sc->call_completion_task_id != GNUNET_SCHEDULER_NO_TASK);
-  sc->call_completion_task_id = GNUNET_SCHEDULER_NO_TASK;
+  GNUNET_assert (sc->call_completion_task_id != NULL);
+  sc->call_completion_task_id = NULL;
   LOG_DEBUG ("Calling get_statistics() continuation callback\n");
   sc->cont (sc->cb_cls, sc->main_op, NULL);
 }
@@ -169,17 +163,16 @@ call_completion_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * as we cannot destroy the statistics handle in iteration_completion_cb()
  *
  * @param cls the PeerGetStatsContext
- * @param tc the scheduler task context
  */
 static void
-op_done_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+op_done_task (void *cls)
 {
   struct PeerGetStatsContext *peer_sc = cls;
   struct GetStatsContext *sc;
   struct GNUNET_TESTBED_Operation **op;
 
   sc = peer_sc->sc;
-  peer_sc->op_done_task_id = GNUNET_SCHEDULER_NO_TASK;
+  peer_sc->op_done_task_id = NULL;
   op = &sc->ops[peer_sc->peer_index];
   GNUNET_assert (NULL != *op);
   GNUNET_TESTBED_operation_done (*op);
@@ -264,10 +257,11 @@ service_connect_comp (void *cls,
   struct PeerGetStatsContext *peer_sc = cls;
   struct GNUNET_STATISTICS_Handle *h = ca_result;
 
-  LOG_DEBUG ("Retrieving statistics of peer %u\n", peer_sc->peer_index);
+  LOG_DEBUG ("Retrieving statistics of peer %u\n",
+             peer_sc->peer_index);
   peer_sc->get_handle =
-      GNUNET_STATISTICS_get (h, peer_sc->sc->subsystem, peer_sc->sc->name,
-                             GNUNET_TIME_UNIT_FOREVER_REL,
+      GNUNET_STATISTICS_get (h, peer_sc->sc->subsystem,
+                             peer_sc->sc->name,
                              &iteration_completion_cb,
                              iterator_cb, peer_sc);
 }
@@ -312,7 +306,7 @@ statistics_da (void *cls, void *op_result)
     peer_sc->get_handle = NULL;
   }
   GNUNET_STATISTICS_destroy (sh, GNUNET_NO);
-  if (GNUNET_SCHEDULER_NO_TASK != peer_sc->op_done_task_id)
+  if (NULL != peer_sc->op_done_task_id)
     GNUNET_SCHEDULER_cancel (peer_sc->op_done_task_id);
   GNUNET_free (peer_sc);
 }
@@ -366,7 +360,7 @@ oprelease_get_stats (void *cls)
   unsigned int peer;
 
   LOG_DEBUG ("Cleaning up get_statistics operation\n");
-  if (GNUNET_SCHEDULER_NO_TASK != sc->call_completion_task_id)
+  if (NULL != sc->call_completion_task_id)
     GNUNET_SCHEDULER_cancel (sc->call_completion_task_id);
   if (NULL != sc->ops)
   {

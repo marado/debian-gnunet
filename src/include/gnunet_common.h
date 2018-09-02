@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2006-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2006-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -28,6 +23,8 @@
  * @author Nils Durner
  *
  * @defgroup logging Logging
+ * @see [Documentation](https://gnunet.org/logging)
+ *
  * @defgroup memory Memory management
  */
 #ifndef GNUNET_COMMON_H
@@ -49,6 +46,10 @@
 #include <stdarg.h>
 #endif
 
+#ifdef HAVE_BYTESWAP_H
+#include <byteswap.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -60,7 +61,8 @@ extern "C"
 /**
  * Version of the API (for entire gnunetutil.so library).
  */
-#define GNUNET_UTIL_VERSION 0x000A0100
+#define GNUNET_UTIL_VERSION 0x000A0102
+
 
 /**
  * Named constants for return values.  The following invariants hold:
@@ -153,6 +155,19 @@ extern "C"
 #endif
 
 
+/**
+ * Macro used to avoid using 0 for the length of a variable-size
+ * array (Non-Zero-Length).
+ *
+ * Basically, C standard says that "int[n] x;" is undefined if n=0.
+ * This was supposed to prevent issues with pointer aliasing.
+ * However, C compilers may conclude that n!=0 as n=0 would be
+ * undefined, and then optimize under the assumption n!=0, which
+ * could cause actual issues.  Hence, when initializing an array
+ * on the stack with a variable-length that might be zero, write
+ * "int[GNUNET_NZL(n)] x;" instead of "int[n] x".
+ */
+#define GNUNET_NZL(l) GNUNET_MAX(1,l)
 
 
 /**
@@ -248,6 +263,29 @@ struct GNUNET_MessageHeader
 
 };
 
+
+/**
+ * Answer from service to client about last operation.
+ */
+struct GNUNET_OperationResultMessage
+{
+  struct GNUNET_MessageHeader header;
+
+  uint32_t reserved GNUNET_PACKED;
+
+  /**
+   * Operation ID.
+   */
+  uint64_t op_id GNUNET_PACKED;
+
+  /**
+   * Status code for the operation.
+   */
+  uint64_t result_code GNUNET_PACKED;
+
+  /* Followed by data. */
+};
+
 GNUNET_NETWORK_STRUCT_END
 
 /**
@@ -259,7 +297,35 @@ GNUNET_NETWORK_STRUCT_END
  *  #GNUNET_NO to stop iteration with no error,
  *  #GNUNET_SYSERR to abort iteration with error!
  */
-typedef int (*GNUNET_FileNameCallback) (void *cls, const char *filename);
+typedef int
+(*GNUNET_FileNameCallback) (void *cls,
+                            const char *filename);
+
+
+/**
+ * Generic continuation callback.
+ *
+ * @param cls  Closure.
+ */
+typedef void
+(*GNUNET_ContinuationCallback) (void *cls);
+
+
+/**
+ * Function called with the result of an asynchronous operation.
+ *
+ * @param cls
+ *        Closure.
+ * @param result_code
+ *        Result code for the operation.
+ * @param data
+ *        Data result for the operation.
+ * @param data_size
+ *        Size of @a data.
+ */
+typedef void
+(*GNUNET_ResultCallback) (void *cls, int64_t result_code,
+                          const void *data, uint16_t data_size);
 
 
 /* ****************************** logging ***************************** */
@@ -274,10 +340,14 @@ enum GNUNET_ErrorType
   GNUNET_ERROR_TYPE_NONE = 0,
   GNUNET_ERROR_TYPE_ERROR = 1,
   GNUNET_ERROR_TYPE_WARNING = 2,
-  GNUNET_ERROR_TYPE_INFO = 4,
-  GNUNET_ERROR_TYPE_DEBUG = 8,
-  GNUNET_ERROR_TYPE_INVALID = 16,
-  GNUNET_ERROR_TYPE_BULK = 32
+  /* UX: We need a message type that is output by
+   * default without looking like there is a problem.
+   */
+  GNUNET_ERROR_TYPE_MESSAGE = 4,
+  GNUNET_ERROR_TYPE_INFO = 8,
+  GNUNET_ERROR_TYPE_DEBUG = 16,
+  GNUNET_ERROR_TYPE_INVALID = 32,
+  GNUNET_ERROR_TYPE_BULK = 64
 };
 
 
@@ -291,9 +361,12 @@ enum GNUNET_ErrorType
  * @param date when was the message logged?
  * @param message what is the message
  */
-typedef void (*GNUNET_Logger) (void *cls, enum GNUNET_ErrorType kind,
-                               const char *component, const char *date,
-                               const char *message);
+typedef void
+(*GNUNET_Logger) (void *cls,
+                  enum GNUNET_ErrorType kind,
+                  const char *component,
+                  const char *date,
+                  const char *message);
 
 
 /**
@@ -303,14 +376,16 @@ typedef void (*GNUNET_Logger) (void *cls, enum GNUNET_ErrorType kind,
  * @return number of log calls to be ignored
  */
 int
-GNUNET_get_log_skip ();
+GNUNET_get_log_skip (void);
+
 
 #if !defined(GNUNET_CULL_LOGGING)
 int
 GNUNET_get_log_call_status (int caller_level,
                             const char *comp,
                             const char *file,
-                            const char *function, int line);
+                            const char *function,
+                            int line);
 #endif
 
 
@@ -323,7 +398,8 @@ GNUNET_get_log_call_status (int caller_level,
  * @param ... arguments for format string
  */
 void
-GNUNET_log_nocheck (enum GNUNET_ErrorType kind, const char *message, ...);
+GNUNET_log_nocheck (enum GNUNET_ErrorType kind, const char *message, ...)
+  __attribute__ ((format (gnu_printf, 2, 3)));
 
 /* from glib */
 #if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)
@@ -427,9 +503,11 @@ GNUNET_log_config_invalid (enum GNUNET_ErrorType kind,
 /**
  * @ingroup logging
  * Abort the process, generate a core dump if possible.
+ * Most code should use `GNUNET_assert (0)` instead to
+ * first log the location of the failure.
  */
 void
-GNUNET_abort (void) GNUNET_NORETURN;
+GNUNET_abort_ (void) GNUNET_NORETURN;
 
 
 /**
@@ -437,10 +515,11 @@ GNUNET_abort (void) GNUNET_NORETURN;
  * Ignore the next @a n calls to the log function.
  *
  * @param n number of log calls to ignore (could be negative)
- * @param check_reset GNUNET_YES to assert that the log skip counter is currently zero
+ * @param check_reset #GNUNET_YES to assert that the log skip counter is currently zero
  */
 void
-GNUNET_log_skip (int n, int check_reset);
+GNUNET_log_skip (int n,
+                 int check_reset);
 
 
 /**
@@ -453,18 +532,24 @@ GNUNET_log_skip (int n, int check_reset);
  * @return #GNUNET_OK on success, #GNUNET_SYSERR if logfile could not be opened
  */
 int
-GNUNET_log_setup (const char *comp, const char *loglevel, const char *logfile);
+GNUNET_log_setup (const char *comp,
+                  const char *loglevel,
+                  const char *logfile);
 
 
 /**
  * @ingroup logging
- * Add a custom logger.
+ * Add a custom logger.  Note that installing any custom logger
+ * will disable the standard logger.  When multiple custom loggers
+ * are installed, all will be called.  The standard logger will
+ * only be used if no custom loggers are present.
  *
  * @param logger log function
  * @param logger_cls closure for @a logger
  */
 void
-GNUNET_logger_add (GNUNET_Logger logger, void *logger_cls);
+GNUNET_logger_add (GNUNET_Logger logger,
+                   void *logger_cls);
 
 
 /**
@@ -472,10 +557,24 @@ GNUNET_logger_add (GNUNET_Logger logger, void *logger_cls);
  * Remove a custom logger.
  *
  * @param logger log function
- * @param logger_cls closure for logger
+ * @param logger_cls closure for @a logger
  */
 void
-GNUNET_logger_remove (GNUNET_Logger logger, void *logger_cls);
+GNUNET_logger_remove (GNUNET_Logger logger,
+                      void *logger_cls);
+
+
+/**
+ * @ingroup logging
+ * Convert a short hash value to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
+ * NOT reentrant!
+ *
+ * @param shc the hash code
+ * @return string
+ */
+const char *
+GNUNET_sh2s (const struct GNUNET_ShortHashCode *shc);
 
 
 /**
@@ -488,7 +587,22 @@ GNUNET_logger_remove (GNUNET_Logger logger, void *logger_cls);
  * @return string
  */
 const char *
-GNUNET_h2s (const struct GNUNET_HashCode * hc);
+GNUNET_h2s (const struct GNUNET_HashCode *hc);
+
+
+/**
+ * @ingroup logging
+ * Convert a hash value to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
+ * NOT reentrant! Identical to #GNUNET_h2s(), except that another
+ * buffer is used so both #GNUNET_h2s() and #GNUNET_h2s2() can be
+ * used within the same log statement.
+ *
+ * @param hc the hash code
+ * @return string
+ */
+const char *
+GNUNET_h2s2 (const struct GNUNET_HashCode *hc);
 
 
 /**
@@ -502,7 +616,71 @@ GNUNET_h2s (const struct GNUNET_HashCode * hc);
  * @return string
  */
 const char *
-GNUNET_h2s_full (const struct GNUNET_HashCode * hc);
+GNUNET_h2s_full (const struct GNUNET_HashCode *hc);
+
+
+/**
+ * Public key. Details in gnunet_util_crypto.h.
+ */
+struct GNUNET_CRYPTO_EddsaPublicKey;
+
+
+/**
+ * Public key. Details in gnunet_util_crypto.h.
+ */
+struct GNUNET_CRYPTO_EcdhePublicKey;
+
+
+/**
+ * @ingroup logging
+ * Convert a public key value to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
+ * NOT reentrant!
+ *
+ * @param hc the hash code
+ * @return string
+ */
+const char *
+GNUNET_p2s (const struct GNUNET_CRYPTO_EddsaPublicKey *p);
+
+
+/**
+ * @ingroup logging
+ * Convert a public key value to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
+ * NOT reentrant!
+ *
+ * @param hc the hash code
+ * @return string
+ */
+const char *
+GNUNET_p2s2 (const struct GNUNET_CRYPTO_EddsaPublicKey *p);
+
+
+/**
+ * @ingroup logging
+ * Convert a public key value to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
+ * NOT reentrant!
+ *
+ * @param hc the hash code
+ * @return string
+ */
+const char *
+GNUNET_e2s (const struct GNUNET_CRYPTO_EcdhePublicKey *p);
+
+
+/**
+ * @ingroup logging
+ * Convert a public key value to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
+ * NOT reentrant!
+ *
+ * @param hc the hash code
+ * @return string
+ */
+const char *
+GNUNET_e2s2 (const struct GNUNET_CRYPTO_EcdhePublicKey *p);
 
 
 /**
@@ -513,7 +691,7 @@ GNUNET_h2s_full (const struct GNUNET_HashCode * hc);
  *
  * @param pid the peer identity
  * @return string form of the pid; will be overwritten by next
- *         call to #GNUNET_i2s.
+ *         call to #GNUNET_i2s().
  */
 const char *
 GNUNET_i2s (const struct GNUNET_PeerIdentity *pid);
@@ -523,11 +701,27 @@ GNUNET_i2s (const struct GNUNET_PeerIdentity *pid);
  * @ingroup logging
  * Convert a peer identity to a string (for printing debug messages).
  * This is one of the very few calls in the entire API that is
+ * NOT reentrant!  Identical to #GNUNET_i2s(), except that another
+ * buffer is used so both #GNUNET_i2s() and #GNUNET_i2s2() can be
+ * used within the same log statement.
+ *
+ * @param pid the peer identity
+ * @return string form of the pid; will be overwritten by next
+ *         call to #GNUNET_i2s().
+ */
+const char *
+GNUNET_i2s2 (const struct GNUNET_PeerIdentity *pid);
+
+
+/**
+ * @ingroup logging
+ * Convert a peer identity to a string (for printing debug messages).
+ * This is one of the very few calls in the entire API that is
  * NOT reentrant!
  *
  * @param pid the peer identity
  * @return string form of the pid; will be overwritten by next
- *         call to #GNUNET_i2s.
+ *         call to #GNUNET_i2s_full().
  */
 const char *
 GNUNET_i2s_full (const struct GNUNET_PeerIdentity *pid);
@@ -540,12 +734,13 @@ GNUNET_i2s_full (const struct GNUNET_PeerIdentity *pid);
  * in the entire API that is NOT reentrant!
  *
  * @param addr the address
- * @param addrlen the length of the address
+ * @param addrlen the length of the @a addr
  * @return nicely formatted string for the address
- *  will be overwritten by next call to GNUNET_a2s.
+ *  will be overwritten by next call to #GNUNET_a2s().
  */
 const char *
-GNUNET_a2s (const struct sockaddr *addr, socklen_t addrlen);
+GNUNET_a2s (const struct sockaddr *addr,
+            socklen_t addrlen);
 
 
 /**
@@ -563,14 +758,24 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind);
  * @ingroup logging
  * Use this for fatal errors that cannot be handled
  */
-#define GNUNET_assert(cond) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d.\n"), __FILE__, __LINE__); GNUNET_abort(); } } while(0)
+#define GNUNET_assert(cond) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d.\n"), __FILE__, __LINE__); GNUNET_abort_(); } } while(0)
 
 
 /**
  * @ingroup logging
  * Use this for fatal errors that cannot be handled
  */
-#define GNUNET_assert_at(cond, f, l) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d.\n"), f, l); GNUNET_abort(); } } while(0)
+#define GNUNET_assert_at(cond, f, l) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d.\n"), f, l); GNUNET_abort_(); } } while(0)
+
+
+/**
+ * @ingroup logging
+ * Use this for fatal errors that cannot be handled
+ *
+ * @param cond Condition to evaluate
+ * @param comp Component string to use for logging
+ */
+#define GNUNET_assert_from(cond, comp) do { if (! (cond)) { GNUNET_log_from(GNUNET_ERROR_TYPE_ERROR, comp, _("Assertion failed at %s:%d.\n"), __FILE__, __LINE__); GNUNET_abort_(); } } while(0)
 
 
 /**
@@ -617,7 +822,7 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind);
  * a failure of the command 'cmd' with the message given
  * by strerror(errno).
  */
-#define GNUNET_log_strerror_file(level, cmd, filename) do { GNUNET_log(level, _("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename,__FILE__, __LINE__, STRERROR(errno)); } while(0)
+#define GNUNET_log_strerror_file(level, cmd, filename) do { GNUNET_log(level, _("`%s' failed on file `%s' at %s:%d with error: %s\n"), cmd, filename, __FILE__, __LINE__, STRERROR(errno)); } while(0)
 
 
 /**
@@ -631,36 +836,52 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind);
 /* ************************* endianess conversion ****************** */
 
 /**
- * Convert unsigned 64-bit integer to host-byte-order.
- * @param n the value in network byte order
- * @return the same value in host byte order
- */
-uint64_t
-GNUNET_ntohll (uint64_t n);
-
-/**
- * Convert unsigned 64-bit integer to network-byte-order.
- * @param n the value in host byte order
- * @return the same value in network byte order
+ * Convert unsigned 64-bit integer to network byte order.
+ *
+ * @param n
+ *        The value in host byte order.
+ *
+ * @return The same value in network byte order.
  */
 uint64_t
 GNUNET_htonll (uint64_t n);
 
+
 /**
- * Convert double to network-byte-order.
- * @param d the value in network byte order
- * @return the same value in host byte order
+ * Convert unsigned 64-bit integer to host byte order.
+ *
+ * @param n
+ *        The value in network byte order.
+ *
+ * @return The same value in host byte order.
+ */
+uint64_t
+GNUNET_ntohll (uint64_t n);
+
+
+/**
+ * Convert double to network byte order.
+ *
+ * @param d
+ *        The value in host byte order.
+ *
+ * @return The same value in network byte order.
  */
 double
 GNUNET_hton_double (double d);
 
+
 /**
- * Convert double to host-byte-order
- * @param d the value in network byte order
- * @return the same value in host byte order
+ * Convert double to host byte order
+ *
+ * @param d
+ *        The value in network byte order.
+ *
+ * @return The same value in host byte order.
  */
 double
 GNUNET_ntoh_double (double d);
+
 
 /* ************************* allocation functions ****************** */
 
@@ -681,6 +902,18 @@ GNUNET_ntoh_double (double d);
 #define GNUNET_new(type) (type *) GNUNET_malloc (sizeof (type))
 
 /**
+ * Call memcpy() but check for @a n being 0 first. In the latter
+ * case, it is now safe to pass NULL for @a src or @a dst.
+ * Unlike traditional memcpy(), returns nothing.
+ *
+ * @param dst destination of the copy, may be NULL if @a n is zero
+ * @param src source of the copy, may be NULL if @a n is zero
+ * @param n number of bytes to copy
+ */
+#define GNUNET_memcpy(dst,src,n) do { if (0 != n) { (void) memcpy (dst,src,n); } } while (0)
+
+
+/**
  * @ingroup memory
  * Allocate a size @a n array with structs or unions of the given @a type.
  * Wrapper around #GNUNET_malloc that returns a pointer
@@ -690,6 +923,29 @@ GNUNET_ntoh_double (double d);
  * @param type name of the struct or union, i.e. pass 'struct Foo'.
  */
 #define GNUNET_new_array(n, type) (type *) GNUNET_malloc ((n) * sizeof (type))
+
+/**
+ * @ingroup memory
+ * Allocate a size @a n times @a m array
+ * with structs or unions of the given @a type.
+ *
+ * @param n size of the first dimension
+ * @param m size of the second dimension
+ * @param type name of the struct or union, i.e. pass 'struct Foo'.
+ */
+#define GNUNET_new_array_2d(n, m, type) (type **) GNUNET_xnew_array_2d_ (n, m, sizeof (type), __FILE__, __LINE__)
+
+/**
+ * @ingroup memory
+ * Allocate a size @a n times @a m times @a o array
+ * with structs or unions of the given @a type.
+ *
+ * @param n size of the first dimension
+ * @param m size of the second dimension
+ * @param o size of the third dimension
+ * @param type name of the struct or union, i.e. pass 'struct Foo'.
+ */
+#define GNUNET_new_array_3d(n, m, o, type) (type ***) GNUNET_xnew_array_3d_ (n, m, o, sizeof (type), __FILE__, __LINE__)
 
 /**
  * @ingroup memory
@@ -724,7 +980,8 @@ GNUNET_ntoh_double (double d);
 
 /**
  * @ingroup memory
- * Wrapper around realloc. Rellocates size bytes of memory.
+ * Wrapper around realloc. Reallocates size bytes of memory.
+ * The content of the intersection of the new and old size will be unchanged.
  *
  * @param ptr the pointer to reallocate
  * @param size the number of bytes to reallocate
@@ -735,7 +992,7 @@ GNUNET_ntoh_double (double d);
 /**
  * @ingroup memory
  * Wrapper around free. Frees the memory referred to by ptr.
- * Note that is is generally better to free memory that was
+ * Note that it is generally better to free memory that was
  * allocated with #GNUNET_array_grow using #GNUNET_array_grow(mem, size, 0) instead of #GNUNET_free.
  *
  * @param ptr location where to free the memory. ptr must have
@@ -788,12 +1045,12 @@ GNUNET_ntoh_double (double d);
  *
  * static void push(struct foo * elem) {
  *   GNUNET_array_grow(myVector, myVecLen, myVecLen+1);
- *   memcpy(&myVector[myVecLen-1], elem, sizeof(struct foo));
+ *   GNUNET_memcpy(&myVector[myVecLen-1], elem, sizeof(struct foo));
  * }
  *
  * static void pop(struct foo * elem) {
  *   if (myVecLen == 0) die();
- *   memcpy(elem, myVector[myVecLen-1], sizeof(struct foo));
+ *   GNUNET_memcpy(elem, myVector[myVecLen-1], sizeof(struct foo));
  *   GNUNET_array_grow(myVector, myVecLen, myVecLen-1);
  * }
  * </pre>
@@ -803,7 +1060,8 @@ GNUNET_ntoh_double (double d);
  *        arr is important since size is the number of elements and
  *        not the size in bytes
  * @param size the number of elements in the existing vector (number
- *        of elements to copy over)
+ *        of elements to copy over), will be updated with the new
+ *        array size
  * @param tsize the target size for the resulting vector, use 0 to
  *        free the vector (then, arr will be NULL afterwards).
  */
@@ -811,8 +1069,16 @@ GNUNET_ntoh_double (double d);
 
 /**
  * @ingroup memory
- * Append an element to a list (growing the
- * list by one).
+ * Append an element to a list (growing the list by one).
+ *
+ * @param arr base-pointer of the vector, may be NULL if size is 0;
+ *        will be updated to reflect the new address. The TYPE of
+ *        arr is important since size is the number of elements and
+ *        not the size in bytes
+ * @param size the number of elements in the existing vector (number
+ *        of elements to copy over), will be updated with the new
+ *        array size
+ * @param element the element that will be appended to the array
  */
 #define GNUNET_array_append(arr,size,element) do { GNUNET_array_grow(arr,size,size+1); arr[size-1] = element; } while(0)
 
@@ -858,6 +1124,45 @@ GNUNET_asprintf (char **buf, const char *format, ...);
  */
 void *
 GNUNET_xmalloc_ (size_t size, const char *filename, int linenumber);
+
+
+/**
+ * Allocate memory for a two dimensional array in one block
+ * and set up pointers. Aborts if no more memory is available.
+ * Don't use GNUNET_xnew_array_2d_ directly. Use the
+ * #GNUNET_new_array_2d macro.
+ * The memory of the elements will be zero'ed out.
+ *
+ * @param n size of the first dimension
+ * @param m size of the second dimension
+ * @param elementSize size of a single element in bytes
+ * @param filename where is this call being made (for debugging)
+ * @param linenumber line where this call is being made (for debugging)
+ * @return allocated memory, never NULL
+ */
+void **
+GNUNET_xnew_array_2d_ (size_t n, size_t m, size_t elementSize,
+                       const char *filename, int linenumber);
+
+
+/**
+ * Allocate memory for a three dimensional array in one block
+ * and set up pointers. Aborts if no more memory is available.
+ * Don't use GNUNET_xnew_array_3d_ directly. Use the
+ * #GNUNET_new_array_3d macro.
+ * The memory of the elements will be zero'ed out.
+ *
+ * @param n size of the first dimension
+ * @param m size of the second dimension
+ * @param o size of the third dimension
+ * @param elementSize size of a single element in bytes
+ * @param filename where is this call being made (for debugging)
+ * @param linenumber line where this call is being made (for debugging)
+ * @return allocated memory, never NULL
+ */
+void ***
+GNUNET_xnew_array_3d_ (size_t n, size_t m, size_t o, size_t elementSize,
+                       const char *filename, int linenumber);
 
 
 /**
@@ -976,6 +1281,77 @@ GNUNET_copy_message (const struct GNUNET_MessageHeader *msg);
 #endif
 
 
+/**
+ * Valid task priorities.  Use these, do not pass random integers!
+ * For various reasons (#3862 -- building with QT Creator, and
+ * our restricted cross-compilation with emscripten) this cannot
+ * be in gnunet_scheduler_lib.h, but it works if we declare it here.
+ * Naturally, logically this is part of the scheduler.
+ */
+enum GNUNET_SCHEDULER_Priority
+{
+  /**
+   * Run with the same priority as the current job.
+   */
+  GNUNET_SCHEDULER_PRIORITY_KEEP = 0,
+
+  /**
+   * Run when otherwise idle.
+   */
+  GNUNET_SCHEDULER_PRIORITY_IDLE = 1,
+
+  /**
+   * Run as background job (higher than idle,
+   * lower than default).
+   */
+  GNUNET_SCHEDULER_PRIORITY_BACKGROUND = 2,
+
+  /**
+   * Run with the default priority (normal
+   * P2P operations).  Any task that is scheduled
+   * without an explicit priority being specified
+   * will run with this priority.
+   */
+  GNUNET_SCHEDULER_PRIORITY_DEFAULT = 3,
+
+  /**
+   * Run with high priority (important requests).
+   * Higher than DEFAULT.
+   */
+  GNUNET_SCHEDULER_PRIORITY_HIGH = 4,
+
+  /**
+   * Run with priority for interactive tasks.
+   * Higher than "HIGH".
+   */
+  GNUNET_SCHEDULER_PRIORITY_UI = 5,
+
+  /**
+   * Run with priority for urgent tasks.  Use
+   * for things like aborts and shutdowns that
+   * need to preempt "UI"-level tasks.
+   * Higher than "UI".
+   */
+  GNUNET_SCHEDULER_PRIORITY_URGENT = 6,
+
+  /**
+   * This is an internal priority level that is only used for tasks
+   * that are being triggered due to shutdown (they have automatically
+   * highest priority).  User code must not use this priority level
+   * directly.  Tasks run with this priority level that internally
+   * schedule other tasks will see their original priority level
+   * be inherited (unless otherwise specified).
+   */
+  GNUNET_SCHEDULER_PRIORITY_SHUTDOWN = 7,
+
+  /**
+   * Number of priorities (must be the last priority).
+   * This priority must not be used by clients.
+   */
+  GNUNET_SCHEDULER_PRIORITY_COUNT = 8
+};
+
+
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
@@ -983,7 +1359,4 @@ GNUNET_copy_message (const struct GNUNET_MessageHeader *msg);
 }
 #endif
 
-
-
-
-#endif /*GNUNET_COMMON_H_ */
+#endif /* GNUNET_COMMON_H */

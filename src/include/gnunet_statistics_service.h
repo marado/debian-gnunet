@@ -1,30 +1,33 @@
 /*
       This file is part of GNUnet
-      (C) 2009-2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2009-2013, 2016 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
- * @file include/gnunet_statistics_service.h
- * @brief API to create, modify and access statistics about
- *        the operation of GNUnet; all statistical values
- *        must be of type `unsigned long long`.
  * @author Christian Grothoff
- * @defgroup statistics track statistics or provide access to statistics
+ *
+ * @file
+ * API to create, modify and access statistics.
+ *
+ * @defgroup statistics  Statistics service
+ * Track statistics or provide access to statistics.
+ *
+ * Create, modify and access statistics about the operation of GNUnet.
+ *
+ * All statistical values must be of type `unsigned long long`.
+ *
+ * @see [Documentation](https://gnunet.org/gnunet-statistics-subsystem)
+ *
  * @{
  */
 
@@ -61,11 +64,12 @@ struct GNUNET_STATISTICS_Handle;
  * @param is_persistent #GNUNET_YES if the value is persistent, #GNUNET_NO if not
  * @return #GNUNET_OK to continue, #GNUNET_SYSERR to abort iteration
  */
-typedef int (*GNUNET_STATISTICS_Iterator) (void *cls,
-                                           const char *subsystem,
-                                           const char *name,
-                                           uint64_t value,
-                                           int is_persistent);
+typedef int
+(*GNUNET_STATISTICS_Iterator) (void *cls,
+                               const char *subsystem,
+                               const char *name,
+                               uint64_t value,
+                               int is_persistent);
 
 
 /**
@@ -81,8 +85,7 @@ GNUNET_STATISTICS_create (const char *subsystem,
 
 
 /**
- * Destroy a handle (free all state associated with
- * it).
+ * Destroy a handle (free all state associated with it).
  *
  * @param h statistics handle to destroy
  * @param sync_first set to #GNUNET_YES if pending SET requests should
@@ -130,14 +133,15 @@ GNUNET_STATISTICS_watch_cancel (struct GNUNET_STATISTICS_Handle *handle,
 
 
 /**
- * Continuation called by #GNUNET_STATISTICS_get functions.
+ * Continuation called by #GNUNET_STATISTICS_get() functions.
  *
  * @param cls closure
  * @param success #GNUNET_OK if statistics were
  *        successfully obtained, #GNUNET_SYSERR if not.
  */
-typedef void (*GNUNET_STATISTICS_Callback) (void *cls,
-                                            int success);
+typedef void
+(*GNUNET_STATISTICS_Callback) (void *cls,
+                               int success);
 
 
 /**
@@ -152,8 +156,6 @@ struct GNUNET_STATISTICS_GetHandle;
  * @param handle identification of the statistics service
  * @param subsystem limit to the specified subsystem, NULL for all subsystems
  * @param name name of the statistic value, NULL for all values
- * @param timeout after how long should we give up (and call
- *        notify with buf NULL and size 0)?
  * @param cont continuation to call when done (can be NULL)
  *        This callback CANNOT destroy the statistics handle in the same call.
  * @param proc function to call on each value
@@ -164,9 +166,9 @@ struct GNUNET_STATISTICS_GetHandle *
 GNUNET_STATISTICS_get (struct GNUNET_STATISTICS_Handle *handle,
                        const char *subsystem,
                        const char *name,
-                       struct GNUNET_TIME_Relative timeout,
                        GNUNET_STATISTICS_Callback cont,
-                       GNUNET_STATISTICS_Iterator proc, void *cls);
+                       GNUNET_STATISTICS_Iterator proc,
+                       void *cls);
 
 
 /**

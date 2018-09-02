@@ -1,27 +1,22 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2014 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2014 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
 */
 
 /**
  * @file testbed/gnunet-daemon-latency-logger.c
  * @brief log latency values from neighbour connections into an SQLite database
- * @author Sree Harsha Totakura <sreeharsha@totakura.in> 
+ * @author Sree Harsha Totakura <sreeharsha@totakura.in>
  */
 
 #include "platform.h"
@@ -68,10 +63,11 @@ struct Entry
   struct GNUNET_PeerIdentity id;
 
   /**
-   * The last known value for latency
+   * The last known value for latency.
+   * FIXME: type!
    */
   unsigned int latency;
-  
+
 };
 
 
@@ -88,17 +84,12 @@ static struct sqlite3 *db;
 /**
  * Handle to the ATS performance subsystem
  */
-struct GNUNET_ATS_PerformanceHandle *ats;
+static struct GNUNET_ATS_PerformanceHandle *ats;
 
 /**
  * Prepared statement for inserting values into the database table
  */
-struct sqlite3_stmt *stmt_insert;
-
-/**
- * Shutdown task identifier
- */
-GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
+static struct sqlite3_stmt *stmt_insert;
 
 
 /**
@@ -119,7 +110,7 @@ free_iterator (void *cls,
 {
   struct Entry *e = cls;
 
-  GNUNET_assert (GNUNET_YES == 
+  GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multipeermap_remove (map, key, e));
   GNUNET_free (e);
   return GNUNET_YES;
@@ -130,13 +121,11 @@ free_iterator (void *cls,
  * Shutdown
  *
  * @param cls NULL
- * @param tc task context from scheduler
- * @return 
+ * @return
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  shutdown_task = GNUNET_SCHEDULER_NO_TASK;
   GNUNET_ATS_performance_done (ats);
   ats = NULL;
   if (NULL != stmt_insert)
@@ -148,7 +137,7 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   db = NULL;
   if (NULL != map)
   {
-    GNUNET_assert (GNUNET_SYSERR != 
+    GNUNET_assert (GNUNET_SYSERR !=
                    GNUNET_CONTAINER_multipeermap_iterate (map, free_iterator, NULL));
     GNUNET_CONTAINER_multipeermap_destroy (map);
     map = NULL;
@@ -160,12 +149,13 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *
  * @param cls closure
  * @param address the address
- * @param address_active is this address actively used to maintain a connection
- * 				to a peer
+ * @param address_active #GNUNET_YES if this address is actively used
+ *        to maintain a connection to a peer;
+ *        #GNUNET_NO if the address is not actively used;
+ *        #GNUNET_SYSERR if this address is no longer available for ATS
  * @param bandwidth_out assigned outbound bandwidth for the connection
  * @param bandwidth_in assigned inbound bandwidth for the connection
- * @param ats performance data for the address (as far as known)
- * @param ats_count number of performance records in 'ats'
+ * @param prop performance data for the address (as far as known)
  */
 static void
 addr_info_cb (void *cls,
@@ -173,8 +163,7 @@ addr_info_cb (void *cls,
               int address_active,
               struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
               struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
-              const struct GNUNET_ATS_Information *ats,
-              uint32_t ats_count)
+              const struct GNUNET_ATS_Properties *prop)
 {
   static const char *query_insert =
       "INSERT INTO ats_info("
@@ -187,21 +176,18 @@ addr_info_cb (void *cls,
       " datetime('now')"
       ");";
   struct Entry *entry;
-  int latency;
-  unsigned int cnt;
+  int latency; /* FIXME: type!? */
+
+  if (NULL == address)
+  {
+    /* ATS service temporarily disconnected */
+    return;
+  }
 
   GNUNET_assert (NULL != db);
-  if (GNUNET_NO == address_active)
+  if (GNUNET_YES != address_active)
     return;
-  for (cnt = 0; cnt < ats_count; cnt++)
-  {
-    if (GNUNET_ATS_QUALITY_NET_DELAY == ntohl (ats[cnt].type))
-      goto insert;
-  }
-  return;
-
- insert:
-  latency = (int) ntohl (ats[cnt].value);
+  latency = (int) prop->delay.rel_value_us;
   entry = NULL;
   if (GNUNET_YES == GNUNET_CONTAINER_multipeermap_contains (map,
                                                             &address->peer))
@@ -242,13 +228,13 @@ addr_info_cb (void *cls,
   {
     entry = GNUNET_new (struct Entry);
     entry->id = address->peer;
-    GNUNET_CONTAINER_multipeermap_put (map, 
+    GNUNET_CONTAINER_multipeermap_put (map,
                                        &entry->id, entry,
                                        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
   }
   entry->latency = latency;
   return;
-  
+
  err_shutdown:
       GNUNET_SCHEDULER_shutdown ();
 }
@@ -266,7 +252,7 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
-  const char *query_create = 
+  const char *query_create =
       "CREATE TABLE ats_info ("
       "id TEXT,"
       "val INTEGER,"
@@ -286,7 +272,7 @@ run (void *cls, char *const *args, const char *cfgfile,
     if (NULL != db)
     {
       LOG_SQLITE (db, NULL, GNUNET_ERROR_TYPE_ERROR, "sqlite_open_v2");
-      sqlite3_close (db);
+      GNUNET_break (SQLITE_OK == sqlite3_close (db));
     }
     else
       LOG (GNUNET_ERROR_TYPE_ERROR, "Cannot open sqlite file %s\n", dbfile);
@@ -297,12 +283,11 @@ run (void *cls, char *const *args, const char *cfgfile,
     DEBUG ("SQLite Error: %d.  Perhaps the database `%s' already exits.\n",
            sqlite3_errcode (db), dbfile);
   DEBUG ("Opened database %s\n", dbfile);
-  GNUNET_free (dbfile);  
+  GNUNET_free (dbfile);
   dbfile = NULL;
-  ats = GNUNET_ATS_performance_init (c, addr_info_cb, NULL);
+  ats = GNUNET_ATS_performance_init (c, &addr_info_cb, NULL);
   map = GNUNET_CONTAINER_multipeermap_create (30, GNUNET_YES);
-  shutdown_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                                &do_shutdown, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
 }
 
 

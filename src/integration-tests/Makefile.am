@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
@@ -26,15 +27,23 @@ endif
 
 if HAVE_MHD
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
+if HAVE_LIBGNURL
 TESTS = \
  $(check_SCRIPTS)
+else
+if HAVE_LIBCURL
+TESTS = \
+ $(check_SCRIPTS)
+endif
+endif
 endif
 endif
 
 do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 
-%.py: %.py.in Makefile
+SUFFIXES = .py.in .py
+.py.in.py:
 	$(do_subst) < $(srcdir)/$< > $@
 	chmod +x $@
 
@@ -53,7 +62,7 @@ test_integration_bootstrap_and_connect.py: test_integration_bootstrap_and_connec
 test_integration_disconnect.py: test_integration_disconnect.py.in Makefile
 	$(do_subst) < $(srcdir)/test_integration_disconnect.py.in > test_integration_disconnect.py
 	chmod +x test_integration_disconnect.py
-	
+
 test_integration_disconnect_nat.py: test_integration_disconnect_nat.py.in Makefile
 	$(do_subst) < $(srcdir)/test_integration_disconnect_nat.py.in > test_integration_disconnect_nat.py
 	chmod +x test_integration_disconnect_nat.py

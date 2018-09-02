@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013, 2015 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -25,7 +20,8 @@
  */
 #include "platform.h"
 #include <gcrypt.h>
-#include "gnunet_util_lib.h"
+#include "gnunet_crypto_lib.h"
+#include "gnunet_strings_lib.h"
 
 #define EXTRA_CHECKS 0
 
@@ -37,11 +33,11 @@
  */
 #define CURVE "Ed25519"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-ecc", __VA_ARGS__)
 
-#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util", syscall)
+#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util-crypto-ecc", syscall)
 
-#define LOG_STRERROR_FILE(kind,syscall,filename) GNUNET_log_from_strerror_file (kind, "util", syscall, filename)
+#define LOG_STRERROR_FILE(kind,syscall,filename) GNUNET_log_from_strerror_file (kind, "util-crypto-ecc", syscall, filename)
 
 /**
  * Log an error message at log-level 'level' that indicates
@@ -49,6 +45,9 @@
  * by gcry_strerror(rc).
  */
 #define LOG_GCRY(level, cmd, rc) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, gcry_strerror(rc)); } while(0)
+
+
+#include "crypto_bug.c"
 
 
 /**
@@ -61,7 +60,9 @@
  * @return 0 on success
  */
 static int
-key_from_sexp (gcry_mpi_t * array, gcry_sexp_t sexp, const char *topname,
+key_from_sexp (gcry_mpi_t * array,
+               gcry_sexp_t sexp,
+               const char *topname,
                const char *elems)
 {
   gcry_sexp_t list;
@@ -127,7 +128,7 @@ decode_private_ecdsa_key (const struct GNUNET_CRYPTO_EcdsaPrivateKey *priv)
   rc = gcry_sexp_build (&result, NULL,
 			"(private-key(ecc(curve \"" CURVE "\")"
                         "(d %b)))",
-			(int)sizeof (priv->d), priv->d);
+			(int) sizeof (priv->d), priv->d);
   if (0 != rc)
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "gcry_sexp_build", rc);
@@ -229,7 +230,7 @@ GNUNET_CRYPTO_ecdsa_key_get_public (const struct GNUNET_CRYPTO_EcdsaPrivateKey *
   GNUNET_assert (0 == gcry_mpi_ec_new (&ctx, sexp, NULL));
   gcry_sexp_release (sexp);
   q = gcry_mpi_ec_get_mpi ("q@eddsa", ctx, 0);
-  GNUNET_assert (q);
+  GNUNET_assert (NULL != q);
   GNUNET_CRYPTO_mpi_print_unsigned (pub->q_y, sizeof (pub->q_y), q);
   gcry_mpi_release (q);
   gcry_ctx_release (ctx);
@@ -351,6 +352,37 @@ GNUNET_CRYPTO_eddsa_public_key_to_string (const struct GNUNET_CRYPTO_EddsaPublic
 
 
 /**
+ * Convert a private key to a string.
+ *
+ * @param priv key to convert
+ * @return string representing @a pub
+ */
+char *
+GNUNET_CRYPTO_eddsa_private_key_to_string (const struct GNUNET_CRYPTO_EddsaPrivateKey *priv)
+{
+  char *privkeybuf;
+  size_t keylen = (sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)) * 8;
+  char *end;
+
+  if (keylen % 5 > 0)
+    keylen += 5 - keylen % 5;
+  keylen /= 5;
+  privkeybuf = GNUNET_malloc (keylen + 1);
+  end = GNUNET_STRINGS_data_to_string ((unsigned char *) priv,
+				       sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey),
+				       privkeybuf,
+				       keylen);
+  if (NULL == end)
+  {
+    GNUNET_free (privkeybuf);
+    return NULL;
+  }
+  *end = '\0';
+  return privkeybuf;
+}
+
+
+/**
  * Convert a string representing a public key to a public key.
  *
  * @param enc encoded public key
@@ -371,9 +403,10 @@ GNUNET_CRYPTO_ecdsa_public_key_from_string (const char *enc,
   if (enclen != keylen)
     return GNUNET_SYSERR;
 
-  if (GNUNET_OK != GNUNET_STRINGS_string_to_data (enc, enclen,
-						  pub,
-						  sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey)))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_string_to_data (enc, enclen,
+				     pub,
+				     sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey)))
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
@@ -400,10 +433,49 @@ GNUNET_CRYPTO_eddsa_public_key_from_string (const char *enc,
   if (enclen != keylen)
     return GNUNET_SYSERR;
 
-  if (GNUNET_OK != GNUNET_STRINGS_string_to_data (enc, enclen,
-						  pub,
-						  sizeof (struct GNUNET_CRYPTO_EddsaPublicKey)))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_string_to_data (enc, enclen,
+				     pub,
+				     sizeof (struct GNUNET_CRYPTO_EddsaPublicKey)))
     return GNUNET_SYSERR;
+  return GNUNET_OK;
+}
+
+
+/**
+ * Convert a string representing a private key to a private key.
+ *
+ * @param enc encoded public key
+ * @param enclen number of bytes in @a enc (without 0-terminator)
+ * @param priv where to store the private key
+ * @return #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_eddsa_private_key_from_string (const char *enc,
+                                             size_t enclen,
+                                             struct GNUNET_CRYPTO_EddsaPrivateKey *priv)
+{
+  size_t keylen = (sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)) * 8;
+
+  if (keylen % 5 > 0)
+    keylen += 5 - keylen % 5;
+  keylen /= 5;
+  if (enclen != keylen)
+    return GNUNET_SYSERR;
+
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_string_to_data (enc, enclen,
+                                     priv,
+                                     sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)))
+    return GNUNET_SYSERR;
+#if CRYPTO_BUG
+  if (GNUNET_OK !=
+      check_eddsa_key (priv))
+  {
+    GNUNET_break (0);
+    return GNUNET_OK;
+  }
+#endif
   return GNUNET_OK;
 }
 
@@ -456,23 +528,50 @@ struct GNUNET_CRYPTO_EcdhePrivateKey *
 GNUNET_CRYPTO_ecdhe_key_create ()
 {
   struct GNUNET_CRYPTO_EcdhePrivateKey *priv;
+
+  priv = GNUNET_new (struct GNUNET_CRYPTO_EcdhePrivateKey);
+  if (GNUNET_OK !=
+      GNUNET_CRYPTO_ecdhe_key_create2 (priv))
+  {
+    GNUNET_free (priv);
+    return NULL;
+  }
+  return priv;
+}
+
+
+/**
+ * @ingroup crypto
+ * Create a new private key.  Clear with #GNUNET_CRYPTO_ecdhe_key_clear().
+ *
+ * @param[out] pk set to fresh private key;
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure
+ */
+int
+GNUNET_CRYPTO_ecdhe_key_create2 (struct GNUNET_CRYPTO_EcdhePrivateKey *pk)
+{
   gcry_sexp_t priv_sexp;
   gcry_sexp_t s_keyparam;
   gcry_mpi_t d;
   int rc;
 
+  /* NOTE: For libgcrypt >= 1.7, we do not need the 'eddsa' flag here,
+     but should also be harmless. For libgcrypt < 1.7, using 'eddsa'
+     disables an expensive key testing routine. We do not want to run
+     the expensive check for ECDHE, as we generate TONS of keys to
+     use for a very short time. */
   if (0 != (rc = gcry_sexp_build (&s_keyparam, NULL,
                                   "(genkey(ecc(curve \"" CURVE "\")"
-                                  "(flags)))")))
+                                  "(flags eddsa no-keytest)))")))
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "gcry_sexp_build", rc);
-    return NULL;
+    return GNUNET_SYSERR;
   }
   if (0 != (rc = gcry_pk_genkey (&priv_sexp, s_keyparam)))
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "gcry_pk_genkey", rc);
     gcry_sexp_release (s_keyparam);
-    return NULL;
+    return GNUNET_SYSERR;
   }
   gcry_sexp_release (s_keyparam);
 #if EXTRA_CHECKS
@@ -480,20 +579,19 @@ GNUNET_CRYPTO_ecdhe_key_create ()
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "gcry_pk_testkey", rc);
     gcry_sexp_release (priv_sexp);
-    return NULL;
+    return GNUNET_SYSERR;
   }
 #endif
   if (0 != (rc = key_from_sexp (&d, priv_sexp, "private-key", "d")))
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "key_from_sexp", rc);
     gcry_sexp_release (priv_sexp);
-    return NULL;
+    return GNUNET_SYSERR;
   }
   gcry_sexp_release (priv_sexp);
-  priv = GNUNET_new (struct GNUNET_CRYPTO_EcdhePrivateKey);
-  GNUNET_CRYPTO_mpi_print_unsigned (priv->d, sizeof (priv->d), d);
+  GNUNET_CRYPTO_mpi_print_unsigned (pk->d, sizeof (pk->d), d);
   gcry_mpi_release (d);
-  return priv;
+  return GNUNET_OK;
 }
 
 
@@ -560,6 +658,9 @@ GNUNET_CRYPTO_eddsa_key_create ()
   gcry_mpi_t d;
   int rc;
 
+#if CRYPTO_BUG
+ again:
+#endif
   if (0 != (rc = gcry_sexp_build (&s_keyparam, NULL,
                                   "(genkey(ecc(curve \"" CURVE "\")"
                                   "(flags eddsa)))")))
@@ -592,6 +693,17 @@ GNUNET_CRYPTO_eddsa_key_create ()
   priv = GNUNET_new (struct GNUNET_CRYPTO_EddsaPrivateKey);
   GNUNET_CRYPTO_mpi_print_unsigned (priv->d, sizeof (priv->d), d);
   gcry_mpi_release (d);
+
+#if CRYPTO_BUG
+  if (GNUNET_OK !=
+      check_eddsa_key (priv))
+  {
+    GNUNET_break (0);
+    GNUNET_free (priv);
+    goto again;
+  }
+#endif
+
   return priv;
 }
 
@@ -618,407 +730,6 @@ GNUNET_CRYPTO_ecdsa_key_get_anonymous ()
 	     GCRYMPI_CONST_ONE);
   once = 1;
   return &anonymous;
-}
-
-
-/**
- * Wait for a short time (we're trying to lock a file or want
- * to give another process a shot at finishing a disk write, etc.).
- * Sleeps for 100ms (as that should be long enough for virtually all
- * modern systems to context switch and allow another process to do
- * some 'real' work).
- */
-static void
-short_wait ()
-{
-  struct GNUNET_TIME_Relative timeout;
-
-  timeout = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 100);
-  (void) GNUNET_NETWORK_socket_select (NULL, NULL, NULL, timeout);
-}
-
-
-/**
- * Create a new private key by reading it from a file.  If the
- * files does not exist, create a new key and write it to the
- * file.  Caller must free return value.  Note that this function
- * can not guarantee that another process might not be trying
- * the same operation on the same file at the same time.
- * If the contents of the file
- * are invalid the old file is deleted and a fresh key is
- * created.
- *
- * @param filename name of file to use to store the key
- * @return new private key, NULL on error (for example,
- *   permission denied)
- */
-struct GNUNET_CRYPTO_EddsaPrivateKey *
-GNUNET_CRYPTO_eddsa_key_create_from_file (const char *filename)
-{
-  struct GNUNET_CRYPTO_EddsaPrivateKey *priv;
-  struct GNUNET_DISK_FileHandle *fd;
-  unsigned int cnt;
-  int ec;
-  uint64_t fs;
-
-  if (GNUNET_SYSERR == GNUNET_DISK_directory_create_for_file (filename))
-    return NULL;
-  while (GNUNET_YES != GNUNET_DISK_file_test (filename))
-  {
-    fd = GNUNET_DISK_file_open (filename,
-                                GNUNET_DISK_OPEN_WRITE | GNUNET_DISK_OPEN_CREATE
-                                | GNUNET_DISK_OPEN_FAILIFEXISTS,
-                                GNUNET_DISK_PERM_USER_READ |
-                                GNUNET_DISK_PERM_USER_WRITE);
-    if (NULL == fd)
-    {
-      if (EEXIST == errno)
-      {
-        if (GNUNET_YES != GNUNET_DISK_file_test (filename))
-        {
-          /* must exist but not be accessible, fail for good! */
-          if (0 != ACCESS (filename, R_OK))
-            LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "access", filename);
-          else
-            GNUNET_break (0);   /* what is going on!? */
-          return NULL;
-        }
-        continue;
-      }
-      LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "open", filename);
-      return NULL;
-    }
-    cnt = 0;
-    while (GNUNET_YES !=
-           GNUNET_DISK_file_lock (fd, 0,
-                                  sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey),
-                                  GNUNET_YES))
-    {
-      short_wait ();
-      if (0 == ++cnt % 10)
-      {
-        ec = errno;
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Could not acquire lock on file `%s': %s...\n"), filename,
-             STRERROR (ec));
-      }
-    }
-    LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Creating a new private key.  This may take a while.\n"));
-    priv = GNUNET_CRYPTO_eddsa_key_create ();
-    GNUNET_assert (NULL != priv);
-    GNUNET_assert (sizeof (*priv) ==
-                   GNUNET_DISK_file_write (fd, priv, sizeof (*priv)));
-    GNUNET_DISK_file_sync (fd);
-    if (GNUNET_YES !=
-        GNUNET_DISK_file_unlock (fd, 0,
-                                 sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)))
-      LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-    GNUNET_assert (GNUNET_YES == GNUNET_DISK_file_close (fd));
-    return priv;
-  }
-  /* key file exists already, read it! */
-  fd = GNUNET_DISK_file_open (filename, GNUNET_DISK_OPEN_READ,
-                              GNUNET_DISK_PERM_NONE);
-  if (NULL == fd)
-  {
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "open", filename);
-    return NULL;
-  }
-  cnt = 0;
-  while (1)
-  {
-    if (GNUNET_YES !=
-        GNUNET_DISK_file_lock (fd, 0,
-                               sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey),
-                               GNUNET_NO))
-    {
-      if (0 == ++cnt % 60)
-      {
-        ec = errno;
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Could not acquire lock on file `%s': %s...\n"), filename,
-             STRERROR (ec));
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _
-             ("This may be ok if someone is currently generating a private key.\n"));
-      }
-      short_wait ();
-      continue;
-    }
-    if (GNUNET_YES != GNUNET_DISK_file_test (filename))
-    {
-      /* eh, what!? File we opened is now gone!? */
-      LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "stat", filename);
-      if (GNUNET_YES !=
-          GNUNET_DISK_file_unlock (fd, 0,
-                                   sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)))
-        LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-      GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fd));
-
-      return NULL;
-    }
-    if (GNUNET_OK != GNUNET_DISK_file_size (filename, &fs, GNUNET_YES, GNUNET_YES))
-      fs = 0;
-    if (fs < sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey))
-    {
-      /* maybe we got the read lock before the key generating
-       * process had a chance to get the write lock; give it up! */
-      if (GNUNET_YES !=
-          GNUNET_DISK_file_unlock (fd, 0,
-                                   sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)))
-        LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-      if (0 == ++cnt % 10)
-      {
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("When trying to read key file `%s' I found %u bytes but I need at least %u.\n"),
-             filename, (unsigned int) fs,
-             (unsigned int) sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey));
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("This may be ok if someone is currently generating a key.\n"));
-      }
-      short_wait ();                /* wait a bit longer! */
-      continue;
-    }
-    break;
-  }
-  fs = sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey);
-  priv = GNUNET_malloc (fs);
-  GNUNET_assert (fs == GNUNET_DISK_file_read (fd, priv, fs));
-  if (GNUNET_YES !=
-      GNUNET_DISK_file_unlock (fd, 0,
-                               sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)))
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-  GNUNET_assert (GNUNET_YES == GNUNET_DISK_file_close (fd));
-  return priv;
-}
-
-
-/**
- * Create a new private key by reading it from a file.  If the
- * files does not exist, create a new key and write it to the
- * file.  Caller must free return value.  Note that this function
- * can not guarantee that another process might not be trying
- * the same operation on the same file at the same time.
- * If the contents of the file
- * are invalid the old file is deleted and a fresh key is
- * created.
- *
- * @param filename name of file to use to store the key
- * @return new private key, NULL on error (for example,
- *   permission denied)
- */
-struct GNUNET_CRYPTO_EcdsaPrivateKey *
-GNUNET_CRYPTO_ecdsa_key_create_from_file (const char *filename)
-{
-  struct GNUNET_CRYPTO_EcdsaPrivateKey *priv;
-  struct GNUNET_DISK_FileHandle *fd;
-  unsigned int cnt;
-  int ec;
-  uint64_t fs;
-
-  if (GNUNET_SYSERR == GNUNET_DISK_directory_create_for_file (filename))
-    return NULL;
-  while (GNUNET_YES != GNUNET_DISK_file_test (filename))
-  {
-    fd = GNUNET_DISK_file_open (filename,
-                                GNUNET_DISK_OPEN_WRITE | GNUNET_DISK_OPEN_CREATE
-                                | GNUNET_DISK_OPEN_FAILIFEXISTS,
-                                GNUNET_DISK_PERM_USER_READ |
-                                GNUNET_DISK_PERM_USER_WRITE);
-    if (NULL == fd)
-    {
-      if (EEXIST == errno)
-      {
-        if (GNUNET_YES != GNUNET_DISK_file_test (filename))
-        {
-          /* must exist but not be accessible, fail for good! */
-          if (0 != ACCESS (filename, R_OK))
-            LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "access", filename);
-          else
-            GNUNET_break (0);   /* what is going on!? */
-          return NULL;
-        }
-        continue;
-      }
-      LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "open", filename);
-      return NULL;
-    }
-    cnt = 0;
-    while (GNUNET_YES !=
-           GNUNET_DISK_file_lock (fd, 0,
-                                  sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey),
-                                  GNUNET_YES))
-    {
-      short_wait ();
-      if (0 == ++cnt % 10)
-      {
-        ec = errno;
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Could not acquire lock on file `%s': %s...\n"), filename,
-             STRERROR (ec));
-      }
-    }
-    LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Creating a new private key.  This may take a while.\n"));
-    priv = GNUNET_CRYPTO_ecdsa_key_create ();
-    GNUNET_assert (NULL != priv);
-    GNUNET_assert (sizeof (*priv) ==
-                   GNUNET_DISK_file_write (fd, priv, sizeof (*priv)));
-    GNUNET_DISK_file_sync (fd);
-    if (GNUNET_YES !=
-        GNUNET_DISK_file_unlock (fd, 0,
-                                 sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey)))
-      LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-    GNUNET_assert (GNUNET_YES == GNUNET_DISK_file_close (fd));
-    return priv;
-  }
-  /* key file exists already, read it! */
-  fd = GNUNET_DISK_file_open (filename, GNUNET_DISK_OPEN_READ,
-                              GNUNET_DISK_PERM_NONE);
-  if (NULL == fd)
-  {
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "open", filename);
-    return NULL;
-  }
-  cnt = 0;
-  while (1)
-  {
-    if (GNUNET_YES !=
-        GNUNET_DISK_file_lock (fd, 0,
-                               sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey),
-                               GNUNET_NO))
-    {
-      if (0 == ++cnt % 60)
-      {
-        ec = errno;
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Could not acquire lock on file `%s': %s...\n"), filename,
-             STRERROR (ec));
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _
-             ("This may be ok if someone is currently generating a private key.\n"));
-      }
-      short_wait ();
-      continue;
-    }
-    if (GNUNET_YES != GNUNET_DISK_file_test (filename))
-    {
-      /* eh, what!? File we opened is now gone!? */
-      LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "stat", filename);
-      if (GNUNET_YES !=
-          GNUNET_DISK_file_unlock (fd, 0,
-                                   sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey)))
-        LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-      GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fd));
-
-      return NULL;
-    }
-    if (GNUNET_OK != GNUNET_DISK_file_size (filename, &fs, GNUNET_YES, GNUNET_YES))
-      fs = 0;
-    if (fs < sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey))
-    {
-      /* maybe we got the read lock before the key generating
-       * process had a chance to get the write lock; give it up! */
-      if (GNUNET_YES !=
-          GNUNET_DISK_file_unlock (fd, 0,
-                                   sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey)))
-        LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-      if (0 == ++cnt % 10)
-      {
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("When trying to read key file `%s' I found %u bytes but I need at least %u.\n"),
-             filename, (unsigned int) fs,
-             (unsigned int) sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey));
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("This may be ok if someone is currently generating a key.\n"));
-      }
-      short_wait ();                /* wait a bit longer! */
-      continue;
-    }
-    break;
-  }
-  fs = sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey);
-  priv = GNUNET_malloc (fs);
-  GNUNET_assert (fs == GNUNET_DISK_file_read (fd, priv, fs));
-  if (GNUNET_YES !=
-      GNUNET_DISK_file_unlock (fd, 0,
-                               sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey)))
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "fcntl", filename);
-  GNUNET_assert (GNUNET_YES == GNUNET_DISK_file_close (fd));
-  return priv;
-}
-
-
-/**
- * Create a new private key by reading our peer's key from
- * the file specified in the configuration.
- *
- * @param cfg the configuration to use
- * @return new private key, NULL on error (for example,
- *   permission denied)
- */
-struct GNUNET_CRYPTO_EddsaPrivateKey *
-GNUNET_CRYPTO_eddsa_key_create_from_configuration (const struct GNUNET_CONFIGURATION_Handle *cfg)
-{
-  struct GNUNET_CRYPTO_EddsaPrivateKey *priv;
-  char *fn;
-
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (cfg, "PEER", "PRIVATE_KEY", &fn))
-    return NULL;
-  priv = GNUNET_CRYPTO_eddsa_key_create_from_file (fn);
-  GNUNET_free (fn);
-  return priv;
-}
-
-
-/**
- * Setup a key file for a peer given the name of the
- * configuration file (!).  This function is used so that
- * at a later point code can be certain that reading a
- * key is fast (for example in time-dependent testcases).
- *
- * @param cfg_name name of the configuration file to use
- */
-void
-GNUNET_CRYPTO_eddsa_setup_key (const char *cfg_name)
-{
-  struct GNUNET_CONFIGURATION_Handle *cfg;
-  struct GNUNET_CRYPTO_EddsaPrivateKey *priv;
-
-  cfg = GNUNET_CONFIGURATION_create ();
-  (void) GNUNET_CONFIGURATION_load (cfg, cfg_name);
-  priv = GNUNET_CRYPTO_eddsa_key_create_from_configuration (cfg);
-  if (NULL != priv)
-    GNUNET_free (priv);
-  GNUNET_CONFIGURATION_destroy (cfg);
-}
-
-
-/**
- * Retrieve the identity of the host's peer.
- *
- * @param cfg configuration to use
- * @param dst pointer to where to write the peer identity
- * @return #GNUNET_OK on success, #GNUNET_SYSERR if the identity
- *         could not be retrieved
- */
-int
-GNUNET_CRYPTO_get_peer_identity (const struct GNUNET_CONFIGURATION_Handle *cfg,
-                                 struct GNUNET_PeerIdentity *dst)
-{
-  struct GNUNET_CRYPTO_EddsaPrivateKey *priv;
-
-  if (NULL == (priv = GNUNET_CRYPTO_eddsa_key_create_from_configuration (cfg)))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Could not load peer's private key\n"));
-    return GNUNET_SYSERR;
-  }
-  GNUNET_CRYPTO_eddsa_key_get_public (priv, &dst->public_key);
-  GNUNET_free (priv);
-  return GNUNET_OK;
 }
 
 
@@ -1219,16 +930,16 @@ GNUNET_CRYPTO_ecdsa_verify (uint32_t purpose,
   /* build s-expression for signature */
   if (0 != (rc = gcry_sexp_build (&sig_sexpr, NULL,
 				  "(sig-val(ecdsa(r %b)(s %b)))",
-                                  (int)sizeof (sig->r), sig->r,
-                                  (int)sizeof (sig->s), sig->s)))
+                                  (int) sizeof (sig->r), sig->r,
+                                  (int) sizeof (sig->s), sig->s)))
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "gcry_sexp_build", rc);
     return GNUNET_SYSERR;
   }
   data = data_to_ecdsa_value (validate);
   if (0 != (rc = gcry_sexp_build (&pub_sexpr, NULL,
-                            "(public-key(ecc(curve " CURVE ")(q %b)))",
-                                  (int)sizeof (pub->q_y), pub->q_y)))
+                                  "(public-key(ecc(curve " CURVE ")(q %b)))",
+                                  (int) sizeof (pub->q_y), pub->q_y)))
   {
     gcry_sexp_release (data);
     gcry_sexp_release (sig_sexpr);
@@ -1284,7 +995,7 @@ GNUNET_CRYPTO_eddsa_verify (uint32_t purpose,
   }
   data = data_to_eddsa_value (validate);
   if (0 != (rc = gcry_sexp_build (&pub_sexpr, NULL,
-                                  "(public-key(ecc(curve " CURVE ")(q %b)))",
+                                  "(public-key(ecc(curve " CURVE ")(flags eddsa)(q %b)))",
                                   (int)sizeof (pub->q_y), pub->q_y)))
   {
     gcry_sexp_release (data);
@@ -1367,7 +1078,9 @@ GNUNET_CRYPTO_ecc_ecdh (const struct GNUNET_CRYPTO_EcdhePrivateKey *priv,
   GNUNET_assert (0 ==
                  gcry_mpi_print (GCRYMPI_FMT_STD, xbuf, rsize, &rsize,
                                  result_x));
-  GNUNET_CRYPTO_hash (xbuf, rsize, key_material);
+  GNUNET_CRYPTO_hash (xbuf,
+                      rsize,
+                      key_material);
   gcry_mpi_release (result_x);
   return GNUNET_OK;
 }
@@ -1390,14 +1103,17 @@ derive_h (const struct GNUNET_CRYPTO_EcdsaPublicKey *pub,
 {
   gcry_mpi_t h;
   struct GNUNET_HashCode hc;
+  static const char *const salt = "key-derivation";
 
   GNUNET_CRYPTO_kdf (&hc, sizeof (hc),
-		     "key-derivation", strlen ("key-derivation"),
+		     salt, strlen (salt),
 		     pub, sizeof (*pub),
 		     label, strlen (label),
 		     context, strlen (context),
 		     NULL, 0);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&h, (unsigned char *) &hc, sizeof (hc));
+  GNUNET_CRYPTO_mpi_scan_unsigned (&h,
+				   (unsigned char *) &hc,
+				   sizeof (hc));
   return h;
 }
 
@@ -1433,7 +1149,9 @@ GNUNET_CRYPTO_ecdsa_private_key_derive (const struct GNUNET_CRYPTO_EcdsaPrivateK
   GNUNET_CRYPTO_ecdsa_key_get_public (priv, &pub);
 
   h = derive_h (&pub, label, context);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&x, priv->d, sizeof (priv->d));
+  GNUNET_CRYPTO_mpi_scan_unsigned (&x,
+				   priv->d,
+				   sizeof (priv->d));
   d = gcry_mpi_new (256);
   gcry_mpi_mulm (d, h, x, n);
   gcry_mpi_release (h);
@@ -1477,7 +1195,7 @@ GNUNET_CRYPTO_ecdsa_public_key_derive (const struct GNUNET_CRYPTO_EcdsaPublicKey
      compressed thus we first store it in the context and then get it
      back as a (decompresssed) point.  */
   q_y = gcry_mpi_set_opaque_copy (NULL, pub->q_y, 8*sizeof (pub->q_y));
-  GNUNET_assert (q_y);
+  GNUNET_assert (NULL != q_y);
   GNUNET_assert (0 == gcry_mpi_ec_set_mpi ("q", q_y, ctx));
   gcry_mpi_release (q_y);
   q = gcry_mpi_ec_get_point ("q", ctx, 0);
@@ -1501,10 +1219,301 @@ GNUNET_CRYPTO_ecdsa_public_key_derive (const struct GNUNET_CRYPTO_EcdsaPublicKey
   gcry_mpi_point_release (v);
   q_y = gcry_mpi_ec_get_mpi ("q@eddsa", ctx, 0);
   GNUNET_assert (q_y);
-  GNUNET_CRYPTO_mpi_print_unsigned (result->q_y, sizeof result->q_y, q_y);
+  GNUNET_CRYPTO_mpi_print_unsigned (result->q_y,
+                                    sizeof (result->q_y),
+                                    q_y);
   gcry_mpi_release (q_y);
   gcry_ctx_release (ctx);
 }
 
+
+/**
+ * Reverse the sequence of the bytes in @a buffer
+ *
+ * @param[in|out] buffer buffer to invert
+ * @param length number of bytes in @a buffer
+ */
+static void
+reverse_buffer (unsigned char *buffer,
+		size_t length)
+{
+  unsigned char tmp;
+  size_t i;
+
+  for (i=0; i < length/2; i++)
+  {
+    tmp = buffer[i];
+    buffer[i] = buffer[length-1-i];
+    buffer[length-1-i] = tmp;
+  }
+}
+
+
+/**
+ * Convert the secret @a d of an EdDSA key to the
+ * value that is actually used in the EdDSA computation.
+ *
+ * @param d secret input
+ * @return value used for the calculation in EdDSA
+ */
+static gcry_mpi_t
+eddsa_d_to_a (gcry_mpi_t d)
+{
+  unsigned char rawmpi[32]; /* 256-bit value */
+  size_t rawmpilen;
+  unsigned char digest[64]; /* 512-bit hash value */
+  gcry_buffer_t hvec[2];
+  unsigned int b;
+  gcry_mpi_t a;
+
+  b = 256 / 8; /* number of bytes in `d` */
+
+  /* Note that we clear DIGEST so we can use it as input to left pad
+     the key with zeroes for hashing.  */
+  memset (digest, 0, sizeof digest);
+  memset (hvec, 0, sizeof hvec);
+  rawmpilen = sizeof (rawmpi);
+  GNUNET_assert (0 ==
+                 gcry_mpi_print (GCRYMPI_FMT_USG,
+				 rawmpi, rawmpilen, &rawmpilen,
+                                 d));
+  hvec[0].data = digest;
+  hvec[0].off = 0;
+  hvec[0].len = b > rawmpilen ? (b - rawmpilen) : 0;
+  hvec[1].data = rawmpi;
+  hvec[1].off = 0;
+  hvec[1].len = rawmpilen;
+  GNUNET_assert (0 ==
+		 gcry_md_hash_buffers (GCRY_MD_SHA512,
+				       0 /* flags */,
+				       digest,
+				       hvec, 2));
+  /* Compute the A value.  */
+  reverse_buffer (digest, 32);  /* Only the first half of the hash.  */
+  digest[0]   = (digest[0] & 0x7f) | 0x40;
+  digest[31] &= 0xf8;
+
+  GNUNET_CRYPTO_mpi_scan_unsigned (&a,
+				   digest,
+				   32);
+  return a;
+}
+
+
+/**
+ * Take point from ECDH and convert it to key material.
+ *
+ * @param result point from ECDH
+ * @param ctx ECC context
+ * @param key_material[out] set to derived key material
+ * @return #GNUNET_OK on success
+ */
+static int
+point_to_hash (gcry_mpi_point_t result,
+               gcry_ctx_t ctx,
+               struct GNUNET_HashCode *key_material)
+{
+  gcry_mpi_t result_x;
+  unsigned char xbuf[256 / 8];
+  size_t rsize;
+
+  /* finally, convert point to string for hashing */
+  result_x = gcry_mpi_new (256);
+  if (gcry_mpi_ec_get_affine (result_x, NULL, result, ctx))
+  {
+    LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "get_affine failed", 0);
+    return GNUNET_SYSERR;
+  }
+
+  rsize = sizeof (xbuf);
+  GNUNET_assert (! gcry_mpi_get_flag (result_x, GCRYMPI_FLAG_OPAQUE));
+  /* result_x can be negative here, so we do not use 'GNUNET_CRYPTO_mpi_print_unsigned'
+     as that does not include the sign bit; x should be a 255-bit
+     value, so with the sign it should fit snugly into the 256-bit
+     xbuf */
+  GNUNET_assert (0 ==
+                 gcry_mpi_print (GCRYMPI_FMT_STD, xbuf, rsize, &rsize,
+                                 result_x));
+  GNUNET_CRYPTO_hash (xbuf,
+                      rsize,
+                      key_material);
+  gcry_mpi_release (result_x);
+  return GNUNET_OK;
+}
+
+
+/**
+ * @ingroup crypto
+ * Derive key material from a ECDH public key and a private EdDSA key.
+ * Dual to #GNUNET_CRRYPTO_ecdh_eddsa.
+ *
+ * @param priv private key from EdDSA to use for the ECDH (x)
+ * @param pub public key to use for the ECDH (yG)
+ * @param key_material where to write the key material H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_eddsa_ecdh (const struct GNUNET_CRYPTO_EddsaPrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EcdhePublicKey *pub,
+                          struct GNUNET_HashCode *key_material)
+{
+  gcry_mpi_point_t result;
+  gcry_mpi_point_t q;
+  gcry_mpi_t d;
+  gcry_mpi_t a;
+  gcry_ctx_t ctx;
+  gcry_sexp_t pub_sexpr;
+  int ret;
+
+  /* first, extract the q = dP value from the public key */
+  if (0 != gcry_sexp_build (&pub_sexpr, NULL,
+                            "(public-key(ecc(curve " CURVE ")(q %b)))",
+                            (int)sizeof (pub->q_y), pub->q_y))
+    return GNUNET_SYSERR;
+  GNUNET_assert (0 == gcry_mpi_ec_new (&ctx, pub_sexpr, NULL));
+  gcry_sexp_release (pub_sexpr);
+  q = gcry_mpi_ec_get_point ("q", ctx, 0);
+
+  /* second, extract the d value from our private key */
+  GNUNET_CRYPTO_mpi_scan_unsigned (&d, priv->d, sizeof (priv->d));
+
+  /* NOW, because this is EdDSA, HASH 'd' first! */
+  a = eddsa_d_to_a (d);
+  gcry_mpi_release (d);
+
+  /* then call the 'multiply' function, to compute the product */
+  result = gcry_mpi_point_new (0);
+  gcry_mpi_ec_mul (result, a, q, ctx);
+  gcry_mpi_point_release (q);
+  gcry_mpi_release (a);
+
+  ret = point_to_hash (result,
+                       ctx,
+                       key_material);
+  gcry_mpi_point_release (result);
+  gcry_ctx_release (ctx);
+  return ret;
+}
+
+
+/**
+ * @ingroup crypto
+ * Derive key material from a ECDH public key and a private ECDSA key.
+ * Dual to #GNUNET_CRRYPTO_ecdh_eddsa.
+ *
+ * @param priv private key from ECDSA to use for the ECDH (x)
+ * @param pub public key to use for the ECDH (yG)
+ * @param key_material where to write the key material H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_ecdsa_ecdh (const struct GNUNET_CRYPTO_EcdsaPrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EcdhePublicKey *pub,
+                          struct GNUNET_HashCode *key_material)
+{
+  gcry_mpi_point_t result;
+  gcry_mpi_point_t q;
+  gcry_mpi_t d;
+  gcry_ctx_t ctx;
+  gcry_sexp_t pub_sexpr;
+  int ret;
+
+  /* first, extract the q = dP value from the public key */
+  if (0 != gcry_sexp_build (&pub_sexpr, NULL,
+                            "(public-key(ecc(curve " CURVE ")(q %b)))",
+                            (int)sizeof (pub->q_y), pub->q_y))
+    return GNUNET_SYSERR;
+  GNUNET_assert (0 == gcry_mpi_ec_new (&ctx, pub_sexpr, NULL));
+  gcry_sexp_release (pub_sexpr);
+  q = gcry_mpi_ec_get_point ("q", ctx, 0);
+
+  /* second, extract the d value from our private key */
+  GNUNET_CRYPTO_mpi_scan_unsigned (&d, priv->d, sizeof (priv->d));
+
+  /* then call the 'multiply' function, to compute the product */
+  result = gcry_mpi_point_new (0);
+  gcry_mpi_ec_mul (result, d, q, ctx);
+  gcry_mpi_point_release (q);
+  gcry_mpi_release (d);
+
+  /* finally, convert point to string for hashing */
+  ret = point_to_hash (result,
+                       ctx,
+                       key_material);
+  gcry_mpi_point_release (result);
+  gcry_ctx_release (ctx);
+  return ret;
+}
+
+
+
+/**
+ * @ingroup crypto
+ * Derive key material from a EdDSA public key and a private ECDH key.
+ * Dual to #GNUNET_CRRYPTO_eddsa_ecdh.
+ *
+ * @param priv private key to use for the ECDH (y)
+ * @param pub public key from EdDSA to use for the ECDH (X=h(x)G)
+ * @param key_material where to write the key material H(yX)=H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_ecdh_eddsa (const struct GNUNET_CRYPTO_EcdhePrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EddsaPublicKey *pub,
+                          struct GNUNET_HashCode *key_material)
+{
+  gcry_mpi_point_t result;
+  gcry_mpi_point_t q;
+  gcry_mpi_t d;
+  gcry_ctx_t ctx;
+  gcry_sexp_t pub_sexpr;
+  int ret;
+
+  /* first, extract the q = dP value from the public key */
+  if (0 != gcry_sexp_build (&pub_sexpr, NULL,
+                            "(public-key(ecc(curve " CURVE ")(q %b)))",
+                            (int)sizeof (pub->q_y), pub->q_y))
+    return GNUNET_SYSERR;
+  GNUNET_assert (0 == gcry_mpi_ec_new (&ctx, pub_sexpr, NULL));
+  gcry_sexp_release (pub_sexpr);
+  q = gcry_mpi_ec_get_point ("q", ctx, 0);
+
+  /* second, extract the d value from our private key */
+  GNUNET_CRYPTO_mpi_scan_unsigned (&d, priv->d, sizeof (priv->d));
+
+  /* then call the 'multiply' function, to compute the product */
+  result = gcry_mpi_point_new (0);
+  gcry_mpi_ec_mul (result, d, q, ctx);
+  gcry_mpi_point_release (q);
+  gcry_mpi_release (d);
+
+  /* finally, convert point to string for hashing */
+  ret = point_to_hash (result,
+                       ctx,
+                       key_material);
+  gcry_mpi_point_release (result);
+  gcry_ctx_release (ctx);
+  return ret;
+}
+
+/**
+ * @ingroup crypto
+ * Derive key material from a ECDSA public key and a private ECDH key.
+ * Dual to #GNUNET_CRRYPTO_eddsa_ecdh.
+ *
+ * @param priv private key to use for the ECDH (y)
+ * @param pub public key from ECDSA to use for the ECDH (X=h(x)G)
+ * @param key_material where to write the key material H(yX)=H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_ecdh_ecdsa (const struct GNUNET_CRYPTO_EcdhePrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EcdsaPublicKey *pub,
+                          struct GNUNET_HashCode *key_material)
+{
+  return GNUNET_CRYPTO_ecdh_eddsa (priv,
+                                   (const struct GNUNET_CRYPTO_EddsaPublicKey *)pub,
+                                   key_material);
+}
 
 /* end of crypto_ecc.c */

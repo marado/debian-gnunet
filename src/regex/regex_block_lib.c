@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012,2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012,2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @author Bartlomiej Polot
@@ -164,7 +159,7 @@ struct CheckEdgeContext
  * @param len Lenght of token.
  * @param key Hash of next state.
  *
- * @return GNUNET_YES, to keep iterating
+ * @return #GNUNET_YES, to keep iterating
  */
 static int
 check_edge (void *cls,
@@ -175,8 +170,11 @@ check_edge (void *cls,
   struct CheckEdgeContext *ctx = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "edge %.*s [%u]: %s->%s\n",
-              (int) len, token, len, GNUNET_h2s(key));
+	      "edge %.*s [%u]: %s\n",
+              (int) len,
+              token,
+              (unsigned int) len,
+              GNUNET_h2s (key));
   if (NULL == ctx->xquery)
     return GNUNET_YES;
   if (strlen (ctx->xquery) < len)
@@ -209,7 +207,8 @@ REGEX_BLOCK_check (const struct RegexBlock *block,
   struct CheckEdgeContext ctx;
   int res;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Block check\n");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Block check\n");
   if (GNUNET_OK !=
       REGEX_BLOCK_get_key (block, size,
 			   &key))
@@ -229,8 +228,9 @@ REGEX_BLOCK_check (const struct RegexBlock *block,
        ( (NULL == xquery) || ('\0' == xquery[0]) ) )
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "  out! Is accepting: %u, xquery %p\n",
-       ntohs(block->is_accepting), xquery);
+         "  out! Is accepting: %u, xquery %p\n",
+         ntohs(block->is_accepting),
+         xquery);
     return GNUNET_OK;
   }
   ctx.xquery = xquery;
@@ -443,17 +443,17 @@ REGEX_BLOCK_create (const char *proof,
   block->num_edges = htons (num_edges);
   block->num_destinations = htons (unique_destinations);
   dests = (struct GNUNET_HashCode *) &block[1];
-  memcpy (dests, destinations, sizeof (struct GNUNET_HashCode) * unique_destinations);
+  GNUNET_memcpy (dests, destinations, sizeof (struct GNUNET_HashCode) * unique_destinations);
   edgeinfos = (struct EdgeInfo *) &dests[unique_destinations];
   aux = (char *) &edgeinfos[num_edges];
   off = len;
-  memcpy (aux, proof, len);
+  GNUNET_memcpy (aux, proof, len);
   for (i=0;i<num_edges;i++)
   {
     slen = strlen (edges[i].label);
     edgeinfos[i].token_length = htons ((uint16_t) slen);
     edgeinfos[i].destination_index = htons (destination_indices[i]);
-    memcpy (&aux[off],
+    GNUNET_memcpy (&aux[off],
 	    edges[i].label,
 	    slen);
     off += slen;

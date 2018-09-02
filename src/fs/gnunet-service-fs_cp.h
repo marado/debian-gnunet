@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -34,18 +29,15 @@
  * Maximum number of outgoing messages we queue per peer.
  *
  * Performance measurements for 2 peer setup for 50 MB file
- * (with MAX_DATASTORE_QUEUE = 1 and RETRY_PROBABILITY_INV = 1):
+ * (using perf_gnunet_service_fs_p2p):
  *
- *   2: 1700 kb/s, 1372 kb/s
- *   8: 2117 kb/s, 1284 kb/s, 1112 kb/s
- *  16: 3500 kb/s, 3200 kb/s, 3388 kb/s
- *  32: 3441 kb/s, 3163 kb/s, 3277 kb/s
- * 128: 1700 kb/s; 2010 kb/s, 3383 kb/s, 1156 kb/s
+ *  24: 2-3 MB/s # ~ 24 MB RAM
+ * 256:   8 MB/s # ~256 MB RAM
  *
- * Conclusion: 16 seems to be a pretty good value (stable
- * and high performance, no excessive memory use).
+ * Conclusion: 24 should suffice (reasonable
+ * performance, no excessive memory use).
  */
-#define MAX_QUEUE_PER_PEER 16
+#define MAX_QUEUE_PER_PEER 24
 
 /**
  * Length of the P2P success tracker.  Note that having a very long
@@ -65,11 +57,6 @@
  */
 struct GSF_PeerPerformanceData
 {
-
-  /**
-   * Transport performance data.
-   */
-  struct GNUNET_ATS_Information *atsi;
 
   /**
    * List of the last clients for which this peer successfully
@@ -128,10 +115,15 @@ struct GSF_PeerPerformanceData
   double avg_priority;
 
   /**
-   * The peer's identity.
+   * The peer's identity (interned version).
    */
   GNUNET_PEER_Id pid;
 
+  /**
+   * The peer's identity (pointer).
+   */
+  const struct GNUNET_PeerIdentity *peer;
+  
   /**
    * Respect rating for this peer
    */
@@ -158,23 +150,25 @@ struct GSF_PeerPerformanceData
  * @param cp handle to the connected peer record
  * @param perf peer performance data
  */
-typedef void (*GSF_ConnectedPeerIterator) (void *cls,
-                                           const struct GNUNET_PeerIdentity *
-                                           peer, struct GSF_ConnectedPeer * cp,
-                                           const struct GSF_PeerPerformanceData
-                                           * ppd);
+typedef void
+(*GSF_ConnectedPeerIterator) (void *cls,
+                              const struct GNUNET_PeerIdentity *peer,
+                              struct GSF_ConnectedPeer *cp,
+                              const struct GSF_PeerPerformanceData *ppd);
 
 
 /**
  * Function called to get a message for transmission.
  *
  * @param cls closure
- * @param buf_size number of bytes available in buf
+ * @param buf_size number of bytes available in @a buf
  * @param buf where to copy the message, NULL on error (peer disconnect)
- * @return number of bytes copied to 'buf', can be 0 (without indicating an error)
+ * @return number of bytes copied to @a buf, can be 0 (without indicating an error)
  */
-typedef size_t (*GSF_GetMessageCallback) (void *cls, size_t buf_size,
-                                          void *buf);
+typedef size_t
+(*GSF_GetMessageCallback) (void *cls,
+                           size_t buf_size,
+                           void *buf);
 
 
 /**
@@ -182,11 +176,12 @@ typedef size_t (*GSF_GetMessageCallback) (void *cls, size_t buf_size,
  *
  * @param cls closure
  * @param cp handle to the connected peer record
- * @param success GNUNET_YES on success, GNUNET_NO on failure
+ * @param success #GNUNET_YES on success, #GNUNET_NO on failure
  */
-typedef void (*GSF_PeerReserveCallback) (void *cls,
-                                         struct GSF_ConnectedPeer * cp,
-                                         int success);
+typedef void
+(*GSF_PeerReserveCallback) (void *cls,
+                            struct GSF_ConnectedPeer *cp,
+                            int success);
 
 
 /**
@@ -199,11 +194,15 @@ struct GSF_PeerTransmitHandle;
  * A peer connected to us.  Setup the connected peer
  * records.
  *
+ * @param cls NULL
  * @param peer identity of peer that connected
- * @return handle to connected peer entry
+ * @param mq queue for sending messages to @a peer
+ * @return internal handle for the peer
  */
-struct GSF_ConnectedPeer *
-GSF_peer_connect_handler_ (const struct GNUNET_PeerIdentity *peer);
+void *
+GSF_peer_connect_handler (void *cls,
+			  const struct GNUNET_PeerIdentity *peer,
+			  struct GNUNET_MQ_Handle *mq);
 
 
 /**
@@ -233,27 +232,15 @@ GSF_update_peer_latency_ (const struct GNUNET_PeerIdentity *id,
  * the callback is invoked with a 'NULL' buffer.
  *
  * @param cp target peer
- * @param is_query is this a query (GNUNET_YES) or content (GNUNET_NO)
+ * @param is_query is this a query (#GNUNET_YES) or content (#GNUNET_NO)
  * @param priority how important is this request?
- * @param timeout when does this request timeout (call gmc with error)
- * @param size number of bytes we would like to send to the peer
- * @param gmc function to call to get the message
- * @param gmc_cls closure for gmc
- * @return handle to cancel request
- */
-struct GSF_PeerTransmitHandle *
-GSF_peer_transmit_ (struct GSF_ConnectedPeer *cp, int is_query,
-                    uint32_t priority, struct GNUNET_TIME_Relative timeout,
-                    size_t size, GSF_GetMessageCallback gmc, void *gmc_cls);
-
-
-/**
- * Cancel an earlier request for transmission.
- *
- * @param pth request to cancel
+ * @param env envelope of message to send
  */
 void
-GSF_peer_transmit_cancel_ (struct GSF_PeerTransmitHandle *pth);
+GSF_peer_transmit_ (struct GSF_ConnectedPeer *cp,
+                    int is_query,
+                    uint32_t priority,
+		    struct GNUNET_MQ_Envelope *env);
 
 
 /**
@@ -295,35 +282,25 @@ GSF_peer_update_responder_peer_ (struct GSF_ConnectedPeer *cp,
 
 
 /**
- * Handle P2P "MIGRATION_STOP" message.
+ * Handle P2P #GNUNET_MESSAGE_TYPE_FS_MIGRATION_STOP message.
  *
- * @param cls closure, always NULL
- * @param other the other peer involved (sender or receiver, NULL
- *        for loopback messages where we are both sender and receiver)
- * @param message the actual message
- * @return GNUNET_OK to keep the connection open,
- *         GNUNET_SYSERR to close it (signal serious error)
+ * @param cls closure, the `struct GSF_ConnectedPeer`
+ * @param msm the actual message
  */
-int
-GSF_handle_p2p_migration_stop_ (void *cls,
-                                const struct GNUNET_PeerIdentity *other,
-                                const struct GNUNET_MessageHeader *message);
+void
+handle_p2p_migration_stop (void *cls,
+			   const struct MigrationStopMessage *message);
 
 
 /**
- * Handle P2P "QUERY" message.  Only responsible for creating the
- * request entry itself and setting up reply callback and cancellation
- * on peer disconnect.  Does NOT execute the actual request strategy
- * (planning) or local database operations.
+ * Handle P2P "QUERY" message.
  *
- * @param other the other peer involved (sender or receiver, NULL
- *        for loopback messages where we are both sender and receiver)
- * @param message the actual message
- * @return pending request handle, NULL on error
+ * @param cls the `struct GSF_ConnectedPeer` of the other sender
+ * @param gm the actual message
  */
-struct GSF_PendingRequest *
-GSF_handle_p2p_query_ (const struct GNUNET_PeerIdentity *other,
-                       const struct GNUNET_MessageHeader *message);
+void
+handle_p2p_get (void *cls,
+		const struct GetMessage *gm);
 
 
 /**
@@ -354,10 +331,12 @@ GSF_block_peer_migration_ (struct GSF_ConnectedPeer *cp,
  *
  * @param cls unused
  * @param peer identity of peer that connected
+ * @param internal_cls our `struct GSF_ConnectedPeer` for @a peer
  */
 void
-GSF_peer_disconnect_handler_ (void *cls,
-                              const struct GNUNET_PeerIdentity *peer);
+GSF_peer_disconnect_handler (void *cls,
+			     const struct GNUNET_PeerIdentity *peer,
+			     void *internal_cls);
 
 
 /**

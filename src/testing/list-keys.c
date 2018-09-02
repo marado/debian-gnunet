@@ -6,10 +6,6 @@ static unsigned int nkeys;
 static unsigned int nskip;
 static int result;
 
-
-
-
-
 /**
  * Main run function.
  *
@@ -72,7 +68,8 @@ run (void *cls, char *const *args, const char *cfgfile,
       PRINTF ("Max keys %u reached\n", nmax);
       break;
     }
-    (void) memcpy (&pkey, data + (cnt * GNUNET_TESTING_HOSTKEYFILESIZE),
+    GNUNET_memcpy (&pkey,
+                   data + (cnt * GNUNET_TESTING_HOSTKEYFILESIZE),
                    GNUNET_TESTING_HOSTKEYFILESIZE);
     GNUNET_CRYPTO_eddsa_key_get_public (&pkey, &id.public_key);
     PRINTF ("Key %u: %s\n", cnt, GNUNET_i2s_full (&id));
@@ -86,19 +83,18 @@ run (void *cls, char *const *args, const char *cfgfile,
 int main (int argc, char *argv[])
 {
   struct GNUNET_GETOPT_CommandLineOption option[] = {
-    {'n', "num-keys", "COUNT",
-     gettext_noop ("list COUNT number of keys"),
-     GNUNET_YES, &GNUNET_GETOPT_set_uint, &nkeys},
-    {'s', "skip", "COUNT",
-     gettext_noop ("skip COUNT number of keys in the beginning"),
-     GNUNET_YES, &GNUNET_GETOPT_set_uint, &nskip},
+    GNUNET_GETOPT_option_uint ('n',
+                                   "num-keys",
+                                   "COUNT",
+                                   gettext_noop ("list COUNT number of keys"),
+                                   &nkeys),
     GNUNET_GETOPT_OPTION_END
   };
   int ret;
 
   result = GNUNET_SYSERR;
   nkeys = 10;
-  ret = 
+  ret =
       GNUNET_PROGRAM_run (argc, argv, "list-keys", "Lists the peer IDs corresponding to the given keys file\n",
                           option, &run, NULL);
   if (GNUNET_OK != ret)

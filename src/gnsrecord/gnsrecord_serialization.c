@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2009-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -37,6 +32,12 @@
 
 #define LOG(kind,...) GNUNET_log_from (kind, "gnsrecord",__VA_ARGS__)
 
+/**
+ * Set to 1 to check that all records are well-formed (can be converted
+ * to string) during serialization/deserialization.
+ */
+#define DEBUG_GNSRECORDS 0
+
 GNUNET_NETWORK_STRUCT_BEGIN
 
 
@@ -48,7 +49,7 @@ struct NetworkRecord
 
   /**
    * Expiration time for the DNS record; relative or absolute depends
-   * on 'flags', network byte order.
+   * on @e flags, network byte order.
    */
   uint64_t expiration_time GNUNET_PACKED;
 
@@ -78,22 +79,45 @@ GNUNET_NETWORK_STRUCT_END
  *
  * @param rd_count number of records in the rd array
  * @param rd array of #GNUNET_GNSRECORD_Data with @a rd_count elements
- * @return the required size to serialize
+ * @return the required size to serialize, -1 on error
  */
-size_t
+ssize_t
 GNUNET_GNSRECORD_records_get_size (unsigned int rd_count,
 				   const struct GNUNET_GNSRECORD_Data *rd)
 {
-  unsigned int i;
   size_t ret;
 
   ret = sizeof (struct NetworkRecord) * rd_count;
-  for (i=0;i<rd_count;i++)
+  for (unsigned int i=0;i<rd_count;i++)
   {
-    GNUNET_assert ((ret + rd[i].data_size) >= ret);
+    if ((ret + rd[i].data_size) < ret)
+    {
+      GNUNET_break (0);
+      return -1;
+    }
     ret += rd[i].data_size;
+#if DEBUG_GNSRECORDS
+    {
+      char *str;
+
+      str = GNUNET_GNSRECORD_value_to_string (rd[i].record_type,
+                                              rd[i].data,
+                                              rd[i].data_size);
+      if (NULL == str)
+      {
+        GNUNET_break_op (0);
+        return -1;
+      }
+      GNUNET_free (str);
+    }
+#endif
   }
-  return ret;
+  if (ret > SSIZE_MAX)
+  {
+    GNUNET_break (0);
+    return -1;
+  }
+  return (ssize_t) ret;
 }
 
 
@@ -113,31 +137,55 @@ GNUNET_GNSRECORD_records_serialize (unsigned int rd_count,
 				    char *dest)
 {
   struct NetworkRecord rec;
-  unsigned int i;
   size_t off;
 
   off = 0;
-  for (i=0;i<rd_count;i++)
+  for (unsigned int i=0;i<rd_count;i++)
   {
-#if 0
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Serializing record %u with flags %d and expiration time %llu\n",
          i,
          rd[i].flags,
          (unsigned long long) rd[i].expiration_time);
-#endif
     rec.expiration_time = GNUNET_htonll (rd[i].expiration_time);
     rec.data_size = htonl ((uint32_t) rd[i].data_size);
     rec.record_type = htonl (rd[i].record_type);
     rec.flags = htonl (rd[i].flags);
-    if (off + sizeof (rec) > dest_size)
+    if ( (off + sizeof (rec) > dest_size) ||
+         (off + sizeof (rec) < off) )
+    {
+      GNUNET_break (0);
       return -1;
-    memcpy (&dest[off], &rec, sizeof (rec));
+    }
+    GNUNET_memcpy (&dest[off],
+                   &rec,
+                   sizeof (rec));
     off += sizeof (rec);
-    if (off + rd[i].data_size > dest_size)
+    if ( (off + rd[i].data_size > dest_size) ||
+         (off + rd[i].data_size < off) )
+    {
+      GNUNET_break (0);
       return -1;
-    memcpy (&dest[off], rd[i].data, rd[i].data_size);
+    }
+    GNUNET_memcpy (&dest[off],
+                   rd[i].data,
+                   rd[i].data_size);
     off += rd[i].data_size;
+#if DEBUG_GNSRECORDS
+    {
+      char *str;
+
+      str = GNUNET_GNSRECORD_value_to_string (rd[i].record_type,
+                                              rd[i].data,
+                                              rd[i].data_size);
+      if (NULL == str)
+      {
+        GNUNET_break_op (0);
+        return -1;
+      }
+      GNUNET_free (str);
+    }
+#endif
   }
   return off;
 }
@@ -159,31 +207,53 @@ GNUNET_GNSRECORD_records_deserialize (size_t len,
 				      struct GNUNET_GNSRECORD_Data *dest)
 {
   struct NetworkRecord rec;
-  unsigned int i;
   size_t off;
 
   off = 0;
-  for (i=0;i<rd_count;i++)
+  for (unsigned int i=0;i<rd_count;i++)
   {
-    if (off + sizeof (rec) > len)
+    if ( (off + sizeof (rec) > len) ||
+         (off + sizeof (rec) < off) )
+    {
+      GNUNET_break_op (0);
       return GNUNET_SYSERR;
-    memcpy (&rec, &src[off], sizeof (rec));
+    }
+    GNUNET_memcpy (&rec,
+                   &src[off],
+                   sizeof (rec));
     dest[i].expiration_time = GNUNET_ntohll (rec.expiration_time);
     dest[i].data_size = ntohl ((uint32_t) rec.data_size);
     dest[i].record_type = ntohl (rec.record_type);
     dest[i].flags = ntohl (rec.flags);
     off += sizeof (rec);
-    if (off + dest[i].data_size > len)
+    if ( (off + dest[i].data_size > len) ||
+         (off + dest[i].data_size < off) )
+    {
+      GNUNET_break_op (0);
       return GNUNET_SYSERR;
+    }
     dest[i].data = &src[off];
     off += dest[i].data_size;
-#if 0
+#if GNUNET_EXTRA_LOGGING
+    {
+      char *str;
+
+      str = GNUNET_GNSRECORD_value_to_string (dest[i].record_type,
+                                              dest[i].data,
+                                              dest[i].data_size);
+      if (NULL == str)
+      {
+        GNUNET_break_op (0);
+        return GNUNET_SYSERR;
+      }
+      GNUNET_free (str);
+    }
+#endif
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Deserialized record %u with flags %d and expiration time %llu\n",
          i,
          dest[i].flags,
          (unsigned long long) dest[i].expiration_time);
-#endif
   }
   return GNUNET_OK;
 }

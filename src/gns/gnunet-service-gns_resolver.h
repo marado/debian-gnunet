@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2009-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file gns/gnunet-service-gns_resolver.h
@@ -65,9 +60,10 @@ struct GNS_ResolverHandle;
  * @param rd_count number of records in @a rd
  * @param rd records returned for the lookup
  */
-typedef void (*GNS_ResultProcessor)(void *cls,
-				    uint32_t rd_count,
-				    const struct GNUNET_GNSRECORD_Data *rd);
+typedef void
+(*GNS_ResultProcessor)(void *cls,
+                       uint32_t rd_count,
+                       const struct GNUNET_GNSRECORD_Data *rd);
 
 
 /**
@@ -77,7 +73,6 @@ typedef void (*GNS_ResultProcessor)(void *cls,
  * @param zone the zone to perform the lookup in
  * @param record_type the record type to look up
  * @param name the name to look up
- * @param shorten_key optional private key for authority caching, can be NULL
  * @param options options set to control local lookup
  * @param proc the processor to call
  * @param proc_cls the closure to pass to @a proc
@@ -87,7 +82,6 @@ struct GNS_ResolverHandle *
 GNS_resolver_lookup (const struct GNUNET_CRYPTO_EcdsaPublicKey *zone,
 		     uint32_t record_type,
 		     const char *name,
-		     const struct GNUNET_CRYPTO_EcdsaPrivateKey *shorten_key,
 		     enum GNUNET_GNS_LocalOptions options,
 		     GNS_ResultProcessor proc,
 		     void *proc_cls);
@@ -100,28 +94,5 @@ GNS_resolver_lookup (const struct GNUNET_CRYPTO_EcdsaPublicKey *zone,
  */
 void
 GNS_resolver_lookup_cancel (struct GNS_ResolverHandle *rh);
-
-
-
-
-/**
- * Generic function to check for TLDs.  Checks if "name" ends in ".tld"
- *
- * @param name the name to check
- * @param tld the tld to check
- * @return #GNUNET_YES or #GNUNET_NO
- */
-int
-is_tld (const char *name,
-	const char *tld);
-
-
-
-/**
- * Checks for gnu/zkey
- */
-#define is_gnu_tld(name) is_tld(name, GNUNET_GNS_TLD)
-#define is_zkey_tld(name) is_tld(name, GNUNET_GNS_TLD_ZKEY)
-
 
 #endif

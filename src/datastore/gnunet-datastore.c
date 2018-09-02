@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -23,15 +18,83 @@
  * @brief tool to manipulate datastores
  * @author Christian Grothoff
  */
+#include <inttypes.h>
 #include "platform.h"
 #include "gnunet_util_lib.h"
 #include "gnunet_datastore_service.h"
 
+GNUNET_NETWORK_STRUCT_BEGIN
+
+struct DataRecord
+{
+  /**
+   * Number of bytes in the item (NBO).
+   */
+  uint32_t size GNUNET_PACKED;
+
+  /**
+   * Type of the item (NBO) (actually an enum GNUNET_BLOCK_Type)
+   */
+  uint32_t type GNUNET_PACKED;
+
+  /**
+   * Priority of the item (NBO).
+   */
+  uint32_t priority GNUNET_PACKED;
+
+  /**
+   * Desired anonymity level (NBO).
+   */
+  uint32_t anonymity GNUNET_PACKED;
+
+  /**
+   * Desired replication level (NBO).
+   */
+  uint32_t replication GNUNET_PACKED;
+
+  /**
+   * Expiration time (NBO).
+   */
+  struct GNUNET_TIME_AbsoluteNBO expiration;
+
+  /**
+   * Key under which the item can be found.
+   */
+  struct GNUNET_HashCode key;
+
+};
+GNUNET_NETWORK_STRUCT_END
+
 
 /**
- * Name of the second configuration file.
+ * Length of our magic header.
  */
-static char *alternative_cfg;
+static const size_t MAGIC_LEN = 16;
+
+/**
+ * Magic header bytes.
+ */
+static const uint8_t MAGIC_BYTES[16] = "GNUNETDATASTORE1";
+
+/**
+ * Dump the database.
+ */
+static int dump;
+
+/**
+ * Insert into the database.
+ */
+static int insert;
+
+/**
+ * Dump file name.
+ */
+static char *file_name;
+
+/**
+ * Dump file handle.
+ */
+static struct GNUNET_DISK_FileHandle *file_handle;
 
 /**
  * Global return value.
@@ -39,45 +102,135 @@ static char *alternative_cfg;
 static int ret;
 
 /**
- * Our offset on 'get'.
+ * Handle for datastore.
  */
-static uint64_t offset;
-
-/**
- * First UID ever returned.
- */
-static uint64_t first_uid;
-
-/**
- * Configuration for the source database.
- */
-static struct GNUNET_CONFIGURATION_Handle *scfg;
-
-/**
- * Handle for database source.
- */
-static struct GNUNET_DATASTORE_Handle *db_src;
-
-/**
- * Handle for database destination.
- */
-static struct GNUNET_DATASTORE_Handle *db_dst;
+static struct GNUNET_DATASTORE_Handle *datastore;
 
 /**
  * Current operation.
  */
 static struct GNUNET_DATASTORE_QueueEntry *qe;
 
+/**
+ * Record count.
+ */
+static uint64_t record_count;
+
 
 static void
-do_shutdown (void *cls,
-	     const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
   if (NULL != qe)
     GNUNET_DATASTORE_cancel (qe);
-  GNUNET_DATASTORE_disconnect (db_src, GNUNET_NO);
-  GNUNET_DATASTORE_disconnect (db_dst, GNUNET_NO);
-  GNUNET_CONFIGURATION_destroy (scfg);
+  if (NULL != datastore)
+    GNUNET_DATASTORE_disconnect (datastore, GNUNET_NO);
+  if (NULL != file_handle)
+    GNUNET_DISK_file_close (file_handle);
+}
+
+
+/**
+ * Begin dumping the database.
+ */
+static void
+start_dump (void);
+
+
+/**
+ * Begin inserting into the database.
+ */
+static void
+start_insert (void);
+
+
+/**
+ * Perform next GET operation.
+ */
+static void
+do_get (const uint64_t next_uid);
+
+
+/**
+ * Process a datum that was stored in the datastore.
+ *
+ * @param cls closure
+ * @param key key for the content
+ * @param size number of bytes in data
+ * @param data content stored
+ * @param type type of the content
+ * @param priority priority of the content
+ * @param anonymity anonymity-level for the content
+ * @param replication replication-level for the content
+ * @param expiration expiration time for the content
+ * @param uid unique identifier for the datum;
+ *        maybe 0 if no unique identifier is available
+ */
+static void
+get_cb (void *cls,
+        const struct GNUNET_HashCode *key,
+        size_t size,
+        const void *data,
+        enum GNUNET_BLOCK_Type type,
+        uint32_t priority,
+        uint32_t anonymity,
+        uint32_t replication,
+        struct GNUNET_TIME_Absolute expiration,
+        uint64_t uid)
+{
+  qe = NULL;
+  if (NULL == key)
+  {
+    FPRINTF (stderr,
+             _("Dumped %" PRIu64 " records\n"),
+             record_count);
+    GNUNET_DISK_file_close (file_handle);
+    file_handle = NULL;
+    if (insert)
+      start_insert();
+    else
+    {
+      ret = 0;
+      GNUNET_SCHEDULER_shutdown ();
+    }
+    return;
+  }
+
+  struct DataRecord dr;
+  dr.size = htonl ((uint32_t) size);
+  dr.type = htonl (type);
+  dr.priority = htonl (priority);
+  dr.anonymity = htonl (anonymity);
+  dr.replication = htonl (replication);
+  dr.expiration = GNUNET_TIME_absolute_hton (expiration);
+  dr.key = *key;
+
+  ssize_t len;
+  len = GNUNET_DISK_file_write (file_handle, &dr, sizeof (dr));
+  if (sizeof (dr) != len)
+  {
+    FPRINTF (stderr,
+             _("Short write to file: %zd bytes expecting %zd\n"),
+             len,
+             sizeof (dr));
+    ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+
+  len = GNUNET_DISK_file_write (file_handle, data, size);
+  if (size != len)
+  {
+    FPRINTF (stderr,
+             _("Short write to file: %zd bytes expecting %zd\n"),
+             len,
+             size);
+    ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+
+  record_count++;
+  do_get(uid + 1);
 }
 
 
@@ -85,7 +238,61 @@ do_shutdown (void *cls,
  * Perform next GET operation.
  */
 static void
-do_get (void);
+do_get (const uint64_t next_uid)
+{
+  GNUNET_assert (NULL == qe);
+  qe = GNUNET_DATASTORE_get_key (datastore,
+                                 next_uid,
+                                 false /* random */,
+                                 NULL /* key */,
+                                 GNUNET_BLOCK_TYPE_ANY,
+                                 0 /* queue_priority */,
+                                 1 /* max_queue_size */,
+                                 &get_cb,
+                                 NULL /* proc_cls */);
+  if (NULL == qe)
+  {
+    FPRINTF (stderr,
+             _("Error queueing datastore GET operation\n"));
+    ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
+  }
+}
+
+
+/**
+ * Begin dumping the database.
+ */
+static void
+start_dump ()
+{
+  record_count = 0;
+
+  if (NULL != file_name)
+  {
+    file_handle = GNUNET_DISK_file_open (file_name,
+                                         GNUNET_DISK_OPEN_WRITE |
+                                         GNUNET_DISK_OPEN_TRUNCATE |
+                                         GNUNET_DISK_OPEN_CREATE,
+                                         GNUNET_DISK_PERM_USER_READ |
+                                         GNUNET_DISK_PERM_USER_WRITE);
+    if (NULL == file_handle)
+    {
+      FPRINTF (stderr,
+               _("Unable to open dump file: %s\n"),
+               file_name);
+      ret = 1;
+      GNUNET_SCHEDULER_shutdown ();
+      return;
+    }
+  }
+  else
+  {
+    file_handle = GNUNET_DISK_get_handle_from_int_fd (STDOUT_FILENO);
+  }
+  GNUNET_DISK_file_write (file_handle, MAGIC_BYTES, MAGIC_LEN);
+  do_get(0);
+}
 
 
 /**
@@ -102,82 +309,126 @@ do_get (void);
  * @param msg NULL on success, otherwise an error message
  */
 static void
-do_finish (void *cls,
-	   int32_t success,
-	   struct GNUNET_TIME_Absolute min_expiration,
-	   const char *msg)
+put_cb (void *cls,
+        int32_t success,
+        struct GNUNET_TIME_Absolute min_expiration,
+        const char *msg)
 {
   qe = NULL;
   if (GNUNET_SYSERR == success)
   {
-    fprintf (stderr,
-	     _("Failed to store item: %s, aborting\n"),
-	     msg);
+    FPRINTF (stderr,
+             _("Failed to store item: %s, aborting\n"),
+             msg);
     ret = 1;
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  do_get ();
-}
 
+  struct DataRecord dr;
+  ssize_t len;
 
-/**
- * Process a datum that was stored in the datastore.
- *
- * @param cls closure
- * @param key key for the content
- * @param size number of bytes in data
- * @param data content stored
- * @param type type of the content
- * @param priority priority of the content
- * @param anonymity anonymity-level for the content
- * @param expiration expiration time for the content
- * @param uid unique identifier for the datum;
- *        maybe 0 if no unique identifier is available
- */
-static void
-do_put (void *cls,
-	const struct GNUNET_HashCode *key,
-	size_t size, const void *data,
-	enum GNUNET_BLOCK_Type type,
-	uint32_t priority,
-	uint32_t anonymity,
-	struct GNUNET_TIME_Absolute
-	expiration, uint64_t uid)
-{
-  qe = NULL;
-  if ( (0 != offset) &&
-       (uid == first_uid) )
+  len = GNUNET_DISK_file_read (file_handle, &dr, sizeof (dr));
+  if (0 == len)
   {
+    FPRINTF (stderr,
+             _("Inserted %" PRIu64 " records\n"),
+             record_count);
+    ret = 0;
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  if (0 == offset)
-    first_uid = uid;
-  qe = GNUNET_DATASTORE_put (db_dst, 0,
-			     key, size, data, type,
-			     priority, anonymity,
-			     0 /* FIXME: replication is lost... */,
-			     expiration,
-			     0, 1, GNUNET_TIME_UNIT_FOREVER_REL,
-			     &do_finish, NULL);
+  else if (sizeof (dr) != len)
+  {
+    FPRINTF (stderr,
+             _("Short read from file: %zd bytes expecting %zd\n"),
+             len,
+             sizeof (dr));
+    ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+
+  const size_t size = ntohl (dr.size);
+  uint8_t data[size];
+  len = GNUNET_DISK_file_read (file_handle, data, size);
+  if (size != len)
+  {
+    FPRINTF (stderr,
+             _("Short read from file: %zd bytes expecting %zd\n"),
+             len,
+             size);
+    ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+
+  record_count++;
+  qe = GNUNET_DATASTORE_put (datastore,
+                             0,
+                             &dr.key,
+                             size,
+                             data,
+                             ntohl (dr.type),
+                             ntohl (dr.priority),
+                             ntohl (dr.anonymity),
+                             ntohl (dr.replication),
+                             GNUNET_TIME_absolute_ntoh (dr.expiration),
+                             0,
+                             1,
+                             &put_cb,
+                             NULL);
+  if (NULL == qe)
+  {
+    FPRINTF (stderr,
+             _("Error queueing datastore PUT operation\n"));
+    ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
+  }
 }
 
 
 /**
- * Perform next GET operation.
+ * Begin inserting into the database.
  */
 static void
-do_get ()
+start_insert ()
 {
-  qe = GNUNET_DATASTORE_get_key (db_src,
-				 offset,
-				 NULL, GNUNET_BLOCK_TYPE_ANY,
-				 0, 1,
-				 GNUNET_TIME_UNIT_FOREVER_REL,
-				 &do_put, NULL);
-}
+  record_count = 0;
 
+  if (NULL != file_name)
+  {
+    file_handle = GNUNET_DISK_file_open (file_name,
+                                         GNUNET_DISK_OPEN_READ,
+                                         GNUNET_DISK_PERM_NONE);
+    if (NULL == file_handle)
+    {
+      FPRINTF (stderr,
+               _("Unable to open dump file: %s\n"),
+               file_name);
+      ret = 1;
+      GNUNET_SCHEDULER_shutdown ();
+      return;
+    }
+  }
+  else
+  {
+    file_handle = GNUNET_DISK_get_handle_from_int_fd (STDIN_FILENO);
+  }
+
+  uint8_t buf[MAGIC_LEN];
+  ssize_t len;
+
+  len = GNUNET_DISK_file_read (file_handle, buf, MAGIC_LEN);
+  if (len != MAGIC_LEN ||
+      0 != memcmp (buf, MAGIC_BYTES, MAGIC_LEN))
+  {
+    FPRINTF (stderr,
+             _("Input file is not of a supported format\n"));
+    return;
+  }
+  put_cb (NULL, GNUNET_YES, GNUNET_TIME_UNIT_ZERO_ABS, NULL);
+}
 
 
 /**
@@ -186,48 +437,37 @@ do_get ()
  * @param cls closure
  * @param args remaining command-line arguments
  * @param cfgfile name of the configuration file used
- * @param cfg configuration -- for destination datastore
+ * @param cfg configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-  if (NULL == alternative_cfg)
-    return; /* nothing to be done */
-  if (0 == strcmp (cfgfile, alternative_cfg))
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
+  datastore = GNUNET_DATASTORE_connect (cfg);
+  if (NULL == datastore)
   {
-    fprintf (stderr,
-	     _("Cannot use the same configuration for source and destination\n"));
+    FPRINTF (stderr,
+             _("Failed connecting to the datastore.\n"));
     ret = 1;
+    GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  scfg = GNUNET_CONFIGURATION_create ();
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_load (scfg,
-				 alternative_cfg))
+  if (dump)
+    start_dump();
+  else if (insert)
+    start_insert();
+  else
   {
-    GNUNET_CONFIGURATION_destroy (scfg);
+    FPRINTF (stderr,
+             _("Please choose at least one operation: %s, %s\n"),
+             "dump",
+             "insert");
     ret = 1;
-    return;
+    GNUNET_SCHEDULER_shutdown ();
   }
-  db_src = GNUNET_DATASTORE_connect (scfg);
-  if (NULL == db_src)
-  {
-    GNUNET_CONFIGURATION_destroy (scfg);
-    ret = 1;
-    return;
-  }
-  db_dst = GNUNET_DATASTORE_connect (cfg);
-  if (NULL == db_dst)
-  {
-    GNUNET_DATASTORE_disconnect (db_src, GNUNET_NO);
-    GNUNET_CONFIGURATION_destroy (scfg);
-    ret = 1;
-    return;
-  }
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-				&do_shutdown, NULL);
-  do_get ();
 }
 
 
@@ -239,12 +479,23 @@ run (void *cls, char *const *args, const char *cfgfile,
  * @return 0 ok, 1 on error
  */
 int
-main (int argc, char *const *argv)
+main (int argc,
+      char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    { 's', "sourcecfg", "FILENAME",
-      gettext_noop ("specifies the configuration to use to access an alternative datastore; will merge that datastore into our current datastore"),
-      1, &GNUNET_GETOPT_set_filename, &alternative_cfg },
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_flag ('d',
+                               "dump",
+                               gettext_noop ("Dump all records from the datastore"),
+                               &dump),
+    GNUNET_GETOPT_option_flag ('i',
+                               "insert",
+                               gettext_noop ("Insert records into the datastore"),
+                               &insert),
+    GNUNET_GETOPT_option_filename ('f',
+                                   "file",
+                                   "FILENAME",
+                                   gettext_noop ("File to dump or insert"),
+                                   &file_name),
     GNUNET_GETOPT_OPTION_END
   };
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))

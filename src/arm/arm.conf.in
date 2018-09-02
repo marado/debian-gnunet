@@ -1,11 +1,10 @@
-
 [arm]
 @UNIXONLY@ PORT = 2087
 HOSTNAME = localhost
 BINARY = gnunet-service-arm
 ACCEPT_FROM = 127.0.0.1;
 ACCEPT_FROM6 = ::1;
-DEFAULTSERVICES = topology hostlist dht nse mesh fs revocation
+
 # Special case, uses user runtime dir even for per-system service.
 UNIXPATH = $GNUNET_USER_RUNTIME_DIR/gnunet-service-arm.sock
 UNIX_MATCH_UID = YES
@@ -42,6 +41,8 @@ GLOBAL_PREFIX = @MONKEYPREFIX@
 #
 # USER_ONLY = YES
 
+# File where we should log per-service resource consumption on exit.
+# RESOURCE_DIAGNOSTICS = resource.log
 
 
 # Name of the user that will be used to provide the service

@@ -1,3 +1,10 @@
-SUBDIRS = man doxygen
+# This Makefile.am is in the public domain
+if DOCUMENTATION
+  SUBDIRS = man doxygen documentation
+endif
+if !DOCUMENTATION
+  SUBDIRS = man doxygen
+endif
 
-docdir = $(datadir)/doc/gnunet/
+EXTRA_DIST =							\
+	outdated-and-old-installation-instructions.txt

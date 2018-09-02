@@ -1,21 +1,16 @@
 /*
  * This file is part of GNUnet
- * (C) 2013 Christian Grothoff (and other contributing authors)
+ * Copyright (C) 2013 GNUnet e.V.
  *
- * GNUnet is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 3, or (at your
- * option) any later version.
+ * GNUnet is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
  *
  * GNUnet is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GNUnet; see the file COPYING.  If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * Affero General Public License for more details.
  */
 
 /**
@@ -42,15 +37,17 @@ struct OperationResult
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
-  /**
+  /**lowed by
    * Status code for the operation.
    */
-  int64_t result_code GNUNET_PACKED;
+  uint64_t result_code GNUNET_PACKED;
 
   /* followed by 0-terminated error message (on error) */
 
@@ -70,9 +67,17 @@ struct CountersResult
   struct GNUNET_MessageHeader header;
 
   /**
+   * Status code for the operation:
+   * #GNUNET_OK: success, counter values are returned.
+   * #GNUNET_NO: no message has been sent to the channel yet.
+   * #GNUNET_SYSERR: an error occurred.
+   */
+  uint32_t result_code GNUNET_PACKED;
+
+  /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   uint64_t max_fragment_id GNUNET_PACKED;
 
@@ -81,14 +86,6 @@ struct CountersResult
   uint64_t max_group_generation GNUNET_PACKED;
 
   uint64_t max_state_message_id GNUNET_PACKED;
-
-  /**
-   * Status code for the operation:
-   * #GNUNET_OK: success, counter values are returned.
-   * #GNUNET_NO: no message has been sent to the channel yet.
-   * #GNUNET_SYSERR: an error occurred.
-   */
-  int32_t result_code GNUNET_PACKED;
 };
 
 
@@ -102,15 +99,14 @@ struct FragmentResult
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t psycstore_flags GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
-  uint32_t psycstore_flags GNUNET_PACKED;
-
-  /* followed by GNUNET_MULTICAST_MessageHeader */
-
+  /* Followed by GNUNET_MULTICAST_MessageHeader */
 };
 
 
@@ -124,14 +120,16 @@ struct StateResult
    */
   struct GNUNET_MessageHeader header;
 
+  uint16_t name_size GNUNET_PACKED;
+
+  uint16_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
-  uint16_t name_size  GNUNET_PACKED;
-
-  /* followed by name and value */
+  /* Followed by name and value */
 };
 
 
@@ -142,13 +140,14 @@ struct OperationRequest
 {
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
-
 };
 
 
@@ -162,10 +161,12 @@ struct MembershipStoreRequest
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   /**
    * Channel's public key.
@@ -175,12 +176,12 @@ struct MembershipStoreRequest
   /**
    * Slave's public key.
    */
-  struct GNUNET_CRYPTO_EddsaPublicKey slave_key;
+  struct GNUNET_CRYPTO_EcdsaPublicKey slave_key;
 
   uint64_t announced_at GNUNET_PACKED;
   uint64_t effective_since GNUNET_PACKED;
   uint64_t group_generation GNUNET_PACKED;
-  int did_join GNUNET_PACKED;
+  uint8_t did_join;
 };
 
 
@@ -194,10 +195,12 @@ struct MembershipTestRequest
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   /**
    * Channel's public key.
@@ -207,7 +210,7 @@ struct MembershipTestRequest
   /**
    * Slave's public key.
    */
-  struct GNUNET_CRYPTO_EddsaPublicKey slave_key;
+  struct GNUNET_CRYPTO_EcdsaPublicKey slave_key;
 
   uint64_t message_id GNUNET_PACKED;
 
@@ -226,16 +229,21 @@ struct FragmentStoreRequest
   struct GNUNET_MessageHeader header;
 
   /**
-   * Operation ID.
+   * enum GNUNET_PSYCSTORE_MessageFlags
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint32_t psycstore_flags GNUNET_PACKED;
 
   /**
    * Channel's public key.
    */
   struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
 
-  uint32_t psycstore_flags GNUNET_PACKED;
+  /**
+   * Operation ID.
+   */
+  uint64_t op_id;
+
+  /* Followed by fragment */
 };
 
 
@@ -249,17 +257,43 @@ struct FragmentGetRequest
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   /**
    * Channel's public key.
    */
   struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
 
-  uint64_t fragment_id GNUNET_PACKED;
+  /**
+   * Slave's public key.
+   */
+  struct GNUNET_CRYPTO_EcdsaPublicKey slave_key;
+
+  /**
+   * First fragment ID to request.
+   */
+  uint64_t first_fragment_id GNUNET_PACKED;
+
+  /**
+   * Last fragment ID to request.
+   */
+  uint64_t last_fragment_id GNUNET_PACKED;
+
+  /**
+   * Maximum number of fragments to retrieve.
+   */
+  uint64_t fragment_limit GNUNET_PACKED;
+
+  /**
+   * Do membership test with @a slave_key before returning fragment?
+   * #GNUNET_YES or #GNUNET_NO
+   */
+  uint8_t do_membership_test;
 };
 
 
@@ -273,17 +307,50 @@ struct MessageGetRequest
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   /**
    * Channel's public key.
    */
   struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
 
-  uint64_t message_id GNUNET_PACKED;
+  /**
+   * Slave's public key.
+   */
+  struct GNUNET_CRYPTO_EcdsaPublicKey slave_key;
+
+  /**
+   * First message ID to request.
+   */
+  uint64_t first_message_id GNUNET_PACKED;
+
+  /**
+   * Last message ID to request.
+   */
+  uint64_t last_message_id GNUNET_PACKED;
+
+  /**
+   * Maximum number of messages to retrieve.
+   */
+  uint64_t message_limit GNUNET_PACKED;
+
+  /**
+   * Maximum number of fragments to retrieve.
+   */
+  uint64_t fragment_limit GNUNET_PACKED;
+
+  /**
+   * Do membership test with @a slave_key before returning fragment?
+   * #GNUNET_YES or #GNUNET_NO
+   */
+  uint8_t do_membership_test;
+
+  /* Followed by method_prefix */
 };
 
 
@@ -297,19 +364,38 @@ struct MessageGetFragmentRequest
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   /**
    * Channel's public key.
    */
   struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
 
+  /**
+   * Slave's public key.
+   */
+  struct GNUNET_CRYPTO_EcdsaPublicKey slave_key;
+
+  /**
+   * Requested message ID.
+   */
   uint64_t message_id GNUNET_PACKED;
 
+  /**
+   * Requested fragment offset.
+   */
   uint64_t fragment_offset GNUNET_PACKED;
+
+  /**
+   * Do membership test with @a slave_key before returning fragment?
+   * #GNUNET_YES or #GNUNET_NO
+   */
+  uint8_t do_membership_test;
 };
 
 
@@ -323,10 +409,12 @@ struct StateHashUpdateRequest
    */
   struct GNUNET_MessageHeader header;
 
+  uint32_t reserved GNUNET_PACKED;
+
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
 
   /**
    * Channel's public key.
@@ -336,11 +424,13 @@ struct StateHashUpdateRequest
   struct GNUNET_HashCode hash;
 };
 
+
 enum StateOpFlags
 {
   STATE_OP_FIRST = 1 << 0,
   STATE_OP_LAST = 1 << 1
 };
+
 
 /**
  * @see GNUNET_PSYCSTORE_state_modify()
@@ -355,33 +445,22 @@ struct StateModifyRequest
   /**
    * Operation ID.
    */
-  uint32_t op_id GNUNET_PACKED;
+  uint64_t op_id GNUNET_PACKED;
+
+  /**
+   * ID of the message to apply the state changes in.
+   */
+  uint64_t message_id GNUNET_PACKED;
+
+  /**
+   * State delta of the message with ID @a message_id.
+   */
+  uint64_t state_delta GNUNET_PACKED;
 
   /**
    * Channel's public key.
    */
   struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
-
-  uint64_t message_id GNUNET_PACKED;
-
-  uint64_t state_delta GNUNET_PACKED;
-
-  /**
-   * Size of name, including NUL terminator.
-   */
-  uint16_t name_size GNUNET_PACKED;
-
-  /**
-   * OR'd StateOpFlags
-   */
-  uint8_t flags;
-
-  /**
-   * enum GNUNET_ENV_Operator
-   */
-  uint8_t oper;
-
-  /* Followed by NUL-terminated name, then the value. */
 };
 
 
@@ -396,18 +475,6 @@ struct StateSyncRequest
   struct GNUNET_MessageHeader header;
 
   /**
-   * Operation ID.
-   */
-  uint32_t op_id GNUNET_PACKED;
-
-  /**
-   * Channel's public key.
-   */
-  struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
-
-  uint64_t message_id GNUNET_PACKED;
-
-  /**
    * Size of name, including NUL terminator.
    */
   uint16_t name_size GNUNET_PACKED;
@@ -416,6 +483,28 @@ struct StateSyncRequest
    * OR'd StateOpFlags
    */
   uint8_t flags;
+
+  uint8_t reserved;
+
+  /**
+   * Operation ID.
+   */
+  uint64_t op_id GNUNET_PACKED;
+
+  /**
+   * ID of the message that contains the state_hash PSYC header variable.
+   */
+  uint64_t state_hash_message_id GNUNET_PACKED;
+
+  /**
+   * ID of the last stateful message before @a state_hash_message_id.
+   */
+  uint64_t max_state_message_id GNUNET_PACKED;
+
+  /**
+   * Channel's public key.
+   */
+  struct GNUNET_CRYPTO_EddsaPublicKey channel_key;
 
   /* Followed by NUL-terminated name, then the value. */
 };

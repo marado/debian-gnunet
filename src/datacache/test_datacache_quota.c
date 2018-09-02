@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2006, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2006, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /*
  * @file datacache/test_datacache_quota.c
@@ -49,8 +44,6 @@ run (void *cls, char *const *args, const char *cfgfile,
   struct GNUNET_DATACACHE_Handle *h;
   struct GNUNET_HashCode k;
   struct GNUNET_HashCode n;
-  unsigned int i;
-  unsigned int j;
   char buf[3200];
   struct GNUNET_TIME_Absolute exp;
 
@@ -59,28 +52,43 @@ run (void *cls, char *const *args, const char *cfgfile,
 
   if (h == NULL)
   {
-    FPRINTF (stderr, "%s", "Failed to initialize datacache.  Database likely not setup, skipping test.\n");
+    FPRINTF (stderr,
+             "%s",
+             "Failed to initialize datacache.  Database likely not setup, skipping test.\n");
     return;
   }
   exp = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_HOURS);
   memset (buf, 1, sizeof (buf));
   memset (&k, 0, sizeof (struct GNUNET_HashCode));
-  for (i = 0; i < 10; i++)
+  for (unsigned int i = 0; i < 10; i++)
   {
-    FPRINTF (stderr, "%s",  ".");
-    GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);
-    for (j = i; j < sizeof (buf); j += 10)
+    FPRINTF (stderr,
+             "%s",
+             ".");
+    GNUNET_CRYPTO_hash (&k,
+                        sizeof (struct GNUNET_HashCode),
+                        &n);
+    for (unsigned int j = i; j < sizeof (buf); j += 10)
     {
       exp.abs_value_us++;
       buf[j] = i;
-      ASSERT (GNUNET_OK == GNUNET_DATACACHE_put (h, &k, j, buf, 1 + i, exp, 0, NULL));
+      ASSERT (GNUNET_OK ==
+              GNUNET_DATACACHE_put (h,
+                                    &k,
+                                    GNUNET_YES,
+                                    j,
+                                    buf,
+                                    1 + i,
+                                    exp,
+                                    0,
+                                    NULL));
       ASSERT (0 < GNUNET_DATACACHE_get (h, &k, 1 + i, NULL, NULL));
     }
     k = n;
   }
   FPRINTF (stderr, "%s",  "\n");
   memset (&k, 0, sizeof (struct GNUNET_HashCode));
-  for (i = 0; i < 10; i++)
+  for (unsigned int i = 0; i < 10; i++)
   {
     FPRINTF (stderr, "%s",  ".");
     GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);

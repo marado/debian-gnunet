@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006, 2008, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/test_fs_publish_persistence.c
@@ -60,11 +55,11 @@ static char *fn2;
 
 static int err;
 
-static GNUNET_SCHEDULER_TaskIdentifier rtask;
+static struct GNUNET_SCHEDULER_Task *rtask;
 
 
 static void
-abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_publish_task (void *cls)
 {
   GNUNET_FS_publish_stop (publish);
   publish = NULL;
@@ -76,10 +71,10 @@ abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   fn2 = NULL;
   GNUNET_FS_stop (fs);
   fs = NULL;
-  if (GNUNET_SCHEDULER_NO_TASK != rtask)
+  if (NULL != rtask)
   {
     GNUNET_SCHEDULER_cancel (rtask);
-    rtask = GNUNET_SCHEDULER_NO_TASK;
+    rtask = NULL;
   }
 }
 
@@ -89,9 +84,9 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event);
 
 
 static void
-restart_fs_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+restart_fs_task (void *cls)
 {
-  rtask = GNUNET_SCHEDULER_NO_TASK;
+  rtask = NULL;
   GNUNET_FS_stop (fs);
   fs = GNUNET_FS_start (cfg, "test-fs-publish-persistence",
 			&progress_cb, NULL,
@@ -134,7 +129,6 @@ progress_cb (void *cls,
   switch (event->status)
   {
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
-    consider_restart (event->status);
     ret = event->value.publish.cctx;
     printf ("Publish complete,  %llu kbps.\n",
             (unsigned long long) (FILESIZE * 1000000LL /

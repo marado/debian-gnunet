@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -25,6 +20,7 @@
  */
 #include "platform.h"
 #include "gnunet_fs_service.h"
+#include "gnunet_getopt_lib.h"
 #include "fs_api.h"
 
 /* ******************** command-line option parsing API ******************** */
@@ -41,10 +37,10 @@
  * @param value command line argument given
  * @return GNUNET_OK on success
  */
-int
-GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
-                               *ctx, void *scls, const char *option,
-                               const char *value)
+static int
+getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
+                     *ctx, void *scls, const char *option,
+                      const char *value)
 {
   struct GNUNET_FS_Uri **uri = scls;
   struct GNUNET_FS_Uri *u = *uri;
@@ -76,7 +72,7 @@ GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
       /* remove the quotes, keep the '+' */
       val = GNUNET_malloc (slen - 1);
       val[0] = '+';
-      memcpy (&val[1], &value[2], slen - 3);
+      GNUNET_memcpy (&val[1], &value[2], slen - 3);
       val[slen - 2] = '\0';
     }
     else
@@ -92,7 +88,7 @@ GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
       /* remove the quotes, add a space */
       val = GNUNET_malloc (slen);
       val[0] = ' ';
-      memcpy (&val[1], &value[1], slen - 2);
+      GNUNET_memcpy (&val[1], &value[1], slen - 2);
       val[slen - 1] = '\0';
     }
     else
@@ -107,6 +103,34 @@ GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
   return GNUNET_OK;
 }
 
+/**
+ * Allow user to specify keywords.
+ *
+ * @param shortName short name of the option
+ * @param name long name of the option
+ * @param argumentHelp help text for the option argument
+ * @param description long help text for the option
+ * @param[out] topKeywords set to the desired value
+ */
+struct GNUNET_GETOPT_CommandLineOption
+GNUNET_FS_GETOPT_KEYWORDS (char shortName,
+                           const char *name,
+                           const char *argumentHelp,
+                           const char *description,
+                           struct GNUNET_FS_Uri **topKeywords)
+{
+  struct GNUNET_GETOPT_CommandLineOption clo = {
+    .shortName = shortName,
+    .name = name,
+    .argumentHelp = argumentHelp,
+    .description = description,
+    .require_argument = 1,
+    .processor = &getopt_set_keywords,
+    .scls = (void *) topKeywords  
+  };
+
+  return clo;
+}
 
 /**
  * Command-line option parser function that allows the user to specify
@@ -118,17 +142,20 @@ GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
  * @param scls must be of type "struct GNUNET_MetaData **"
  * @param option name of the option (typically 'k')
  * @param value command line argument given
- * @return GNUNET_OK on success
+ * @return #GNUNET_OK on success
  */
-int
-GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext
-                               *ctx, void *scls, const char *option,
-                               const char *value)
+static int
+getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
+                     void *scls,
+                     const char *option,
+                     const char *value)
 {
   struct GNUNET_CONTAINER_MetaData **mm = scls;
+#if HAVE_EXTRACTOR_H && HAVE_LIBEXTRACTOR
   enum EXTRACTOR_MetaType type;
   const char *typename;
   const char *typename_i18n;
+#endif
   struct GNUNET_CONTAINER_MetaData *meta;
   char *tmp;
 
@@ -144,7 +171,7 @@ GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext
    */
   /*tmp = GNUNET_STRINGS_to_utf8 (value, strlen (value), locale_charset ());*/
   tmp = GNUNET_strdup (value);
-
+#if HAVE_EXTRACTOR_H && HAVE_LIBEXTRACTOR
   type = EXTRACTOR_metatype_get_max ();
   while (type > 0)
   {
@@ -181,7 +208,9 @@ GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext
       break;
     }
   }
-  if (tmp != NULL)
+#endif
+
+  if (NULL != tmp)
   {
     GNUNET_CONTAINER_meta_data_insert (meta, "<gnunet>",
                                        EXTRACTOR_METATYPE_UNKNOWN,
@@ -194,5 +223,37 @@ GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext
   }
   return GNUNET_OK;
 }
+
+/**
+ * Allow user to specify metadata.
+ *
+ * @param shortName short name of the option
+ * @param name long name of the option
+ * @param argumentHelp help text for the option argument
+ * @param description long help text for the option
+ * @param[out] metadata set to the desired value
+ */
+struct GNUNET_GETOPT_CommandLineOption
+GNUNET_FS_GETOPT_METADATA (char shortName,
+                           const char *name,
+                           const char *argumentHelp,
+                           const char *description,
+                           struct GNUNET_CONTAINER_MetaData **meta)
+{
+  struct GNUNET_GETOPT_CommandLineOption clo = {
+    .shortName = shortName,
+    .name = name,
+    .argumentHelp = argumentHelp,
+    .description = description,
+    .require_argument = 1,
+    .processor = &getopt_set_metadata,
+    .scls = (void *) meta
+  };
+
+  return clo;
+}
+
+
+
 
 /* end of fs_getopt.c */

@@ -7,26 +7,29 @@ TOPOLOGY = RANDOM
 #PREFIX = xterm -geometry 100x85 -T peer1 -e libtool --mode=execute gdb --args
 
 [arm]
-DEFAULTSERVICES = core transport test-barriers
 PORT = 12366
 
 [test-barriers]
 AUTOSTART = NO
 PORT = 12114
 BINARY = /will/be/overwriten/in/test_testbed_api_barriers/
+FORCESTART = YES
 
 [fs]
 AUTOSTART = NO
+FORCESTART = NO
 
 [resolver]
 HOSTNAME = localhost
 AUTOSTART = NO
 
-[mesh]
+[cadet]
 AUTOSTART = NO
+FORCESTART = NO
 
 [dht]
 AUTOSTART = NO
+FORCESTART = NO
 
 [dhtcache]
 QUOTA = 1 MB
@@ -38,6 +41,7 @@ ACCEPT_FROM6 = ::1;
 ACCEPT_FROM = 127.0.0.1;
 NEIGHBOUR_LIMIT = 50
 PORT = 12365
+FORCESTART = YES
 
 [ats]
 WAN_QUOTA_OUT = 3932160
@@ -46,6 +50,7 @@ WAN_QUOTA_IN = 3932160
 [core]
 PORT = 12092
 AUTOSTART = YES
+FORCESTART = YES
 USE_EPHEMERAL_KEYS = NO
 
 [transport-udp]
@@ -53,31 +58,46 @@ TIMEOUT = 300 s
 PORT = 12368
 
 [PATHS]
-GNUNET_TEST_HOME = /tmp/test-testbed/
+GNUNET_TEST_HOME = $GNUNET_TMP/test-testbed/
 
 [dns]
 AUTOSTART = NO
+FORCESTART = NO
 
 [nse]
 AUTOSTART = NO
+FORCESTART = NO
 
 [vpn]
 AUTOSTART = NO
+FORCESTART = NO
 
 [nat]
 RETURN_LOCAL_ADDRESSES = YES
+FORCESTART = NO
 
 [gns-helper-service-w32]
 AUTOSTART = NO
 
 [consensus]
 AUTOSTART = NO
+FORCESTART = NO
 
 [gns]
 AUTOSTART = NO
+FORCESTART = NO
 
 [statistics]
 AUTOSTART = NO
+FORCESTART = NO
 
 [peerinfo]
 NO_IO = YES
+
+[set]
+AUTOSTART = NO
+FORCESTART = NO
+
+[revocation]
+AUTOSTART = NO
+FORCESTART = NO

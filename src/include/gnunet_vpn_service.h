@@ -1,27 +1,27 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2012 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
- * @file include/gnunet_vpn_service.h
- * @brief API to access the VPN service.
  * @author Christian Grothoff
+ *
+ * @file
+ * API to access the VPN service.
+ *
+ * @defgroup vpn  VPN service
+ *
+ * @{
  */
 #ifndef GNUNET_VPN_SERVICE_H
 #define GNUNET_VPN_SERVICE_H
@@ -99,7 +99,7 @@ GNUNET_VPN_redirect_to_peer (struct GNUNET_VPN_Handle *vh,
 			     GNUNET_VPN_AllocationCallback cb,
 			     void *cb_cls);
 
-		
+
 /**
  * Tell the VPN that forwarding to the Internet via some exit node is
  * requested.  Note that both UDP and TCP traffic will be forwarded,
@@ -152,3 +152,5 @@ void
 GNUNET_VPN_disconnect (struct GNUNET_VPN_Handle *vh);
 
 #endif
+
+/** @} */  /* end of group */

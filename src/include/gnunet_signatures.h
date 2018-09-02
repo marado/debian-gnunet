@@ -1,27 +1,26 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_signatures.h
- * @brief constants for network signatures
  * @author Christian Grothoff
+ *
+ * @file
+ * Constants for network signatures
+ *
+ * @defgroup signatures  Network signature definitions
+ * @{
  */
 
 #ifndef GNUNET_SIGNATURES_H
@@ -137,7 +136,7 @@ extern "C"
 #define GNUNET_SIGNATURE_PURPOSE_REGEX_ACCEPT 18
 
 /**
- * Signature of a multicast message.
+ * Signature of a multicast message sent by the origin.
  */
 #define GNUNET_SIGNATURE_PURPOSE_MULTICAST_MESSAGE 19
 
@@ -145,11 +144,6 @@ extern "C"
  * Signature of a conversation ring.
  */
 #define GNUNET_SIGNATURE_PURPOSE_CONVERSATION_RING 20
-
-/**
- * Key exchange in MESH
- */
-#define GNUNET_SIGNATURE_PURPOSE_MESH_KX                21
 
 /**
  * Signature for the first round of distributed key generation.
@@ -166,6 +160,30 @@ extern "C"
  */
 #define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DECRYPTION 23
 
+/**
+ * Signature of a multicast request sent by a member.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_MULTICAST_REQUEST 24
+
+/**
+ * Signature for a sensor anomaly report message.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_SENSOR_ANOMALY_REPORT 25
+
+/**
+ * Signature for a GNUid Token
+ */
+#define GNUNET_SIGNATURE_PURPOSE_GNUID_TOKEN 26
+
+/**
+ * Signature for a GNUid Ticket
+ */
+#define GNUNET_SIGNATURE_PURPOSE_GNUID_TICKET 27
+
+/**
+ * Signature for a GNUnet credential
+ */
+#define GNUNET_SIGNATURE_PURPOSE_CREDENTIAL 28
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
@@ -176,4 +194,7 @@ extern "C"
 
 /* ifndef GNUNET_SIGNATURES_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_signatures.h */

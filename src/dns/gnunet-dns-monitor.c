@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -52,7 +47,7 @@ static int ret;
 /**
  * Selected level of verbosity.
  */
-static int verbosity;
+static unsigned int verbosity;
 
 
 /**
@@ -164,7 +159,7 @@ display_record (const struct GNUNET_DNSPARSER_Record *record)
 		       (unsigned int) record->data.soa->refresh,
 		       (unsigned int) record->data.soa->retry,
 		       (unsigned int) record->data.soa->expire,
-		       (unsigned int) record->data.soa->minimum_ttl);	
+		       (unsigned int) record->data.soa->minimum_ttl);
       format = tmp;
     }
     break;
@@ -186,10 +181,7 @@ display_record (const struct GNUNET_DNSPARSER_Record *record)
     else
     {
       GNUNET_asprintf (&tmp,
-		       "service: %s, protocol: %s, domain_name = %s, priority %u, weight = %s, port = %u, target = %s",
-		       record->data.srv->service,
-		       record->data.srv->proto,
-		       record->data.srv->domain_name,
+		       "priority %u, weight = %s, port = %u, target = %s",
 		       (unsigned int) record->data.srv->priority,
 		       (unsigned int) record->data.srv->weight,
 		       (unsigned int) record->data.srv->port,
@@ -306,7 +298,7 @@ display_request (void *cls,
  * Shutdown.
  */
 static void
-do_disconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_disconnect (void *cls)
 {
   if (NULL != handle)
   {
@@ -342,22 +334,26 @@ run (void *cls, char *const *args, const char *cfgfile,
 			flags,
 			&display_request,
 			NULL);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-				&do_disconnect, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_disconnect, NULL);
 }
 
 
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'i', "inbound-only", NULL,
-     gettext_noop ("only monitor DNS queries"),
-     0, &GNUNET_GETOPT_set_one, &inbound_only},
-    {'o', "outbound-only", NULL,
-     gettext_noop ("only monitor DNS replies"),
-     0, &GNUNET_GETOPT_set_one, &outbound_only},
-    GNUNET_GETOPT_OPTION_VERBOSE (&verbosity),
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_flag ('i',
+                                  "inbound-only",
+                                  gettext_noop ("only monitor DNS queries"),
+                                  &inbound_only),
+
+    GNUNET_GETOPT_option_flag ('o',
+                                  "outbound-only",
+                                  gettext_noop ("only monitor DNS queries"),
+                                  &outbound_only),
+
+    GNUNET_GETOPT_option_verbose (&verbosity),
     GNUNET_GETOPT_OPTION_END
   };
 

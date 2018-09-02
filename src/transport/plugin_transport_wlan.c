@@ -1,50 +1,49 @@
 /*
   This file is part of GNUnet
-  (C) 2010, 2011, 2012 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2010-2014 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+  Affero General Public License for more details.
 */
 
 /**
  * @file transport/plugin_transport_wlan.c
- * @brief transport plugin for wlan
+ * @brief transport plugin for wlan and/or bluetooth
  * @author David Brodski
  * @author Christian Grothoff
+ *
+ * BUILD_WLAN or BUILD_BLUETOOTH must be defined such that the respective
+ * variant of this code is compiled.
  */
 #include "platform.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_hello_lib.h"
 #include "gnunet_protocols.h"
-#include "gnunet_util_lib.h"
 #include "gnunet_statistics_service.h"
 #include "gnunet_transport_service.h"
 #include "gnunet_transport_plugin.h"
 #include "plugin_transport_wlan.h"
-#include "gnunet_common.h"
-#include "gnunet_crypto_lib.h"
 #include "gnunet_fragmentation_lib.h"
 #include "gnunet_constants.h"
 
+
+#if BUILD_WLAN
+/* begin case wlan */
+#define PLUGIN_NAME "wlan"
+#define CONFIG_NAME "transport-wlan"
+#define HELPER_NAME "gnunet-helper-transport-wlan"
+#define DUMMY_HELPER_NAME "gnunet-helper-transport-wlan-dummy"
+#define LIBGNUNET_PLUGIN_TRANSPORT_INIT libgnunet_plugin_transport_wlan_init
+#define LIBGNUNET_PLUGIN_TRANSPORT_DONE libgnunet_plugin_transport_wlan_done
 #define LOG(kind,...) GNUNET_log_from (kind, "transport-wlan",__VA_ARGS__)
 
-#define PLUGIN_NAME "wlan"
-
-/**
- * Max size of packet (that we give to the WLAN driver for transmission)
- */
-#define WLAN_MTU 1430
 
 /**
  * time out of a mac endpoint
@@ -57,6 +56,78 @@
  * This is the multiplication factor.
  */
 #define HELLO_BEACON_SCALING_FACTOR GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 2)
+
+
+/* end case wlan */
+#elif BUILD_BLUETOOTH
+/* begin case bluetooth */
+
+#define PLUGIN_NAME "bluetooth"
+#define CONFIG_NAME "transport-bluetooth"
+#define HELPER_NAME "gnunet-helper-transport-bluetooth"
+/* yes, this is correct, we use the same dummy driver as 'wlan' */
+#define DUMMY_HELPER_NAME "gnunet-helper-transport-wlan-dummy"
+#define LIBGNUNET_PLUGIN_TRANSPORT_INIT libgnunet_plugin_transport_bluetooth_init
+#define LIBGNUNET_PLUGIN_TRANSPORT_DONE libgnunet_plugin_transport_bluetooth_done
+#define LOG(kind,...) GNUNET_log_from (kind, "transport-bluetooth",__VA_ARGS__)
+
+/**
+ * time out of a mac endpoint
+ */
+#define MACENDPOINT_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT, 60)
+
+
+/**
+ * We reduce the frequence of HELLO beacons in relation to
+ * the number of MAC addresses currently visible to us.
+ * This is the multiplication factor.
+ */
+#define HELLO_BEACON_SCALING_FACTOR GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 60)
+
+/* end case bluetooth */
+#else
+#error need to build wlan or bluetooth
+#endif
+
+
+
+/**
+ * Functions with this signature are called whenever a
+ * complete message is received by the tokenizer.
+ *
+ * Do not call #GNUNET_SERVER_mst_destroy from within
+ * the scope of this callback.
+ *
+ * @param cls closure
+ * @param client identification of the client
+ * @param message the actual message
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR to stop further processing
+ */
+typedef int
+(*GNUNET_SERVER_MessageTokenizerCallback) (void *cls,
+                                           void *client,
+                                           const struct GNUNET_MessageHeader *message);
+
+
+/* Include legacy message stream tokenizer that was removed from util (for now) */
+#include "tcp_server_mst_legacy.c"
+
+
+/**
+ * Max size of packet (that we give to the WLAN driver for transmission)
+ */
+#define WLAN_MTU 1430
+
+
+/**
+ * Which network scope do we belong to?
+ */
+#if BUILD_WLAN
+static const enum GNUNET_ATS_Network_Type scope = GNUNET_ATS_NET_WLAN;
+#else
+static const enum GNUNET_ATS_Network_Type scope = GNUNET_ATS_NET_BT;
+#endif
+
 
 /**
  * Maximum number of messages in defragmentation queue per MAC
@@ -82,7 +153,7 @@ struct WlanHeader
 {
 
   /**
-   * Message type is GNUNET_MESSAGE_TYPE_WLAN_DATA.
+   * Message type is #GNUNET_MESSAGE_TYPE_WLAN_DATA.
    */
   struct GNUNET_MessageHeader header;
 
@@ -107,10 +178,19 @@ struct WlanHeader
 };
 
 
+/**
+ * Address format for WLAN.
+ */
 struct WlanAddress
 {
+  /**
+   * Options set for the WLAN, in NBO.
+   */
   uint32_t options GNUNET_PACKED;
 
+  /**
+   * WLAN addresses using MACs.
+   */
   struct GNUNET_TRANSPORT_WLAN_MacAddress mac;
 };
 
@@ -147,14 +227,14 @@ struct PendingMessage
   GNUNET_TRANSPORT_TransmitContinuation transmit_cont;
 
   /**
-   * Cls for transmit_cont
+   * Cls for @e transmit_cont
    */
   void *transmit_cont_cls;
 
   /**
    * Timeout task (for this message).
    */
-  GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+  struct GNUNET_SCHEDULER_Task * timeout_task;
 
 };
 
@@ -162,7 +242,7 @@ struct PendingMessage
 /**
  * Session handle for connections with other peers.
  */
-struct Session
+struct GNUNET_ATS_Session
 {
   /**
    * To whom are we talking to (set to our identity
@@ -171,21 +251,16 @@ struct Session
   struct GNUNET_PeerIdentity target;
 
   /**
-   * API requirement (must be first).
+   * We keep all sessions in a DLL at their respective
+   * `struct MACEndpoint *`.
    */
-  struct SessionHeader header;
+  struct GNUNET_ATS_Session *next;
 
   /**
    * We keep all sessions in a DLL at their respective
-   * 'struct MACEndpoint'.
+   * `struct MACEndpoint *`.
    */
-  struct Session *next;
-
-  /**
-   * We keep all sessions in a DLL at their respective
-   * 'struct MACEndpoint'.
-   */
-  struct Session *prev;
+  struct GNUNET_ATS_Session *prev;
 
   /**
    * MAC endpoint with the address of this peer.
@@ -198,16 +273,6 @@ struct Session
   struct GNUNET_HELLO_Address *address;
 
   /**
-   * Head of messages currently pending for transmission to this peer.
-   */
-  struct PendingMessage *pending_message_head;
-
-  /**
-   * Tail of messages currently pending for transmission to this peer.
-   */
-  struct PendingMessage *pending_message_tail;
-
-  /**
    * When should this session time out?
    */
   struct GNUNET_TIME_Absolute timeout;
@@ -215,7 +280,8 @@ struct Session
   /**
    * Timeout task (for the session).
    */
-  GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+  struct GNUNET_SCHEDULER_Task * timeout_task;
+
 };
 
 
@@ -264,7 +330,7 @@ struct FragmentMessage
   /**
    * Timeout task.
    */
-  GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+  struct GNUNET_SCHEDULER_Task * timeout_task;
 
   /**
    * Continuation to call when we're done with this message.
@@ -272,7 +338,13 @@ struct FragmentMessage
   GNUNET_TRANSPORT_TransmitContinuation cont;
 
   /**
-   * Closure for 'cont'
+   * Message we need to fragment and transmit, NULL after the
+   * @e fragmentcontext has been created.
+   */
+  struct GNUNET_MessageHeader *msg;
+
+  /**
+   * Closure for @e cont
    */
   void *cont_cls;
 
@@ -313,12 +385,12 @@ struct MacEndpoint
   /**
    * Head of sessions that use this MAC.
    */
-  struct Session *sessions_head;
+  struct GNUNET_ATS_Session *sessions_head;
 
   /**
    * Tail of sessions that use this MAC.
    */
-  struct Session *sessions_tail;
+  struct GNUNET_ATS_Session *sessions_tail;
 
   /**
    * Head of messages we are currently sending to this MAC.
@@ -343,7 +415,7 @@ struct MacEndpoint
   /**
    * Timeout task.
    */
-  GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+  struct GNUNET_SCHEDULER_Task * timeout_task;
 
   /**
    * count of messages in the fragment out queue for this mac endpoint
@@ -399,18 +471,29 @@ struct Plugin
   struct GNUNET_HELPER_Handle *suid_helper;
 
   /**
+   * Function to call about session status changes.
+   */
+  GNUNET_TRANSPORT_SessionInfoCallback sic;
+
+  /**
+   * Closure for @e sic.
+   */
+  void *sic_cls;
+
+  /**
    * ARGV-vector for the helper (all helpers take only the binary
    * name, one actual argument, plus the NULL terminator for 'argv').
    */
-  char * helper_argv[3];
+  char *helper_argv[3];
 
   /**
    * The interface of the wlan card given to us by the user.
    */
-  char *interface;
+  char *wlan_interface;
 
   /**
-   * Tokenizer for demultiplexing of data packets resulting from defragmentation.
+   * Tokenizer for demultiplexing of data packets resulting from
+   * defragmentation.
    */
   struct GNUNET_SERVER_MessageStreamTokenizer *fragment_data_tokenizer;
 
@@ -435,14 +518,9 @@ struct Plugin
   struct MacEndpoint *mac_tail;
 
   /**
-   * Number of connections
-   */
-  unsigned int mac_count;
-
-  /**
    * Task that periodically sends a HELLO beacon via the helper.
    */
-  GNUNET_SCHEDULER_TaskIdentifier beacon_task;
+  struct GNUNET_SCHEDULER_Task *beacon_task;
 
   /**
    * Tracker for bandwidth limit
@@ -458,6 +536,11 @@ struct Plugin
    * Have we received a control message with our MAC address yet?
    */
   int have_mac;
+
+  /**
+   * Number of connections
+   */
+  unsigned int mac_count;
 
   /**
    * Options for addresses
@@ -477,13 +560,37 @@ struct MacAndSession
   /**
    * NULL if the identity of the other peer is not known.
    */
-  struct Session *session;
+  struct GNUNET_ATS_Session *session;
 
   /**
    * MAC address of the other peer, NULL if not known.
    */
   struct MacEndpoint *endpoint;
 };
+
+
+/**
+ * Print MAC addresses nicely.
+ *
+ * @param mac the mac address
+ * @return string to a static buffer with
+ * the human-readable mac, will be overwritten during the next call to
+ * this function
+ */
+static const char *
+mac_to_string (const struct GNUNET_TRANSPORT_WLAN_MacAddress * mac)
+{
+  static char macstr[20];
+
+  GNUNET_snprintf (macstr,
+                   sizeof (macstr),
+                   "%.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+                   mac->mac[0], mac->mac[1],
+                   mac->mac[2], mac->mac[3],
+                   mac->mac[4], mac->mac[5]);
+  return macstr;
+}
+
 
 /**
  * Function called for a quick conversion of the binary address to
@@ -497,23 +604,57 @@ struct MacAndSession
  * @return string representing the same address
  */
 static const char *
-wlan_plugin_address_to_string (void *cls, const void *addr, size_t addrlen);
+wlan_plugin_address_to_string (void *cls,
+                               const void *addr,
+                               size_t addrlen)
+{
+  const struct GNUNET_TRANSPORT_WLAN_MacAddress *mac;
+  static char macstr[36];
+
+  if (sizeof (struct WlanAddress) != addrlen)
+  {
+    GNUNET_break (0);
+    return NULL;
+  }
+  mac = &((struct WlanAddress *) addr)->mac;
+  GNUNET_snprintf (macstr,
+                   sizeof (macstr),
+                   "%s.%u.%s",
+                   PLUGIN_NAME,
+                   ntohl (((struct WlanAddress *) addr)->options),
+                   mac_to_string (mac));
+  return macstr;
+}
+
 
 /**
- * Print MAC addresses nicely.
+ * If a session monitor is attached, notify it about the new
+ * session state.
  *
- * @param mac the mac address
- * @return string to a static buffer with the human-readable mac, will be overwritten during the next call to this function
+ * @param plugin our plugin
+ * @param session session that changed state
+ * @param state new state of the session
  */
-static const char *
-mac_to_string (const struct GNUNET_TRANSPORT_WLAN_MacAddress * mac)
+static void
+notify_session_monitor (struct Plugin *plugin,
+                        struct GNUNET_ATS_Session *session,
+                        enum GNUNET_TRANSPORT_SessionState state)
 {
-  static char macstr[20];
+  struct GNUNET_TRANSPORT_SessionInfo info;
 
-  GNUNET_snprintf (macstr, sizeof (macstr), "%.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-  								 mac->mac[0], mac->mac[1],
-                   mac->mac[2], mac->mac[3], mac->mac[4], mac->mac[5]);
-  return macstr;
+  if (NULL == plugin->sic)
+    return;
+  memset (&info, 0, sizeof (info));
+  info.state = state;
+  info.is_inbound = GNUNET_SYSERR; /* hard to say */
+  info.num_msg_pending = 0; /* we queue per MAC, not per peer */
+  info.num_bytes_pending = 0; /* we queue per MAC, not per peer */
+  info.receive_delay = GNUNET_TIME_UNIT_ZERO_ABS; /* not supported by WLAN */
+  info.session_timeout = session->timeout;
+  info.address = session->address;
+  plugin->sic (plugin->sic_cls,
+               session,
+               &info);
 }
 
 
@@ -578,12 +719,13 @@ get_wlan_header (struct Plugin *plugin,
 /**
  * Send an ACK for a fragment we received.
  *
- * @param cls the 'struct MacEndpoint' the ACK must be sent to
+ * @param cls the `struct MacEndpoint *` the ACK must be sent to
  * @param msg_id id of the message
  * @param hdr pointer to the hdr where the ack is stored
  */
 static void
-send_ack (void *cls, uint32_t msg_id,
+send_ack (void *cls,
+          uint32_t msg_id,
 	  const struct GNUNET_MessageHeader *hdr)
 {
   struct MacEndpoint *endpoint = cls;
@@ -597,27 +739,28 @@ send_ack (void *cls, uint32_t msg_id,
     GNUNET_break (0);
     return;
   }
-
-  if (size >= GNUNET_SERVER_MAX_MESSAGE_SIZE)
+  if (size >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
     return;
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Sending ACK to helper\n");
+       "Sending ACK to %s\n",
+       mac_to_string (&endpoint->wlan_addr.mac));
   radio_header = (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage *) buf;
   get_radiotap_header (endpoint, radio_header, size);
   get_wlan_header (endpoint->plugin,
 		   &radio_header->frame,
 		   &endpoint->wlan_addr.mac,
 		   sizeof (endpoint->wlan_addr.mac));
-  memcpy (&radio_header[1], hdr, msize);
+  GNUNET_memcpy (&radio_header[1], hdr, msize);
   if (NULL !=
       GNUNET_HELPER_send (endpoint->plugin->suid_helper,
 			  &radio_header->header,
 			  GNUNET_NO /* dropping ACKs is bad */,
 			  NULL, NULL))
-    GNUNET_STATISTICS_update (endpoint->plugin->env->stats, _("# WLAN ACKs sent"),
+    GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
+                              _("# ACKs sent"),
 			      1, GNUNET_NO);
 }
 
@@ -629,14 +772,16 @@ send_ack (void *cls, uint32_t msg_id,
  * @param hdr pointer to the data
  */
 static void
-wlan_data_message_handler (void *cls, const struct GNUNET_MessageHeader *hdr)
+wlan_data_message_handler (void *cls,
+                           const struct GNUNET_MessageHeader *hdr)
 {
   struct MacEndpoint *endpoint = cls;
   struct Plugin *plugin = endpoint->plugin;
   struct MacAndSession mas;
 
   GNUNET_STATISTICS_update (plugin->env->stats,
-			    _("# WLAN messages defragmented"), 1,
+			    _("# Messages defragmented"),
+                            1,
 			    GNUNET_NO);
   mas.session = NULL;
   mas.endpoint = endpoint;
@@ -656,36 +801,28 @@ wlan_data_message_handler (void *cls, const struct GNUNET_MessageHeader *hdr)
  */
 static int
 wlan_plugin_disconnect_session (void *cls,
-                                struct Session *session)
+                                struct GNUNET_ATS_Session *session)
 {
   struct MacEndpoint *endpoint = session->mac;
-  struct PendingMessage *pm;
+  struct Plugin *plugin = endpoint->plugin;
 
-  endpoint->plugin->env->session_end (endpoint->plugin->env->cls,
-				      session->address,
-				      session);
-  while (NULL != (pm = session->pending_message_head))
-  {
-    GNUNET_CONTAINER_DLL_remove (session->pending_message_head,
-                                 session->pending_message_tail, pm);
-    if (GNUNET_SCHEDULER_NO_TASK != pm->timeout_task)
-    {
-      GNUNET_SCHEDULER_cancel (pm->timeout_task);
-      pm->timeout_task = GNUNET_SCHEDULER_NO_TASK;
-    }
-    GNUNET_free (pm->msg);
-    GNUNET_free (pm);
-  }
+  plugin->env->session_end (plugin->env->cls,
+                            session->address,
+                            session);
+  notify_session_monitor (plugin,
+                          session,
+                          GNUNET_TRANSPORT_SS_DONE);
   GNUNET_CONTAINER_DLL_remove (endpoint->sessions_head,
 			       endpoint->sessions_tail,
                                session);
-  if (session->timeout_task != GNUNET_SCHEDULER_NO_TASK)
+  if (session->timeout_task != NULL)
   {
     GNUNET_SCHEDULER_cancel (session->timeout_task);
-    session->timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    session->timeout_task = NULL;
   }
-  GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
-                            _("# WLAN sessions allocated"), -1,
+  GNUNET_STATISTICS_update (plugin->env->stats,
+                            _("# Sessions allocated"),
+                            -1,
                             GNUNET_NO);
   GNUNET_HELLO_address_free (session->address);
   GNUNET_free (session);
@@ -695,7 +832,7 @@ wlan_plugin_disconnect_session (void *cls,
 
 /**
  * Function that is called to get the keepalive factor.
- * GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT is divided by this number to
+ * #GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT is divided by this number to
  * calculate the interval between keepalive packets.
  *
  * @param cls closure with the `struct Plugin`
@@ -712,24 +849,25 @@ wlan_plugin_query_keepalive_factor (void *cls)
  * A session is timing out.  Clean up.
  *
  * @param cls pointer to the Session
- * @param tc pointer to the GNUNET_SCHEDULER_TaskContext
  */
 static void
-session_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+session_timeout (void *cls)
 {
-  struct Session *session = cls;
-  struct GNUNET_TIME_Relative timeout;
+  struct GNUNET_ATS_Session *session = cls;
+  struct GNUNET_TIME_Relative left;
 
-  session->timeout_task = GNUNET_SCHEDULER_NO_TASK;
-  timeout = GNUNET_TIME_absolute_get_remaining (session->timeout);
-  if (0 == timeout.rel_value_us)
+  session->timeout_task = NULL;
+  left = GNUNET_TIME_absolute_get_remaining (session->timeout);
+  if (0 != left.rel_value_us)
   {
-    wlan_plugin_disconnect_session (session->mac->plugin,
+    session->timeout_task =
+      GNUNET_SCHEDULER_add_delayed (left,
+                                    &session_timeout,
                                     session);
     return;
   }
-  session->timeout_task =
-    GNUNET_SCHEDULER_add_delayed (timeout, &session_timeout, session);
+  wlan_plugin_disconnect_session (session->mac->plugin,
+                                  session);
 }
 
 
@@ -741,20 +879,18 @@ session_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param peer peer identity to use for this session
  * @return returns the session or NULL
  */
-static struct Session *
+static struct GNUNET_ATS_Session *
 lookup_session (struct MacEndpoint *endpoint,
                 const struct GNUNET_PeerIdentity *peer)
 {
-  struct Session *session;
+  struct GNUNET_ATS_Session *session;
 
   for (session = endpoint->sessions_head; NULL != session; session = session->next)
     if (0 == memcmp (peer, &session->target, sizeof (struct GNUNET_PeerIdentity)))
-    {
-      session->timeout = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
       return session;
-    }
   return NULL;
 }
+
 
 /**
  * Create a new session
@@ -763,26 +899,37 @@ lookup_session (struct MacEndpoint *endpoint,
  * @param peer peer identity to use for this session
  * @return returns the session or NULL
  */
-static struct Session *
+static struct GNUNET_ATS_Session *
 create_session (struct MacEndpoint *endpoint,
                 const struct GNUNET_PeerIdentity *peer)
 {
-  struct Session *session;
+  struct GNUNET_ATS_Session *session;
 
-  GNUNET_STATISTICS_update (endpoint->plugin->env->stats, _("# WLAN sessions allocated"), 1,
+  GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
+                            _("# Sessions allocated"),
+                            1,
                             GNUNET_NO);
-  session = GNUNET_new (struct Session);
+  session = GNUNET_new (struct GNUNET_ATS_Session);
   GNUNET_CONTAINER_DLL_insert_tail (endpoint->sessions_head,
                                     endpoint->sessions_tail,
 				    session);
-  session->address = GNUNET_HELLO_address_allocate (peer, PLUGIN_NAME,
-      &endpoint->wlan_addr, sizeof (endpoint->wlan_addr),
-      GNUNET_HELLO_ADDRESS_INFO_NONE);
+  session->address = GNUNET_HELLO_address_allocate (peer,
+                                                    PLUGIN_NAME,
+                                                    &endpoint->wlan_addr,
+                                                    sizeof (endpoint->wlan_addr),
+                                                    GNUNET_HELLO_ADDRESS_INFO_NONE);
   session->mac = endpoint;
   session->target = *peer;
   session->timeout = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
   session->timeout_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT, &session_timeout, session);
+      GNUNET_SCHEDULER_add_delayed (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT, &session_timeout,
+                                    session);
+  notify_session_monitor (endpoint->plugin,
+                          session,
+                          GNUNET_TRANSPORT_SS_INIT);
+  notify_session_monitor (endpoint->plugin,
+                          session,
+                          GNUNET_TRANSPORT_SS_UP);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Created new session %p for peer `%s' with endpoint %s\n",
        session,
@@ -800,13 +947,14 @@ create_session (struct MacEndpoint *endpoint,
  * @param peer peer identity to use for this session
  * @return returns the session
  */
-static struct Session *
+static struct GNUNET_ATS_Session *
 get_session (struct MacEndpoint *endpoint,
-                const struct GNUNET_PeerIdentity *peer)
+             const struct GNUNET_PeerIdentity *peer)
 {
-  struct Session *session;
+  struct GNUNET_ATS_Session *session;
+
   if (NULL != (session = lookup_session (endpoint, peer)))
-  	return session;
+    return session;
   return create_session (endpoint, peer);
 }
 
@@ -816,8 +964,9 @@ get_session (struct MacEndpoint *endpoint,
  * message to the SUID helper process and we are thus ready for
  * the next fragment.
  *
- * @param cls the 'struct FragmentMessage'
- * @param result result of the operation (#GNUNET_OK on success, #GNUNET_NO if the helper died, #GNUNET_SYSERR
+ * @param cls the `struct FragmentMessage *`
+ * @param result result of the operation (#GNUNET_OK on success,
+ *        #GNUNET_NO if the helper died, #GNUNET_SYSERR
  *        if the helper was stopped)
  */
 static void
@@ -825,7 +974,6 @@ fragment_transmission_done (void *cls,
 			    int result)
 {
   struct FragmentMessage *fm = cls;
-
 
   fm->sh = NULL;
   GNUNET_FRAGMENT_context_transmission_done (fm->fragcontext);
@@ -835,7 +983,7 @@ fragment_transmission_done (void *cls,
 /**
  * Transmit a fragment of a message.
  *
- * @param cls 'struct FragmentMessage' this fragment message belongs to
+ * @param cls `struct FragmentMessage *` this fragment message belongs to
  * @param hdr pointer to the start of the fragment message
  */
 static void
@@ -849,10 +997,9 @@ transmit_fragment (void *cls,
 
   if (NULL == endpoint)
   {
-  	GNUNET_break (0);
-  	return;
+    GNUNET_break (0);
+    return;
   }
-
   msize = ntohs (hdr->size);
   size = sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage) + msize;
   {
@@ -861,11 +1008,16 @@ transmit_fragment (void *cls,
 
     radio_header = (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage *) buf;
     get_radiotap_header (endpoint, radio_header, size);
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Sending %u bytes of data to MAC `%s'\n",
+	 (unsigned int) msize,
+	 mac_to_string (&endpoint->wlan_addr.mac));
+
     get_wlan_header (endpoint->plugin,
 		     &radio_header->frame,
 		     &endpoint->wlan_addr.mac,
 		     sizeof (endpoint->wlan_addr.mac));
-    memcpy (&radio_header[1], hdr, msize);
+    GNUNET_memcpy (&radio_header[1], hdr, msize);
     GNUNET_assert (NULL == fm->sh);
     fm->sh = GNUNET_HELPER_send (endpoint->plugin->suid_helper,
 				 &radio_header->header,
@@ -873,15 +1025,21 @@ transmit_fragment (void *cls,
 				 &fragment_transmission_done, fm);
     fm->size_on_wire += size;
     if (NULL != fm->sh)
-      GNUNET_STATISTICS_update (endpoint->plugin->env->stats, _("# WLAN message fragments sent"),
-				1, GNUNET_NO);
+    {
+      GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
+                                _("# message fragments sent"),
+				1,
+                                GNUNET_NO);
+    }
     else
+    {
       GNUNET_FRAGMENT_context_transmission_done (fm->fragcontext);
+    }
     GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
-                              "# bytes currently in WLAN buffers",
+                              "# bytes currently in buffers",
                               -msize, GNUNET_NO);
     GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
-                              "# bytes transmitted via WLAN",
+                              "# bytes transmitted",
                               msize, GNUNET_NO);
   }
 }
@@ -897,22 +1055,33 @@ free_fragment_message (struct FragmentMessage *fm)
 {
   struct MacEndpoint *endpoint = fm->macendpoint;
 
-  GNUNET_STATISTICS_update (endpoint->plugin->env->stats, _("# WLAN messages pending (with fragmentation)"),
+  GNUNET_STATISTICS_update (endpoint->plugin->env->stats,
+                            _("# messages pending (with fragmentation)"),
 			    -1, GNUNET_NO);
   GNUNET_CONTAINER_DLL_remove (endpoint->sending_messages_head,
-                               endpoint->sending_messages_tail, fm);
+                               endpoint->sending_messages_tail,
+                               fm);
   if (NULL != fm->sh)
   {
     GNUNET_HELPER_send_cancel (fm->sh);
     fm->sh = NULL;
   }
-  GNUNET_FRAGMENT_context_destroy (fm->fragcontext,
-                                   &endpoint->msg_delay,
-                                   &endpoint->ack_delay);
-  if (fm->timeout_task != GNUNET_SCHEDULER_NO_TASK)
+  if (NULL != fm->msg)
+  {
+    GNUNET_free (fm->msg);
+    fm->msg = NULL;
+  }
+  if (NULL != fm->fragcontext)
+  {
+    GNUNET_FRAGMENT_context_destroy (fm->fragcontext,
+                                     &endpoint->msg_delay,
+                                     &endpoint->ack_delay);
+    fm->fragcontext = NULL;
+  }
+  if (NULL != fm->timeout_task)
   {
     GNUNET_SCHEDULER_cancel (fm->timeout_task);
-    fm->timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    fm->timeout_task = NULL;
   }
   GNUNET_free (fm);
 }
@@ -922,18 +1091,20 @@ free_fragment_message (struct FragmentMessage *fm)
  * A FragmentMessage has timed out.  Remove it.
  *
  * @param cls pointer to the 'struct FragmentMessage'
- * @param tc pointer to the GNUNET_SCHEDULER_TaskContext
  */
 static void
-fragmentmessage_timeout (void *cls,
-                         const struct GNUNET_SCHEDULER_TaskContext *tc)
+fragmentmessage_timeout (void *cls)
 {
   struct FragmentMessage *fm = cls;
 
-  fm->timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  fm->timeout_task = NULL;
   if (NULL != fm->cont)
   {
-    fm->cont (fm->cont_cls, &fm->target, GNUNET_SYSERR, fm->size_payload, fm->size_on_wire);
+    fm->cont (fm->cont_cls,
+              &fm->target,
+              GNUNET_SYSERR,
+              fm->size_payload,
+              fm->size_on_wire);
     fm->cont = NULL;
   }
   free_fragment_message (fm);
@@ -952,7 +1123,7 @@ fragmentmessage_timeout (void *cls,
  *        been transmitted (or if the transport is ready
  *        for the next transmission call; or if the
  *        peer disconnected...); can be NULL
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  */
 static void
 send_with_fragmentation (struct MacEndpoint *endpoint,
@@ -960,7 +1131,8 @@ send_with_fragmentation (struct MacEndpoint *endpoint,
 			 const struct GNUNET_PeerIdentity *target,
 			 const struct GNUNET_MessageHeader *msg,
 			 size_t payload_size,
-			 GNUNET_TRANSPORT_TransmitContinuation cont, void *cont_cls)
+			 GNUNET_TRANSPORT_TransmitContinuation cont,
+                         void *cont_cls)
 
 {
   struct FragmentMessage *fm;
@@ -971,21 +1143,29 @@ send_with_fragmentation (struct MacEndpoint *endpoint,
   fm->macendpoint = endpoint;
   fm->target = *target;
   fm->size_payload = payload_size;
-  fm->size_on_wire = 0;
   fm->timeout = GNUNET_TIME_relative_to_absolute (timeout);
   fm->cont = cont;
   fm->cont_cls = cont_cls;
   /* 1 MBit/s typical data rate, 1430 byte fragments => ~100 ms per message */
-  fm->fragcontext =
-    GNUNET_FRAGMENT_context_create (plugin->env->stats, WLAN_MTU,
-				    &plugin->tracker,
-				    endpoint->msg_delay,
-				    endpoint->ack_delay,
-				    msg,
-				    &transmit_fragment, fm);
   fm->timeout_task =
     GNUNET_SCHEDULER_add_delayed (timeout,
-				  &fragmentmessage_timeout, fm);
+                                  &fragmentmessage_timeout,
+                                  fm);
+  if (GNUNET_YES == plugin->have_mac)
+  {
+    fm->fragcontext =
+      GNUNET_FRAGMENT_context_create (plugin->env->stats,
+                                      WLAN_MTU,
+                                      &plugin->tracker,
+                                      fm->macendpoint->msg_delay,
+                                      fm->macendpoint->ack_delay,
+                                      msg,
+                                      &transmit_fragment, fm);
+  }
+  else
+  {
+    fm->msg = GNUNET_copy_message (msg);
+  }
   GNUNET_CONTAINER_DLL_insert_tail (endpoint->sending_messages_head,
 				    endpoint->sending_messages_tail,
 				    fm);
@@ -1002,10 +1182,12 @@ free_macendpoint (struct MacEndpoint *endpoint)
 {
   struct Plugin *plugin = endpoint->plugin;
   struct FragmentMessage *fm;
-  struct Session *session;
+  struct GNUNET_ATS_Session *session;
 
   GNUNET_STATISTICS_update (plugin->env->stats,
-			    _("# WLAN MAC endpoints allocated"), -1, GNUNET_NO);
+			    _("# MAC endpoints allocated"),
+                            -1,
+                            GNUNET_NO);
   while (NULL != (session = endpoint->sessions_head))
     wlan_plugin_disconnect_session (plugin,
                                     session);
@@ -1022,10 +1204,10 @@ free_macendpoint (struct MacEndpoint *endpoint)
   }
 
   plugin->mac_count--;
-  if (GNUNET_SCHEDULER_NO_TASK != endpoint->timeout_task)
+  if (NULL != endpoint->timeout_task)
   {
     GNUNET_SCHEDULER_cancel (endpoint->timeout_task);
-    endpoint->timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    endpoint->timeout_task = NULL;
   }
   GNUNET_free (endpoint);
 }
@@ -1034,16 +1216,15 @@ free_macendpoint (struct MacEndpoint *endpoint)
 /**
  * A MAC endpoint is timing out.  Clean up.
  *
- * @param cls pointer to the MacEndpoint
- * @param tc pointer to the GNUNET_SCHEDULER_TaskContext
+ * @param cls pointer to the `struct MacEndpoint *`
  */
 static void
-macendpoint_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+macendpoint_timeout (void *cls)
 {
   struct MacEndpoint *endpoint = cls;
   struct GNUNET_TIME_Relative timeout;
 
-  endpoint->timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  endpoint->timeout_task = NULL;
   timeout = GNUNET_TIME_absolute_get_remaining (endpoint->timeout);
   if (0 == timeout.rel_value_us)
   {
@@ -1051,7 +1232,8 @@ macendpoint_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     return;
   }
   endpoint->timeout_task =
-    GNUNET_SCHEDULER_add_delayed (timeout, &macendpoint_timeout,
+    GNUNET_SCHEDULER_add_delayed (timeout,
+                                  &macendpoint_timeout,
 				  endpoint);
 }
 
@@ -1064,24 +1246,20 @@ macendpoint_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @return handle to our data structure for this MAC
  */
 static struct MacEndpoint *
-create_macendpoint (struct Plugin *plugin, struct WlanAddress *mac)
+create_macendpoint (struct Plugin *plugin,
+                    struct WlanAddress *mac)
 {
   struct MacEndpoint *pos;
 
   for (pos = plugin->mac_head; NULL != pos; pos = pos->next)
-  {
     if (0 == memcmp (mac, &pos->wlan_addr, sizeof (pos->wlan_addr)))
-    {
-      LOG (GNUNET_ERROR_TYPE_DEBUG, "Found existing MAC endpoint `%s'\n",
-        wlan_plugin_address_to_string(NULL, &pos->wlan_addr.mac, sizeof (pos->wlan_addr)));
       return pos;
-    }
-  }
   pos = GNUNET_new (struct MacEndpoint);
   pos->wlan_addr = (*mac);
   pos->plugin = plugin;
   pos->defrag =
-    GNUNET_DEFRAGMENT_context_create (plugin->env->stats, WLAN_MTU,
+    GNUNET_DEFRAGMENT_context_create (plugin->env->stats,
+                                      WLAN_MTU,
 				      MESSAGES_IN_DEFRAG_QUEUE_PER_MAC,
 				      pos,
 				      &wlan_data_message_handler,
@@ -1093,12 +1271,18 @@ create_macendpoint (struct Plugin *plugin, struct WlanAddress *mac)
   pos->timeout_task =
       GNUNET_SCHEDULER_add_delayed (MACENDPOINT_TIMEOUT, &macendpoint_timeout,
                                     pos);
-  GNUNET_CONTAINER_DLL_insert (plugin->mac_head, plugin->mac_tail, pos);
+  GNUNET_CONTAINER_DLL_insert (plugin->mac_head,
+                               plugin->mac_tail,
+                               pos);
   plugin->mac_count++;
-  GNUNET_STATISTICS_update (plugin->env->stats, _("# WLAN MAC endpoints allocated"),
+  GNUNET_STATISTICS_update (plugin->env->stats,
+                            _("# MAC endpoints allocated"),
 			    1, GNUNET_NO);
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "New MAC endpoint `%s'\n",
-       wlan_plugin_address_to_string(NULL, &pos->wlan_addr, sizeof (struct WlanAddress)));
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "New MAC endpoint `%s'\n",
+       wlan_plugin_address_to_string (NULL,
+                                      &pos->wlan_addr,
+                                      sizeof (struct WlanAddress)));
   return pos;
 }
 
@@ -1106,28 +1290,50 @@ create_macendpoint (struct Plugin *plugin, struct WlanAddress *mac)
 /**
  * Function obtain the network type for a session
  *
- * @param cls closure ('struct Plugin*')
+ * @param cls closure (`struct Plugin*`)
  * @param session the session
- * @return the network type in HBO or GNUNET_SYSERR
+ * @return the network type in HBO or #GNUNET_SYSERR
  */
 static enum GNUNET_ATS_Network_Type
-wlan_get_network (void *cls,
-		  struct Session *session)
+wlan_plugin_get_network (void *cls,
+                         struct GNUNET_ATS_Session *session)
 {
-  GNUNET_assert (NULL != session);
+#if BUILD_WLAN
   return GNUNET_ATS_NET_WLAN;
+#else
+  return GNUNET_ATS_NET_BT;
+#endif
 }
 
 
 /**
- * Creates a new outbound session the transport service will use to send data to the
- * peer
+ * Function obtain the network type for an address.
  *
- * @param cls the plugin
+ * @param cls closure (`struct Plugin *`)
+ * @param address the address
+ * @return the network type
+ */
+static enum GNUNET_ATS_Network_Type
+wlan_plugin_get_network_for_address (void *cls,
+                                    const struct GNUNET_HELLO_Address *address)
+{
+#if BUILD_WLAN
+  return GNUNET_ATS_NET_WLAN;
+#else
+  return GNUNET_ATS_NET_BT;
+#endif
+}
+
+
+/**
+ * Creates a new outbound session the transport service will use to
+ * send data to the peer
+ *
+ * @param cls the `struct Plugin *`
  * @param address the address
  * @return the session or NULL of max connections exceeded
  */
-static struct Session *
+static struct GNUNET_ATS_Session *
 wlan_plugin_get_session (void *cls,
 			 const struct GNUNET_HELLO_Address *address)
 {
@@ -1144,8 +1350,11 @@ wlan_plugin_get_session (void *cls,
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Service asked to create session for peer `%s' with MAC `%s'\n",
        GNUNET_i2s (&address->peer),
-       wlan_plugin_address_to_string(NULL, address->address, address->address_length));
-  endpoint = create_macendpoint (plugin, (struct WlanAddress *) address->address);
+       wlan_plugin_address_to_string (NULL,
+                                      address->address,
+                                      address->address_length));
+  endpoint = create_macendpoint (plugin,
+                                 (struct WlanAddress *) address->address);
   return get_session (endpoint, &address->peer);
 }
 
@@ -1163,7 +1372,7 @@ wlan_plugin_disconnect_peer (void *cls,
                              const struct GNUNET_PeerIdentity *target)
 {
   struct Plugin *plugin = cls;
-  struct Session *session;
+  struct GNUNET_ATS_Session *session;
   struct MacEndpoint *endpoint;
 
   for (endpoint = plugin->mac_head; NULL != endpoint; endpoint = endpoint->next)
@@ -1188,7 +1397,7 @@ wlan_plugin_disconnect_peer (void *cls,
  * @param cls closure
  * @param session which session must be used
  * @param msgbuf the message to transmit
- * @param msgbuf_size number of bytes in 'msgbuf'
+ * @param msgbuf_size number of bytes in @a msgbuf
  * @param priority how important is the message (most plugins will
  *                 ignore message priority and just FIFO)
  * @param to how long to wait at most for the transmission (does not
@@ -1199,14 +1408,14 @@ wlan_plugin_disconnect_peer (void *cls,
  *        been transmitted (or if the transport is ready
  *        for the next transmission call; or if the
  *        peer disconnected...); can be NULL
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  * @return number of bytes used (on the physical network, with overheads);
  *         -1 on hard errors (i.e. address invalid); 0 is a legal value
  *         and does NOT mean that the message was not transmitted (DV)
  */
 static ssize_t
 wlan_plugin_send (void *cls,
-                  struct Session *session,
+                  struct GNUNET_ATS_Session *session,
                   const char *msgbuf, size_t msgbuf_size,
                   unsigned int priority,
                   struct GNUNET_TIME_Relative to,
@@ -1229,12 +1438,13 @@ wlan_plugin_send (void *cls,
   wlanheader->sender = *plugin->env->my_identity;
   wlanheader->target = session->target;
   wlanheader->crc = htonl (GNUNET_CRYPTO_crc32_n (msgbuf, msgbuf_size));
-  memcpy (&wlanheader[1], msgbuf, msgbuf_size);
-
+  GNUNET_memcpy (&wlanheader[1],
+          msgbuf,
+          msgbuf_size);
   GNUNET_STATISTICS_update (plugin->env->stats,
-                            "# bytes currently in WLAN buffers",
-                            msgbuf_size, GNUNET_NO);
-
+                            "# bytes currently in buffers",
+                            msgbuf_size,
+                            GNUNET_NO);
   send_with_fragmentation (session->mac,
 			   to,
 			   &session->target,
@@ -1254,25 +1464,23 @@ wlan_plugin_send (void *cls,
  * @param hdr start of the message
  */
 static int
-process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
+process_data (void *cls,
+              void *client,
+              const struct GNUNET_MessageHeader *hdr)
 {
   struct Plugin *plugin = cls;
   struct GNUNET_HELLO_Address *address;
   struct MacAndSession *mas = client;
-  struct MacAndSession xmas;
-  struct GNUNET_ATS_Information ats;
   struct FragmentMessage *fm;
   struct GNUNET_PeerIdentity tmpsource;
   const struct WlanHeader *wlanheader;
   int ret;
   uint16_t msize;
 
-  ats.type = htonl (GNUNET_ATS_NETWORK_TYPE);
-  ats.value = htonl (GNUNET_ATS_NET_WLAN);
   msize = ntohs (hdr->size);
 
   GNUNET_STATISTICS_update (plugin->env->stats,
-                            "# bytes received via WLAN",
+                            "# bytes received",
                             msize, GNUNET_NO);
 
   switch (ntohs (hdr->type))
@@ -1280,7 +1488,8 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
   case GNUNET_MESSAGE_TYPE_HELLO:
 
     if (GNUNET_OK !=
-	GNUNET_HELLO_get_id ((const struct GNUNET_HELLO_Message *) hdr, &tmpsource))
+	GNUNET_HELLO_get_id ((const struct GNUNET_HELLO_Message *) hdr,
+                             &tmpsource))
     {
       GNUNET_break_op (0);
       break;
@@ -1295,20 +1504,33 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
 	 "Processing %u bytes of HELLO from peer `%s' at MAC %s\n",
 	 (unsigned int) msize,
 	 GNUNET_i2s (&tmpsource),
-	 wlan_plugin_address_to_string (NULL, &mas->endpoint->wlan_addr,
-	     sizeof (mas->endpoint->wlan_addr)));
+	 wlan_plugin_address_to_string (NULL,
+                                        &mas->endpoint->wlan_addr,
+                                        sizeof (mas->endpoint->wlan_addr)));
 
     GNUNET_STATISTICS_update (plugin->env->stats,
-			      _("# HELLO messages received via WLAN"), 1,
+			      _("# HELLO messages received"), 1,
 			      GNUNET_NO);
-
-    address = GNUNET_HELLO_address_allocate (&tmpsource, PLUGIN_NAME,
-        &mas->endpoint->wlan_addr, sizeof (mas->endpoint->wlan_addr),
-        GNUNET_HELLO_ADDRESS_INFO_INBOUND);
+    address = GNUNET_HELLO_address_allocate (&tmpsource,
+                                             PLUGIN_NAME,
+                                             &mas->endpoint->wlan_addr,
+                                             sizeof (mas->endpoint->wlan_addr),
+                                             GNUNET_HELLO_ADDRESS_INFO_NONE);
+    mas->session = lookup_session (mas->endpoint,
+                                   &tmpsource);
+    if (NULL == mas->session)
+    {
+      mas->session = create_session (mas->endpoint,
+                                     &tmpsource);
+      plugin->env->session_start (plugin->env->cls,
+                                  address,
+                                  mas->session,
+                                  scope);
+    }
     plugin->env->receive (plugin->env->cls,
-        address, mas->session, hdr);
-    plugin->env->update_address_metrics (plugin->env->cls,
-        address, mas->session, &ats, 1);
+                          address,
+                          mas->session,
+                          hdr);
     GNUNET_HELLO_address_free (address);
     break;
   case GNUNET_MESSAGE_TYPE_FRAGMENT:
@@ -1320,10 +1542,13 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
     LOG (GNUNET_ERROR_TYPE_DEBUG,
 	 "Processing %u bytes of FRAGMENT from MAC %s\n",
 	 (unsigned int) msize,
-	 wlan_plugin_address_to_string (NULL, &mas->endpoint->wlan_addr,
-	     sizeof (mas->endpoint->wlan_addr)));
+	 wlan_plugin_address_to_string (NULL,
+                                        &mas->endpoint->wlan_addr,
+                                        sizeof (mas->endpoint->wlan_addr)));
     GNUNET_STATISTICS_update (plugin->env->stats,
-                              _("# fragments received via WLAN"), 1, GNUNET_NO);
+                              _("# fragments received"),
+                              1,
+                              GNUNET_NO);
     (void) GNUNET_DEFRAGMENT_process_fragment (mas->endpoint->defrag,
 					      hdr);
     break;
@@ -1333,7 +1558,8 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
       GNUNET_break (0);
       break;
     }
-    GNUNET_STATISTICS_update (plugin->env->stats, _("# ACKs received via WLAN"),
+    GNUNET_STATISTICS_update (plugin->env->stats,
+                              _("# ACKs received"),
 			      1, GNUNET_NO);
     for (fm = mas->endpoint->sending_messages_head; NULL != fm; fm = fm->next)
     {
@@ -1342,13 +1568,18 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
       {
         LOG (GNUNET_ERROR_TYPE_DEBUG,
 	     "Got last ACK, finished message transmission to `%s' (%p)\n",
-             wlan_plugin_address_to_string (NULL, &mas->endpoint->wlan_addr,
-                 sizeof (mas->endpoint->wlan_addr)),
+             wlan_plugin_address_to_string (NULL,
+                                            &mas->endpoint->wlan_addr,
+                                            sizeof (mas->endpoint->wlan_addr)),
 	     fm);
 	mas->endpoint->timeout = GNUNET_TIME_relative_to_absolute (MACENDPOINT_TIMEOUT);
 	if (NULL != fm->cont)
 	{
-	  fm->cont (fm->cont_cls, &fm->target, GNUNET_OK, fm->size_payload, fm->size_on_wire);
+	  fm->cont (fm->cont_cls,
+                    &fm->target,
+                    GNUNET_OK,
+                    fm->size_payload,
+                    fm->size_on_wire);
 	  fm->cont = NULL;
 	}
         free_fragment_message (fm);
@@ -1358,15 +1589,18 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
       {
         LOG (GNUNET_ERROR_TYPE_DEBUG,
 	     "Got an ACK, message transmission to `%s' not yet finished\n",
-             wlan_plugin_address_to_string (NULL, &mas->endpoint->wlan_addr,
-                 sizeof (mas->endpoint->wlan_addr)));
+             wlan_plugin_address_to_string (NULL,
+                                            &mas->endpoint->wlan_addr,
+                                            sizeof (mas->endpoint->wlan_addr)));
         break;
       }
     }
-    LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "ACK not matched against any active fragmentation with MAC `%s'\n",
-         wlan_plugin_address_to_string (NULL, &mas->endpoint->wlan_addr,
-             sizeof (mas->endpoint->wlan_addr)));
+    if (NULL == fm)
+      LOG (GNUNET_ERROR_TYPE_DEBUG,
+           "ACK not matched against any active fragmentation with MAC `%s'\n",
+           wlan_plugin_address_to_string (NULL,
+                                          &mas->endpoint->wlan_addr,
+                                          sizeof (mas->endpoint->wlan_addr)));
     break;
   case GNUNET_MESSAGE_TYPE_WLAN_DATA:
     if (NULL == mas->endpoint)
@@ -1385,40 +1619,52 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
 		     sizeof (struct GNUNET_PeerIdentity)))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-	   "WLAN data for `%s', not for me, ignoring\n",
+	   "Data for `%s', not for me, ignoring\n",
 	   GNUNET_i2s (&wlanheader->target));
       break;
     }
     if (ntohl (wlanheader->crc) !=
-	GNUNET_CRYPTO_crc32_n (&wlanheader[1], msize - sizeof (struct WlanHeader)))
+	GNUNET_CRYPTO_crc32_n (&wlanheader[1],
+                               msize - sizeof (struct WlanHeader)))
     {
       GNUNET_STATISTICS_update (plugin->env->stats,
-				_("# WLAN DATA messages discarded due to CRC32 error"), 1,
+				_("# DATA messages discarded due to CRC32 error"),
+                                1,
 				GNUNET_NO);
       break;
     }
-    xmas.endpoint = mas->endpoint;
-    if (NULL == (xmas.session = lookup_session (mas->endpoint, &wlanheader->sender)))
+    mas->session = lookup_session (mas->endpoint,
+                                   &wlanheader->sender);
+    if (NULL == mas->session)
     {
-      xmas.session = create_session (mas->endpoint, &wlanheader->sender);
-      address = GNUNET_HELLO_address_allocate (&wlanheader->sender, PLUGIN_NAME,
-          &mas->endpoint->wlan_addr, sizeof (struct WlanAddress),
-          GNUNET_HELLO_ADDRESS_INFO_NONE);
-      plugin->env->session_start (NULL, address, xmas.session, NULL, 0);
+      mas->session = create_session (mas->endpoint,
+                                     &wlanheader->sender);
+      address = GNUNET_HELLO_address_allocate (&wlanheader->sender,
+                                               PLUGIN_NAME,
+                                               &mas->endpoint->wlan_addr,
+                                               sizeof (struct WlanAddress),
+                                               GNUNET_HELLO_ADDRESS_INFO_NONE);
+      plugin->env->session_start (plugin->env->cls,
+                                  address,
+                                  mas->session,
+                                  scope);
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-          "Notifying transport about peer `%s''s new session %p \n",
-          GNUNET_i2s (&wlanheader->sender), xmas.session);
+           "Notifying transport about peer `%s''s new session %p \n",
+           GNUNET_i2s (&wlanheader->sender),
+           mas->session);
       GNUNET_HELLO_address_free (address);
     }
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-    		"Processing %u bytes of WLAN DATA from peer `%s'\n",
+         "Processing %u bytes of DATA from peer `%s'\n",
 	 (unsigned int) msize,
 	 GNUNET_i2s (&wlanheader->sender));
+    mas->session->timeout = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
     (void) GNUNET_SERVER_mst_receive (plugin->wlan_header_payload_tokenizer,
-				      &xmas,
+				      mas,
 				      (const char *) &wlanheader[1],
 				      msize - sizeof (struct WlanHeader),
-				      GNUNET_YES, GNUNET_NO);
+				      GNUNET_YES,
+                                      GNUNET_NO);
     break;
   default:
     if (NULL == mas->endpoint)
@@ -1437,13 +1683,9 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
 	 (unsigned int) ntohs (hdr->type),
 	 GNUNET_i2s (&mas->session->target));
     plugin->env->receive (plugin->env->cls,
-        mas->session->address,
-        mas->session,
-        hdr);
-    plugin->env->update_address_metrics (plugin->env->cls,
-        mas->session->address,
-        mas->session,
-        &ats, 1);
+                          mas->session->address,
+                          mas->session,
+                          hdr);
     break;
   }
   return GNUNET_OK;
@@ -1451,14 +1693,66 @@ process_data (void *cls, void *client, const struct GNUNET_MessageHeader *hdr)
 
 
 /**
+ * Task to (periodically) send a HELLO beacon
+ *
+ * @param cls pointer to the plugin struct
+ */
+static void
+send_hello_beacon (void *cls)
+{
+  struct Plugin *plugin = cls;
+  uint16_t size;
+  uint16_t hello_size;
+  struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage *radioHeader;
+  const struct GNUNET_MessageHeader *hello;
+
+  hello = plugin->env->get_our_hello ();
+  if (NULL != hello)
+  {
+    hello_size = GNUNET_HELLO_size ((struct GNUNET_HELLO_Message *) hello);
+    GNUNET_assert (sizeof (struct WlanHeader) + hello_size <= WLAN_MTU);
+    size = sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage) + hello_size;
+  {
+    char buf[size] GNUNET_ALIGN;
+
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Sending %u byte HELLO beacon\n",
+	 (unsigned int) size);
+    radioHeader = (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage*) buf;
+    get_radiotap_header (NULL, radioHeader, size);
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Broadcasting %u bytes of data to MAC `%s'\n",
+	 (unsigned int) size,
+	 mac_to_string (&bc_all_mac));
+    get_wlan_header (plugin, &radioHeader->frame, &bc_all_mac, size);
+    GNUNET_memcpy (&radioHeader[1], hello, hello_size);
+    if (NULL !=
+	GNUNET_HELPER_send (plugin->suid_helper,
+			    &radioHeader->header,
+			    GNUNET_YES /* can drop */,
+			    NULL, NULL))
+      GNUNET_STATISTICS_update (plugin->env->stats,
+                                _("# HELLO beacons sent"),
+				1, GNUNET_NO);
+  } }
+  plugin->beacon_task =
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+				  (HELLO_BEACON_SCALING_FACTOR,
+				   plugin->mac_count + 1),
+				  &send_hello_beacon,
+				  plugin);
+
+}
+
+
+/**
  * Function used for to process the data from the suid process
  *
  * @param cls the plugin handle
- * @param client client that send the data (not used)
  * @param hdr header of the GNUNET_MessageHeader
  */
 static int
-handle_helper_message (void *cls, void *client,
+handle_helper_message (void *cls,
 		       const struct GNUNET_MessageHeader *hdr)
 {
   struct Plugin *plugin = cls;
@@ -1468,6 +1762,8 @@ handle_helper_message (void *cls, void *client,
   struct WlanAddress wa;
   struct MacAndSession mas;
   uint16_t msize;
+  struct FragmentMessage *fm;
+  struct MacEndpoint *endpoint;
 
   msize = ntohs (hdr->size);
   switch (ntohs (hdr->type))
@@ -1490,24 +1786,61 @@ handle_helper_message (void *cls, void *client,
       wa.mac = plugin->mac_address;
       wa.options = htonl(plugin->options);
       my_address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-          PLUGIN_NAME, &wa, sizeof (wa), GNUNET_HELLO_ADDRESS_INFO_NONE);
-      plugin->env->notify_address (plugin->env->cls, GNUNET_NO, my_address);
+                                                  PLUGIN_NAME,
+                                                  &wa, sizeof (wa),
+                                                  GNUNET_HELLO_ADDRESS_INFO_NONE);
+      plugin->env->notify_address (plugin->env->cls,
+                                   GNUNET_NO,
+                                   my_address);
       GNUNET_HELLO_address_free (my_address);
+      plugin->mac_address = cm->mac;
     }
-    plugin->mac_address = cm->mac;
-    plugin->have_mac = GNUNET_YES;
+    else
+    {
+      plugin->mac_address = cm->mac;
+      plugin->have_mac = GNUNET_YES;
+      for (endpoint = plugin->mac_head; NULL != endpoint; endpoint = endpoint->next)
+      {
+        for (fm = endpoint->sending_messages_head; NULL != fm; fm = fm->next)
+        {
+          if (NULL != fm->fragcontext)
+          {
+            GNUNET_break (0); /* should not happen */
+            continue;
+          }
+          fm->fragcontext =
+            GNUNET_FRAGMENT_context_create (plugin->env->stats,
+                                            WLAN_MTU,
+                                            &plugin->tracker,
+                                            fm->macendpoint->msg_delay,
+                                            fm->macendpoint->ack_delay,
+                                            fm->msg,
+                                            &transmit_fragment, fm);
+          GNUNET_free (fm->msg);
+          fm->msg = NULL;
+        }
+      }
+      GNUNET_break (NULL == plugin->beacon_task);
+      plugin->beacon_task = GNUNET_SCHEDULER_add_now (&send_hello_beacon,
+                                                      plugin);
+
+    }
 
     memset (&wa, 0, sizeof (struct WlanAddress));
     wa.mac = plugin->mac_address;
     wa.options = htonl(plugin->options);
     my_address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-        PLUGIN_NAME, &wa, sizeof (wa), GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                                PLUGIN_NAME,
+                                                &wa, sizeof (wa),
+                                                GNUNET_HELLO_ADDRESS_INFO_NONE);
 
     LOG (GNUNET_ERROR_TYPE_DEBUG,
 	 "Received WLAN_HELPER_CONTROL message with MAC address `%s' for peer `%s'\n",
 	 mac_to_string (&cm->mac),
 	 GNUNET_i2s (plugin->env->my_identity));
-    plugin->env->notify_address (plugin->env->cls, GNUNET_YES, my_address);
+    plugin->env->notify_address (plugin->env->cls,
+                                 GNUNET_YES,
+                                 my_address);
     GNUNET_HELLO_address_free (my_address);
     break;
   case GNUNET_MESSAGE_TYPE_WLAN_DATA_FROM_HELPER:
@@ -1515,14 +1848,13 @@ handle_helper_message (void *cls, void *client,
 	 "Got data message from helper with %u bytes\n",
 	 msize);
     GNUNET_STATISTICS_update (plugin->env->stats,
-                              _("# DATA messages received via WLAN"), 1,
+                              _("# DATA messages received"), 1,
                               GNUNET_NO);
     if (msize < sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage))
     {
-      GNUNET_break (0);
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-	   "Size of packet is too small (%u bytes)\n",
-	   msize);
+	   "Size of packet is too small (%u bytes < %u)\n",
+	   msize,  sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage));
       break;
     }
     rxinfo = (const struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage *) hdr;
@@ -1550,12 +1882,20 @@ handle_helper_message (void *cls, void *client,
     }
 
     GNUNET_STATISTICS_update (plugin->env->stats,
-			      _("# WLAN DATA messages processed"),
+			      _("# DATA messages processed"),
 			      1, GNUNET_NO);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
 	 "Receiving %u bytes of data from MAC `%s'\n",
 	 (unsigned int) (msize - sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)),
 	 mac_to_string (&rxinfo->frame.addr2));
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Receiving %u bytes of data to MAC `%s'\n",
+	 (unsigned int) (msize - sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)),
+	 mac_to_string (&rxinfo->frame.addr1));
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Receiving %u bytes of data with BSSID MAC `%s'\n",
+	 (unsigned int) (msize - sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)),
+	 mac_to_string (&rxinfo->frame.addr3));
     wa.mac = rxinfo->frame.addr2;
     wa.options = htonl (0);
     mas.endpoint = create_macendpoint (plugin, &wa);
@@ -1568,61 +1908,13 @@ handle_helper_message (void *cls, void *client,
     break;
   default:
     GNUNET_break (0);
-    LOG (GNUNET_ERROR_TYPE_DEBUG,
+    LOG (GNUNET_ERROR_TYPE_ERROR,
 	 "Unexpected message of type %u (%u bytes)",
-	 ntohs (hdr->type), ntohs (hdr->size));
+	 ntohs (hdr->type),
+	 ntohs (hdr->size));
     break;
   }
   return GNUNET_OK;
-}
-
-
-
-/**
- * Task to (periodically) send a HELLO beacon
- *
- * @param cls pointer to the plugin struct
- * @param tc scheduler context
- */
-static void
-send_hello_beacon (void *cls,
-		   const struct GNUNET_SCHEDULER_TaskContext *tc)
-{
-  struct Plugin *plugin = cls;
-  uint16_t size;
-  uint16_t hello_size;
-  struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage *radioHeader;
-  const struct GNUNET_MessageHeader *hello;
-
-  hello = plugin->env->get_our_hello ();
-  hello_size = GNUNET_HELLO_size ((struct GNUNET_HELLO_Message *) hello);
-  GNUNET_assert (sizeof (struct WlanHeader) + hello_size <= WLAN_MTU);
-  size = sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage) + hello_size;
-  {
-    char buf[size] GNUNET_ALIGN;
-
-    LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Sending %u byte HELLO beacon\n",
-	 (unsigned int) size);
-    radioHeader = (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage*) buf;
-    get_radiotap_header (NULL, radioHeader, size);
-    get_wlan_header (plugin, &radioHeader->frame, &bc_all_mac, size);
-    memcpy (&radioHeader[1], hello, hello_size);
-    if (NULL !=
-	GNUNET_HELPER_send (plugin->suid_helper,
-			    &radioHeader->header,
-			    GNUNET_YES /* can drop */,
-			    NULL, NULL))
-      GNUNET_STATISTICS_update (plugin->env->stats, _("# HELLO beacons sent via WLAN"),
-				1, GNUNET_NO);
-  }
-  plugin->beacon_task =
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
-				  (HELLO_BEACON_SCALING_FACTOR,
-				   plugin->mac_count + 1),
-				  &send_hello_beacon,
-				  plugin);
-
 }
 
 
@@ -1634,12 +1926,14 @@ send_hello_beacon (void *cls,
  *
  * @param cls closure
  * @param addr pointer to the address
- * @param addrlen length of addr
- * @return GNUNET_OK if this is a plausible address for this peer
+ * @param addrlen length of @a addr
+ * @return #GNUNET_OK if this is a plausible address for this peer
  *         and transport
  */
 static int
-wlan_plugin_address_suggested (void *cls, const void *addr, size_t addrlen)
+wlan_plugin_address_suggested (void *cls,
+                               const void *addr,
+                               size_t addrlen)
 {
   struct Plugin *plugin = cls;
   struct WlanAddress *wa = (struct WlanAddress *) addr;
@@ -1670,36 +1964,6 @@ wlan_plugin_address_suggested (void *cls, const void *addr, size_t addrlen)
 
 
 /**
- * Function called for a quick conversion of the binary address to
- * a numeric address.  Note that the caller must not free the
- * address and that the next call to this function is allowed
- * to override the address again.
- *
- * @param cls closure
- * @param addr binary address
- * @param addrlen length of the address
- * @return string representing the same address
- */
-static const char *
-wlan_plugin_address_to_string (void *cls, const void *addr, size_t addrlen)
-{
-  const struct GNUNET_TRANSPORT_WLAN_MacAddress *mac;
-  static char macstr[36];
-
-  if (sizeof (struct WlanAddress) != addrlen)
-  {
-    GNUNET_break (0);
-    return NULL;
-  }
-  mac = &((struct WlanAddress *) addr)->mac;
-  GNUNET_snprintf (macstr, sizeof (macstr), "%s.%u.%s",
-  		PLUGIN_NAME, ntohl (((struct WlanAddress *) addr)->options),
-  		mac_to_string (mac));
-  return macstr;
-}
-
-
-/**
  * Convert the transports address to a nice, human-readable format.
  *
  * @param cls closure
@@ -1710,30 +1974,30 @@ wlan_plugin_address_to_string (void *cls, const void *addr, size_t addrlen)
  * @param numeric should (IP) addresses be displayed in numeric form?
  * @param timeout after how long should we give up?
  * @param asc function to call on each string
- * @param asc_cls closure for asc
+ * @param asc_cls closure for @a asc
  */
 static void
-wlan_plugin_address_pretty_printer (void *cls, const char *type,
-                                    const void *addr, size_t addrlen,
+wlan_plugin_address_pretty_printer (void *cls,
+                                    const char *type,
+                                    const void *addr,
+                                    size_t addrlen,
                                     int numeric,
                                     struct GNUNET_TIME_Relative timeout,
                                     GNUNET_TRANSPORT_AddressStringCallback asc,
                                     void *asc_cls)
 {
-  char *ret;
+  const char *ret;
 
-  if (sizeof (struct WlanAddress) != addrlen)
-  {
-    /* invalid address  */
-    LOG (GNUNET_ERROR_TYPE_WARNING,
-	 _("WLAN address with invalid size encountered\n"));
-    asc (asc_cls, NULL);
-    return;
-  }
-  ret = GNUNET_strdup (wlan_plugin_address_to_string(NULL, addr, addrlen));
-  asc (asc_cls, ret);
-  GNUNET_free (ret);
-  asc (asc_cls, NULL);
+  if (sizeof (struct WlanAddress) == addrlen)
+    ret = wlan_plugin_address_to_string (NULL,
+                                         addr,
+                                         addrlen);
+  else
+    ret = NULL;
+  asc (asc_cls,
+       ret,
+       (NULL == ret) ? GNUNET_SYSERR : GNUNET_OK);
+  asc (asc_cls, NULL, GNUNET_OK);
 }
 
 
@@ -1743,7 +2007,7 @@ wlan_plugin_address_pretty_printer (void *cls, const char *type,
  * @param cls pointer to the api struct
  */
 void *
-libgnunet_plugin_transport_wlan_done (void *cls)
+LIBGNUNET_PLUGIN_TRANSPORT_DONE (void *cls)
 {
   struct WlanAddress wa;
   struct GNUNET_HELLO_Address *address;
@@ -1757,30 +2021,32 @@ libgnunet_plugin_transport_wlan_done (void *cls)
     GNUNET_free (api);
     return NULL;
   }
-
   if (GNUNET_YES == plugin->have_mac)
   {
     memset (&wa, 0, sizeof(wa));
     wa.options = htonl (plugin->options);
     wa.mac = plugin->mac_address;
     address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-        PLUGIN_NAME, &wa, sizeof (struct WlanAddress),
-        GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                             PLUGIN_NAME,
+                                             &wa, sizeof (struct WlanAddress),
+                                             GNUNET_HELLO_ADDRESS_INFO_NONE);
 
-    plugin->env->notify_address (plugin->env->cls, GNUNET_NO, address);
+    plugin->env->notify_address (plugin->env->cls,
+                                 GNUNET_NO,
+                                 address);
     plugin->have_mac = GNUNET_NO;
-
     GNUNET_HELLO_address_free (address);
   }
 
-  if (GNUNET_SCHEDULER_NO_TASK != plugin->beacon_task)
+  if (NULL != plugin->beacon_task)
   {
     GNUNET_SCHEDULER_cancel (plugin->beacon_task);
-    plugin->beacon_task = GNUNET_SCHEDULER_NO_TASK;
+    plugin->beacon_task = NULL;
   }
   if (NULL != plugin->suid_helper)
   {
-    GNUNET_HELPER_stop (plugin->suid_helper, GNUNET_NO);
+    GNUNET_HELPER_stop (plugin->suid_helper,
+                        GNUNET_NO);
     plugin->suid_helper = NULL;
   }
   endpoint_next = plugin->mac_head;
@@ -1804,7 +2070,7 @@ libgnunet_plugin_transport_wlan_done (void *cls)
     GNUNET_SERVER_mst_destroy (plugin->helper_payload_tokenizer);
     plugin->helper_payload_tokenizer = NULL;
   }
-  GNUNET_free_non_null (plugin->interface);
+  GNUNET_free_non_null (plugin->wlan_interface);
   GNUNET_free (plugin);
   GNUNET_free (api);
   return NULL;
@@ -1815,17 +2081,20 @@ libgnunet_plugin_transport_wlan_done (void *cls)
  * Function called to convert a string address to
  * a binary address.
  *
- * @param cls closure ('struct Plugin*')
+ * @param cls closure (`struct Plugin *`)
  * @param addr string address
  * @param addrlen length of the address
  * @param buf location to store the buffer
  * @param added location to store the number of bytes in the buffer.
- *        If the function returns GNUNET_SYSERR, its contents are undefined.
- * @return GNUNET_OK on success, GNUNET_SYSERR on failure
+ *        If the function returns #GNUNET_SYSERR, its contents are undefined.
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure
  */
 static int
-wlan_string_to_address (void *cls, const char *addr, uint16_t addrlen,
-			void **buf, size_t *added)
+wlan_plugin_string_to_address (void *cls,
+                               const char *addr,
+                               uint16_t addrlen,
+                               void **buf,
+                               size_t *added)
 {
   struct WlanAddress *wa;
   unsigned int a[6];
@@ -1833,7 +2102,7 @@ wlan_string_to_address (void *cls, const char *addr, uint16_t addrlen,
   char plugin[5];
   uint32_t options;
 
-  if ((NULL == addr) || (addrlen == 0))
+  if ((NULL == addr) || (0 == addrlen))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -1852,7 +2121,8 @@ wlan_string_to_address (void *cls, const char *addr, uint16_t addrlen,
   if (8 != SSCANF (addr,
 		   "%4s.%u.%X:%X:%X:%X:%X:%X",
 		   plugin, &options,
-		   &a[0], &a[1], &a[2], &a[3], &a[4], &a[5]))
+		   &a[0], &a[1], &a[2],
+                   &a[3], &a[4], &a[5]))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -1867,31 +2137,99 @@ wlan_string_to_address (void *cls, const char *addr, uint16_t addrlen,
 }
 
 
+/**
+ * Begin monitoring sessions of a plugin.  There can only
+ * be one active monitor per plugin (i.e. if there are
+ * multiple monitors, the transport service needs to
+ * multiplex the generated events over all of them).
+ *
+ * @param cls closure of the plugin
+ * @param sic callback to invoke, NULL to disable monitor;
+ *            plugin will being by iterating over all active
+ *            sessions immediately and then enter monitor mode
+ * @param sic_cls closure for @a sic
+ */
+static void
+wlan_plugin_setup_monitor (void *cls,
+                           GNUNET_TRANSPORT_SessionInfoCallback sic,
+                           void *sic_cls)
+{
+  struct Plugin *plugin = cls;
+  struct MacEndpoint *mac;
+  struct GNUNET_ATS_Session *session;
+
+  plugin->sic = sic;
+  plugin->sic_cls = sic_cls;
+  if (NULL != sic)
+  {
+    for (mac = plugin->mac_head; NULL != mac; mac = mac->next)
+      for (session = mac->sessions_head; NULL != session; session = session->next)
+      {
+        notify_session_monitor (plugin,
+                                session,
+                                GNUNET_TRANSPORT_SS_INIT);
+        notify_session_monitor (plugin,
+                                session,
+                                GNUNET_TRANSPORT_SS_UP);
+      }
+    sic (sic_cls, NULL, NULL);
+  }
+}
+
+
+
+/**
+ * Function that will be called whenever the transport service wants to
+ * notify the plugin that a session is still active and in use and
+ * therefore the session timeout for this session has to be updated
+ *
+ * @param cls closure
+ * @param peer which peer was the session for
+ * @param session which session is being updated
+ */
 static void
 wlan_plugin_update_session_timeout (void *cls,
-                                  const struct GNUNET_PeerIdentity *peer,
-                                  struct Session *session)
+                                    const struct GNUNET_PeerIdentity *peer,
+                                    struct GNUNET_ATS_Session *session)
 {
-  if (session->timeout_task != GNUNET_SCHEDULER_NO_TASK)
-    GNUNET_SCHEDULER_cancel (session->timeout_task);
-
-  session->timeout_task = GNUNET_SCHEDULER_add_delayed (
-      GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT, &session_timeout, session);
+  GNUNET_assert (NULL != session->timeout_task);
+  session->timeout = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
 }
+
+
+/**
+ * Function that will be called whenever the transport service wants to
+ * notify the plugin that the inbound quota changed and that the plugin
+ * should update it's delay for the next receive value
+ *
+ * @param cls closure
+ * @param peer which peer was the session for
+ * @param session which session is being updated
+ * @param delay new delay to use for receiving
+ */
+static void
+wlan_plugin_update_inbound_delay (void *cls,
+                                  const struct GNUNET_PeerIdentity *peer,
+                                  struct GNUNET_ATS_Session *session,
+                                  struct GNUNET_TIME_Relative delay)
+{
+  /* does nothing, as inbound delay is not supported by WLAN */
+}
+
 
 /**
  * Entry point for the plugin.
  *
- * @param cls closure, the 'struct GNUNET_TRANSPORT_PluginEnvironment*'
- * @return the 'struct GNUNET_TRANSPORT_PluginFunctions*' or NULL on error
+ * @param cls closure, the `struct GNUNET_TRANSPORT_PluginEnvironment *`
+ * @return the `struct GNUNET_TRANSPORT_PluginFunctions *` or NULL on error
  */
 void *
-libgnunet_plugin_transport_wlan_init (void *cls)
+LIBGNUNET_PLUGIN_TRANSPORT_INIT (void *cls)
 {
   struct GNUNET_TRANSPORT_PluginEnvironment *env = cls;
   struct GNUNET_TRANSPORT_PluginFunctions *api;
   struct Plugin *plugin;
-  char *interface;
+  char *wlan_interface;
   unsigned long long testmode;
   char *binary;
 
@@ -1904,59 +2242,73 @@ libgnunet_plugin_transport_wlan_init (void *cls)
     api->cls = NULL;
     api->address_pretty_printer = &wlan_plugin_address_pretty_printer;
     api->address_to_string = &wlan_plugin_address_to_string;
-    api->string_to_address = &wlan_string_to_address;
+    api->string_to_address = &wlan_plugin_string_to_address;
     return api;
   }
 
   testmode = 0;
   /* check configuration */
   if ( (GNUNET_YES ==
-	GNUNET_CONFIGURATION_have_value (env->cfg, "transport-wlan", "TESTMODE")) &&
+	GNUNET_CONFIGURATION_have_value (env->cfg,
+                                         CONFIG_NAME,
+                                         "TESTMODE")) &&
        ( (GNUNET_SYSERR ==
-	  GNUNET_CONFIGURATION_get_value_number (env->cfg, "transport-wlan",
-						 "TESTMODE", &testmode)) ||
+	  GNUNET_CONFIGURATION_get_value_number (env->cfg,
+                                                 CONFIG_NAME,
+						 "TESTMODE",
+                                                 &testmode)) ||
 	 (testmode > 2) ) )
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "transport-wlan", "TESTMODE");
+			       CONFIG_NAME,
+                               "TESTMODE");
     return NULL;
   }
-  binary = GNUNET_OS_get_libexec_binary_path ("gnunet-helper-transport-wlan");
+  binary = GNUNET_OS_get_libexec_binary_path (HELPER_NAME);
   if ( (0 == testmode) &&
-       (GNUNET_YES != GNUNET_OS_check_helper_binary (binary, GNUNET_YES, NULL)) )
+       (GNUNET_YES !=
+        GNUNET_OS_check_helper_binary (binary,
+                                       GNUNET_YES,
+                                       NULL)) )
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
 	 _("Helper binary `%s' not SUID, cannot run WLAN transport\n"),
-	 "gnunet-helper-transport-wlan");
+	 HELPER_NAME);
     GNUNET_free (binary);
     return NULL;
   }
     GNUNET_free (binary);
   if (GNUNET_YES !=
-      GNUNET_CONFIGURATION_get_value_string
-      (env->cfg, "transport-wlan", "INTERFACE",
-       &interface))
+      GNUNET_CONFIGURATION_get_value_string (env->cfg,
+                                             CONFIG_NAME,
+                                             "INTERFACE",
+                                             &wlan_interface))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "transport-wlan", "INTERFACE");
+			       CONFIG_NAME,
+                               "INTERFACE");
     return NULL;
   }
 
   plugin = GNUNET_new (struct Plugin);
-  plugin->interface = interface;
+  plugin->wlan_interface = wlan_interface;
   plugin->env = env;
-  GNUNET_STATISTICS_set (plugin->env->stats, _("# WLAN sessions allocated"),
+  GNUNET_STATISTICS_set (plugin->env->stats,
+                         _("# sessions allocated"),
                          0, GNUNET_NO);
-  GNUNET_STATISTICS_set (plugin->env->stats, _("# WLAN MAC endpoints allocated"),
+  GNUNET_STATISTICS_set (plugin->env->stats,
+                         _("# MAC endpoints allocated"),
                          0, 0);
   GNUNET_BANDWIDTH_tracker_init (&plugin->tracker, NULL, NULL,
                                  GNUNET_BANDWIDTH_value_init (100 * 1024 *
-                                                              1024 / 8), 100);
-  plugin->fragment_data_tokenizer = GNUNET_SERVER_mst_create (&process_data, plugin);
-  plugin->wlan_header_payload_tokenizer = GNUNET_SERVER_mst_create (&process_data, plugin);
-  plugin->helper_payload_tokenizer = GNUNET_SERVER_mst_create (&process_data, plugin);
-  plugin->beacon_task = GNUNET_SCHEDULER_add_now (&send_hello_beacon,
-						  plugin);
+                                                              1024 / 8),
+                                 100);
+  plugin->fragment_data_tokenizer = GNUNET_SERVER_mst_create (&process_data,
+                                                              plugin);
+  plugin->wlan_header_payload_tokenizer = GNUNET_SERVER_mst_create (&process_data,
+                                                                    plugin);
+  plugin->helper_payload_tokenizer = GNUNET_SERVER_mst_create (&process_data,
+                                                               plugin);
 
   plugin->options = 0;
 
@@ -1964,33 +2316,33 @@ libgnunet_plugin_transport_wlan_init (void *cls)
   switch ((unsigned int) testmode)
   {
   case 0: /* normal */
-    plugin->helper_argv[0] = (char *) "gnunet-helper-transport-wlan";
-    plugin->helper_argv[1] = interface;
+    plugin->helper_argv[0] = (char *) HELPER_NAME;
+    plugin->helper_argv[1] = wlan_interface;
     plugin->helper_argv[2] = NULL;
     plugin->suid_helper = GNUNET_HELPER_start (GNUNET_NO,
-					       "gnunet-helper-transport-wlan",
+					       HELPER_NAME,
 					       plugin->helper_argv,
 					       &handle_helper_message,
 					       NULL,
 					       plugin);
     break;
   case 1: /* testmode, peer 1 */
-    plugin->helper_argv[0] = (char *) "gnunet-helper-transport-wlan-dummy";
+    plugin->helper_argv[0] = (char *) DUMMY_HELPER_NAME;
     plugin->helper_argv[1] = (char *) "1";
     plugin->helper_argv[2] = NULL;
     plugin->suid_helper = GNUNET_HELPER_start (GNUNET_NO,
-					       "gnunet-helper-transport-wlan-dummy",
+					       DUMMY_HELPER_NAME,
 					       plugin->helper_argv,
 					       &handle_helper_message,
 					       NULL,
 					       plugin);
     break;
   case 2: /* testmode, peer 2 */
-    plugin->helper_argv[0] = (char *) "gnunet-helper-transport-wlan-dummy";
+    plugin->helper_argv[0] = (char *) DUMMY_HELPER_NAME;
     plugin->helper_argv[1] = (char *) "2";
     plugin->helper_argv[2] = NULL;
     plugin->suid_helper = GNUNET_HELPER_start (GNUNET_NO,
-					       "gnunet-helper-transport-wlan-dummy",
+					       DUMMY_HELPER_NAME,
 					       plugin->helper_argv,
 					       &handle_helper_message,
 					       NULL,
@@ -2010,9 +2362,12 @@ libgnunet_plugin_transport_wlan_init (void *cls)
   api->address_pretty_printer = &wlan_plugin_address_pretty_printer;
   api->check_address = &wlan_plugin_address_suggested;
   api->address_to_string = &wlan_plugin_address_to_string;
-  api->string_to_address = &wlan_string_to_address;
-  api->get_network = &wlan_get_network;
+  api->string_to_address = &wlan_plugin_string_to_address;
+  api->get_network = &wlan_plugin_get_network;
+  api->get_network_for_address = &wlan_plugin_get_network_for_address;
   api->update_session_timeout = &wlan_plugin_update_session_timeout;
+  api->update_inbound_delay = &wlan_plugin_update_inbound_delay;
+  api->setup_monitor = &wlan_plugin_setup_monitor;
   return api;
 }
 

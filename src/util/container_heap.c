@@ -1,21 +1,16 @@
 /*
   This file is part of GNUnet.
-  (C) 2008, 2009 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2008, 2009 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+  Affero General Public License for more details.
 */
 
 /**
@@ -26,9 +21,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_util_lib.h"
+#include "gnunet_container_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-container-heap", __VA_ARGS__)
 
 #define EXTRA_CHECKS 0
 
@@ -163,10 +158,10 @@ GNUNET_CONTAINER_heap_destroy (struct GNUNET_CONTAINER_Heap *heap)
 
 
 /**
- * Get element stored at root of heap.
+ * Get element stored at the root of @a heap.
  *
- * @param heap heap to inspect
- * @return NULL if heap is empty
+ * @param heap  Heap to inspect.
+ * @return Element at the root, or NULL if heap is empty.
  */
 void *
 GNUNET_CONTAINER_heap_peek (const struct GNUNET_CONTAINER_Heap *heap)
@@ -174,6 +169,30 @@ GNUNET_CONTAINER_heap_peek (const struct GNUNET_CONTAINER_Heap *heap)
   if (heap->root == NULL)
     return NULL;
   return heap->root->element;
+}
+
+
+/**
+ * Get @a element and @a cost stored at the root of @a heap.
+ *
+ * @param[in]  heap     Heap to inspect.
+ * @param[out] element  Root element is returned here.
+ * @param[out] cost     Cost of @a element is returned here.
+ * @return #GNUNET_YES if an element is returned,
+ *         #GNUNET_NO  if the heap is empty.
+ */
+int
+GNUNET_CONTAINER_heap_peek2 (const struct GNUNET_CONTAINER_Heap *heap,
+                             void **element,
+                             GNUNET_CONTAINER_HeapCostType *cost)
+{
+  if (NULL == heap->root)
+    return GNUNET_NO;
+  if (NULL != element)
+    *element = heap->root->element;
+  if (NULL != cost)
+    *cost = heap->root->cost;
+  return GNUNET_YES;
 }
 
 
@@ -202,6 +221,7 @@ GNUNET_CONTAINER_heap_node_get_cost (const struct GNUNET_CONTAINER_HeapNode
 {
   return node->cost;
 }
+
 
 /**
  * Iterate over the children of the given node.
@@ -516,36 +536,23 @@ GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_HeapNode *node)
 /**
  * Updates the cost of any node in the tree
  *
- * @param heap heap to modify
  * @param node node for which the cost is to be changed
  * @param new_cost new cost for the node
  */
 void
-GNUNET_CONTAINER_heap_update_cost (struct GNUNET_CONTAINER_Heap *heap,
-                                   struct GNUNET_CONTAINER_HeapNode *node,
+GNUNET_CONTAINER_heap_update_cost (struct GNUNET_CONTAINER_HeapNode *node,
                                    GNUNET_CONTAINER_HeapCostType new_cost)
 {
-#if EXTRA_CHECKS
-  GNUNET_assert (((heap->size == 0) && (heap->root == NULL)) ||
-                 (heap->size == heap->root->tree_size + 1));
-  CHECK (heap->root);
-#endif
+  struct GNUNET_CONTAINER_Heap *heap = node->heap;
+
   remove_node (node);
-#if EXTRA_CHECKS
-  CHECK (heap->root);
-  GNUNET_assert (((heap->size == 1) && (heap->root == NULL)) ||
-                 (heap->size == heap->root->tree_size + 2));
-#endif
   node->cost = new_cost;
-  if (heap->root == NULL)
+  if (NULL == heap->root)
     heap->root = node;
   else
-    insert_node (heap, heap->root, node);
-#if EXTRA_CHECKS
-  CHECK (heap->root);
-  GNUNET_assert (((heap->size == 0) && (heap->root == NULL)) ||
-                 (heap->size == heap->root->tree_size + 1));
-#endif
+    insert_node (heap,
+                 heap->root,
+                 node);
 }
 
 

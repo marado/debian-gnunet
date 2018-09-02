@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -49,16 +44,16 @@ static struct GNUNET_OS_Process *proc;
 /* Pipe to read from started processes stdout (on read end) */
 static struct GNUNET_DISK_PipeHandle *pipe_stdout;
 
-static GNUNET_SCHEDULER_TaskIdentifier die_task;
+static struct GNUNET_SCHEDULER_Task * die_task;
 
-static GNUNET_SCHEDULER_TaskIdentifier read_task;
+static struct GNUNET_SCHEDULER_Task * read_task;
 
 static void
 runone (void);
 
 
 static void
-end_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+end_task (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Ending phase %d, ok is %d\n", phase,
               ok);
@@ -72,10 +67,10 @@ end_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_OS_process_destroy (proc);
     proc = NULL;
   }
-  if (GNUNET_SCHEDULER_NO_TASK != read_task)
+  if (NULL != read_task)
   {
     GNUNET_SCHEDULER_cancel (read_task);
-    read_task = GNUNET_SCHEDULER_NO_TASK;
+    read_task = NULL;
   }
   GNUNET_DISK_pipe_close (pipe_stdout);
   if (ok == 1)
@@ -179,16 +174,22 @@ read_output_line (int phase_from1, int phase_to1, int phase_from2,
   if (delay_is_a_dummy)
     delay_outside_of_range = 1;
 
-  if (!stop)
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Wrong log format?\n");
-  if (!level_matches)
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Wrong log level\n");
-  if (!delay_is_sane)
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Delay %ld is insane\n", *delay);
-  if (!delay_outside_of_range)
+  if (! stop)
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Wrong log format?\n");
+  if (! level_matches)
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Wrong log level\n");
+  if (! delay_is_sane)
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Delay %ld is insane\n",
+                *delay);
+  if (! delay_outside_of_range)
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Delay %ld is not outside of range (%ld ; %ld)\n",
-                *delay, delay_lessthan, delay_morethan, c);
+                *delay,
+                delay_lessthan,
+                delay_morethan);
   if (!stop || !level_matches || !delay_is_sane || !delay_outside_of_range)
     return NULL;
   *len = *len - i;
@@ -215,7 +216,7 @@ static int bytes;
 
 
 static void
-read_call (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+read_call (void *cls)
 {
   const struct GNUNET_DISK_FileHandle *stdout_read_handle = cls;
   char level[8];
@@ -223,7 +224,7 @@ read_call (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   long delays[8];
   int rd;
 
-  read_task = GNUNET_SCHEDULER_NO_TASK;
+  read_task = NULL;
   rd = GNUNET_DISK_file_read (stdout_read_handle, buf_ptr,
                               sizeof (buf) - bytes);
   if (rd > 0)
@@ -234,7 +235,8 @@ read_call (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     FPRINTF (stderr, "got %d bytes, reading more\n", rd);
 #endif
     read_task = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
-						stdout_read_handle, &read_call,
+						stdout_read_handle,
+						&read_call,
 						(void*) stdout_read_handle);
     return;
   }
@@ -411,7 +413,8 @@ runone ()
 
   die_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
-                                    (GNUNET_TIME_UNIT_SECONDS, 10), &end_task,
+                                    (GNUNET_TIME_UNIT_SECONDS, 10),
+				    &end_task,
                                     NULL);
 
   bytes = 0;
@@ -419,13 +422,14 @@ runone ()
   memset (&buf, 0, sizeof (buf));
 
   read_task = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
-					      stdout_read_handle, &read_call,
+					      stdout_read_handle,
+					      &read_call,
 					      (void*) stdout_read_handle);
 }
 
 
 static void
-task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+task (void *cls)
 {
   phase = 0;
   runone ();

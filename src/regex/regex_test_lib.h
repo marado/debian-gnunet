@@ -1,21 +1,16 @@
 /*
  *  This file is part of GNUnet
- *  (C) 2012 Christian Grothoff (and other contributing authors)
+ *  Copyright (C) 2012 GNUnet e.V.
  *
- *  GNUnet is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published
- *  by the Free Software Foundation; either version 3, or (at your
- *  option) any later version.
+ *  GNUnet is free software: you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published
+ *  by the Free Software Foundation, either version 3 of the License,
+ *  or (at your option) any later version.
  *
  *  GNUnet is distributed in the hope that it will be useful, but
  *  WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with GNUnet; see the file COPYING.  If not, write to the
- *  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- *  Boston, MA 02111-1307, USA.
+ *  Affero General Public License for more details.
  */
 /**
  * @file src/regex/regex_test_lib.h
@@ -38,15 +33,23 @@ extern "C"
 #endif
 #endif
 
+
 /**
  * Combine an array of regexes into a single prefix-shared regex.
+ * Returns a prefix-combine regex that matches the same strings as
+ * any of the original regexes.
+ *
+ * WARNING: only useful for reading specific regexes for specific applications,
+ *          namely the gnunet-regex-profiler / gnunet-regex-daemon.
+ *          This function DOES NOT support arbitrary regex combining.
  *
  * @param regexes A NULL-terminated array of regexes.
+ * @param alphabet_size Size of the alphabet the regex uses.
  *
  * @return A string with a single regex that matches any of the original regexes
  */
 char *
-REGEX_TEST_combine(char * const regexes[]);
+REGEX_TEST_combine (char * const regexes[], unsigned int alphabet_size);
 
 
 /**

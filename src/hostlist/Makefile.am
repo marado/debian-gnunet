@@ -1,29 +1,42 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 pkgcfgdir= $(pkgdatadir)/config.d/
 
 libexecdir= $(pkglibdir)/libexec/
 
-dist_pkgcfg_DATA = \
-  hostlist.conf
 
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
 endif
 
 if HAVE_MHD
- HOSTLIST_SERVER_SOURCES =  hostlist-server.c hostlist-server.h
+ HOSTLIST_SERVER_SOURCES = \
+   gnunet-daemon-hostlist_server.c gnunet-daemon-hostlist_server.h
  GN_LIBMHD = -lmicrohttpd
 endif
 
 if HAVE_LIBGNURL
 libexec_PROGRAMS = \
  gnunet-daemon-hostlist
+LIB_GNURL=@LIBGNURL@
+CPP_GNURL=@LIBGNURL_CPPFLAGS@
+dist_pkgcfg_DATA = \
+  hostlist.conf
+else
+if HAVE_LIBCURL
+libexec_PROGRAMS = \
+ gnunet-daemon-hostlist
+LIB_GNURL=@LIBCURL@
+CPP_GNURL=@LIBCURL_CPPFLAGS@
+dist_pkgcfg_DATA = \
+  hostlist.conf
+endif
 endif
 
 gnunet_daemon_hostlist_SOURCES = \
  gnunet-daemon-hostlist.c gnunet-daemon-hostlist.h \
- hostlist-client.c hostlist-client.h \
+ gnunet-daemon-hostlist_client.c gnunet-daemon-hostlist_client.h \
  $(HOSTLIST_SERVER_SOURCES)
 
 gnunet_daemon_hostlist_LDADD = \
@@ -34,26 +47,32 @@ gnunet_daemon_hostlist_LDADD = \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBMHD) \
-  @LIBGNURL@  \
+  $(LIB_GNURL) \
   $(GN_LIBINTL)
 
 gnunet_daemon_hostlist_CPPFLAGS = \
- @LIBGNURL_CPPFLAGS@  $(AM_CPPFLAGS)
+ $(CPP_GNURL) \
+ $(AM_CPPFLAGS)
 
 if HAVE_LIBGNURL
 check_PROGRAMS = \
  test_gnunet_daemon_hostlist \
  test_gnunet_daemon_hostlist_reconnect \
  test_gnunet_daemon_hostlist_learning
-
-if HAVE_MHD
-if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
-TESTS = \
+else
+if HAVE_LIBCURL
+check_PROGRAMS = \
  test_gnunet_daemon_hostlist \
  test_gnunet_daemon_hostlist_reconnect \
  test_gnunet_daemon_hostlist_learning
 endif
+endif
+
+if HAVE_MHD
+if ENABLE_TEST_RUN
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
+TESTS = \
+ $(check_PROGRAMS)
 endif
 endif
 

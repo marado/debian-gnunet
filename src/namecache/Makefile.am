@@ -1,4 +1,5 @@
-AM_CPPFLAGS = -I$(top_srcdir)/src/include
+# This Makefile.am is in the public domain
+AM_CPPFLAGS = -I$(top_srcdir)/src/include $(POSTGRESQL_CPPFLAGS)
 
 plugindir = $(libdir)/gnunet
 
@@ -19,6 +20,13 @@ if USE_COVERAGE
   XLIBS = -lgcov
 endif
 
+if HAVE_EXPERIMENTAL
+FLAT_PLUGIN = libgnunet_plugin_namecache_flat.la
+if HAVE_TESTING
+FLAT_TESTS = test_plugin_namecache_flat
+endif
+endif
+
 if HAVE_SQLITE
 SQLITE_PLUGIN = libgnunet_plugin_namecache_sqlite.la
 if HAVE_TESTING
@@ -26,7 +34,7 @@ SQLITE_TESTS = test_plugin_namecache_sqlite
 endif
 endif
 
-if HAVE_POSTGRES
+if HAVE_POSTGRESQL
 POSTGRES_PLUGIN = libgnunet_plugin_namecache_postgres.la
 if HAVE_TESTING
 POSTGRES_TESTS = test_plugin_namecache_postgres
@@ -43,11 +51,12 @@ if HAVE_SQLITE
 check_PROGRAMS = \
  $(SQLITE_TESTS) \
  $(POSTGRES_TESTS) \
+ $(FLAT_TESTS) \
  $(TESTING_TESTS)
 endif
 
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = \
   $(check_PROGRAMS)
 endif
@@ -81,11 +90,6 @@ gnunet_namecache_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetnamecache.la \
   $(GN_LIBINTL)
-gnunet_namecache_DEPENDENCIES = \
-  $(top_builddir)/src/identity/libgnunetidentity.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetnamecache.la
-
 
 gnunet_service_namecache_SOURCES = \
  gnunet-service-namecache.c
@@ -96,54 +100,60 @@ gnunet_service_namecache_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetnamecache.la \
   $(GN_LIBINTL)
-gnunet_service_namecache_DEPENDENCIES = \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetnamecache.la
 
 
 plugin_LTLIBRARIES = \
   $(SQLITE_PLUGIN) \
+	$(FLAT_PLUGIN) \
   $(POSTGRES_PLUGIN)
+
+libgnunet_plugin_namecache_flat_la_SOURCES = \
+  plugin_namecache_flat.c
+libgnunet_plugin_namecache_flat_la_LIBADD = \
+  libgnunetnamecache.la  \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL)
+libgnunet_plugin_namecache_flat_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_namecache_sqlite_la_SOURCES = \
   plugin_namecache_sqlite.c
 libgnunet_plugin_namecache_sqlite_la_LIBADD = \
-  $(top_builddir)/src/namecache/libgnunetnamecache.la  \
+  libgnunetnamecache.la  \
+  $(top_builddir)/src/sq/libgnunetsq.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) -lsqlite3 \
   $(LTLIBINTL)
 libgnunet_plugin_namecache_sqlite_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
-libgnunet_plugin_namecache_sqlite_la_DEPENDENCIES = \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetnamecache.la
 
 
 libgnunet_plugin_namecache_postgres_la_SOURCES = \
   plugin_namecache_postgres.c
 libgnunet_plugin_namecache_postgres_la_LIBADD = \
-  $(top_builddir)/src/namecache/libgnunetnamecache.la  \
-  $(top_builddir)/src/postgres/libgnunetpostgres.la  \
+  libgnunetnamecache.la  \
+  $(top_builddir)/src/pq/libgnunetpq.la  \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) -lpq \
   $(LTLIBINTL)
 libgnunet_plugin_namecache_postgres_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
-libgnunet_plugin_namecache_postgres_la_DEPENDENCIES = \
-  $(top_builddir)/src/postgres/libgnunetpostgres.la  \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  libgnunetnamecache.la
+ $(GN_PLUGIN_LDFLAGS) $(POSTGRESQL_LDFLAGS)
 
 test_namecache_api_cache_block_SOURCES = \
  test_namecache_api_cache_block.c
 test_namecache_api_cache_block_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
-  $(top_builddir)/src/namecache/libgnunetnamecache.la \
+  libgnunetnamecache.la \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la
+
+
+test_plugin_namecache_flat_SOURCES = \
+ test_plugin_namecache.c
+test_plugin_namecache_flat_LDADD = \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_plugin_namecache_sqlite_SOURCES = \
  test_plugin_namecache.c
@@ -160,5 +170,5 @@ test_plugin_namecache_postgres_LDADD = \
 EXTRA_DIST = \
   test_namecache_api.conf \
   test_plugin_namecache_sqlite.conf \
-  test_plugin_namecache_postgres.conf 
-
+  test_plugin_namecache_postgres.conf \
+	test_plugin_namecache_flat.conf

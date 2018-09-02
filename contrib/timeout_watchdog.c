@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License, or
+     (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -33,12 +28,14 @@
 
 static pid_t child;
 
+
 static void
 sigchld_handler (int val)
 {
   int status = 0;
   int ret = 0;
 
+  (void) val;
   waitpid (child, &status, 0);
   if (WIFEXITED (status) != 0)
     {
@@ -53,6 +50,7 @@ sigchld_handler (int val)
   exit (ret);
 }
 
+
 static void
 sigint_handler (int val)
 {
@@ -60,8 +58,10 @@ sigint_handler (int val)
   exit (val);
 }
 
+
 int
-main (int argc, char *argv[])
+main (int argc,
+      char *argv[])
 {
   int timeout = 0;
   pid_t gpid = 0;

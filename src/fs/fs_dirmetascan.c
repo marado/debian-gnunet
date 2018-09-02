@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2005-2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2005-2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -80,7 +75,7 @@ struct GNUNET_FS_DirScanner
   /**
    * Task scheduled when we are done.
    */
-  GNUNET_SCHEDULER_TaskIdentifier stop_task;
+  struct GNUNET_SCHEDULER_Task * stop_task;
 
   /**
    * Arguments for helper.
@@ -106,7 +101,7 @@ GNUNET_FS_directory_scan_abort (struct GNUNET_FS_DirScanner *ds)
   /* free resources */
   if (NULL != ds->toplevel)
     GNUNET_FS_share_tree_free (ds->toplevel);
-  if (GNUNET_SCHEDULER_NO_TASK != ds->stop_task)
+  if (NULL != ds->stop_task)
     GNUNET_SCHEDULER_cancel (ds->stop_task);
   GNUNET_free_non_null (ds->ex_arg);
   GNUNET_free (ds->filename_expanded);
@@ -211,9 +206,9 @@ expand_tree (struct GNUNET_FS_ShareTreeItem *parent,
     chld->short_filename[slen-1] = '\0';
   chld->is_directory = is_directory;
   if (NULL != parent)
-      GNUNET_CONTAINER_DLL_insert (parent->children_head,
-				   parent->children_tail,
-				   chld);
+    GNUNET_CONTAINER_DLL_insert (parent->children_head,
+				 parent->children_tail,
+				 chld);
   return chld;
 }
 
@@ -222,15 +217,13 @@ expand_tree (struct GNUNET_FS_ShareTreeItem *parent,
  * Task run last to shut everything down.
  *
  * @param cls the 'struct GNUNET_FS_DirScanner'
- * @param tc unused
  */
 static void
-finish_scan (void *cls,
-	     const struct GNUNET_SCHEDULER_TaskContext *tc)
+finish_scan (void *cls)
 {
   struct GNUNET_FS_DirScanner *ds = cls;
 
-  ds->stop_task = GNUNET_SCHEDULER_NO_TASK;
+  ds->stop_task = NULL;
   if (NULL != ds->helper)
   {
     GNUNET_HELPER_stop (ds->helper, GNUNET_NO);
@@ -247,12 +240,13 @@ finish_scan (void *cls,
  * Calls the scanner progress handler.
  *
  * @param cls the closure (directory scanner object)
- * @param client always NULL
  * @param msg message from the helper process
+ * @return #GNUNET_OK on success,
+ *    #GNUNET_NO to stop further processing (no error)
+ *    #GNUNET_SYSERR to stop further processing with error
  */
 static int
 process_helper_msgs (void *cls,
-		     void *client,
 		     const struct GNUNET_MessageHeader *msg)
 {
   struct GNUNET_FS_DirScanner *ds = cls;
@@ -260,7 +254,8 @@ process_helper_msgs (void *cls,
   size_t left;
 
 #if 0
-  fprintf (stderr, "DMS parses %u-byte message of type %u\n",
+  fprintf (stderr,
+	   "DMS parses %u-byte message of type %u\n",
 	   (unsigned int) ntohs (msg->size),
 	   (unsigned int) ntohs (msg->type));
 #endif
@@ -278,11 +273,18 @@ process_helper_msgs (void *cls,
 			   filename, GNUNET_NO,
 			   GNUNET_FS_DIRSCANNER_FILE_START);
     if (NULL == ds->toplevel)
+    {
       ds->toplevel = expand_tree (ds->pos,
-				  filename, GNUNET_NO);
+				  filename,
+				  GNUNET_NO);
+    }
     else
+    {
+      GNUNET_assert (NULL != ds->pos);
       (void) expand_tree (ds->pos,
-			  filename, GNUNET_NO);
+			  filename,
+			  GNUNET_NO);
+    }
     return GNUNET_OK;
   case GNUNET_MESSAGE_TYPE_FS_PUBLISH_HELPER_PROGRESS_DIRECTORY:
     if (filename[left-1] != '\0')
@@ -304,7 +306,8 @@ process_helper_msgs (void *cls,
 			   filename, GNUNET_YES,
 			   GNUNET_FS_DIRSCANNER_FILE_START);
     ds->pos = expand_tree (ds->pos,
-			   filename, GNUNET_YES);
+			   filename,
+			   GNUNET_YES);
     if (NULL == ds->toplevel)
       ds->toplevel = ds->pos;
     return GNUNET_OK;
@@ -361,11 +364,13 @@ process_helper_msgs (void *cls,
 	break;
       }
       ds->progress_callback (ds->progress_callback_cls,
-			     filename, GNUNET_YES,
+			     filename,
+			     GNUNET_YES,
 			     GNUNET_FS_DIRSCANNER_EXTRACT_FINISHED);
       if (0 < left)
       {
-	ds->pos->meta = GNUNET_CONTAINER_meta_data_deserialize (end, left);
+	ds->pos->meta = GNUNET_CONTAINER_meta_data_deserialize (end,
+								left);
 	if (NULL == ds->pos->meta)
 	{
 	  GNUNET_break (0);
@@ -427,7 +432,7 @@ helper_died_cb (void *cls)
   struct GNUNET_FS_DirScanner *ds = cls;
 
   ds->helper = NULL;
-  if (GNUNET_SCHEDULER_NO_TASK != ds->stop_task)
+  if (NULL != ds->stop_task)
     return; /* normal death, was finished */
   ds->progress_callback (ds->progress_callback_cls,
 			 NULL, GNUNET_SYSERR,
@@ -439,7 +444,8 @@ helper_died_cb (void *cls)
  * Start a directory scanner thread.
  *
  * @param filename name of the directory to scan
- * @param disable_extractor #GNUNET_YES to not to run libextractor on files (only build a tree)
+ * @param disable_extractor #GNUNET_YES to not run libextractor on files (only
+ *        build a tree)
  * @param ex if not NULL, must be a list of extra plugins for extractor
  * @param cb the callback to call when there are scanning progress messages
  * @param cb_cls closure for 'cb'

@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 # $Id$
 #
 # This file taken and modified from nss-gns.
@@ -14,26 +15,20 @@
 #
 # You should have received a copy of the GNU Lesser General Public
 # License along with nss-gns; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 # USA.
 
-EXTRA_DIST = map-file \
-  install-nss-plugin.sh \
-  uninstall-nss-plugin.sh
+EXTRA_DIST = map-file 
 
 AM_LDFLAGS=-avoid-version -module -export-dynamic
 
-nssdir = $(NSS_DIR)
-
-LIBTOOL = $(SUDO_BINARY) $(SHELL) $(top_builddir)/libtool
+nssdir = $(libdir)/gnunet/nss
 
 if !MINGW
-if INSTALL_NSS
 nss_LTLIBRARIES = \
 	libnss_gns.la \
 	libnss_gns4.la \
 	libnss_gns6.la
-endif
 endif
 
 sources = nss_gns_query.h nss_gns_query.c
@@ -51,14 +46,3 @@ libnss_gns6_la_SOURCES=$(libnss_gns_la_SOURCES)
 libnss_gns6_la_CFLAGS=$(libnss_gns_la_CFLAGS) -DNSS_IPV6_ONLY=1
 libnss_gns6_la_LDFLAGS=$(libnss_gns_la_LDFLAGS)
 
-if INSTALL_NSS
-if !MINGW
-install-data-hook:
-	$(top_srcdir)/src/gns/nss/install-nss-plugin.sh $(SHELL) $(top_builddir) $(nssdir) $(SUDO_BINARY)
-
-uninstall-hook:
-	$(top_srcdir)/src/gns/nss/uninstall-nss-plugin.sh $(SHELL) $(top_builddir) "rm -f $(nssdir)/libnss_gns.so.2" $(SUDO_BINARY)
-	$(top_srcdir)/src/gns/nss/uninstall-nss-plugin.sh $(SHELL) $(top_builddir) "rm -f $(nssdir)/libnss_gns4.so.2" $(SUDO_BINARY)
-	$(top_srcdir)/src/gns/nss/uninstall-nss-plugin.sh $(SHELL) $(top_builddir) "rm -f $(nssdir)/libnss_gns6.so.2" $(SUDO_BINARY)
-endif
-endif

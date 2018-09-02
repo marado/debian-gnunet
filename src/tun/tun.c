@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2011, 2012 Christian Grothoff
+     Copyright (C) 2010, 2011, 2012 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -70,7 +65,7 @@ GNUNET_TUN_initialize_ipv4_header (struct GNUNET_TUN_IPv4Header *ip,
  *
  * @param ip header to initialize
  * @param protocol protocol to use (i.e. IPPROTO_UDP), technically "next_header" for IPv6
- * @param payload_length number of bytes of payload that follow (excluding IPv4 header)
+ * @param payload_length number of bytes of payload that follow (excluding IPv6 header)
  * @param src source IP address to use
  * @param dst destination IP address to use
  */
@@ -265,6 +260,46 @@ GNUNET_TUN_calculate_icmp_checksum (struct GNUNET_TUN_IcmpHeader *icmp,
 				  sizeof (struct GNUNET_TUN_IcmpHeader));
   sum = GNUNET_CRYPTO_crc16_step (sum, payload, payload_length);
   icmp->crc = GNUNET_CRYPTO_crc16_finish (sum);
+}
+
+
+/**
+ * Check if two sockaddrs are equal.
+ *
+ * @param sa one address
+ * @param sb another address
+ * @param include_port also check ports
+ * @return #GNUNET_YES if they are equal
+ */
+int
+GNUNET_TUN_sockaddr_cmp (const struct sockaddr *sa,
+                         const struct sockaddr *sb,
+                         int include_port)
+{
+  if (sa->sa_family != sb->sa_family)
+    return GNUNET_NO;
+
+  switch (sa->sa_family)
+  {
+  case AF_INET:
+    {
+      const struct sockaddr_in *sa4 = (const struct sockaddr_in *) sa;
+      const struct sockaddr_in *sb4 = (const struct sockaddr_in *) sb;
+      return (sa4->sin_addr.s_addr == sb4->sin_addr.s_addr);
+    }
+  case AF_INET6:
+    {
+      const struct sockaddr_in6 *sa6 = (const struct sockaddr_in6 *) sa;
+      const struct sockaddr_in6 *sb6 = (const struct sockaddr_in6 *) sb;
+
+      return (0 == memcmp(&sa6->sin6_addr,
+                          &sb6->sin6_addr,
+                          sizeof (struct in6_addr)));
+    }
+  default:
+    GNUNET_break (0);
+    return GNUNET_SYSERR;
+  }
 }
 
 
