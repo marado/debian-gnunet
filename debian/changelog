@@ -1,3 +1,11 @@
+gnunet (0.10.1-5.1) unstable; urgency=high
+
+  * Non-maintainer upload.
+  * Build-depend on python, to make gnunet-qr usable again.
+    (Closes: #906075)
+
+ -- Adrian Bunk <bunk@debian.org>  Sat, 22 Sep 2018 10:42:50 +0300
+
 gnunet (0.10.1-5) unstable; urgency=medium
 
   * Migrate from a manual "-dbg" package to an automatic generated debug symbol
