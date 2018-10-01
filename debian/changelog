@@ -113,7 +113,7 @@ gnunet (0.9.5a-4) unstable; urgency=medium
   * Fix FTBFS on non-linux architectures (Closes: #740544):
    + remove gnunet-server.install.[kfreebsd,hurd].
    + generate gnunet-server.install.[kfreebsd,hurd] during install and remove
-     them during auto_clean.   
+     them during auto_clean.
    + remove the useless leftovers of vpn, dns and gns stuff on non-linux
      architectures (which are useless as the related libraries are not built).
 
@@ -293,7 +293,7 @@ gnunet (0.9.2-1) unstable; urgency=low
   * New upstream release (Closes: #621645).
   * Remove debian/patches, not necessary any more.
   * Update dependencies, according to README:
-    + update minimal versions. 
+    + update minimal versions.
     + depends on libunistring-dev.
     + depends on libltdl-dev instead of libltdl3-dev.
     + no need to depend on libgtk anymore.
