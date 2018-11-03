@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public Liceidentity as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public Liceidentity for more details.
-
-     You should have received a copy of the GNU General Public Liceidentity
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -39,7 +34,7 @@ GNUNET_NETWORK_STRUCT_BEGIN
  * GET_DEFAULT maybe answered with this message on failure;
  * CREATE and RENAME will always be answered with this message.
  */
-struct GNUNET_IDENTITY_ResultCodeMessage
+struct ResultCodeMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE
@@ -60,7 +55,7 @@ struct GNUNET_IDENTITY_ResultCodeMessage
 /**
  * Service informs client about status of a pseudonym.
  */
-struct GNUNET_IDENTITY_UpdateMessage
+struct UpdateMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE
@@ -93,7 +88,7 @@ struct GNUNET_IDENTITY_UpdateMessage
  * Client requests knowledge about default identity for
  * a subsystem from identity service.
  */
-struct GNUNET_IDENTITY_GetDefaultMessage
+struct GetDefaultMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_GET_DEFAULT
@@ -120,7 +115,7 @@ struct GNUNET_IDENTITY_GetDefaultMessage
  * Used from service to client as a result to the GET_DEFAULT
  * message, used from client to service to SET_DEFAULT.
  */
-struct GNUNET_IDENTITY_SetDefaultMessage
+struct SetDefaultMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT
@@ -151,7 +146,7 @@ struct GNUNET_IDENTITY_SetDefaultMessage
  * Client requests creation of an identity.  Service
  * will respond with a result code.
  */
-struct GNUNET_IDENTITY_CreateRequestMessage
+struct CreateRequestMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_CREATE
@@ -182,7 +177,7 @@ struct GNUNET_IDENTITY_CreateRequestMessage
  * Client requests renaming of an identity.  Service
  * will respond with a result code.
  */
-struct GNUNET_IDENTITY_RenameMessage
+struct RenameMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_RENAME
@@ -208,7 +203,7 @@ struct GNUNET_IDENTITY_RenameMessage
  * Client requests deletion of an identity.  Service
  * will respond with a result code.
  */
-struct GNUNET_IDENTITY_DeleteMessage
+struct DeleteMessage
 {
   /**
    * Type: #GNUNET_MESSAGE_TYPE_IDENTITY_DELETE

@@ -1,32 +1,31 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_os_lib.h
- * @brief low level process routines
  * @author Christian Grothoff
  * @author Krista Bennett
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
  * @author Milan
+ *
+ * @file
+ * Low level process routines
+ *
+ * @defgroup os  OS library
+ * Low level process routines.
  *
  * This code manages child processes.  We can communicate with child
  * processes using signals.  Because signals are not supported on W32
@@ -37,6 +36,8 @@
  * termination via signals, and not as a replacement for SIGKILL.
  * Thus using pipes to communicate signals should only be enabled if
  * the child is a Java process OR if we are on Windoze.
+ *
+ * @{
  */
 
 #ifndef GNUNET_OS_LIB_H
@@ -194,6 +195,100 @@ enum GNUNET_OS_ProcessStatusType
 
 
 /**
+ * Project-specific data used to help the OS subsystem
+ * find installation paths.
+ */
+struct GNUNET_OS_ProjectData
+{
+  /**
+   * Name of a library that is installed in the "lib/" directory of
+   * the project, such as "libgnunetutil".  Used to locate the
+   * installation by scanning dependencies of the current process.
+   */
+  const char *libname;
+
+  /**
+   * Name of the project that is used in the "libexec" prefix, For
+   * example, "gnunet".  Certain helper binaries are then expected to
+   * be installed in "$PREFIX/libexec/gnunet/" and resources in
+   * "$PREFIX/share/gnunet/".
+   */
+  const char *project_dirname;
+
+  /**
+   * Name of a project-specific binary that should be in "$PREFIX/bin/".
+   * Used to determine installation path from $PATH variable.
+   * For example "gnunet-arm".  On W32, ".exe" should be omitted.
+   */
+  const char *binary_name;
+
+  /**
+   * Name of an environment variable that can be used to override
+   * installation path detection, for example "GNUNET_PREFIX".
+   */
+  const char *env_varname;
+
+  /**
+   * Alternative name of an environment variable that can be used to
+   * override installation path detection, if "env_varname" is not
+   * set. Again, for example, "GNUNET_PREFIX".
+   */
+  const char *env_varname_alt;
+
+  /**
+   * Name of an environment variable that can be used to override
+   * the location from which default configuration files are loaded
+   * from, for example "GNUNET_BASE_CONFIG".
+   */
+  const char *base_config_varname;
+
+  /**
+   * E-mail address for reporting bugs.
+   */
+  const char *bug_email;
+
+  /**
+   * Project homepage.
+   */
+  const char *homepage;
+
+  /**
+   * Configuration file name (in $XDG_CONFIG_HOME) to use.
+   */
+  const char *config_file;
+
+  /**
+   * Configuration file name to use (if $XDG_CONFIG_HOME is not set).
+   */
+  const char *user_config_file;
+
+};
+
+
+/**
+ * Return default project data used by 'libgnunetutil' for GNUnet.
+ */
+const struct GNUNET_OS_ProjectData *
+GNUNET_OS_project_data_default (void);
+
+
+/**
+ * @return current (actual) project data.
+ */
+const struct GNUNET_OS_ProjectData *
+GNUNET_OS_project_data_get (void);
+
+
+/**
+ * Setup OS subsystem with project data.
+ *
+ * @param pd project data used to determine paths.
+ */
+void
+GNUNET_OS_init (const struct GNUNET_OS_ProjectData *pd);
+
+
+/**
  * Get the path to a specific GNUnet installation directory or, with
  * #GNUNET_OS_IPK_SELF_PREFIX, the current running apps installation
  * directory.
@@ -229,13 +324,14 @@ GNUNET_OS_get_libexec_binary_path (const char *progname);
  * @param addrlen length of the address
  * @return #GNUNET_OK to continue iteration, #GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_OS_NetworkInterfaceProcessor) (void *cls,
-                                                    const char *name,
-                                                    int isDefault,
-                                                    const struct sockaddr *addr,
-                                                    const struct sockaddr *broadcast_addr,
-                                                    const struct sockaddr *netmask,
-                                                    socklen_t addrlen);
+typedef int
+(*GNUNET_OS_NetworkInterfaceProcessor) (void *cls,
+                                        const char *name,
+                                        int isDefault,
+                                        const struct sockaddr *addr,
+                                        const struct sockaddr *broadcast_addr,
+                                        const struct sockaddr *netmask,
+                                        socklen_t addrlen);
 
 
 /**
@@ -280,7 +376,8 @@ GNUNET_OS_process_current (void);
  * @return 0 on success, -1 on error
  */
 int
-GNUNET_OS_process_kill (struct GNUNET_OS_Process *proc, int sig);
+GNUNET_OS_process_kill (struct GNUNET_OS_Process *proc,
+                        int sig);
 
 
 /**
@@ -423,7 +520,8 @@ struct GNUNET_OS_CommandHandle;
  * @param cls closure
  * @param line line of output from a command, NULL for the end
  */
-typedef void (*GNUNET_OS_LineProcessor) (void *cls, const char *line);
+typedef void
+(*GNUNET_OS_LineProcessor) (void *cls, const char *line);
 
 
 /**
@@ -447,8 +545,10 @@ GNUNET_OS_command_stop (struct GNUNET_OS_CommandHandle *cmd);
  * @return NULL on error
  */
 struct GNUNET_OS_CommandHandle *
-GNUNET_OS_command_run (GNUNET_OS_LineProcessor proc, void *proc_cls,
-                       struct GNUNET_TIME_Relative timeout, const char *binary,
+GNUNET_OS_command_run (GNUNET_OS_LineProcessor proc,
+                       void *proc_cls,
+                       struct GNUNET_TIME_Relative timeout,
+                       const char *binary,
                        ...);
 
 
@@ -469,7 +569,7 @@ GNUNET_OS_process_status (struct GNUNET_OS_Process *proc,
 
 /**
  * Wait for a process to terminate.  The return code is discarded.
- * You must not use 'GNUNET_OS_process_status' on the same process
+ * You must not use #GNUNET_OS_process_status() on the same process
  * after calling this function!  This function is blocking and should
  * thus only be used if the child process is known to have terminated
  * or to terminate very soon.
@@ -481,19 +581,32 @@ int
 GNUNET_OS_process_wait (struct GNUNET_OS_Process *proc);
 
 
+
+/**
+ * Retrieve the status of a process, waiting on him if dead.
+ * Blocking version.
+ *
+ * @param proc pointer to process structure
+ * @param type status type
+ * @param code return code/signal number
+ * @return #GNUNET_OK on success, #GNUNET_NO if the process is still running, #GNUNET_SYSERR otherwise
+ */
+int
+GNUNET_OS_process_wait_status (struct GNUNET_OS_Process *proc,
+                               enum GNUNET_OS_ProcessStatusType *type,
+                               unsigned long *code);
+
+
 /**
  * Connects this process to its parent via pipe;
  * essentially, the parent control handler will read signal numbers
- * from the 'GNUNET_OS_CONTROL_PIPE' (as given in an environment
+ * from the #GNUNET_OS_CONTROL_PIPE (as given in an environment
  * variable) and raise those signals.
  *
  * @param cls closure (unused)
- * @param tc scheduler context (unused)
  */
 void
-GNUNET_OS_install_parent_control_handler (void *cls,
-                                          const struct
-                                          GNUNET_SCHEDULER_TaskContext *tc);
+GNUNET_OS_install_parent_control_handler (void *cls);
 
 
 /**
@@ -514,7 +627,9 @@ GNUNET_OS_install_parent_control_handler (void *cls,
  *         #GNUNET_SYSERR on error (no such binary or not executable)
  */
 int
-GNUNET_OS_check_helper_binary (const char *binary, int check_suid, const char * params);
+GNUNET_OS_check_helper_binary (const char *binary,
+                               int check_suid,
+                               const char *params);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
@@ -524,7 +639,9 @@ GNUNET_OS_check_helper_binary (const char *binary, int check_suid, const char * 
 }
 #endif
 
-
 /* ifndef GNUNET_OS_LIB_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_os_lib.h */

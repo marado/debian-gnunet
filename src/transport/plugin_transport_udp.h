@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2010, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -32,7 +27,6 @@
 #include "gnunet_hello_lib.h"
 #include "gnunet_util_lib.h"
 #include "gnunet_fragmentation_lib.h"
-#include "gnunet_nat_lib.h"
 #include "gnunet_protocols.h"
 #include "gnunet_resolver_service.h"
 #include "gnunet_signatures.h"
@@ -47,6 +41,7 @@
 #define PLUGIN_NAME "udp"
 
 #define DEBUG_UDP GNUNET_NO
+
 #define DEBUG_UDP_BROADCASTING GNUNET_NO
 
 /**
@@ -101,30 +96,34 @@ struct IPv6UdpAddress
 };
 GNUNET_NETWORK_STRUCT_END
 
-
 /**
- * UDP Message-Packet header (after defragmentation).
+ * Either an IPv4 or IPv6 UDP address.  Note that without a "length",
+ * one cannot tell which one of the two types this address represents.
  */
-struct UDPMessage
+union UdpAddress
 {
   /**
-   * Message header.
+   * IPv4 case.
    */
-  struct GNUNET_MessageHeader header;
+  struct IPv4UdpAddress v4;
 
   /**
-   * Always zero for now.
+   * IPv6 case.
    */
-  uint32_t reserved;
-
-  /**
-   * What is the identity of the sender
-   */
-  struct GNUNET_PeerIdentity sender;
-
+  struct IPv6UdpAddress v6;
 };
 
+
+/**
+ * Information we track for each message in the queue.
+ */
 struct UDP_MessageWrapper;
+
+
+/**
+ * Closure for #append_port().
+ */
+struct PrettyPrinterContext;
 
 
 /**
@@ -140,7 +139,7 @@ struct Plugin
 
   /**
    * Session of peers with whom we are currently connected,
-   * map of peer identity to 'struct PeerSession'.
+   * map of peer identity to `struct GNUNET_ATS_Session *`.
    */
   struct GNUNET_CONTAINER_MultiPeerMap *sessions;
 
@@ -150,15 +149,14 @@ struct Plugin
   struct GNUNET_CONTAINER_Heap *defrag_ctxs;
 
   /**
-   * ID of select task
+   * ID of select task for IPv4
    */
-  GNUNET_SCHEDULER_TaskIdentifier select_task;
-  GNUNET_SCHEDULER_TaskIdentifier select_task_v6;
+  struct GNUNET_SCHEDULER_Task *select_task_v4;
 
   /**
-   * Tokenizer for inbound messages.
+   * ID of select task for IPv6
    */
-  struct GNUNET_SERVER_MessageStreamTokenizer *mst;
+  struct GNUNET_SCHEDULER_Task *select_task_v6;
 
   /**
    * Bandwidth tracker to limit global UDP traffic.
@@ -175,43 +173,20 @@ struct Plugin
    */
   char *bind6_address;
 
-
-  /**
-   * Bytes currently in buffer
-   */
-  int64_t bytes_in_buffer;
-
   /**
    * Handle to NAT traversal support.
    */
   struct GNUNET_NAT_Handle *nat;
 
   /**
-   * FD Read set
+   * Handle to NAT traversal support.
    */
-  struct GNUNET_NETWORK_FDSet *rs_v4;
-
-  /**
-   * FD Write set
-   */
-  struct GNUNET_NETWORK_FDSet *ws_v4;
-
+  struct GNUNET_NAT_STUN_Handle *stun;
 
   /**
    * The read socket for IPv4
    */
   struct GNUNET_NETWORK_Handle *sockv4;
-
-
-  /**
-   * FD Read set
-   */
-  struct GNUNET_NETWORK_FDSet *rs_v6;
-
-  /**
-   * FD Write set
-   */
-  struct GNUNET_NETWORK_FDSet *ws_v6;
 
   /**
    * The read socket for IPv6
@@ -219,20 +194,54 @@ struct Plugin
   struct GNUNET_NETWORK_Handle *sockv6;
 
   /**
-   * Beacon broadcasting
-   * -------------------
+   * Head of DLL of broadcast addresses
    */
+  struct BroadcastAddress *broadcast_tail;
 
   /**
-   * Broadcast interval
+   * Tail of DLL of broadcast addresses
    */
-  struct GNUNET_TIME_Relative broadcast_interval;
+  struct BroadcastAddress *broadcast_head;
 
   /**
-   * Tokenizer for inbound messages.
+   * Head of messages in IPv4 queue.
    */
-  struct GNUNET_SERVER_MessageStreamTokenizer *broadcast_ipv6_mst;
-  struct GNUNET_SERVER_MessageStreamTokenizer *broadcast_ipv4_mst;
+  struct UDP_MessageWrapper *ipv4_queue_head;
+
+  /**
+   * Tail of messages in IPv4 queue.
+   */
+  struct UDP_MessageWrapper *ipv4_queue_tail;
+
+  /**
+   * Head of messages in IPv6 queue.
+   */
+  struct UDP_MessageWrapper *ipv6_queue_head;
+
+  /**
+   * Tail of messages in IPv6 queue.
+   */
+  struct UDP_MessageWrapper *ipv6_queue_tail;
+
+  /**
+   * Running pretty printers: head
+   */
+  struct PrettyPrinterContext *ppc_dll_head;
+
+  /**
+   * Running pretty printers: tail
+   */
+  struct PrettyPrinterContext *ppc_dll_tail;
+
+  /**
+   * Function to call about session status changes.
+   */
+  GNUNET_TRANSPORT_SessionInfoCallback sic;
+
+  /**
+   * Closure for @e sic.
+   */
+  void *sic_cls;
 
   /**
    * IPv6 multicast address
@@ -240,28 +249,37 @@ struct Plugin
   struct sockaddr_in6 ipv6_multicast_address;
 
   /**
-   * DLL of broadcast addresses
+   * Broadcast interval
    */
-  struct BroadcastAddress *broadcast_tail;
-  struct BroadcastAddress *broadcast_head;
+  struct GNUNET_TIME_Relative broadcast_interval;
 
   /**
-   * Is IPv6 enabled: GNUNET_YES or GNUNET_NO
+   * Bytes currently in buffer
+   */
+  int64_t bytes_in_buffer;
+
+  /**
+   * Address options
+   */
+  uint32_t myoptions;
+
+  /**
+   * Is IPv6 enabled: #GNUNET_YES or #GNUNET_NO
    */
   int enable_ipv6;
 
   /**
-   * Is IPv4 enabled: GNUNET_YES or GNUNET_NO
+   * Is IPv4 enabled: #GNUNET_YES or #GNUNET_NO
    */
   int enable_ipv4;
 
   /**
-   * Is broadcasting enabled: GNUNET_YES or GNUNET_NO
+   * Is broadcasting enabled: #GNUNET_YES or #GNUNET_NO
    */
   int enable_broadcasting;
 
   /**
-   * Is receiving broadcasts enabled: GNUNET_YES or GNUNET_NO
+   * Is receiving broadcasts enabled: #GNUNET_YES or #GNUNET_NO
    */
   int enable_broadcasting_receiving;
 
@@ -280,28 +298,51 @@ struct Plugin
    */
   uint16_t aport;
 
-  struct UDP_MessageWrapper *ipv4_queue_head;
-  struct UDP_MessageWrapper *ipv4_queue_tail;
-
-  struct UDP_MessageWrapper *ipv6_queue_head;
-  struct UDP_MessageWrapper *ipv6_queue_tail;
 };
 
 
+/**
+ * Function called for a quick conversion of the binary address to
+ * a numeric address.  Note that the caller must not free the
+ * address and that the next call to this function is allowed
+ * to override the address again.
+ *
+ * @param cls closure
+ * @param addr binary address (a `union UdpAddress`)
+ * @param addrlen length of the @a addr
+ * @return string representing the same address
+ */
 const char *
-udp_address_to_string (void *cls, const void *addr, size_t addrlen);
+udp_address_to_string (void *cls,
+                       const void *addr,
+                       size_t addrlen);
 
+
+/**
+ * We received a broadcast message.  Process it and all subsequent
+ * messages in the same packet.
+ *
+ * @param plugin the UDP plugin
+ * @param buf the buffer with the message(s)
+ * @param size number of bytes in @a buf
+ * @param udp_addr address of the sender
+ * @param udp_addr_len number of bytes in @a udp_addr
+ * @param network_type network type of the sender's address
+ */
 void
 udp_broadcast_receive (struct Plugin *plugin,
-                       const char * buf,
+                       const char *buf,
                        ssize_t size,
-                       const struct sockaddr *addr,
-                       size_t addrlen);
+                       const union UdpAddress *udp_addr,
+                       size_t udp_addr_len,
+                       enum GNUNET_ATS_Network_Type network_type);
+
 
 void
 setup_broadcast (struct Plugin *plugin,
                  struct sockaddr_in6 *server_addrv6,
                  struct sockaddr_in *server_addrv4);
+
 
 void
 stop_broadcast (struct Plugin *plugin);

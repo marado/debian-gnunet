@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2010, 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2010, 2011, 2012, 2016 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file hostlist/test_gnunet_daemon_hostlist_learning.c
@@ -37,13 +32,12 @@
  */
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 180)
 
-#define CHECK_INTERVALL GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
+#define CHECK_INTERVAL GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
 
 
 struct PeerContext
 {
   struct GNUNET_CONFIGURATION_Handle *cfg;
-  struct GNUNET_TRANSPORT_Handle *th;
   struct GNUNET_MessageHeader *hello;
   struct GNUNET_CORE_Handle *core;
   struct GNUNET_STATISTICS_Handle *stats;
@@ -64,9 +58,9 @@ static char *current_adv_uri;
 
 static const struct GNUNET_CONFIGURATION_Handle *cfg;
 
-static GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+static struct GNUNET_SCHEDULER_Task *timeout_task;
 
-static GNUNET_SCHEDULER_TaskIdentifier check_task;
+static struct GNUNET_SCHEDULER_Task *check_task;
 
 static struct PeerContext adv_peer;
 
@@ -82,11 +76,12 @@ static struct GNUNET_STATISTICS_GetHandle *advsent_stat;
 static void
 shutdown_testcase ()
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Shutdown testcase....\n");
-  if (timeout_task != GNUNET_SCHEDULER_NO_TASK)
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Shutdown testcase....\n");
+  if (NULL != timeout_task)
   {
     GNUNET_SCHEDULER_cancel (timeout_task);
-    timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    timeout_task = NULL;
   }
   if (NULL != download_stats)
   {
@@ -113,62 +108,62 @@ shutdown_testcase ()
     GNUNET_STATISTICS_destroy (learn_peer.stats, GNUNET_NO);
     learn_peer.stats = NULL;
   }
-  if (check_task != GNUNET_SCHEDULER_NO_TASK)
+  if (NULL != check_task)
   {
     GNUNET_SCHEDULER_cancel (check_task);
-    check_task = GNUNET_SCHEDULER_NO_TASK;
+    check_task = NULL;
   }
   if (NULL != current_adv_uri)
   {
     GNUNET_free (current_adv_uri);
     current_adv_uri = NULL;
   }
-  if (adv_peer.th != NULL)
-  {
-    GNUNET_TRANSPORT_disconnect (adv_peer.th);
-    adv_peer.th = NULL;
-  }
-  if (learn_peer.th != NULL)
-  {
-    GNUNET_TRANSPORT_disconnect (learn_peer.th);
-    learn_peer.th = NULL;
-  }
-  if (adv_peer.core != NULL)
+  if (NULL != adv_peer.core)
   {
     GNUNET_CORE_disconnect (adv_peer.core);
     adv_peer.core = NULL;
   }
-  if (learn_peer.core != NULL)
+  if (NULL != learn_peer.core)
   {
     GNUNET_CORE_disconnect (learn_peer.core);
     learn_peer.core = NULL;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Killing hostlist server ARM process.\n");
-  if (0 != GNUNET_OS_process_kill (adv_peer.arm_proc, GNUNET_TERM_SIG))
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
-  if (GNUNET_OS_process_wait (adv_peer.arm_proc) != GNUNET_OK)
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");
+  if (0 != GNUNET_OS_process_kill (adv_peer.arm_proc,
+				   GNUNET_TERM_SIG))
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			 "kill");
+  if (GNUNET_OK !=
+      GNUNET_OS_process_wait (adv_peer.arm_proc))
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			 "waitpid");
   GNUNET_OS_process_destroy (adv_peer.arm_proc);
   adv_peer.arm_proc = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Killing hostlist client ARM process.\n");
-  if (0 != GNUNET_OS_process_kill (learn_peer.arm_proc, GNUNET_TERM_SIG))
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
-  if (GNUNET_OS_process_wait (learn_peer.arm_proc) != GNUNET_OK)
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");
+  if (0 != GNUNET_OS_process_kill (learn_peer.arm_proc,
+				   GNUNET_TERM_SIG))
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			 "kill");
+  if (GNUNET_OK !=
+      GNUNET_OS_process_wait (learn_peer.arm_proc))
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			 "waitpid");
   GNUNET_OS_process_destroy (learn_peer.arm_proc);
   learn_peer.arm_proc = NULL;
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Shutdown complete....\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Shutdown complete....\n");
 }
+
 
 /**
  * Timeout, give up.
  */
 static void
-timeout_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+timeout_error (void *cls)
 {
-  timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  timeout_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
               "Timeout while executing testcase, test failed.\n");
   timeout = GNUNET_YES;
@@ -184,18 +179,21 @@ process_downloads_done (void *cls, int success)
 
 
 static void
-do_shutdown (void *cls,
-	     const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
   shutdown_testcase ();
 }
 
 
 static int
-process_downloads (void *cls, const char *subsystem, const char *name,
-                   uint64_t value, int is_persistent)
+process_downloads (void *cls,
+		   const char *subsystem,
+		   const char *name,
+                   uint64_t value,
+		   int is_persistent)
 {
-  if ((value >= 2) && (learned_hostlist_downloaded == GNUNET_NO))
+  if ( (value >= 2) &&
+       (GNUNET_NO == learned_hostlist_downloaded) )
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Peer has successfully downloaded advertised URI\n");
@@ -217,18 +215,25 @@ process_uris_recv_done (void *cls, int success)
 
 
 static int
-process_uris_recv (void *cls, const char *subsystem, const char *name,
-                   uint64_t value, int is_persistent)
+process_uris_recv (void *cls,
+		   const char *subsystem,
+		   const char *name,
+                   uint64_t value,
+		   int is_persistent)
 {
-  if (((struct PeerContext *) cls == &learn_peer) && (value == 1) &&
-      (learned_hostlist_saved == GNUNET_NO))
+  struct PeerContext *pc = cls;
+  if ( (pc == &learn_peer) &&
+       (value == 1) &&
+       (learned_hostlist_saved == GNUNET_NO) )
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Peer has successfully saved advertised URI\n");
     learned_hostlist_saved = GNUNET_YES;
-    if ((learned_hostlist_downloaded == GNUNET_YES) && (adv_sent == GNUNET_YES))
+    if ( (learned_hostlist_downloaded == GNUNET_YES) &&
+	 (adv_sent == GNUNET_YES) )
     {
-      GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+      GNUNET_SCHEDULER_add_now (&do_shutdown,
+				NULL);
     }
   }
   return GNUNET_OK;
@@ -243,8 +248,11 @@ process_adv_sent_done (void *cls, int success)
 
 
 static int
-process_adv_sent (void *cls, const char *subsystem, const char *name,
-                  uint64_t value, int is_persistent)
+process_adv_sent (void *cls,
+		  const char *subsystem,
+		  const char *name,
+                  uint64_t value,
+		  int is_persistent)
 {
   if ((value >= 1) && (adv_sent == GNUNET_NO))
   {
@@ -254,7 +262,8 @@ process_adv_sent (void *cls, const char *subsystem, const char *name,
     if ((learned_hostlist_downloaded == GNUNET_YES) &&
         (learned_hostlist_saved == GNUNET_YES))
     {
-      GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+      GNUNET_SCHEDULER_add_now (&do_shutdown,
+				NULL);
     }
   }
   return GNUNET_OK;
@@ -265,30 +274,30 @@ process_adv_sent (void *cls, const char *subsystem, const char *name,
  * Check the server statistics regularly
  */
 static void
-check_statistics (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+check_statistics (void *cls)
 {
   char *stat;
 
-  check_task = GNUNET_SCHEDULER_NO_TASK;
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-    return;
-  GNUNET_asprintf (&stat, gettext_noop ("# advertised URI `%s' downloaded"),
+  check_task = NULL;
+  GNUNET_asprintf (&stat,
+		   gettext_noop ("# advertised URI `%s' downloaded"),
                    current_adv_uri);
   if (NULL != learn_peer.stats)
   {
     if (NULL != download_stats)
       GNUNET_STATISTICS_get_cancel (download_stats);
     download_stats =
-        GNUNET_STATISTICS_get (learn_peer.stats, "hostlist", stat,
-                               GNUNET_TIME_UNIT_MINUTES,
-                               &process_downloads_done, &process_downloads,
+        GNUNET_STATISTICS_get (learn_peer.stats,
+			       "hostlist",
+			       stat,
+                               &process_downloads_done,
+			       &process_downloads,
                                &learn_peer);
     if (NULL != urisrecv_stat)
       GNUNET_STATISTICS_get_cancel (urisrecv_stat);
     urisrecv_stat =
         GNUNET_STATISTICS_get (learn_peer.stats, "hostlist",
                                gettext_noop ("# advertised hostlist URIs"),
-                               GNUNET_TIME_UNIT_MINUTES,
                                &process_uris_recv_done, &process_uris_recv,
                                &learn_peer);
   }
@@ -300,55 +309,65 @@ check_statistics (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     advsent_stat =
         GNUNET_STATISTICS_get (adv_peer.stats, "hostlist",
                                gettext_noop ("# hostlist advertisements send"),
-                               GNUNET_TIME_UNIT_MINUTES, &process_adv_sent_done,
-                               &process_adv_sent, NULL);
+                               &process_adv_sent_done,
+                               &process_adv_sent,
+			       NULL);
   }
   check_task =
-      GNUNET_SCHEDULER_add_delayed (CHECK_INTERVALL, &check_statistics, NULL);
+      GNUNET_SCHEDULER_add_delayed (CHECK_INTERVAL,
+				    &check_statistics,
+				    NULL);
 }
 
 
-/**
- * Core handler for p2p hostlist advertisements
- */
 static int
-ad_arrive_handler (void *cls, const struct GNUNET_PeerIdentity *peer,
+check_ad_arrive (void *cls,
+		 const struct GNUNET_MessageHeader *message)
+{
+  const char *end = (const char *) &message[1];
+  if ('\0' != end[ntohs (message->size) - sizeof (struct GNUNET_MessageHeader) - 1])
+  {
+    GNUNET_break (0);
+    return GNUNET_SYSERR;
+  }
+  return GNUNET_OK;
+}
+
+
+static void
+handle_ad_arrive (void *cls,
                    const struct GNUNET_MessageHeader *message)
 {
   char *hostname;
   char *expected_uri;
   unsigned long long port;
-  const struct GNUNET_MessageHeader *incoming;
   const char *end;
 
-  if (-1 ==
-      GNUNET_CONFIGURATION_get_value_number (adv_peer.cfg, "HOSTLIST",
-                                             "HTTPPORT", &port))
+  if (GNUNET_SYSERR ==
+      GNUNET_CONFIGURATION_get_value_number (adv_peer.cfg,
+					     "HOSTLIST",
+                                             "HTTPPORT",
+					     &port))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Could not read advertising server's configuration\n");
-    return GNUNET_SYSERR;
+    return;
   }
 
   if (GNUNET_SYSERR ==
-      GNUNET_CONFIGURATION_get_value_string (adv_peer.cfg, "HOSTLIST",
-                                             "EXTERNAL_DNS_NAME", &hostname))
+      GNUNET_CONFIGURATION_get_value_string (adv_peer.cfg,
+					     "HOSTLIST",
+                                             "EXTERNAL_DNS_NAME",
+					     &hostname))
     hostname = GNUNET_RESOLVER_local_fqdn_get ();
-  GNUNET_asprintf (&expected_uri, "http://%s:%u/",
+  GNUNET_asprintf (&expected_uri,
+		   "http://%s:%u/",
                    hostname != NULL ? hostname : "localhost",
                    (unsigned int) port);
-  incoming = (const struct GNUNET_MessageHeader *) message;
-  end = (const char *) &incoming[1];
-  if ('\0' !=
-      end[ntohs (message->size) - sizeof (struct GNUNET_MessageHeader) - 1])
-  {
-    GNUNET_break (0);
-    GNUNET_free (expected_uri);
-    GNUNET_free_non_null (hostname);
-    return GNUNET_SYSERR;
-  }
+  end = (const char *) &message[1];
   current_adv_uri = GNUNET_strdup (end);
-  if (0 == strcmp (expected_uri, current_adv_uri))
+  if (0 == strcmp (expected_uri,
+		   current_adv_uri))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Received hostlist advertisement with URI `%s' as expected\n",
@@ -359,25 +378,24 @@ ad_arrive_handler (void *cls, const struct GNUNET_PeerIdentity *peer,
   else
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Expected URI `%s' and received URI `%s' differ\n",
-                expected_uri, current_adv_uri);
+                expected_uri,
+		current_adv_uri);
   GNUNET_free (expected_uri);
   GNUNET_free_non_null (hostname);
-  return GNUNET_OK;
 }
 
 
-/**
- * List of handlers if we are learning.
- */
-static struct GNUNET_CORE_MessageHandler learn_handlers[] = {
-  {&ad_arrive_handler, GNUNET_MESSAGE_TYPE_HOSTLIST_ADVERTISEMENT, 0},
-  {NULL, 0, 0}
-};
-
-
 static void
-setup_learn_peer (struct PeerContext *p, const char *cfgname)
+setup_learn_peer (struct PeerContext *p,
+		  const char *cfgname)
 {
+  struct GNUNET_MQ_MessageHandler learn_handlers[] = {
+    GNUNET_MQ_hd_var_size (ad_arrive,
+                           GNUNET_MESSAGE_TYPE_HOSTLIST_ADVERTISEMENT,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+    GNUNET_MQ_handler_end ()
+  };
   char *filename;
   unsigned int result;
   char *binary;
@@ -390,9 +408,13 @@ setup_learn_peer (struct PeerContext *p, const char *cfgname)
                              binary,
                              "gnunet-service-arm",
                              "-c", cfgname, NULL);
-  GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_load (p->cfg, cfgname));
+  GNUNET_assert (GNUNET_OK ==
+		 GNUNET_CONFIGURATION_load (p->cfg,
+					    cfgname));
   if (GNUNET_OK ==
-      GNUNET_CONFIGURATION_get_value_string (p->cfg, "HOSTLIST", "HOSTLISTFILE",
+      GNUNET_CONFIGURATION_get_value_string (p->cfg,
+					     "HOSTLIST",
+					     "HOSTLISTFILE",
                                              &filename))
   {
     if (GNUNET_YES == GNUNET_DISK_file_test (filename))
@@ -400,34 +422,43 @@ setup_learn_peer (struct PeerContext *p, const char *cfgname)
       result = UNLINK (filename);
       if (result == 0)
         GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                    _("Hostlist file `%s' was removed\n"), filename);
+                    _("Hostlist file `%s' was removed\n"),
+		    filename);
     }
     GNUNET_free (filename);
   }
-  p->core =
-      GNUNET_CORE_connect (p->cfg, NULL, NULL, NULL, NULL, NULL, GNUNET_NO,
-                           NULL, GNUNET_NO, learn_handlers);
+  p->core = GNUNET_CORE_connect (p->cfg,
+				 NULL,
+				 NULL,
+				 NULL,
+				 NULL,
+				 learn_handlers);
   GNUNET_assert (NULL != p->core);
-  p->stats = GNUNET_STATISTICS_create ("hostlist", p->cfg);
+  p->stats = GNUNET_STATISTICS_create ("hostlist",
+				       p->cfg);
   GNUNET_assert (NULL != p->stats);
   GNUNET_free (binary);
 }
 
 
 static void
-setup_adv_peer (struct PeerContext *p, const char *cfgname)
+setup_adv_peer (struct PeerContext *p,
+		const char *cfgname)
 {
   char *binary;
 
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-arm");
   p->cfg = GNUNET_CONFIGURATION_create ();
   p->arm_proc =
-    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+    GNUNET_OS_start_process (GNUNET_YES,
+			     GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
                              NULL, NULL, NULL,
                              binary,
 			     "gnunet-service-arm",
 			     "-c", cfgname, NULL);
-  GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_load (p->cfg, cfgname));
+  GNUNET_assert (GNUNET_OK ==
+		 GNUNET_CONFIGURATION_load (p->cfg,
+					    cfgname));
   p->stats = GNUNET_STATISTICS_create ("hostlist", p->cfg);
   GNUNET_assert (NULL != p->stats);
   GNUNET_free (binary);
@@ -435,7 +466,9 @@ setup_adv_peer (struct PeerContext *p, const char *cfgname)
 
 
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   timeout = GNUNET_NO;
@@ -447,12 +480,17 @@ run (void *cls, char *const *args, const char *cfgfile,
 
   cfg = c;
 
-  setup_adv_peer (&adv_peer, "test_learning_adv_peer.conf");
-  setup_learn_peer (&learn_peer, "test_learning_learn_peer.conf");
-  timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT, &timeout_error, NULL);
-
+  setup_adv_peer (&adv_peer,
+		  "test_learning_adv_peer.conf");
+  setup_learn_peer (&learn_peer,
+		    "test_learning_learn_peer.conf");
+  timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
+					       &timeout_error,
+					       NULL);
   check_task =
-      GNUNET_SCHEDULER_add_delayed (CHECK_INTERVALL, &check_statistics, NULL);
+      GNUNET_SCHEDULER_add_delayed (CHECK_INTERVAL,
+				    &check_statistics,
+				    NULL);
 }
 
 
@@ -470,13 +508,18 @@ check ()
     GNUNET_GETOPT_OPTION_END
   };
 
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv,
-                      "test-gnunet-daemon-hostlist-learning", "nohelp", options,
-                      &run, NULL);
+  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+		      argv,
+                      "test-gnunet-daemon-hostlist-learning",
+		      "nohelp",
+		      options,
+                      &run,
+		      NULL);
   failed = GNUNET_NO;
   if (timeout == GNUNET_YES)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Testcase timeout\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		"Testcase timeout\n");
     failed = GNUNET_YES;
   }
   if (adv_arrived != GNUNET_YES)
@@ -514,22 +557,20 @@ main (int argc, char *argv[])
 {
   int ret;
 
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-1");
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-2");
+  GNUNET_DISK_purge_cfg_dir ("test_learning_learn_peer.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_DISK_purge_cfg_dir ("test_learning_adv_peer.conf",
+                             "GNUNET_TEST_HOME");
   GNUNET_log_setup ("test-gnunet-daemon-hostlist",
                     "WARNING",
                     NULL);
-#if !WINDOWS
-  system ("gnunet-peerinfo -s -c test_learning_adv_peer.conf > /dev/null");
-  system ("gnunet-peerinfo -s -c test_learning_learn_peer.conf > /dev/null");
-#else
-  system ("gnunet-peerinfo -s -c test_learning_adv_peer.conf > NUL");
-  system ("gnunet-peerinfo -s -c test_learning_learn_peer.conf > NUL");
-#endif
   ret = check ();
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-1");
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-2");
-  if (GNUNET_YES == GNUNET_DISK_file_test ("hostlists_learn_peer.file"))
+  GNUNET_DISK_purge_cfg_dir ("test_learning_learn_peer.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_DISK_purge_cfg_dir ("test_learning_adv_peer.conf",
+                             "GNUNET_TEST_HOME");
+  if (GNUNET_YES ==
+      GNUNET_DISK_file_test ("hostlists_learn_peer.file"))
   {
     if (0 == UNLINK ("hostlists_learn_peer.file"))
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,

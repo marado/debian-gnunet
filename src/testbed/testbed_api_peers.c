@@ -1,21 +1,16 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
@@ -99,30 +94,36 @@ opstart_peer_create (void *cls)
   struct OperationContext *opc = cls;
   struct PeerCreateData *data = opc->data;
   struct GNUNET_TESTBED_PeerCreateMessage *msg;
+  struct GNUNET_MQ_Envelope *env;
   char *config;
   char *xconfig;
   size_t c_size;
   size_t xc_size;
-  uint16_t msize;
 
   GNUNET_assert (OP_PEER_CREATE == opc->type);
   GNUNET_assert (NULL != data);
   GNUNET_assert (NULL != data->peer);
   opc->state = OPC_STATE_STARTED;
-  config = GNUNET_CONFIGURATION_serialize (data->cfg, &c_size);
-  xc_size = GNUNET_TESTBED_compress_config_ (config, c_size, &xconfig);
+  config = GNUNET_CONFIGURATION_serialize (data->cfg,
+                                           &c_size);
+  xc_size = GNUNET_TESTBED_compress_config_ (config,
+                                             c_size,
+                                             &xconfig);
   GNUNET_free (config);
-  msize = xc_size + sizeof (struct GNUNET_TESTBED_PeerCreateMessage);
-  msg = GNUNET_realloc (xconfig, msize);
-  memmove (&msg[1], msg, xc_size);
-  msg->header.size = htons (msize);
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER);
+  env = GNUNET_MQ_msg_extra (msg,
+                             xc_size,
+                             GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER);
   msg->operation_id = GNUNET_htonll (opc->id);
   msg->host_id = htonl (GNUNET_TESTBED_host_get_id_ (data->peer->host));
   msg->peer_id = htonl (data->peer->unique_id);
   msg->config_size = htons ((uint16_t) c_size);
+  GNUNET_memcpy (&msg[1],
+          xconfig,
+          xc_size);
+  GNUNET_MQ_send (opc->c->mq,
+                  env);
+  GNUNET_free (xconfig);
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (opc->c, &msg->header);
 }
 
 
@@ -163,17 +164,18 @@ opstart_peer_destroy (void *cls)
   struct OperationContext *opc = cls;
   struct GNUNET_TESTBED_Peer *peer = opc->data;
   struct GNUNET_TESTBED_PeerDestroyMessage *msg;
+  struct GNUNET_MQ_Envelope *env;
 
   GNUNET_assert (OP_PEER_DESTROY == opc->type);
   GNUNET_assert (NULL != peer);
   opc->state = OPC_STATE_STARTED;
-  msg = GNUNET_new (struct GNUNET_TESTBED_PeerDestroyMessage);
-  msg->header.size = htons (sizeof (struct GNUNET_TESTBED_PeerDestroyMessage));
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER);
+  env = GNUNET_MQ_msg (msg,
+                       GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER);
   msg->peer_id = htonl (peer->unique_id);
   msg->operation_id = GNUNET_htonll (opc->id);
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (peer->controller, &msg->header);
+  GNUNET_MQ_send (peer->controller->mq,
+                  env);
 }
 
 
@@ -211,6 +213,7 @@ opstart_peer_start (void *cls)
 {
   struct OperationContext *opc = cls;
   struct GNUNET_TESTBED_PeerStartMessage *msg;
+  struct GNUNET_MQ_Envelope *env;
   struct PeerEventData *data;
   struct GNUNET_TESTBED_Peer *peer;
 
@@ -219,13 +222,13 @@ opstart_peer_start (void *cls)
   GNUNET_assert (NULL != (peer = data->peer));
   GNUNET_assert ((TESTBED_PS_CREATED == peer->state) || (TESTBED_PS_STOPPED == peer->state));
   opc->state = OPC_STATE_STARTED;
-  msg = GNUNET_new (struct GNUNET_TESTBED_PeerStartMessage);
-  msg->header.size = htons (sizeof (struct GNUNET_TESTBED_PeerStartMessage));
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_START_PEER);
+  env = GNUNET_MQ_msg (msg,
+                       GNUNET_MESSAGE_TYPE_TESTBED_START_PEER);
   msg->peer_id = htonl (peer->unique_id);
   msg->operation_id = GNUNET_htonll (opc->id);
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (peer->controller, &msg->header);
+  GNUNET_MQ_send (peer->controller->mq,
+                  env);
 }
 
 
@@ -266,18 +269,19 @@ opstart_peer_stop (void *cls)
   struct GNUNET_TESTBED_PeerStopMessage *msg;
   struct PeerEventData *data;
   struct GNUNET_TESTBED_Peer *peer;
+  struct GNUNET_MQ_Envelope *env;
 
   GNUNET_assert (NULL != (data = opc->data));
   GNUNET_assert (NULL != (peer = data->peer));
   GNUNET_assert (TESTBED_PS_STARTED == peer->state);
   opc->state = OPC_STATE_STARTED;
-  msg = GNUNET_new (struct GNUNET_TESTBED_PeerStopMessage);
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER);
-  msg->header.size = htons (sizeof (struct GNUNET_TESTBED_PeerStopMessage));
+  env = GNUNET_MQ_msg (msg,
+                       GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER);
   msg->peer_id = htonl (peer->unique_id);
   msg->operation_id = GNUNET_htonll (opc->id);
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (peer->controller, &msg->header);
+  GNUNET_MQ_send (peer->controller->mq,
+                  env);
 }
 
 
@@ -404,22 +408,23 @@ static void
 opstart_overlay_connect (void *cls)
 {
   struct OperationContext *opc = cls;
+  struct GNUNET_MQ_Envelope *env;
   struct GNUNET_TESTBED_OverlayConnectMessage *msg;
   struct OverlayConnectData *data;
 
   opc->state = OPC_STATE_STARTED;
   data = opc->data;
   GNUNET_assert (NULL != data);
-  msg = GNUNET_new (struct GNUNET_TESTBED_OverlayConnectMessage);
-  msg->header.size =
-      htons (sizeof (struct GNUNET_TESTBED_OverlayConnectMessage));
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT);
+  env = GNUNET_MQ_msg (msg,
+                       GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT);
   msg->peer1 = htonl (data->p1->unique_id);
   msg->peer2 = htonl (data->p2->unique_id);
   msg->operation_id = GNUNET_htonll (opc->id);
   msg->peer2_host_id = htonl (GNUNET_TESTBED_host_get_id_ (data->p2->host));
-  GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (opc->c, &msg->header);
+  GNUNET_TESTBED_insert_opc_ (opc->c,
+                              opc);
+  GNUNET_MQ_send (opc->c->mq,
+                  env);
 }
 
 
@@ -460,31 +465,34 @@ opstart_peer_reconfigure (void *cls)
 {
   struct OperationContext *opc = cls;
   struct PeerReconfigureData *data = opc->data;
+  struct GNUNET_MQ_Envelope *env;
   struct GNUNET_TESTBED_PeerReconfigureMessage *msg;
   char *xconfig;
   size_t xc_size;
-  uint16_t msize;
 
   opc->state = OPC_STATE_STARTED;
   GNUNET_assert (NULL != data);
-  xc_size = GNUNET_TESTBED_compress_config_ (data->config, data->cfg_size,
+  xc_size = GNUNET_TESTBED_compress_config_ (data->config,
+                                             data->cfg_size,
                                              &xconfig);
   GNUNET_free (data->config);
   data->config = NULL;
-  GNUNET_assert (xc_size <= UINT16_MAX);
-  msize = (uint16_t) xc_size +
-      sizeof (struct GNUNET_TESTBED_PeerReconfigureMessage);
-  msg = GNUNET_realloc (xconfig, msize);
-  (void) memmove (&msg[1], msg, xc_size);
-  msg->header.size = htons (msize);
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER);
+  GNUNET_assert (xc_size < UINT16_MAX - sizeof (*msg));
+  env = GNUNET_MQ_msg_extra (msg,
+                             xc_size,
+                             GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER);
   msg->peer_id = htonl (data->peer->unique_id);
   msg->operation_id = GNUNET_htonll (opc->id);
   msg->config_size = htons (data->cfg_size);
+  GNUNET_memcpy (&msg[1],
+          xconfig,
+          xc_size);
+  GNUNET_free (xconfig);
   GNUNET_free (data);
   opc->data = NULL;
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (opc->c, &msg->header);
+  GNUNET_MQ_send (opc->c->mq,
+                  env);
 }
 
 
@@ -873,22 +881,27 @@ opstart_manage_service (void *cls)
 {
   struct OperationContext *opc = cls;
   struct ManageServiceData *data = opc->data;
+  struct GNUNET_MQ_Envelope *env;
   struct GNUNET_TESTBED_ManagePeerServiceMessage *msg;
+  size_t xlen;
 
   GNUNET_assert (NULL != data);
-  msg = GNUNET_malloc (data->msize);
-  msg->header.size = htons (data->msize);
-  msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_MANAGE_PEER_SERVICE);
+  xlen = data->msize - sizeof (struct GNUNET_TESTBED_ManagePeerServiceMessage);
+  env = GNUNET_MQ_msg_extra (msg,
+                             xlen,
+                             GNUNET_MESSAGE_TYPE_TESTBED_MANAGE_PEER_SERVICE);
   msg->peer_id = htonl (data->peer->unique_id);
   msg->operation_id = GNUNET_htonll (opc->id);
   msg->start = (uint8_t) data->start;
-  (void) memcpy (&msg[1], data->service_name, data->msize
-                 - sizeof (struct GNUNET_TESTBED_ManagePeerServiceMessage));
+  GNUNET_memcpy (&msg[1],
+          data->service_name,
+          xlen);
   GNUNET_free (data->service_name);
   data->service_name = NULL;
   opc->state = OPC_STATE_STARTED;
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
-  GNUNET_TESTBED_queue_message_ (opc->c, &msg->header);
+  GNUNET_MQ_send (opc->c->mq,
+                  env);
 }
 
 
@@ -951,7 +964,7 @@ GNUNET_TESTBED_peer_manage_service (void *op_cls,
   GNUNET_assert (TESTBED_PS_STARTED == peer->state); /* peer is not running? */
   msize = strlen (service_name) + 1;
   msize += sizeof (struct GNUNET_TESTBED_ManagePeerServiceMessage);
-  if (GNUNET_SERVER_MAX_MESSAGE_SIZE < msize)
+  if (GNUNET_MAX_MESSAGE_SIZE < msize)
     return NULL;
   data = GNUNET_new (struct ManageServiceData);
   data->cb = cb;

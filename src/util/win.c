@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -300,18 +295,19 @@ int
 EnumNICs2 (INTERFACE_INFO **ifs4, int *ifs4_len, SOCKET_ADDRESS_LIST **ifs6)
 {
   int result = 0;
-  SOCKET s4 = INVALID_SOCKET, s6 = INVALID_SOCKET;
-  DWORD dwret1 = 0, dwret2;
-  DWORD err1, err2;
-  int ifs4len = 0, ifs6len = 0;
+  SOCKET s4;
+  SOCKET s6;
+  int ifs4len = 0;
+  int ifs6len = 0;
   INTERFACE_INFO *interfaces4 = NULL;
   SOCKET_ADDRESS_LIST *interfaces6 = NULL;
+
   SetLastError (0);
   s4 = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  err1 = GetLastError ();
+  (void) GetLastError ();
   SetLastError (0);
   s6 = socket (AF_INET6, SOCK_STREAM, IPPROTO_TCP);
-  err2 = GetLastError ();
+  (void) GetLastError ();
   if (s6 != INVALID_SOCKET)
   {
     ifs6len = EnumNICs_IPv6_get_ifs_count (s6);
@@ -352,8 +348,9 @@ error:
   return GNUNET_SYSERR;
 }
 
+
 /**
- * Returns GNUNET_OK on OK, GNUNET_SYSERR on error
+ * @returns #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
 EnumNICs3 (struct EnumNICs3_results **results, int *results_count)
@@ -498,7 +495,7 @@ EnumNICs3 (struct EnumNICs3_results **results, int *results_count)
 
       if (!use_enum2)
       {
-        memcpy (&r->address, unicast->Address.lpSockaddr,
+        GNUNET_memcpy (&r->address, unicast->Address.lpSockaddr,
             unicast->Address.iSockaddrLength);
         memset (&r->mask, 0, sizeof (struct sockaddr));
         mask_length = ((IP_ADAPTER_UNICAST_ADDRESS_VISTA *) unicast)->
@@ -518,7 +515,7 @@ EnumNICs3 (struct EnumNICs3_results **results, int *results_count)
           struct sockaddr_in6 *b = (struct sockaddr_in6 *) &r->broadcast;
           for (i = 0; i < mask_length; i++)
             ((unsigned char *) &m->sin6_addr)[i / 8] |= 0x80 >> (i % 8);
-          memcpy (&r->broadcast, &r->address, unicast->Address.iSockaddrLength);
+          GNUNET_memcpy (&r->broadcast, &r->address, unicast->Address.iSockaddrLength);
           for (i = mask_length; i < 128; i++)
             ((unsigned char *) &b->sin6_addr)[i / 8] |= 0x80 >> (i % 8);
         }
@@ -532,14 +529,13 @@ EnumNICs3 (struct EnumNICs3_results **results, int *results_count)
           for (i = 0; !found && i < interfaces4_len / sizeof (INTERFACE_INFO); i++)
           {
             struct sockaddr_in *m = (struct sockaddr_in *) &r->mask;
-            if (memcpy (&interfaces4[i].iiAddress.Address,
+            GNUNET_memcpy (&interfaces4[i].iiAddress.Address,
                 unicast->Address.lpSockaddr,
-                unicast->Address.iSockaddrLength) != 0)
-              continue;
+                unicast->Address.iSockaddrLength);
             found = 1;
-            memcpy (&r->address, &interfaces4[i].iiAddress.Address,
+            GNUNET_memcpy (&r->address, &interfaces4[i].iiAddress.Address,
                 sizeof (struct sockaddr_in));
-            memcpy (&r->mask, &interfaces4[i].iiNetmask.Address,
+            GNUNET_memcpy (&r->mask, &interfaces4[i].iiNetmask.Address,
                 sizeof (struct sockaddr_in));
             for (mask_length = 0;
                 ((unsigned char *) &m->sin_addr)[mask_length / 8] &
@@ -555,12 +551,11 @@ EnumNICs3 (struct EnumNICs3_results **results, int *results_count)
               interfaces6 != NULL && !found && i < interfaces6->iAddressCount;
               i++)
           {
-            if (memcpy (interfaces6->Address[i].lpSockaddr,
+            GNUNET_memcpy (interfaces6->Address[i].lpSockaddr,
                 unicast->Address.lpSockaddr,
-                unicast->Address.iSockaddrLength) != 0)
-              continue;
+                unicast->Address.iSockaddrLength);
             found = 1;
-            memcpy (&r->address, interfaces6->Address[i].lpSockaddr,
+            GNUNET_memcpy (&r->address, interfaces6->Address[i].lpSockaddr,
                 sizeof (struct sockaddr_in6));
             /* TODO: Find a way to reliably get network mask for IPv6 on XP */
             memset (&r->mask, 0, sizeof (struct sockaddr));
@@ -580,7 +575,7 @@ EnumNICs3 (struct EnumNICs3_results **results, int *results_count)
          * falling under netmask to 1,
          * so we get, 192.168.0.255 from, say, 192.168.0.43 with mask == 24.
          */
-        memcpy (&r->broadcast, &r->address, unicast->Address.iSockaddrLength);
+        GNUNET_memcpy (&r->broadcast, &r->address, unicast->Address.iSockaddrLength);
         for (i = mask_length; i < 32; i++)
           ((unsigned char *) &m->sin_addr)[i / 8] |= 0x80 >> (i % 8);
         r->flags |= ENUMNICS3_BCAST_OK;
@@ -697,6 +692,7 @@ int InstallAsService(char *servicename, char *application, char *username)
   return 0;
 }
 
+
 /**
  * @brief Uninstall Windows service
  * @param servicename name of the service to delete
@@ -706,7 +702,8 @@ int InstallAsService(char *servicename, char *application, char *username)
  *          3 if the service cannot be accessed
  *          4 if the service cannot be deleted
  */
-int UninstallService(char *servicename)
+int
+UninstallService(char *servicename)
 {
   SC_HANDLE hManager, hService;
 
@@ -740,7 +737,8 @@ closeSCM:
  * @see http://support.microsoft.com/?scid=kb;en-us;132958
  * @date 12-Jul-95
  */
-void _InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
+void
+_InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
 {
   DWORD StringLength;
 
@@ -764,7 +762,8 @@ void _InitLsaString(PLSA_UNICODE_STRING LsaString, LPWSTR String)
  * @see http://support.microsoft.com/?scid=kb;en-us;132958
  * @date 12-Jul-95
  */
-NTSTATUS _OpenPolicy(LPWSTR ServerName, DWORD DesiredAccess, PLSA_HANDLE PolicyHandle)
+NTSTATUS
+_OpenPolicy(LPWSTR ServerName, DWORD DesiredAccess, PLSA_HANDLE PolicyHandle)
 {
   LSA_OBJECT_ATTRIBUTES ObjectAttributes;
   LSA_UNICODE_STRING ServerString;
@@ -797,7 +796,8 @@ NTSTATUS _OpenPolicy(LPWSTR ServerName, DWORD DesiredAccess, PLSA_HANDLE PolicyH
  * @remarks Call GetLastError() to obtain extended error information.
  * @see http://support.microsoft.com/?scid=kb;en-us;132958
  */
-BOOL _GetAccountSid(LPCTSTR SystemName, LPCTSTR AccountName, PSID * Sid)
+BOOL
+_GetAccountSid(LPCTSTR SystemName, LPCTSTR AccountName, PSID * Sid)
 {
   LPTSTR ReferencedDomain = NULL;
   DWORD cbSid = 128;  							/* initial allocation attempt */
@@ -864,10 +864,11 @@ end:
  * @see http://support.microsoft.com/?scid=kb;en-us;132958
  * @date 12-Jul-95
  */
-NTSTATUS _SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle,/* open policy handle */
-                               PSID AccountSid,   			/* SID to grant privilege to */
-                               LPWSTR PrivilegeName,  	/* privilege to grant (Unicode) */
-                               BOOL bEnable  						/* enable or disable */
+NTSTATUS
+_SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle,/* open policy handle */
+                       PSID AccountSid,   			/* SID to grant privilege to */
+                       LPWSTR PrivilegeName,  	/* privilege to grant (Unicode) */
+                       BOOL bEnable  						/* enable or disable */
   )
 {
   LSA_UNICODE_STRING PrivilegeString;
@@ -904,13 +905,14 @@ NTSTATUS _SetPrivilegeOnAccount(LSA_HANDLE PolicyHandle,/* open policy handle */
  * @param pszName the name of the account
  * @param pszDesc description of the account
  */
-int CreateServiceAccount(const char *pszName, const char *pszDesc)
+int
+CreateServiceAccount(const char *pszName,
+                     const char *pszDesc)
 {
   USER_INFO_1 ui;
   USER_INFO_1008 ui2;
   NET_API_STATUS nStatus;
   wchar_t wszName[MAX_NAME_LENGTH], wszDesc[MAX_NAME_LENGTH];
-  DWORD dwErr;
   LSA_HANDLE hPolicy;
   PSID pSID;
 

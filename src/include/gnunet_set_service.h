@@ -1,28 +1,31 @@
 /*
       This file is part of GNUnet
-      (C) 2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2013, 2014 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
- * @file include/gnunet_set_service.h
- * @brief two-peer set operations
  * @author Florian Dold
  * @author Christian Grothoff
+ *
+ * @file
+ * Two-peer set operations
+ *
+ * @defgroup set  Set service
+ * Two-peer set operations
+ *
+ * @see [Documentation](https://gnunet.org/set-subsystem)
+ *
+ * @{
  */
 
 #ifndef GNUNET_SET_SERVICE_H
@@ -74,8 +77,7 @@ struct GNUNET_SET_OperationHandle;
 enum GNUNET_SET_OperationType
 {
   /**
-   * A purely local set that does not support any
-   * operation.
+   * A purely local set that does not support any operation.
    */
   GNUNET_SET_OPERATION_NONE,
 
@@ -90,20 +92,41 @@ enum GNUNET_SET_OperationType
   GNUNET_SET_OPERATION_UNION
 };
 
+
 /**
  * Status for the result callback
  */
 enum GNUNET_SET_Status
 {
   /**
-   * Everything went ok.
+   * Everything went ok, we are transmitting an element of the
+   * result (in set, or to be removed from set, depending on
+   * the `enum GNUNET_SET_ResultMode`).
+   *
+   * Only applies to
+   * #GNUNET_SET_RESULT_FULL,
+   * #GNUNET_SET_RESULT_ADDED,
+   * #GNUNET_SET_RESULT_REMOVED,
    */
   GNUNET_SET_STATUS_OK,
 
   /**
-   * There was a timeout.
+   * Element should be added to the result set
+   * of the local peer, i.e. the local peer is
+   * missing an element.
+   *
+   * Only applies to #GNUNET_SET_RESULT_SYMMETRIC
    */
-  GNUNET_SET_STATUS_TIMEOUT,
+  GNUNET_SET_STATUS_ADD_LOCAL,
+
+  /**
+   * Element should be added to the result set
+   * of the remote peer, i.e. the remote peer is
+   * missing an element.
+   *
+   * Only applies to #GNUNET_SET_RESULT_SYMMETRIC
+   */
+  GNUNET_SET_STATUS_ADD_REMOTE,
 
   /**
    * The other peer refused to to the operation with us,
@@ -112,8 +135,9 @@ enum GNUNET_SET_Status
   GNUNET_SET_STATUS_FAILURE,
 
   /**
-   * Success, all elements have been returned (but the other
-   * peer might still be receiving some from us, so we are not done).
+   * Success, all elements have been returned (but the other peer
+   * might still be receiving some from us, so we are not done).  Only
+   * used during UNION operation.
    */
   GNUNET_SET_STATUS_HALF_DONE,
 
@@ -124,6 +148,7 @@ enum GNUNET_SET_Status
 };
 
 
+
 /**
  * The way results are given to the client.
  */
@@ -131,18 +156,32 @@ enum GNUNET_SET_ResultMode
 {
   /**
    * Client gets every element in the resulting set.
+   *
+   * Only supported for set intersection.
    */
   GNUNET_SET_RESULT_FULL,
+
   /**
-   * Client gets only elements that have been added to the set.
-   * Only works with set union.
+   * Client gets notified of the required changes
+   * for both the local and the remote set.
+   *
+   * Only supported for set
    */
-  GNUNET_SET_RESULT_ADDED,
+  GNUNET_SET_RESULT_SYMMETRIC,
+
   /**
    * Client gets only elements that have been removed from the set.
-   * Only works with set intersection.
+   *
+   * Only supported for set intersection.
    */
-  GNUNET_SET_RESULT_REMOVED
+  GNUNET_SET_RESULT_REMOVED,
+
+  /**
+   * Client gets only elements that have been added to the set.
+   *
+   * Only supported for set union.
+   */
+  GNUNET_SET_RESULT_ADDED
 };
 
 
@@ -159,7 +198,7 @@ struct GNUNET_SET_Element
   /**
    * Application-specific element type.
    */
-  uint16_t type;
+  uint16_t element_type;
 
   /**
    * Actual data of the element
@@ -169,11 +208,64 @@ struct GNUNET_SET_Element
 
 
 /**
+ * Possible options to pass to a set operation.
+ *
+ * Used as tag for struct #GNUNET_SET_Option.
+ */
+enum GNUNET_SET_OptionType
+{
+  /**
+   * List terminator.
+   */
+  GNUNET_SET_OPTION_END=0,
+  /**
+   * Fail set operations when the other peer shows weird behavior
+   * that might by a Byzantine fault.
+   *
+   * For set union, 'v.num' is a lower bound on elements
+   * that the other peer must have in common with us.
+   */
+  GNUNET_SET_OPTION_BYZANTINE=1,
+  /**
+   * Do not use the optimized set operation, but send full sets.
+   * Might trigger Byzantine fault detection.
+   */
+  GNUNET_SET_OPTION_FORCE_FULL=2,
+  /**
+   * Only use optimized set operations, even though for this
+   * particular set operation they might be much slower.
+   * Might trigger Byzantine fault detection.
+   */
+  GNUNET_SET_OPTION_FORCE_DELTA=4,
+};
+
+
+/**
+ * Option for set operations.
+ */
+struct GNUNET_SET_Option
+{
+  /**
+   * Type of the option.
+   */
+  enum GNUNET_SET_OptionType type;
+
+  /**
+   * Value for the option, only used with some options.
+   */
+  union {
+    uint64_t num;
+  } v;
+};
+
+
+/**
  * Continuation used for some of the set operations
  *
  * @param cls closure
  */
-typedef void (*GNUNET_SET_Continuation) (void *cls);
+typedef void
+(*GNUNET_SET_Continuation) (void *cls);
 
 
 /**
@@ -182,11 +274,14 @@ typedef void (*GNUNET_SET_Continuation) (void *cls);
  *
  * @param cls closure
  * @param element a result element, only valid if status is #GNUNET_SET_STATUS_OK
+ * @param current_size current set size
  * @param status see `enum GNUNET_SET_Status`
  */
-typedef void (*GNUNET_SET_ResultIterator) (void *cls,
-                                           const struct GNUNET_SET_Element *element,
-                                           enum GNUNET_SET_Status status);
+typedef void
+(*GNUNET_SET_ResultIterator) (void *cls,
+                              const struct GNUNET_SET_Element *element,
+                              uint64_t current_size,
+                              enum GNUNET_SET_Status status);
 
 /**
  * Iterator for set elements.
@@ -196,8 +291,9 @@ typedef void (*GNUNET_SET_ResultIterator) (void *cls,
  *        iterated over
  * @return #GNUNET_YES to continue iterating, #GNUNET_NO to stop.
  */
-typedef int (*GNUNET_SET_ElementIterator) (void *cls,
-                                           const struct GNUNET_SET_Element *element);
+typedef int
+(*GNUNET_SET_ElementIterator) (void *cls,
+                               const struct GNUNET_SET_Element *element);
 
 
 /**
@@ -221,6 +317,11 @@ typedef void
                               const struct GNUNET_MessageHeader *context_msg,
                               struct GNUNET_SET_Request *request);
 
+
+
+typedef void
+(*GNUNET_SET_CopyReadyCallback) (void *cls,
+                                 struct GNUNET_SET_Handle *copy);
 
 
 /**
@@ -279,8 +380,19 @@ GNUNET_SET_remove_element (struct GNUNET_SET_Handle *set,
                            void *cont_cls);
 
 
+void
+GNUNET_SET_copy_lazy (struct GNUNET_SET_Handle *set,
+                      GNUNET_SET_CopyReadyCallback cb,
+                      void *cls);
+
+
 /**
  * Destroy the set handle, and free all associated resources.
+ * Iterations must have completed (or be explicitly canceled)
+ * before destroying the corresponding set.  Operations may
+ * still be pending when a set is destroyed.
+ *
+ * @param set set to destroy
  */
 void
 GNUNET_SET_destroy (struct GNUNET_SET_Handle *set);
@@ -294,9 +406,6 @@ GNUNET_SET_destroy (struct GNUNET_SET_Handle *set);
  * @param other_peer peer with the other set
  * @param app_id hash for the application using the set
  * @param context_msg additional information for the request
- * @param salt salt used for the set operation; sometimes set operations
- *        fail due to hash collisions, using a different salt for each operation
- *        makes it harder for an attacker to exploit this
  * @param result_mode specified how results will be returned,
  *        see `enum GNUNET_SET_ResultMode`.
  * @param result_cb called on error or success
@@ -307,8 +416,8 @@ struct GNUNET_SET_OperationHandle *
 GNUNET_SET_prepare (const struct GNUNET_PeerIdentity *other_peer,
                     const struct GNUNET_HashCode *app_id,
                     const struct GNUNET_MessageHeader *context_msg,
-                    uint16_t salt,
                     enum GNUNET_SET_ResultMode result_mode,
+                    struct GNUNET_SET_Option options[],
                     GNUNET_SET_ResultIterator result_cb,
                     void *result_cls);
 
@@ -324,7 +433,7 @@ GNUNET_SET_prepare (const struct GNUNET_PeerIdentity *other_peer,
  * @param app_id id of the application that handles set operation requests
  * @param listen_cb called for each incoming request matching the operation
  *                  and application id
- * @param listen_cls handle for listen_cb
+ * @param listen_cls handle for @a listen_cb
  * @return a handle that can be used to cancel the listen operation
  */
 struct GNUNET_SET_ListenHandle *
@@ -336,9 +445,10 @@ GNUNET_SET_listen (const struct GNUNET_CONFIGURATION_Handle *cfg,
 
 
 /**
- * Cancel the given listen operation.
- * After calling cancel, the listen callback for this listen handle
- * will not be called again.
+ * Cancel the given listen operation.  After calling cancel, the
+ * listen callback for this listen handle will not be called again.
+ * Note that cancelling a listen operation will automatically reject
+ * all operations that have not yet been accepted.
  *
  * @param lh handle for the listen operation
  */
@@ -363,6 +473,7 @@ GNUNET_SET_listen_cancel (struct GNUNET_SET_ListenHandle *lh);
 struct GNUNET_SET_OperationHandle *
 GNUNET_SET_accept (struct GNUNET_SET_Request *request,
                    enum GNUNET_SET_ResultMode result_mode,
+                   struct GNUNET_SET_Option options[],
                    GNUNET_SET_ResultIterator result_cb,
                    void *result_cls);
 
@@ -386,9 +497,9 @@ GNUNET_SET_commit (struct GNUNET_SET_OperationHandle *oh,
 
 
 /**
- * Cancel the given set operation.
- * May not be called after the operation's GNUNET_SET_ResultIterator has been
- * called with a status that indicates error, timeout or done.
+ * Cancel the given set operation.  May not be called after the
+ * operation's `GNUNET_SET_ResultIterator` has been called with a
+ * status that indicates error, timeout or done.
  *
  * @param oh set operation to cancel
  */
@@ -404,12 +515,49 @@ GNUNET_SET_operation_cancel (struct GNUNET_SET_OperationHandle *oh);
  *
  * @param set the set to iterate over
  * @param iter the iterator to call for each element
- * @param cls closure for 'iter'
- * @return GNUNET_YES if the iteration started successfuly,
- *         GNUNET_SYSERR if the set  is invalid (e.g. the server crashed, disconnected)
+ * @param iter_cls closure for @a iter
+ * @return #GNUNET_YES if the iteration started successfuly,
+ *         #GNUNET_NO if another iteration was still active,
+ *         #GNUNET_SYSERR if the set is invalid (e.g. the server crashed, disconnected)
  */
 int
-GNUNET_SET_iterate (struct GNUNET_SET_Handle *set, GNUNET_SET_ElementIterator iter, void *cls);
+GNUNET_SET_iterate (struct GNUNET_SET_Handle *set,
+                    GNUNET_SET_ElementIterator iter,
+                    void *iter_cls);
+
+
+/**
+ * Stop iteration over all elements in the given set.  Can only
+ * be called before the iteration has "naturally" completed its
+ * turn.
+ *
+ * @param set the set to stop iterating over
+ */
+void
+GNUNET_SET_iterate_cancel (struct GNUNET_SET_Handle *set);
+
+
+/**
+ * Create a copy of an element.  The copy
+ * must be GNUNET_free-d by the caller.
+ *
+ * @param element the element to copy
+ * @return the copied element
+ */
+struct GNUNET_SET_Element *
+GNUNET_SET_element_dup (const struct GNUNET_SET_Element *element);
+
+
+/**
+ * Hash a set element.
+ *
+ * @param element the element that should be hashed
+ * @param ret_hash a pointer to where the hash of @a element
+ *        should be stored
+ */
+void
+GNUNET_SET_element_hash (const struct GNUNET_SET_Element *element,
+                         struct GNUNET_HashCode *ret_hash);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
@@ -420,3 +568,5 @@ GNUNET_SET_iterate (struct GNUNET_SET_Handle *set, GNUNET_SET_ElementIterator it
 #endif
 
 #endif
+
+/** @} */  /* end of group */

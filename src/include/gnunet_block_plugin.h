@@ -1,36 +1,161 @@
 /*
      This file is part of GNUnet
-     (C) 2010,2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010,2013,2017 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_block_plugin.h
- * @brief API for block plugins.  Each block plugin must conform to
- *        the API specified by this header.
  * @author Christian Grothoff
- * @defgroup block API to be implemented by applications storing data in the DHT
+ *
+ * @file
+ * API for block plugins.
+ *
+ * @defgroup block-plugin  Block plugin API
+ * To be implemented by applications storing data in the DHT.
+ *
+ * Each block plugin must conform to the API specified by this header.
+ *
  * @{
  */
+
 #ifndef PLUGIN_BLOCK_H
 #define PLUGIN_BLOCK_H
 
 #include "gnunet_util_lib.h"
 #include "gnunet_block_lib.h"
+
+
+/**
+ * Mark elements as "seen" using a hash of the element. Not supported
+ * by all block plugins.
+ *
+ * @param bg group to update
+ * @param seen_results results already seen
+ * @param seen_results_count number of entries in @a seen_results
+ */
+typedef void
+(*GNUNET_BLOCK_GroupMarkSeenFunction)(struct GNUNET_BLOCK_Group *bg,
+                                      const struct GNUNET_HashCode *seen_results,
+                                      unsigned int seen_results_count);
+
+
+/**
+ * Merge two groups, if possible. Not supported by all block plugins,
+ * can also fail if the nonces were different.
+ *
+ * @param bg1 group to update
+ * @param bg2 group to merge into @a bg1
+ * @return #GNUNET_OK on success, #GNUNET_NO if the nonces were different and thus
+ *         we failed.
+ */
+typedef int
+(*GNUNET_BLOCK_GroupMergeFunction)(struct GNUNET_BLOCK_Group *bg1,
+                                   const struct GNUNET_BLOCK_Group *bg2);
+
+
+/**
+ * Serialize state of a block group.
+ *
+ * @param bg group to serialize
+ * @param[out] nonce set to the nonce of the @a bg
+ * @param[out] raw_data set to the serialized state
+ * @param[out] raw_data_size set to the number of bytes in @a raw_data
+ * @return #GNUNET_OK on success, #GNUNET_NO if serialization is not
+ *         supported, #GNUNET_SYSERR on error
+ */
+typedef int
+(*GNUNET_BLOCK_GroupSerializeFunction)(struct GNUNET_BLOCK_Group *bg,
+                                       uint32_t *nonce,
+                                       void **raw_data,
+                                       size_t *raw_data_size);
+
+
+/**
+ * Destroy resources used by a block group.
+ *
+ * @param bg group to destroy, NULL is allowed
+ */
+typedef void
+(*GNUNET_BLOCK_GroupDestroyFunction)(struct GNUNET_BLOCK_Group *bg);
+
+
+/**
+ * Block group data.  The plugin must initialize the callbacks
+ * and can use the @e internal_cls as it likes.
+ */
+struct GNUNET_BLOCK_Group
+{
+
+  /**
+   * Context owning the block group. Set by the main block library.
+   */
+  struct GNUENT_BLOCK_Context *ctx;
+
+  /**
+   * Type for the block group.  Set by the main block library.
+   */
+  enum GNUNET_BLOCK_Type type;
+
+  /**
+   * Serialize the block group data, can be NULL if
+   * not supported.
+   */
+  GNUNET_BLOCK_GroupSerializeFunction serialize_cb;
+
+  /**
+   * Function to call to mark elements as seen in the group.
+   * Can be NULL if not supported.
+   */
+  GNUNET_BLOCK_GroupMarkSeenFunction mark_seen_cb;
+
+  /**
+   * Function to call to merge two groups.
+   * Can be NULL if not supported.
+   */
+  GNUNET_BLOCK_GroupMergeFunction merge_cb;
+
+  /**
+   * Function to call to destroy the block group.
+   * Must not be NULL.
+   */
+  GNUNET_BLOCK_GroupDestroyFunction destroy_cb;
+
+  /**
+   * Internal data structure of the plugin.
+   */
+  void *internal_cls;
+
+};
+
+
+/**
+ * Create a new block group.
+ *
+ * @param ctx block context in which the block group is created
+ * @param type type of the block for which we are creating the group
+ * @param nonce random value used to seed the group creation
+ * @param raw_data optional serialized prior state of the group, NULL if unavailable/fresh
+ * @param raw_data_size number of bytes in @a raw_data, 0 if unavailable/fresh
+ * @param va variable arguments specific to @a type
+ * @return block group handle, NULL if block groups are not supported
+ *         by this @a type of block (this is not an error)
+ */
+typedef struct GNUNET_BLOCK_Group *
+(*GNUNET_BLOCK_GroupCreateFunction)(void *cls,
+                                    enum GNUNET_BLOCK_Type type,
+                                    uint32_t nonce,
+                                    const void *raw_data,
+                                    size_t raw_data_size,
+                                    va_list va);
 
 
 /**
@@ -41,10 +166,11 @@
  * be done with the "get_key" function.
  *
  * @param cls closure
+ * @param ctx block context
  * @param type block type
+ * @param group which block group to use for evaluation
+ * @param eo evaluation options to control evaluation
  * @param query original query (hash)
- * @param bf pointer to bloom filter associated with query; possibly updated (!)
- * @param bf_mutator mutation value for @a bf
  * @param xquery extrended query data (can be NULL, depending on type)
  * @param xquery_size number of bytes in @a xquery
  * @param reply_block response to validate
@@ -53,10 +179,11 @@
  */
 typedef enum GNUNET_BLOCK_EvaluationResult
 (*GNUNET_BLOCK_EvaluationFunction) (void *cls,
+                                    struct GNUNET_BLOCK_Context *ctx,
 				    enum GNUNET_BLOCK_Type type,
+                                    struct GNUNET_BLOCK_Group *group,
+                                    enum GNUNET_BLOCK_EvaluationOptions eo,
 				    const struct GNUNET_HashCode *query,
-				    struct GNUNET_CONTAINER_BloomFilter **bf,
-				    int32_t bf_mutator,
 				    const void *xquery,
 				    size_t xquery_size,
 				    const void *reply_block,
@@ -76,11 +203,12 @@ typedef enum GNUNET_BLOCK_EvaluationResult
  *         #GNUNET_SYSERR if type not supported
  *         (or if extracting a key from a block of this type does not work)
  */
-typedef int (*GNUNET_BLOCK_GetKeyFunction) (void *cls,
-                                            enum GNUNET_BLOCK_Type type,
-                                            const void *block,
-                                            size_t block_size,
-                                            struct GNUNET_HashCode * key);
+typedef int
+(*GNUNET_BLOCK_GetKeyFunction) (void *cls,
+                                enum GNUNET_BLOCK_Type type,
+                                const void *block,
+                                size_t block_size,
+                                struct GNUNET_HashCode *key);
 
 
 
@@ -112,8 +240,13 @@ struct GNUNET_BLOCK_PluginFunctions
    */
   GNUNET_BLOCK_GetKeyFunction get_key;
 
+  /**
+   * Create a block group to process a bunch of blocks in a shared
+   * context (i.e. to detect duplicates).
+   */
+  GNUNET_BLOCK_GroupCreateFunction create_group;
 };
 
-/** @} */ /* end of group block */
-
 #endif
+
+/** @} */  /* end of group */

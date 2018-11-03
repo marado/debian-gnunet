@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -269,6 +264,12 @@ struct GNUNET_FS_FileInformation
   struct GNUNET_FS_Uri *chk_uri;
 
   /**
+   * SKS URI for this file or directory. NULL if
+   * we have not yet computed it.
+   */
+  struct GNUNET_FS_Uri *sks_uri;
+
+  /**
    * Block options for the file.
    */
   struct GNUNET_FS_BlockOptions bo;
@@ -404,25 +405,6 @@ struct GNUNET_FS_FileInformation
 
 
 /**
- * The job is now ready to run and should use the given client
- * handle to communicate with the FS service.
- *
- * @param cls closure
- * @param client handle to use for FS communication
- */
-typedef void (*GNUNET_FS_QueueStart) (void *cls,
-                                      struct GNUNET_CLIENT_Connection * client);
-
-
-/**
- * The job must now stop to run and should destry the client handle as
- * soon as possible (ideally prior to returning).
- */
-typedef void (*GNUNET_FS_QueueStop) (void *cls);
-
-
-
-/**
  * Priorities for the queue.
  */
 enum GNUNET_FS_QueuePriority
@@ -457,12 +439,12 @@ struct GNUNET_FS_QueueEntry
   /**
    * Function to call when the job is started.
    */
-  GNUNET_FS_QueueStart start;
+  GNUNET_SCHEDULER_TaskCallback start;
 
   /**
    * Function to call when the job needs to stop (or is done / dequeued).
    */
-  GNUNET_FS_QueueStop stop;
+  GNUNET_SCHEDULER_TaskCallback stop;
 
   /**
    * Closure for start and stop.
@@ -475,9 +457,9 @@ struct GNUNET_FS_QueueEntry
   struct GNUNET_FS_Handle *h;
 
   /**
-   * Client handle, or NULL if job is not running.
+   * Message queue handle, or NULL if job is not running.
    */
-  struct GNUNET_CLIENT_Connection *client;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * Time the job was originally queued.
@@ -510,6 +492,11 @@ struct GNUNET_FS_QueueEntry
    */
   unsigned int start_times;
 
+  /**
+   * #GNUNET_YES if the job is active now.
+   */
+  int active;
+
 };
 
 
@@ -523,6 +510,16 @@ struct GNUNET_FS_SearchResult
    * File-sharing context this result belongs to.
    */
   struct GNUNET_FS_Handle *h;
+
+  /**
+   * Kept in a DLL while probing.
+   */
+  struct GNUNET_FS_SearchResult *next;
+
+  /**
+   * Kept in a DLL while probing.
+   */
+  struct GNUNET_FS_SearchResult *prev;
 
   /**
    * Search context this result belongs to; can be NULL
@@ -574,7 +571,7 @@ struct GNUNET_FS_SearchResult
   uint8_t *keyword_bitmap;
 
   /**
-   * Key for the search result
+   * Key for the search result based on the URI.
    */
   struct GNUNET_HashCode key;
 
@@ -583,13 +580,7 @@ struct GNUNET_FS_SearchResult
    * complete on time (and that will need to be cancelled if we clean
    * up the search result before then).
    */
-  GNUNET_SCHEDULER_TaskIdentifier probe_cancel_task;
-
-  /**
-   * Task we use to report periodically to the application that the
-   * probe is still running.
-   */
-  GNUNET_SCHEDULER_TaskIdentifier probe_ping_task;
+  struct GNUNET_SCHEDULER_Task * probe_cancel_task;
 
   /**
    * When did the current probe become active?
@@ -645,8 +636,11 @@ struct GNUNET_FS_SearchResult
  * @return queue handle
  */
 struct GNUNET_FS_QueueEntry *
-GNUNET_FS_queue_ (struct GNUNET_FS_Handle *h, GNUNET_FS_QueueStart start,
-                  GNUNET_FS_QueueStop stop, void *cls, unsigned int blocks,
+GNUNET_FS_queue_ (struct GNUNET_FS_Handle *h,
+                  GNUNET_SCHEDULER_TaskCallback start,
+                  GNUNET_SCHEDULER_TaskCallback stop,
+                  void *cls,
+                  unsigned int blocks,
 		  enum GNUNET_FS_QueuePriority priority);
 
 
@@ -667,7 +661,7 @@ GNUNET_FS_dequeue_ (struct GNUNET_FS_QueueEntry *qe);
  *            that the caller might need to go backwards
  *            a bit at times
  * @param max maximum number of bytes that should be
- *            copied to buf; readers are not allowed
+ *            copied to @a buf; readers are not allowed
  *            to provide less data unless there is an error;
  *            a value of "0" will be used at the end to allow
  *            the reader to clean up its internal state
@@ -676,12 +670,15 @@ GNUNET_FS_dequeue_ (struct GNUNET_FS_QueueEntry *qe);
  * @return number of bytes written, usually "max", 0 on error
  */
 size_t
-GNUNET_FS_data_reader_file_ (void *cls, uint64_t offset, size_t max, void *buf,
+GNUNET_FS_data_reader_file_ (void *cls,
+                             uint64_t offset,
+                             size_t max,
+                             void *buf,
                              char **emsg);
 
 
 /**
- * Create the closure for the 'GNUNET_FS_data_reader_file_' callback.
+ * Create the closure for the #GNUNET_FS_data_reader_file_() callback.
  *
  * @param filename file to read
  * @return closure to use
@@ -699,23 +696,26 @@ GNUNET_FS_make_file_reader_context_ (const char *filename);
  *            that the caller might need to go backwards
  *            a bit at times
  * @param max maximum number of bytes that should be
- *            copied to buf; readers are not allowed
+ *            copied to @a buf; readers are not allowed
  *            to provide less data unless there is an error;
  *            a value of "0" will be used at the end to allow
  *            the reader to clean up its internal state
  * @param buf where the reader should write the data
  * @param emsg location for the reader to store an error message
- * @return number of bytes written, usually "max", 0 on error
+ * @return number of bytes written, usually @a max, 0 on error
  */
 size_t
-GNUNET_FS_data_reader_copy_ (void *cls, uint64_t offset, size_t max, void *buf,
+GNUNET_FS_data_reader_copy_ (void *cls,
+                             uint64_t offset,
+                             size_t max,
+                             void *buf,
                              char **emsg);
 
 
 /**
  * Notification of FS that a search probe has made progress.
  * This function is used INSTEAD of the client's event handler
- * for downloads where the GNUNET_FS_DOWNLOAD_IS_PROBE flag is set.
+ * for downloads where the #GNUNET_FS_DOWNLOAD_IS_PROBE flag is set.
  *
  * @param cls closure, always NULL (!), actual closure
  *        is in the client-context of the info struct
@@ -725,7 +725,7 @@ GNUNET_FS_data_reader_copy_ (void *cls, uint64_t offset, size_t max, void *buf,
  *         for this operation; should be set to NULL for
  *         SUSPEND and STOPPED events).  The value returned
  *         will be passed to future callbacks in the respective
- *         field in the GNUNET_FS_ProgressInfo struct.
+ *         field in the `struct GNUNET_FS_ProgressInfo`.
  */
 void *
 GNUNET_FS_search_probe_progress_ (void *cls,
@@ -735,12 +735,10 @@ GNUNET_FS_search_probe_progress_ (void *cls,
 /**
  * Main function that performs the upload.
  *
- * @param cls "struct GNUNET_FS_PublishContext" identifies the upload
- * @param tc task context
+ * @param cls `struct GNUNET_FS_PublishContext` identifies the upload
  */
 void
-GNUNET_FS_publish_main_ (void *cls,
-                         const struct GNUNET_SCHEDULER_TaskContext *tc);
+GNUNET_FS_publish_main_ (void *cls);
 
 
 /**
@@ -751,7 +749,8 @@ GNUNET_FS_publish_main_ (void *cls,
  * @param file_id computed hash, NULL on error
  */
 void
-GNUNET_FS_unindex_process_hash_ (void *cls, const struct GNUNET_HashCode * file_id);
+GNUNET_FS_unindex_process_hash_ (void *cls,
+                                 const struct GNUNET_HashCode *file_id);
 
 
 /**
@@ -806,11 +805,9 @@ GNUNET_FS_download_make_status_ (struct GNUNET_FS_ProgressInfo *pi,
  * request for the file.
  *
  * @param cls the 'struct GNUNET_FS_DownloadContext'
- * @param tc scheduler context
  */
 void
-GNUNET_FS_download_start_task_ (void *cls,
-                                const struct GNUNET_SCHEDULER_TaskContext *tc);
+GNUNET_FS_download_start_task_ (void *cls);
 
 
 
@@ -877,6 +874,7 @@ GNUNET_FS_download_start_downloading_ (struct GNUNET_FS_DownloadContext *dc);
 void
 GNUNET_FS_search_start_probe_ (struct GNUNET_FS_SearchResult *sr);
 
+
 /**
  * Remove serialization/deserialization file from disk.
  *
@@ -885,7 +883,8 @@ GNUNET_FS_search_start_probe_ (struct GNUNET_FS_SearchResult *sr);
  * @param ent entity identifier
  */
 void
-GNUNET_FS_remove_sync_file_ (struct GNUNET_FS_Handle *h, const char *ext,
+GNUNET_FS_remove_sync_file_ (struct GNUNET_FS_Handle *h,
+                             const char *ext,
                              const char *ent);
 
 
@@ -897,7 +896,8 @@ GNUNET_FS_remove_sync_file_ (struct GNUNET_FS_Handle *h, const char *ext,
  * @param uni unique name of parent
  */
 void
-GNUNET_FS_remove_sync_dir_ (struct GNUNET_FS_Handle *h, const char *ext,
+GNUNET_FS_remove_sync_dir_ (struct GNUNET_FS_Handle *h,
+                            const char *ext,
                             const char *uni);
 
 
@@ -977,7 +977,7 @@ GNUNET_FS_download_sync_ (struct GNUNET_FS_DownloadContext *dc);
  * Create SUSPEND event for the given publish operation
  * and then clean up our state (without stop signal).
  *
- * @param cls the 'struct GNUNET_FS_PublishContext' to signal for
+ * @param cls the `struct GNUNET_FS_PublishContext` to signal for
  */
 void
 GNUNET_FS_publish_signal_suspend_ (void *cls);
@@ -997,7 +997,7 @@ GNUNET_FS_search_signal_suspend_ (void *cls);
  * Create SUSPEND event for the given download operation
  * and then clean up our state (without stop signal).
  *
- * @param cls the 'struct GNUNET_FS_DownloadContext' to signal for
+ * @param cls the `struct GNUNET_FS_DownloadContext` to signal for
  */
 void
 GNUNET_FS_download_signal_suspend_ (void *cls);
@@ -1007,7 +1007,7 @@ GNUNET_FS_download_signal_suspend_ (void *cls);
  * Create SUSPEND event for the given unindex operation
  * and then clean up our state (without stop signal).
  *
- * @param cls the 'struct GNUNET_FS_UnindexContext' to signal for
+ * @param cls the `struct GNUNET_FS_UnindexContext` to signal for
  */
 void
 GNUNET_FS_unindex_signal_suspend_ (void *cls);
@@ -1132,10 +1132,26 @@ struct GNUNET_FS_Handle
   struct GNUNET_FS_QueueEntry *pending_tail;
 
   /**
+   * Head of active probes.
+   */
+  struct GNUNET_FS_SearchResult *probes_head;
+
+  /**
+   * Tail of active probes.
+   */
+  struct GNUNET_FS_SearchResult *probes_tail;
+
+  /**
    * Task that processes the jobs in the running and pending queues
    * (and moves jobs around as needed).
    */
-  GNUNET_SCHEDULER_TaskIdentifier queue_job;
+  struct GNUNET_SCHEDULER_Task * queue_job;
+
+  /**
+   * Task we use to report periodically to the application that
+   * certain search probes (from @e probes_head) are still running.
+   */
+  struct GNUNET_SCHEDULER_Task * probe_ping_task;
 
   /**
    * Average time we take for a single request to be satisfied.
@@ -1213,10 +1229,10 @@ struct GNUNET_FS_PublishContext
   char *serialization;
 
   /**
-   * Our own client handle for the FS service; only briefly used when
+   * Our own message queue for the FS service; only briefly used when
    * we start to index a file, otherwise NULL.
    */
-  struct GNUNET_CLIENT_Connection *client;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * Current position in the file-tree for the upload.
@@ -1254,7 +1270,7 @@ struct GNUNET_FS_PublishContext
    * ID of the task performing the upload. NO_TASK if the upload has
    * completed.
    */
-  GNUNET_SCHEDULER_TaskIdentifier upload_task;
+  struct GNUNET_SCHEDULER_Task * upload_task;
 
   /**
    * Storage space to reserve for the operation.
@@ -1277,6 +1293,12 @@ struct GNUNET_FS_PublishContext
    * for this upload.
    */
   int rid;
+
+  /**
+   * Set to #GNUNET_YES if we were able to publish any block.
+   * (and thus unindexing on error might make sense).
+   */
+  int any_done;
 
   /**
    * Set to #GNUNET_YES if all processing has completed.
@@ -1387,7 +1409,7 @@ struct GNUNET_FS_UnindexContext
    * Connection to the FS service, only valid during the
    * #UNINDEX_STATE_FS_NOTIFY phase.
    */
-  struct GNUNET_CLIENT_Connection *client;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * Connection to the datastore service, only valid during the
@@ -1427,11 +1449,6 @@ struct GNUNET_FS_UnindexContext
   struct GNUNET_HashCode uquery;
 
   /**
-   * First content UID, 0 for none.
-   */
-  uint64_t first_uid;
-
-  /**
    * Error message, NULL on success.
    */
   char *emsg;
@@ -1445,11 +1462,6 @@ struct GNUNET_FS_UnindexContext
    * Overall size of the file.
    */
   uint64_t file_size;
-
-  /**
-   * Random offset given to #GNUNET_DATASTORE_get_key.
-   */
-  uint64_t roff;
 
   /**
    * When did we start?
@@ -1470,8 +1482,7 @@ struct GNUNET_FS_UnindexContext
 
 
 /**
- * Information we keep for each keyword in
- * a keyword search.
+ * Information we keep for each keyword in a keyword search.
  */
 struct SearchRequestEntry
 {
@@ -1540,7 +1551,7 @@ struct GNUNET_FS_SearchContext
   /**
    * Connection to the FS service.
    */
-  struct GNUNET_CLIENT_Connection *client;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * Pointer we keep for the client.
@@ -1558,7 +1569,7 @@ struct GNUNET_FS_SearchContext
   char *emsg;
 
   /**
-   * Map that contains a "struct GNUNET_FS_SearchResult" for each result that
+   * Map that contains a `struct GNUNET_FS_SearchResult` for each result that
    * was found in the search.  The key for each entry is the XOR of
    * the key and query in the CHK URI (as a unique identifier for the
    * search result).
@@ -1584,22 +1595,10 @@ struct GNUNET_FS_SearchContext
   /**
    * ID of a task that is using this struct and that must be cancelled
    * when the search is being stopped (if not
-   * #GNUNET_SCHEDULER_NO_TASK).  Used for the task that adds some
+   * NULL).  Used for the task that adds some
    * artificial delay when trying to reconnect to the FS service.
    */
-  GNUNET_SCHEDULER_TaskIdentifier task;
-
-  /**
-   * How many of the entries in the search request
-   * map have been passed to the service so far?
-   */
-  unsigned int search_request_map_offset;
-
-  /**
-   * How many of the keywords in the KSK
-   * map have been passed to the service so far?
-   */
-  unsigned int keyword_offset;
+  struct GNUNET_SCHEDULER_Task *task;
 
   /**
    * Anonymity level for the search.
@@ -1693,15 +1692,6 @@ enum BlockRequestState
  */
 struct DownloadRequest
 {
-  /**
-   * While pending, we keep all download requests in a doubly-linked list.
-   */
-  struct DownloadRequest *next;
-
-  /**
-   * While pending, we keep all download requests in a doubly-linked list.
-   */
-  struct DownloadRequest *prev;
 
   /**
    * Parent in the CHK-tree.
@@ -1727,7 +1717,7 @@ struct DownloadRequest
   uint64_t offset;
 
   /**
-   * Number of entries in 'children' array.
+   * Number of entries in @e children array.
    */
   unsigned int num_children;
 
@@ -1746,11 +1736,6 @@ struct DownloadRequest
    */
   enum BlockRequestState state;
 
-  /**
-   * #GNUNET_YES if this entry is in the pending list.
-   */
-  int is_pending;
-
 };
 
 
@@ -1761,6 +1746,15 @@ struct DownloadRequest
  */
 void
 GNUNET_FS_free_download_request_ (struct DownloadRequest *dr);
+
+
+/**
+ * Stop the ping task for this search result.
+ *
+ * @param sr result to start pinging for.
+ */
+void
+GNUNET_FS_stop_probe_ping_task_ (struct GNUNET_FS_SearchResult *sr);
 
 
 /**
@@ -1782,7 +1776,7 @@ struct GNUNET_FS_DownloadContext
   /**
    * Connection to the FS service.
    */
-  struct GNUNET_CLIENT_Connection *client;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * Parent download (used when downloading files
@@ -1861,12 +1855,6 @@ struct GNUNET_FS_DownloadContext
   struct GNUNET_FS_QueueEntry *job_queue;
 
   /**
-   * Non-NULL if we are currently having a request for
-   * transmission pending with the client handle.
-   */
-  struct GNUNET_CLIENT_TransmitHandle *th;
-
-  /**
    * Tree encoder used for the reconstruction.
    */
   struct GNUNET_FS_TreeEncoder *te;
@@ -1884,16 +1872,6 @@ struct GNUNET_FS_DownloadContext
   struct GNUNET_CONTAINER_MultiHashMap *active;
 
   /**
-   * Head of linked list of pending requests.
-   */
-  struct DownloadRequest *pending_head;
-
-  /**
-   * Head of linked list of pending requests.
-   */
-  struct DownloadRequest *pending_tail;
-
-  /**
    * Top-level download request.
    */
   struct DownloadRequest *top_request;
@@ -1907,12 +1885,12 @@ struct GNUNET_FS_DownloadContext
   /**
    * ID of a task that is using this struct and that must be cancelled
    * when the download is being stopped (if not
-   * GNUNET_SCHEDULER_NO_TASK).  Used for the task that adds some
+   * NULL).  Used for the task that adds some
    * artificial delay when trying to reconnect to the FS service or
    * the task processing incrementally the data on disk, or the
    * task requesting blocks, etc.
    */
-  GNUNET_SCHEDULER_TaskIdentifier task;
+  struct GNUNET_SCHEDULER_Task *task;
 
   /**
    * What is the first offset that we're interested
@@ -1971,11 +1949,6 @@ struct GNUNET_FS_DownloadContext
    * child-downloads have also completed (and signalled completion).
    */
   int has_finished;
-
-  /**
-   * Have we started the receive continuation yet?
-   */
-  int in_receive;
 
   /**
    * Are we ready to issue requests (reconstructions are finished)?

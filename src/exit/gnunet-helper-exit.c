@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2011, 2012 Christian Grothoff
+     Copyright (C) 2010, 2011, 2012 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -62,7 +57,7 @@
 #define DEBUG GNUNET_NO
 
 /**
- * Maximum size of a GNUnet message (GNUNET_SERVER_MAX_MESSAGE_SIZE)
+ * Maximum size of a GNUnet message (GNUNET_MAX_MESSAGE_SIZE)
  */
 #define MAX_SIZE 65536
 
@@ -451,7 +446,7 @@ run (int fd_tun)
   /* write refers to reading from stdin, writing to fd_tun */
   int write_open = 1;
 
-  while ((1 == read_open) || (1 == write_open))
+  while ((1 == read_open) && (1 == write_open))
   {
     FD_ZERO (&fds_w);
     FD_ZERO (&fds_r);
@@ -503,7 +498,9 @@ run (int fd_tun)
                   MAX_SIZE - sizeof (struct GNUNET_MessageHeader));
         if (-1 == buftun_size)
         {
-          fprintf (stderr, "read-error: %s\n", strerror (errno));
+          fprintf (stderr,
+                   "read-error: %s\n",
+                   strerror (errno));
           shutdown (fd_tun, SHUT_RD);
           shutdown (1, SHUT_WR);
           read_open = 0;
@@ -538,7 +535,9 @@ run (int fd_tun)
 #if !DEBUG
 	  if (errno != EPIPE)
 #endif
-	    fprintf (stderr, "write-error to stdout: %s\n", strerror (errno));
+	    fprintf (stderr,
+                     "write-error to stdout: %s\n",
+                     strerror (errno));
           shutdown (fd_tun, SHUT_RD);
           shutdown (1, SHUT_WR);
           read_open = 0;
@@ -639,7 +638,8 @@ PROCESS_BUFFER:
  * @param argc must be 6
  * @param argv 0: binary name ("gnunet-helper-exit")
  *             1: tunnel interface name ("gnunet-exit")
- *             2: IPv4 "physical" interface name ("eth0"), or "-" to not do IPv4 NAT
+ *             2: "physical" interface name ("eth0"), or "-" to not setup NAT
+ *                and routing
  *             3: IPv6 address ("::1"), or "-" to skip IPv6
  *             4: IPv6 netmask length in bits ("64") [ignored if #4 is "-"]
  *             5: IPv4 address ("1.2.3.4"), or "-" to skip IPv4
@@ -663,27 +663,30 @@ main (int argc, char **argv)
     fprintf (stderr, "Fatal: disabling both IPv4 and IPv6 makes no sense.\n");
     return 1;
   }
-  if (0 == access ("/sbin/iptables", X_OK))
-    sbin_iptables = "/sbin/iptables";
-  else if (0 == access ("/usr/sbin/iptables", X_OK))
-    sbin_iptables = "/usr/sbin/iptables";
-  else
+  if (0 != strcmp (argv[2], "-"))
   {
-    fprintf (stderr,
-	     "Fatal: executable iptables not found in approved directories: %s\n",
-	     strerror (errno));
-    return 1;
-  }
-  if (0 == access ("/sbin/sysctl", X_OK))
-    sbin_sysctl = "/sbin/sysctl";
-  else if (0 == access ("/usr/sbin/sysctl", X_OK))
-    sbin_sysctl = "/usr/sbin/sysctl";
-  else
-  {
-    fprintf (stderr,
-	     "Fatal: executable sysctl not found in approved directories: %s\n",
-	     strerror (errno));
-    return 1;
+    if (0 == access ("/sbin/iptables", X_OK))
+      sbin_iptables = "/sbin/iptables";
+    else if (0 == access ("/usr/sbin/iptables", X_OK))
+      sbin_iptables = "/usr/sbin/iptables";
+    else
+    {
+      fprintf (stderr,
+	       "Fatal: executable iptables not found in approved directories: %s\n",
+	       strerror (errno));
+      return 1;
+    }
+    if (0 == access ("/sbin/sysctl", X_OK))
+      sbin_sysctl = "/sbin/sysctl";
+    else if (0 == access ("/usr/sbin/sysctl", X_OK))
+      sbin_sysctl = "/usr/sbin/sysctl";
+    else
+    {
+      fprintf (stderr,
+	       "Fatal: executable sysctl not found in approved directories: %s\n",
+	       strerror (errno));
+      return 1;
+    }
   }
 
   strncpy (dev, argv[1], IFNAMSIZ);
@@ -714,6 +717,7 @@ main (int argc, char **argv)
       }
       set_address6 (dev, address, prefix_len);
     }
+    if (0 != strcmp (argv[2], "-"))
     {
       char *const sysctl_args[] =
 	{
@@ -736,29 +740,31 @@ main (int argc, char **argv)
 
       set_address4 (dev, address, mask);
     }
-    {
-      char *const sysctl_args[] =
-	{
-	  "sysctl", "-w", "net.ipv4.ip_forward=1", NULL
-	};
-      if (0 != fork_and_exec (sbin_sysctl,
-			      sysctl_args))
-      {
-	fprintf (stderr,
-		 "Failed to enable IPv4 forwarding.  Will continue anyway.\n");
-      }
-    }
     if (0 != strcmp (argv[2], "-"))
     {
-      char *const iptables_args[] =
-	{
-	  "iptables", "-t", "nat", "-A", "POSTROUTING", "-o", argv[2], "-j", "MASQUERADE", NULL
-	};
-      if (0 != fork_and_exec (sbin_iptables,
-			      iptables_args))
       {
-	fprintf (stderr,
-		 "Failed to enable IPv4 masquerading (NAT).  Will continue anyway.\n");
+        char *const sysctl_args[] =
+	  {
+	    "sysctl", "-w", "net.ipv4.ip_forward=1", NULL
+	  };
+        if (0 != fork_and_exec (sbin_sysctl,
+			        sysctl_args))
+        {
+	  fprintf (stderr,
+		   "Failed to enable IPv4 forwarding.  Will continue anyway.\n");
+        }
+      }
+      {
+        char *const iptables_args[] =
+	  {
+	    "iptables", "-t", "nat", "-A", "POSTROUTING", "-o", argv[2], "-j", "MASQUERADE", NULL
+	  };
+        if (0 != fork_and_exec (sbin_iptables,
+			        iptables_args))
+        {
+	  fprintf (stderr,
+		   "Failed to enable IPv4 masquerading (NAT).  Will continue anyway.\n");
+        }
       }
     }
   }

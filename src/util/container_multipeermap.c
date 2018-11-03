@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2008, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2008, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file util/container_multipeermap.c
@@ -26,7 +21,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-container-multipeermap", __VA_ARGS__)
 
 /**
  * An entry in the hash map with the full key.
@@ -248,7 +243,7 @@ idx_of (const struct GNUNET_CONTAINER_MultiPeerMap *map,
   unsigned int kx;
 
   GNUNET_assert (NULL != map);
-  memcpy (&kx, key, sizeof (kx));
+  GNUNET_memcpy (&kx, key, sizeof (kx));
   return kx % map->map_length;
 }
 
@@ -482,7 +477,7 @@ GNUNET_CONTAINER_multipeermap_remove_all (struct GNUNET_CONTAINER_MultiPeerMap
 	  sme = map->map[i].sme;
 	else
 	  sme = p->next;
-	ret++;	
+	ret++;
       }
       else
       {
@@ -645,7 +640,7 @@ grow (struct GNUNET_CONTAINER_MultiPeerMap *map)
       struct BigMapEntry *bme;
 
       while (NULL != (bme = old_map[i].bme))
-      {	
+      {
 	old_map[i].bme = bme->next;
 	idx = idx_of (map, &bme->key);
 	bme->next = new_map[idx].bme;
@@ -794,6 +789,80 @@ GNUNET_CONTAINER_multipeermap_get_multiple (const struct GNUNET_CONTAINER_MultiP
     }
   }
   return count;
+}
+
+
+/**
+ * @ingroup hashmap
+ * Call @a it on a random value from the map, or not at all
+ * if the map is empty.  Note that this function has linear
+ * complexity (in the size of the map).
+ *
+ * @param map the map
+ * @param it function to call on a random entry
+ * @param it_cls extra argument to @a it
+ * @return the number of key value pairs processed, zero or one.
+ */
+unsigned int
+GNUNET_CONTAINER_multipeermap_get_random (const struct GNUNET_CONTAINER_MultiPeerMap *map,
+                                          GNUNET_CONTAINER_PeerMapIterator it,
+                                          void *it_cls)
+{
+  unsigned int off;
+  unsigned int idx;
+  union MapEntry me;
+
+  if (0 == map->size)
+    return 0;
+  if (NULL == it)
+    return 1;
+  off = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_NONCE,
+                                  map->size);
+  for (idx = 0; idx < map->map_length; idx++)
+  {
+    me = map->map[idx];
+    if (map->use_small_entries)
+    {
+      struct SmallMapEntry *sme;
+      struct SmallMapEntry *nxt;
+
+      nxt = me.sme;
+      while (NULL != (sme = nxt))
+      {
+        nxt = sme->next;
+        if (0 == off)
+        {
+          if (GNUNET_OK != it (it_cls,
+                               sme->key,
+                               sme->value))
+            return GNUNET_SYSERR;
+          return 1;
+        }
+        off--;
+      }
+    }
+    else
+    {
+      struct BigMapEntry *bme;
+      struct BigMapEntry *nxt;
+
+      nxt = me.bme;
+      while (NULL != (bme = nxt))
+      {
+        nxt = bme->next;
+        if (0 == off)
+        {
+          if (GNUNET_OK != it (it_cls,
+                               &bme->key, bme->value))
+            return GNUNET_SYSERR;
+          return 1;
+        }
+        off--;
+      }
+    }
+  }
+  GNUNET_break (0);
+  return GNUNET_SYSERR;
 }
 
 

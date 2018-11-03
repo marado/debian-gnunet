@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file conversation/gnunet-helper-audio-record.c
@@ -114,7 +109,7 @@
  * OPUS_SIGNAL_VOICE - Bias thresholds towards choosing LPC or Hybrid modes.
  * OPUS_SIGNAL_MUSIC - Bias thresholds towards choosing MDCT modes.
  */
-#define CONV_OPUS_SIGNAL OPUS_AUTO
+#define CONV_OPUS_SIGNAL OPUS_SIGNAL_VOICE
 
 /**
  * Coding mode.
@@ -269,29 +264,35 @@ static int dump_pure_ogg;
 static void
 quit (int ret)
 {
-  mainloop_api->quit (mainloop_api, ret);
+  mainloop_api->quit (mainloop_api,
+		      ret);
   exit (ret);
 }
 
 
 static void
-write_data (const char *ptr, size_t msg_size)
+write_data (const char *ptr,
+	    size_t msg_size)
 {
   ssize_t ret;
   size_t off;
   off = 0;
   while (off < msg_size)
   {
-    ret = write (1, &ptr[off], msg_size - off);
+    ret = write (STDOUT_FILENO,
+		 &ptr[off],
+		 msg_size - off);
     if (0 >= ret)
     {
       if (-1 == ret)
-        GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "write");
+        GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
+			     "write");
       quit (2);
     }
     off += ret;
   }
 }
+
 
 static void
 write_page (ogg_page *og)
@@ -300,8 +301,8 @@ write_page (ogg_page *og)
   size_t msg_size;
   msg_size = sizeof (struct AudioMessage) + og->header_len + og->body_len;
   audio_message->header.size = htons ((uint16_t) msg_size);
-  memcpy (&audio_message[1], og->header, og->header_len);
-  memcpy (((char *) &audio_message[1]) + og->header_len, og->body, og->body_len);
+  GNUNET_memcpy (&audio_message[1], og->header, og->header_len);
+  GNUNET_memcpy (((char *) &audio_message[1]) + og->header_len, og->body, og->body_len);
 
   toff += msg_size;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -310,11 +311,14 @@ write_page (ogg_page *og)
               toff);
 #ifdef DEBUG_RECORD_PURE_OGG
   if (dump_pure_ogg)
-    write_data ((const char *) &audio_message[1], og->header_len + og->body_len);
+    write_data ((const char *) &audio_message[1],
+		og->header_len + og->body_len);
   else
 #endif
-    write_data ((const char *) audio_message, msg_size);
+    write_data ((const char *) audio_message,
+		msg_size);
 }
+
 
 /**
  * Creates OPUS packets from PCM data
@@ -330,7 +334,7 @@ packetizer ()
 
   while (transmit_buffer_length >= transmit_buffer_index + pcm_length)
   {
-    memcpy (pcm_buffer,
+    GNUNET_memcpy (pcm_buffer,
 	    &transmit_buffer[transmit_buffer_index],
 	    pcm_length);
     transmit_buffer_index += pcm_length;
@@ -345,7 +349,7 @@ packetizer ()
                   opus_strerror (len));
       quit (5);
     }
-    if (len > UINT16_MAX - sizeof (struct AudioMessage))
+    if (((uint32_t)len) > UINT16_MAX - sizeof (struct AudioMessage))
     {
       GNUNET_break (0);
       continue;
@@ -365,7 +369,9 @@ packetizer ()
 
     while (ogg_stream_flush_fill (&os, &og, PAGE_WATERLINE))
     {
-      if (og.header_len + og.body_len > UINT16_MAX - sizeof (struct AudioMessage))
+      if ( ((unsigned long long) og.header_len) +
+	   ((unsigned long long) og.body_len) >
+	   UINT16_MAX - sizeof (struct AudioMessage))
       {
         GNUNET_assert (0);
         continue;
@@ -404,9 +410,10 @@ stream_read_callback (pa_stream * s,
 {
   const void *data;
 
+  (void) userdata;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Got %u/%u bytes of PCM data\n",
-	      length,
+	      "Got %u/%d bytes of PCM data\n",
+	      (unsigned int) length,
 	      pcm_length);
 
   GNUNET_assert (NULL != s);
@@ -428,7 +435,7 @@ stream_read_callback (pa_stream * s,
   {
     transmit_buffer = pa_xrealloc (transmit_buffer,
 				   transmit_buffer_length + length);
-    memcpy (&transmit_buffer[transmit_buffer_length],
+    GNUNET_memcpy (&transmit_buffer[transmit_buffer_length],
 	    data,
 	    length);
     transmit_buffer_length += length;
@@ -436,7 +443,7 @@ stream_read_callback (pa_stream * s,
   else
   {
     transmit_buffer = pa_xmalloc (length);
-    memcpy (transmit_buffer, data, length);
+    GNUNET_memcpy (transmit_buffer, data, length);
     transmit_buffer_length = length;
     transmit_buffer_index = 0;
   }
@@ -454,6 +461,10 @@ exit_signal_callback (pa_mainloop_api * m,
 		      int sig,
 		      void *userdata)
 {
+  (void) m;
+  (void) e;
+  (void) sig;
+  (void) userdata;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 	      _("Got signal, exiting.\n"));
   quit (1);
@@ -464,10 +475,11 @@ exit_signal_callback (pa_mainloop_api * m,
  * Pulseaudio stream state callback
  */
 static void
-stream_state_callback (pa_stream * s, void *userdata)
+stream_state_callback (pa_stream * s,
+		       void *userdata)
 {
+  (void) userdata;
   GNUNET_assert (NULL != s);
-
   switch (pa_stream_get_state (s))
   {
   case PA_STREAM_CREATING:
@@ -527,6 +539,7 @@ static void
 context_state_callback (pa_context * c,
 			void *userdata)
 {
+  (void) userdata;
   GNUNET_assert (c);
 
   switch (pa_context_get_state (c))
@@ -656,8 +669,9 @@ opus_init ()
   opus_encoder_ctl (enc,
 		    OPUS_SET_INBAND_FEC (CONV_OPUS_INBAND_FEC));
   opus_encoder_ctl (enc,
-		    OPUS_SET_SIGNAL (OPUS_SIGNAL_VOICE));
+		    OPUS_SET_SIGNAL (CONV_OPUS_SIGNAL));
 }
+
 
 static void
 ogg_init ()
@@ -667,8 +681,8 @@ ogg_init ()
   struct OpusCommentsPacket *commentspacket;
   size_t commentspacket_len;
 
-  serialno = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_STRONG, 0x7FFFFFFF);
-
+  serialno = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_STRONG,
+				       0x7FFFFFFF);
   /*Initialize Ogg stream struct*/
   if (-1 == ogg_stream_init (&os, serialno))
   {
@@ -686,7 +700,7 @@ ogg_init ()
     const char *opusver;
     int vendor_length;
 
-    memcpy (headpacket.magic, "OpusHead", 8);
+    GNUNET_memcpy (headpacket.magic, "OpusHead", 8);
     headpacket.version = 1;
     headpacket.channels = CHANNELS;
     headpacket.preskip = GNUNET_htole16 (0);
@@ -718,14 +732,14 @@ ogg_init ()
     if (NULL == commentspacket)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to allocate %d bytes for second packet\n"),
-                  commentspacket_len);
+		  _("Failed to allocate %u bytes for second packet\n"),
+                  (unsigned int) commentspacket_len);
       exit (5);
     }
 
-    memcpy (commentspacket->magic, "OpusTags", 8);
+    GNUNET_memcpy (commentspacket->magic, "OpusTags", 8);
     commentspacket->vendor_length = GNUNET_htole32 (vendor_length);
-    memcpy (&commentspacket[1], opusver, vendor_length);
+    GNUNET_memcpy (&commentspacket[1], opusver, vendor_length);
     *(uint32_t *) &((char *) &commentspacket[1])[vendor_length] = \
         GNUNET_htole32 (0); /* no tags */
 
@@ -755,8 +769,11 @@ ogg_init ()
  * @return 0 ok, 1 on error
  */
 int
-main (int argc, char *argv[])
+main (int argc,
+      char *argv[])
 {
+  (void) argc;
+  (void) argv;
   GNUNET_assert (GNUNET_OK ==
 		 GNUNET_log_setup ("gnunet-helper-audio-record",
 				   "WARNING",

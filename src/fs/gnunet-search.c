@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/gnunet-search.c
@@ -51,9 +46,12 @@ static unsigned int results_limit;
 
 static unsigned int results;
 
-static int verbose;
+static unsigned int verbose;
 
 static int local_only;
+
+static struct GNUNET_SCHEDULER_Task *tt;
+
 
 /**
  * Type of a function that libextractor calls for each
@@ -69,28 +67,38 @@ static int local_only;
  * @param data_mime_type mime-type of data (not of the original file);
  *        can be NULL (if mime-type is not known)
  * @param data actual meta-data found
- * @param data_size number of bytes in data
+ * @param data_size number of bytes in @a data
  * @return 0 to continue extracting, 1 to abort
  */
 static int
-item_printer (void *cls, const char *plugin_name, enum EXTRACTOR_MetaType type,
-              enum EXTRACTOR_MetaFormat format, const char *data_mime_type,
-              const char *data, size_t data_size)
+item_printer (void *cls,
+              const char *plugin_name,
+              enum EXTRACTOR_MetaType type,
+              enum EXTRACTOR_MetaFormat format,
+              const char *data_mime_type,
+              const char *data,
+              size_t data_size)
 {
   if ((format != EXTRACTOR_METAFORMAT_UTF8) &&
       (format != EXTRACTOR_METAFORMAT_C_STRING))
     return 0;
   if (type == EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME)
     return 0;
+#if HAVE_LIBEXTRACTOR
   printf ("\t%20s: %s\n",
           dgettext (LIBEXTRACTOR_GETTEXT_DOMAIN,
                     EXTRACTOR_metatype_to_string (type)), data);
+#else
+  printf ("\t%20d: %s\n",
+          type,
+          data);
+#endif
   return 0;
 }
 
 
 static void
-clean_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+clean_task (void *cls)
 {
   size_t dsize;
   void *ddata;
@@ -151,7 +159,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
                                        info->value.search.specifics.result.meta,
                                        NULL);
     uri = GNUNET_FS_uri_to_string (info->value.search.specifics.result.uri);
-    printf ("#%u:\n", cnt++);
+    printf ("#%u:\n", ++cnt);
     filename =
         GNUNET_CONTAINER_meta_data_get_by_type (info->value.search.
                                                 specifics.result.meta,
@@ -193,8 +201,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     GNUNET_SCHEDULER_shutdown ();
     break;
   case GNUNET_FS_STATUS_SEARCH_STOPPED:
-    GNUNET_SCHEDULER_add_continuation (&clean_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&clean_task, NULL);
     break;
   default:
     FPRINTF (stderr, _("Unexpected status: %d\n"), info->status);
@@ -205,13 +212,21 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
 
 
 static void
-shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
   if (sc != NULL)
   {
     GNUNET_FS_search_stop (sc);
     sc = NULL;
   }
+}
+
+
+static void
+timeout_task (void *cls)
+{
+  tt = NULL;
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -267,10 +282,11 @@ run (void *cls, char *const *args, const char *cfgfile,
     return;
   }
   if (0 != timeout.rel_value_us)
-    GNUNET_SCHEDULER_add_delayed (timeout, &shutdown_task, NULL);
-  else
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
-                                  NULL);
+    tt = GNUNET_SCHEDULER_add_delayed (timeout,
+				       &timeout_task,
+				       NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
+				 NULL);
 }
 
 
@@ -284,26 +300,42 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'a', "anonymity", "LEVEL",
-     gettext_noop ("set the desired LEVEL of receiver-anonymity"),
-     1, &GNUNET_GETOPT_set_uint, &anonymity},
-    {'n', "no-network", NULL,
-     gettext_noop ("only search the local peer (no P2P network search)"),
-     0, &GNUNET_GETOPT_set_one, &local_only},
-    {'o', "output", "PREFIX",
-     gettext_noop ("write search results to file starting with PREFIX"),
-     1, &GNUNET_GETOPT_set_string, &output_filename},
-    {'t', "timeout", "DELAY",
-     gettext_noop ("automatically terminate search after DELAY"),
-     1, &GNUNET_GETOPT_set_relative_time, &timeout},
-    {'V', "verbose", NULL,
-     gettext_noop ("be verbose (print progress information)"),
-     0, &GNUNET_GETOPT_set_one, &verbose},
-    {'N', "results", "VALUE",
-     gettext_noop
-     ("automatically terminate search after VALUE results are found"),
-     1, &GNUNET_GETOPT_set_uint, &results_limit},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_uint ('a',
+                                   "anonymity",
+                                   "LEVEL",
+                                   gettext_noop ("set the desired LEVEL of receiver-anonymity"),
+                                   &anonymity),
+
+
+    GNUNET_GETOPT_option_flag ('n',
+                                  "no-network",
+                                  gettext_noop ("only search the local peer (no P2P network search)"),
+                                  &local_only),
+                                  
+    GNUNET_GETOPT_option_string ('o',
+                                 "output",
+                                 "PREFIX",
+                                 gettext_noop ("write search results to file starting with PREFIX"),
+                                 &output_filename),                              
+
+    GNUNET_GETOPT_option_relative_time ('t', 
+                                            "timeout",
+                                            "DELAY",
+                                            gettext_noop ("automatically terminate search after DELAY"),
+                                            &timeout),
+
+
+    GNUNET_GETOPT_option_verbose (&verbose),
+
+    GNUNET_GETOPT_option_uint ('N',
+                                   "results",
+                                   "VALUE",
+                                   gettext_noop ("automatically terminate search "
+                                                 "after VALUE results are found"),
+                                   &results_limit),
+
     GNUNET_GETOPT_OPTION_END
   };
 

@@ -1,28 +1,26 @@
 /*
      This file is part of GNUnet.
-     (C) 2001-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_time_lib.h
- * @brief functions related to time
  * @author Christian Grothoff
- * @defgroup time Time and time calculations
+ *
+ * @file
+ * Functions related to time
+ *
+ * @defgroup time  Time library
+ * Time and time calculations.
  * @{
  */
 
@@ -256,6 +254,30 @@ GNUNET_TIME_relative_to_absolute (struct GNUNET_TIME_Relative rel);
 
 
 /**
+ * Round a time value so that it is suitable for transmission
+ * via JSON encodings.
+ *
+ * @param at time to round
+ * @return #GNUNET_OK if time was already rounded, #GNUNET_NO if
+ *         it was just now rounded
+ */
+int
+GNUNET_TIME_round_abs (struct GNUNET_TIME_Absolute *at);
+
+
+/**
+ * Round a time value so that it is suitable for transmission
+ * via JSON encodings.
+ *
+ * @param rt time to round
+ * @return #GNUNET_OK if time was already rounded, #GNUNET_NO if
+ *         it was just now rounded
+ */
+int
+GNUNET_TIME_round_rel (struct GNUNET_TIME_Relative *rt);
+
+
+/**
  * Return the minimum of two relative time values.
  *
  * @param t1 first timestamp
@@ -349,7 +371,7 @@ GNUNET_TIME_absolute_get_difference (struct GNUNET_TIME_Absolute start,
  * difference of the current time and the given start time "hence".
  *
  * @param whence some absolute time, typically in the past
- * @return aborts if hence==FOREVER, 0 if hence > now, otherwise now-hence.
+ * @return 0 if hence > now, otherwise now-hence.
  */
 struct GNUNET_TIME_Relative
 GNUNET_TIME_absolute_get_duration (struct GNUNET_TIME_Absolute whence);
@@ -390,7 +412,19 @@ GNUNET_TIME_absolute_subtract (struct GNUNET_TIME_Absolute start,
  */
 struct GNUNET_TIME_Relative
 GNUNET_TIME_relative_multiply (struct GNUNET_TIME_Relative rel,
-                               unsigned int factor);
+                               unsigned long long factor);
+
+
+/**
+ * Saturating multiply relative time by a given factor.
+ *
+ * @param rel some duration
+ * @param factor integer to multiply with
+ * @return FOREVER if rel=FOREVER or on overflow; otherwise rel*factor
+ */
+struct GNUNET_TIME_Relative
+GNUNET_TIME_relative_saturating_multiply (struct GNUNET_TIME_Relative rel,
+                                          unsigned long long factor);
 
 
 /**
@@ -402,7 +436,7 @@ GNUNET_TIME_relative_multiply (struct GNUNET_TIME_Relative rel,
  */
 struct GNUNET_TIME_Relative
 GNUNET_TIME_relative_divide (struct GNUNET_TIME_Relative rel,
-                             unsigned int factor);
+                             unsigned long long factor);
 
 
 /**
@@ -521,9 +555,9 @@ GNUNET_TIME_time_to_year (struct GNUNET_TIME_Absolute at);
 }
 #endif
 
-/** @} */ /* end of group time */
-
-
 /* ifndef GNUNET_TIME_LIB_H */
 #endif
+
+/** @} */ /* end of group time */
+
 /* end of gnunet_time_lib.h */

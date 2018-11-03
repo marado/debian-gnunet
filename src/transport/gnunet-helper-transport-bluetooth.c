@@ -1,23 +1,18 @@
 /*
    This file is part of GNUnet.
-   (C) 2010, 2011, 2012 Christian Grothoff (and other contributing authors)
+   Copyright (C) 2010, 2011, 2012 GNUnet e.V.
    Copyright (c) 2007, 2008, Andy Green <andy@warmcat.com>
-   Copyright (C) 2009 Thomas d'Otreppe
+   Copyright Copyright (C) 2009 Thomas d'Otreppe
 
-   GNUnet is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 3, or (at your
-   option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
    GNUnet is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with GNUnet; see the file COPYING.  If not, write to the
-   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
+   Affero General Public License for more details.
 */
 #include "gnunet_config.h"
 
@@ -356,7 +351,7 @@ do_align:
       delta =
           GNUNET_MIN (sizeof (struct GNUNET_MessageHeader) -
                       (mst->pos - mst->off), size);
-      memcpy (&ibuf[mst->pos], buf, delta);
+      GNUNET_memcpy (&ibuf[mst->pos], buf, delta);
       mst->pos += delta;
       buf += delta;
       size -= delta;
@@ -409,7 +404,7 @@ do_align:
         fprintf (stderr, "The size of the buffer will be exceeded!\n");
         return GNUNET_SYSERR;
       }
-      memcpy (&ibuf[mst->pos], buf, delta);
+      GNUNET_memcpy (&ibuf[mst->pos], buf, delta);
       mst->pos += delta;
       buf += delta;
       size -= delta;
@@ -486,7 +481,7 @@ do_align:
          "Assertion failed\n");
       exit (1);
     }
-    memcpy (&ibuf[mst->pos], buf, size);
+    GNUNET_memcpy (&ibuf[mst->pos], buf, size);
     mst->pos += size;
   }
   return ret;
@@ -727,7 +722,7 @@ check_crc_buf_osdep (const unsigned char *buf, size_t len)
     }
 
     /* save the device address */
-    memcpy (&dev->pl_mac, &addr.btAddr, sizeof (BTH_ADDR));
+    GNUNET_memcpy (&dev->pl_mac, &addr.btAddr, sizeof (BTH_ADDR));
 
     /* set the address information */
     memset (&addr_info, 0, sizeof (CSADDR_INFO));
@@ -965,7 +960,7 @@ check_crc_buf_osdep (const unsigned char *buf, size_t len)
     sdp_list_t *search_list = 0, *attrid_list = 0, *response_list = 0, *it = 0;
     uuid_t svc_uuid;
     uint32_t range = 0x0000ffff;
-    uint8_t channel = -1;
+    int channel = -1;
 
     /* Connect to the local SDP server */
     session = sdp_connect (BDADDR_ANY, &dest, 0);
@@ -1002,9 +997,12 @@ check_crc_buf_osdep (const unsigned char *buf, size_t len)
 
     sdp_close (session);
 
-    if (channel == -1)
-      fprintf (stderr, "Failed to find the listening channel for interface `%.*s': %s\n",
-              IFNAMSIZ, dev->iface, strerror (errno));
+    if (-1 == channel)
+      fprintf (stderr,
+               "Failed to find the listening channel for interface `%.*s': %s\n",
+               IFNAMSIZ,
+               dev->iface,
+               strerror (errno));
 
     return channel;
   }
@@ -1070,7 +1068,7 @@ read_from_the_socket (void *sock,
     count -= sizeof(uint32_t);
   }
 
-  memcpy (buf, tmpbuf, count);
+  GNUNET_memcpy (buf, tmpbuf, count);
 
   return count;
 }
@@ -1080,7 +1078,7 @@ read_from_the_socket (void *sock,
  * Open the bluetooth interface for reading/writing
  *
  * @param dev pointer to the device struct
- * @return 0 on success
+ * @return 0 on success, non-zero on error
  */
 static int
 open_device (struct HardwareInfos *dev)
@@ -1140,7 +1138,9 @@ open_device (struct HardwareInfos *dev)
 
     if (fd_hci < 0)
     {
-      fprintf (stderr, "Failed to create HCI socket: %s\n", strerror (errno));
+      fprintf (stderr,
+               "Failed to create HCI socket: %s\n",
+               strerror (errno));
       return -1;
     }
 
@@ -1149,8 +1149,12 @@ open_device (struct HardwareInfos *dev)
 
     if (ioctl (fd_hci, HCIGETDEVLIST, (void *) &request) < 0)
     {
-      fprintf (stderr, "ioctl(HCIGETDEVLIST) on interface `%.*s' failed: %s\n",
-              IFNAMSIZ, dev->iface, strerror (errno));
+      fprintf (stderr,
+               "ioctl(HCIGETDEVLIST) on interface `%.*s' failed: %s\n",
+               IFNAMSIZ,
+               dev->iface,
+               strerror (errno));
+      (void) close (fd_hci);
       return 1;
     }
 
@@ -1165,8 +1169,12 @@ open_device (struct HardwareInfos *dev)
 
       if (ioctl (fd_hci, HCIGETDEVINFO, (void *) &dev_info))
       {
-        fprintf (stderr, "ioctl(HCIGETDEVINFO) on interface `%.*s' failed: %s\n",
-               IFNAMSIZ, dev->iface, strerror (errno));
+        fprintf (stderr,
+                 "ioctl(HCIGETDEVINFO) on interface `%.*s' failed: %s\n",
+                 IFNAMSIZ,
+                 dev->iface,
+                 strerror (errno));
+        (void) close (fd_hci);
         return 1;
       }
 
@@ -1177,7 +1185,7 @@ open_device (struct HardwareInfos *dev)
         /**
          * Copy the MAC address to the device structure
          */
-        memcpy (&dev->pl_mac, &dev_info.bdaddr, sizeof (bdaddr_t));
+        GNUNET_memcpy (&dev->pl_mac, &dev_info.bdaddr, sizeof (bdaddr_t));
 
         /* Check if the interface is up */
         if (hci_test_bit (HCI_UP, (void *) &dev_info.flags) == 0)
@@ -1185,8 +1193,12 @@ open_device (struct HardwareInfos *dev)
           /* Bring the interface up */
           if (ioctl (fd_hci, HCIDEVUP, dev_info.dev_id))
           {
-            fprintf (stderr, "ioctl(HCIDEVUP) on interface `%.*s' failed: %s\n",
-               IFNAMSIZ, dev->iface, strerror (errno));
+            fprintf (stderr,
+                     "ioctl(HCIDEVUP) on interface `%.*s' failed: %s\n",
+                     IFNAMSIZ,
+                     dev->iface,
+                     strerror (errno));
+            (void) close (fd_hci);
             return 1;
           }
         }
@@ -1204,8 +1216,12 @@ open_device (struct HardwareInfos *dev)
 
           if (ioctl (fd_hci, HCISETSCAN, (unsigned long) &dev_req))
           {
-            fprintf (stderr, "ioctl(HCISETSCAN) on interface `%.*s' failed: %s\n",
-               IFNAMSIZ, dev->iface, strerror (errno));
+            fprintf (stderr,
+                     "ioctl(HCISETSCAN) on interface `%.*s' failed: %s\n",
+                     IFNAMSIZ,
+                     dev->iface,
+                     strerror (errno));
+            (void) close (fd_hci);
             return 1;
           }
 
@@ -1216,9 +1232,12 @@ open_device (struct HardwareInfos *dev)
     }
 
     /* Check if the interface was not found */
-    if (dev_id == -1)
+    if (-1 == dev_id)
     {
-      fprintf (stderr, "The interface %s was not found\n", dev->iface);
+      fprintf (stderr,
+               "The interface %s was not found\n",
+               dev->iface);
+      (void) close (fd_hci);
       return 1;
     }
 
@@ -1234,15 +1253,20 @@ open_device (struct HardwareInfos *dev)
 
     if (bind_socket (dev->fd_rfcomm, &rc_addr) != 0)
     {
-      fprintf (stderr, "Failed to bind interface `%.*s': %s\n", IFNAMSIZ,
-               dev->iface, strerror (errno));
+      fprintf (stderr,
+               "Failed to bind interface `%.*s': %s\n",
+               IFNAMSIZ,
+               dev->iface,
+               strerror (errno));
       return 1;
     }
 
     /* Register a SDP service */
     if (register_service (dev, rc_addr.rc_channel) != 0)
     {
-      fprintf (stderr, "Failed to register a service on interface `%.*s': %s\n", IFNAMSIZ,
+      fprintf (stderr,
+               "Failed to register a service on interface `%.*s': %s\n",
+               IFNAMSIZ,
                dev->iface, strerror (errno));
       return 1;
     }
@@ -1277,7 +1301,7 @@ mac_set (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame *taIeeeHeader,
   taIeeeHeader->addr3 = mac_bssid_gnunet;
 
   #ifdef MINGW
-    memcpy (&taIeeeHeader->addr2, &dev->pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
+    GNUNET_memcpy (&taIeeeHeader->addr2, &dev->pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
   #else
     taIeeeHeader->addr2 = dev->pl_mac;
   #endif
@@ -1374,13 +1398,13 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
     exit (1);
   }
   header = (const struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage *) hdr;
-  memcpy (&write_pout.buf, &header->frame, sendsize);
+  GNUNET_memcpy (&write_pout.buf, &header->frame, sendsize);
   blueheader = (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame *) &write_pout.buf;
 
   /* payload contains MAC address, but we don't trust it, so we'll
   * overwrite it with OUR MAC address to prevent mischief */
   mac_set (blueheader, dev);
-  memcpy (&blueheader->addr1, &header->frame.addr1,
+  GNUNET_memcpy (&blueheader->addr1, &header->frame.addr1,
           sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
   write_pout.size = sendsize;
 }
@@ -1486,7 +1510,7 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
 
           ba2str (&(devices +i)->bdaddr, addr);
           fprintf (stderr, "LOG : %s was added to the list\n", addr); //FIXME debugging message
-          memcpy (&(neighbours.devices[neighbours.size++]), &(devices + i)->bdaddr, sizeof (bdaddr_t));
+          GNUNET_memcpy (&(neighbours.devices[neighbours.size++]), &(devices + i)->bdaddr, sizeof (bdaddr_t));
         }
       }
 
@@ -1507,32 +1531,43 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
       {
 
         memset (&addr_rc.rc_bdaddr, 0, sizeof (addr_rc.rc_bdaddr));
-        memcpy (&addr_rc.rc_bdaddr, &(neighbours.devices[neighbours.pos]), sizeof (addr_rc.rc_bdaddr));
+        GNUNET_memcpy (&addr_rc.rc_bdaddr, &(neighbours.devices[neighbours.pos]), sizeof (addr_rc.rc_bdaddr));
 
         addr_rc.rc_channel = get_channel (dev, addr_rc.rc_bdaddr);
 
         *sendsocket = socket (AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-        if (connect (*sendsocket, (struct sockaddr *)&addr_rc, sizeof (addr_rc)) == 0)
+        if ( (-1 < *sendsocket) &&
+             (0 == connect (*sendsocket,
+                            (struct sockaddr *) &addr_rc,
+                            sizeof (addr_rc))) )
         {
           neighbours.fds[neighbours.pos++] = *sendsocket;
           connection_successful = 1;
           char addr[19] = { 0 };
           ba2str (&(neighbours.devices[neighbours.pos - 1]), addr);
           fprintf (stderr, "LOG : Connected to %s\n", addr);
-
           break;
         }
         else
         {
           char addr[19] = { 0 };
           errno_copy = errno;  //Save a copy for later
+
+          if (-1 != *sendsocket)
+          {
+            (void) close (*sendsocket);
+            *sendsocket = -1;
+          }
           ba2str (&(neighbours.devices[neighbours.pos]), addr);
-          fprintf (stderr, "LOG : Couldn't connect on device %s, error : %s\n", addr, strerror(errno));
+          fprintf (stderr,
+                   "LOG : Couldn't connect on device %s, error : %s\n",
+                   addr,
+                   strerror (errno));
           if (errno != ECONNREFUSED) //FIXME be sure that this works
           {
             fprintf (stderr, "LOG : Removes %d device from the list\n", neighbours.pos);
             /* Remove the device from the list */
-            memcpy (&neighbours.devices[neighbours.pos], &neighbours.devices[neighbours.size - 1], sizeof (bdaddr_t));
+            GNUNET_memcpy (&neighbours.devices[neighbours.pos], &neighbours.devices[neighbours.size - 1], sizeof (bdaddr_t));
             memset (&neighbours.devices[neighbours.size - 1], 0, sizeof (bdaddr_t));
             neighbours.fds[neighbours.pos] = neighbours.fds[neighbours.size - 1];
             neighbours.fds[neighbours.size - 1] = -1;
@@ -1627,24 +1662,30 @@ main (int argc, char *argv[])
     int stdin_open;
     struct MessageStreamTokenizer *stdin_mst;
     int raw_eno, i;
-    uid_t uid;
     int crt_rfds = 0, rfds_list[MAX_PORTS];
     int broadcast, sendsocket;
+
     /* Assert privs so we can modify the firewall rules! */
-    uid = getuid ();
-  #ifdef HAVE_SETRESUID
-    if (0 != setresuid (uid, 0, 0))
     {
-      fprintf (stderr, "Failed to setresuid to root: %s\n", strerror (errno));
-      return 254;
+#ifdef HAVE_SETRESUID
+      uid_t uid = getuid ();
+
+      if (0 != setresuid (uid, 0, 0))
+      {
+	fprintf (stderr, 
+		 "Failed to setresuid to root: %s\n",
+		 strerror (errno));
+	return 254;
+      }
+#else
+      if (0 != seteuid (0))
+      {
+	fprintf (stderr, 
+		 "Failed to seteuid back to root: %s\n", strerror (errno));
+	return 254;
+      }
+#endif
     }
-  #else
-    if (0 != seteuid (0))
-    {
-      fprintf (stderr, "Failed to seteuid back to root: %s\n", strerror (errno));
-      return 254;
-    }
-  #endif
 
     /* Make use of SGID capabilities on POSIX */
     memset (&dev, 0, sizeof (dev));
@@ -1713,8 +1754,8 @@ main (int argc, char *argv[])
 
       macmsg.hdr.size = htons (sizeof (macmsg));
       macmsg.hdr.type = htons (GNUNET_MESSAGE_TYPE_WLAN_HELPER_CONTROL);
-      memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
-      memcpy (write_std.buf, &macmsg, sizeof (macmsg));
+      GNUNET_memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
+      GNUNET_memcpy (write_std.buf, &macmsg, sizeof (macmsg));
       write_std.size = sizeof (macmsg);
     }
 
@@ -1823,7 +1864,7 @@ main (int argc, char *argv[])
               return -1;
             }
 
-            memcpy (&addr.rc_bdaddr, &frame->addr1, sizeof (bdaddr_t));
+            GNUNET_memcpy (&addr.rc_bdaddr, &frame->addr1, sizeof (bdaddr_t));
             addr.rc_family = AF_BLUETOOTH;
             addr.rc_channel = get_channel (&dev, addr.rc_bdaddr);
 
@@ -1867,7 +1908,7 @@ main (int argc, char *argv[])
                 if (neighbours.size < MAX_PORTS)
                 {
                   neighbours.fds[neighbours.size] = sendsocket;
-                  memcpy (&(neighbours.devices[neighbours.size++]), &addr.rc_bdaddr, sizeof (bdaddr_t));
+                  GNUNET_memcpy (&(neighbours.devices[neighbours.size++]), &addr.rc_bdaddr, sizeof (bdaddr_t));
                 }
                 else
                 {
@@ -1911,13 +1952,13 @@ main (int argc, char *argv[])
           fprintf (stderr, "LOG : %s sends a message to STDOUT\n", dev.iface); //FIXME: debugging message
 
         }
-        if (sendsocket != -1)
+        if (-1 != sendsocket)
         {
           if (FD_ISSET (sendsocket , &wfds))
           {
-            ssize_t ret =
-        write (sendsocket, write_pout.buf + write_std.pos,
-               write_pout.size - write_pout.pos);
+            ssize_t ret = write (sendsocket,
+                                 write_pout.buf + write_std.pos,
+                                 write_pout.size - write_pout.pos);
             if (0 > ret) //FIXME should I first check the error type?
             {
               fprintf (stderr, "Failed to write to bluetooth device: %s. Closing the socket!\n",
@@ -2064,7 +2105,8 @@ main (int argc, char *argv[])
     stdin_mst = NULL;
     sdp_close (dev.session);
     (void) close (dev.fd_rfcomm);
-    (void) close (sendsocket);
+    if (-1 != sendsocket)
+      (void) close (sendsocket);
 
     for (i = 0; i < crt_rfds; i++)
       (void) close (rfds_list[i]);
@@ -2149,8 +2191,8 @@ main (int argc, char *argv[])
 
       macmsg.hdr.size = htons (sizeof (macmsg));
       macmsg.hdr.type = htons (GNUNET_MESSAGE_TYPE_WLAN_HELPER_CONTROL);
-      memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress_Copy));
-      memcpy (write_std.buf, &macmsg, sizeof (macmsg));
+      GNUNET_memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress_Copy));
+      GNUNET_memcpy (write_std.buf, &macmsg, sizeof (macmsg));
       write_std.size = sizeof (macmsg);
     }
 

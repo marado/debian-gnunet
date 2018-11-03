@@ -1,29 +1,31 @@
 /*
      This file is part of GNUnet
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_gnsrecord_plugin.h
- * @brief plugin API for GNS record types
  * @author Christian Grothoff
- * @defgroup gnsrecordplugin API to be implemented by applications defining new GNS record types
- * @{ */
+ *
+ * @file
+ * Plugin API for GNS record types
+ *
+ * @defgroup gnsrecord-plugin  GNS Record plugin API
+ * To be implemented by applications defining new record types.
+ *
+ * @see [Documentation](https://gnunet.org/gns-plugins)
+ *
+ * @{
+ */
 #ifndef GNUNET_GNSRECORD_PLUGIN_H
 #define GNUNET_GNSRECORD_PLUGIN_H
 
@@ -46,10 +48,11 @@ extern "C"
  * @param data_size number of bytes in @a data
  * @return NULL on error, otherwise human-readable representation of the value
  */
-typedef char * (*GNUNET_GNSRECORD_ValueToStringFunction) (void *cls,
-                                                          uint32_t type,
-                                                          const void *data,
-                                                          size_t data_size);
+typedef char *
+(*GNUNET_GNSRECORD_ValueToStringFunction) (void *cls,
+					   uint32_t type,
+					   const void *data,
+					   size_t data_size);
 
 
 /**
@@ -64,11 +67,12 @@ typedef char * (*GNUNET_GNSRECORD_ValueToStringFunction) (void *cls,
  * @param data_size set to number of bytes in @a data
  * @return #GNUNET_OK on success
  */
-typedef int (*GNUNET_GNSRECORD_StringToValueFunction) (void *cls,
-                                                       uint32_t type,
-                                                       const char *s,
-                                                       void **data,
-                                                       size_t *data_size);
+typedef int
+(*GNUNET_GNSRECORD_StringToValueFunction) (void *cls,
+					   uint32_t type,
+					   const char *s,
+					   void **data,
+					   size_t *data_size);
 
 
 /**
@@ -79,8 +83,9 @@ typedef int (*GNUNET_GNSRECORD_StringToValueFunction) (void *cls,
  * @param dns_typename name to convert
  * @return corresponding number, UINT32_MAX on error
  */
-typedef uint32_t (*GNUNET_GNSRECORD_TypenameToNumberFunction) (void *cls,
-                                                               const char *dns_typename);
+typedef uint32_t
+(*GNUNET_GNSRECORD_TypenameToNumberFunction) (void *cls,
+					      const char *dns_typename);
 
 
 /**
@@ -91,8 +96,9 @@ typedef uint32_t (*GNUNET_GNSRECORD_TypenameToNumberFunction) (void *cls,
  * @param type number of a type to convert
  * @return corresponding typestring, NULL on error
  */
-typedef const char * (*GNUNET_GNSRECORD_NumberToTypenameFunction) (void *cls,
-                                                                   uint32_t type);
+typedef const char *
+(*GNUNET_GNSRECORD_NumberToTypenameFunction) (void *cls,
+					      uint32_t type);
 
 
 /**
@@ -129,8 +135,7 @@ struct GNUNET_GNSRECORD_PluginFunctions
 
 };
 
-
-/** @} */ /* end of group gnsrecordplugin */
+/** @} */  /* end of group */
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

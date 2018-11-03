@@ -1,21 +1,16 @@
 /*
  This file is part of GNUnet.
- (C) 2010-2013 Christian Grothoff (and other contributing authors)
+ Copyright (C) 2010-2013 GNUnet e.V.
 
- GNUnet is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published
- by the Free Software Foundation; either version 3, or (at your
- option) any later version.
+ GNUnet is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published
+ by the Free Software Foundation, either version 3 of the License,
+ or (at your option) any later version.
 
  GNUnet is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with GNUnet; see the file COPYING.  If not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ Affero General Public License for more details.
  */
 /**
  * @file ats-tests/ats-testing-experiment.c
@@ -33,7 +28,6 @@
 /**
  * Experiments
  */
-
 const char *
 print_op (enum OperationType op)
 {
@@ -66,6 +60,7 @@ create_experiment ()
   return e;
 }
 
+
 static void
 free_experiment (struct Experiment *e)
 {
@@ -93,9 +88,11 @@ free_experiment (struct Experiment *e)
   GNUNET_free (e);
 }
 
+
 static int
-load_episode (struct Experiment *e, struct Episode *cur,
-    struct GNUNET_CONFIGURATION_Handle *cfg)
+load_episode (struct Experiment *e,
+              struct Episode *cur,
+              struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_ATS_TEST_Operation *o;
   char *sec_name;
@@ -187,8 +184,12 @@ load_episode (struct Experiment *e, struct Episode *cur,
     }
     if (o->dest_id > (e->num_slaves - 1))
     {
-      fprintf (stderr, "Invalid destination %llu in operation %u `%s' in episode %u\n",
-          o->dest_id, op_counter, op, cur->id);
+      fprintf (stderr,
+               "Invalid destination %llu in operation %u `%s' in episode %u\n",
+               o->dest_id,
+               op_counter,
+               op,
+               cur->id);
       GNUNET_free (op);
       GNUNET_free (op_name);
       GNUNET_free (sec_name);
@@ -198,9 +199,13 @@ load_episode (struct Experiment *e, struct Episode *cur,
     GNUNET_free (op_name);
 
     GNUNET_asprintf(&op_name, "op-%u-type", op_counter);
-    if ( (GNUNET_SYSERR != GNUNET_CONFIGURATION_get_value_string(cfg,
-            sec_name, op_name, &type)) &&
-        ((STOP_SEND != o->type) || (STOP_PREFERENCE != o->type)))
+    if ( (GNUNET_SYSERR !=
+          GNUNET_CONFIGURATION_get_value_string(cfg,
+                                                sec_name,
+                                                op_name,
+                                                &type)) &&
+         (STOP_SEND != o->type) &&
+         (STOP_PREFERENCE != o->type) )
     {
       /* Load arguments for set_rate, start_send, set_preference */
       if (0 == strcmp (type, "constant"))
@@ -250,8 +255,11 @@ load_episode (struct Experiment *e, struct Episode *cur,
 
       /* Get max rate */
       GNUNET_asprintf(&op_name, "op-%u-max-rate", op_counter);
-      if (GNUNET_SYSERR == GNUNET_CONFIGURATION_get_value_number (cfg,
-          sec_name, op_name, &o->max_rate))
+      if (GNUNET_SYSERR ==
+          GNUNET_CONFIGURATION_get_value_number (cfg,
+                                                 sec_name,
+                                                 op_name,
+                                                 &o->max_rate))
       {
         if ((GNUNET_ATS_TEST_TG_LINEAR == o->gen_type) ||
             (GNUNET_ATS_TEST_TG_RANDOM == o->gen_type) ||
@@ -318,12 +326,14 @@ load_episode (struct Experiment *e, struct Episode *cur,
             o->pref_type = GNUNET_ATS_PREFERENCE_LATENCY;
           else
           {
-              fprintf (stderr, "Invalid preference in operation %u `%s' in episode %u\n",
-                  op_counter, op, cur->id);
+              fprintf (stderr,
+                       "Invalid preference in operation %u `%s' in episode %u\n",
+                       op_counter,
+                       op,
+                       cur->id);
               GNUNET_free (type);
               GNUNET_free (op_name);
               GNUNET_free (op);
-              GNUNET_free (pref);
               GNUNET_free (sec_name);
               GNUNET_free_non_null (pref);
               GNUNET_free (o);
@@ -419,22 +429,24 @@ load_episodes (struct Experiment *e, struct GNUNET_CONFIGURATION_Handle *cfg)
   return e_counter;
 }
 
+
 static void
-timeout_experiment (void *cls, const struct GNUNET_SCHEDULER_TaskContext* tc)
+timeout_experiment (void *cls)
 {
   struct Experiment *e = cls;
-  e->experiment_timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  e->experiment_timeout_task = NULL;
   fprintf (stderr, "Experiment timeout!\n");
 
-  if (GNUNET_SCHEDULER_NO_TASK != e->episode_timeout_task)
+  if (NULL != e->episode_timeout_task)
   {
     GNUNET_SCHEDULER_cancel (e->episode_timeout_task);
-    e->episode_timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    e->episode_timeout_task = NULL;
   }
 
   e->e_done_cb (e, GNUNET_TIME_absolute_get_duration(e->start_time),
       GNUNET_SYSERR);
 }
+
 
 static void
 enforce_start_send (struct GNUNET_ATS_TEST_Operation *op)
@@ -585,11 +597,12 @@ static void enforce_episode (struct Episode *ep)
   }
 }
 
+
 static void
-timeout_episode (void *cls, const struct GNUNET_SCHEDULER_TaskContext* tc)
+timeout_episode (void *cls)
 {
   struct Experiment *e = cls;
-  e->episode_timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  e->episode_timeout_task = NULL;
   if (NULL != e->ep_done_cb)
     e->ep_done_cb (e->cur);
 
@@ -599,10 +612,10 @@ timeout_episode (void *cls, const struct GNUNET_SCHEDULER_TaskContext* tc)
   {
     /* done */
     fprintf (stderr, "Last episode done!\n");
-    if (GNUNET_SCHEDULER_NO_TASK != e->experiment_timeout_task)
+    if (NULL != e->experiment_timeout_task)
     {
       GNUNET_SCHEDULER_cancel (e->experiment_timeout_task);
-      e->experiment_timeout_task = GNUNET_SCHEDULER_NO_TASK;
+      e->experiment_timeout_task = NULL;
     }
     e->e_done_cb (e, GNUNET_TIME_absolute_get_duration(e->start_time), GNUNET_OK);
     return;
@@ -739,15 +752,15 @@ GNUNET_ATS_solvers_experimentation_load (char *filename)
 void
 GNUNET_ATS_solvers_experimentation_stop (struct Experiment *e)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != e->experiment_timeout_task)
+  if (NULL != e->experiment_timeout_task)
   {
     GNUNET_SCHEDULER_cancel (e->experiment_timeout_task);
-    e->experiment_timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    e->experiment_timeout_task = NULL;
   }
-  if (GNUNET_SCHEDULER_NO_TASK != e->episode_timeout_task)
+  if (NULL != e->episode_timeout_task)
   {
     GNUNET_SCHEDULER_cancel (e->episode_timeout_task);
-    e->episode_timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    e->episode_timeout_task = NULL;
   }
   free_experiment (e);
 }
@@ -913,23 +926,35 @@ main (int argc, char *argv[])
   opt_log = GNUNET_NO;
   opt_plot = GNUNET_NO;
 
-  static struct GNUNET_GETOPT_CommandLineOption options[] =
+  struct GNUNET_GETOPT_CommandLineOption options[] =
   {
-    { 's', "solver", NULL,
-        gettext_noop ("solver to use"),
-        1, &GNUNET_GETOPT_set_string, &opt_solver},
-    {  'e', "experiment", NULL,
-      gettext_noop ("experiment to use"),
-      1, &GNUNET_GETOPT_set_string, &opt_exp_file},
-    {  'e', "experiment", NULL,
-      gettext_noop ("experiment to use"),
-      1, &GNUNET_GETOPT_set_one, &opt_verbose},
+    GNUNET_GETOPT_option_string ('s',
+                                 "solver",
+                                 NULL,
+                                 gettext_noop ("solver to use"),
+                                 &opt_solver),
+
+    GNUNET_GETOPT_option_string ('e',
+                                 "experiment",
+                                 NULL,
+                                 gettext_noop ("experiment to use"),
+                                 &opt_exp_file),
+ 
+    GNUNET_GETOPT_option_flag ('e',
+                                  "experiment",
+                                  gettext_noop ("experiment to use"),
+                                  &opt_verbose),
     GNUNET_GETOPT_OPTION_END
   };
 
-  GNUNET_PROGRAM_run (argc, argv, argv[0], NULL, options, &run, argv[0]);
+  if (GNUNET_OK !=
+      GNUNET_PROGRAM_run (argc,
+                          argv, argv[0],
+                          NULL,
+                          options,
+                          &run, argv[0]))
+    return 1;
 
   return 0;
 }
-/* end of file ats-testing-experiment.c*/
-
+/* end of file gnunet-solver-eval.c*/

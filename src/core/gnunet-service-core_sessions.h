@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2009-2014 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -39,6 +34,29 @@
 void
 GSC_SESSIONS_create (const struct GNUNET_PeerIdentity *peer,
                      struct GSC_KeyExchangeInfo *kx);
+
+
+/**
+ * The other peer has indicated that he 'lost' the session
+ * (KX down), reinitialize the session on our end, in particular
+ * this means to restart the typemap transmission.
+ *
+ * @param peer peer that is now connected
+ */
+void
+GSC_SESSIONS_reinit (const struct GNUNET_PeerIdentity *peer);
+
+
+/**
+ * The other peer has confirmed receiving our type map,
+ * check if it is current and if so, stop retransmitting it.
+ *
+ * @param peer peer that confirmed the type map
+ * @param msg confirmation message we received
+ */
+void
+GSC_SESSIONS_confirm_typemap (const struct GNUNET_PeerIdentity *peer,
+                              const struct GNUNET_MessageHeader *msg);
 
 
 /**
@@ -102,12 +120,13 @@ GSC_SESSIONS_transmit (struct GSC_ClientActiveRequest *car,
 
 
 /**
- * Broadcast a message to all neighbours.
+ * Broadcast an updated typemap message to all neighbours.
+ * Restarts the retransmissions until the typemaps are confirmed.
  *
  * @param msg message to transmit
  */
 void
-GSC_SESSIONS_broadcast (const struct GNUNET_MessageHeader *msg);
+GSC_SESSIONS_broadcast_typemap (const struct GNUNET_MessageHeader *msg);
 
 
 /**
@@ -117,6 +136,7 @@ GSC_SESSIONS_broadcast (const struct GNUNET_MessageHeader *msg);
  */
 void
 GSC_SESSIONS_notify_client_about_sessions (struct GSC_Client *client);
+
 
 /**
  * We've received a typemap message from a peer, update ours.
@@ -141,22 +161,6 @@ GSC_SESSIONS_set_typemap (const struct GNUNET_PeerIdentity *peer,
 void
 GSC_SESSIONS_add_to_typemap (const struct GNUNET_PeerIdentity *peer,
                              uint16_t type);
-
-
-/**
- * Handle CORE_ITERATE_PEERS request.  For this request type, the client
- * does not have to have transmitted an INIT request.  All current peers
- * are returned, regardless of which message types they accept.
- *
- * @param cls unused
- * @param client client sending the iteration request
- * @param message iteration request message
- */
-void
-GSC_SESSIONS_handle_client_iterate_peers (void *cls,
-                                          struct GNUNET_SERVER_Client *client,
-                                          const struct GNUNET_MessageHeader
-                                          *message);
 
 
 /**

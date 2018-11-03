@@ -1,33 +1,42 @@
 /*
      This file is part of GNUnet.
-     (C) 2001-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001-2015 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_container_lib.h
- * @brief container classes for GNUnet
  * @author Christian Grothoff
  * @author Nils Durner
- * @defgroup hashmap multi hash-map
- * @defgroup heap min- or max-heap with arbitrary element removal
- * @defgroup bloomfilter Bloom filter (probabilistic set tests)
- * @defgroup dll Doubly-linked list
- * @defgroup metadata Meta data (GNU libextractor key-value pairs)
+ *
+ * @file
+ * Container classes for GNUnet
+ *
+ * @defgroup hashmap  Container library: MultiHashMap
+ * Hash map with multiple values per key.
+ *
+ * @see [Documentation](https://gnunet.org/util_multihashmap)
+ *
+ * @defgroup heap  Container library: Heap
+ * Min- or max-heap with arbitrary element removal
+ *
+ * @defgroup bloomfilter  Container library: Bloom filter
+ * Probabilistic set tests
+ *
+ * @defgroup dll  Container library: Doubly-linked list
+ *
+ * @see [Documentation](https://gnunet.org/mdll-api)
+ *
+ * @defgroup metadata  Container library: Metadata
+ * GNU libextractor key-value pairs
  */
 
 #ifndef GNUNET_CONTAINER_LIB_H
@@ -35,7 +44,140 @@
 
 /* add error and config prototypes */
 #include "gnunet_crypto_lib.h"
+
+
+/**
+ * Try to compress the given block of data using libz.  Only returns
+ * the compressed block if compression worked and the new block is
+ * actually smaller.  Decompress using #GNUNET_decompress().
+ *
+ * @param data block to compress; if compression
+ *        resulted in a smaller block, the first
+ *        bytes of data are updated to the compressed
+ *        data
+ * @param old_size number of bytes in data
+ * @param[out] result set to the compressed data, if compression worked
+ * @param[out] new_size set to size of result, if compression worked
+ * @return #GNUNET_YES if compression reduce the size,
+ *         #GNUNET_NO if compression did not help
+ */
+int
+GNUNET_try_compression (const char *data,
+                        size_t old_size,
+                        char **result,
+                        size_t *new_size);
+
+
+/**
+ * Decompress input, return the decompressed data as output.  Dual to
+ * #GNUNET_try_compression(). Caller must set @a output_size to the
+ * number of bytes that were originally compressed.
+ *
+ * @param input compressed data
+ * @param input_size number of bytes in input
+ * @param output_size expected size of the output
+ * @return NULL on error, buffer of @a output_size decompressed bytes otherwise
+ */
+char *
+GNUNET_decompress (const char *input,
+                   size_t input_size,
+                   size_t output_size);
+
+
+#if HAVE_EXTRACTOR_H
+
 #include <extractor.h>
+
+#else
+
+/* definitions from extractor.h we need for the build */
+
+/**
+ * Enumeration defining various sources of keywords.  See also
+ * http://dublincore.org/documents/1998/09/dces/
+ */
+enum EXTRACTOR_MetaType {
+  EXTRACTOR_METATYPE_RESERVED = 0,
+  EXTRACTOR_METATYPE_MIMETYPE = 1,
+  EXTRACTOR_METATYPE_FILENAME = 2,
+  EXTRACTOR_METATYPE_COMMENT = 3,
+  EXTRACTOR_METATYPE_TITLE = 4,
+  EXTRACTOR_METATYPE_BOOK_TITLE = 5,
+  EXTRACTOR_METATYPE_JOURNAL_NAME = 8,
+  EXTRACTOR_METATYPE_AUTHOR_NAME = 13,
+  EXTRACTOR_METATYPE_PUBLICATION_DATE = 24,
+  EXTRACTOR_METATYPE_URL = 29,
+  EXTRACTOR_METATYPE_URI = 30,
+  EXTRACTOR_METATYPE_ISRC = 31,
+  EXTRACTOR_METATYPE_UNKNOWN = 45,
+  EXTRACTOR_METATYPE_DESCRIPTION = 46,
+  EXTRACTOR_METATYPE_KEYWORDS = 49,
+  EXTRACTOR_METATYPE_SUBJECT = 52,
+  EXTRACTOR_METATYPE_PACKAGE_NAME = 69,
+  EXTRACTOR_METATYPE_THUMBNAIL = 114,
+  EXTRACTOR_METATYPE_ALBUM = 129,
+  EXTRACTOR_METATYPE_ARTIST = 130,
+  EXTRACTOR_METATYPE_ORIGINAL_TITLE = 162,
+  EXTRACTOR_METATYPE_GNUNET_FULL_DATA = 174,
+  EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME = 180,
+
+};
+
+/**
+ * Format in which the extracted meta data is presented.
+ */
+enum EXTRACTOR_MetaFormat {
+  /**
+   * Format is unknown.
+   */
+  EXTRACTOR_METAFORMAT_UNKNOWN = 0,
+
+  /**
+   * 0-terminated, UTF-8 encoded string.  "data_len"
+   * is strlen(data)+1.
+   */
+  EXTRACTOR_METAFORMAT_UTF8 = 1,
+
+  /**
+   * Some kind of binary format, see given Mime type.
+   */
+  EXTRACTOR_METAFORMAT_BINARY = 2,
+
+  /**
+   * 0-terminated string.  The specific encoding is unknown.
+   * "data_len" is strlen (data)+1.
+   */
+  EXTRACTOR_METAFORMAT_C_STRING = 3
+};
+
+
+/**
+ * Type of a function that libextractor calls for each
+ * meta data item found.
+ *
+ * @param cls closure (user-defined)
+ * @param plugin_name name of the plugin that produced this value;
+ *        special values can be used (i.e. '&lt;zlib&gt;' for zlib being
+ *        used in the main libextractor library and yielding
+ *        meta data).
+ * @param type libextractor-type describing the meta data
+ * @param format basic format information about @a data
+ * @param data_mime_type mime-type of @a data (not of the original file);
+ *        can be NULL (if mime-type is not known)
+ * @param data actual meta-data found
+ * @param data_len number of bytes in @a data
+ * @return 0 to continue extracting, 1 to abort
+ */
+typedef int
+(*EXTRACTOR_MetaDataProcessor) (void *cls,
+                                const char *plugin_name,
+                                enum EXTRACTOR_MetaType type,
+                                enum EXTRACTOR_MetaFormat format,
+                                const char *data_mime_type,
+                                const char *data,
+                                size_t data_len);
+
+#endif
 
 #ifndef EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME
 /* hack for LE < 0.6.3 */
@@ -59,17 +201,19 @@ extern "C"
  */
 struct GNUNET_CONTAINER_BloomFilter;
 
+
 /**
  * @ingroup bloomfilter
- * Iterator over struct GNUNET_HashCodes.
+ * Iterator over `struct GNUNET_HashCode`.
  *
  * @param cls closure
  * @param next set to the next hash code
  * @return #GNUNET_YES if next was updated
  *         #GNUNET_NO if there are no more entries
  */
-typedef int (*GNUNET_HashCodeIterator) (void *cls,
-                                        struct GNUNET_HashCode *next);
+typedef int
+(*GNUNET_CONTAINER_HashCodeIterator) (void *cls,
+                                      struct GNUNET_HashCode *next);
 
 
 /**
@@ -121,7 +265,8 @@ GNUNET_CONTAINER_bloomfilter_init (const char *data,
  */
 int
 GNUNET_CONTAINER_bloomfilter_get_raw_data (const struct GNUNET_CONTAINER_BloomFilter *bf,
-                                           char *data, size_t size);
+                                           char *data,
+                                           size_t size);
 
 
 /**
@@ -194,6 +339,7 @@ GNUNET_CONTAINER_bloomfilter_free (struct GNUNET_CONTAINER_BloomFilter *bf);
 size_t
 GNUNET_CONTAINER_bloomfilter_get_element_addresses (const struct GNUNET_CONTAINER_BloomFilter *bf);
 
+
 /**
  * @ingroup bloomfilter
  * Get size of the bloom filter.
@@ -246,6 +392,7 @@ int
 GNUNET_CONTAINER_bloomfilter_or2 (struct GNUNET_CONTAINER_BloomFilter *bf,
                                   const struct GNUNET_CONTAINER_BloomFilter *to_or);
 
+
 /**
  * @ingroup bloomfilter
  * Resize a bloom filter.  Note that this operation
@@ -260,8 +407,9 @@ GNUNET_CONTAINER_bloomfilter_or2 (struct GNUNET_CONTAINER_BloomFilter *bf,
  */
 void
 GNUNET_CONTAINER_bloomfilter_resize (struct GNUNET_CONTAINER_BloomFilter *bf,
-                                     GNUNET_HashCodeIterator iterator,
-                                     void *iterator_cls, size_t size,
+                                     GNUNET_CONTAINER_HashCodeIterator iterator,
+                                     void *iterator_cls,
+                                     size_t size,
                                      unsigned int k);
 
 
@@ -272,6 +420,7 @@ GNUNET_CONTAINER_bloomfilter_resize (struct GNUNET_CONTAINER_BloomFilter *bf,
  * Meta data to associate with a file, directory or namespace.
  */
 struct GNUNET_CONTAINER_MetaData;
+
 
 /**
  * @ingroup metadata
@@ -291,8 +440,8 @@ GNUNET_CONTAINER_meta_data_create (void);
  * @return duplicate meta-data container
  */
 struct GNUNET_CONTAINER_MetaData *
-GNUNET_CONTAINER_meta_data_duplicate (const struct GNUNET_CONTAINER_MetaData
-                                      *md);
+GNUNET_CONTAINER_meta_data_duplicate (const struct GNUNET_CONTAINER_MetaData *md);
+
 
 /**
  * @ingroup metadata
@@ -343,7 +492,8 @@ GNUNET_CONTAINER_meta_data_insert (struct GNUNET_CONTAINER_MetaData *md,
                                    const char *plugin_name,
                                    enum EXTRACTOR_MetaType type,
                                    enum EXTRACTOR_MetaFormat format,
-                                   const char *data_mime_type, const char *data,
+                                   const char *data_mime_type,
+                                   const char *data,
                                    size_t data_size);
 
 
@@ -374,7 +524,8 @@ GNUNET_CONTAINER_meta_data_merge (struct GNUNET_CONTAINER_MetaData *md,
 int
 GNUNET_CONTAINER_meta_data_delete (struct GNUNET_CONTAINER_MetaData *md,
                                    enum EXTRACTOR_MetaType type,
-                                   const char *data, size_t data_size);
+                                   const char *data,
+                                   size_t data_size);
 
 
 /**
@@ -395,8 +546,7 @@ GNUNET_CONTAINER_meta_data_clear (struct GNUNET_CONTAINER_MetaData *md);
  * @param md metadata to modify
  */
 void
-GNUNET_CONTAINER_meta_data_add_publication_date (struct
-                                                 GNUNET_CONTAINER_MetaData *md);
+GNUNET_CONTAINER_meta_data_add_publication_date (struct GNUNET_CONTAINER_MetaData *md);
 
 
 /**
@@ -427,8 +577,8 @@ GNUNET_CONTAINER_meta_data_iterate (const struct GNUNET_CONTAINER_MetaData *md,
  * @return NULL if no entry was found
  */
 char *
-GNUNET_CONTAINER_meta_data_get_by_type (const struct GNUNET_CONTAINER_MetaData
-                                        *md, enum EXTRACTOR_MetaType type);
+GNUNET_CONTAINER_meta_data_get_by_type (const struct GNUNET_CONTAINER_MetaData *md,
+                                        enum EXTRACTOR_MetaType type);
 
 
 /**
@@ -444,8 +594,7 @@ GNUNET_CONTAINER_meta_data_get_by_type (const struct GNUNET_CONTAINER_MetaData
  *  otherwise client is responsible for freeing the value!
  */
 char *
-GNUNET_CONTAINER_meta_data_get_first_by_types (const struct
-                                               GNUNET_CONTAINER_MetaData *md,
+GNUNET_CONTAINER_meta_data_get_first_by_types (const struct GNUNET_CONTAINER_MetaData *md,
                                                ...);
 
 /**
@@ -459,8 +608,8 @@ GNUNET_CONTAINER_meta_data_get_first_by_types (const struct
  * @return number of bytes in thumbnail, 0 if not available
  */
 size_t
-GNUNET_CONTAINER_meta_data_get_thumbnail (const struct GNUNET_CONTAINER_MetaData
-                                          *md, unsigned char **thumb);
+GNUNET_CONTAINER_meta_data_get_thumbnail (const struct GNUNET_CONTAINER_MetaData *md,
+                                          unsigned char **thumb);
 
 
 
@@ -507,11 +656,10 @@ enum GNUNET_CONTAINER_MetaDataSerializationOptions
  *         space)
  */
 ssize_t
-GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
-                                      *md, char **target, size_t max,
-                                      enum
-                                      GNUNET_CONTAINER_MetaDataSerializationOptions
-                                      opt);
+GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData *md,
+                                      char **target,
+                                      size_t max,
+                                      enum GNUNET_CONTAINER_MetaDataSerializationOptions opt);
 
 
 /**
@@ -522,8 +670,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
  * @return number of bytes needed for serialization, -1 on error
  */
 ssize_t
-GNUNET_CONTAINER_meta_data_get_serialized_size (const struct
-                                                GNUNET_CONTAINER_MetaData *md);
+GNUNET_CONTAINER_meta_data_get_serialized_size (const struct GNUNET_CONTAINER_MetaData *md);
 
 
 /**
@@ -536,7 +683,8 @@ GNUNET_CONTAINER_meta_data_get_serialized_size (const struct
  *         bad format)
  */
 struct GNUNET_CONTAINER_MetaData *
-GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size);
+GNUNET_CONTAINER_meta_data_deserialize (const char *input,
+                                        size_t size);
 
 
 /* ******************************* HashMap **************************** */
@@ -606,9 +754,10 @@ enum GNUNET_CONTAINER_MultiHashMapOption
  *         iterate,
  *         #GNUNET_NO if not.
  */
-typedef int (*GNUNET_CONTAINER_HashMapIterator) (void *cls,
-                                                 const struct GNUNET_HashCode *key,
-                                                 void *value);
+typedef int
+(*GNUNET_CONTAINER_HashMapIterator) (void *cls,
+                                     const struct GNUNET_HashCode *key,
+                                     void *value);
 
 
 /**
@@ -692,6 +841,18 @@ GNUNET_CONTAINER_multihashmap_remove_all (struct GNUNET_CONTAINER_MultiHashMap *
 
 /**
  * @ingroup hashmap
+ * Remove all entries from the map.
+ * Note that the values would not be "freed".
+ *
+ * @param map the map
+ * @return number of values removed
+ */
+unsigned int
+GNUNET_CONTAINER_multihashmap_clear (struct GNUNET_CONTAINER_MultiHashMap *map);
+
+
+/**
+ * @ingroup hashmap
  * Check if the map contains any value under the given
  * key (including values that are NULL).
  *
@@ -750,8 +911,7 @@ GNUNET_CONTAINER_multihashmap_put (struct GNUNET_CONTAINER_MultiHashMap *map,
  * @return the number of key value pairs
  */
 unsigned int
-GNUNET_CONTAINER_multihashmap_size (const struct GNUNET_CONTAINER_MultiHashMap
-                                    *map);
+GNUNET_CONTAINER_multihashmap_size (const struct GNUNET_CONTAINER_MultiHashMap *map);
 
 
 /**
@@ -765,8 +925,7 @@ GNUNET_CONTAINER_multihashmap_size (const struct GNUNET_CONTAINER_MultiHashMap
  *         #GNUNET_SYSERR if it aborted iteration
  */
 int
-GNUNET_CONTAINER_multihashmap_iterate (const struct
-                                       GNUNET_CONTAINER_MultiHashMap *map,
+GNUNET_CONTAINER_multihashmap_iterate (const struct GNUNET_CONTAINER_MultiHashMap *map,
                                        GNUNET_CONTAINER_HashMapIterator it,
                                        void *it_cls);
 
@@ -831,11 +990,27 @@ GNUNET_CONTAINER_multihashmap_iterator_destroy (struct GNUNET_CONTAINER_MultiHas
  *         #GNUNET_SYSERR if it aborted iteration
  */
 int
-GNUNET_CONTAINER_multihashmap_get_multiple (const struct
-                                            GNUNET_CONTAINER_MultiHashMap *map,
-                                            const struct GNUNET_HashCode * key,
+GNUNET_CONTAINER_multihashmap_get_multiple (const struct GNUNET_CONTAINER_MultiHashMap *map,
+                                            const struct GNUNET_HashCode *key,
                                             GNUNET_CONTAINER_HashMapIterator it,
                                             void *it_cls);
+
+
+/**
+ * @ingroup hashmap
+ * Call @a it on a random value from the map, or not at all
+ * if the map is empty.  Note that this function has linear
+ * complexity (in the size of the map).
+ *
+ * @param map the map
+ * @param it function to call on a random entry
+ * @param it_cls extra argument to @a it
+ * @return the number of key value pairs processed, zero or one.
+ */
+unsigned int
+GNUNET_CONTAINER_multihashmap_get_random (const struct GNUNET_CONTAINER_MultiHashMap *map,
+                                          GNUNET_CONTAINER_HashMapIterator it,
+                                          void *it_cls);
 
 
 /* ***************** Version of Multihashmap for peer identities ****************** */
@@ -851,12 +1026,18 @@ GNUNET_CONTAINER_multihashmap_get_multiple (const struct
  *         iterate,
  *         #GNUNET_NO if not.
  */
-typedef int (*GNUNET_CONTAINER_PeerMapIterator) (void *cls,
-                                                 const struct GNUNET_PeerIdentity *key,
-                                                 void *value);
+typedef int
+(*GNUNET_CONTAINER_PeerMapIterator) (void *cls,
+                                     const struct GNUNET_PeerIdentity *key,
+                                     void *value);
 
 
+/**
+ * Hash map from peer identities to values.
+ */
 struct GNUNET_CONTAINER_MultiPeerMap;
+
+
 /**
  * @ingroup hashmap
  * Create a multi peer map (hash map for public keys of peers).
@@ -1081,6 +1262,291 @@ GNUNET_CONTAINER_multipeermap_get_multiple (const struct GNUNET_CONTAINER_MultiP
                                             GNUNET_CONTAINER_PeerMapIterator it,
                                             void *it_cls);
 
+
+/**
+ * @ingroup hashmap
+ * Call @a it on a random value from the map, or not at all
+ * if the map is empty.  Note that this function has linear
+ * complexity (in the size of the map).
+ *
+ * @param map the map
+ * @param it function to call on a random entry
+ * @param it_cls extra argument to @a it
+ * @return the number of key value pairs processed, zero or one.
+ */
+unsigned int
+GNUNET_CONTAINER_multipeermap_get_random (const struct GNUNET_CONTAINER_MultiPeerMap *map,
+                                          GNUNET_CONTAINER_PeerMapIterator it,
+                                          void *it_cls);
+
+
+/* ***************** Version of Multihashmap for short hashes ****************** */
+
+/**
+ * @ingroup hashmap
+ * Iterator over hash map entries.
+ *
+ * @param cls closure
+ * @param key current public key
+ * @param value value in the hash map
+ * @return #GNUNET_YES if we should continue to
+ *         iterate,
+ *         #GNUNET_NO if not.
+ */
+typedef int
+(*GNUNET_CONTAINER_ShortmapIterator) (void *cls,
+                                     const struct GNUNET_ShortHashCode *key,
+                                     void *value);
+
+
+/**
+ * Hash map from peer identities to values.
+ */
+struct GNUNET_CONTAINER_MultiShortmap;
+
+
+/**
+ * @ingroup hashmap
+ * Create a multi peer map (hash map for public keys of peers).
+ *
+ * @param len initial size (map will grow as needed)
+ * @param do_not_copy_keys #GNUNET_NO is always safe and should be used by default;
+ *                         #GNUNET_YES means that on 'put', the 'key' does not have
+ *                         to be copied as the destination of the pointer is
+ *                         guaranteed to be life as long as the value is stored in
+ *                         the hashmap.  This can significantly reduce memory
+ *                         consumption, but of course is also a recipie for
+ *                         heap corruption if the assumption is not true.  Only
+ *                         use this if (1) memory use is important in this case and
+ *                         (2) you have triple-checked that the invariant holds
+ * @return NULL on error
+ */
+struct GNUNET_CONTAINER_MultiShortmap *
+GNUNET_CONTAINER_multishortmap_create (unsigned int len,
+                                       int do_not_copy_keys);
+
+
+/**
+ * @ingroup hashmap
+ * Destroy a hash map.  Will not free any values
+ * stored in the hash map!
+ *
+ * @param map the map
+ */
+void
+GNUNET_CONTAINER_multishortmap_destroy (struct GNUNET_CONTAINER_MultiShortmap *map);
+
+
+/**
+ * @ingroup hashmap
+ * Given a key find a value in the map matching the key.
+ *
+ * @param map the map
+ * @param key what to look for
+ * @return NULL if no value was found; note that
+ *   this is indistinguishable from values that just
+ *   happen to be NULL; use "contains" to test for
+ *   key-value pairs with value NULL
+ */
+void *
+GNUNET_CONTAINER_multishortmap_get (const struct GNUNET_CONTAINER_MultiShortmap *map,
+                                    const struct GNUNET_ShortHashCode *key);
+
+
+/**
+ * @ingroup hashmap
+ * Remove the given key-value pair from the map.  Note that if the
+ * key-value pair is in the map multiple times, only one of the pairs
+ * will be removed.
+ *
+ * @param map the map
+ * @param key key of the key-value pair
+ * @param value value of the key-value pair
+ * @return #GNUNET_YES on success, #GNUNET_NO if the key-value pair
+ *  is not in the map
+ */
+int
+GNUNET_CONTAINER_multishortmap_remove (struct GNUNET_CONTAINER_MultiShortmap *map,
+                                       const struct GNUNET_ShortHashCode * key,
+                                       const void *value);
+
+/**
+ * @ingroup hashmap
+ * Remove all entries for the given key from the map.
+ * Note that the values would not be "freed".
+ *
+ * @param map the map
+ * @param key identifies values to be removed
+ * @return number of values removed
+ */
+int
+GNUNET_CONTAINER_multishortmap_remove_all (struct GNUNET_CONTAINER_MultiShortmap *map,
+                                           const struct GNUNET_ShortHashCode *key);
+
+
+/**
+ * @ingroup hashmap
+ * Check if the map contains any value under the given
+ * key (including values that are NULL).
+ *
+ * @param map the map
+ * @param key the key to test if a value exists for it
+ * @return #GNUNET_YES if such a value exists,
+ *         #GNUNET_NO if not
+ */
+int
+GNUNET_CONTAINER_multishortmap_contains (const struct GNUNET_CONTAINER_MultiShortmap *map,
+                                         const struct GNUNET_ShortHashCode *key);
+
+
+/**
+ * @ingroup hashmap
+ * Check if the map contains the given value under the given
+ * key.
+ *
+ * @param map the map
+ * @param key the key to test if a value exists for it
+ * @param value value to test for
+ * @return #GNUNET_YES if such a value exists,
+ *         #GNUNET_NO if not
+ */
+int
+GNUNET_CONTAINER_multishortmap_contains_value (const struct GNUNET_CONTAINER_MultiShortmap *map,
+                                               const struct GNUNET_ShortHashCode * key,
+                                               const void *value);
+
+
+/**
+ * @ingroup hashmap
+ * Store a key-value pair in the map.
+ *
+ * @param map the map
+ * @param key key to use
+ * @param value value to use
+ * @param opt options for put
+ * @return #GNUNET_OK on success,
+ *         #GNUNET_NO if a value was replaced (with REPLACE)
+ *         #GNUNET_SYSERR if #GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY was the option and the
+ *                       value already exists
+ */
+int
+GNUNET_CONTAINER_multishortmap_put (struct GNUNET_CONTAINER_MultiShortmap *map,
+                                    const struct GNUNET_ShortHashCode *key,
+                                    void *value,
+                                    enum GNUNET_CONTAINER_MultiHashMapOption opt);
+
+
+/**
+ * @ingroup hashmap
+ * Get the number of key-value pairs in the map.
+ *
+ * @param map the map
+ * @return the number of key value pairs
+ */
+unsigned int
+GNUNET_CONTAINER_multishortmap_size (const struct GNUNET_CONTAINER_MultiShortmap *map);
+
+
+/**
+ * @ingroup hashmap
+ * Iterate over all entries in the map.
+ *
+ * @param map the map
+ * @param it function to call on each entry
+ * @param it_cls extra argument to @a it
+ * @return the number of key value pairs processed,
+ *         #GNUNET_SYSERR if it aborted iteration
+ */
+int
+GNUNET_CONTAINER_multishortmap_iterate (const struct GNUNET_CONTAINER_MultiShortmap *map,
+                                        GNUNET_CONTAINER_ShortmapIterator it,
+                                        void *it_cls);
+
+
+struct GNUNET_CONTAINER_MultiShortmapIterator;
+
+
+/**
+ * @ingroup hashmap
+ * Create an iterator for a multihashmap.
+ * The iterator can be used to retrieve all the elements in the multihashmap
+ * one by one, without having to handle all elements at once (in contrast to
+ * #GNUNET_CONTAINER_multishortmap_iterate).  Note that the iterator can not be
+ * used anymore if elements have been removed from @a map after the creation of
+ * the iterator, or 'map' has been destroyed.  Adding elements to @a map may
+ * result in skipped or repeated elements.
+ *
+ * @param map the map to create an iterator for
+ * @return an iterator over the given multihashmap @a map
+ */
+struct GNUNET_CONTAINER_MultiShortmapIterator *
+GNUNET_CONTAINER_multishortmap_iterator_create (const struct GNUNET_CONTAINER_MultiShortmap *map);
+
+
+/**
+ * @ingroup hashmap
+ * Retrieve the next element from the hash map at the iterator's
+ * position.  If there are no elements left, #GNUNET_NO is returned,
+ * and @a key and @a value are not modified.  This operation is only
+ * allowed if no elements have been removed from the multihashmap
+ * since the creation of @a iter, and the map has not been destroyed.
+ * Adding elements may result in repeating or skipping elements.
+ *
+ * @param iter the iterator to get the next element from
+ * @param key pointer to store the key in, can be NULL
+ * @param value pointer to store the value in, can be NULL
+ * @return #GNUNET_YES we returned an element,
+ *         #GNUNET_NO if we are out of elements
+ */
+int
+GNUNET_CONTAINER_multishortmap_iterator_next (struct GNUNET_CONTAINER_MultiShortmapIterator *iter,
+                                              struct GNUNET_ShortHashCode *key,
+                                              const void **value);
+
+
+/**
+ * @ingroup hashmap
+ * Destroy a multishortmap iterator.
+ *
+ * @param iter the iterator to destroy
+ */
+void
+GNUNET_CONTAINER_multishortmap_iterator_destroy (struct GNUNET_CONTAINER_MultiShortmapIterator *iter);
+
+
+/**
+ * @ingroup hashmap
+ * Iterate over all entries in the map that match a particular key.
+ *
+ * @param map the map
+ * @param key public key that the entries must correspond to
+ * @param it function to call on each entry
+ * @param it_cls extra argument to @a it
+ * @return the number of key value pairs processed,
+ *         #GNUNET_SYSERR if it aborted iteration
+ */
+int
+GNUNET_CONTAINER_multishortmap_get_multiple (const struct GNUNET_CONTAINER_MultiShortmap *map,
+                                             const struct GNUNET_ShortHashCode *key,
+                                             GNUNET_CONTAINER_ShortmapIterator it,
+                                             void *it_cls);
+
+
+/**
+ * @ingroup hashmap
+ * Call @a it on a random value from the map, or not at all
+ * if the map is empty.  Note that this function has linear
+ * complexity (in the size of the map).
+ *
+ * @param map the map
+ * @param it function to call on a random entry
+ * @param it_cls extra argument to @a it
+ * @return the number of key value pairs processed, zero or one.
+ */
+unsigned int
+GNUNET_CONTAINER_multishortmap_get_random (const struct GNUNET_CONTAINER_MultiShortmap *map,
+                                          GNUNET_CONTAINER_ShortmapIterator it,
+                                          void *it_cls);
 
 
 /* Version of multihashmap with 32 bit keys */
@@ -1602,6 +2068,59 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (struct GNUNET_CONTAINER_MultiH
 
 
 
+/**
+ * Insertion sort of @a element into DLL from @a head to @a tail
+ * sorted by @a comparator.
+ *
+ * @param TYPE element type of the elements, i.e. `struct ListElement`
+ * @param comparator function like memcmp() to compare elements; takes
+ *                   three arguments, the @a comparator_cls and two elements,
+ *                   returns an `int` (-1, 0 or 1)
+ * @param comparator_cls closure for @a comparator
+ * @param[in,out] head head of DLL
+ * @param[in,out] tail tail of DLL
+ * @param element element to insert
+ */
+#define GNUNET_CONTAINER_DLL_insert_sorted(TYPE,comparator,comparator_cls,head,tail,element) do { \
+  if ( (NULL == head) || \
+       (0 < comparator (comparator_cls, \
+                        element, \
+                        head)) ) \
+  { \
+    /* insert at head, element < head */ \
+    GNUNET_CONTAINER_DLL_insert (head,                                \
+                                 tail, \
+                                 element); \
+  } \
+  else \
+  {          \
+    TYPE *pos; \
+    \
+    for (pos = head; \
+         NULL != pos; \
+         pos = pos->next) \
+      if (0 < \
+          comparator (comparator_cls, \
+                      element, \
+                      pos)) \
+        break; /* element < pos */ \
+    if (NULL == pos) /* => element > tail */ \
+    { \
+      GNUNET_CONTAINER_DLL_insert_tail (head,                             \
+                                        tail, \
+                                        element); \
+    } \
+    else /* prev < element < pos */ \
+    { \
+      GNUNET_CONTAINER_DLL_insert_after (head, \
+                                         tail, \
+                                         pos->prev, \
+                                         element); \
+    } \
+  } \
+} while (0)
+
+
 /* ******************** Heap *************** */
 
 
@@ -1670,13 +2189,28 @@ GNUNET_CONTAINER_heap_destroy (struct GNUNET_CONTAINER_Heap *heap);
 
 /**
  * @ingroup heap
- * Get element stored at root of heap.
+ * Get element stored at the root of @a heap.
  *
- * @param heap heap to inspect
- * @return NULL if heap is empty
+ * @param heap  Heap to inspect.
+ * @return Element at the root, or NULL if heap is empty.
  */
 void *
 GNUNET_CONTAINER_heap_peek (const struct GNUNET_CONTAINER_Heap *heap);
+
+
+/**
+ * Get @a element and @a cost stored at the root of @a heap.
+ *
+ * @param[in]  heap     Heap to inspect.
+ * @param[out] element  Root element is returned here.
+ * @param[out] cost     Cost of @a element is returned here.
+ * @return #GNUNET_YES if an element is returned,
+ *         #GNUNET_NO  if the heap is empty.
+ */
+int
+GNUNET_CONTAINER_heap_peek2 (const struct GNUNET_CONTAINER_Heap *heap,
+                             void **element,
+                             GNUNET_CONTAINER_HeapCostType *cost);
 
 
 /**
@@ -1698,8 +2232,8 @@ GNUNET_CONTAINER_heap_get_size (const struct GNUNET_CONTAINER_Heap *heap);
  * @return cost of the node
  */
 GNUNET_CONTAINER_HeapCostType
-GNUNET_CONTAINER_heap_node_get_cost (const struct GNUNET_CONTAINER_HeapNode
-                                     *node);
+GNUNET_CONTAINER_heap_node_get_cost (const struct GNUNET_CONTAINER_HeapNode *node);
+
 
 /**
  * @ingroup heap
@@ -1712,11 +2246,11 @@ GNUNET_CONTAINER_heap_node_get_cost (const struct GNUNET_CONTAINER_HeapNode
  * @return #GNUNET_YES if we should continue to iterate,
  *         #GNUNET_NO if not.
  */
-typedef int (*GNUNET_CONTAINER_HeapIterator) (void *cls,
-                                              struct GNUNET_CONTAINER_HeapNode *
-                                              node, void *element,
-                                              GNUNET_CONTAINER_HeapCostType
-                                              cost);
+typedef int
+(*GNUNET_CONTAINER_HeapIterator) (void *cls,
+                                  struct GNUNET_CONTAINER_HeapNode *node,
+                                  void *element,
+                                  GNUNET_CONTAINER_HeapCostType cost);
 
 
 /**
@@ -1758,7 +2292,8 @@ GNUNET_CONTAINER_heap_walk_get_next (struct GNUNET_CONTAINER_Heap *heap);
  * @return node for the new element
  */
 struct GNUNET_CONTAINER_HeapNode *
-GNUNET_CONTAINER_heap_insert (struct GNUNET_CONTAINER_Heap *heap, void *element,
+GNUNET_CONTAINER_heap_insert (struct GNUNET_CONTAINER_Heap *heap,
+                              void *element,
                               GNUNET_CONTAINER_HeapCostType cost);
 
 
@@ -1788,259 +2323,12 @@ GNUNET_CONTAINER_heap_remove_node (struct GNUNET_CONTAINER_HeapNode *node);
  * @ingroup heap
  * Updates the cost of any node in the tree
  *
- * @param heap heap to modify
  * @param node node for which the cost is to be changed
  * @param new_cost new cost for the node
  */
 void
-GNUNET_CONTAINER_heap_update_cost (struct GNUNET_CONTAINER_Heap *heap,
-                                   struct GNUNET_CONTAINER_HeapNode *node,
+GNUNET_CONTAINER_heap_update_cost (struct GNUNET_CONTAINER_HeapNode *node,
                                    GNUNET_CONTAINER_HeapCostType new_cost);
-
-
-/* ******************** Singly linked list *************** */
-
-/**
- * Possible ways for how data stored in the linked list
- * might be allocated.
- * @deprecated use DLL macros
- */
-enum GNUNET_CONTAINER_SListDisposition
-{
-  /**
-   * Single-linked list must copy the buffer.
-   * @deprecated use DLL macros
-   */
-  GNUNET_CONTAINER_SLIST_DISPOSITION_TRANSIENT = 0,
-
-  /**
-   * Data is static, no need to copy or free.
-   * @deprecated use DLL macros
-   */
-  GNUNET_CONTAINER_SLIST_DISPOSITION_STATIC = 2,
-
-  /**
-   * Data is dynamic, do not copy but free when done.
-   * @deprecated use DLL macros
-   */
-  GNUNET_CONTAINER_SLIST_DISPOSITION_DYNAMIC = 4
-};
-
-struct GNUNET_CONTAINER_SList_Elem;
-
-
-/**
- * Handle to a singly linked list
- * @deprecated use DLL macros
- */
-struct GNUNET_CONTAINER_SList;
-
-/**
- * Handle to a singly linked list iterator
- * @deprecated use DLL macros
- */
-struct GNUNET_CONTAINER_SList_Iterator
-{
-  /**
-   * Linked list that we are iterating over.
-   */
-  struct GNUNET_CONTAINER_SList *list;
-
-  /**
-   * Last element accessed.
-   */
-  struct GNUNET_CONTAINER_SList_Elem *last;
-
-  /**
-   * Current list element.
-   */
-  struct GNUNET_CONTAINER_SList_Elem *elem;
-};
-
-
-
-/**
- * Add a new element to the list
- * @param l list
- * @param disp memory disposition
- * @param buf payload buffer
- * @param len length of the buffer
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_add (struct GNUNET_CONTAINER_SList *l,
-                            enum GNUNET_CONTAINER_SListDisposition disp,
-                            const void *buf, size_t len);
-
-
-/**
- * Add a new element to the end of the list
- * @param l list
- * @param disp memory disposition
- * @param buf payload buffer
- * @param len length of the buffer
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_add_end (struct GNUNET_CONTAINER_SList *l,
-                                enum GNUNET_CONTAINER_SListDisposition disp,
-                                const void *buf, size_t len);
-
-
-/**
- * Append a singly linked list to another
- * @param dst list to append to
- * @param src source
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_append (struct GNUNET_CONTAINER_SList *dst,
-                               struct GNUNET_CONTAINER_SList *src);
-
-
-/**
- * Create a new singly linked list
- * @return the new list
- * @deprecated use DLL macros
- */
-struct GNUNET_CONTAINER_SList *
-GNUNET_CONTAINER_slist_create (void);
-
-
-/**
- * Destroy a singly linked list
- * @param l the list to be destroyed
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_destroy (struct GNUNET_CONTAINER_SList *l);
-
-
-/**
- * Return the beginning of a list
- *
- * @param l list
- * @return iterator pointing to the beginning (by value! Either allocate the
- *   structure on the stack, or use GNUNET_malloc() yourself! All other
- *   functions do take pointer to this struct though)
- * @deprecated use DLL macros
- */
-struct GNUNET_CONTAINER_SList_Iterator
-GNUNET_CONTAINER_slist_begin (struct GNUNET_CONTAINER_SList *l);
-
-
-/**
- * Clear a list
- *
- * @param l list
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_clear (struct GNUNET_CONTAINER_SList *l);
-
-
-/**
- * Check if a list contains a certain element
- * @param l list
- * @param buf payload buffer to find
- * @param len length of the payload (number of bytes in buf)
- * @return GNUNET_YES if found, GNUNET_NO otherwise
- * @deprecated use DLL macros
- */
-int
-GNUNET_CONTAINER_slist_contains (const struct GNUNET_CONTAINER_SList *l,
-                                 const void *buf, size_t len);
-
-/**
- * Check if a list contains a certain element using 'compare' function
- *
- * @param l list
- * @param buf payload buffer to find
- * @param len length of the payload (number of bytes in buf)
- * @param compare comparison function
- *
- * @return NULL if the 'buf' could not be found, pointer to the
- *         list element, if found
- * @deprecated use DLL macros
- */
-void *
-GNUNET_CONTAINER_slist_contains2 (const struct GNUNET_CONTAINER_SList *l,
-                                  const void *buf, size_t len,
-                                  int (*compare)(const void *, const size_t, const void *, const size_t));
-/**
- * Count the elements of a list
- * @param l list
- * @return number of elements in the list
- * @deprecated use DLL macros
- */
-int
-GNUNET_CONTAINER_slist_count (const struct GNUNET_CONTAINER_SList *l);
-
-
-/**
- * Remove an element from the list
- * @param i iterator that points to the element to be removed
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_erase (struct GNUNET_CONTAINER_SList_Iterator *i);
-
-
-/**
- * Insert an element into a list at a specific position
- * @param before where to insert the new element
- * @param disp memory disposition
- * @param buf payload buffer
- * @param len length of the payload
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_insert (struct GNUNET_CONTAINER_SList_Iterator *before,
-                               enum GNUNET_CONTAINER_SListDisposition disp,
-                               const void *buf, size_t len);
-
-
-/**
- * Advance an iterator to the next element
- * @param i iterator
- * @return GNUNET_YES on success, GNUNET_NO if the end has been reached
- * @deprecated use DLL macros
- */
-int
-GNUNET_CONTAINER_slist_next (struct GNUNET_CONTAINER_SList_Iterator *i);
-
-
-/**
- * Check if an iterator points beyond the end of a list
- * @param i iterator
- * @return GNUNET_YES if the end has been reached, GNUNET_NO if the iterator
- *         points to a valid element
- * @deprecated use DLL macros
- */
-int
-GNUNET_CONTAINER_slist_end (struct GNUNET_CONTAINER_SList_Iterator *i);
-
-
-/**
- * Retrieve the element at a specific position in a list
- *
- * @param i iterator
- * @param len set to the payload length
- * @return payload
- * @deprecated use DLL macros
- */
-void *
-GNUNET_CONTAINER_slist_get (const struct GNUNET_CONTAINER_SList_Iterator *i,
-                            size_t *len);
-
-
-/**
- * Release an iterator
- * @param i iterator
- * @deprecated use DLL macros
- */
-void
-GNUNET_CONTAINER_slist_iter_destroy (struct GNUNET_CONTAINER_SList_Iterator *i);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

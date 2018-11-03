@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -26,10 +21,97 @@
 
 #include "platform.h"
 #include "gnunet_util_lib.h"
+#if HAVE_EXTRACTOR_H
 #include <extractor.h>
+#endif
 #include <zlib.h>
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-container-meta-data", __VA_ARGS__)
+
+
+
+/**
+ * Try to compress the given block of data using libz.  Only returns
+ * the compressed block if compression worked and the new block is
+ * actually smaller.  Decompress using #GNUNET_decompress().
+ *
+ * @param data block to compress; if compression
+ *        resulted in a smaller block, the first
+ *        bytes of data are updated to the compressed
+ *        data
+ * @param old_size number of bytes in data
+ * @param[out] result set to the compressed data, if compression worked
+ * @param[out] new_size set to size of result, if compression worked
+ * @return #GNUNET_YES if compression reduce the size,
+ *         #GNUNET_NO if compression did not help
+ */
+int
+GNUNET_try_compression (const char *data,
+                        size_t old_size,
+                        char **result,
+                        size_t *new_size)
+{
+  char *tmp;
+  uLongf dlen;
+
+  *result = NULL;
+  *new_size = 0;
+#ifdef compressBound
+  dlen = compressBound (old_size);
+#else
+  dlen = old_size + (old_size / 100) + 20;
+  /* documentation says 100.1% oldSize + 12 bytes, but we
+   * should be able to overshoot by more to be safe */
+#endif
+  tmp = GNUNET_malloc (dlen);
+  if (Z_OK ==
+      compress2 ((Bytef *) tmp,
+                 &dlen,
+                 (const Bytef *) data,
+                 old_size, 9))
+  {
+    if (dlen < old_size)
+    {
+      *result = tmp;
+      *new_size = dlen;
+      return GNUNET_YES;
+    }
+  }
+  GNUNET_free (tmp);
+  return GNUNET_NO;
+}
+
+
+/**
+ * Decompress input, return the decompressed data as output.  Dual to
+ * #GNUNET_try_compression(). Caller must set @a output_size to the
+ * number of bytes that were originally compressed.
+ *
+ * @param input compressed data
+ * @param input_size number of bytes in input
+ * @param output_size expected size of the output
+ * @return NULL on error, buffer of @a output_size decompressed bytes otherwise
+ */
+char *
+GNUNET_decompress (const char *input,
+                   size_t input_size,
+                   size_t output_size)
+{
+  char *output;
+  uLongf olen;
+
+  olen = output_size;
+  output = GNUNET_malloc (olen);
+  if (Z_OK ==
+      uncompress ((Bytef *) output,
+                  &olen,
+                  (const Bytef *) input,
+                  input_size))
+    return output;
+  GNUNET_free (output);
+  return NULL;
+}
+
 
 /**
  * Meta data item.
@@ -319,7 +401,7 @@ GNUNET_CONTAINER_meta_data_insert (struct GNUNET_CONTAINER_MetaData *md,
       (NULL == data_mime_type) ? NULL : GNUNET_strdup (data_mime_type);
   mi->plugin_name = (NULL == plugin_name) ? NULL : GNUNET_strdup (plugin_name);
   mi->data = GNUNET_malloc (data_size);
-  memcpy (mi->data, data, data_size);
+  GNUNET_memcpy (mi->data, data, data_size);
   /* change all dir separators to POSIX style ('/') */
   if ( (EXTRACTOR_METATYPE_FILENAME == type) ||
        (EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME == type) )
@@ -432,7 +514,8 @@ GNUNET_CONTAINER_meta_data_add_publication_date (struct
   struct GNUNET_TIME_Absolute t;
 
   t = GNUNET_TIME_absolute_get ();
-  GNUNET_CONTAINER_meta_data_delete (md, EXTRACTOR_METATYPE_PUBLICATION_DATE,
+  GNUNET_CONTAINER_meta_data_delete (md,
+                                     EXTRACTOR_METATYPE_PUBLICATION_DATE,
                                      NULL, 0);
   dat = GNUNET_STRINGS_absolute_time_to_string (t);
   GNUNET_CONTAINER_meta_data_insert (md, "<gnunet>",
@@ -481,8 +564,8 @@ GNUNET_CONTAINER_meta_data_iterate (const struct GNUNET_CONTAINER_MetaData *md,
  * @return NULL if no entry was found
  */
 char *
-GNUNET_CONTAINER_meta_data_get_by_type (const struct GNUNET_CONTAINER_MetaData
-                                        *md, enum EXTRACTOR_MetaType type)
+GNUNET_CONTAINER_meta_data_get_by_type (const struct GNUNET_CONTAINER_MetaData *md,
+                                        enum EXTRACTOR_MetaType type)
 {
   struct MetaItem *pos;
 
@@ -515,7 +598,7 @@ GNUNET_CONTAINER_meta_data_get_first_by_types (const struct
 {
   char *ret;
   va_list args;
-  enum EXTRACTOR_MetaType type;
+  int type;
 
   if (NULL == md)
     return NULL;
@@ -523,7 +606,7 @@ GNUNET_CONTAINER_meta_data_get_first_by_types (const struct
   va_start (args, md);
   while (1)
   {
-    type = va_arg (args, enum EXTRACTOR_MetaType);
+    type = va_arg (args, int);
     if (-1 == type)
       break;
     if (NULL != (ret = GNUNET_CONTAINER_meta_data_get_by_type (md, type)))
@@ -568,7 +651,7 @@ GNUNET_CONTAINER_meta_data_get_thumbnail (const struct GNUNET_CONTAINER_MetaData
   if ((NULL == match) || (0 == match->data_size))
     return 0;
   *thumb = GNUNET_malloc (match->data_size);
-  memcpy (*thumb, match->data, match->data_size);
+  GNUNET_memcpy (*thumb, match->data, match->data_size);
   return match->data_size;
 }
 
@@ -594,50 +677,6 @@ GNUNET_CONTAINER_meta_data_duplicate (const struct GNUNET_CONTAINER_MetaData
                                        pos->format, pos->mime_type, pos->data,
                                        pos->data_size);
   return ret;
-}
-
-
-
-/**
- * Try to compress the given block of data.
- *
- * @param data block to compress; if compression
- *        resulted in a smaller block, the first
- *        bytes of data are updated to the compressed
- *        data
- * @param oldSize number of bytes in data
- * @param result set to the compressed data
- * @param newSize set to size of result
- * @return #GNUNET_YES if compression reduce the size,
- *         #GNUNET_NO if compression did not help
- */
-static int
-try_compression (const char *data, size_t oldSize, char **result,
-                 size_t * newSize)
-{
-  char *tmp;
-  uLongf dlen;
-
-#ifdef compressBound
-  dlen = compressBound (oldSize);
-#else
-  dlen = oldSize + (oldSize / 100) + 20;
-  /* documentation says 100.1% oldSize + 12 bytes, but we
-   * should be able to overshoot by more to be safe */
-#endif
-  tmp = GNUNET_malloc (dlen);
-  if (Z_OK ==
-      compress2 ((Bytef *) tmp, &dlen, (const Bytef *) data, oldSize, 9))
-  {
-    if (dlen < oldSize)
-    {
-      *result = tmp;
-      *newSize = dlen;
-      return GNUNET_YES;
-    }
-  }
-  GNUNET_free (tmp);
-  return GNUNET_NO;
 }
 
 
@@ -772,7 +811,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
     {
       if (NULL == *target)
         *target = GNUNET_malloc (md->sbuf_size);
-      memcpy (*target, md->sbuf, md->sbuf_size);
+      GNUNET_memcpy (*target, md->sbuf, md->sbuf_size);
       return md->sbuf_size;
     }
     if (0 == (opt & GNUNET_CONTAINER_META_DATA_SERIALIZE_PART))
@@ -824,13 +863,13 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
     if ((EXTRACTOR_METAFORMAT_UTF8 == pos->format) ||
         (EXTRACTOR_METAFORMAT_C_STRING == pos->format))
       GNUNET_break ('\0' == pos->data[pos->data_size - 1]);
-    memcpy (&mdata[off], pos->data, pos->data_size);
+    GNUNET_memcpy (&mdata[off], pos->data, pos->data_size);
     off -= plen;
     if (NULL != pos->plugin_name)
-      memcpy (&mdata[off], pos->plugin_name, plen);
+      GNUNET_memcpy (&mdata[off], pos->plugin_name, plen);
     off -= mlen;
     if (NULL != pos->mime_type)
-      memcpy (&mdata[off], pos->mime_type, mlen);
+      GNUNET_memcpy (&mdata[off], pos->mime_type, mlen);
     i++;
   }
   GNUNET_assert (0 == off);
@@ -843,7 +882,10 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
   {
     comp = GNUNET_NO;
     if (0 == (opt & GNUNET_CONTAINER_META_DATA_SERIALIZE_NO_COMPRESS))
-      comp = try_compression ((const char *) &ent[i], left, &cdata, &clen);
+      comp = GNUNET_try_compression ((const char *) &ent[i],
+                                     left,
+                                     &cdata,
+                                     &clen);
 
     if ((NULL == md->sbuf) && (0 == i))
     {
@@ -858,13 +900,13 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
       {
         GNUNET_assert (clen < left);
         hdr->version = htonl (2 | HEADER_COMPRESSED);
-        memcpy (&hdr[1], cdata, clen);
+        GNUNET_memcpy (&hdr[1], cdata, clen);
         vmd->sbuf_size = clen + sizeof (struct MetaDataHeader);
       }
       else
       {
         hdr->version = htonl (2);
-        memcpy (&hdr[1], &ent[0], left);
+        GNUNET_memcpy (&hdr[1], &ent[0], left);
         vmd->sbuf_size = left + sizeof (struct MetaDataHeader);
       }
       vmd->sbuf = (char *) hdr;
@@ -882,7 +924,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
         hdr->version = htonl (2 | HEADER_COMPRESSED);
         hdr->size = htonl (left);
         hdr->entries = htonl (md->item_count - i);
-        memcpy (&dst[sizeof (struct MetaDataHeader)], cdata, clen);
+        GNUNET_memcpy (&dst[sizeof (struct MetaDataHeader)], cdata, clen);
         GNUNET_free (cdata);
 	cdata = NULL;
         GNUNET_free (ent);
@@ -896,16 +938,16 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
         hdr->version = htonl (2);
         hdr->entries = htonl (md->item_count - i);
         hdr->size = htonl (left);
-        memcpy (&dst[sizeof (struct MetaDataHeader)], &ent[i], left);
+        GNUNET_memcpy (&dst[sizeof (struct MetaDataHeader)], &ent[i], left);
         GNUNET_free (ent);
         rlen = left + sizeof (struct MetaDataHeader);
       }
       if (NULL != *target)
       {
         if (GNUNET_YES == comp)
-          memcpy (*target, dst, clen + sizeof (struct MetaDataHeader));
+          GNUNET_memcpy (*target, dst, clen + sizeof (struct MetaDataHeader));
         else
-          memcpy (*target, dst, left + sizeof (struct MetaDataHeader));
+          GNUNET_memcpy (*target, dst, left + sizeof (struct MetaDataHeader));
         GNUNET_free (dst);
       }
       else
@@ -944,7 +986,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
   ihdr.size = htonl (0);
   if (NULL == *target)
     *target = (char *) GNUNET_new (struct MetaDataHeader);
-  memcpy (*target, &ihdr, sizeof (struct MetaDataHeader));
+  GNUNET_memcpy (*target, &ihdr, sizeof (struct MetaDataHeader));
   return sizeof (struct MetaDataHeader);
 }
 
@@ -971,32 +1013,6 @@ GNUNET_CONTAINER_meta_data_get_serialized_size (const struct
   if (-1 != ret)
     GNUNET_free (ptr);
   return ret;
-}
-
-
-/**
- * Decompress input, return the decompressed data
- * as output, set outputSize to the number of bytes
- * that were found.
- *
- * @param input compressed data
- * @param inputSize number of bytes in input
- * @param outputSize expected size of the output
- * @return NULL on error
- */
-static char *
-decompress (const char *input, size_t inputSize, size_t outputSize)
-{
-  char *output;
-  uLongf olen;
-
-  olen = outputSize;
-  output = GNUNET_malloc (olen);
-  if (Z_OK ==
-      uncompress ((Bytef *) output, &olen, (const Bytef *) input, inputSize))
-    return output;
-  GNUNET_free (output);
-  return NULL;
 }
 
 
@@ -1033,7 +1049,7 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
 
   if (size < sizeof (struct MetaDataHeader))
     return NULL;
-  memcpy (&hdr, input, sizeof (struct MetaDataHeader));
+  GNUNET_memcpy (&hdr, input, sizeof (struct MetaDataHeader));
   version = ntohl (hdr.version) & HEADER_VERSION_MASK;
   compressed = (ntohl (hdr.version) & HEADER_COMPRESSED) != 0;
 
@@ -1047,7 +1063,9 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
 
   ic = ntohl (hdr.entries);
   dataSize = ntohl (hdr.size);
-  if ((sizeof (struct MetaDataEntry) * ic) > dataSize)
+  if ( ((sizeof (struct MetaDataEntry) * ic) > dataSize) ||
+       ( (0 != ic) &&
+         (dataSize / ic < sizeof (struct MetaDataEntry)) ) )
   {
     GNUNET_break_op (0);
     return NULL;
@@ -1063,8 +1081,9 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
       return NULL;
     }
     data =
-        decompress ((const char *) &input[sizeof (struct MetaDataHeader)],
-                    size - sizeof (struct MetaDataHeader), dataSize);
+      GNUNET_decompress ((const char *) &input[sizeof (struct MetaDataHeader)],
+                         size - sizeof (struct MetaDataHeader),
+                         dataSize);
     if (NULL == data)
     {
       GNUNET_break_op (0);
@@ -1088,7 +1107,7 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
   mdata = &cdata[ic * sizeof (struct MetaDataEntry)];
   for (i = 0; i < ic; i++)
   {
-    memcpy (&ent, &cdata[i * sizeof (struct MetaDataEntry)],
+    GNUNET_memcpy (&ent, &cdata[i * sizeof (struct MetaDataEntry)],
             sizeof (struct MetaDataEntry));
     format = (enum EXTRACTOR_MetaFormat) ntohl (ent.format);
     if ((EXTRACTOR_METAFORMAT_UTF8 != format) &&

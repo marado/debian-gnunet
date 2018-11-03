@@ -1,6 +1,6 @@
 /*
      This file is part of PlibC.
-     (C) 2005, 2006, 2007, 2008, 2009, 2010 Nils Durner (and other contributing authors)
+     Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Nils Durner (and other contributing authors)
 
 	   This library is free software; you can redistribute it and/or
 	   modify it under the terms of the GNU Lesser General Public
@@ -14,15 +14,17 @@
 
 	   You should have received a copy of the GNU Lesser General Public
 	   License along with this library; if not, write to the Free Software
-	   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+	   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /**
- * @file include/plibc.h
- * @brief PlibC header
+ * @file
+ * PlibC header
+ *
  * @attention This file is usually not installed under Unix,
  *            so ship it with your application
- * @version $Revision$
+ *
+ * @version $Revision: 158 $
  */
 
 #ifndef _PLIBC_H_
@@ -425,17 +427,39 @@ struct statfs
 #define LOCK_UN  8       /* remove lock */
 
 /* Not supported under MinGW */
+#ifndef S_IRGRP
 #define S_IRGRP 0
+#endif
+#ifndef S_IWGRP
 #define S_IWGRP 0
+#endif
+#ifndef S_IROTH
 #define S_IROTH 0
+#endif
+#ifndef S_IXGRP
 #define S_IXGRP 0
+#endif
+#ifndef S_IWOTH
 #define S_IWOTH 0
+#endif
+#ifndef S_IXOTH
 #define S_IXOTH 0
+#endif
+#ifndef S_ISUID
 #define S_ISUID 0
+#endif
+#ifndef S_ISGID
 #define S_ISGID 0
+#endif
+#ifndef S_ISVTX
 #define S_ISVTX 0
+#endif
+#ifndef S_IRWXG
 #define S_IRWXG 0
+#endif
+#ifndef S_IRWXO
 #define S_IRWXO 0
+#endif
 
 #define SHUT_WR SD_SEND
 #define SHUT_RD SD_RECEIVE
@@ -522,7 +546,7 @@ int _win_ftruncate(int fildes, off_t length);
 int _win_truncate(const char *fname, int distance);
 int _win_kill(pid_t pid, int sig);
 int _win_pipe(int *phandles);
-intptr_t _win_mkfifo(const char *path, mode_t mode);
+int _win_mkfifo(const char *path, mode_t mode);
 int _win_rmdir(const char *path);
 int _win_access( const char *path, int mode );
 int _win_chmod(const char *filename, int pmode);

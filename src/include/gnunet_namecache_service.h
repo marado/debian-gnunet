@@ -1,30 +1,34 @@
 /*
      This file is part of GNUnet
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013, 2016 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_namecache_service.h
- * @brief API that can be used to store naming information on a GNUnet node;
- *        Naming information can either be records for which this peer/user
- *        is authoritative, or blocks which are cached, encrypted naming
- *        data from other peers.
  * @author Christian Grothoff
+ *
+ * @file
+ * API that can be used to store naming information on a GNUnet node.
+ *
+ * @defgroup namecache  Name Cache service
+ * Store naming information on a GNUnet node.
+ *
+ * Naming information can either be records for which this peer/user is
+ * authoritative, or blocks which are cached, encrypted naming data from other
+ * peers.
+ *
+ * @see [Documentation](https://gnunet.org/namecache-subsystem)
+ *
+ * @{
  */
 #ifndef GNUNET_NAMECACHE_SERVICE_H
 #define GNUNET_NAMECACHE_SERVICE_H
@@ -89,9 +93,10 @@ GNUNET_NAMECACHE_disconnect (struct GNUNET_NAMECACHE_Handle *h);
  *                #GNUNET_YES (or other positive value) on success
  * @param emsg NULL on success, otherwise an error message
  */
-typedef void (*GNUNET_NAMECACHE_ContinuationWithStatus) (void *cls,
-                                                         int32_t success,
-                                                         const char *emsg);
+typedef void
+(*GNUNET_NAMECACHE_ContinuationWithStatus) (void *cls,
+                                            int32_t success,
+                                            const char *emsg);
 
 
 
@@ -103,7 +108,7 @@ typedef void (*GNUNET_NAMECACHE_ContinuationWithStatus) (void *cls,
  * @param block block to store
  * @param cont continuation to call when done
  * @param cont_cls closure for @a cont
- * @return handle to abort the request
+ * @return handle to abort the request, NULL on error
  */
 struct GNUNET_NAMECACHE_QueueEntry *
 GNUNET_NAMECACHE_block_cache (struct GNUNET_NAMECACHE_Handle *h,
@@ -118,8 +123,9 @@ GNUNET_NAMECACHE_block_cache (struct GNUNET_NAMECACHE_Handle *h,
  * @param cls closure
  * @param block block that was stored in the namecache
  */
-typedef void (*GNUNET_NAMECACHE_BlockProcessor) (void *cls,
-						 const struct GNUNET_GNSRECORD_Block *block);
+typedef void
+(*GNUNET_NAMECACHE_BlockProcessor) (void *cls,
+                                    const struct GNUNET_GNSRECORD_Block *block);
 
 
 /**
@@ -132,12 +138,13 @@ typedef void (*GNUNET_NAMECACHE_BlockProcessor) (void *cls,
  * @param proc function to call on the matching block, or with
  *        NULL if there is no matching block
  * @param proc_cls closure for @a proc
- * @return a handle that can be used to cancel
+ * @return a handle that can be used to cancel, NULL on error
  */
 struct GNUNET_NAMECACHE_QueueEntry *
 GNUNET_NAMECACHE_lookup_block (struct GNUNET_NAMECACHE_Handle *h,
 			       const struct GNUNET_HashCode *derived_hash,
-			       GNUNET_NAMECACHE_BlockProcessor proc, void *proc_cls);
+			       GNUNET_NAMECACHE_BlockProcessor proc,
+                               void *proc_cls);
 
 
 /**
@@ -159,5 +166,6 @@ GNUNET_NAMECACHE_cancel (struct GNUNET_NAMECACHE_QueueEntry *qe);
 }
 #endif
 
-/* end of gnunet_namecache_service.h */
 #endif
+
+/** @} */  /* end of group */

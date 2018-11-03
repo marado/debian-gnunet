@@ -1,21 +1,16 @@
 /*
-     This file is part of GNUnet.
-     (C) 2010,2011 Christian Grothoff (and other contributing authors)
+  This file is part of GNUnet.
+  Copyright (C) 2010-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
-     GNUnet is distributed in the hope that it will be useful, but
-     WITHOUT ANY WARRANTY; without even the implied warranty of
-     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+  GNUnet is distributed in the hope that it will be useful, but
+  WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Affero General Public License for more details.
 */
 
 /**
@@ -26,6 +21,7 @@
 #include "platform.h"
 #include "gnunet-service-transport.h"
 #include "gnunet-service-transport_hello.h"
+#include "gnunet-service-transport_ats.h"
 #include "gnunet-service-transport_plugins.h"
 
 /**
@@ -78,6 +74,48 @@ static struct TransportPlugin *plugins_head;
 static struct TransportPlugin *plugins_tail;
 
 
+/**
+ * Function that will be called to update metrics for an address
+ *
+ * @param cls closure
+ * @param address address to update metrics for
+ * @param session the session
+ * @param distance new distance
+ */
+static void
+plugin_env_update_distance (void *cls,
+                            const struct GNUNET_HELLO_Address *address,
+                            uint32_t distance)
+{
+  GST_ats_update_distance (address,
+                           distance);
+}
+
+
+/**
+ * Function that will be called to figure if an address is an loopback,
+ * LAN, WAN etc. address
+ *
+ * @param cls closure
+ * @param addr binary address
+ * @param addrlen length of the @a addr
+ * @return type of the network @a addr belongs to
+ */
+static enum GNUNET_ATS_Network_Type
+plugin_env_address_to_type (void *cls,
+                            const struct sockaddr *addr,
+                            size_t addrlen)
+{
+  if (NULL == GST_is)
+  {
+    GNUNET_break(0);
+    return GNUNET_ATS_NET_UNSPECIFIED;
+  }
+  return GNUNET_ATS_scanner_address_get_type (GST_is,
+                                              addr,
+                                              addrlen);
+}
+
 
 /**
  * Load and initialize all plugins.  The respective functions will be
@@ -86,23 +124,16 @@ static struct TransportPlugin *plugins_tail;
  * plugin that caused the call.
  *
  * @param recv_cb function to call when data is received
- * @param register_quota_cb function to call to register a quota callback
- * @param unregister_quota_cb function to call to unregister a quota callback
  * @param address_cb function to call when our public addresses changed
  * @param session_start_cb function to call when a session was created
  * @param session_end_cb function to call when a session was terminated
  * @param address_type_cb function to call when a address type is requested
- * @param metric_update_cb function to call when address metrics change
  */
 void
 GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
-                  GNUNET_TRANSPORT_RegisterQuotaNotification register_quota_cb,
-                  GNUNET_TRANSPORT_UnregisterQuotaNotification unregister_quota_cb,
                   GNUNET_TRANSPORT_AddressNotification address_cb,
                   GNUNET_TRANSPORT_SessionStart session_start_cb,
-                  GNUNET_TRANSPORT_SessionEnd session_end_cb,
-                  GNUNET_TRANSPORT_AddressToType address_type_cb,
-                  GNUNET_TRANSPORT_UpdateAddressMetrics metric_update_cb)
+                  GNUNET_TRANSPORT_SessionEnd session_end_cb)
 {
   struct TransportPlugin *plug;
   struct TransportPlugin *next;
@@ -113,15 +144,19 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
   int fail;
 
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_number (GST_cfg, "TRANSPORT",
-                                             "NEIGHBOUR_LIMIT", &tneigh))
+      GNUNET_CONFIGURATION_get_value_number (GST_cfg,
+                                             "TRANSPORT",
+                                             "NEIGHBOUR_LIMIT",
+                                             &tneigh))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _("Transport service is lacking NEIGHBOUR_LIMIT option.\n"));
     return;
   }
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (GST_cfg, "TRANSPORT", "PLUGINS",
+      GNUNET_CONFIGURATION_get_value_string (GST_cfg,
+                                             "TRANSPORT",
+                                             "PLUGINS",
                                              &plugs))
     return;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -132,7 +167,9 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 _("Loading `%s' transport plugin\n"),
                 pos);
-    GNUNET_asprintf (&libname, "libgnunet_plugin_transport_%s", pos);
+    GNUNET_asprintf (&libname,
+                     "libgnunet_plugin_transport_%s",
+                     pos);
     plug = GNUNET_new (struct TransportPlugin);
     plug->short_name = GNUNET_strdup (pos);
     plug->lib_name = libname;
@@ -144,27 +181,30 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     plug->env.notify_address = address_cb;
     plug->env.session_start = session_start_cb;
     plug->env.session_end = session_end_cb;
-    plug->env.get_address_type = address_type_cb;
-    plug->env.update_address_metrics = metric_update_cb;
-    plug->env.register_quota_notification = register_quota_cb;
-    plug->env.unregister_quota_notification = unregister_quota_cb;
+    plug->env.get_address_type = &plugin_env_address_to_type;
+    plug->env.update_address_distance = &plugin_env_update_distance;
     plug->env.max_connections = tneigh;
     plug->env.stats = GST_stats;
-    GNUNET_CONTAINER_DLL_insert (plugins_head, plugins_tail, plug);
+    GNUNET_CONTAINER_DLL_insert (plugins_head,
+                                 plugins_tail,
+                                 plug);
   }
   GNUNET_free (plugs);
   next = plugins_head;
-  while (next != NULL)
+  while (NULL != next)
   {
     plug = next;
     next = plug->next;
-    plug->api = GNUNET_PLUGIN_load (plug->lib_name, &plug->env);
+    plug->api = GNUNET_PLUGIN_load (plug->lib_name,
+                                    &plug->env);
     if (NULL == plug->api)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   _("Failed to load transport plugin for `%s'\n"),
                   plug->lib_name);
-      GNUNET_CONTAINER_DLL_remove (plugins_head, plugins_tail, plug);
+      GNUNET_CONTAINER_DLL_remove (plugins_head,
+                                   plugins_tail,
+                                   plug);
       GNUNET_free (plug->short_name);
       GNUNET_free (plug->lib_name);
       GNUNET_free (plug);
@@ -197,7 +237,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     }
     if (NULL == plug->api->check_address)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   _("Missing function `%s' in transport plugin for `%s'\n"),
                   "check_address",
@@ -205,7 +245,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     }
     if (NULL == plug->api->get_session)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   _("Missing function `%s' in transport plugin for `%s'\n"),
                   "get_session",
@@ -213,7 +253,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     }
     if (NULL == plug->api->get_network)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   _("Missing function `%s' in transport plugin for `%s'\n"),
                   "get_network",
@@ -221,7 +261,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     }
     if (NULL == plug->api->send)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   _("Missing function `%s' in transport plugin for `%s'\n"),
                   "send",
@@ -265,7 +305,9 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
                   _("Did not load plugin `%s' due to missing functions\n"),
                   plug->lib_name);
       GNUNET_break (NULL == GNUNET_PLUGIN_unload (plug->lib_name, plug->api));
-      GNUNET_CONTAINER_DLL_remove (plugins_head, plugins_tail, plug);
+      GNUNET_CONTAINER_DLL_remove (plugins_head,
+                                   plugins_tail,
+                                   plug);
       GNUNET_free (plug->short_name);
       GNUNET_free (plug->lib_name);
       GNUNET_free (plug);
@@ -302,13 +344,14 @@ GST_plugins_unload ()
 struct GNUNET_TRANSPORT_PluginFunctions *
 GST_plugins_find (const char *name)
 {
-  struct TransportPlugin *head = plugins_head;
+  struct TransportPlugin *pos;
 
-  while ((head != NULL) && (0 != strcmp (name, head->short_name)))
-    head = head->next;
-  if (NULL == head)
+  for (pos = plugins_head; NULL != pos; pos = pos->next)
+    if (0 == strcmp (name, pos->short_name))
+      break;
+  if (NULL == pos)
     return NULL;
-  return head->api;
+  return pos->api;
 }
 
 
@@ -325,23 +368,19 @@ GST_plugins_find (const char *name)
 struct GNUNET_TRANSPORT_PluginFunctions *
 GST_plugins_printer_find (const char *name)
 {
-  struct TransportPlugin *head = plugins_head;
-
+  struct TransportPlugin *pos;
   char *stripped = GNUNET_strdup (name);
   char *sep = strchr (stripped, '_');
+
   if (NULL != sep)
     sep[0] = '\0';
-
-  while (head != NULL)
-  {
-    if (head->short_name == strstr (head->short_name, stripped))
+  for (pos = plugins_head; NULL != pos; pos = pos->next)
+    if (pos->short_name == strstr (pos->short_name, stripped))
         break;
-    head = head->next;
-  }
   GNUNET_free (stripped);
-  if (NULL == head)
+  if (NULL == pos)
     return NULL;
-  return head->api;
+  return pos->api;
 }
 
 
@@ -359,26 +398,54 @@ GST_plugins_a2s (const struct GNUNET_HELLO_Address *address)
   static char unable_to_show[1024];
   static const char *s;
 
-  if (address == NULL)
-  {
-  	GNUNET_break (0); /* a HELLO address cannot be NULL */
-    return "<invalid>";
-  }
+  if (NULL == address)
+    return "<NULL>";
   if (0 == address->address_length)
     return TRANSPORT_SESSION_INBOUND_STRING; /* Addresse with length 0 are inbound, address->address itself may be NULL */
   api = GST_plugins_printer_find (address->transport_name);
   if (NULL == api)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Failed to find transport plugin `%s'\n",
+                address->transport_name);
     return "<plugin unknown>";
+  }
   if (0 == address->address_length)
   {
-    GNUNET_snprintf (unable_to_show, sizeof (unable_to_show),
+    GNUNET_snprintf (unable_to_show,
+                     sizeof (unable_to_show),
                      "<unable to stringify %u-byte long address of %s transport>",
                      (unsigned int) address->address_length,
                      address->transport_name);
     return unable_to_show;
   }
-  return (NULL != (s = api->address_to_string (NULL, address->address,
-                                 address->address_length)) ? s : "<invalid>");
+  return (NULL != (s = api->address_to_string (NULL,
+                                               address->address,
+                                               address->address_length))
+          ? s
+          : "<invalid>");
+}
+
+
+/**
+ * Register callback with all plugins to monitor their status.
+ *
+ * @param cb callback to register, NULL to unsubscribe
+ * @param cb_cls closure for @a cb
+ */
+void
+GST_plugins_monitor_subscribe (GNUNET_TRANSPORT_SessionInfoCallback cb,
+			       void *cb_cls)
+{
+  struct TransportPlugin *pos;
+
+  for (pos = plugins_head; NULL != pos; pos = pos->next)
+    if (NULL == pos->api->setup_monitor)
+      GNUNET_break (0);
+    else
+      pos->api->setup_monitor (pos->api->cls,
+			       cb,
+			       cb_cls);
 }
 
 

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/gnunet-directory.c
@@ -36,13 +31,17 @@ static int ret;
  * @param format format of data
  * @param data_mime_type mime type of data
  * @param data value of the meta data
- * @param data_size number of bytes in data
+ * @param data_size number of bytes in @a data
  * @return always 0 (to continue iterating)
  */
 static int
-item_printer (void *cls, const char *plugin_name, enum EXTRACTOR_MetaType type,
-              enum EXTRACTOR_MetaFormat format, const char *data_mime_type,
-              const char *data, size_t data_size)
+item_printer (void *cls,
+              const char *plugin_name,
+              enum EXTRACTOR_MetaType type,
+              enum EXTRACTOR_MetaFormat format,
+              const char *data_mime_type,
+              const char *data,
+              size_t data_size)
 {
   if (type == EXTRACTOR_METATYPE_GNUNET_FULL_DATA)
   {
@@ -55,9 +54,16 @@ item_printer (void *cls, const char *plugin_name, enum EXTRACTOR_MetaType type,
     return 0;
   if (type == EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME)
     return 0;
+#if HAVE_LIBEXTRACTOR
   printf ("\t%20s: %s\n",
           dgettext (LIBEXTRACTOR_GETTEXT_DOMAIN,
-                    EXTRACTOR_metatype_to_string (type)), data);
+                    EXTRACTOR_metatype_to_string (type)),
+    data);
+#else
+  printf ("\t%20d: %s\n",
+          type,
+          data);
+#endif
   return 0;
 }
 
@@ -91,19 +97,19 @@ print_entry (void *cls, const char *filename, const struct GNUNET_FS_Uri *uri,
                                               EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME);
   if (uri == NULL)
   {
-    printf (_("Directory `%s' meta data:\n"), name);
+    printf (_("Directory `%s' meta data:\n"), name ? name : "");
     GNUNET_CONTAINER_meta_data_iterate (meta, &item_printer, NULL);
     printf ("\n");
-    printf (_("Directory `%s' contents:\n"), name);
-    GNUNET_free (name);
+    printf (_("Directory `%s' contents:\n"), name ? name : "");
+    GNUNET_free_non_null (name);
     return;
   }
   string = GNUNET_FS_uri_to_string (uri);
-  printf ("%s (%s):\n", name, string);
+  printf ("%s (%s):\n", name ? name : "", string);
   GNUNET_free (string);
   GNUNET_CONTAINER_meta_data_iterate (meta, &item_printer, NULL);
   printf ("\n");
-  GNUNET_free (name);
+  GNUNET_free_non_null (name);
 }
 
 

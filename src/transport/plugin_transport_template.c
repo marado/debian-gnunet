@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2002-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -51,7 +46,7 @@ struct Plugin;
 /**
  * Session handle for connections.
  */
-struct Session
+struct GNUNET_ATS_Session
 {
   /**
    * To whom are we talking to (set to our identity
@@ -60,9 +55,9 @@ struct Session
   struct GNUNET_PeerIdentity sender;
 
   /**
-   * Stored in a linked list.
+   * Stored in a linked list (or a peer map, or ...)
    */
-  struct Session *next;
+  struct GNUNET_ATS_Session *next;
 
   /**
    * Pointer to the global plugin struct.
@@ -82,17 +77,17 @@ struct Session
   GNUNET_TRANSPORT_TransmitContinuation transmit_cont;
 
   /**
-   * Closure for transmit_cont.
+   * Closure for @e transmit_cont.
    */
   void *transmit_cont_cls;
 
   /**
-   * At what time did we reset last_received last?
+   * At what time did we reset @e last_received last?
    */
   struct GNUNET_TIME_Absolute last_quota_update;
 
   /**
-   * How many bytes have we received since the "last_quota_update"
+   * How many bytes have we received since the @e last_quota_update
    * timestamp?
    */
   uint64_t last_received;
@@ -109,12 +104,12 @@ GNUNET_NETWORK_STRUCT_BEGIN
 
 struct TemplateAddress
 {
-	/**
-	 * Address options in NBO
-	 */
-	uint32_t options GNUNET_PACKED;
+  /**
+   * Address options in NBO
+   */
+  uint32_t options GNUNET_PACKED;
 
-	/* Add address here */
+  /* Add address here */
 };
 
 GNUNET_NETWORK_STRUCT_END
@@ -130,15 +125,58 @@ struct Plugin
   struct GNUNET_TRANSPORT_PluginEnvironment *env;
 
   /**
-   * List of open sessions.
+   * List of open sessions (or peer map, or...)
    */
-  struct Session *sessions;
+  struct GNUNET_ATS_Session *sessions;
+
+  /**
+   * Function to call about session status changes.
+   */
+  GNUNET_TRANSPORT_SessionInfoCallback sic;
+
+  /**
+   * Closure for @e sic.
+   */
+  void *sic_cls;
 
   /**
    * Options in HBO to be used with addresses
    */
 
 };
+
+
+#if 0
+/**
+ * If a session monitor is attached, notify it about the new
+ * session state.
+ *
+ * @param plugin our plugin
+ * @param session session that changed state
+ * @param state new state of the session
+ */
+static void
+notify_session_monitor (struct Plugin *plugin,
+                        struct GNUNET_ATS_Session *session,
+                        enum GNUNET_TRANSPORT_SessionState state)
+{
+  struct GNUNET_TRANSPORT_SessionInfo info;
+
+  if (NULL == plugin->sic)
+    return;
+  memset (&info, 0, sizeof (info));
+  info.state = state;
+  info.is_inbound = GNUNET_SYSERR; /* FIXME */
+  // info.num_msg_pending =
+  // info.num_bytes_pending =
+  // info.receive_delay =
+  // info.session_timeout = session->timeout;
+  // info.address = session->address;
+  plugin->sic (plugin->sic_cls,
+               session,
+               &info);
+}
+#endif
 
 
 /**
@@ -170,19 +208,17 @@ struct Plugin
  */
 static ssize_t
 template_plugin_send (void *cls,
-                  struct Session *session,
-                  const char *msgbuf, size_t msgbuf_size,
-                  unsigned int priority,
-                  struct GNUNET_TIME_Relative to,
-                  GNUNET_TRANSPORT_TransmitContinuation cont, void *cont_cls)
+                      struct GNUNET_ATS_Session *session,
+                      const char *msgbuf,
+                      size_t msgbuf_size,
+                      unsigned int priority,
+                      struct GNUNET_TIME_Relative to,
+                      GNUNET_TRANSPORT_TransmitContinuation cont,
+                      void *cont_cls)
 {
-  struct Plugin *plugin = cls;
-  int bytes_sent = 0;
-
-  GNUNET_assert (plugin != NULL);
-  GNUNET_assert (session != NULL);
-
   /*  struct Plugin *plugin = cls; */
+  ssize_t bytes_sent = 0;
+
   return bytes_sent;
 }
 
@@ -215,7 +251,7 @@ template_plugin_disconnect_peer (void *cls,
  */
 static int
 template_plugin_disconnect_session (void *cls,
-                                    struct Session *session)
+                                    struct GNUNET_ATS_Session *session)
 {
   // struct Plugin *plugin = cls;
   // FIXME
@@ -243,14 +279,29 @@ template_plugin_query_keepalive_factor (void *cls)
  *
  * @param cls closure ('struct Plugin*')
  * @param session the session
- * @return the network type in HBO or GNUNET_SYSERR
+ * @return the network type in HBO or #GNUNET_SYSERR
  */
 static enum GNUNET_ATS_Network_Type
 template_plugin_get_network (void *cls,
-			     struct Session *session)
+			     struct GNUNET_ATS_Session *session)
 {
   GNUNET_assert (NULL != session);
   return GNUNET_ATS_NET_UNSPECIFIED; /* Change to correct network type */
+}
+
+
+/**
+ * Function obtain the network type for an address.
+ *
+ * @param cls closure (`struct Plugin *`)
+ * @param address the address
+ * @return the network type
+ */
+static enum GNUNET_ATS_Network_Type
+template_plugin_get_network_for_address (void *cls,
+                                         const struct GNUNET_HELLO_Address *address)
+{
+  return GNUNET_ATS_NET_WAN; /* FOR NOW */
 }
 
 
@@ -266,7 +317,7 @@ template_plugin_get_network (void *cls,
  * @param numeric should (IP) addresses be displayed in numeric form?
  * @param timeout after how long should we give up?
  * @param asc function to call on each string
- * @param asc_cls closure for asc
+ * @param asc_cls closure for @a asc
  */
 static void
 template_plugin_address_pretty_printer (void *cls, const char *type,
@@ -276,11 +327,8 @@ template_plugin_address_pretty_printer (void *cls, const char *type,
                                         GNUNET_TRANSPORT_AddressStringCallback
                                         asc, void *asc_cls)
 {
-  if (0 == addrlen)
-  {
-    asc (asc_cls, TRANSPORT_SESSION_INBOUND_STRING);
-  }
-  asc (asc_cls, NULL);
+  asc (asc_cls, "converted address", GNUNET_OK); /* return address */
+  asc (asc_cls, NULL, GNUNET_OK); /* done */
 }
 
 
@@ -370,7 +418,7 @@ template_plugin_string_to_address (void *cls,
  * @param address pointer to the GNUNET_HELLO_Address
  * @return the session if the address is valid, NULL otherwise
  */
-static struct Session *
+static struct GNUNET_ATS_Session *
 template_plugin_get_session (void *cls,
                         const struct GNUNET_HELLO_Address *address)
 {
@@ -378,13 +426,75 @@ template_plugin_get_session (void *cls,
   return NULL;
 }
 
+
 static void
 template_plugin_update_session_timeout (void *cls,
-                                  const struct GNUNET_PeerIdentity *peer,
-                                  struct Session *session)
+                                        const struct GNUNET_PeerIdentity *peer,
+                                        struct GNUNET_ATS_Session *session)
 {
 
 }
+
+
+#if 0
+/**
+ * Return information about the given session to the
+ * monitor callback.
+ *
+ * @param cls the `struct Plugin` with the monitor callback (`sic`)
+ * @param peer peer we send information about
+ * @param value our `struct GNUNET_ATS_Session` to send information about
+ * @return #GNUNET_OK (continue to iterate)
+ */
+static int
+send_session_info_iter (void *cls,
+                        const struct GNUNET_PeerIdentity *peer,
+                        void *value)
+{
+  struct Plugin *plugin = cls;
+  struct GNUNET_ATS_Session *session = value;
+
+  notify_session_monitor (plugin,
+                          session,
+                          GNUNET_TRANSPORT_SS_UP);
+  return GNUNET_OK;
+}
+#endif
+
+
+/**
+ * Begin monitoring sessions of a plugin.  There can only
+ * be one active monitor per plugin (i.e. if there are
+ * multiple monitors, the transport service needs to
+ * multiplex the generated events over all of them).
+ *
+ * @param cls closure of the plugin
+ * @param sic callback to invoke, NULL to disable monitor;
+ *            plugin will being by iterating over all active
+ *            sessions immediately and then enter monitor mode
+ * @param sic_cls closure for @a sic
+ */
+static void
+template_plugin_setup_monitor (void *cls,
+                               GNUNET_TRANSPORT_SessionInfoCallback sic,
+                               void *sic_cls)
+{
+  struct Plugin *plugin = cls;
+
+  plugin->sic = sic;
+  plugin->sic_cls = sic_cls;
+  if (NULL != sic)
+  {
+#if 0
+    GNUNET_CONTAINER_multipeermap_iterate (NULL /* FIXME */,
+                                           &send_session_info_iter,
+                                           plugin);
+#endif
+    /* signal end of first iteration */
+    sic (sic_cls, NULL, NULL);
+  }
+}
+
 
 /**
  * Entry point for the plugin.
@@ -422,7 +532,9 @@ libgnunet_plugin_transport_template_init (void *cls)
   api->string_to_address = &template_plugin_string_to_address;
   api->get_session = &template_plugin_get_session;
   api->get_network = &template_plugin_get_network;
+  api->get_network_for_address = &template_plugin_get_network_for_address;
   api->update_session_timeout = &template_plugin_update_session_timeout;
+  api->setup_monitor = &template_plugin_setup_monitor;
   LOG (GNUNET_ERROR_TYPE_INFO, "Template plugin successfully loaded\n");
   return api;
 }

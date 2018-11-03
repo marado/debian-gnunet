@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file dht/dht_test_lib.c
@@ -114,19 +109,19 @@ dht_connect_cb (void *cls,
 		const char *emsg)
 {
   struct GNUNET_DHT_TEST_Context *ctx = cls;
-  unsigned int i;
 
   if (NULL != emsg)
   {
-    fprintf (stderr, "Failed to connect to DHT service: %s\n",
+    fprintf (stderr,
+             "Failed to connect to DHT service: %s\n",
 	     emsg);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  for (i=0;i<ctx->num_peers;i++)
+  for (unsigned int i=0;i<ctx->num_peers;i++)
     if (op == ctx->ops[i])
       ctx->dhts[i] = ca_result;
-  for (i=0;i<ctx->num_peers;i++)
+  for (unsigned int i=0;i<ctx->num_peers;i++)
     if (NULL == ctx->dhts[i])
       return; /* still some DHT connections missing */
   /* all DHT connections ready! */
@@ -134,7 +129,7 @@ dht_connect_cb (void *cls,
 		 ctx,
 		 ctx->num_peers,
 		 ctx->peers,
-		 ctx->dhts);		
+		 ctx->dhts);
 }
 
 
@@ -146,9 +141,7 @@ dht_connect_cb (void *cls,
 void
 GNUNET_DHT_TEST_cleanup (struct GNUNET_DHT_TEST_Context *ctx)
 {
-  unsigned int i;
-
-  for (i=0;i<ctx->num_peers;i++)
+  for (unsigned int i=0;i<ctx->num_peers;i++)
     GNUNET_TESTBED_operation_done (ctx->ops[i]);
   GNUNET_free (ctx->ops);
   GNUNET_free (ctx->dhts);
@@ -159,18 +152,17 @@ GNUNET_DHT_TEST_cleanup (struct GNUNET_DHT_TEST_Context *ctx)
 
 static void
 dht_test_run (void *cls,
-             struct GNUNET_TESTBED_RunHandle *h,
+              struct GNUNET_TESTBED_RunHandle *h,
 	      unsigned int num_peers,
 	      struct GNUNET_TESTBED_Peer **peers,
               unsigned int links_succeeded,
               unsigned int links_failed)
 {
   struct GNUNET_DHT_TEST_Context *ctx = cls;
-  unsigned int i;
 
   GNUNET_assert (num_peers == ctx->num_peers);
   ctx->peers = peers;
-  for (i=0;i<num_peers;i++)
+  for (unsigned int i=0;i<num_peers;i++)
     ctx->ops[i] = GNUNET_TESTBED_service_connect (ctx,
 						  peers[i],
 						  "dht",
@@ -203,8 +195,10 @@ GNUNET_DHT_TEST_run (const char *testname,
 
   ctx = GNUNET_new (struct GNUNET_DHT_TEST_Context);
   ctx->num_peers = num_peers;
-  ctx->ops = GNUNET_malloc (num_peers * sizeof (struct GNUNET_TESTBED_Operation *));
-  ctx->dhts = GNUNET_malloc (num_peers * sizeof (struct GNUNET_DHT_Handle *));
+  ctx->ops = GNUNET_new_array (num_peers,
+                               struct GNUNET_TESTBED_Operation *);
+  ctx->dhts = GNUNET_new_array (num_peers,
+                                struct GNUNET_DHT_Handle *);
   ctx->app_main = tmain;
   ctx->app_main_cls = tmain_cls;
   (void) GNUNET_TESTBED_test_run (testname,

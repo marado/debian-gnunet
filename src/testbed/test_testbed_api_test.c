@@ -1,21 +1,16 @@
 /*
   This file is part of GNUnet
-  (C) 2008--2013 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+  Affero General Public License for more details.
 */
 
 /**
@@ -38,7 +33,7 @@
 /**
  * Number of peers we want to start
  */
-#define NUM_PEERS 25
+#define NUM_PEERS 2
 
 /**
  * Array of peers
@@ -53,12 +48,12 @@ static struct GNUNET_TESTBED_Operation *op;
 /**
  * Abort task identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier abort_task;
+static struct GNUNET_SCHEDULER_Task * abort_task;
 
 /**
  * shutdown task identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
+static struct GNUNET_SCHEDULER_Task * shutdown_task;
 
 /**
  * Testing result
@@ -70,13 +65,12 @@ static int result;
  * Shutdown nicely
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  shutdown_task = GNUNET_SCHEDULER_NO_TASK;
-  if (GNUNET_SCHEDULER_NO_TASK != abort_task)
+  shutdown_task = NULL;
+  if (NULL != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
   if (NULL != op)
     GNUNET_TESTBED_operation_done (op);
@@ -89,11 +83,11 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 #define FAIL_TEST(cond) do {                                            \
     if (!(cond)) {                                                      \
       GNUNET_break(0);                                                  \
-      if (GNUNET_SCHEDULER_NO_TASK != abort_task)                       \
+      if (NULL != abort_task)                       \
         GNUNET_SCHEDULER_cancel (abort_task);                           \
-      abort_task = GNUNET_SCHEDULER_NO_TASK;                            \
-      if (GNUNET_SCHEDULER_NO_TASK == shutdown_task)                    \
-        shutdown_task = GNUNET_SCHEDULER_add_now (do_shutdown, NULL);   \
+      abort_task = NULL;                            \
+      if (NULL == shutdown_task)                    \
+        shutdown_task = GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);   \
       return;                                                           \
     }                                                                   \
   } while (0)
@@ -103,16 +97,15 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * abort task to run on test timed out
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_abort (void *cls)
 {
   LOG (GNUNET_ERROR_TYPE_WARNING, "Test timedout -- Aborting\n");
-  abort_task = GNUNET_SCHEDULER_NO_TASK;
-  if (GNUNET_SCHEDULER_NO_TASK != shutdown_task)
+  abort_task = NULL;
+  if (NULL != shutdown_task)
     GNUNET_SCHEDULER_cancel (shutdown_task);
-  do_shutdown (cls, tc);
+  do_shutdown (cls);
 }
 
 

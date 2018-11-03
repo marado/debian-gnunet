@@ -1,27 +1,27 @@
 /*
      This file is part of GNUnet.
-     (C) 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_bandwidth_lib.h
- * @brief functions related to bandwidth (unit)
  * @author Christian Grothoff
+ *
+ * @file
+ * Functions related to bandwidth (unit)
+ *
+ * @defgroup bandwidth  Bandwidth library
+ * Functions related to bandwidth (unit)
+ * @{
  */
 
 #ifndef GNUNET_BANDWIDTH_LIB_H
@@ -113,7 +113,7 @@ struct GNUNET_BANDWIDTH_Tracker
    * Task scheduled to call the @e excess_cb once we have
    * reached the maximum bandwidth the tracker can hold.
    */
-  GNUNET_SCHEDULER_TaskIdentifier excess_task;
+  struct GNUNET_SCHEDULER_Task *excess_task;
 
   /**
    * Time when we last updated the tracker.
@@ -121,17 +121,23 @@ struct GNUNET_BANDWIDTH_Tracker
   struct GNUNET_TIME_Absolute last_update__;
 
   /**
-   * Bandwidth limit to enforce in bytes per s.
+   * Bandwidth limit to enforce in bytes per second.
    */
   uint32_t available_bytes_per_s__;
 
   /**
    * Maximum number of seconds over which bandwidth may "accumulate".
    * Note that additionally, we also always allow at least
-   * #GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.
+   * #GNUNET_MAX_MESSAGE_SIZE to accumulate.
    */
   uint32_t max_carry_s__;
 };
+
+
+/**
+ * Convenience definition to use for 0-bandwidth.
+ */
+#define GNUNET_BANDWIDTH_ZERO GNUNET_BANDWIDTH_value_init (0)
 
 
 /**
@@ -189,17 +195,29 @@ GNUNET_BANDWIDTH_value_min (struct GNUNET_BANDWIDTH_Value32NBO b1,
 
 
 /**
+ * Compute the MAX of two bandwidth values.
+ *
+ * @param b1 first value
+ * @param b2 second value
+ * @return the min of b1 and b2
+ */
+struct GNUNET_BANDWIDTH_Value32NBO
+GNUNET_BANDWIDTH_value_max (struct GNUNET_BANDWIDTH_Value32NBO b1,
+                            struct GNUNET_BANDWIDTH_Value32NBO b2);
+
+
+/**
  * Initialize bandwidth tracker.  Note that in addition to the
  * 'max_carry_s' limit, we also always allow at least
- * GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.  So if the
+ * #GNUNET_MAX_MESSAGE_SIZE to accumulate.  So if the
  * bytes-per-second limit is so small that within 'max_carry_s' not
- * even GNUNET_SERVER_MAX_MESSAGE_SIZE is allowed to accumulate, it is
- * ignored and replaced by GNUNET_SERVER_MAX_MESSAGE_SIZE (which is in
+ * even #GNUNET_MAX_MESSAGE_SIZE is allowed to accumulate, it is
+ * ignored and replaced by #GNUNET_MAX_MESSAGE_SIZE (which is in
  * bytes).
  *
  * @param av tracker to initialize
  * @param update_cb callback to notify a client about the tracker being updated
- * @param update_cb_cls cls for the callback
+ * @param update_cb_cls cls for the @a update_cb callback
  * @param bytes_per_second_limit initial limit to assume
  * @param max_carry_s maximum number of seconds unused bandwidth
  *        may accumulate before it expires
@@ -215,10 +233,10 @@ GNUNET_BANDWIDTH_tracker_init (struct GNUNET_BANDWIDTH_Tracker *av,
 /**
  * Initialize bandwidth tracker.  Note that in addition to the
  * 'max_carry_s' limit, we also always allow at least
- * GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.  So if the
+ * GNUNET_MAX_MESSAGE_SIZE to accumulate.  So if the
  * bytes-per-second limit is so small that within 'max_carry_s' not
- * even GNUNET_SERVER_MAX_MESSAGE_SIZE is allowed to accumulate, it is
- * ignored and replaced by GNUNET_SERVER_MAX_MESSAGE_SIZE (which is in
+ * even GNUNET_MAX_MESSAGE_SIZE is allowed to accumulate, it is
+ * ignored and replaced by GNUNET_MAX_MESSAGE_SIZE (which is in
  * bytes).
  *
  * @param av tracker to initialize
@@ -266,7 +284,7 @@ GNUNET_BANDWIDTH_tracker_consume (struct GNUNET_BANDWIDTH_Tracker *av,
 
 
 /**
- * Compute how long we should wait until consuming 'size'
+ * Compute how long we should wait until consuming @a size
  * bytes of bandwidth in order to stay within the given
  * quota.
  *
@@ -311,4 +329,7 @@ GNUNET_BANDWIDTH_tracker_update_quota (struct GNUNET_BANDWIDTH_Tracker *av,
 
 /* ifndef GNUNET_BANDWIDTH_LIB_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_bandwidth_lib.h */

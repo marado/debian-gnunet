@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2008 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2008 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file util/container_multihashmap32.c
@@ -26,9 +21,9 @@
  */
 
 #include "platform.h"
-#include "gnunet_util_lib.h"
+#include "gnunet_container_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-container-multihashmap32", __VA_ARGS__)
 
 /**
  * An entry in the hash map.
@@ -219,9 +214,9 @@ GNUNET_CONTAINER_multihashmap32_get (const struct
  *
  * @param map the map
  * @param it function to call on each entry
- * @param it_cls extra argument to it
+ * @param it_cls extra argument to @a it
  * @return the number of key value pairs processed,
- *         GNUNET_SYSERR if it aborted iteration
+ *         #GNUNET_SYSERR if it aborted iteration
  */
 int
 GNUNET_CONTAINER_multihashmap32_iterate (const struct
@@ -235,7 +230,7 @@ GNUNET_CONTAINER_multihashmap32_iterate (const struct
   struct MapEntry *n;
 
   count = 0;
-  GNUNET_assert (map != NULL);
+  GNUNET_assert (NULL != map);
   for (i = 0; i < map->map_length; i++)
   {
     n = map->map[i];

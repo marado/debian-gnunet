@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff
+     Copyright (C) 2013 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -46,6 +41,7 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
   size_t start;
   struct GNUNET_PeerIdentity pid;
   uint64_t fsize;
+  ssize_t ssize;
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (cfg,
@@ -54,18 +50,36 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                                &fn))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "topology", "FRIENDS");
+			       "topology",
+                               "FRIENDS");
     return GNUNET_SYSERR;
   }
-  if ( (GNUNET_OK != GNUNET_DISK_file_test (fn)) &&
-       (GNUNET_OK != GNUNET_DISK_fn_write (fn, NULL, 0,
-					   GNUNET_DISK_PERM_USER_READ |
-					   GNUNET_DISK_PERM_USER_WRITE)) )
-      GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "write", fn);
+  if (GNUNET_SYSERR ==
+      GNUNET_DISK_directory_create_for_file (fn))
+  {
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
+                              "mkdir",
+                              fn);
+    GNUNET_free (fn);
+    return GNUNET_SYSERR;
+  }
+  if ( (GNUNET_OK !=
+        GNUNET_DISK_file_test (fn)) &&
+       (GNUNET_OK !=
+        GNUNET_DISK_fn_write (fn,
+                              NULL,
+                              0,
+                              GNUNET_DISK_PERM_USER_READ |
+                              GNUNET_DISK_PERM_USER_WRITE |
+                              GNUNET_DISK_OPEN_CREATE)) )
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
+                              "write",
+                              fn);
   if ( (GNUNET_OK !=
         GNUNET_DISK_file_size (fn,
                                &fsize,
-                               GNUNET_NO, GNUNET_YES)) ||
+                               GNUNET_NO,
+                               GNUNET_YES)) ||
        (0 == fsize) )
   {
     GNUNET_free (fn);
@@ -78,9 +92,15 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
     GNUNET_free (fn);
     return GNUNET_SYSERR;
   }
-  if (fsize != GNUNET_DISK_fn_read (fn, data, fsize))
+  ssize = GNUNET_DISK_fn_read (fn,
+                               data,
+                               fsize);
+  if ( (ssize < 0) ||
+       (fsize != (uint64_t) ssize) )
   {
-    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR, "read", "fn");
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
+                              "read",
+                              "fn");
     GNUNET_free (fn);
     GNUNET_free (data);
     return GNUNET_SYSERR;
@@ -89,12 +109,13 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
   pos = 0;
   while (pos < fsize)
   {
-    while ((pos < fsize) && (! isspace ((int) data[pos])))
+    while ( (pos < fsize) &&
+            (! isspace ((unsigned char) data[pos])) )
       pos++;
     if (GNUNET_OK !=
         GNUNET_CRYPTO_eddsa_public_key_from_string (&data[start],
-						       pos - start,
-						       &pid.public_key))
+                                                    pos - start,
+                                                    &pid.public_key))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                   _("Syntax error in FRIENDS file at offset %llu, skipping bytes `%.*s'.\n"),
@@ -153,6 +174,7 @@ GNUNET_FRIENDS_write_start (const struct GNUNET_CONFIGURATION_Handle *cfg)
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 _("Directory for file `%s' does not seem to be writable.\n"),
                 fn);
+    GNUNET_free (fn);
     return NULL;
   }
   if (GNUNET_OK == GNUNET_DISK_file_test (fn))

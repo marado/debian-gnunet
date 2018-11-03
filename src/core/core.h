@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -43,10 +38,32 @@
  * transmitted to the client.
  */
 #define GNUNET_CORE_OPTION_NOTHING             0
+
+/**
+ * Client cares about connectivity changes.
+ */
 #define GNUNET_CORE_OPTION_SEND_STATUS_CHANGE  4
+
+/**
+ * Client wants all inbound messages in full.
+ */
 #define GNUNET_CORE_OPTION_SEND_FULL_INBOUND   8
+
+/**
+ * Client just wants the 4-byte message headers of
+ * all inbound messages.
+ */
 #define GNUNET_CORE_OPTION_SEND_HDR_INBOUND   16
+
+/**
+ * Client wants all outbound messages in full.
+ */
 #define GNUNET_CORE_OPTION_SEND_FULL_OUTBOUND 32
+
+/**
+ * Client just wants the 4-byte message headers of
+ * all outbound messages.
+ */
 #define GNUNET_CORE_OPTION_SEND_HDR_OUTBOUND  64
 
 
@@ -62,7 +79,7 @@ struct InitMessage
 {
 
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_INIT.
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_INIT.
    */
   struct GNUNET_MessageHeader header;
 
@@ -82,7 +99,7 @@ struct InitReplyMessage
 {
 
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_INIT_REPLY
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_INIT_REPLY
    */
   struct GNUNET_MessageHeader header;
 
@@ -106,7 +123,7 @@ struct InitReplyMessage
 struct ConnectNotifyMessage
 {
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_NOTIFY_CONNECT
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_NOTIFY_CONNECT
    */
   struct GNUNET_MessageHeader header;
 
@@ -130,7 +147,7 @@ struct ConnectNotifyMessage
 struct DisconnectNotifyMessage
 {
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_NOTIFY_DISCONNECT.
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_NOTIFY_DISCONNECT.
    */
   struct GNUNET_MessageHeader header;
 
@@ -159,8 +176,8 @@ struct DisconnectNotifyMessage
 struct NotifyTrafficMessage
 {
   /**
-   * Header with type GNUNET_MESSAGE_TYPE_CORE_NOTIFY_INBOUND
-   * or GNUNET_MESSAGE_TYPE_CORE_NOTIFY_OUTBOUND.
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_NOTIFY_INBOUND
+   * or #GNUNET_MESSAGE_TYPE_CORE_NOTIFY_OUTBOUND.
    */
   struct GNUNET_MessageHeader header;
 
@@ -287,6 +304,35 @@ struct SendMessage
    * Always 0.
    */
   uint32_t reserved GNUNET_PACKED;
+
+};
+
+
+/**
+ * Message sent by the service to monitor clients to notify them
+ * about a peer changing status.
+ */
+struct MonitorNotifyMessage
+{
+  /**
+   * Header with type #GNUNET_MESSAGE_TYPE_CORE_MONITOR_NOTIFY
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * New peer state, an `enum GNUNET_CORE_KxState` in NBO.
+   */
+  uint32_t state GNUNET_PACKED;
+
+  /**
+   * Identity of the peer.
+   */
+  struct GNUNET_PeerIdentity peer;
+
+  /**
+   * How long will we stay in this state (if nothing else happens)?
+   */
+  struct GNUNET_TIME_AbsoluteNBO timeout;
 
 };
 

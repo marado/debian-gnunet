@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010,2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010,2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -32,35 +27,12 @@
 #include "gnunet_hello_lib.h"
 
 /**
- * Function called to notify transport users that a neighbour peer changed its
- * active address.
- *
- * @param cls closure
- * @param peer peer this update is about (never NULL)
- * @param address address (never NULL)
- * @param last_validation point in time when last validation was performed
- * @param valid_until point in time how long address is valid
- * @param next_validation point in time when next validation will be performed
- * @param state state of validation notification
- */
-typedef void (*GST_ValidationChangedCallback) (void *cls,
-    const struct GNUNET_PeerIdentity *peer,
-    const struct GNUNET_HELLO_Address *address,
-    struct GNUNET_TIME_Absolute last_validation,
-    struct GNUNET_TIME_Absolute valid_until,
-    struct GNUNET_TIME_Absolute next_validation,
-    enum GNUNET_TRANSPORT_ValidationState state);
-
-
-/**
  * Start the validation subsystem.
  *
- * @param cb callback to call with changes to valdidation entries
- * @param cb_cls cls for the callback
  * @param max_fds maximum number of fds to use
  */
 void
-GST_validation_start (GST_ValidationChangedCallback cb, void *cb_cls, unsigned int max_fds);
+GST_validation_start (unsigned int max_fds);
 
 
 /**
@@ -75,40 +47,14 @@ GST_validation_stop (void);
  * Based on this, the validation module will measure latency for the
  * address more or less often.
  *
- * @param address the address
- * @param session the session
- * @param in_use GNUNET_YES if we are now using the address for a connection,
- *               GNUNET_NO if we are no longer using the address for a connection
+ * @param address the address that we are now using (or not)
+ * @param in_use #GNUNET_YES if we are now using the address for a connection,
+ *               #GNUNET_NO if we are no longer using the address for a connection
  */
 void
 GST_validation_set_address_use (const struct GNUNET_HELLO_Address *address,
-                                struct Session *session,
                                 int in_use);
 
-
-/**
- * Query validation about the latest observed latency on a given
- * address.
- *
- * @param sender peer
- * @param address the address
- * @param session session
- * @return observed latency of the address, FOREVER if the address was
- *         never successfully validated
- */
-struct GNUNET_TIME_Relative
-GST_validation_get_address_latency (const struct GNUNET_PeerIdentity *sender,
-                                    const struct GNUNET_HELLO_Address *address,
-                                    struct Session *session);
-
-/**
- * Iterate over all iteration entries
- *
- * @param cb function to call
- * @param cb_cls closure for cb
- */
-void
-GST_validation_iterate (GST_ValidationChangedCallback cb, void *cb_cls);
 
 /**
  * We've received a PING.  If appropriate, generate a PONG.
@@ -123,7 +69,7 @@ int
 GST_validation_handle_ping (const struct GNUNET_PeerIdentity *sender,
                             const struct GNUNET_MessageHeader *hdr,
                             const struct GNUNET_HELLO_Address *sender_address,
-                            struct Session *session);
+                            struct GNUNET_ATS_Session *session);
 
 
 /**
@@ -151,6 +97,15 @@ GST_validation_handle_hello (const struct GNUNET_MessageHeader *hello);
 
 
 /**
+ * Validate an individual address.
+ *
+ * @param address address we should try to validate
+ */
+void
+GST_validation_handle_address (const struct GNUNET_HELLO_Address *address);
+
+
+/**
  * Function called for each address (or address status change) that
  * the validation module is aware of (for the given target).
  *
@@ -163,15 +118,11 @@ GST_validation_handle_hello (const struct GNUNET_MessageHeader *hello);
  *                          otherwise a time in the future if we're currently denying re-validation
  * @param address the address
  */
-typedef void (*GST_ValidationAddressCallback) (void *cls,
-                                               const struct
-                                               GNUNET_CRYPTO_EddsaPublicKey *public_key,
-                                               struct GNUNET_TIME_Absolute
-                                               valid_until,
-                                               struct GNUNET_TIME_Absolute
-                                               validation_block,
-                                               const struct GNUNET_HELLO_Address
-                                               * address);
+typedef void
+(*GST_ValidationAddressCallback) (void *cls,
+                                  struct GNUNET_TIME_Absolute valid_until,
+                                  struct GNUNET_TIME_Absolute validation_block,
+                                  const struct GNUNET_HELLO_Address *address);
 
 
 /**
@@ -179,7 +130,7 @@ typedef void (*GST_ValidationAddressCallback) (void *cls,
  *
  * @param target peer information is requested for
  * @param cb function to call; will not be called after this function returns
- * @param cb_cls closure for 'cb'
+ * @param cb_cls closure for @a cb
  */
 void
 GST_validation_get_addresses (const struct GNUNET_PeerIdentity *target,

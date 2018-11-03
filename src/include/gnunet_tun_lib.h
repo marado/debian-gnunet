@@ -1,28 +1,28 @@
 /*
      This file is part of GNUnet.
-     (C) 2010-2013 Christian Grothoff
+     Copyright (C) 2010-2013 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_tun_lib.h
- * @brief standard TCP/IP network structs and IP checksum calculations for TUN interaction
  * @author Philipp Toelke
  * @author Christian Grothoff
+ *
+ * @file
+ * Standard TCP/IP network structs and IP checksum calculations for TUN interaction
+ *
+ * @defgroup tun  TUN library
+ * Standard TCP/IP network structs and IP checksum calculations for TUN interaction
+ * @{
  */
 #ifndef GNUNET_TUN_LIB_H
 #define GNUNET_TUN_LIB_H
@@ -183,6 +183,18 @@ struct GNUNET_TUN_IPv6Header
   struct in6_addr destination_address GNUNET_PACKED;
 } GNUNET_GCC_STRUCT_LAYOUT;
 
+
+/**
+ * TCP flags.
+ */
+#define GNUNET_TUN_TCP_FLAGS_FIN 1
+#define GNUNET_TUN_TCP_FLAGS_SYN 2
+#define GNUNET_TUN_TCP_FLAGS_RST 4
+#define GNUNET_TUN_TCP_FLAGS_PSH 8
+#define GNUNET_TUN_TCP_FLAGS_ACK 16
+#define GNUNET_TUN_TCP_FLAGS_URG 32
+#define GNUNET_TUN_TCP_FLAGS_ECE 64
+#define GNUNET_TUN_TCP_FLAGS_CWR 128
 
 /**
  * TCP packet header.
@@ -893,10 +905,41 @@ GNUNET_TUN_ipv4policy2regex (const char *policy);
  * the network.
  *
  * @param service_name a string
- * @param hc corresponding hash
+ * @param[out] hc corresponding hash
  */
 void
 GNUNET_TUN_service_name_to_hash (const char *service_name,
                                  struct GNUNET_HashCode *hc);
 
+
+/**
+ * Check if two sockaddrs are equal.
+ *
+ * @param sa one address
+ * @param sb another address
+ * @param include_port also check ports
+ * @return #GNUNET_YES if they are equal
+ */
+int
+GNUNET_TUN_sockaddr_cmp (const struct sockaddr *sa,
+                         const struct sockaddr *sb,
+                         int include_port);
+
+
+/**
+ * Compute the CADET port given a service descriptor
+ * (returned from #GNUNET_TUN_service_name_to_hash) and
+ * a TCP/UDP port @a ip_port.
+ *
+ * @param desc service shared secret
+ * @param ip_port TCP/UDP port, use 0 for ICMP
+ * @param[out] cadet_port CADET port to use
+ */
+void
+GNUNET_TUN_compute_service_cadet_port (const struct GNUNET_HashCode *desc,
+                                       uint16_t ip_port,
+                                       struct GNUNET_HashCode *cadet_port);
+
 #endif
+
+/** @} */  /* end of group */

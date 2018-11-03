@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -44,23 +39,27 @@
 
 static struct GNUNET_TESTBED_Peer *the_peers[NUM_DAEMONS];
 
+static struct GNUNET_TIME_Absolute start_time;
+
 static int ret;
 
 
 static void
-do_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_stop (void *cls)
 {
   char *fn = cls;
 
-  if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_PREREQ_DONE))
+  if (0 ==
+      GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
+                                                                    TIMEOUT)).rel_value_us)
   {
     GNUNET_break (0);
     ret = 1;
   }
   else
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished download, shutting down\n",
-                (unsigned long long) FILESIZE);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Finished download, shutting down\n");
   }
   if (NULL != fn)
   {
@@ -72,7 +71,8 @@ do_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-do_download (void *cls, const struct GNUNET_FS_Uri *uri,
+do_download (void *cls,
+             const struct GNUNET_FS_Uri *uri,
 	     const char *fn)
 {
   if (NULL == uri)
@@ -82,9 +82,15 @@ do_download (void *cls, const struct GNUNET_FS_Uri *uri,
     ret = 1;
     return;
   }
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Downloading %llu bytes\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Downloading %llu bytes\n",
               (unsigned long long) FILESIZE);
-  GNUNET_FS_TEST_download (the_peers[0], TIMEOUT, 1, SEED, uri, VERBOSE, &do_stop,
+  start_time = GNUNET_TIME_absolute_get ();
+  GNUNET_FS_TEST_download (the_peers[0],
+                           TIMEOUT, 1, SEED,
+                           uri,
+                           VERBOSE,
+                           &do_stop,
                            (NULL == fn) ? NULL : GNUNET_strdup (fn));
 }
 

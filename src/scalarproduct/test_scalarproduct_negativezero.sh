@@ -1,8 +1,8 @@
 #!/bin/bash
 # compute a simple scalar product
 # payload for this test:
-INPUTALICE="-k CCC -e -1,1,1"
-INPUTBOB="-k CCC -e 1,1,0"
+INPUTALICE="-k CCC -e 'AB,10;RO,-1;FL,1;LOL,1;'"
+INPUTBOB="-k CCC -e 'BC,20;RO,1;FL,1;LOL,0;'"
 
 # necessary to make the testing prefix deterministic, so we can access the config files
 PREFIX=/tmp/test-scalarproduct`date +%H%M%S`
@@ -22,13 +22,15 @@ PID=$!
 # sleep 1 is too short on most systems, 2 works on most, 5 seems to be safe
 sleep 5
 
+which timeout &> /dev/null && DO_TIMEOUT="timeout 15"
+
 # get bob's peer ID, necessary for alice
-PEERIDBOB=`gnunet-peerinfo -qs $CFGBOB`
+PEERIDBOB=`${DO_TIMEOUT} gnunet-peerinfo -qs $CFGBOB`
 
 #GNUNET_LOG=';;;;DEBUG'
-gnunet-scalarproduct $CFGBOB $INPUTBOB &
+${DO_TIMEOUT} gnunet-scalarproduct $CFGBOB $INPUTBOB &
 #GNUNET_LOG=';;;;DEBUG'
-RESULT=`gnunet-scalarproduct $CFGALICE $INPUTALICE -p $PEERIDBOB`
+RESULT=`${DO_TIMEOUT} gnunet-scalarproduct $CFGALICE $INPUTALICE -p $PEERIDBOB`
 
 # terminate the testbed
 kill $PID

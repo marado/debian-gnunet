@@ -1,28 +1,28 @@
 /*
      This file is part of GNUnet.
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_multicast_service.h
- * @brief multicast service; establish tunnels to distant peers
- * @author Christian Grothoff
  * @author Gabor X Toth
+ * @author Christian Grothoff
+ *
+ * @file
+ * Multicast service; multicast messaging via CADET
+ *
+ * @defgroup multicast  Multicast service
+ * Multicast messaging via CADET.
+ * @{
  */
 
 #ifndef GNUNET_MULTICAST_SERVICE_H
@@ -174,14 +174,14 @@ struct GNUNET_MULTICAST_RequestHeader
   /**
    * Public key of the sending member.
    */
-  struct GNUNET_CRYPTO_EddsaPublicKey member_key;
+  struct GNUNET_CRYPTO_EcdsaPublicKey member_pub_key;
 
   /**
    * ECC signature of the request fragment.
    *
    * Signature must match the public key of the multicast group.
    */
-  struct GNUNET_CRYPTO_EddsaSignature signature;
+  struct GNUNET_CRYPTO_EcdsaSignature signature;
 
   /**
    * Purpose for the signature and size of the signed data.
@@ -220,17 +220,17 @@ GNUNET_NETWORK_STRUCT_END
 /**
  * Maximum size of a multicast message fragment.
  */
-#define GNUNET_MULTICAST_FRAGMENT_MAX_SIZE 63 * 1024
+#define GNUNET_MULTICAST_FRAGMENT_MAX_SIZE (63 * 1024)
 
 #define GNUNET_MULTICAST_FRAGMENT_MAX_PAYLOAD           \
-  GNUNET_MULTICAST_FRAGMENT_MAX_SIZE                    \
-  - sizeof (struct GNUNET_MULTICAST_MessageHeader)
+  (GNUNET_MULTICAST_FRAGMENT_MAX_SIZE                   \
+   - sizeof (struct GNUNET_MULTICAST_MessageHeader))
 
 
 /**
  * Handle that identifies a join request.
  *
- * Used to match calls to #GNUNET_MULTICAST_JoinCallback to the
+ * Used to match calls to #GNUNET_MULTICAST_JoinRequestCallback to the
  * corresponding calls to #GNUNET_MULTICAST_join_decision().
  */
 struct GNUNET_MULTICAST_JoinHandle;
@@ -240,20 +240,26 @@ struct GNUNET_MULTICAST_JoinHandle;
  * Function to call with the decision made for a join request.
  *
  * Must be called once and only once in response to an invocation of the
- * #GNUNET_MULTICAST_JoinCallback.
+ * #GNUNET_MULTICAST_JoinRequestCallback.
  *
- * @param jh Join request handle.
- * @param is_admitted #GNUNET_YES if joining is approved,
- *        #GNUNET_NO if it is disapproved
- * @param relay_count Number of relays given.
- * @param relays Array of suggested peers that might be useful relays to use
+ * @param jh
+ *        Join request handle.
+ * @param is_admitted
+ *        #GNUNET_YES    if the join is approved,
+ *        #GNUNET_NO     if it is disapproved,
+ *        #GNUNET_SYSERR if we cannot answer the request.
+ * @param relay_count
+ *        Number of relays given.
+ * @param relays
+ *        Array of suggested peers that might be useful relays to use
  *        when joining the multicast group (essentially a list of peers that
  *        are already part of the multicast group and might thus be willing
  *        to help with routing).  If empty, only this local peer (which must
  *        be the multicast origin) is a good candidate for building the
  *        multicast tree.  Note that it is unnecessary to specify our own
  *        peer identity in this array.
- * @param join_response Message to send in response to the joining peer;
+ * @param join_resp
+ *        Message to send in response to the joining peer;
  *        can also be used to redirect the peer to a different group at the
  *        application layer; this response is to be transmitted to the
  *        peer that issued the request even if admission is denied.
@@ -261,9 +267,9 @@ struct GNUNET_MULTICAST_JoinHandle;
 struct GNUNET_MULTICAST_ReplayHandle *
 GNUNET_MULTICAST_join_decision (struct GNUNET_MULTICAST_JoinHandle *jh,
                                 int is_admitted,
-                                unsigned int relay_count,
+                                uint16_t relay_count,
                                 const struct GNUNET_PeerIdentity *relays,
-                                const struct GNUNET_MessageHeader *join_response);
+                                const struct GNUNET_MessageHeader *join_resp);
 
 
 /**
@@ -272,59 +278,51 @@ GNUNET_MULTICAST_join_decision (struct GNUNET_MULTICAST_JoinHandle *jh,
  * Implementations of this function must call GNUNET_MULTICAST_join_decision()
  * with the decision.
  *
- * @param cls Closure.
- * @param peer Identity of the member that wants to join.
- * @param join_req Application-dependent join message from the new member
- *        (might, for example, contain a user,
- *        bind user identity/pseudonym to peer identity, application-level
- *        message to origin, etc.).
- * @param jh Join handle to pass to GNUNET_MULTICAST_join_decison().
+ * @param cls
+ *        Closure.
+ * @param member_pub_key
+ *        Public key of the member requesting join.
+ * @param join_msg
+ *        Application-dependent join message from the new member.
+ * @param jh
+ *        Join handle to pass to GNUNET_MULTICAST_join_decison().
  */
 typedef void
-(*GNUNET_MULTICAST_JoinCallback) (void *cls,
-                                  const struct GNUNET_CRYPTO_EddsaPublicKey *member_key,
-                                  const struct GNUNET_MessageHeader *join_req,
-                                  struct GNUNET_MULTICAST_JoinHandle *jh);
+(*GNUNET_MULTICAST_JoinRequestCallback) (void *cls,
+                                         const struct GNUNET_CRYPTO_EcdsaPublicKey *member_pub_key,
+                                         const struct GNUNET_MessageHeader *join_msg,
+                                         struct GNUNET_MULTICAST_JoinHandle *jh);
 
 
 /**
- * Handle to pass back for the answer of a membership test.
- */
-struct GNUNET_MULTICAST_MembershipTestHandle;
-
-
-/**
- * Call informing multicast about the decision taken for a membership test.
+ * Method called to inform about the decision in response to a join request.
  *
- * @param mth Handle that was given for the query.
- * @param result #GNUNET_YES if peer was a member, #GNUNET_NO if peer was not a member,
- *        #GNUNET_SYSERR if we cannot answer the membership test.
- */
-void
-GNUNET_MULTICAST_membership_test_result (struct GNUNET_MULTICAST_MembershipTestHandle *mth,
-                                         int result);
-
-
-/**
- * Method called to test if a member was in the group at a particular time.
+ * If @a is_admitted is not #GNUNET_YES, then the multicast service disconnects
+ * the client and the multicast member handle returned by
+ * GNUNET_MULTICAST_member_join() is invalidated.
  *
- * It is called when a replay request is received to determine if the requested
- * message can be replayed.
- *
- * @param cls Closure.
- * @param member_key Identity of the member that we want to test.
- * @param message_id Message ID for which to perform the test.
- * @param group_generation Group generation of the message. It has relevance if
- *        the message consists of multiple fragments with different group
- *        generations.
- * @param mth Handle to give to GNUNET_MULTICAST_membership_test_answer().
+ * @param cls
+ *         Closure.
+ * @param is_admitted
+ *         #GNUNET_YES or #GNUNET_NO or #GNUNET_SYSERR
+ * @param peer
+ *        The peer we are connected to and the join decision is from.
+ * @param relay_count
+ *        Number of peers in the @a relays array.
+ * @param relays
+ *        Peer identities of members of the group, which serve as relays
+ *        and can be used to join the group at.  If empty, only the origin can
+ *        be used to connect to the group.
+ * @param join_msg
+ *        Application-dependent join message from the origin.
  */
 typedef void
-(*GNUNET_MULTICAST_MembershipTestCallback) (void *cls,
-                                            const struct GNUNET_CRYPTO_EddsaPublicKey *member_key,
-                                            uint64_t message_id,
-                                            uint64_t group_generation,
-                                            struct GNUNET_MULTICAST_MembershipTestHandle *mth);
+(*GNUNET_MULTICAST_JoinDecisionCallback) (void *cls,
+                                          int is_admitted,
+                                          const struct GNUNET_PeerIdentity *peer,
+                                          uint16_t relay_count,
+                                          const struct GNUNET_PeerIdentity *relays,
+                                          const struct GNUNET_MessageHeader *join_msg);
 
 
 /**
@@ -338,16 +336,18 @@ typedef void
  * GNUNET_MULTICAST_member_to_origin_cancel() are not clear here.   Maybe we
  * should do something with the flags in this case?
  *
- * @param cls Closure (set from GNUNET_MULTICAST_origin_start).
- * @param sender Identity of the sender.
- * @param req Request to the origin.
- * @param flags Flags for the request.
+ * @param cls
+ *        Closure (set from GNUNET_MULTICAST_origin_start).
+ * @param sender
+ *        Identity of the sender.
+ * @param req
+ *        Request to the origin.
+ * @param flags
+ *        Flags for the request.
  */
 typedef void
 (*GNUNET_MULTICAST_RequestCallback) (void *cls,
-                                     const struct GNUNET_CRYPTO_EddsaPublicKey *member_key,
-                                     const struct GNUNET_MessageHeader *req,
-                                     enum GNUNET_MULTICAST_MessageFlags flags);
+                                     const struct GNUNET_MULTICAST_RequestHeader *req);
 
 
 /**
@@ -364,26 +364,16 @@ typedef void
  * So the semantics from the receiver side of
  * GNUNET_MULTICAST_origin_to_all_cancel() are not clear here.
  *
- * @param cls Closure (set from GNUNET_MULTICAST_member_join())
- * @param msg Message from the origin, NULL if the origin shut down
+ * @param cls
+ *        Closure (set from GNUNET_MULTICAST_member_join())
+ * @param msg
+ *        Message from the origin, NULL if the origin shut down
  *        (or we were kicked out, and we should thus call
  *        GNUNET_MULTICAST_member_part() next)
  */
 typedef void
 (*GNUNET_MULTICAST_MessageCallback) (void *cls,
-                                     const struct GNUNET_MessageHeader *msg);
-
-
-/**
- * Function called with the result of an asynchronous operation.
- *
- * @see GNUNET_MULTICAST_replay_fragment()
- *
- * @param result Result of the operation.
- */
-typedef void
-(*GNUNET_MULTICAST_ResultCallback) (void *cls,
-                                    int result);
+                                     const struct GNUNET_MULTICAST_MessageHeader *msg);
 
 
 /**
@@ -400,16 +390,21 @@ struct GNUNET_MULTICAST_ReplayHandle;
  * (with a message or an error); however, if the origin is destroyed or the
  * group is left, the replay handle must no longer be used.
  *
- * @param cls Closure (set from GNUNET_MULTICAST_origin_start()
+ * @param cls
+ *        Closure (set from GNUNET_MULTICAST_origin_start()
  *        or GNUNET_MULTICAST_member_join()).
- * @param member_key The member requesting replay.
- * @param fragment_id Which message fragment should be replayed.
- * @param flags Flags for the replay.
- * @param rh Handle to pass to message transmit function.
+ * @param member_pub_key
+ *        The member requesting replay.
+ * @param fragment_id
+ *        Which message fragment should be replayed.
+ * @param flags
+ *        Flags for the replay.
+ * @param rh
+ *        Handle to pass to message transmit function.
  */
 typedef void
 (*GNUNET_MULTICAST_ReplayFragmentCallback) (void *cls,
-                                            const struct GNUNET_CRYPTO_EddsaPublicKey *member_key,
+                                            const struct GNUNET_CRYPTO_EcdsaPublicKey *member_pub_key,
                                             uint64_t fragment_id,
                                             uint64_t flags,
                                             struct GNUNET_MULTICAST_ReplayHandle *rh);
@@ -422,17 +417,23 @@ typedef void
  * (with a message or an error); however, if the origin is destroyed or the
  * group is left, the replay handle must no longer be used.
  *
- * @param cls Closure (set from GNUNET_MULTICAST_origin_start()
+ * @param cls
+ *        Closure (set from GNUNET_MULTICAST_origin_start()
  *        or GNUNET_MULTICAST_member_join()).
- * @param member_key The member requesting replay.
- * @param message_id Which message should be replayed.
- * @param fragment_offset Offset of the fragment within of @a message_id to be replayed.
- * @param flags Flags for the replay.
- * @param rh Handle to pass to message transmit function.
+ * @param member_pub_key
+ *        The member requesting replay.
+ * @param message_id
+ *        Which message should be replayed.
+ * @param fragment_offset
+ *        Offset of the fragment within of @a message_id to be replayed.
+ * @param flags
+ *        Flags for the replay.
+ * @param rh
+ *        Handle to pass to message transmit function.
  */
 typedef void
 (*GNUNET_MULTICAST_ReplayMessageCallback) (void *cls,
-                                           const struct GNUNET_CRYPTO_EddsaPublicKey *member_key,
+                                           const struct GNUNET_CRYPTO_EcdsaPublicKey *member_pub_key,
                                            uint64_t message_id,
                                            uint64_t fragment_offset,
                                            uint64_t flags,
@@ -484,9 +485,13 @@ enum GNUNET_MULTICAST_ReplayErrorCode
 /**
  * Replay a message fragment for the multicast group.
  *
- * @param rh Replay handle identifying which replay operation was requested.
- * @param msg Replayed message fragment, NULL if unknown/error.
- * @param ec Error code.
+ * @param rh
+ *        Replay handle identifying which replay operation was requested.
+ * @param msg
+ *        Replayed message fragment, NULL if not found / an error occurred.
+ * @param ec
+ *        Error code.  See enum GNUNET_MULTICAST_ReplayErrorCode
+ *        If not #GNUNET_MULTICAST_REC_OK, the replay handle is invalidated.
  */
 void
 GNUNET_MULTICAST_replay_response (struct GNUNET_MULTICAST_ReplayHandle *rh,
@@ -519,9 +524,12 @@ typedef int
 /**
  * Replay a message for the multicast group.
  *
- * @param rh Replay handle identifying which replay operation was requested.
- * @param notify Function to call to get the message.
- * @param notify_cls Closure for @a notify.
+ * @param rh
+ *        Replay handle identifying which replay operation was requested.
+ * @param notify
+ *        Function to call to get the message.
+ * @param notify_cls
+ *        Closure for @a notify.
  */
 void
 GNUNET_MULTICAST_replay_response2 (struct GNUNET_MULTICAST_ReplayHandle *rh,
@@ -532,37 +540,50 @@ GNUNET_MULTICAST_replay_response2 (struct GNUNET_MULTICAST_ReplayHandle *rh,
 /**
  * Start a multicast group.
  *
- * Will advertise the origin in the P2P overlay network under the respective
- * public key so that other peer can find this peer to join it.  Peers that
- * issue GNUNET_MULTICAST_member_join() can then transmit a join request to
- * either an existing group member or to the origin.  If the joining is
+ * Peers that issue GNUNET_MULTICAST_member_join() can transmit a join request
+ * to either an existing group member or to the origin.  If the joining is
  * approved, the member is cleared for @e replay and will begin to receive
  * messages transmitted to the group.  If joining is disapproved, the failed
  * candidate will be given a response.  Members in the group can send messages
- * to the origin (one at a time).
+ * to the origin.
  *
- * @param cfg Configuration to use.
- * @param priv_key ECC key that will be used to sign messages for this
+ * TODO: This function could optionally offer to advertise the origin in the
+ * P2P overlay network(where?) under the respective public key so that other
+ * peers can find an alternate PeerId to join it. Higher level protocols may
+ * however provide other means of solving the problem of the offline host
+ * (see secushare specs about that) and therefore merely need a way to provide
+ * a list of possible PeerIds.
+ *
+ * @param cfg
+ *        Configuration to use.
+ * @param priv_key
+ *        ECC key that will be used to sign messages for this
  *        multicast session; public key is used to identify the multicast group;
- * @param next_fragment_id Next fragment ID to continue counting fragments from
- *        when restarting the origin.  1 for a new group.
- * @param join_cb Function called to approve / disapprove joining of a peer.
- * @param member_test_cb Function multicast can use to test group membership.
- * @param replay_frag_cb Function that can be called to replay a message fragment.
- * @param replay_msg_cb Function that can be called to replay a message.
- * @param request_cb Function called with message fragments from group members.
- * @param message_cb Function called with the message fragments sent to the
+ * @param max_fragment_id
+ *        Maximum fragment ID already sent to the group.
+ *        0 for a new group.
+ * @param join_request_cb
+ *        Function called to approve / disapprove joining of a peer.
+ * @param replay_frag_cb
+ *        Function that can be called to replay a message fragment.
+ * @param replay_msg_cb
+ *        Function that can be called to replay a message.
+ * @param request_cb
+ *        Function called with message fragments from group members.
+ * @param message_cb
+ *        Function called with the message fragments sent to the
  *        network by GNUNET_MULTICAST_origin_to_all().  These message fragments
  *        should be stored for answering replay requests later.
- * @param cls Closure for the various callbacks that follow.
+ * @param cls
+ *        Closure for the various callbacks that follow.
+ *
  * @return Handle for the origin, NULL on error.
  */
 struct GNUNET_MULTICAST_Origin *
 GNUNET_MULTICAST_origin_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                const struct GNUNET_CRYPTO_EddsaPrivateKey *priv_key,
-                               uint64_t next_fragment_id,
-                               GNUNET_MULTICAST_JoinCallback join_cb,
-                               GNUNET_MULTICAST_MembershipTestCallback member_test_cb,
+                               uint64_t max_fragment_id,
+                               GNUNET_MULTICAST_JoinRequestCallback join_request_cb,
                                GNUNET_MULTICAST_ReplayFragmentCallback replay_frag_cb,
                                GNUNET_MULTICAST_ReplayMessageCallback replay_msg_cb,
                                GNUNET_MULTICAST_RequestCallback request_cb,
@@ -576,17 +597,22 @@ GNUNET_MULTICAST_origin_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * Note that returning #GNUNET_OK or #GNUNET_SYSERR (but not #GNUNET_NO)
  * invalidates the respective transmission handle.
  *
- * @param cls Closure.
- * @param[in,out] data_size Initially set to the number of bytes available in
+ * @param cls
+ *        Closure.
+ * @param[in,out] data_size
+ *        Initially set to the number of bytes available in
  *        @a data, should be set to the number of bytes written to data.
- * @param[out] data Where to write the body of the message to give to the
+ * @param[out] data
+ *        Where to write the body of the message to give to the
  *         method. The function must copy at most @a data_size bytes to @a data.
+ *
  * @return #GNUNET_SYSERR on error (fatal, aborts transmission)
  *         #GNUNET_NO on success, if more data is to be transmitted later.
  *         Should be used if @a data_size was not big enough to take all the
  *         data.  If 0 is returned in @a data_size the transmission is paused,
  *         and can be resumed with GNUNET_MULTICAST_origin_to_all_resume().
  *         #GNUNET_YES if this completes the transmission (all data supplied)
+ * @deprecated should move to MQ-style API!
  */
 typedef int
 (*GNUNET_MULTICAST_OriginTransmitNotify) (void *cls,
@@ -598,21 +624,28 @@ typedef int
  * Handle for a request to send a message to all multicast group members
  * (from the origin).
  */
-struct GNUNET_MULTICAST_OriginMessageHandle;
+struct GNUNET_MULTICAST_OriginTransmitHandle;
 
 
 /**
  * Send a message to the multicast group.
  *
- * @param origin Handle to the multicast group.
- * @param message_id Application layer ID for the message.  Opaque to multicast.
- * @param group_generation Group generation of the message.  Documented in
- *             GNUNET_MULTICAST_MessageHeader.
- * @param notify Function to call to get the message.
- * @param notify_cls Closure for @a notify.
+ * @param origin
+ *        Handle to the multicast group.
+ * @param message_id
+ *        Application layer ID for the message.  Opaque to multicast.
+ * @param group_generation
+ *        Group generation of the message.  Documented in
+ *        struct GNUNET_MULTICAST_MessageHeader.
+ * @param notify
+ *        Function to call to get the message.
+ * @param notify_cls
+ *        Closure for @a notify.
+ *
  * @return NULL on error (i.e. request already pending).
+ * @deprecated should move to MQ-style API!
  */
-struct GNUNET_MULTICAST_OriginMessageHandle *
+struct GNUNET_MULTICAST_OriginTransmitHandle *
 GNUNET_MULTICAST_origin_to_all (struct GNUNET_MULTICAST_Origin *origin,
                                 uint64_t message_id,
                                 uint64_t group_generation,
@@ -624,19 +657,19 @@ GNUNET_MULTICAST_origin_to_all (struct GNUNET_MULTICAST_Origin *origin,
 /**
  * Resume message transmission to multicast group.
  *
- * @param mh Request to cancel.
+ * @param th  Transmission to cancel.
  */
 void
-GNUNET_MULTICAST_origin_to_all_resume (struct GNUNET_MULTICAST_OriginMessageHandle *mh);
+GNUNET_MULTICAST_origin_to_all_resume (struct GNUNET_MULTICAST_OriginTransmitHandle *th);
 
 
 /**
  * Cancel request for message transmission to multicast group.
  *
- * @param mh Request to cancel.
+ * @param th  Transmission to cancel.
  */
 void
-GNUNET_MULTICAST_origin_to_all_cancel (struct GNUNET_MULTICAST_OriginMessageHandle *mh);
+GNUNET_MULTICAST_origin_to_all_cancel (struct GNUNET_MULTICAST_OriginTransmitHandle *th);
 
 
 /**
@@ -645,14 +678,16 @@ GNUNET_MULTICAST_origin_to_all_cancel (struct GNUNET_MULTICAST_OriginMessageHand
  * @param origin Multicast group to stop.
  */
 void
-GNUNET_MULTICAST_origin_stop (struct GNUNET_MULTICAST_Origin *origin);
+GNUNET_MULTICAST_origin_stop (struct GNUNET_MULTICAST_Origin *origin,
+                              GNUNET_ContinuationCallback stop_cb,
+                              void *stop_cls);
 
 
 /**
  * Join a multicast group.
  *
  * The entity joining is always the local peer.  Further information about the
- * candidate can be provided in the @a join_request message.  If the join fails, the
+ * candidate can be provided in @a join_msg.  If the join fails, the
  * @a message_cb is invoked with a (failure) response and then with NULL.  If
  * the join succeeds, outstanding (state) messages and ongoing multicast
  * messages will be given to the @a message_cb until the member decides to part
@@ -660,45 +695,56 @@ GNUNET_MULTICAST_origin_stop (struct GNUNET_MULTICAST_Origin *origin);
  * anytime by the multicast service to support relaying messages to other
  * members of the group.
  *
- * @param cfg Configuration to use.
- * @param group_key ECC public key that identifies the group to join.
- * @param member_key ECC key that identifies the member and used to sign
- *        requests sent to the origin.
- * @param origin Peer ID of the origin to send unicast requsets to.  If NULL,
+ * @param cfg
+ *        Configuration to use.
+ * @param group_key
+ *        ECC public key that identifies the group to join.
+ * @param member_pub_key
+ *        ECC key that identifies the member
+ *        and used to sign requests sent to the origin.
+ * @param origin
+ *        Peer ID of the origin to send unicast requsets to.  If NULL,
  *        unicast requests are sent back via multiple hops on the reverse path
  *        of multicast messages.
- * @param relay_count Number of peers in the @a relays array.
- * @param relays Peer identities of members of the group, which serve as relays
+ * @param relay_count
+ *        Number of peers in the @a relays array.
+ * @param relays
+ *        Peer identities of members of the group, which serve as relays
  *        and can be used to join the group at. and send the @a join_request to.
  *        If empty, the @a join_request is sent directly to the @a origin.
- * @param join_request  Application-dependent join request to be passed to the peer
- *        @a relay (might, for example, contain a user, bind user
- *        identity/pseudonym to peer identity, application-level message to
- *        origin, etc.).
- * @param join_cb Function called to approve / disapprove joining of a peer.
- * @param mem_test_cb Function multicast can use to test group membership.
- * @param replay_frag_cb Function that can be called to replay message fragments
+ * @param join_msg
+ *        Application-dependent join message to be passed to the peer @a origin.
+ * @param join_request_cb
+ *        Function called to approve / disapprove joining of a peer.
+ * @param join_decision_cb
+ *        Function called to inform about the join decision.
+ * @param replay_frag_cb
+ *        Function that can be called to replay message fragments
  *        this peer already knows from this group. NULL if this
  *        client is unable to support replay.
- * @param replay_msg_cb Function that can be called to replay message fragments
+ * @param replay_msg_cb
+ *        Function that can be called to replay message fragments
  *        this peer already knows from this group. NULL if this
  *        client is unable to support replay.
- * @param message_cb Function to be called for all message fragments we
+ * @param message_cb
+ *        Function to be called for all message fragments we
  *        receive from the group, excluding those our @a replay_cb
  *        already has.
- * @param cls Closure for callbacks.
+ * @param cls
+ *        Closure for callbacks.
+ *
  * @return Handle for the member, NULL on error.
  */
 struct GNUNET_MULTICAST_Member *
 GNUNET_MULTICAST_member_join (const struct GNUNET_CONFIGURATION_Handle *cfg,
                               const struct GNUNET_CRYPTO_EddsaPublicKey *group_key,
-                              const struct GNUNET_CRYPTO_EddsaPrivateKey *member_key,
+                              const struct GNUNET_CRYPTO_EcdsaPrivateKey *member_pub_key,
                               const struct GNUNET_PeerIdentity *origin,
-                              uint32_t relay_count,
+                              uint16_t relay_count,
                               const struct GNUNET_PeerIdentity *relays,
                               const struct GNUNET_MessageHeader *join_request,
-                              GNUNET_MULTICAST_JoinCallback join_cb,
-                              GNUNET_MULTICAST_MembershipTestCallback mem_test_cb,
+                              GNUNET_MULTICAST_JoinRequestCallback join_request_cb,
+                              GNUNET_MULTICAST_JoinDecisionCallback join_decision_cb,
                               GNUNET_MULTICAST_ReplayFragmentCallback replay_frag_cb,
                               GNUNET_MULTICAST_ReplayMessageCallback replay_msg_cb,
                               GNUNET_MULTICAST_MessageCallback message_cb,
@@ -716,12 +762,14 @@ struct GNUNET_MULTICAST_MemberReplayHandle;
  * Useful if messages below the @e max_known_fragment_id given when joining are
  * needed and not known to the client.
  *
- * @param member Membership handle.
- * @param fragment_id ID of a message fragment that this client would like to
-          see replayed.
- * @param flags Additional flags for the replay request.  It is used and defined
- *        by the replay callback.  FIXME: which replay callback? FIXME: use enum?
- *        FIXME: why not pass reply cb here?
+ * @param member
+ *        Membership handle.
+ * @param fragment_id
+ *        ID of a message fragment that this client would like to see replayed.
+ * @param flags
+ *        Additional flags for the replay request.
+ *        It is used and defined by GNUNET_MULTICAST_ReplayFragmentCallback
+ *
  * @return Replay request handle, NULL on error.
  */
 struct GNUNET_MULTICAST_MemberReplayHandle *
@@ -736,28 +784,30 @@ GNUNET_MULTICAST_member_replay_fragment (struct GNUNET_MULTICAST_Member *member,
  * Useful if messages below the @e max_known_fragment_id given when joining are
  * needed and not known to the client.
  *
- * @param member Membership handle.
- * @param message_id ID of the message this client would like to see replayed.
- * @param fragment_offset Offset of the fragment within the message to replay.
- * @param flags Additional flags for the replay request.  It is used & defined
- *        by the replay callback.
- * @param result_cb Function to be called for the replayed message.
- * @param result_cb_cls Closure for @a result_cb.
+ * @param member
+ *        Membership handle.
+ * @param message_id
+ *        ID of the message this client would like to see replayed.
+ * @param fragment_offset
+ *        Offset of the fragment within the message to replay.
+ * @param flags
+ *        Additional flags for the replay request.
+ *        It is used & defined by GNUNET_MULTICAST_ReplayMessageCallback
+ *
  * @return Replay request handle, NULL on error.
  */
 struct GNUNET_MULTICAST_MemberReplayHandle *
 GNUNET_MULTICAST_member_replay_message (struct GNUNET_MULTICAST_Member *member,
                                         uint64_t message_id,
                                         uint64_t fragment_offset,
-                                        uint64_t flags,
-                                        GNUNET_MULTICAST_ResultCallback result_cb,
-                                        void *result_cb_cls);
+                                        uint64_t flags);
 
 
 /**
  * Cancel a replay request.
  *
- * @param rh Request to cancel.
+ * @param rh
+ *        Request to cancel.
  */
 void
 GNUNET_MULTICAST_member_replay_cancel (struct GNUNET_MULTICAST_MemberReplayHandle *rh);
@@ -771,10 +821,13 @@ GNUNET_MULTICAST_member_replay_cancel (struct GNUNET_MULTICAST_MemberReplayHandl
  * An application-dependent part message can be transmitted beforehand using
  * #GNUNET_MULTICAST_member_to_origin())
  *
- * @param member Membership handle.
+ * @param member
+ *        Membership handle.
  */
 void
-GNUNET_MULTICAST_member_part (struct GNUNET_MULTICAST_Member *member);
+GNUNET_MULTICAST_member_part (struct GNUNET_MULTICAST_Member *member,
+                              GNUNET_ContinuationCallback part_cb,
+                              void *part_cls);
 
 
 /**
@@ -783,17 +836,22 @@ GNUNET_MULTICAST_member_part (struct GNUNET_MULTICAST_Member *member);
  * Note that returning #GNUNET_OK or #GNUNET_SYSERR (but not #GNUNET_NO)
  * invalidates the respective transmission handle.
  *
- * @param cls Closure.
- * @param[in,out] data_size Initially set to the number of bytes available in
+ * @param cls
+ *        Closure.
+ * @param[in,out] data_size
+ *        Initially set to the number of bytes available in
  *        @a data, should be set to the number of bytes written to data.
- * @param[out] data Where to write the body of the message to give to the
- *         method. The function must copy at most @a data_size bytes to @a data.
+ * @param[out] data
+ *        Where to write the body of the message to give to the
+ *        method. The function must copy at most @a data_size bytes to @a data.
+ *
  * @return #GNUNET_SYSERR on error (fatal, aborts transmission)
  *         #GNUNET_NO on success, if more data is to be transmitted later.
  *         Should be used if @a data_size was not big enough to take all the
  *         data.  If 0 is returned in @a data_size the transmission is paused,
  *         and can be resumed with GNUNET_MULTICAST_member_to_origin_resume().
  *         #GNUNET_YES if this completes the transmission (all data supplied)
+ * @deprecated should move to MQ-style API!
  */
 typedef int
 (*GNUNET_MULTICAST_MemberTransmitNotify) (void *cls,
@@ -804,19 +862,25 @@ typedef int
 /**
  * Handle for a message to be delivered from a member to the origin.
  */
-struct GNUNET_MULTICAST_MemberRequestHandle;
+struct GNUNET_MULTICAST_MemberTransmitHandle;
 
 
 /**
  * Send a message to the origin of the multicast group.
  *
- * @param member Membership handle.
- * @param request_id Application layer ID for the request.  Opaque to multicast.
- * @param notify Callback to call to get the message.
- * @param notify_cls Closure for @a notify.
+ * @param member
+ *        Membership handle.
+ * @param request_id
+ *        Application layer ID for the request.  Opaque to multicast.
+ * @param notify
+ *        Callback to call to get the message.
+ * @param notify_cls
+ *        Closure for @a notify.
+ *
  * @return Handle to cancel request, NULL on error (i.e. request already pending).
+ * @deprecated should move to MQ-style API!
  */
-struct GNUNET_MULTICAST_MemberRequestHandle *
+struct GNUNET_MULTICAST_MemberTransmitHandle *
 GNUNET_MULTICAST_member_to_origin (struct GNUNET_MULTICAST_Member *member,
                                    uint64_t request_id,
                                    GNUNET_MULTICAST_MemberTransmitNotify notify,
@@ -826,19 +890,21 @@ GNUNET_MULTICAST_member_to_origin (struct GNUNET_MULTICAST_Member *member,
 /**
  * Resume message transmission to origin.
  *
- * @param rh Request to cancel.
+ * @param th
+ *        Transmission to cancel.
  */
 void
-GNUNET_MULTICAST_member_to_origin_resume (struct GNUNET_MULTICAST_MemberRequestHandle *rh);
+GNUNET_MULTICAST_member_to_origin_resume (struct GNUNET_MULTICAST_MemberTransmitHandle *th);
 
 
 /**
  * Cancel request for message transmission to origin.
  *
- * @param rh Request to cancel.
+ * @param th
+ *        Transmission to cancel.
  */
 void
-GNUNET_MULTICAST_member_to_origin_cancel (struct GNUNET_MULTICAST_MemberRequestHandle *rh);
+GNUNET_MULTICAST_member_to_origin_cancel (struct GNUNET_MULTICAST_MemberTransmitHandle *th);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
@@ -850,4 +916,5 @@ GNUNET_MULTICAST_member_to_origin_cancel (struct GNUNET_MULTICAST_MemberRequestH
 
 /* ifndef GNUNET_MULTICAST_SERVICE_H */
 #endif
-/* end of gnunet_multicast_service.h */
+
+/** @} */  /* end of group */

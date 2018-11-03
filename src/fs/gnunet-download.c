@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/gnunet-download.c
@@ -30,7 +25,7 @@
 
 static int ret;
 
-static int verbose;
+static unsigned int verbose;
 
 static int delete_incomplete;
 
@@ -54,7 +49,7 @@ static int local_only;
 
 
 static void
-cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleanup_task (void *cls)
 {
   GNUNET_FS_stop (ctx);
   ctx = NULL;
@@ -62,7 +57,7 @@ cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
   if (NULL != dc)
   {
@@ -124,7 +119,8 @@ display_bar (unsigned long long x,
  *         field in the `struct GNUNET_FS_ProgressInfo`
  */
 static void *
-progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
+progress_cb (void *cls,
+	     const struct GNUNET_FS_ProgressInfo *info)
 {
   char *s;
   const char *s2;
@@ -134,7 +130,8 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
   {
   case GNUNET_FS_STATUS_DOWNLOAD_START:
     if (verbose > 1)
-      FPRINTF (stderr, _("Starting download `%s'.\n"),
+      FPRINTF (stderr,
+	       _("Starting download `%s'.\n"),
                info->value.download.filename);
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_PROGRESS:
@@ -146,8 +143,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
           == GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us)
         s2 = _("<unknown time>");
       else
-        s2 = GNUNET_STRINGS_relative_time_to_string (
-						     info->value.download.specifics.progress.block_download_duration,
+        s2 = GNUNET_STRINGS_relative_time_to_string (info->value.download.specifics.progress.block_download_duration,
 						     GNUNET_YES);
       t = GNUNET_STRINGS_byte_size_fancy (info->value.download.completed *
                                           1000LL /
@@ -157,7 +153,10 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
                _("Downloading `%s' at %llu/%llu (%s remaining, %s/s). Block took %s to download\n"),
                info->value.download.filename,
                (unsigned long long) info->value.download.completed,
-               (unsigned long long) info->value.download.size, s, t, s2);
+               (unsigned long long) info->value.download.size,
+	       s,
+	       t,
+	       s2);
       GNUNET_free (s);
       GNUNET_free (t);
     }
@@ -173,7 +172,8 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     if (0 != isatty (1))
       fprintf (stdout, "\n");
 #else
-    if (FILE_TYPE_CHAR == GetFileType (GetStdHandle (STD_OUTPUT_HANDLE)))
+    if (FILE_TYPE_CHAR ==
+	GetFileType (GetStdHandle (STD_OUTPUT_HANDLE)))
       fprintf (stdout, "\n");
 #endif
     FPRINTF (stderr, _("Error downloading: %s.\n"),
@@ -188,10 +188,12 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     if (0 != isatty (1))
       fprintf (stdout, "\n");
 #else
-    if (FILE_TYPE_CHAR == GetFileType (GetStdHandle (STD_OUTPUT_HANDLE)))
+    if (FILE_TYPE_CHAR ==
+	GetFileType (GetStdHandle (STD_OUTPUT_HANDLE)))
       fprintf (stdout, "\n");
 #endif
-    FPRINTF (stdout, _("Downloading `%s' done (%s/s).\n"),
+    FPRINTF (stdout,
+	     _("Downloading `%s' done (%s/s).\n"),
              info->value.download.filename, s);
     GNUNET_free (s);
     if (info->value.download.dc == dc)
@@ -199,14 +201,15 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_STOPPED:
     if (info->value.download.dc == dc)
-      GNUNET_SCHEDULER_add_continuation (&cleanup_task, NULL,
-                                         GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+      GNUNET_SCHEDULER_add_now (&cleanup_task, NULL);
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_ACTIVE:
   case GNUNET_FS_STATUS_DOWNLOAD_INACTIVE:
     break;
   default:
-    FPRINTF (stderr, _("Unexpected status: %d\n"), info->status);
+    FPRINTF (stderr,
+	     _("Unexpected status: %d\n"),
+	     info->status);
     break;
   }
   return NULL;
@@ -222,7 +225,9 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
  * @param c configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   struct GNUNET_FS_Uri *uri;
@@ -231,41 +236,55 @@ run (void *cls, char *const *args, const char *cfgfile,
 
   if (NULL == args[0])
   {
-    FPRINTF (stderr, "%s",  _("You need to specify a URI argument.\n"));
+    FPRINTF (stderr,
+	     "%s",
+	     _("You need to specify a URI argument.\n"));
     return;
   }
   uri = GNUNET_FS_uri_parse (args[0], &emsg);
   if (NULL == uri)
   {
-    FPRINTF (stderr, _("Failed to parse URI: %s\n"), emsg);
+    FPRINTF (stderr,
+	     _("Failed to parse URI: %s\n"),
+	     emsg);
     GNUNET_free (emsg);
     ret = 1;
     return;
   }
-  if ((!GNUNET_FS_uri_test_chk (uri)) && (!GNUNET_FS_uri_test_loc (uri)))
+  if ( (! GNUNET_FS_uri_test_chk (uri)) &&
+       (! GNUNET_FS_uri_test_loc (uri)))
   {
-    FPRINTF (stderr, "%s",  _("Only CHK or LOC URIs supported.\n"));
+    FPRINTF (stderr,
+	     "%s",
+	     _("Only CHK or LOC URIs supported.\n"));
     ret = 1;
     GNUNET_FS_uri_destroy (uri);
     return;
   }
   if (NULL == filename)
   {
-    FPRINTF (stderr, "%s",  _("Target filename must be specified.\n"));
+    FPRINTF (stderr,
+	     "%s",
+	     _("Target filename must be specified.\n"));
     ret = 1;
     GNUNET_FS_uri_destroy (uri);
     return;
   }
   cfg = c;
-  ctx =
-      GNUNET_FS_start (cfg, "gnunet-download", &progress_cb, NULL,
-                       GNUNET_FS_FLAGS_NONE,
-                       GNUNET_FS_OPTIONS_DOWNLOAD_PARALLELISM, parallelism,
-                       GNUNET_FS_OPTIONS_REQUEST_PARALLELISM,
-                       request_parallelism, GNUNET_FS_OPTIONS_END);
+  ctx = GNUNET_FS_start (cfg,
+			 "gnunet-download",
+			 &progress_cb, NULL,
+			 GNUNET_FS_FLAGS_NONE,
+			 GNUNET_FS_OPTIONS_DOWNLOAD_PARALLELISM,
+			 parallelism,
+			 GNUNET_FS_OPTIONS_REQUEST_PARALLELISM,
+			 request_parallelism,
+			 GNUNET_FS_OPTIONS_END);
   if (NULL == ctx)
   {
-    FPRINTF (stderr, _("Could not initialize `%s' subsystem.\n"), "FS");
+    FPRINTF (stderr,
+	     _("Could not initialize `%s' subsystem.\n"),
+	     "FS");
     GNUNET_FS_uri_destroy (uri);
     ret = 1;
     return;
@@ -275,9 +294,17 @@ run (void *cls, char *const *args, const char *cfgfile,
     options |= GNUNET_FS_DOWNLOAD_OPTION_RECURSIVE;
   if (local_only)
     options |= GNUNET_FS_DOWNLOAD_OPTION_LOOPBACK_ONLY;
-  dc = GNUNET_FS_download_start (ctx, uri, NULL, filename, NULL, 0,
+  dc = GNUNET_FS_download_start (ctx,
+				 uri,
+				 NULL,
+				 filename,
+				 NULL,
+				 0,
                                  GNUNET_FS_uri_chk_get_file_size (uri),
-                                 anonymity, options, NULL, NULL);
+                                 anonymity,
+				 options,
+				 NULL,
+				 NULL);
   GNUNET_FS_uri_destroy (uri);
   if (dc == NULL)
   {
@@ -285,8 +312,8 @@ run (void *cls, char *const *args, const char *cfgfile,
     ctx = NULL;
     return;
   }
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
+				 NULL);
 }
 
 
@@ -300,44 +327,60 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'a', "anonymity", "LEVEL",
-     gettext_noop ("set the desired LEVEL of receiver-anonymity"),
-     1, &GNUNET_GETOPT_set_uint, &anonymity},
-    {'D', "delete-incomplete", NULL,
-     gettext_noop ("delete incomplete downloads (when aborted with CTRL-C)"),
-     0, &GNUNET_GETOPT_set_one, &delete_incomplete},
-    {'n', "no-network", NULL,
-     gettext_noop ("only search the local peer (no P2P network search)"),
-     0, &GNUNET_GETOPT_set_uint, &local_only},
-    {'o', "output", "FILENAME",
-     gettext_noop ("write the file to FILENAME"),
-     1, &GNUNET_GETOPT_set_string, &filename},
-    {'p', "parallelism", "DOWNLOADS",
-     gettext_noop
-     ("set the maximum number of parallel downloads that is allowed"),
-     1, &GNUNET_GETOPT_set_uint, &parallelism},
-    {'r', "request-parallelism", "REQUESTS",
-     gettext_noop
-     ("set the maximum number of parallel requests for blocks that is allowed"),
-     1, &GNUNET_GETOPT_set_uint, &request_parallelism},
-    {'R', "recursive", NULL,
-     gettext_noop ("download a GNUnet directory recursively"),
-     0, &GNUNET_GETOPT_set_one, &do_recursive},
-    {'V', "verbose", NULL,
-     gettext_noop ("be verbose (print progress information)"),
-     0, &GNUNET_GETOPT_increment_value, &verbose},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_uint ('a',
+			       "anonymity",
+			       "LEVEL",
+			       gettext_noop ("set the desired LEVEL of receiver-anonymity"),
+			       &anonymity),
+
+    GNUNET_GETOPT_option_flag ('D',
+			       "delete-incomplete",
+			       gettext_noop ("delete incomplete downloads (when aborted with CTRL-C)"),
+			       &delete_incomplete),
+
+    GNUNET_GETOPT_option_flag ('n',
+			       "no-network",
+			       gettext_noop ("only search the local peer (no P2P network search)"),
+			       &local_only), 
+    GNUNET_GETOPT_option_string ('o',
+                                 "output",
+                                 "FILENAME",
+                                 gettext_noop ("write the file to FILENAME"),
+                                 &filename),
+    GNUNET_GETOPT_option_uint ('p',
+			       "parallelism",
+			       "DOWNLOADS",
+			       gettext_noop ("set the maximum number of parallel downloads that is allowed"),
+			       &parallelism),
+    GNUNET_GETOPT_option_uint ('r',
+			       "request-parallelism",
+			       "REQUESTS",
+			       gettext_noop ("set the maximum number of parallel requests for blocks that is allowed"),
+			       &request_parallelism), 
+    GNUNET_GETOPT_option_flag ('R',
+			       "recursive",
+			       gettext_noop ("download a GNUnet directory recursively"),
+			       &do_recursive),
+    GNUNET_GETOPT_option_increment_uint ('V',
+					 "verbose",
+					 gettext_noop ("be verbose (print progress information)"),
+					 &verbose), 
     GNUNET_GETOPT_OPTION_END
   };
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv,
+				    &argc, &argv))
     return 2;
 
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv, "gnunet-download [OPTIONS] URI",
+	 GNUNET_PROGRAM_run (argc, argv,
+			     "gnunet-download [OPTIONS] URI",
 			     gettext_noop
 			     ("Download files from GNUnet using a GNUnet CHK or LOC URI (gnunet://fs/chk/...)"),
-			     options, &run, NULL)) ? ret : 1;
+			     options,
+			     &run, NULL)) ? ret : 1;
   GNUNET_free ((void*) argv);
   return ret;
 }

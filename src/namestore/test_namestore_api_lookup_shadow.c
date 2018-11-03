@@ -1,24 +1,19 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
- * @file namestore/test_namestore_api_lookup_shadow_filter.c
+ * @file namestore/test_namestore_api_lookup_shadow.c
  * @brief testcase for namestore_api.c: store a shadow record and perform a lookup
  * test passes if test returns the record but without the shadow flag since no
  * other valid record is available
@@ -27,8 +22,9 @@
 #include "gnunet_namecache_service.h"
 #include "gnunet_namestore_service.h"
 #include "gnunet_testing_lib.h"
+#include "gnunet_dnsparser_lib.h"
 
-#define TEST_RECORD_TYPE 1234
+#define TEST_RECORD_TYPE GNUNET_DNSPARSER_TYPE_TXT
 
 #define TEST_RECORD_DATALEN 123
 
@@ -41,7 +37,7 @@ static struct GNUNET_NAMESTORE_Handle *nsh;
 
 static struct GNUNET_NAMECACHE_Handle *nch;
 
-static GNUNET_SCHEDULER_TaskIdentifier endbadly_task;
+static struct GNUNET_SCHEDULER_Task * endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -53,7 +49,6 @@ static struct GNUNET_NAMESTORE_QueueEntry *nsqe;
 
 static struct GNUNET_NAMECACHE_QueueEntry *ncqe;
 
-static char *directory;
 
 static void
 cleanup ()
@@ -81,10 +76,9 @@ cleanup ()
  * Re-establish the connection to the service.
  *
  * @param cls handle to use to re-connect.
- * @param tc scheduler context
  */
 static void
-endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+endbadly (void *cls)
 {
   if (NULL != nsqe)
   {
@@ -102,7 +96,7 @@ endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-end (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+end (void *cls)
 {
   cleanup ();
   res = 0;
@@ -171,17 +165,17 @@ name_lookup_proc (void *cls,
   ncqe = NULL;
   GNUNET_assert (NULL != cls);
 
-  if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
+  if (endbadly_task != NULL)
   {
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_NO_TASK;
+    endbadly_task = NULL;
   }
 
   if (NULL == block)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
   	      _("Namestore returned no block\n"));
-    if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
+    if (endbadly_task != NULL)
       GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task =  GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
@@ -223,25 +217,15 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   struct GNUNET_GNSRECORD_Data rd;
-  char *hostkey_file;
   const char * name = "dummy.dummy.gnunet";
 
-  directory = NULL;
-  GNUNET_CONFIGURATION_get_value_string(cfg, "PATHS", "GNUNET_TEST_HOME", &directory);
-  GNUNET_DISK_directory_remove (directory);
-
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly, NULL);
-  GNUNET_asprintf (&hostkey_file,
-		   "zonefiles%s%s",
-		   DIR_SEPARATOR_STR,
-		   "N0UJMP015AFUNR2BTNM3FKPBLG38913BL8IDMCO2H0A1LIB81960.zkey");
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Using zonekey file `%s' \n", hostkey_file);
-  privkey = GNUNET_CRYPTO_ecdsa_key_create_from_file (hostkey_file);
-  GNUNET_free (hostkey_file);
+						&endbadly,
+                                                NULL);
+  privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
-  GNUNET_CRYPTO_ecdsa_key_get_public (privkey, &pubkey);
-
+  GNUNET_CRYPTO_ecdsa_key_get_public (privkey,
+                                      &pubkey);
   rd.expiration_time = GNUNET_TIME_absolute_get().abs_value_us + 1000000000;
   rd.record_type = TEST_RECORD_TYPE;
   rd.data_size = TEST_RECORD_DATALEN;
@@ -253,8 +237,13 @@ run (void *cls,
   nch = GNUNET_NAMECACHE_connect (cfg);
   GNUNET_break (NULL != nsh);
   GNUNET_break (NULL != nch);
-  nsqe = GNUNET_NAMESTORE_records_store (nsh, privkey, name,
-				      1, &rd, &put_cont, (void *) name);
+  nsqe = GNUNET_NAMESTORE_records_store (nsh,
+                                         privkey,
+                                         name,
+                                         1,
+                                         &rd,
+                                         &put_cont,
+                                         (void *) name);
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -267,22 +256,29 @@ run (void *cls,
 int
 main (int argc, char *argv[])
 {
+  const char *plugin_name;
+  char *cfg_name;
+
+  plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
+  GNUNET_asprintf (&cfg_name,
+                   "test_namestore_api_%s.conf",
+                   plugin_name);
+  GNUNET_DISK_purge_cfg_dir (cfg_name,
+                             "GNUNET_TEST_HOME");
   res = 1;
   if (0 !=
-      GNUNET_TESTING_peer_run ("test-namestore-api",
-                               "test_namestore_api.conf",
+      GNUNET_TESTING_peer_run ("test-namestore-api-lookup-shadow",
+                               cfg_name,
                                &run,
                                NULL))
   {
     res = 1;
   }
-  if (NULL != directory)
-  {
-      GNUNET_DISK_directory_remove (directory);
-      GNUNET_free (directory);
-  }
+  GNUNET_free (cfg_name);
+  GNUNET_DISK_purge_cfg_dir (cfg_name,
+                             "GNUNET_TEST_HOME");
   return res;
 }
 
 
-/* end of test_namestore_api_lookup_shadow_filter.c */
+/* end of test_namestore_api_lookup_shadow.c */

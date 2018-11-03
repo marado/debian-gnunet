@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -41,6 +36,8 @@
  * - Christian Grothoff
  */
 #define _GNU_SOURCE
+/* Instead of including gnunet_common.h */
+#define GNUNET_memcpy(dst,src,n) do { if (0 != n) { (void) memcpy (dst,src,n); } } while (0)
 
 #define FD_SETSIZE 1024
 #include <winsock2.h>
@@ -284,7 +281,7 @@ send_icmp_echo (const struct in_addr *my_ip)
   ip_pkt.dst_ip = dummy.s_addr;
   ip_pkt.checksum =
       htons (calc_checksum ((uint16_t *) & ip_pkt, sizeof (struct ip_header)));
-  memcpy (&packet[off], &ip_pkt, sizeof (struct ip_header));
+  GNUNET_memcpy (&packet[off], &ip_pkt, sizeof (struct ip_header));
   off += sizeof (struct ip_header);
 
   icmp_echo.type = ICMP_ECHO;
@@ -294,7 +291,7 @@ send_icmp_echo (const struct in_addr *my_ip)
   icmp_echo.checksum =
       htons (calc_checksum
              ((uint16_t *) & icmp_echo, sizeof (struct icmp_echo_header)));
-  memcpy (&packet[off], &icmp_echo, sizeof (struct icmp_echo_header));
+  GNUNET_memcpy (&packet[off], &icmp_echo, sizeof (struct icmp_echo_header));
   off += sizeof (struct icmp_echo_header);
 
   memset (&dst, 0, sizeof (dst));
@@ -377,10 +374,10 @@ process_icmp_response ()
     return;
   }
   off = 0;
-  memcpy (&ip_pkt, &buf[off], sizeof (struct ip_header));
+  GNUNET_memcpy (&ip_pkt, &buf[off], sizeof (struct ip_header));
   off += sizeof (struct ip_header);
-  memcpy (&source_ip, &ip_pkt.src_ip, sizeof (source_ip));
-  memcpy (&icmp_ttl, &buf[off], sizeof (struct icmp_ttl_exceeded_header));
+  GNUNET_memcpy (&source_ip, &ip_pkt.src_ip, sizeof (source_ip));
+  GNUNET_memcpy (&icmp_ttl, &buf[off], sizeof (struct icmp_ttl_exceeded_header));
   off += sizeof (struct icmp_ttl_exceeded_header);
   if ((ICMP_TIME_EXCEEDED != icmp_ttl.type) || (0 != icmp_ttl.code))
   {
@@ -388,7 +385,7 @@ process_icmp_response ()
     return;
   }
   /* skip 2nd IP header */
-  memcpy (&ip_pkt, &buf[off], sizeof (struct ip_header));
+  GNUNET_memcpy (&ip_pkt, &buf[off], sizeof (struct ip_header));
   off += sizeof (struct ip_header);
 
   switch (ip_pkt.proto)
@@ -403,7 +400,7 @@ process_icmp_response ()
       return;
     }
     /* grab ICMP ECHO content */
-    memcpy (&icmp_echo, &buf[off], sizeof (struct icmp_echo_header));
+    GNUNET_memcpy (&icmp_echo, &buf[off], sizeof (struct icmp_echo_header));
     port = (uint16_t) ntohl (icmp_echo.reserved);
     break;
   case IPPROTO_UDP:
@@ -415,7 +412,7 @@ process_icmp_response ()
       return;
     }
     /* grab UDP content */
-    memcpy (&udp_pkt, &buf[off], sizeof (struct udp_header));
+    GNUNET_memcpy (&udp_pkt, &buf[off], sizeof (struct udp_header));
     port = ntohs (udp_pkt.length);
     break;
   default:

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2010, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/test_plugin_block_fs.c
@@ -38,17 +33,32 @@ test_fs (struct GNUNET_BLOCK_Context *ctx)
                             sizeof (block), &key))
     return 1;
   if (GNUNET_BLOCK_EVALUATION_OK_LAST !=
-      GNUNET_BLOCK_evaluate (ctx, GNUNET_BLOCK_TYPE_FS_DBLOCK, &key, NULL, 0,
-                             NULL, 0, block, sizeof (block)))
+      GNUNET_BLOCK_evaluate (ctx,
+                             GNUNET_BLOCK_TYPE_FS_DBLOCK,
+                             NULL,
+                             GNUNET_BLOCK_EO_NONE,
+                             &key,
+                             NULL, 0,
+                             block, sizeof (block)))
     return 2;
   if (GNUNET_BLOCK_EVALUATION_REQUEST_VALID !=
-      GNUNET_BLOCK_evaluate (ctx, GNUNET_BLOCK_TYPE_FS_DBLOCK, &key, NULL, 0,
-                             NULL, 0, NULL, 0))
+      GNUNET_BLOCK_evaluate (ctx,
+                             GNUNET_BLOCK_TYPE_FS_DBLOCK,
+                             NULL,
+                             GNUNET_BLOCK_EO_NONE,
+                             &key,
+                             NULL, 0,
+                             NULL, 0))
     return 4;
   GNUNET_log_skip (1, GNUNET_NO);
   if (GNUNET_BLOCK_EVALUATION_REQUEST_INVALID !=
-      GNUNET_BLOCK_evaluate (ctx, GNUNET_BLOCK_TYPE_FS_DBLOCK, &key, NULL, 0,
-                             "bogus", 5, NULL, 0))
+      GNUNET_BLOCK_evaluate (ctx,
+                             GNUNET_BLOCK_TYPE_FS_DBLOCK,
+                             NULL,
+                             GNUNET_BLOCK_EO_NONE,
+                             &key,
+                             "bogus", 5,
+                             NULL, 0))
     return 8;
   GNUNET_log_skip (0, GNUNET_YES);
   return 0;

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file arm/test_gnunet_service_arm.c
@@ -38,18 +33,20 @@
 
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 10)
 
+
 static int ret = 1;
 
-static int resolved_ok = 0;
+static int resolved_ok;
 
-static int asked_for_a_list = 0;
+static int asked_for_a_list;
 
 static struct GNUNET_ARM_Handle *arm;
 
+
 static void
-trigger_disconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+trigger_disconnect (void *cls)
 {
-  GNUNET_ARM_disconnect_and_free (arm);
+  GNUNET_ARM_disconnect (arm);
   arm = NULL;
 }
 
@@ -57,55 +54,77 @@ trigger_disconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 static void
 arm_stop_cb (void *cls,
 	     enum GNUNET_ARM_RequestStatus status,
-	     const char *servicename,
 	     enum GNUNET_ARM_Result result)
 {
   GNUNET_break (status == GNUNET_ARM_REQUEST_SENT_OK);
   GNUNET_break (result == GNUNET_ARM_RESULT_STOPPED);
   if (result != GNUNET_ARM_RESULT_STOPPED)
+  {
+    GNUNET_break (0);
     ret = 4;
-  GNUNET_SCHEDULER_add_now (trigger_disconnect, NULL);
+  }
+  GNUNET_SCHEDULER_add_now (&trigger_disconnect, NULL);
 }
 
 
 static void
 service_list (void *cls,
 	      enum GNUNET_ARM_RequestStatus rs,
-	      unsigned int count, const char *const*list)
+	      unsigned int count,
+              const char *const*list)
 {
+  unsigned int i;
+
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "%u services are are currently running\n",
 	      count);
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
     goto stop_arm;
-  if (1 == count)
+  for (i=0;i<count;i++)
   {
-    GNUNET_break (0 == strcasecmp (list[0], "resolver (gnunet-service-resolver)"));
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got service list, now stopping arm\n");
-    ret = 0;
+    if (0 == strcasecmp (list[i],
+                         "resolver (gnunet-service-resolver)"))
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "Got service list, now stopping arm\n");
+      ret = 0;
+    }
   }
 
  stop_arm:
-  GNUNET_ARM_request_service_stop (arm, "arm", TIMEOUT, arm_stop_cb, NULL);
+  GNUNET_ARM_request_service_stop (arm,
+                                   "arm",
+                                   &arm_stop_cb,
+                                   NULL);
 }
 
 
 static void
-hostNameResolveCB (void *cls, const struct sockaddr *addr, socklen_t addrlen)
+hostname_resolve_cb (void *cls,
+                     const struct sockaddr *addr,
+                     socklen_t addrlen)
 {
-  if ((ret == 0) || (ret == 4) || (resolved_ok == 1))
+  if ((0 == ret) || (4 == ret) || (1 == resolved_ok))
     return;
   if (NULL == addr)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Name not resolved!\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Name not resolved!\n");
+    GNUNET_break (0);
     ret = 3;
-    GNUNET_ARM_request_service_stop (arm, "arm", TIMEOUT, arm_stop_cb, NULL);
+    GNUNET_ARM_request_service_stop (arm,
+                                     "arm",
+                                     &arm_stop_cb,
+                                     NULL);
+    return;
   }
-  else if (asked_for_a_list == 0)
+  if (0 == asked_for_a_list)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-        "Resolved hostname, now checking the service list\n");
-    GNUNET_ARM_request_service_list (arm, TIMEOUT, service_list, NULL);
+                "Resolved hostname, now checking the service list\n");
+    GNUNET_ARM_request_service_list (arm,
+                                     &service_list,
+                                     NULL);
     asked_for_a_list = 1;
     resolved_ok = 1;
   }
@@ -115,47 +134,45 @@ hostNameResolveCB (void *cls, const struct sockaddr *addr, socklen_t addrlen)
 static void
 arm_start_cb (void *cls,
 	      enum GNUNET_ARM_RequestStatus status,
-	      const char *servicename,
 	      enum GNUNET_ARM_Result result)
 {
   GNUNET_break (status == GNUNET_ARM_REQUEST_SENT_OK);
   GNUNET_break (result == GNUNET_ARM_RESULT_STARTING);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-      "Trying to resolve our own hostname!\n");
+              "Trying to resolve our own hostname!\n");
   /* connect to the resolver service */
-  if (NULL == GNUNET_RESOLVER_hostname_resolve (
-      AF_UNSPEC, TIMEOUT, &hostNameResolveCB, NULL))
+  if (NULL ==
+      GNUNET_RESOLVER_hostname_resolve (AF_UNSPEC,
+                                        TIMEOUT,
+                                        &hostname_resolve_cb,
+                                        NULL))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-        "Unable initiate connection to resolver service\n");
+                "Unable initiate connection to resolver service\n");
+    GNUNET_break (0);
     ret = 2;
-    GNUNET_ARM_request_service_stop (arm, "arm", TIMEOUT, arm_stop_cb, NULL);
+    GNUNET_ARM_request_service_stop (arm,
+                                     "arm",
+                                     &arm_stop_cb,
+                                     NULL);
   }
 }
 
 
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
-  char *armconfig;
-
-  if (NULL != cfgfile)
-  {
-    if (GNUNET_OK !=
-        GNUNET_CONFIGURATION_get_value_filename (c, "arm", "CONFIG",
-					       &armconfig))
-    {
-      GNUNET_CONFIGURATION_set_value_string ((struct GNUNET_CONFIGURATION_Handle
-                                              *) c, "arm", "CONFIG",
-                                             cfgfile);
-    }
-    else
-      GNUNET_free (armconfig);
-  }
-  arm = GNUNET_ARM_connect (c, NULL, NULL);
-  GNUNET_ARM_request_service_start (arm, "arm",
-      GNUNET_OS_INHERIT_STD_OUT_AND_ERR, START_TIMEOUT, arm_start_cb, NULL);
+  arm = GNUNET_ARM_connect (c,
+                            NULL,
+                            NULL);
+  GNUNET_ARM_request_service_start (arm,
+                                    "arm",
+                                    GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                                    &arm_start_cb,
+                                    NULL);
 }
 
 
@@ -164,7 +181,8 @@ main (int argc, char *av[])
 {
   static char *const argv[] = {
     "test-gnunet-service-arm",
-    "-c", "test_arm_api_data.conf",
+    "-c",
+    "test_arm_api_data.conf",
     NULL
   };
   static struct GNUNET_GETOPT_CommandLineOption options[] = {
@@ -173,27 +191,87 @@ main (int argc, char *av[])
   char hostname[GNUNET_OS_get_hostname_max_length () + 1];
 
   if (0 != gethostname (hostname, sizeof (hostname) - 1))
+  {
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
+                         "gethostname");
+    FPRINTF (stderr,
+             "%s",
+             "Failed to determine my own hostname, testcase not run.\n");
+    return 0;
+  }
+  if ( (0 == strcmp (hostname,
+		     "localhost")) ||
+       (0 == strcmp (hostname,
+		     "ipv6-localnet")) )
+  {
+    /* we cannot use 'localhost' as this would not trigger the
+       resolver service (see resolver_api.c); so in this case,
+       we fall back to (ab)using gnu.org. */
+    strcpy (hostname,
+	    "www.gnu.org");
+  }
+  /* trigger DNS lookup */
+#if HAVE_GETADDRINFO
+  {
+    struct addrinfo *ai;
+    int ret;
+
+    if (0 != (ret = getaddrinfo (hostname, NULL, NULL, &ai)))
     {
-      GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-			   "gethostname");
       FPRINTF (stderr,
-	       "%s", "Failed to determine my own hostname, testcase not run.\n");
+               "Failed to resolve my hostname `%s', testcase not run.\n",
+               hostname);
       return 0;
     }
-  if (NULL == gethostbyname (hostname))
-    {
-      FPRINTF (stderr,
-	       "Failed to resolve my hostname `%s', testcase not run.\n",
-	       hostname);
-      return 0;
-    }
+    freeaddrinfo (ai);
+  }
+#elif HAVE_GETHOSTBYNAME2
+  {
+    struct hostent *host;
+
+    host = gethostbyname2 (hostname, AF_INET);
+    if (NULL == host)
+      host = gethostbyname2 (hostname, AF_INET6);
+    if (NULL == host)
+      {
+        FPRINTF (stderr,
+                 "Failed to resolve my hostname `%s', testcase not run.\n",
+                 hostname);
+        return 0;
+      }
+  }
+#elif HAVE_GETHOSTBYNAME
+  {
+    struct hostent *host;
+
+    host = gethostbyname (hostname);
+    if (NULL == host)
+      {
+        FPRINTF (stderr,
+                 "Failed to resolve my hostname `%s', testcase not run.\n",
+                 hostname);
+        return 0;
+      }
+  }
+#else
+  FPRINTF (stderr,
+           "libc fails to have resolver function, testcase not run.\n");
+  return 0;
+#endif
   GNUNET_log_setup ("test-gnunet-service-arm",
 		    "WARNING",
 		    NULL);
   GNUNET_break (GNUNET_OK ==
 		GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
 				    argv, "test-gnunet-service-arm",
-				    "nohelp", options, &run, NULL));
+				    "nohelp", options,
+                                    &run, NULL));
+  if (0 != ret)
+  {
+    fprintf (stderr,
+             "Test failed with error code %d\n",
+             ret);
+  }
   return ret;
 }
 

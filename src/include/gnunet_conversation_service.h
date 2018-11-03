@@ -1,30 +1,28 @@
 /*
   This file is part of GNUnet
-  (C) 2013 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2013, 2014, 2016 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+  Affero General Public License for more details.
  */
 
 /**
- * @file include/gnunet_conversation_service.h
- * @brief API to the conversation service
  * @author Simon Dieterle
  * @author Andreas Fuchs
  * @author Christian Grothoff
  *
+ * @file
+ * API to the conversation service
+ *
+ * @defgroup conversation  Conversation service
+ * One-to-one voice communication over CADET
  *
  * NOTE: This API is deliberately deceptively simple; the idea
  * is that advanced features (such as answering machines) will
@@ -41,6 +39,8 @@
  * course provided as part of the basic implementation, as only the
  * CONVERSATION service can know for sure who it is that we are
  * talking to.
+ *
+ * @{
  */
 #ifndef GNUNET_CONVERSATION_SERVICE_H
 #define GNUNET_CONVERSATION_SERVICE_H
@@ -63,7 +63,7 @@ extern "C"
 /**
  * Version of the conversation API.
  */
-#define GNUNET_CONVERSATION_VERSION 0x00000003
+#define GNUNET_CONVERSATION_VERSION 0x00000004
 
 /**
  * Handle to identify a particular caller.  A caller is an entity that
@@ -85,21 +85,26 @@ struct GNUNET_CONVERSATION_PhoneRecord
 {
 
   /**
-   * Version of the phone record, for now always zero.  We may
+   * Version of the phone record, for now always one.  We may
    * use other versions for anonymously hosted phone lines in
    * the future.
    */
   uint32_t version GNUNET_PACKED;
 
   /**
-   * Phone line to use at the peer.
+   * Reserved. In v1. always zero.
    */
-  uint32_t line GNUNET_PACKED;
+  uint32_t reserved GNUNET_PACKED;
 
   /**
    * Identity of the peer hosting the phone service.
    */
   struct GNUNET_PeerIdentity peer;
+
+  /**
+   * Phone line (CADET port) to connect to.
+   */
+  struct GNUNET_HashCode line_port;
 
 };
 
@@ -131,12 +136,13 @@ enum GNUNET_CONVERSATION_PhoneEventCode
  * @param cls closure
  * @param code type of the event
  * @param caller handle for the caller
- * @param caller_id name of the caller in GNS
+ * @param caller_id public key of the caller (in GNS)
  */
-typedef void (*GNUNET_CONVERSATION_PhoneEventHandler)(void *cls,
-                                                      enum GNUNET_CONVERSATION_PhoneEventCode code,
-                                                      struct GNUNET_CONVERSATION_Caller *caller,
-                                                      const char *caller_id);
+typedef void
+(*GNUNET_CONVERSATION_PhoneEventHandler)(void *cls,
+                                         enum GNUNET_CONVERSATION_PhoneEventCode code,
+                                         struct GNUNET_CONVERSATION_Caller *caller,
+                                         const struct GNUNET_CRYPTO_EcdsaPublicKey *caller_id);
 
 
 /**
@@ -172,8 +178,9 @@ enum GNUNET_CONVERSATION_CallerEventCode
  * @param cls closure
  * @param code type of the event for this caller
  */
-typedef void (*GNUNET_CONVERSATION_CallerEventHandler)(void *cls,
-                                                       enum GNUNET_CONVERSATION_CallerEventCode code);
+typedef void
+(*GNUNET_CONVERSATION_CallerEventHandler)(void *cls,
+                                          enum GNUNET_CONVERSATION_CallerEventCode code);
 
 
 /**
@@ -293,6 +300,7 @@ struct GNUNET_CONVERSATION_Call;
  */
 enum GNUNET_CONVERSATION_CallEventCode
 {
+
   /**
    * We are the caller and are now ringing the other party (GNS lookup
    * succeeded).
@@ -351,8 +359,9 @@ enum GNUNET_CONVERSATION_CallEventCode
  * @param cls closure
  * @param code type of the event on the call
  */
-typedef void (*GNUNET_CONVERSATION_CallEventHandler)(void *cls,
-                                                     enum GNUNET_CONVERSATION_CallEventCode code);
+typedef void
+(*GNUNET_CONVERSATION_CallEventHandler)(void *cls,
+                                        enum GNUNET_CONVERSATION_CallEventCode code);
 
 
 /**
@@ -368,6 +377,7 @@ typedef void (*GNUNET_CONVERSATION_CallEventHandler)(void *cls,
  *        #GNUNET_CONVERSATION_EC_CALL_PICKED_UP event is generated)
  * @param event_handler how to notify the owner of the phone about events
  * @param event_handler_cls closure for @a event_handler
+ * @return handle for the call
  */
 struct GNUNET_CONVERSATION_Call *
 GNUNET_CONVERSATION_call_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
@@ -419,3 +429,5 @@ GNUNET_CONVERSATION_call_stop (struct GNUNET_CONVERSATION_Call *call);
 #endif
 
 #endif
+
+/** @} */  /* end of group */
