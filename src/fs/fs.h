@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2003--2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2003--2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -65,6 +60,77 @@ struct ContentHashKey
 
 
 GNUNET_NETWORK_STRUCT_BEGIN
+
+
+/**
+ * Message sent from a GNUnet (fs) publishing activity to sign
+ * a LOC URI.
+ */
+struct RequestLocSignatureMessage
+{
+
+  /**
+   * Message type will be #GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGN.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Requested signature purpose.  For now, always
+   * #GNUNET_SIGNATURE_PURPOSE_PEER_PLACEMENT.
+   */
+  uint32_t purpose GNUNET_PACKED;
+
+  /**
+   * Requested expiration time.
+   */
+  struct GNUNET_TIME_AbsoluteNBO expiration_time;
+
+  /**
+   * Information about the shared file (to be signed).
+   */
+  struct ContentHashKey chk;
+
+  /**
+   * Size of the shared file (to be signed).
+   */
+  uint64_t file_length;
+};
+
+
+/**
+ * Message sent from the service with the signed LOC URI.
+ */
+struct ResponseLocSignatureMessage
+{
+
+  /**
+   * Message type will be
+   * #GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGNATURE.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Purpose of the generated signature.  For now, always
+   * #GNUNET_SIGNATURE_PURPOSE_PEER_PLACEMENT.
+   */
+  uint32_t purpose GNUNET_PACKED;
+
+  /**
+   * Expiration time that was actually used (rounded!).
+   */
+  struct GNUNET_TIME_AbsoluteNBO expiration_time;
+
+  /**
+   * The requested signature.
+   */
+  struct GNUNET_CRYPTO_EddsaSignature signature;
+
+  /**
+   * Identity of the peer sharing the file.
+   */
+  struct GNUNET_PeerIdentity peer;
+};
+
 
 /**
  * Message sent from a GNUnet (fs) publishing activity to the

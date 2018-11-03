@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2012 Christian Grothoff
+     Copyright (C) 2010, 2012 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -53,7 +48,7 @@
 #define DEBUG GNUNET_NO
 
 /**
- * Maximum size of a GNUnet message (GNUNET_SERVER_MAX_MESSAGE_SIZE)
+ * Maximum size of a GNUnet message (GNUNET_MAX_MESSAGE_SIZE)
  */
 #define MAX_SIZE 65536
 
@@ -91,14 +86,18 @@ init_tun (char *dev)
 
   if (-1 == (fd = open ("/dev/net/tun", O_RDWR)))
   {
-    fprintf (stderr, "Error opening `%s': %s\n", "/dev/net/tun",
+    fprintf (stderr,
+             "Error opening `%s': %s\n",
+             "/dev/net/tun",
              strerror (errno));
     return -1;
   }
 
   if (fd >= FD_SETSIZE)
   {
-    fprintf (stderr, "File descriptor to large: %d", fd);
+    fprintf (stderr,
+             "File descriptor to large: %d",
+             fd);
     (void) close (fd);
     return -1;
   }
@@ -107,11 +106,17 @@ init_tun (char *dev)
   ifr.ifr_flags = IFF_TUN;
 
   if ('\0' != *dev)
-    strncpy (ifr.ifr_name, dev, IFNAMSIZ);
+    strncpy (ifr.ifr_name,
+             dev,
+             IFNAMSIZ);
 
-  if (-1 == ioctl (fd, TUNSETIFF, (void *) &ifr))
+  if (-1 == ioctl (fd,
+                   TUNSETIFF,
+                   (void *) &ifr))
   {
-    fprintf (stderr, "Error with ioctl on `%s': %s\n", "/dev/net/tun",
+    fprintf (stderr,
+             "Error with ioctl on `%s': %s\n",
+             "/dev/net/tun",
              strerror (errno));
     (void) close (fd);
     return -1;
@@ -129,7 +134,9 @@ init_tun (char *dev)
  * @param prefix_len the length of the network-prefix
  */
 static void
-set_address6 (const char *dev, const char *address, unsigned long prefix_len)
+set_address6 (const char *dev,
+              const char *address,
+              unsigned long prefix_len)
 {
   struct ifreq ifr;
   struct in6_ifreq ifr6;
@@ -143,14 +150,17 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
   sa6.sin6_family = AF_INET6;
   if (1 != inet_pton (AF_INET6, address, sa6.sin6_addr.s6_addr))
   {
-    fprintf (stderr, "Failed to parse address `%s': %s\n", address,
-             strerror (errno));
+    fprintf (stderr,
+             "Failed to parse IPv6 address `%s'\n",
+             address);
     exit (1);
   }
 
   if (-1 == (fd = socket (PF_INET6, SOCK_DGRAM, 0)))
   {
-    fprintf (stderr, "Error creating socket: %s\n", strerror (errno));
+    fprintf (stderr,
+             "Error creating socket: %s\n",
+             strerror (errno));
     exit (1);
   }
 
@@ -158,10 +168,17 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
   /*
    * Get the index of the if
    */
-  strncpy (ifr.ifr_name, dev, IFNAMSIZ);
-  if (-1 == ioctl (fd, SIOGIFINDEX, &ifr))
+  strncpy (ifr.ifr_name,
+           dev,
+           IFNAMSIZ);
+  if (-1 == ioctl (fd,
+                   SIOGIFINDEX,
+                   &ifr))
   {
-    fprintf (stderr, "ioctl failed at %d: %s\n", __LINE__, strerror (errno));
+    fprintf (stderr,
+             "ioctl failed at %d: %s\n",
+             __LINE__,
+             strerror (errno));
     (void) close (fd);
     exit (1);
   }
@@ -174,9 +191,13 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
   /*
    * Set the address
    */
-  if (-1 == ioctl (fd, SIOCSIFADDR, &ifr6))
+  if (-1 == ioctl (fd,
+                   SIOCSIFADDR,
+                   &ifr6))
   {
-    fprintf (stderr, "ioctl failed at line %d: %s\n", __LINE__,
+    fprintf (stderr,
+             "ioctl failed at line %d: %s\n",
+             __LINE__,
              strerror (errno));
     (void) close (fd);
     exit (1);
@@ -185,9 +206,13 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
   /*
    * Get the flags
    */
-  if (-1 == ioctl (fd, SIOCGIFFLAGS, &ifr))
+  if (-1 == ioctl (fd,
+                   SIOCGIFFLAGS,
+                   &ifr))
   {
-    fprintf (stderr, "ioctl failed at line %d: %s\n", __LINE__,
+    fprintf (stderr,
+             "ioctl failed at line %d: %s\n",
+             __LINE__,
              strerror (errno));
     (void) close (fd);
     exit (1);
@@ -197,9 +222,13 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
    * Add the UP and RUNNING flags
    */
   ifr.ifr_flags |= IFF_UP | IFF_RUNNING;
-  if (-1 == ioctl (fd, SIOCSIFFLAGS, &ifr))
+  if (-1 == ioctl (fd,
+                   SIOCSIFFLAGS,
+                   &ifr))
   {
-    fprintf (stderr, "ioctl failed at line %d: %s\n", __LINE__,
+    fprintf (stderr,
+             "ioctl failed at line %d: %s\n",
+             __LINE__,
              strerror (errno));
     (void) close (fd);
     exit (1);
@@ -207,7 +236,9 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
 
   if (0 != close (fd))
   {
-    fprintf (stderr, "close failed: %s\n", strerror (errno));
+    fprintf (stderr,
+             "close failed: %s\n",
+             strerror (errno));
     exit (1);
   }
 }
@@ -221,7 +252,9 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
  * @param mask the netmask
  */
 static void
-set_address4 (const char *dev, const char *address, const char *mask)
+set_address4 (const char *dev,
+              const char *address,
+              const char *mask)
 {
   int fd;
   struct sockaddr_in *addr;
@@ -234,16 +267,21 @@ set_address4 (const char *dev, const char *address, const char *mask)
   /*
    * Parse the address
    */
-  if (1 != inet_pton (AF_INET, address, &addr->sin_addr.s_addr))
+  if (1 != inet_pton (AF_INET,
+                      address,
+                      &addr->sin_addr.s_addr))
   {
-    fprintf (stderr, "Failed to parse address `%s': %s\n", address,
-             strerror (errno));
+    fprintf (stderr,
+             "Failed to parse IPv4 address `%s'\n",
+             address);
     exit (1);
   }
 
   if (-1 == (fd = socket (PF_INET, SOCK_DGRAM, 0)))
   {
-    fprintf (stderr, "Error creating socket: %s\n", strerror (errno));
+    fprintf (stderr,
+             "Error creating socket: %s\n",
+             strerror (errno));
     exit (1);
   }
 
@@ -254,7 +292,10 @@ set_address4 (const char *dev, const char *address, const char *mask)
    */
   if (-1 == ioctl (fd, SIOCSIFADDR, &ifr))
   {
-    fprintf (stderr, "ioctl failed at %d: %s\n", __LINE__, strerror (errno));
+    fprintf (stderr,
+             "ioctl failed at %d: %s\n",
+             __LINE__,
+             strerror (errno));
     (void) close (fd);
     exit (1);
   }
@@ -263,10 +304,13 @@ set_address4 (const char *dev, const char *address, const char *mask)
    * Parse the netmask
    */
   addr = (struct sockaddr_in *) &(ifr.ifr_netmask);
-  if (1 != inet_pton (AF_INET, mask, &addr->sin_addr.s_addr))
+  if (1 != inet_pton (AF_INET,
+                      mask,
+                      &addr->sin_addr.s_addr))
   {
-    fprintf (stderr, "Failed to parse address `%s': %s\n", mask,
-             strerror (errno));
+    fprintf (stderr,
+             "Failed to parse IPv4 address mask `%s'\n",
+             mask);
     (void) close (fd);
     exit (1);
   }
@@ -276,7 +320,9 @@ set_address4 (const char *dev, const char *address, const char *mask)
    */
   if (-1 == ioctl (fd, SIOCSIFNETMASK, &ifr))
   {
-    fprintf (stderr, "ioctl failed at line %d: %s\n", __LINE__,
+    fprintf (stderr,
+             "ioctl failed at line %d: %s\n",
+             __LINE__,
              strerror (errno));
     (void) close (fd);
     exit (1);
@@ -287,7 +333,9 @@ set_address4 (const char *dev, const char *address, const char *mask)
    */
   if (-1 == ioctl (fd, SIOCGIFFLAGS, &ifr))
   {
-    fprintf (stderr, "ioctl failed at line %d: %s\n", __LINE__,
+    fprintf (stderr,
+             "ioctl failed at line %d: %s\n",
+             __LINE__,
              strerror (errno));
     (void) close (fd);
     exit (1);
@@ -299,7 +347,9 @@ set_address4 (const char *dev, const char *address, const char *mask)
   ifr.ifr_flags |= IFF_UP | IFF_RUNNING;
   if (-1 == ioctl (fd, SIOCSIFFLAGS, &ifr))
   {
-    fprintf (stderr, "ioctl failed at line %d: %s\n", __LINE__,
+    fprintf (stderr,
+             "ioctl failed at line %d: %s\n",
+             __LINE__,
              strerror (errno));
     (void) close (fd);
     exit (1);
@@ -307,7 +357,9 @@ set_address4 (const char *dev, const char *address, const char *mask)
 
   if (0 != close (fd))
   {
-    fprintf (stderr, "close failed: %s\n", strerror (errno));
+    fprintf (stderr,
+             "close failed: %s\n",
+             strerror (errno));
     (void) close (fd);
     exit (1);
   }
@@ -346,7 +398,7 @@ run (int fd_tun)
   /* write refers to reading from stdin, writing to fd_tun */
   int write_open = 1;
 
-  while ((1 == read_open) || (1 == write_open))
+  while ((1 == read_open) && (1 == write_open))
   {
     FD_ZERO (&fds_w);
     FD_ZERO (&fds_r);
@@ -385,7 +437,9 @@ run (int fd_tun)
     {
       if (EINTR == errno)
         continue;
-      fprintf (stderr, "select failed: %s\n", strerror (errno));
+      fprintf (stderr,
+               "select failed: %s\n",
+               strerror (errno));
       exit (1);
     }
 
@@ -398,7 +452,9 @@ run (int fd_tun)
                   MAX_SIZE - sizeof (struct GNUNET_MessageHeader));
         if (-1 == buftun_size)
         {
-          fprintf (stderr, "read-error: %s\n", strerror (errno));
+          fprintf (stderr,
+                   "read-error: %s\n",
+                   strerror (errno));
           shutdown (fd_tun, SHUT_RD);
           shutdown (1, SHUT_WR);
           read_open = 0;
@@ -424,14 +480,18 @@ run (int fd_tun)
       }
       else if (FD_ISSET (1, &fds_w))
       {
-        ssize_t written = write (1, buftun_read, buftun_size);
+        ssize_t written = write (1,
+                                 buftun_read,
+                                 buftun_size);
 
         if (-1 == written)
         {
 #if !DEBUG
 	  if (errno != EPIPE)
 #endif
-	    fprintf (stderr, "write-error to stdout: %s\n", strerror (errno));
+	    fprintf (stderr,
+                     "write-error to stdout: %s\n",
+                     strerror (errno));
           shutdown (fd_tun, SHUT_RD);
           shutdown (1, SHUT_WR);
           read_open = 0;
@@ -439,7 +499,8 @@ run (int fd_tun)
         }
         else if (0 == written)
         {
-          fprintf (stderr, "write returned 0!?\n");
+          fprintf (stderr,
+                   "write returned 0!?\n");
           exit (1);
         }
         else
@@ -454,7 +515,9 @@ run (int fd_tun)
         bufin_size = read (0, bufin + bufin_rpos, MAX_SIZE - bufin_rpos);
         if (-1 == bufin_size)
         {
-          fprintf (stderr, "read-error: %s\n", strerror (errno));
+          fprintf (stderr,
+                   "read-error: %s\n",
+                   strerror (errno));
           shutdown (0, SHUT_RD);
           shutdown (fd_tun, SHUT_WR);
           write_open = 0;
@@ -481,7 +544,8 @@ PROCESS_BUFFER:
           hdr = (struct GNUNET_MessageHeader *) bufin;
           if (ntohs (hdr->type) != GNUNET_MESSAGE_TYPE_VPN_HELPER)
           {
-            fprintf (stderr, "protocol violation!\n");
+            fprintf (stderr,
+                     "protocol violation!\n");
             exit (1);
           }
           if (ntohs (hdr->size) > bufin_rpos)
@@ -493,11 +557,15 @@ PROCESS_BUFFER:
       }
       else if (FD_ISSET (fd_tun, &fds_w))
       {
-        ssize_t written = write (fd_tun, bufin_read, bufin_size);
+        ssize_t written = write (fd_tun,
+                                 bufin_read,
+                                 bufin_size);
 
         if (-1 == written)
         {
-          fprintf (stderr, "write-error to tun: %s\n", strerror (errno));
+          fprintf (stderr,
+                   "write-error to tun: %s\n",
+                   strerror (errno));
           shutdown (0, SHUT_RD);
           shutdown (fd_tun, SHUT_WR);
           write_open = 0;
@@ -550,12 +618,15 @@ main (int argc, char **argv)
     return 1;
   }
 
-  strncpy (dev, argv[1], IFNAMSIZ);
+  strncpy (dev,
+           argv[1],
+           IFNAMSIZ);
   dev[IFNAMSIZ - 1] = '\0';
 
   if (-1 == (fd_tun = init_tun (dev)))
   {
-    fprintf (stderr, "Fatal: could not initialize tun-interface `%s'  with IPv6 %s/%s and IPv4 %s/%s\n",
+    fprintf (stderr,
+             "Fatal: could not initialize tun-interface `%s'  with IPv6 %s/%s and IPv4 %s/%s\n",
 	     dev,
 	     argv[2],
 	     argv[3],
@@ -571,11 +642,15 @@ main (int argc, char **argv)
 
     if ((prefix_len < 1) || (prefix_len > 127))
     {
-      fprintf (stderr, "Fatal: prefix_len out of range\n");
+      fprintf (stderr,
+               "Fatal: prefix_len out of range\n");
+      close (fd_tun);
       return 1;
     }
 
-    set_address6 (dev, address, prefix_len);
+    set_address6 (dev,
+                  address,
+                  prefix_len);
   }
 
   if (0 != strcmp (argv[4], "-"))
@@ -590,14 +665,18 @@ main (int argc, char **argv)
 #ifdef HAVE_SETRESUID
   if (0 != setresuid (uid, uid, uid))
   {
-    fprintf (stderr, "Failed to setresuid: %s\n", strerror (errno));
+    fprintf (stderr,
+             "Failed to setresuid: %s\n",
+             strerror (errno));
     global_ret = 2;
     goto cleanup;
   }
 #else
   if (0 != (setuid (uid) | seteuid (uid)))
   {
-    fprintf (stderr, "Failed to setuid: %s\n", strerror (errno));
+    fprintf (stderr,
+             "Failed to setuid: %s\n",
+             strerror (errno));
     global_ret = 2;
     goto cleanup;
   }
@@ -605,7 +684,8 @@ main (int argc, char **argv)
 
   if (SIG_ERR == signal (SIGPIPE, SIG_IGN))
   {
-    fprintf (stderr, "Failed to protect against SIGPIPE: %s\n",
+    fprintf (stderr,
+             "Failed to protect against SIGPIPE: %s\n",
              strerror (errno));
     /* no exit, we might as well die with SIGPIPE should it ever happen */
   }

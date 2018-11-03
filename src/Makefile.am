@@ -1,29 +1,46 @@
+# This Makefile.am is in the public domain
 #if WANT_FRAMEWORK
 #  INTLEMU_SUBDIRS = intlemu
 #endif
 
 if HAVE_TESTING
  TESTING = testing
- TESTBED = testbed
- CONSENSUS = consensus
- SECRETSHARING = secretsharing
- EXPERIMENTATION = experimentation
- SCALARPRODUCT = scalarproduct
+ TESTBED = testbed-logger testbed
+ ATS_TESTS = ats-tests
 endif
 
 if HAVE_EXPERIMENTAL
  EXP_DIR = \
-  dv \
+  rps \
   multicast \
-  env \
+  psycutil \
   psycstore \
   psyc \
-  $(CONSENSUS) \
-  $(SECRETSHARING) \
-  $(SCALARPRODUCT) \
-  $(EXPERIMENTATION)
+  social 
+#  dv (FTBFS)
+if HAVE_ABE
+ EXP_DIR += \
+    abe \
+    credential \
+    identity-attribute \
+    identity-provider 
+endif
+if HAVE_JSON
+ EXP_DIR += \
+    auction
+endif
 endif
 
+if HAVE_JSON
+  JSON_DIR = json
+if HAVE_LIBGNURL
+  JSON_DIR += curl
+else
+if HAVE_LIBCURL
+  JSON_DIR += curl
+endif
+endif
+endif
 
 if BUILD_PULSE_HELPERS
 CONVERSATION_DIR = conversation
@@ -33,17 +50,38 @@ CONVERSATION_DIR = conversation
 endif
 endif
 
-if HAVE_MYSQL
- MYSQL_DIR = mysql
+if HAVE_SQLITE
+ SQLITE_DIR = sq
 endif
 
-if HAVE_POSTGRES
- POSTGRES_DIR = postgres
+if HAVE_MYSQL
+ MYSQL_DIR = mysql my
 endif
+
+if HAVE_POSTGRESQL
+ POSTGRES_DIR = pq
+endif
+
+if HAVE_MHD
+ REST_DIR = rest
+if HAVE_JSON
+ JSONAPI_DIR = jsonapi
+endif
+endif
+
+
+if TALER_ONLY
+SUBDIRS = \
+ include \
+ util
+else
 
 SUBDIRS = \
   include $(INTLEMU_SUBDIRS) \
   util \
+  $(JSON_DIR) \
+  $(REST_DIR) \
+  $(JSONAPI_DIR) \
   hello \
   tun \
   block \
@@ -51,6 +89,7 @@ SUBDIRS = \
   arm \
   $(TESTING) \
   peerinfo \
+  $(SQLITE_DIR) \
   $(MYSQL_DIR) \
   $(POSTGRES_DIR) \
   datacache \
@@ -58,31 +97,39 @@ SUBDIRS = \
   template \
   ats \
   nat \
+  nat-auto \
   fragmentation \
   transport \
   ats-tool \
   peerinfo-tool \
   core \
   $(TESTBED) \
-  ats-tests \
+  $(ATS_TESTS) \
   nse \
   dht \
   hostlist \
   topology \
   regex \
-  mesh \
   dns \
   identity \
-  set \
-  revocation \
   gnsrecord \
   namecache \
   namestore \
+  peerstore \
+  cadet \
+  set \
+  consensus \
+  scalarproduct \
+  revocation \
   vpn \
   gns \
+  zonemaster \
   $(CONVERSATION_DIR) \
   fs \
   exit \
   pt \
+  secretsharing \
   integration-tests \
   $(EXP_DIR)
+
+endif

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file gns/w32nsp.c
@@ -71,7 +66,7 @@
 #endif
 #endif
 #include "w32resolver.h"
-#define INITGUID
+#include <initguid.h>
 #include "gnunet_w32nsp_lib.h"
 #undef INITGUID
 
@@ -103,7 +98,7 @@ resize_records ()
     SetLastError (WSA_NOT_ENOUGH_MEMORY);
     return 0;
   }
-  memcpy (new_records, records, records_len * sizeof (struct record));
+  GNUNET_memcpy (new_records, records, records_len * sizeof (struct record));
   memset (&new_records[records_len], 0, sizeof (struct record) * (new_size - records_len));
   records_size = new_size;
   free (records);
@@ -229,7 +224,7 @@ send_name_to_ip_request (LPWSAQUERYSETW lpqsRestrictions,
   else
     msg->af = htonl (AF_UNSPEC);
   if (lpqsRestrictions->lpszServiceInstanceName)
-    memcpy (&msg[1], lpqsRestrictions->lpszServiceInstanceName, namelen);
+    GNUNET_memcpy (&msg[1], lpqsRestrictions->lpszServiceInstanceName, namelen);
   msg->sc_data1 = htonl (lpqsRestrictions->lpServiceClassId->Data1);
   msg->sc_data2 = htons (lpqsRestrictions->lpServiceClassId->Data2);
   msg->sc_data3 = htons (lpqsRestrictions->lpServiceClassId->Data3);
@@ -425,7 +420,7 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
       //LeaveCriticalSection (&records_cs);
       return SOCKET_ERROR;
     }
-    memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)records[rec].buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
+    GNUNET_memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)records[rec].buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
     free (records[rec].buf);
     records[rec].buf = NULL;
     //LeaveCriticalSection (&records_cs);
@@ -508,7 +503,7 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
   }
   records[rec].state |= 8;
   //LeaveCriticalSection (&records_cs);
-  memcpy (buf, &header, sizeof (header));
+  GNUNET_memcpy (buf, &header, sizeof (header));
   to_receive = header.size - sizeof (header);
   rc = 0;
 #if VERBOSE
@@ -567,7 +562,7 @@ GNUNET_W32NSP_LookupServiceNext (HANDLE hLookup, DWORD dwControlFlags,
   }
   //LeaveCriticalSection (&records_cs);
   DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: writing %d bytes into result buffer\n", header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
-  memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
+  GNUNET_memcpy (lpqsResults, &((struct GNUNET_W32RESOLVER_GetMessage *)buf)[1], header.size - sizeof (struct GNUNET_W32RESOLVER_GetMessage));
   free (buf);
   DEBUGLOG ("GNUNET_W32NSP_LookupServiceNext: OK\n");
   UnmarshallWSAQUERYSETW ((LPWSAQUERYSETW) lpqsResults);

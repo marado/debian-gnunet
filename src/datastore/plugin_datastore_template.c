@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -47,11 +42,13 @@ struct Plugin
  * @param cls our "struct Plugin*"
  * @return number of bytes used on disk
  */
-static unsigned long long
-template_plugin_estimate_size (void *cls)
+static void
+template_plugin_estimate_size (void *cls, unsigned long long *estimate)
 {
+  if (NULL == estimate)
+    return;
   GNUNET_break (0);
-  return 0;
+  *estimate = 0;
 }
 
 
@@ -60,6 +57,7 @@ template_plugin_estimate_size (void *cls)
  *
  * @param cls closure
  * @param key key for the item
+ * @param absent true if the key was not found in the bloom filter
  * @param size number of bytes in data
  * @param data content stored
  * @param type type of the content
@@ -67,19 +65,25 @@ template_plugin_estimate_size (void *cls)
  * @param anonymity anonymity-level for the content
  * @param replication replication-level for the content
  * @param expiration expiration time for the content
- * @param msg set to error message
- * @return GNUNET_OK on success
+ * @param cont continuation called with success or failure status
+ * @param cont_cls continuation closure
  */
-static int
-template_plugin_put (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
-                     const void *data, enum GNUNET_BLOCK_Type type,
-                     uint32_t priority, uint32_t anonymity,
+static void
+template_plugin_put (void *cls,
+                     const struct GNUNET_HashCode *key,
+                     bool absent,
+                     uint32_t size,
+                     const void *data,
+                     enum GNUNET_BLOCK_Type type,
+                     uint32_t priority,
+                     uint32_t anonymity,
                      uint32_t replication,
-                     struct GNUNET_TIME_Absolute expiration, char **msg)
+                     struct GNUNET_TIME_Absolute expiration,
+                     PluginPutCont cont,
+                     void *cont_cls)
 {
   GNUNET_break (0);
-  *msg = GNUNET_strdup ("not implemented");
-  return GNUNET_SYSERR;
+  cont (cont_cls, key, size, GNUNET_SYSERR, "not implemented");
 }
 
 
@@ -87,14 +91,9 @@ template_plugin_put (void *cls, const struct GNUNET_HashCode * key, uint32_t siz
  * Get one of the results for a particular key in the datastore.
  *
  * @param cls closure
- * @param offset offset of the result (modulo num-results);
- *               specific ordering does not matter for the offset
+ * @param next_uid return the result with lowest uid >= next_uid
+ * @param random if true, return a random result instead of using next_uid
  * @param key maybe NULL (to match all entries)
- * @param vhash hash of the value, maybe NULL (to
- *        match all values that have the right key).
- *        Note that for DBlocks there is no difference
- *        betwen key and vhash, but for other blocks
- *        there may be!
  * @param type entries of which type are relevant?
  *     Use 0 for any type.
  * @param proc function to call on each matching value;
@@ -102,10 +101,12 @@ template_plugin_put (void *cls, const struct GNUNET_HashCode * key, uint32_t siz
  * @param proc_cls closure for proc
  */
 static void
-template_plugin_get_key (void *cls, uint64_t offset,
-                         const struct GNUNET_HashCode * key,
-                         const struct GNUNET_HashCode * vhash,
-                         enum GNUNET_BLOCK_Type type, PluginDatumProcessor proc,
+template_plugin_get_key (void *cls,
+                         uint64_t next_uid,
+                         bool random,
+                         const struct GNUNET_HashCode *key,
+                         enum GNUNET_BLOCK_Type type,
+                         PluginDatumProcessor proc,
                          void *proc_cls)
 {
   GNUNET_break (0);
@@ -149,52 +150,18 @@ template_plugin_get_expiration (void *cls, PluginDatumProcessor proc,
 
 
 /**
- * Update the priority for a particular key in the datastore.  If
- * the expiration time in value is different than the time found in
- * the datastore, the higher value should be kept.  For the
- * anonymity level, the lower value is to be used.  The specified
- * priority should be added to the existing priority, ignoring the
- * priority in value.
- *
- * Note that it is possible for multiple values to match this put.
- * In that case, all of the respective values are updated.
- *
- * @param cls our "struct Plugin*"
- * @param uid unique identifier of the datum
- * @param delta by how much should the priority
- *     change?  If priority + delta < 0 the
- *     priority should be set to 0 (never go
- *     negative).
- * @param expire new expiration time should be the
- *     MAX of any existing expiration time and
- *     this value
- * @param msg set to error message
- * @return GNUNET_OK on success
- */
-static int
-template_plugin_update (void *cls, uint64_t uid, int delta,
-                        struct GNUNET_TIME_Absolute expire, char **msg)
-{
-  GNUNET_break (0);
-  *msg = GNUNET_strdup ("not implemented");
-  return GNUNET_SYSERR;
-}
-
-
-/**
  * Call the given processor on an item with zero anonymity.
  *
  * @param cls our "struct Plugin*"
- * @param offset offset of the result (modulo num-results);
- *               specific ordering does not matter for the offset
+ * @param next_uid return the result with lowest uid >= next_uid
  * @param type entries of which type should be considered?
- *        Use 0 for any type.
- * @param proc function to call on each matching value;
- *        will be called  with NULL if no value matches
+ *        Must not be zero (ANY).
+ * @param proc function to call on the matching value;
+ *        will be called with NULL if no value matches
  * @param proc_cls closure for proc
  */
 static void
-template_plugin_get_zero_anonymity (void *cls, uint64_t offset,
+template_plugin_get_zero_anonymity (void *cls, uint64_t next_uid,
                                     enum GNUNET_BLOCK_Type type,
                                     PluginDatumProcessor proc, void *proc_cls)
 {
@@ -224,6 +191,30 @@ template_get_keys (void *cls,
 		   PluginKeyProcessor proc,
 		   void *proc_cls)
 {
+  proc (proc_cls, NULL, 0);
+}
+
+
+/**
+ * Remove a particular key in the datastore.
+ *
+ * @param cls closure
+ * @param key key for the content
+ * @param size number of bytes in data
+ * @param data content stored
+ * @param cont continuation called with success or failure status
+ * @param cont_cls continuation closure for @a cont
+ */
+static void
+template_plugin_remove_key (void *cls,
+                            const struct GNUNET_HashCode *key,
+                            uint32_t size,
+                            const void *data,
+                            PluginRemoveCont cont,
+                            void *cont_cls)
+{
+  GNUNET_break (0);
+  cont (cont_cls, key, size, GNUNET_SYSERR, "not implemented");
 }
 
 
@@ -246,13 +237,13 @@ libgnunet_plugin_datastore_template_init (void *cls)
   api->cls = plugin;
   api->estimate_size = &template_plugin_estimate_size;
   api->put = &template_plugin_put;
-  api->update = &template_plugin_update;
   api->get_key = &template_plugin_get_key;
   api->get_replication = &template_plugin_get_replication;
   api->get_expiration = &template_plugin_get_expiration;
   api->get_zero_anonymity = &template_plugin_get_zero_anonymity;
   api->drop = &template_plugin_drop;
   api->get_keys = &template_get_keys;
+  api->remove_key = &template_plugin_remove_key;
   GNUNET_log_from (GNUNET_ERROR_TYPE_INFO, "template",
                    _("Template database running\n"));
   return api;

@@ -1,23 +1,18 @@
 /*
    This file is part of GNUnet.
-   (C) 2010, 2011, 2012 Christian Grothoff (and other contributing authors)
+   Copyright (C) 2010, 2011, 2012 GNUnet e.V.
    Copyright (c) 2007, 2008, Andy Green <andy@warmcat.com>
-   Copyright (C) 2009 Thomas d'Otreppe
+   Copyright Copyright (C) 2009 Thomas d'Otreppe
 
-   GNUnet is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 3, or (at your
-   option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
    GNUnet is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with GNUnet; see the file COPYING.  If not, write to the
-   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
+   Affero General Public License for more details.
 */
 /**
  * @file src/transport/gnunet-helper-transport-wlan.c
@@ -910,7 +905,7 @@ do_align:
       delta =
           GNUNET_MIN (sizeof (struct GNUNET_MessageHeader) -
                       (mst->pos - mst->off), size);
-      memcpy (&ibuf[mst->pos], buf, delta);
+      GNUNET_memcpy (&ibuf[mst->pos], buf, delta);
       mst->pos += delta;
       buf += delta;
       size -= delta;
@@ -949,7 +944,7 @@ do_align:
     if (mst->pos - mst->off < want)
     {
       delta = GNUNET_MIN (want - (mst->pos - mst->off), size);
-      memcpy (&ibuf[mst->pos], buf, delta);
+      GNUNET_memcpy (&ibuf[mst->pos], buf, delta);
       mst->pos += delta;
       buf += delta;
       size -= delta;
@@ -1016,7 +1011,7 @@ do_align:
 	       "Assertion failed\n");
       exit (1);
     }
-    memcpy (&ibuf[mst->pos], buf, size);
+    GNUNET_memcpy (&ibuf[mst->pos], buf, size);
     mst->pos += size;
   }
   return ret;
@@ -1475,7 +1470,7 @@ linux_read (struct HardwareInfos *dev,
 	while (left > sizeof (struct PrismValue))
 	{
 	  left -= sizeof (struct PrismValue);
-	  memcpy (&pv, pos, sizeof (struct PrismValue));
+	  GNUNET_memcpy (&pv, pos, sizeof (struct PrismValue));
 	  pos += sizeof (struct PrismValue);
 
 	  switch (pv.did)
@@ -1603,7 +1598,7 @@ linux_read (struct HardwareInfos *dev,
     {
       if (sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) > caplen)
 	return 0; /* invalid */
-      memcpy (&buf[sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame)],
+      GNUNET_memcpy (&buf[sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame)],
 	      tmpbuf + sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame),
 	      caplen - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) - 4 /* 4 byte FCS */);
       return caplen - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) - 4;
@@ -1626,7 +1621,7 @@ linux_read (struct HardwareInfos *dev,
     caplen -= sizeof (uint32_t);
   }
   /* copy payload to target buffer */
-  memcpy (buf, tmpbuf + n, caplen);
+  GNUNET_memcpy (buf, tmpbuf + n, caplen);
   return caplen;
 }
 
@@ -1731,7 +1726,7 @@ open_device_raw (struct HardwareInfos *dev)
     return 1;
   }
 
-  memcpy (&dev->pl_mac, ifr.ifr_hwaddr.sa_data, MAC_ADDR_SIZE);
+  GNUNET_memcpy (&dev->pl_mac, ifr.ifr_hwaddr.sa_data, MAC_ADDR_SIZE);
   dev->arptype_in = ifr.ifr_hwaddr.sa_family;
   if ((ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) &&
       (ifr.ifr_hwaddr.sa_family != ARPHRD_IEEE80211) &&
@@ -1876,8 +1871,8 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
     rtheader.rate = header->rate;
     rtheader.pad1 = 0;
     rtheader.txflags = GNUNET_htole16 (IEEE80211_RADIOTAP_F_TX_NOACK | IEEE80211_RADIOTAP_F_TX_NOSEQ);
-    memcpy (write_pout.buf, &rtheader, sizeof (rtheader));
-    memcpy (&write_pout.buf[sizeof (rtheader)], &header->frame, sendsize);
+    GNUNET_memcpy (write_pout.buf, &rtheader, sizeof (rtheader));
+    GNUNET_memcpy (&write_pout.buf[sizeof (rtheader)], &header->frame, sendsize);
     wlanheader = (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame *) &write_pout.buf[sizeof (rtheader)];
 
     /* payload contains MAC address, but we don't trust it, so we'll
@@ -1890,8 +1885,8 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
     /* etheader.src = header->frame.addr2; --- untrusted input */
     etheader.src = dev->pl_mac;
     etheader.type = htons (ETH_P_IP);
-    memcpy (write_pout.buf, &etheader, sizeof (etheader));
-    memcpy (&write_pout.buf[sizeof (etheader)], &header[1], sendsize - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame));
+    GNUNET_memcpy (write_pout.buf, &etheader, sizeof (etheader));
+    GNUNET_memcpy (&write_pout.buf[sizeof (etheader)], &header[1], sendsize - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame));
     write_pout.size = sendsize - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame) + sizeof (etheader);
     break;
   default:
@@ -1923,23 +1918,28 @@ main (int argc, char *argv[])
   int stdin_open;
   struct MessageStreamTokenizer *stdin_mst;
   int raw_eno;
-  uid_t uid;
 
   /* assert privs so we can modify the firewall rules! */
-  uid = getuid ();
+  {
 #ifdef HAVE_SETRESUID
-  if (0 != setresuid (uid, 0, 0))
-  {
-    fprintf (stderr, "Failed to setresuid to root: %s\n", strerror (errno));
-    return 254;
-  }
+    uid_t uid = getuid ();
+
+    if (0 != setresuid (uid, 0, 0))
+    {
+      fprintf (stderr,
+	       "Failed to setresuid to root: %s\n", 
+	       strerror (errno));
+      return 254;
+    }
 #else
-  if (0 != seteuid (0))
-  {
-    fprintf (stderr, "Failed to seteuid back to root: %s\n", strerror (errno));
-    return 254;
-  }
+    if (0 != seteuid (0))
+    {
+      fprintf (stderr, 
+	       "Failed to seteuid back to root: %s\n", strerror (errno));
+      return 254;
+    }
 #endif
+  }
 
   /* make use of SGID capabilities on POSIX */
   memset (&dev, 0, sizeof (dev));
@@ -2009,8 +2009,8 @@ main (int argc, char *argv[])
 
     macmsg.hdr.size = htons (sizeof (macmsg));
     macmsg.hdr.type = htons (GNUNET_MESSAGE_TYPE_WLAN_HELPER_CONTROL);
-    memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
-    memcpy (write_std.buf, &macmsg, sizeof (macmsg));
+    GNUNET_memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
+    GNUNET_memcpy (write_std.buf, &macmsg, sizeof (macmsg));
     write_std.size = sizeof (macmsg);
   }
 
@@ -2071,7 +2071,7 @@ main (int argc, char *argv[])
     if (FD_ISSET (dev.fd_raw, &wfds))
     {
       ssize_t ret =
-	write (dev.fd_raw, write_pout.buf + write_std.pos,
+	write (dev.fd_raw, write_pout.buf + write_pout.pos,
 	       write_pout.size - write_pout.pos);
       if (0 > ret)
       {

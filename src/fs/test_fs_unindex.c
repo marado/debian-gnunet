@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006, 2008, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006, 2008, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -57,7 +52,7 @@ static char *fn;
 
 
 static void
-abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_publish_task (void *cls)
 {
   GNUNET_FS_publish_stop (publish);
   publish = NULL;
@@ -65,7 +60,7 @@ abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-abort_unindex_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_unindex_task (void *cls)
 {
   GNUNET_FS_unindex_stop (unindex);
   unindex = NULL;
@@ -108,8 +103,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
                                   (1 +
                                    GNUNET_TIME_absolute_get_duration
                                    (start).rel_value_us) / 1024));
-    GNUNET_SCHEDULER_add_continuation (&abort_unindex_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_unindex_task, NULL);
     break;
   case GNUNET_FS_STATUS_UNINDEX_PROGRESS:
     GNUNET_assert (unindex == event->value.unindex.uc);
@@ -125,14 +119,12 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     FPRINTF (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     GNUNET_break (0);
-    GNUNET_SCHEDULER_add_continuation (&abort_publish_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
   case GNUNET_FS_STATUS_UNINDEX_ERROR:
     FPRINTF (stderr, "Error unindexing file: %s\n",
              event->value.unindex.specifics.error.message);
-    GNUNET_SCHEDULER_add_continuation (&abort_unindex_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_unindex_task, NULL);
     break;
   case GNUNET_FS_STATUS_PUBLISH_START:
     GNUNET_assert (0 == strcmp ("publish-context", event->value.publish.cctx));
@@ -157,8 +149,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     break;
   case GNUNET_FS_STATUS_UNINDEX_STOPPED:
     GNUNET_assert (unindex == event->value.unindex.uc);
-    GNUNET_SCHEDULER_add_continuation (&abort_publish_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
   default:
     printf ("Unexpected event: %d\n", event->status);

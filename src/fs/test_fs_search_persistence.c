@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006, 2008, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/test_fs_search_persistence.c
@@ -54,15 +49,15 @@ static struct GNUNET_FS_PublishContext *publish;
 
 static const struct GNUNET_CONFIGURATION_Handle *cfg;
 
-static GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+static struct GNUNET_SCHEDULER_Task * timeout_task;
 
 static int err;
 
 
 static void
-abort_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_error (void *cls)
 {
-  timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  timeout_task = NULL;
   fprintf (stderr,
 	   "Timeout\n");
   if (NULL != search)
@@ -78,24 +73,25 @@ abort_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   err = 1;
 }
 
+
 static void
-abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_publish_task (void *cls)
 {
   if (NULL != publish)
   {
     GNUNET_FS_publish_stop (publish);
     publish = NULL;
   }
-  if (GNUNET_SCHEDULER_NO_TASK != timeout_task)
+  if (NULL != timeout_task)
   {
     GNUNET_SCHEDULER_cancel (timeout_task);
-    timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    timeout_task = NULL;
   }
 }
 
 
 static void
-abort_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_search_task (void *cls)
 {
   if (NULL != search)
   {
@@ -110,7 +106,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event);
 
 
 static void
-restart_fs_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+restart_fs_task (void *cls)
 {
   GNUNET_FS_stop (fs);
   fs = GNUNET_FS_start (cfg, "test-fs-search-persistence", &progress_cb, NULL,
@@ -183,21 +179,18 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
      * search result since we exit here after the first one... */
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		"Search complete.\n");
-    GNUNET_SCHEDULER_add_continuation (&abort_search_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_search_task, NULL);
     break;
   case GNUNET_FS_STATUS_PUBLISH_ERROR:
     FPRINTF (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     GNUNET_break (0);
-    GNUNET_SCHEDULER_add_continuation (&abort_publish_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
   case GNUNET_FS_STATUS_SEARCH_ERROR:
     FPRINTF (stderr, "Error searching file: %s\n",
              event->value.search.specifics.error.message);
-    GNUNET_SCHEDULER_add_continuation (&abort_search_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_search_task, NULL);
     break;
   case GNUNET_FS_STATUS_SEARCH_SUSPEND:
     if (event->value.search.sc == search)
@@ -235,8 +228,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     break;
   case GNUNET_FS_STATUS_SEARCH_STOPPED:
     GNUNET_assert (search == event->value.search.sc);
-    GNUNET_SCHEDULER_add_continuation (&abort_publish_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     search = NULL;
     break;
   default:

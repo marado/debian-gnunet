@@ -1,33 +1,36 @@
 /*
       This file is part of GNUnet
-      (C) 2011 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2011 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 #ifndef GNUNET_NSE_SERVICE_H_
 #define GNUNET_NSE_SERVICE_H_
 
 /**
- * @file include/gnunet_nse_service.h
- * @brief API to retrieve the current network size estimate,
- *        also to register for notifications whenever a new
- *        network size estimate is calculated.
  * @author Nathan Evans
- * @defgroup nse network size estimation service
+ *
+ * @file
+ * API to retrieve the current network size estimate
+ *
+ * @defgroup nse  NSE service
+ * Network Size Estimation
+ *
+ * Provides an API to retrieve the current network size estimate,
+ * also to register for notifications whenever a new
+ * network size estimate is calculated.
+ *
+ * @see [Documentation](https://gnunet.org/gnunet-nse-subsystem)
+ *
  * @{
  */
 

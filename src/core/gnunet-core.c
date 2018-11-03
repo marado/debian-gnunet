@@ -1,36 +1,27 @@
 /*
      This file is part of GNUnet.
-     (C) 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011, 2012, 2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
  * @file core/gnunet-core.c
- * @brief Print information about other known _connected_ peers.
+ * @brief Print information about other peers known to CORE.
  * @author Nathan Evans
  */
 #include "platform.h"
-#include "gnunet_crypto_lib.h"
-#include "gnunet_configuration_lib.h"
-#include "gnunet_getopt_lib.h"
-#include "gnunet_peerinfo_service.h"
-#include "gnunet_transport_service.h"
+#include "gnunet_util_lib.h"
 #include "gnunet_core_service.h"
-#include "gnunet_program_lib.h"
+
 
 /**
  * Option -m.
@@ -38,161 +29,97 @@
 static int monitor_connections;
 
 /**
- * Current number of connections in monitor mode
+ * Handle to the CORE monitor.
  */
-static int monitor_connections_counter;
+static struct GNUNET_CORE_MonitorHandle *mh;
 
-static struct GNUNET_CORE_Handle *ch;
-
-static struct GNUNET_PeerIdentity my_id;
 
 /**
  * Task run in monitor mode when the user presses CTRL-C to abort.
  * Stops monitoring activity.
  *
- * @param cls the 'struct GNUNET_TRANSPORT_PeerIterateContext *'
- * @param tc scheduler context
+ * @param cls NULL
  */
 static void
-shutdown_task (void *cls,
-               const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
-  if (NULL != ch)
+  if (NULL != mh)
   {
-    GNUNET_CORE_disconnect (ch);
-    ch = NULL;
+    GNUNET_CORE_monitor_stop (mh);
+    mh = NULL;
   }
 }
 
 
 /**
- * Callback for retrieving a list of connected peers.
+ * Function called to notify core users that another
+ * peer changed its state with us.
  *
- * @param cls closure (unused)
- * @param peer peer identity this notification is about
+ * @param cls closure
+ * @param peer the peer that changed state
+ * @param state new state of the peer
+ * @param timeout timeout for the new state
  */
 static void
-connected_peer_callback (void *cls,
-			 const struct GNUNET_PeerIdentity *peer)
+monitor_cb (void *cls,
+            const struct GNUNET_PeerIdentity *peer,
+            enum GNUNET_CORE_KxState state,
+            struct GNUNET_TIME_Absolute timeout)
 {
-  if (NULL == peer)
+  struct GNUNET_TIME_Absolute now = GNUNET_TIME_absolute_get();
+  const char *now_str;
+  const char *state_str;
+
+  if ( ( (NULL == peer) ||
+         (GNUNET_CORE_KX_ITERATION_FINISHED == state) ) &&
+       (GNUNET_NO == monitor_connections) )
+  {
+    GNUNET_SCHEDULER_shutdown ();
     return;
-  printf (_("Peer `%s'\n"),
-	  GNUNET_i2s_full (peer));
-}
-
-
-static void
-monitor_notify_startup (void *cls,
-			const struct GNUNET_PeerIdentity *my_identity)
-{
-  my_id = (*my_identity);
-}
-
-
-/**
- * Function called to notify core users that another
- * peer connected to us.
- *
- * @param cls closure
- * @param peer the peer that connected
- */
-static void
-monitor_notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
-{
-  struct GNUNET_TIME_Absolute now = GNUNET_TIME_absolute_get();
-  const char *now_str;
-
-  if (0 != memcmp (&my_id, peer, sizeof (my_id)))
-  {
-    monitor_connections_counter ++;
-    now_str = GNUNET_STRINGS_absolute_time_to_string (now);
-    FPRINTF (stdout, _("%24s: %-17s %4s   (%u connections in total)\n"),
-             now_str,
-             _("Connected to"),
-             GNUNET_i2s (peer),
-             monitor_connections_counter);
   }
+
+  switch (state)
+  {
+  case GNUNET_CORE_KX_STATE_DOWN:
+    /* should never happen, as we immediately send the key */
+    state_str = _("fresh connection");
+    break;
+  case GNUNET_CORE_KX_STATE_KEY_SENT:
+    state_str = _("key sent");
+    break;
+  case GNUNET_CORE_KX_STATE_KEY_RECEIVED:
+    state_str = _("key received");
+    break;
+  case GNUNET_CORE_KX_STATE_UP:
+    state_str = _("connection established");
+    break;
+  case GNUNET_CORE_KX_STATE_REKEY_SENT:
+    state_str = _("rekeying");
+    break;
+  case GNUNET_CORE_KX_PEER_DISCONNECT:
+    state_str = _("disconnected");
+    break;
+  case GNUNET_CORE_KX_ITERATION_FINISHED:
+    return;
+  case GNUNET_CORE_KX_CORE_DISCONNECT:
+    FPRINTF (stderr,
+             "%s\n",
+             _("Connection to CORE service lost (reconnecting)"));
+    return;
+  default:
+    state_str = _("unknown state");
+    break;
+  }
+  now_str = GNUNET_STRINGS_absolute_time_to_string (now);
+  FPRINTF (stdout,
+           _("%24s: %-30s %4s (timeout in %6s)\n"),
+           now_str,
+           state_str,
+           GNUNET_i2s (peer),
+           GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (timeout),
+                                                   GNUNET_YES));
 }
 
-
-/**
- * Function called to notify core users that another
- * peer disconnected from us.
- *
- * @param cls closure
- * @param peer the peer that disconnected
- */
-static void
-monitor_notify_disconnect (void *cls, const struct GNUNET_PeerIdentity *peer)
-{
-  struct GNUNET_TIME_Absolute now = GNUNET_TIME_absolute_get();
-  const char *now_str;
-
-  if (0 != memcmp (&my_id, peer, sizeof (my_id)))
-  {
-    now_str = GNUNET_STRINGS_absolute_time_to_string (now);
-
-    GNUNET_assert (monitor_connections_counter > 0);
-    monitor_connections_counter--;
-    FPRINTF (stdout, _("%24s: %-17s %4s   (%u connections in total)\n"),
-             now_str,
-             _("Disconnected from"),
-             GNUNET_i2s (peer),
-             monitor_connections_counter);
-  }
-}
-
-/**
- * Function called with the result of the check if the 'transport'
- * service is running.
- *
- * @param cls closure with our configuration
- * @param result #GNUNET_YES if transport is running
- */
-static void
-testservice_task (void *cls, int result)
-{
-  const struct GNUNET_CONFIGURATION_Handle *cfg = cls;
-  static const struct GNUNET_CORE_MessageHandler handlers[] = {
-    {NULL, 0, 0}
-  };
-
-  if (result != GNUNET_OK)
-    {
-      FPRINTF (stderr, _("Service `%s' is not running\n"), "core");
-      return;
-    }
-
-  if (GNUNET_NO == monitor_connections)
-  {
-    if (GNUNET_OK != GNUNET_CORE_iterate_peers (cfg, &connected_peer_callback, NULL))
-    {
-      fprintf (stderr, ("Failed to connect to CORE service to iterate peers!\n"));
-      return;
-    }
-  }
-  else
-  {
-    memset(&my_id, '\0', sizeof (my_id));
-    ch = GNUNET_CORE_connect (cfg, NULL,
-                              monitor_notify_startup,
-                              monitor_notify_connect,
-                              monitor_notify_disconnect,
-                              NULL, GNUNET_NO,
-                              NULL, GNUNET_NO,
-                              handlers);
-
-    if (NULL == ch)
-    {
-      GNUNET_SCHEDULER_add_now (shutdown_task, NULL);
-      fprintf (stderr, ("Failed to connect to CORE service!\n"));
-      return;
-    }
-    else
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, shutdown_task, NULL);
-  }
-}
 
 /**
  * Main function that will be run by the scheduler.
@@ -206,50 +133,58 @@ static void
 run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-  if (args[0] != NULL)
+  if (NULL != args[0])
   {
-    FPRINTF (stderr, _("Invalid command line argument `%s'\n"), args[0]);
+    FPRINTF (stderr,
+             _("Invalid command line argument `%s'\n"),
+             args[0]);
     return;
   }
-
-  GNUNET_CLIENT_service_test ("core", cfg, GNUNET_TIME_UNIT_SECONDS,
-      &testservice_task, (void *) cfg);
+  mh = GNUNET_CORE_monitor_start (cfg,
+                                  &monitor_cb,
+                                  NULL);
+  if (NULL == mh)
+  {
+    FPRINTF (stderr,
+             "%s",
+             _("Failed to connect to CORE service!\n"));
+    return;
+  }
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
 }
 
 
 /**
- * The main function to obtain peer information.
+ * The main function to obtain peer information from CORE.
  *
  * @param argc number of arguments from the command line
  * @param argv command line arguments
  * @return 0 ok, 1 on error
  */
 int
-main (int argc, char *const *argv)
+main (int argc,
+      char *const *argv)
 {
   int res;
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'m', "monitor", NULL,
-     gettext_noop ("provide information about all current connections (continuously)"),
-     0, &GNUNET_GETOPT_set_one, &monitor_connections},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_flag ('m',
+                                  "monitor",
+                                  gettext_noop ("provide information about all current connections (continuously)"),
+                                  &monitor_connections),
     GNUNET_GETOPT_OPTION_END
   };
 
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
-
-
   res = GNUNET_PROGRAM_run (argc, argv, "gnunet-core",
-                      gettext_noop
-                      ("Print information about connected peers."),
-                      options, &run, NULL);
+                            gettext_noop
+                            ("Print information about connected peers."),
+                            options, &run, NULL);
 
   GNUNET_free ((void *) argv);
-
   if (GNUNET_OK == res)
     return 0;
-  else
-    return 1;
+  return 1;
 }
 
 /* end of gnunet-core.c */

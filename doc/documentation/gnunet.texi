@@ -1,0 +1,247 @@
+\input texinfo
+@c -*-texinfo-*-
+
+@c %**start of header
+@setfilename gnunet.info
+@documentencoding UTF-8
+@settitle GNUnet Reference Manual
+@exampleindent 2
+@c It seems as if this breaks some old garbage version of
+@c texinfo running on some systems. FIXME!!!
+@c @urefbreakstyle before
+@c %**end of header
+
+@include version.texi
+
+@c Set Versions which might be used in more than one place:
+@set GNUFTP-URL https://ftp.gnu.org/gnu/gnunet
+@set PYPI-URL https://pypi.python.org/packages/source
+@set GNURL-VERSION-CURRENT 7.55.1
+@set GNUNET-DIST-URL https://gnunet.org/sites/default/files/
+@c @set OPENPGP-SIGNING-KEY-ID
+
+@copying
+Copyright @copyright{} 2001-2018 GNUnet e.V.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License''.
+
+A copy of the license is also available from the Free Software
+Foundation Web site at @url{http://www.gnu.org/licenses/fdl.html}.
+
+Alternately, this document is also available under the General
+Public License, version 3 or later, as published by the Free Software
+Foundation.  A copy of the license is included in the section entitled
+``GNU General Public License''.
+
+A copy of the license is also available from the Free Software
+Foundation Web site at @url{http://www.gnu.org/licenses/gpl.html}.
+@end copying
+
+@c TODO: Improve this and improve https://directory.fsf.org/wiki/Gnunet
+
+@dircategory Networking
+@direntry
+* GNUnet: (gnunet).       Framework for secure peer-to-peer networking
+@end direntry
+
+@titlepage
+@title GNUnet Reference Manual
+@subtitle Installing, configuring, using and contributing to GNUnet
+@author The GNUnet Developers
+
+@page
+@vskip 0pt plus 1filll
+Edition @value{EDITION} @*
+@value{UPDATED} @*
+
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+
+@node Top
+@top Introduction
+
+This document is the Reference Manual for GNUnet version @value{VERSION}.
+
+@menu
+
+* Preface::                         Chapter 0
+* Philosophy::                      About GNUnet
+@c * Vocabulary::                      Vocabulary
+* GNUnet Installation Handbook::    How to install GNUnet
+* Using GNUnet::                    Using GNUnet
+@c * Configuration Handbook::          Configuring GNUnet
+* GNUnet Contributors Handbook::    Contributing to GNUnet
+* GNUnet Developer Handbook::       Developing GNUnet
+* GNU Free Documentation License::  The license of this manual
+* GNU General Public License::      The license of this manual
+* Concept Index::                   Concepts
+* Programming Index::               Data types, functions, and variables
+
+@detailmenu
+ --- The Detailed Node Listing ---
+
+Preface
+
+* About this book
+* Introduction
+* General Terminology::
+* Typography::
+
+Philosophy
+
+* Design Goals::
+* Security and Privacy::
+* Versatility::
+* Practicality::
+* Key Concepts::
+* Authentication::
+* Accounting to Encourage Resource Sharing::
+* Confidentiality::
+* Anonymity::
+* Deniability::
+* Peer Identities::
+* Zones in the GNU Name System (GNS Zones)::
+* Egos::
+* Backup of Identities and Egos::
+* Revocation::
+
+GNUnet Installation Handbook
+
+* Dependencies::
+* Pre-installation notes::
+* Generic installation instructions::
+* Build instructions for Ubuntu 12.04 using Git::
+* Build instructions for software builds from source::
+* Build Instructions for Microsoft Windows Platforms::
+* Build instructions for Debian 7.5::
+* Installing GNUnet from Git on Ubuntu 14.4::
+* Build instructions for Debian 8::
+* Outdated build instructions for previous revisions::
+@c * Portable GNUnet::
+* The graphical configuration interface::
+* How to start and stop a GNUnet peer::
+
+Using GNUnet
+
+* Checking the Installation::
+* First steps - File-sharing::
+* First steps - Using the GNU Name System::
+* First steps - Using GNUnet Conversation::
+* First steps - Using the GNUnet VPN::
+* File-sharing::
+* The GNU Name System::
+* Using the Virtual Public Network::
+
+@c Configuration Handbook
+
+GNUnet Contributors Handbook
+
+* Contributing to GNUnet::
+* Licenses of contributions::
+* Copyright Assignment::
+* Contributing to the Reference Manual::
+
+GNUnet Developer Handbook
+
+* Developer Introduction::
+* Code overview::
+* System Architecture::
+* Subsystem stability::
+* Naming conventions and coding style guide::
+* Build-system::
+* Developing extensions for GNUnet using the gnunet-ext template::
+* Writing testcases::
+* TESTING library::
+* Performance regression analysis with Gauger::
+* TESTBED Subsystem::
+* libgnunetutil::
+* Automatic Restart Manager (ARM)::
+* TRANSPORT Subsystem::
+* NAT library::
+* Distance-Vector plugin::
+* SMTP plugin::
+* Bluetooth plugin::
+* WLAN plugin::
+* ATS Subsystem::
+* CORE Subsystem::
+* CADET Subsystem::
+* NSE Subsystem::
+* HOSTLIST Subsystem::
+* IDENTITY Subsystem::
+* NAMESTORE Subsystem::
+* PEERINFO Subsystem::
+* PEERSTORE Subsystem::
+* SET Subsystem::
+* STATISTICS Subsystem::
+* Distributed Hash Table (DHT)::
+* GNU Name System (GNS)::
+* GNS Namecache::
+* REVOCATION Subsystem::
+* File-sharing (FS) Subsystem::
+* REGEX Subsystem::
+
+@end detailmenu
+@end menu
+
+@c *********************************************************************
+@include chapters/preface.texi
+@c *********************************************************************
+
+@c *********************************************************************
+@include chapters/philosophy.texi
+@c *********************************************************************
+
+@c WIP:
+@c @include chapters/vocabulary.texi
+
+@c *********************************************************************
+@include chapters/installation.texi
+@c *********************************************************************
+
+@c *********************************************************************
+@include chapters/user.texi
+@c *********************************************************************
+
+@c WIP:
+@c @include chapters/configuration.texi
+
+@include chapters/contributing.texi
+
+@c *********************************************************************
+@include chapters/developer.texi
+@c For now in its own Book:
+@c @include gnunet-c-tutorial.texi
+@c *********************************************************************
+
+@c *********************************************************************
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
+@cindex license, GNU Free Documentation License
+@include fdl-1.3.texi
+
+@c *********************************************************************
+@node GNU General Public License
+@appendix GNU General Public License
+@cindex license, GNU General Public License
+@include gpl-3.0.texi
+
+@c *********************************************************************
+@node Concept Index
+@unnumbered Concept Index
+@printindex cp
+
+@node Programming Index
+@unnumbered Programming Index
+@syncodeindex tp fn
+@syncodeindex vr fn
+@printindex fn
+
+@bye

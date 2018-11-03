@@ -1,27 +1,27 @@
 /*
      This file is part of GNUnet
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_psycstore_plugin.h
- * @brief plugin API for the PSYCstore database backend
  * @author Gabor X Toth
+ *
+ * @file
+ * Plugin API for the PSYCstore database backend
+ *
+ * @defgroup psycstore-plugin  PSYC Store plugin API
+ * Plugin API for the PSYC Store database backend
+ * @{
  */
 #ifndef GNUNET_PSYCSTORE_PLUGIN_H
 #define GNUNET_PSYCSTORE_PLUGIN_H
@@ -60,7 +60,7 @@ struct GNUNET_PSYCSTORE_PluginFunctions
   int
   (*membership_store) (void *cls,
                        const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                       const struct GNUNET_CRYPTO_EddsaPublicKey *slave_key,
+                       const struct GNUNET_CRYPTO_EcdsaPublicKey *slave_key,
                        int did_join,
                        uint64_t announced_at,
                        uint64_t effective_since,
@@ -77,7 +77,7 @@ struct GNUNET_PSYCSTORE_PluginFunctions
   int
   (*membership_test) (void *cls,
                       const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                      const struct GNUNET_CRYPTO_EddsaPublicKey *slave_key,
+                      const struct GNUNET_CRYPTO_EcdsaPublicKey *slave_key,
                       uint64_t message_id);
 
   /**
@@ -109,10 +109,10 @@ struct GNUNET_PSYCSTORE_PluginFunctions
   (*message_add_flags) (void *cls,
                         const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
                         uint64_t message_id,
-                        uint64_t psycstore_flags);
+                        uint32_t psycstore_flags);
 
   /**
-   * Retrieve a message fragment by fragment ID.
+   * Retrieve a message fragment range by fragment ID.
    *
    * @see GNUNET_PSYCSTORE_fragment_get()
    *
@@ -121,12 +121,29 @@ struct GNUNET_PSYCSTORE_PluginFunctions
   int
   (*fragment_get) (void *cls,
                    const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                   uint64_t fragment_id,
+                   uint64_t first_fragment_id,
+                   uint64_t last_fragment_id,
+                   uint64_t *returned_fragments,
                    GNUNET_PSYCSTORE_FragmentCallback cb,
                    void *cb_cls);
 
   /**
-   * Retrieve all fragments of a message.
+   * Retrieve latest message fragments.
+   *
+   * @see GNUNET_PSYCSTORE_fragment_get()
+   *
+   * @return #GNUNET_OK on success, else #GNUNET_SYSERR
+   */
+  int
+  (*fragment_get_latest) (void *cls,
+                          const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
+                          uint64_t fragment_limit,
+                          uint64_t *returned_fragments,
+                          GNUNET_PSYCSTORE_FragmentCallback cb,
+                          void *cb_cls);
+
+  /**
+   * Retrieve all fragments of a message ID range.
    *
    * @see GNUNET_PSYCSTORE_message_get()
    *
@@ -135,10 +152,27 @@ struct GNUNET_PSYCSTORE_PluginFunctions
   int
   (*message_get) (void *cls,
                   const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                  uint64_t message_id,
+                  uint64_t first_fragment_id,
+                  uint64_t last_fragment_id,
+                  uint64_t fragment_limit,
                   uint64_t *returned_fragments,
                   GNUNET_PSYCSTORE_FragmentCallback cb,
                   void *cb_cls);
+
+  /**
+   * Retrieve all fragments of the latest messages.
+   *
+   * @see GNUNET_PSYCSTORE_message_get()
+   *
+   * @return #GNUNET_OK on success, else #GNUNET_SYSERR
+   */
+  int
+  (*message_get_latest) (void *cls,
+                         const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
+                         uint64_t fragment_limit,
+                         uint64_t *returned_fragments,
+                         GNUNET_PSYCSTORE_FragmentCallback cb,
+                         void *cb_cls);
 
   /**
    * Retrieve a fragment of message specified by its message ID and fragment
@@ -207,9 +241,10 @@ struct GNUNET_PSYCSTORE_PluginFunctions
    * @return #GNUNET_OK on success, else #GNUNET_SYSERR
    */
   int
-  (*state_modify_set) (void *cls,
-                       const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                       const char *name, const void *value, size_t value_size);
+  (*state_modify_op) (void *cls,
+                      const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
+                      enum GNUNET_PSYC_Operator op,
+                      const char *name, const void *value, size_t value_size);
 
 
   /**
@@ -237,20 +272,20 @@ struct GNUNET_PSYCSTORE_PluginFunctions
                          const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key);
 
   /**
-   * Set the value of a state variable while synchronizing state.
+   * Assign value of a state variable while synchronizing state.
    *
    * The state synchronization process is started with state_sync_begin(),
    * which is followed by one or more calls to this function,
-   * and finished with state_sync_end().
+   * and finished using state_sync_end().
    *
    * @see GNUNET_PSYCSTORE_state_sync()
    *
    * @return #GNUNET_OK on success, else #GNUNET_SYSERR
    */
   int
-  (*state_sync_set) (void *cls,
-                     const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                     const char *name, const void *value, size_t value_size);
+  (*state_sync_assign) (void *cls,
+                        const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
+                        const char *name, const void *value, size_t value_size);
 
 
   /**
@@ -263,7 +298,8 @@ struct GNUNET_PSYCSTORE_PluginFunctions
   int
   (*state_sync_end) (void *cls,
                      const struct GNUNET_CRYPTO_EddsaPublicKey *channel_key,
-                     uint64_t message_id);
+                     uint64_t max_state_message_id,
+                     uint64_t state_hash_message_id);
 
 
   /**
@@ -337,5 +373,6 @@ struct GNUNET_PSYCSTORE_PluginFunctions
 }
 #endif
 
-/* end of gnunet_psycstore_plugin.h */
 #endif
+
+/** @} */  /* end of group */

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file gnunet-namecache.c
@@ -68,11 +63,9 @@ static int ret;
  * Task run on shutdown.  Cleans up everything.
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-do_shutdown (void *cls,
-	     const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
   if (NULL != qe)
   {
@@ -192,7 +185,7 @@ run (void *cls, char *const *args, const char *cfgfile,
                                                   &pubkey))
   {
     fprintf (stderr,
-             _("Invalid public key for reverse lookup `%s'\n"),
+             _("Invalid public key for zone `%s'\n"),
              pkey);
     GNUNET_SCHEDULER_shutdown ();
     return;
@@ -204,10 +197,8 @@ run (void *cls, char *const *args, const char *cfgfile,
     return;
   }
 
-
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                &do_shutdown,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+				 NULL);
   ns = GNUNET_NAMECACHE_connect (cfg);
   GNUNET_GNSRECORD_query_from_public_key (&pubkey,
                                           name,
@@ -229,13 +220,19 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'n', "name", "NAME",
-     gettext_noop ("name of the record to add/delete/display"), 1,
-     &GNUNET_GETOPT_set_string, &name},
-    {'z', "zone", "PKEY",
-     gettext_noop ("spezifies the public key of the zone to look in"), 1,
-     &GNUNET_GETOPT_set_string, &pkey},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_string ('n',
+                                 "name",
+                                 "NAME",
+                                 gettext_noop ("name of the record to add/delete/display"),
+                                 &name),
+
+    GNUNET_GETOPT_option_string ('z',
+                                 "zone",
+                                 "PKEY",
+                                 gettext_noop ("spezifies the public key of the zone to look in"),
+                                 &pkey),
+
     GNUNET_GETOPT_OPTION_END
   };
 

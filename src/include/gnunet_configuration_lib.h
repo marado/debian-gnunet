@@ -1,33 +1,32 @@
 /*
      This file is part of GNUnet.
-     (C) 2006, 2008, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2006, 2008, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_configuration_lib.h
- * @brief configuration API
  * @author Christian Grothoff
- * @defgroup configuration Configuration management
+ *
+ * @file
+ * Configuration API
+ *
+ * @defgroup configuration  Configuration library
+ * Configuration management
  * @{
  */
 #ifndef GNUNET_CONFIGURATION_LIB_H
 #define GNUNET_CONFIGURATION_LIB_H
 
+#include "gnunet_time_lib.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -85,7 +84,7 @@ GNUNET_CONFIGURATION_load (struct GNUNET_CONFIGURATION_Handle *cfg,
 
 /**
  * Load default configuration.  This function will parse the
- * defaults from the given defaults_d directory.
+ * defaults from the given @a defaults_d directory.
  *
  * @param cfg configuration to update
  * @param defaults_d directory with the defaults
@@ -128,16 +127,16 @@ GNUNET_CONFIGURATION_serialize (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * @param cfg configuration to update
  * @param mem the memory block of serialized configuration
  * @param size the size of the memory block
- * @param allow_inline set to #GNUNET_YES if we recursively load configuration
- *          from inlined configurations; #GNUNET_NO if not and raise warnings
+ * @param allow_inline set to the base directory if we recursively load configuration
+ *          from inlined configurations; NULL if not and raise warnings
  *          when we come across them
  * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
 GNUNET_CONFIGURATION_deserialize (struct GNUNET_CONFIGURATION_Handle *cfg,
 				  const char *mem,
-				  const size_t size,
-				  int allow_inline);
+				  size_t size,
+				  const char *basedir);
 
 
 /**
@@ -265,6 +264,22 @@ GNUNET_CONFIGURATION_get_value_number (const struct GNUNET_CONFIGURATION_Handle 
                                        const char *section,
                                        const char *option,
                                        unsigned long long *number);
+
+
+/**
+ * Get a configuration value that should be a floating point number.
+ *
+ * @param cfg configuration to inspect
+ * @param section section of interest
+ * @param option option of interest
+ * @param number where to store the floating value of the option
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
+ */
+int
+GNUNET_CONFIGURATION_get_value_float  (const struct GNUNET_CONFIGURATION_Handle *cfg,
+                                       const char *section,
+                                       const char *option,
+                                       float *number);
 
 
 /**
@@ -415,6 +430,26 @@ GNUNET_CONFIGURATION_get_value_yesno (const struct GNUNET_CONFIGURATION_Handle *
 
 
 /**
+ * Get Crockford32-encoded fixed-size binary data from a configuration.
+ *
+ * @param cfg configuration to access
+ * @param section section to access
+ * @param option option to access
+ * @param buf where to store the decoded binary result
+ * @param buf_size exact number of bytes to store in @a buf
+ * @return #GNUNET_OK on success
+ *         #GNUNET_NO is the value does not exist
+ *         #GNUNET_SYSERR on decoding error
+ */
+int
+GNUNET_CONFIGURATION_get_data (const struct GNUNET_CONFIGURATION_Handle *cfg,
+                               const char *section,
+                               const char *option,
+                               void *buf,
+                               size_t buf_size);
+
+
+/**
  * Expand an expression of the form "$FOO/BAR" to "DIRECTORY/BAR"
  * where either in the "PATHS" section or the environtment "FOO" is
  * set to "DIRECTORY".  We also support default expansion,
@@ -500,8 +535,6 @@ GNUNET_CONFIGURATION_append_value_filename (struct GNUNET_CONFIGURATION_Handle *
                                             const char *option,
                                             const char *value);
 
-/** @} */ /* end of group configuration */
-
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
@@ -510,3 +543,5 @@ GNUNET_CONFIGURATION_append_value_filename (struct GNUNET_CONFIGURATION_Handle *
 #endif
 
 #endif
+
+/** @} */ /* end of group configuration */

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2005-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2005-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -41,7 +36,7 @@ static struct GNUNET_FS_SearchContext *sks_search;
 
 static struct GNUNET_FS_SearchContext *ksk_search;
 
-static GNUNET_SCHEDULER_TaskIdentifier kill_task;
+static struct GNUNET_SCHEDULER_Task * kill_task;
 
 static int update_started;
 
@@ -49,7 +44,7 @@ static int err;
 
 
 static void
-abort_ksk_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_ksk_search_task (void *cls)
 {
   if (ksk_search != NULL)
   {
@@ -58,7 +53,7 @@ abort_ksk_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     if (sks_search == NULL)
     {
       GNUNET_FS_stop (fs);
-      if (GNUNET_SCHEDULER_NO_TASK != kill_task)
+      if (NULL != kill_task)
         GNUNET_SCHEDULER_cancel (kill_task);
     }
   }
@@ -66,7 +61,7 @@ abort_ksk_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-abort_sks_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_sks_search_task (void *cls)
 {
   if (sks_search == NULL)
     return;
@@ -75,20 +70,20 @@ abort_sks_search_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   if (ksk_search == NULL)
   {
     GNUNET_FS_stop (fs);
-    if (GNUNET_SCHEDULER_NO_TASK != kill_task)
+    if (NULL != kill_task)
       GNUNET_SCHEDULER_cancel (kill_task);
   }
 }
 
 
 static void
-do_timeout (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_timeout (void *cls)
 {
   err = 1;
   FPRINTF (stderr, "%s",  "Operation timed out\n");
-  kill_task = GNUNET_SCHEDULER_NO_TASK;
-  abort_sks_search_task (NULL, tc);
-  abort_ksk_search_task (NULL, tc);
+  kill_task = NULL;
+  abort_sks_search_task (NULL);
+  abort_ksk_search_task (NULL);
 }
 
 
@@ -118,8 +113,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
         FPRINTF (stderr, "%s",  "Wrong result for ksk search!\n");
         err = 1;
       }
-      GNUNET_SCHEDULER_add_continuation (&abort_ksk_search_task, NULL,
-                                         GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+      GNUNET_SCHEDULER_add_now (&abort_ksk_search_task, NULL);
     }
     else
     {
@@ -131,11 +125,9 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     FPRINTF (stderr, "Error searching file: %s\n",
              event->value.search.specifics.error.message);
     if (sks_search == event->value.search.sc)
-      GNUNET_SCHEDULER_add_continuation (&abort_sks_search_task, NULL,
-                                         GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+      GNUNET_SCHEDULER_add_now (&abort_sks_search_task, NULL);
     else if (ksk_search == event->value.search.sc)
-      GNUNET_SCHEDULER_add_continuation (&abort_ksk_search_task, NULL,
-                                         GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+      GNUNET_SCHEDULER_add_now (&abort_ksk_search_task, NULL);
     else
       GNUNET_break (0);
     break;

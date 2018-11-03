@@ -1,21 +1,16 @@
 /*
  This file is part of GNUnet.
- (C) 2010-2013 Christian Grothoff (and other contributing authors)
+ Copyright (C) 2010-2013 GNUnet e.V.
 
- GNUnet is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published
- by the Free Software Foundation; either version 3, or (at your
- option) any later version.
+ GNUnet is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published
+ by the Free Software Foundation, either version 3 of the License,
+ or (at your option) any later version.
 
  GNUnet is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with GNUnet; see the file COPYING.  If not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ Affero General Public License for more details.
  */
 /**
  * @file ats-tests/ats-testing-log.c
@@ -121,25 +116,19 @@ struct PartnerLoggingTimestep
 
   /* Current ATS properties */
 
-  uint32_t ats_distance;
+  unsigned int ats_distance;
 
-  uint32_t ats_delay;
+  struct GNUNET_TIME_Relative ats_delay;
 
   uint32_t bandwidth_in;
 
   uint32_t bandwidth_out;
 
-  uint32_t ats_utilization_up;
+  uint32_t ats_utilization_out;
 
-  uint32_t ats_utilization_down;
+  uint32_t ats_utilization_in;
 
-  uint32_t ats_network_type;
-
-  uint32_t ats_cost_wan;
-
-  uint32_t ats_cost_lan;
-
-  uint32_t ats_cost_wlan;
+  enum GNUNET_ATS_Network_Type ats_network_type;
 
   double pref_bandwidth;
   double pref_delay;
@@ -233,7 +222,7 @@ struct LoggingHandle
   /**
    * Logging task
    */
-  GNUNET_SCHEDULER_TaskIdentifier log_task;
+  struct GNUNET_SCHEDULER_Task *log_task;
 
   /**
    * Reference to perf_ats' masters
@@ -242,7 +231,7 @@ struct LoggingHandle
   int num_slaves;
   int running;
   int verbose;
-  char *name;
+  const char *name;
   struct GNUNET_TIME_Relative frequency;
 
   /**
@@ -425,11 +414,12 @@ write_bw_gnuplot_script (char * fn, struct LoggingPeer *lp, char **fs, int slave
 
 void
 GNUNET_ATS_TEST_logging_write_to_file (struct LoggingHandle *l,
-    char *experiment_name, int plots)
+                                       const char *experiment_name,
+                                       int plots)
 {
   struct GNUNET_DISK_FileHandle *f[l->num_slaves];
   struct GNUNET_DISK_FileHandle *f_m;
-  char *tmp_exp_name;
+  const char *tmp_exp_name;
   char *filename_master;
   char *filename_slaves[l->num_slaves];
   char *data;
@@ -483,6 +473,8 @@ GNUNET_ATS_TEST_logging_write_to_file (struct LoggingHandle *l,
       {
         GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Cannot open log file `%s'\n", filename_slaves[c_s]);
         GNUNET_free (filename_slaves[c_s]);
+        GNUNET_break (GNUNET_OK == GNUNET_DISK_file_close(f_m));
+        GNUNET_free (filename_master);
         return;
       }
 
@@ -539,7 +531,7 @@ GNUNET_ATS_TEST_logging_write_to_file (struct LoggingHandle *l,
 
         /* Assembling slave string */
         GNUNET_asprintf(&data,
-            "%llu;%llu;%u;%u;%u;%u;%u;%u;%.3f;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%.3f;%.3f\n",
+            "%llu;%llu;%u;%u;%u;%u;%u;%u;%.3f;%u;%u;%u;%u;%u;%u;%u;%.3f;%.3f\n",
             (long long unsigned int) cur_lt->timestamp.abs_value_us,
             (long long unsigned int) GNUNET_TIME_absolute_get_difference(l->lp[c_m].start,
                 cur_lt->timestamp).rel_value_us / 1000,
@@ -552,20 +544,17 @@ GNUNET_ATS_TEST_logging_write_to_file (struct LoggingHandle *l,
             (double) plt->app_rtt / 1000,
             plt->bandwidth_in,
             plt->bandwidth_out,
-            plt->ats_cost_lan,
-            plt->ats_cost_wan,
-            plt->ats_cost_wlan,
             plt->ats_delay,
             plt->ats_distance,
             plt->ats_network_type,
-            plt->ats_utilization_up,
-            plt->ats_utilization_down,
+            plt->ats_utilization_out,
+            plt->ats_utilization_in,
             plt->pref_bandwidth,
             plt->pref_delay);
 
         if (l->verbose)
           fprintf (stderr,
-              "\t Slave [%u]: %u %u %u ; %u %u %u rtt %u delay %u bw_in %u bw_out %u \n",
+              "\t Slave [%u]: %u %u %u ; %u %u %u rtt %u delay %llu bw_in %u bw_out %u \n",
               plt->slave->no,
               plt->total_messages_sent,
               plt->total_bytes_sent,
@@ -574,7 +563,7 @@ GNUNET_ATS_TEST_logging_write_to_file (struct LoggingHandle *l,
               plt->total_bytes_received,
               plt->throughput_recv,
               plt->app_rtt,
-              plt->ats_delay,
+              (long long unsigned int) plt->ats_delay.rel_value_us,
               plt->bandwidth_in,
               plt->bandwidth_out);
 
@@ -601,8 +590,10 @@ GNUNET_ATS_TEST_logging_write_to_file (struct LoggingHandle *l,
 
     if (GNUNET_SYSERR == GNUNET_DISK_file_close(f_m))
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-          "Cannot close log file `%s'\n", filename_master);
+      GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
+                                "close",
+                                filename_master);
+      GNUNET_free (filename_master);
       return;
     }
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -690,25 +681,26 @@ GNUNET_ATS_TEST_logging_now (struct LoggingHandle *l)
        }
        else
        {
-         mlt->total_throughput_send = 0;
+         mlt->total_throughput_recv = 0;
          //mlt->total_throughput_recv = prev_log_mlt->total_throughput_recv; /* no msgs received */
        }
      }
      else
      {
        mlt->total_throughput_send = mult * mlt->total_bytes_sent;
-       mlt->total_throughput_send = mult * mlt->total_bytes_received;
+       mlt->total_throughput_recv = mult * mlt->total_bytes_received;
      }
 
     if (GNUNET_YES == l->verbose)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-          "Master[%u] delta: %llu us, bytes (sent/received): %u / %u; throughput send/recv: %u / %u\n", c_m,
-          delta.rel_value_us,
-          mlt->total_bytes_sent,
-          mlt->total_bytes_received,
-          mlt->total_throughput_send,
-          mlt->total_throughput_recv);
+                  "Master[%u] delta: %llu us, bytes (sent/received): %u / %u; throughput send/recv: %u / %u\n",
+                  c_m,
+                  (unsigned long long) delta.rel_value_us,
+                  mlt->total_bytes_sent,
+                  mlt->total_bytes_received,
+                  mlt->total_throughput_send,
+                  mlt->total_throughput_recv);
     }
 
     mlt->slaves_log = GNUNET_malloc (bp->peer->num_partners *
@@ -733,14 +725,11 @@ GNUNET_ATS_TEST_logging_now (struct LoggingHandle *l)
       slt->total_messages_received = p->messages_received;
       slt->total_app_rtt = p->total_app_rtt;
       /* ats performance information */
-      slt->ats_cost_lan = p->ats_cost_lan;
-      slt->ats_cost_wan = p->ats_cost_wan;
-      slt->ats_cost_wlan = p->ats_cost_wlan;
-      slt->ats_delay = p->ats_delay;
-      slt->ats_distance = p->ats_distance;
-      slt->ats_network_type = p->ats_network_type;
-      slt->ats_utilization_down = p->ats_utilization_down;
-      slt->ats_utilization_up = p->ats_utilization_up;
+      slt->ats_delay = p->props.delay;
+      slt->ats_distance = p->props.distance;
+      slt->ats_network_type = p->props.scope;
+      slt->ats_utilization_in = p->props.utilization_out;
+      slt->ats_utilization_out = p->props.utilization_out;
       slt->bandwidth_in = p->bandwidth_in;
       slt->bandwidth_out = p->bandwidth_out;
       slt->pref_bandwidth = p->pref_bandwidth;
@@ -791,13 +780,13 @@ GNUNET_ATS_TEST_logging_now (struct LoggingHandle *l)
       if (GNUNET_YES == l->verbose)
       {
         GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-            "Master [%u] -> Slave [%u]: delta: %llu us, bytes (sent/received): %u / %u; throughput send/recv: %u / %u\n",
-            c_m, c_s,
-            delta.rel_value_us,
-            mlt->total_bytes_sent,
-            mlt->total_bytes_received,
-            slt->throughput_sent,
-            slt->throughput_recv);
+                    "Master [%u] -> Slave [%u]: delta: %llu us, bytes (sent/received): %u / %u; throughput send/recv: %u / %u\n",
+                    c_m, c_s,
+                    (unsigned long long) delta.rel_value_us,
+                    mlt->total_bytes_sent,
+                    mlt->total_bytes_received,
+                    slt->throughput_sent,
+                    slt->throughput_recv);
       }
       else
         GNUNET_log(GNUNET_ERROR_TYPE_DEBUG,
@@ -807,20 +796,19 @@ GNUNET_ATS_TEST_logging_now (struct LoggingHandle *l)
   }
 }
 
+
 static void
-collect_log_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+collect_log_task (void *cls)
 {
   struct LoggingHandle *l = cls;
-  l->log_task = GNUNET_SCHEDULER_NO_TASK;
 
+  l->log_task = NULL;
   GNUNET_ATS_TEST_logging_now (l);
-
-  if (tc->reason == GNUNET_SCHEDULER_REASON_SHUTDOWN)
-    return;
-
   l->log_task = GNUNET_SCHEDULER_add_delayed (l->frequency,
-      &collect_log_task, l);
+                                              &collect_log_task,
+                                              l);
 }
+
 
 /**
  * Stop logging
@@ -833,9 +821,11 @@ GNUNET_ATS_TEST_logging_stop (struct LoggingHandle *l)
   if (GNUNET_YES!= l->running)
     return;
 
-  if (GNUNET_SCHEDULER_NO_TASK != l->log_task)
+  if (NULL != l->log_task)
+  {
     GNUNET_SCHEDULER_cancel (l->log_task);
-  l->log_task = GNUNET_SCHEDULER_NO_TASK;
+    l->log_task = NULL;
+  }
   l->running = GNUNET_NO;
 
   GNUNET_log(GNUNET_ERROR_TYPE_INFO,
@@ -884,11 +874,15 @@ GNUNET_ATS_TEST_logging_clean_up (struct LoggingHandle *l)
  */
 struct LoggingHandle *
 GNUNET_ATS_TEST_logging_start(struct GNUNET_TIME_Relative log_frequency,
-    char *testname, struct BenchmarkPeer *masters, int num_masters, int num_slaves,
-    int verbose)
+                              const char *testname,
+                              struct BenchmarkPeer *masters,
+                              int num_masters,
+                              int num_slaves,
+                              int verbose)
 {
   struct LoggingHandle *l;
   int c_m;
+
   GNUNET_log(GNUNET_ERROR_TYPE_INFO,
       _("Start logging `%s'\n"), testname);
 
@@ -913,4 +907,3 @@ GNUNET_ATS_TEST_logging_start(struct GNUNET_TIME_Relative log_frequency,
   return l;
 }
 /* end of file ats-testing-log.c */
-

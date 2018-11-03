@@ -1,21 +1,16 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
@@ -151,12 +146,12 @@ struct GNUNET_TESTBED_HostHabitableCheckHandle *hc_handle;
 /**
  * Abort task identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier abort_task;
+static struct GNUNET_SCHEDULER_Task * abort_task;
 
 /**
  * Delayed connect job identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier delayed_connect_task;
+static struct GNUNET_SCHEDULER_Task * delayed_connect_task;
 
 /**
  * Different stages in testing
@@ -254,16 +249,15 @@ static enum Stage result;
  * Shutdown nicely
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != abort_task)
+  if (NULL != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
   if (NULL != hc_handle)
     GNUNET_TESTBED_is_host_habitable_cancel (hc_handle);
-  GNUNET_assert (GNUNET_SCHEDULER_NO_TASK == delayed_connect_task);
+  GNUNET_assert (NULL == delayed_connect_task);
   if (NULL != common_operation)
     GNUNET_TESTBED_operation_done (common_operation);
   if (NULL != reg_handle)
@@ -288,25 +282,25 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * abort task to run on test timed out
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_abort (void *cls)
 {
   LOG (GNUNET_ERROR_TYPE_WARNING, "Test timedout -- Aborting\n");
-  abort_task = GNUNET_SCHEDULER_NO_TASK;
-  if (GNUNET_SCHEDULER_NO_TASK != delayed_connect_task)
+  abort_task = NULL;
+  if (NULL != delayed_connect_task)
   {
     GNUNET_SCHEDULER_cancel (delayed_connect_task);
-    delayed_connect_task = GNUNET_SCHEDULER_NO_TASK;
+    delayed_connect_task = NULL;
   }
-  do_shutdown (cls, tc);
+  do_shutdown (cls);
 }
+
 
 static void
 abort_test ()
 {
-  if (GNUNET_SCHEDULER_NO_TASK != abort_task)
+  if (NULL != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
   abort_task = GNUNET_SCHEDULER_add_now (&do_abort, NULL);
 }
@@ -328,12 +322,11 @@ op_comp_cb (void *cls, struct GNUNET_TESTBED_Operation *op, const char *emsg);
  * task for delaying a connect
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_delayed_connect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_delayed_connect (void *cls)
 {
-  delayed_connect_task = GNUNET_SCHEDULER_NO_TASK;
+  delayed_connect_task = NULL;
   if (NULL != common_operation)
   {
     GNUNET_break (0);
@@ -845,10 +838,11 @@ status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *config,
  * @param cls NULL
  * @param host the host whose status is being reported; will be NULL if the host
  *          given to GNUNET_TESTBED_is_host_habitable() is NULL
- * @param status GNUNET_YES if it is habitable; GNUNET_NO if not
+ * @param status #GNUNET_YES if it is habitable; #GNUNET_NO if not
  */
 static void
-host_habitable_cb (void *cls, const struct GNUNET_TESTBED_Host *_host,
+host_habitable_cb (void *cls,
+		   const struct GNUNET_TESTBED_Host *_host,
                    int status)
 {
   hc_handle = NULL;
@@ -859,8 +853,8 @@ host_habitable_cb (void *cls, const struct GNUNET_TESTBED_Host *_host,
                    "to use password less SSH logins to localhost.\n"
                    "Skipping test\n");
     GNUNET_SCHEDULER_cancel (abort_task);
-    abort_task = GNUNET_SCHEDULER_NO_TASK;
-    (void) GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+    abort_task = NULL;
+    GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
     result = SKIP;
     return;
   }

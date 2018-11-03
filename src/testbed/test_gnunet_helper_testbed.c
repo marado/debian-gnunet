@@ -1,21 +1,16 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
-
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+      Affero General Public License for more details.
  */
 
 /**
@@ -58,12 +53,12 @@ static struct GNUNET_HELPER_SendHandle *shandle;
 /**
  * Abort task identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier abort_task;
+static struct GNUNET_SCHEDULER_Task * abort_task;
 
 /**
  * Shutdown task identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
+static struct GNUNET_SCHEDULER_Task * shutdown_task;
 
 /**
  * Configuratin handler
@@ -80,12 +75,11 @@ static int result;
  * Shutdown nicely
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != abort_task)
+  if (NULL != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
   if (NULL != helper)
     GNUNET_HELPER_stop (helper, GNUNET_NO);
@@ -99,17 +93,16 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * abort task to run on test timed out
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_abort (void *cls)
 {
-  abort_task = GNUNET_SCHEDULER_NO_TASK;
+  abort_task = NULL;
   LOG (GNUNET_ERROR_TYPE_WARNING, "Test timedout -- Aborting\n");
   result = GNUNET_SYSERR;
   if (NULL != shandle)
     GNUNET_HELPER_send_cancel (shandle);
-  if (GNUNET_SCHEDULER_NO_TASK == shutdown_task)
+  if (NULL == shutdown_task)
     shutdown_task = GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
 }
 
@@ -118,15 +111,17 @@ do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Continuation function.
  *
  * @param cls closure
- * @param result GNUNET_OK on success,
- *               GNUNET_NO if helper process died
- *               GNUNET_SYSERR during GNUNET_HELPER_stop
+ * @param result #GNUNET_OK on success,
+ *               #GNUNET_NO if helper process died
+ *               #GNUNET_SYSERR during GNUNET_HELPER_stop()
  */
 static void
-cont_cb (void *cls, int result)
+cont_cb (void *cls,
+         int result)
 {
   shandle = NULL;
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Message sent\n");
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Message sent\n");
   GNUNET_assert (GNUNET_OK == result);
 }
 
@@ -140,11 +135,11 @@ cont_cb (void *cls, int result)
  * @param cls closure
  * @param client identification of the client
  * @param message the actual message
- *
- * @return GNUNET_OK on success, GNUNET_SYSERR to stop further processing
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR to stop further processing
  */
 static int
-mst_cb (void *cls, void *client, const struct GNUNET_MessageHeader *message)
+mst_cb (void *cls,
+        const struct GNUNET_MessageHeader *message)
 {
   const struct GNUNET_TESTBED_HelperReply *msg;
   char *config;
@@ -167,7 +162,7 @@ mst_cb (void *cls, void *client, const struct GNUNET_MessageHeader *message)
                  uncompress ((Bytef *) config, &config_size,
                              (const Bytef *) &msg[1], xconfig_size));
   GNUNET_free (config);
-  if (GNUNET_SCHEDULER_NO_TASK == shutdown_task)
+  if (NULL == shutdown_task)
     shutdown_task =
         GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                       (GNUNET_TIME_UNIT_SECONDS, 1),
@@ -209,8 +204,12 @@ run (void *cls, char *const *args, const char *cfgfile,
   const char *trusted_ip = "127.0.0.1";
 
   helper =
-      GNUNET_HELPER_start (GNUNET_YES, "gnunet-helper-testbed", binary_argv,
-                           &mst_cb, &exp_cb, NULL);
+      GNUNET_HELPER_start (GNUNET_YES,
+                           "gnunet-helper-testbed",
+                           binary_argv,
+                           &mst_cb,
+                           &exp_cb,
+                           NULL);
   GNUNET_assert (NULL != helper);
   cfg = GNUNET_CONFIGURATION_dup (cfg2);
   msg = GNUNET_TESTBED_create_helper_init_msg_ (trusted_ip, NULL, cfg);

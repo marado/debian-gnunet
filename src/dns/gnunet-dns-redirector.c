@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -52,7 +47,7 @@ static int ret;
 /**
  * Selected level of verbosity.
  */
-static int verbosity;
+static unsigned int verbosity;
 
 
 /**
@@ -177,7 +172,7 @@ modify_request (void *cls,
  * Shutdown.
  */
 static void
-do_disconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_disconnect (void *cls)
 {
   if (NULL != handle)
   {
@@ -223,22 +218,27 @@ run (void *cls, char *const *args, const char *cfgfile,
 			GNUNET_DNS_FLAG_POST_RESOLUTION,
 			&modify_request,
 			NULL);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-				&do_disconnect, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_disconnect, NULL);
 }
 
 
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'4', "ipv4", "IPV4",
-     gettext_noop ("set A records"),
-     1, &GNUNET_GETOPT_set_string, &n4},
-    {'6', "ipv4", "IPV6",
-     gettext_noop ("set AAAA records"),
-     1, &GNUNET_GETOPT_set_string, &n6},
-    GNUNET_GETOPT_OPTION_VERBOSE (&verbosity),
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_string ('4',
+                                 "ipv4",
+                                 "IPV4",
+                                 gettext_noop ("set A records"),
+                                 &n4),
+
+    GNUNET_GETOPT_option_string ('6',
+                                 "ipv4",
+                                 "IPV6",
+                                 gettext_noop ("set AAAA records"),
+                                 &n6),
+
+    GNUNET_GETOPT_option_verbose (&verbosity),
     GNUNET_GETOPT_OPTION_END
   };
 

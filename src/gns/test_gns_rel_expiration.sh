@@ -13,27 +13,32 @@ then
 	exit 77
 fi
 
-rm -rf /tmp/test-gnunet-gns-peer-1/
+MY_EGO="myego"
+OTHER_EGO="delegatedego"
+
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
 which timeout &> /dev/null && DO_TIMEOUT="timeout 5"
 TEST_IP="127.0.0.1"
 gnunet-arm -s -c test_gns_lookup.conf
-gnunet-identity -C testego -c test_gns_lookup.conf
-gnunet-identity -C delegatedego -c test_gns_lookup.conf
-DELEGATED_PKEY=$(gnunet-identity -d -c test_gns_lookup.conf | grep delegatedego | awk '{print $3}')
-gnunet-namestore -p -z testego -a -n b -t PKEY -V $DELEGATED_PKEY -e never -c test_gns_lookup.conf
-gnunet-namestore -p -z delegatedego -a -n www -t A -V $TEST_IP -e '5 s' -c test_gns_lookup.conf
+gnunet-identity -C $MY_EGO -c test_gns_lookup.conf
+gnunet-identity -C $OTHER_EGO -c test_gns_lookup.conf
+DELEGATED_PKEY=$(gnunet-identity -d -c test_gns_lookup.conf | grep $OTHER_EGO | awk '{print $3}')
+gnunet-namestore -p -z $MY_EGO -a -n b -t PKEY -V $DELEGATED_PKEY -e never -c test_gns_lookup.conf
+gnunet-namestore -p -z $OTHER_EGO -a -n www -t A -V $TEST_IP -e '5 s' -c test_gns_lookup.conf
 gnunet-arm -i gns -c test_gns_lookup.conf
-sleep 7
-gnunet-namestore -z delegatedego -d -n www -t A -V $TEST_IP  -e '5 s' -c test_gns_lookup.conf
-sleep 1
-RES_IP=`$DO_TIMEOUT gnunet-gns --raw -z testego -u www.b.gnu -t A -c test_gns_lookup.conf`
+# confirm that lookup currently works
+RES_IP=`$DO_TIMEOUT gnunet-gns --raw -u www.b.$MY_EGO -t A -c test_gns_lookup.conf`
+# remove entry
+gnunet-namestore -z $OTHER_EGO -d -n www -t A -V $TEST_IP  -e '5 s' -c test_gns_lookup.conf
+# wait for old entry with 5s 'expiration' to definitively expire
 sleep 6
-RES_IP_EXP=`$DO_TIMEOUT gnunet-gns --raw -z testego -u www.b.gnu -t A -c test_gns_lookup.conf`
-gnunet-namestore -z testego -d -n b -t PKEY -V $DELEGATED_PKEY  -e never -c test_gns_lookup.conf
-gnunet-identity -D testego -c test_gns_lookup.conf
-gnunet-identity -D delegatedego -c test_gns_lookup.conf
+# try again, should no longer work
+RES_IP_EXP=`$DO_TIMEOUT gnunet-gns --raw -u www.b.$MY_EGO -t A -c test_gns_lookup.conf`
+gnunet-namestore -z $MY_EGO -d -n b -t PKEY -V $DELEGATED_PKEY  -e never -c test_gns_lookup.conf
+gnunet-identity -D $MY_EGO -c test_gns_lookup.conf
+gnunet-identity -D $OTHER_EGO -c test_gns_lookup.conf
 gnunet-arm -e -c test_gns_lookup.conf
-rm -rf /tmp/test-gnunet-gns-peer-1/
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
 
 if [ "$RES_IP_EXP" == "$TEST_IP" ]
 then

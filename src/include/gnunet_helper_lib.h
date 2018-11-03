@@ -1,36 +1,40 @@
 /*
      This file is part of GNUnet.
-     (C) 2011, 2012 Christian Grothoff
+     Copyright (C) 2011, 2012 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
- * @file include/gnunet_helper_lib.h
- * @brief API for dealing with (SUID) helper processes that communicate via
- *          GNUNET_MessageHeaders on stdin/stdout
  * @author Philipp Toelke
  * @author Christian Grothoff
+ *
+ * @file
+ * API for dealing with SUID helper processes
+ *
+ * @defgroup helper  Helper library
+ * Dealing with SUID helper processes.
+ *
+ * Provides an API for dealing with (SUID) helper processes
+ * that communicate via GNUNET_MessageHeaders on STDIN/STDOUT.
+ *
+ * @{
  */
 
 #ifndef GNUNET_HELPER_LIB_H
 #define GNUNET_HELPER_LIB_H
 
 #include "gnunet_scheduler_lib.h"
-#include "gnunet_server_lib.h"
+#include "gnunet_mst_lib.h"
+
 
 /**
  * The handle to a helper process.
@@ -44,7 +48,8 @@ struct GNUNET_HELPER_Handle;
  *
  * @param cls the closure from GNUNET_HELPER_start()
  */
-typedef void (*GNUNET_HELPER_ExceptionCallback) (void *cls);
+typedef void
+(*GNUNET_HELPER_ExceptionCallback) (void *cls);
 
 
 /**
@@ -67,7 +72,7 @@ struct GNUNET_HELPER_Handle *
 GNUNET_HELPER_start (int with_control_pipe,
 		     const char *binary_name,
 		     char *const binary_argv[],
-		     GNUNET_SERVER_MessageTokenizerCallback cb,
+		     GNUNET_MessageTokenizerCallback cb,
 		     GNUNET_HELPER_ExceptionCallback exp_cb,
 		     void *cb_cls);
 
@@ -166,5 +171,8 @@ GNUNET_HELPER_send (struct GNUNET_HELPER_Handle *h,
 void
 GNUNET_HELPER_send_cancel (struct GNUNET_HELPER_SendHandle *sh);
 
+
 #endif
 /* end of include guard: GNUNET_HELPER_LIB_H */
+
+/** @} */  /* end of group */

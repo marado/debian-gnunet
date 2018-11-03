@@ -1,28 +1,25 @@
 /*
      This file is part of GNUnet.
-     (C) 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
+
 
 /**
  * @file regex/gnunet-regex-simulation-profiler.c
  * @brief Regex profiler that dumps all DFAs into a database instead of
- *        using the DHT (with mesh).
+ *        using the DHT (with cadet).
  * @author Maximilian Szengel
+ * @author Christophe Genevey
  *
  */
 
@@ -30,6 +27,7 @@
 #include "gnunet_util_lib.h"
 #include "regex_internal_lib.h"
 #include "gnunet_mysql_lib.h"
+#include "gnunet_my_lib.h"
 #include <mysql/mysql.h>
 
 /**
@@ -89,19 +87,9 @@ struct ProgressMeter
 static struct ProgressMeter *meter;
 
 /**
- * Abort task identifier.
- */
-static GNUNET_SCHEDULER_TaskIdentifier abort_task;
-
-/**
- * Shutdown task identifier.
- */
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
-
-/**
  * Scan task identifier;
  */
-static GNUNET_SCHEDULER_TaskIdentifier scan_task;
+static struct GNUNET_SCHEDULER_Task *scan_task;
 
 /**
  * Global testing status.
@@ -240,8 +228,8 @@ update_meter (struct ProgressMeter *meter)
  *
  * @param meter the meter to reset
  *
- * @return GNUNET_YES if meter reset,
- *         GNUNET_SYSERR on error
+ * @return #GNUNET_YES if meter reset,
+ *         #GNUNET_SYSERR on error
  */
 static int
 reset_meter (struct ProgressMeter *meter)
@@ -271,56 +259,46 @@ free_meter (struct ProgressMeter *meter)
  * Shutdown task.
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  shutdown_task = GNUNET_SCHEDULER_NO_TASK;
-  if (GNUNET_SCHEDULER_NO_TASK != abort_task)
-    GNUNET_SCHEDULER_cancel (abort_task);
   if (NULL != mysql_ctx)
+  {
     GNUNET_MYSQL_context_destroy (mysql_ctx);
+    mysql_ctx = NULL;
+  }
   if (NULL != meter)
+  {
     free_meter (meter);
-
-  GNUNET_SCHEDULER_shutdown (); /* Stop scheduler to shutdown testbed run */
+    meter = NULL;
+  }
 }
 
 
 /**
- * abort task to run on test timed out
+ * Abort task to run on test timed out.
+ *
+ * FIXME: this doesn't actually work, it used to cancel
+ * the already running 'scan_task', but now that should
+ * always be NULL and do nothing. We instead need to set
+ * a global variable and abort scan_task internally, not
+ * via scheduler.
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_abort (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Aborting\n");
-  abort_task = GNUNET_SCHEDULER_NO_TASK;
-  GNUNET_SCHEDULER_cancel (scan_task);
-  scan_task = GNUNET_SCHEDULER_NO_TASK;
+  if (NULL != scan_task)
+  {
+    GNUNET_SCHEDULER_cancel (scan_task);
+    scan_task = NULL;
+  }
   result = GNUNET_SYSERR;
-  GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+  GNUNET_SCHEDULER_shutdown ();
 }
-
-
-/**
- * Dummy function for prepared select. Always return GNUNET_OK.
- *
- * @param cls closure
- * @param num_values number of values.
- * @param values returned values from select stmt.
- *
- * @return GNUNET_OK
- */
-static int
-return_ok (void *cls, unsigned int num_values, MYSQL_BIND * values)
-{
-  return GNUNET_OK;
-}
-
 
 /**
  * Iterator over all states that inserts each state into the MySQL db.
@@ -328,48 +306,43 @@ return_ok (void *cls, unsigned int num_values, MYSQL_BIND * values)
  * @param cls closure.
  * @param key hash for current state.
  * @param proof proof for current state.
- * @param accepting GNUNET_YES if this is an accepting state, GNUNET_NO if not.
+ * @param accepting #GNUNET_YES if this is an accepting state, #GNUNET_NO if not.
  * @param num_edges number of edges leaving current state.
  * @param edges edges leaving current state.
  */
 static void
-regex_iterator (void *cls, const struct GNUNET_HashCode *key, const char *proof,
-                int accepting, unsigned int num_edges,
+regex_iterator (void *cls,
+		const struct GNUNET_HashCode *key,
+		const char *proof,
+                int accepting,
+		unsigned int num_edges,
                 const struct REGEX_BLOCK_Edge *edges)
 {
   unsigned int i;
   int result;
-  unsigned long k_length;
-  unsigned long e_length;
-  unsigned long d_length;
-  MYSQL_BIND rbind[1];
-  unsigned long long total;
+
+  uint32_t iaccepting = (uint32_t)accepting;
+  uint64_t total;
 
   GNUNET_assert (NULL != mysql_ctx);
 
   for (i = 0; i < num_edges; i++)
   {
-    k_length = sizeof (struct GNUNET_HashCode);
-    e_length = strlen (edges[i].label);
-    d_length = sizeof (struct GNUNET_HashCode);
-    memset (rbind, 0, sizeof (rbind));
-    total = -1;
-    rbind[0].buffer_type = MYSQL_TYPE_LONGLONG;
-    rbind[0].buffer = &total;
-    rbind[0].is_unsigned = GNUNET_YES;
+    struct GNUNET_MY_QueryParam params_select[] = {
+      GNUNET_MY_query_param_auto_from_type (key),
+      GNUNET_MY_query_param_string (edges[i].label),
+      GNUNET_MY_query_param_end
+    };
 
-    result =
-        GNUNET_MYSQL_statement_run_prepared_select (mysql_ctx,
-                                                    select_stmt_handle, 1,
-                                                    rbind, &return_ok, NULL,
-                                                    MYSQL_TYPE_BLOB, key,
-                                                    sizeof (struct
-                                                            GNUNET_HashCode),
-                                                    &k_length,
-                                                    MYSQL_TYPE_STRING,
-                                                    edges[i].label,
-                                                    strlen (edges[i].label),
-                                                    &e_length, -1);
+    struct GNUNET_MY_ResultSpec results_select[] = {
+      GNUNET_MY_result_spec_uint64 (&total),
+      GNUNET_MY_result_spec_end
+    };
+
+    result = 
+      GNUNET_MY_exec_prepared (mysql_ctx,
+                              select_stmt_handle,
+                              params_select);
 
     if (GNUNET_SYSERR == result)
     {
@@ -379,32 +352,49 @@ regex_iterator (void *cls, const struct GNUNET_HashCode *key, const char *proof,
       return;
     }
 
+    result = 
+      GNUNET_MY_extract_result (select_stmt_handle,
+                                results_select);
+
+    if (GNUNET_SYSERR == result)
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  "Error extracting result mysql select statement\n");
+      GNUNET_SCHEDULER_add_now (&do_abort, NULL);
+      return;
+    }
+
     if (-1 != total && total > 0)
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Total: %llu (%s, %s)\n", total,
+      GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Total: %llu (%s, %s)\n", 
+		  (unsigned long long)total,
                   GNUNET_h2s (key), edges[i].label);
     }
 
-    result =
-        GNUNET_MYSQL_statement_run_prepared (mysql_ctx, stmt_handle, NULL,
-                                             MYSQL_TYPE_BLOB, key,
-                                             sizeof (struct GNUNET_HashCode),
-                                             &k_length, MYSQL_TYPE_STRING,
-                                             edges[i].label,
-                                             strlen (edges[i].label), &e_length,
-                                             MYSQL_TYPE_BLOB,
-                                             &edges[i].destination,
-                                             sizeof (struct GNUNET_HashCode),
-                                             &d_length, MYSQL_TYPE_LONG,
-                                             &accepting, GNUNET_YES, -1);
+    struct GNUNET_MY_QueryParam params_stmt[] = {
+      GNUNET_MY_query_param_auto_from_type (&key),
+      GNUNET_MY_query_param_string (edges[i].label),
+      GNUNET_MY_query_param_auto_from_type (&edges[i].destination),
+      GNUNET_MY_query_param_uint32 (&iaccepting),
+      GNUNET_MY_query_param_end
+    };
+
+    result = 
+      GNUNET_MY_exec_prepared (mysql_ctx,
+                              stmt_handle,
+                              params_stmt);
 
     if (0 == result)
     {
       char *key_str = GNUNET_strdup (GNUNET_h2s (key));
       char *to_key_str = GNUNET_strdup (GNUNET_h2s (&edges[i].destination));
 
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Merged (%s, %s, %s, %i)\n", key_str,
-                  edges[i].label, to_key_str, accepting);
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Merged (%s, %s, %s, %i)\n", 
+		  key_str,
+                  edges[i].label, 
+		  to_key_str, 
+		  accepting);
+
       GNUNET_free (key_str);
       GNUNET_free (to_key_str);
       num_merged_transitions++;
@@ -425,19 +415,18 @@ regex_iterator (void *cls, const struct GNUNET_HashCode *key, const char *proof,
 
   if (0 == num_edges)
   {
-    k_length = sizeof (struct GNUNET_HashCode);
-    e_length = 0;
-    d_length = 0;
+    struct GNUNET_MY_QueryParam params_stmt[] = {
+      GNUNET_MY_query_param_auto_from_type (key),
+      GNUNET_MY_query_param_string (""),
+      GNUNET_MY_query_param_fixed_size (NULL, 0),
+      GNUNET_MY_query_param_uint32 (&iaccepting),
+      GNUNET_MY_query_param_end
+    };
 
-    result =
-        GNUNET_MYSQL_statement_run_prepared (mysql_ctx, stmt_handle, NULL,
-                                             MYSQL_TYPE_BLOB, key,
-                                             sizeof (struct GNUNET_HashCode),
-                                             &k_length, MYSQL_TYPE_STRING, NULL,
-                                             0, &e_length, MYSQL_TYPE_BLOB,
-                                             NULL, 0, &d_length,
-                                             MYSQL_TYPE_LONG, &accepting,
-                                             GNUNET_YES, -1);
+    result = 
+      GNUNET_MY_exec_prepared (mysql_ctx,
+			       stmt_handle,
+			       params_stmt);
 
     if (1 != result && 0 != result)
     {
@@ -455,7 +444,7 @@ regex_iterator (void *cls, const struct GNUNET_HashCode *key, const char *proof,
  * each state into a MySQL database.
  *
  * @param regex regular expression.
- * @return GNUNET_OK on success, GNUNET_SYSERR on failure.
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure.
  */
 static int
 announce_regex (const char *regex)
@@ -463,18 +452,20 @@ announce_regex (const char *regex)
   struct REGEX_INTERNAL_Automaton *dfa;
 
   dfa =
-      REGEX_INTERNAL_construct_dfa (regex, strlen (regex), max_path_compression);
+      REGEX_INTERNAL_construct_dfa (regex,
+				    strlen (regex),
+				    max_path_compression);
 
   if (NULL == dfa)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to create DFA for regex %s\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		"Failed to create DFA for regex %s\n",
                 regex);
-    abort_task = GNUNET_SCHEDULER_add_now (&do_abort, NULL);
+    GNUNET_SCHEDULER_add_now (&do_abort, NULL);
     return GNUNET_SYSERR;
   }
-
-  REGEX_INTERNAL_iterate_all_edges (dfa, &regex_iterator, NULL);
-
+  REGEX_INTERNAL_iterate_all_edges (dfa,
+				    &regex_iterator, NULL);
   REGEX_INTERNAL_automaton_destroy (dfa);
 
   return GNUNET_OK;
@@ -486,8 +477,8 @@ announce_regex (const char *regex)
  *
  * @param cls closure
  * @param filename complete filename (absolute path)
- * @return GNUNET_OK to continue to iterate,
- *  GNUNET_SYSERR to abort iteration with error!
+ * @return #GNUNET_OK to continue to iterate,
+ *  #GNUNET_SYSERR to abort iteration with error!
  */
 static int
 policy_filename_cb (void *cls, const char *filename)
@@ -500,17 +491,20 @@ policy_filename_cb (void *cls, const char *filename)
 
   GNUNET_assert (NULL != filename);
 
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Announcing regexes from file %s\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+	      "Announcing regexes from file %s\n",
               filename);
 
   if (GNUNET_YES != GNUNET_DISK_file_test (filename))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Could not find policy file %s\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+		"Could not find policy file %s\n",
                 filename);
     return GNUNET_OK;
   }
   if (GNUNET_OK !=
-      GNUNET_DISK_file_size (filename, &filesize, GNUNET_YES, GNUNET_YES))
+      GNUNET_DISK_file_size (filename, &filesize,
+			     GNUNET_YES, GNUNET_YES))
     filesize = 0;
   if (0 == filesize)
   {
@@ -522,7 +516,8 @@ policy_filename_cb (void *cls, const char *filename)
   if (filesize != GNUNET_DISK_fn_read (filename, data, filesize))
   {
     GNUNET_free (data);
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Could not read policy file %s.\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+		"Could not read policy file %s.\n",
                 filename);
     return GNUNET_OK;
   }
@@ -547,11 +542,13 @@ policy_filename_cb (void *cls, const char *filename)
   data[offset] = '\0';
   GNUNET_asprintf (&regex, "%s(%s)", regex_prefix, data);
   GNUNET_assert (NULL != regex);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Announcing regex: %s\n", regex);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Announcing regex: %s\n", regex);
 
   if (GNUNET_OK != announce_regex (regex))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Could not announce regex %s\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		"Could not announce regex %s\n",
                 regex);
   }
   GNUNET_free (regex);
@@ -564,16 +561,16 @@ policy_filename_cb (void *cls, const char *filename)
  * Iterate over files contained in policy_dir.
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_directory_scan (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_directory_scan (void *cls)
 {
   struct GNUNET_TIME_Absolute start_time;
   struct GNUNET_TIME_Relative duration;
   char *stmt;
 
   /* Create an MySQL prepared statement for the inserts */
+  scan_task = NULL;
   GNUNET_asprintf (&stmt, INSERT_EDGE_STMT, table_name);
   stmt_handle = GNUNET_MYSQL_statement_prepare (mysql_ctx, stmt);
   GNUNET_free (stmt);
@@ -584,10 +581,13 @@ do_directory_scan (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
   GNUNET_assert (NULL != stmt_handle);
 
-  meter =
-      create_meter (num_policy_files, "Announcing policy files\n", GNUNET_YES);
+  meter = create_meter (num_policy_files,
+			"Announcing policy files\n",
+			GNUNET_YES);
   start_time = GNUNET_TIME_absolute_get ();
-  GNUNET_DISK_directory_scan (policy_dir, &policy_filename_cb, stmt_handle);
+  GNUNET_DISK_directory_scan (policy_dir,
+			      &policy_filename_cb,
+			      stmt_handle);
   duration = GNUNET_TIME_absolute_get_duration (start_time);
   reset_meter (meter);
   free_meter (meter);
@@ -595,12 +595,13 @@ do_directory_scan (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
   printf ("Announced %u files containing %u policies in %s\n"
           "Duplicate transitions: %llu\nMerged states: %llu\n",
-          num_policy_files, num_policies,
+          num_policy_files,
+	  num_policies,
           GNUNET_STRINGS_relative_time_to_string (duration, GNUNET_NO),
-          num_merged_transitions, num_merged_states);
-
+          num_merged_transitions,
+	  num_merged_states);
   result = GNUNET_OK;
-  shutdown_task = GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -613,7 +614,9 @@ do_directory_scan (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param config configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *config)
 {
   if (NULL == args[0])
@@ -623,7 +626,8 @@ run (void *cls, char *const *args, const char *cfgfile,
     result = GNUNET_SYSERR;
     return;
   }
-  if (GNUNET_YES != GNUNET_DISK_directory_test (args[0], GNUNET_YES))
+  if (GNUNET_YES !=
+      GNUNET_DISK_directory_test (args[0], GNUNET_YES))
   {
     fprintf (stderr,
              _("Specified policies directory does not exist. Exiting.\n"));
@@ -632,7 +636,8 @@ run (void *cls, char *const *args, const char *cfgfile,
   }
   policy_dir = args[0];
 
-  num_policy_files = GNUNET_DISK_directory_scan (policy_dir, NULL, NULL);
+  num_policy_files = GNUNET_DISK_directory_scan (policy_dir,
+						 NULL, NULL);
   meter = NULL;
 
   if (NULL == table_name)
@@ -645,32 +650,29 @@ run (void *cls, char *const *args, const char *cfgfile,
   mysql_ctx = GNUNET_MYSQL_context_create (config, "regex-mysql");
   if (NULL == mysql_ctx)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to create mysql context\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		"Failed to create mysql context\n");
     result = GNUNET_SYSERR;
     return;
   }
 
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (config, "regex-mysql",
-                                             "REGEX_PREFIX", &regex_prefix))
+      GNUNET_CONFIGURATION_get_value_string (config,
+					     "regex-mysql",
+                                             "REGEX_PREFIX",
+					     &regex_prefix))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _
-                ("%s service is lacking key configuration settings (%s).  Exiting.\n"),
-                "regexprofiler", "regex_prefix");
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
+			       "regex-mysql",
+			       "REGEX_PREFIX");
     result = GNUNET_SYSERR;
     return;
   }
 
-
   result = GNUNET_OK;
-
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+				 NULL);
   scan_task = GNUNET_SCHEDULER_add_now (&do_directory_scan, NULL);
-
-  /* Scheduled the task to clean up when shutdown is called */
-  shutdown_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &do_shutdown,
-                                    NULL);
 }
 
 
@@ -684,13 +686,20 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'t', "table", "TABLENAME",
-     gettext_noop ("name of the table to write DFAs"),
-     1, &GNUNET_GETOPT_set_string, &table_name},
-    {'p', "max-path-compression", "MAX_PATH_COMPRESSION",
-     gettext_noop ("maximum path compression length"),
-     1, &GNUNET_GETOPT_set_uint, &max_path_compression},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_string ('t',
+                                 "table",
+                                 "TABLENAME",
+                                 gettext_noop ("name of the table to write DFAs"),
+                                 &table_name),
+
+    GNUNET_GETOPT_option_uint ('p',
+                                   "max-path-compression",
+                                   "MAX_PATH_COMPRESSION",
+                                   gettext_noop ("maximum path compression length"),
+                                   &max_path_compression),
+
     GNUNET_GETOPT_OPTION_END
   };
   int ret;

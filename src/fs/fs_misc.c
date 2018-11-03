@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2011, 2017 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file fs/fs_misc.c
@@ -43,6 +38,8 @@ GNUNET_FS_meta_data_suggest_filename (const struct GNUNET_CONTAINER_MetaData
     {"application/gnunet-directory", ".gnd"},
     {"application/java", ".class"},
     {"application/msword", ".doc"},
+    {"application/nar", ".nar"},
+    {"application/narinfo", ".narinfo"},
     {"application/ogg", ".ogg"},
     {"application/pdf", ".pdf"},
     {"application/pgp-keys", ".key"},
@@ -53,8 +50,8 @@ GNUNET_FS_meta_data_suggest_filename (const struct GNUNET_CONTAINER_MetaData
     {"application/xml", ".xml"},
     {"application/x-debian-package", ".deb"},
     {"application/x-dvi", ".dvi"},
-    {"applixation/x-flac", ".flac"},
-    {"applixation/x-gzip", ".gz"},
+    {"application/x-flac", ".flac"},
+    {"application/x-gzip", ".gz"},
     {"application/x-java-archive", ".jar"},
     {"application/x-java-vm", ".class"},
     {"application/x-python-code", ".pyc"},

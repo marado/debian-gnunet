@@ -1,26 +1,29 @@
 /*
      This file is part of GNUnet
-     (C) 2004--2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004--2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
- * @file include/gnunet_fs_service.h
- * @brief API for file-sharing via GNUnet
  * @author Christian Grothoff
+ *
+ * @file
+ * API for file sharing via GNUnet
+ *
+ * @defgroup fs FS service
+ * File sharing
+ *
+ * @see [Documentation](https://gnunet.org/file-sharing-service)
+ *
+ * @{
  */
 #ifndef GNUNET_FS_LIB_H
 #define GNUNET_FS_LIB_H
@@ -54,8 +57,9 @@ extern "C"
  * 9.0.0: CPS-style integrated API
  * 9.1.1: asynchronous directory scanning
  * 9.2.0: unified K-Block and S-block format (#2564)
+ * 9.3.0: base32crockford encoded URLs
  */
-#define GNUNET_FS_VERSION 0x00090200
+#define GNUNET_FS_VERSION 0x00090300
 
 
 /* ******************** URI API *********************** */
@@ -87,8 +91,10 @@ struct GNUNET_FS_Uri;
  * @param is_mandatory is the keyword mandatory (in a search)
  * @return #GNUNET_OK to continue to iterate, #GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_FS_KeywordIterator) (void *cls, const char *keyword,
-                                          int is_mandatory);
+typedef int
+(*GNUNET_FS_KeywordIterator) (void *cls,
+                              const char *keyword,
+                              int is_mandatory);
 
 
 
@@ -98,8 +104,9 @@ typedef int (*GNUNET_FS_KeywordIterator) (void *cls, const char *keyword,
  *
  * @param uri uri to convert to a unique key
  * @param key wherer to store the unique key
+ * @return #GNUNET_OK on success
  */
-void
+int
 GNUNET_FS_uri_to_key (const struct GNUNET_FS_Uri *uri,
 		      struct GNUNET_HashCode *key);
 
@@ -159,7 +166,8 @@ GNUNET_FS_uri_ksk_remove_keyword (struct GNUNET_FS_Uri *uri,
  * @return NULL on error
  */
 struct GNUNET_FS_Uri *
-GNUNET_FS_uri_parse (const char *uri, char **emsg);
+GNUNET_FS_uri_parse (const char *uri,
+                     char **emsg);
 
 
 /**
@@ -230,15 +238,19 @@ GNUNET_FS_uri_loc_get_expiration (const struct GNUNET_FS_Uri *uri);
 
 /**
  * Construct a location URI (this peer will be used for the location).
+ * This function should only be called from within gnunet-service-fs,
+ * as it requires the peer's private key which is generally unavailable
+ * to processes directly under the user's control.  However, for
+ * testing and as it logically fits under URIs, it is in this API.
  *
- * @param baseUri content offered by the sender
- * @param cfg configuration information (used to find our hostkey)
+ * @param base_uri content offered by the sender
+ * @param sign_key private key of the peer
  * @param expiration_time how long will the content be offered?
  * @return the location URI, NULL on error
  */
 struct GNUNET_FS_Uri *
-GNUNET_FS_uri_loc_create (const struct GNUNET_FS_Uri *baseUri,
-                          const struct GNUNET_CONFIGURATION_Handle *cfg,
+GNUNET_FS_uri_loc_create (const struct GNUNET_FS_Uri *base_uri,
+                          const struct GNUNET_CRYPTO_EddsaPrivateKey *sign_key,
                           struct GNUNET_TIME_Absolute expiration_time);
 
 
@@ -282,7 +294,8 @@ GNUNET_FS_uri_dup (const struct GNUNET_FS_Uri *uri);
  *  if keywords is not legal (i.e. empty).
  */
 struct GNUNET_FS_Uri *
-GNUNET_FS_uri_ksk_create (const char *keywords, char **emsg);
+GNUNET_FS_uri_ksk_create (const char *keywords,
+                          char **emsg);
 
 
 /**
@@ -421,22 +434,36 @@ GNUNET_FS_uri_ksk_create_from_meta_data (const struct GNUNET_CONTAINER_MetaData
 /* ******************** command-line option parsing API *********************** */
 
 /**
- * Command-line option parser function that allows the user
- * to specify one or more '-k' options with keywords.  Each
- * specified keyword will be added to the URI.  A pointer to
- * the URI must be passed as the "scls" argument.
+ * Allow user to specify keywords.
  *
- * @param ctx command line processor context
- * @param scls must be of type "struct GNUNET_FS_Uri **"
- * @param option name of the option (typically 'k')
- * @param value command line argument given
- * @return #GNUNET_OK on success
+ * @param shortName short name of the option
+ * @param name long name of the option
+ * @param argumentHelp help text for the option argument
+ * @param description long help text for the option
+ * @param[out] topKeywords set to the desired value
  */
-int
-GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
-                               *ctx, void *scls, const char *option,
-                               const char *value);
+struct GNUNET_GETOPT_CommandLineOption
+GNUNET_FS_GETOPT_KEYWORDS (char shortName,
+                           const char *name,
+                           const char *argumentHelp,
+                           const char *description,
+                           struct GNUNET_FS_Uri **topKeywords);
 
+/**
+ * Allow user to specify metadata.
+ *
+ * @param shortName short name of the option
+ * @param name long name of the option
+ * @param argumentHelp help text for the option argument
+ * @param description long help text for the option
+ * @param[out] metadata set to the desired value
+ */
+struct GNUNET_GETOPT_CommandLineOption
+GNUNET_FS_GETOPT_METADATA (char shortName,
+                           const char *name,
+                           const char *argumentHelp,
+                           const char *description,
+                           struct GNUNET_CONTAINER_MetaData **meta);
 
 /**
  * Command-line option parser function that allows the user to specify
@@ -451,8 +478,9 @@ GNUNET_FS_getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext
  * @return #GNUNET_OK on success
  */
 int
-GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext
-                               *ctx, void *scls, const char *option,
+GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
+                               void *scls,
+                               const char *option,
                                const char *value);
 
 
@@ -892,6 +920,11 @@ struct GNUNET_FS_ProgressInfo
 	   */
           const struct GNUNET_FS_Uri *chk_uri;
 
+          /**
+	   * SKS URI of the file (if the download had been completed)
+	   */
+          const struct GNUNET_FS_Uri *sks_uri;
+
         } resume;
 
         /**
@@ -902,9 +935,14 @@ struct GNUNET_FS_ProgressInfo
         {
 
           /**
-	   * URI of the file.
+	   * CHK URI of the file.
 	   */
           const struct GNUNET_FS_Uri *chk_uri;
+
+          /**
+	   * SKS URI of the file (if the download had been completed)
+	   */
+          const struct GNUNET_FS_Uri *sks_uri;
 
         } completed;
 
@@ -1561,8 +1599,9 @@ struct GNUNET_FS_ProgressInfo
  *         will be passed to future callbacks in the respective
  *         field in the `struct GNUNET_FS_ProgressInfo`.
  */
-typedef void *(*GNUNET_FS_ProgressCallback) (void *cls,
-                                             const struct GNUNET_FS_ProgressInfo *info);
+typedef void *
+(*GNUNET_FS_ProgressCallback) (void *cls,
+                               const struct GNUNET_FS_ProgressInfo *info);
 
 
 /**
@@ -1682,16 +1721,21 @@ struct GNUNET_FS_Handle;
  */
 struct GNUNET_FS_Handle *
 GNUNET_FS_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
-                 const char *client_name, GNUNET_FS_ProgressCallback upcb,
-                 void *upcb_cls, enum GNUNET_FS_Flags flags, ...);
+                 const char *client_name,
+		 GNUNET_FS_ProgressCallback upcb,
+                 void *upcb_cls,
+		 enum GNUNET_FS_Flags flags,
+		 ...);
 
 
 /**
  * Close our connection with the file-sharing service.
- * The callback given to GNUNET_FS_start will no longer be
+ * The callback given to #GNUNET_FS_start() will no longer be
  * called after this function returns.
+ * This function MUST NOT be called from within the
+ * callback itself.
  *
- * @param h handle that was returned from GNUNET_FS_start
+ * @param h handle that was returned from #GNUNET_FS_start()
  */
 void
 GNUNET_FS_stop (struct GNUNET_FS_Handle *h);
@@ -1712,17 +1756,15 @@ GNUNET_FS_stop (struct GNUNET_FS_Handle *h);
  *         this entry from the directory, #GNUNET_SYSERR
  *         to abort the iteration
  */
-typedef int (*GNUNET_FS_FileInformationProcessor) (void *cls,
-                                                   struct
-                                                   GNUNET_FS_FileInformation *
-                                                   fi, uint64_t length,
-                                                   struct
-                                                   GNUNET_CONTAINER_MetaData *
-                                                   meta,
-                                                   struct GNUNET_FS_Uri ** uri,
-                                                   struct GNUNET_FS_BlockOptions
-                                                   * bo, int *do_index,
-                                                   void **client_info);
+typedef int
+(*GNUNET_FS_FileInformationProcessor) (void *cls,
+                                       struct GNUNET_FS_FileInformation *fi,
+                                       uint64_t length,
+                                       struct GNUNET_CONTAINER_MetaData *meta,
+                                       struct GNUNET_FS_Uri ** uri,
+                                       struct GNUNET_FS_BlockOptions *bo,
+                                       int *do_index,
+                                       void **client_info);
 
 
 /**
@@ -1779,13 +1821,10 @@ struct GNUNET_FS_FileInformation *
 GNUNET_FS_file_information_create_from_file (struct GNUNET_FS_Handle *h,
                                              void *client_info,
                                              const char *filename,
-                                             const struct GNUNET_FS_Uri
-                                             *keywords,
-                                             const struct
-                                             GNUNET_CONTAINER_MetaData *meta,
+                                             const struct GNUNET_FS_Uri *keywords,
+                                             const struct GNUNET_CONTAINER_MetaData *meta,
                                              int do_index,
-                                             const struct GNUNET_FS_BlockOptions
-                                             *bo);
+                                             const struct GNUNET_FS_BlockOptions *bo);
 
 
 /**
@@ -1806,15 +1845,13 @@ GNUNET_FS_file_information_create_from_file (struct GNUNET_FS_Handle *h,
  */
 struct GNUNET_FS_FileInformation *
 GNUNET_FS_file_information_create_from_data (struct GNUNET_FS_Handle *h,
-                                             void *client_info, uint64_t length,
+                                             void *client_info,
+                                             uint64_t length,
                                              void *data,
-                                             const struct GNUNET_FS_Uri
-                                             *keywords,
-                                             const struct
-                                             GNUNET_CONTAINER_MetaData *meta,
+                                             const struct GNUNET_FS_Uri *keywords,
+                                             const struct GNUNET_CONTAINER_MetaData *meta,
                                              int do_index,
-                                             const struct GNUNET_FS_BlockOptions
-                                             *bo);
+                                             const struct GNUNET_FS_BlockOptions *bo);
 
 
 /**
@@ -1837,8 +1874,12 @@ GNUNET_FS_file_information_create_from_data (struct GNUNET_FS_Handle *h,
  * @param emsg location for the reader to store an error message
  * @return number of bytes written, usually @a max, 0 on error
  */
-typedef size_t (*GNUNET_FS_DataReader) (void *cls, uint64_t offset, size_t max,
-                                        void *buf, char **emsg);
+typedef size_t
+(*GNUNET_FS_DataReader) (void *cls,
+                         uint64_t offset,
+                         size_t max,
+                         void *buf,
+                         char **emsg);
 
 
 /**
@@ -1911,7 +1952,7 @@ GNUNET_FS_file_information_is_directory (const struct GNUNET_FS_FileInformation
 /**
  * Add an entry to a directory in a publish-structure.  Clients
  * should never modify publish structures that were passed to
- * #GNUNET_FS_publish_start already.
+ * #GNUNET_FS_publish_start() already.
  *
  * @param dir the directory
  * @param ent the entry to add; the entry must not have been
@@ -2021,9 +2062,10 @@ GNUNET_FS_publish_stop (struct GNUNET_FS_PublishContext *pc);
  * @param uri URI under which the block is now available, NULL on error
  * @param emsg error message, NULL on success
  */
-typedef void (*GNUNET_FS_PublishContinuation) (void *cls,
-                                               const struct GNUNET_FS_Uri *uri,
-                                               const char *emsg);
+typedef void
+(*GNUNET_FS_PublishContinuation) (void *cls,
+                                  const struct GNUNET_FS_Uri *uri,
+                                  const char *emsg);
 
 
 /**
@@ -2114,8 +2156,10 @@ GNUNET_FS_publish_sks_cancel (struct GNUNET_FS_PublishSksContext *psc);
  * @param file_id hash of the contents of the indexed file
  * @return #GNUNET_OK to continue iteration, #GNUNET_SYSERR to abort
  */
-typedef int (*GNUNET_FS_IndexedFileProcessor) (void *cls, const char *filename,
-                                               const struct GNUNET_HashCode * file_id);
+typedef int
+(*GNUNET_FS_IndexedFileProcessor) (void *cls,
+                                   const char *filename,
+                                   const struct GNUNET_HashCode *file_id);
 
 
 /**
@@ -2440,6 +2484,24 @@ void
 GNUNET_FS_download_stop (struct GNUNET_FS_DownloadContext *dc, int do_delete);
 
 
+/**
+ * Suspend a download.
+ *
+ * @param dc handle for the download
+ */
+void
+GNUNET_FS_download_suspend (struct GNUNET_FS_DownloadContext *dc);
+
+
+/**
+ * Resume a suspended download.
+ *
+ * @param dc handle for the download
+ */
+void
+GNUNET_FS_download_resume (struct GNUNET_FS_DownloadContext *dc);
+
+
 
 /* ******************** Directory API *********************** */
 
@@ -2701,7 +2763,7 @@ struct GNUNET_FS_ShareTreeItem
 
 
 /**
- * Opaqe handle to an asynchronous directory scanning activity.
+ * Opaque handle to an asynchronous directory scanning activity.
  */
 struct GNUNET_FS_DirScanner;
 
@@ -2710,7 +2772,8 @@ struct GNUNET_FS_DirScanner;
  * Start a directory scanner.
  *
  * @param filename name of the directory to scan
- * @param disable_extractor #GNUNET_YES to not to run libextractor on files (only build a tree)
+ * @param disable_extractor #GNUNET_YES to not run libextractor on files (only
+ *        build a tree)
  * @param ex if not NULL, must be a list of extra plugins for extractor
  * @param cb the callback to call when there are scanning progress messages
  * @param cb_cls closure for @a cb
@@ -2772,5 +2835,6 @@ GNUNET_FS_share_tree_free (struct GNUNET_FS_ShareTreeItem *toplevel);
 }
 #endif
 
-
 #endif
+
+/** @} */  /* end of group */

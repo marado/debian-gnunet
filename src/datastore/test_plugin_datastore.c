@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /*
  * @file test_plugin_datastore.c
@@ -49,10 +44,10 @@ enum RunPhase
   RP_ERROR = 0,
   RP_PUT,
   RP_GET,
-  RP_UPDATE,
   RP_ITER_ZERO,
   RP_REPL_GET,
   RP_EXPI_GET,
+  RP_REMOVE,
   RP_DROP
 };
 
@@ -64,7 +59,6 @@ struct CpsRunContext
   enum RunPhase phase;
   unsigned int cnt;
   unsigned int i;
-  uint64_t offset;
 };
 
 
@@ -84,6 +78,50 @@ disk_utilization_change_cb (void *cls, int delta)
 
 
 static void
+test (void *cls);
+
+
+/**
+ * Put continuation.
+ *
+ * @param cls closure
+ * @param key key for the item stored
+ * @param size size of the item stored
+ * @param status #GNUNET_OK or #GNUNET_SYSERROR
+ * @param msg error message on error
+ */
+static void
+put_continuation (void *cls,
+		  const struct GNUNET_HashCode *key,
+                  uint32_t size,
+		  int status,
+		  const char *msg)
+{
+  struct CpsRunContext *crc = cls;
+  static unsigned long long os;
+  unsigned long long cs;
+
+  if (GNUNET_OK != status)
+  {
+    FPRINTF (stderr,
+             "ERROR: `%s'\n",
+             msg);
+  }
+  else
+  {
+    crc->api->estimate_size (crc->api->cls,
+                             &cs);
+    GNUNET_assert (os <= cs);
+    os = cs;
+    stored_bytes += size;
+    stored_ops++;
+    stored_entries++;
+  }
+  GNUNET_SCHEDULER_add_now (&test, crc);
+}
+
+
+static void
 gen_key (int i, struct GNUNET_HashCode * key)
 {
   memset (key, 0, sizeof (struct GNUNET_HashCode));
@@ -93,18 +131,25 @@ gen_key (int i, struct GNUNET_HashCode * key)
 
 
 static void
-put_value (struct GNUNET_DATASTORE_PluginFunctions *api, int i, int k)
+do_put (struct CpsRunContext *crc)
 {
   char value[65536];
   size_t size;
   struct GNUNET_HashCode key;
-  char *msg;
   unsigned int prio;
+  static int i;
 
+  if (PUT_10 == i)
+  {
+    i = 0;
+    crc->phase++;
+    GNUNET_SCHEDULER_add_now (&test, crc);
+    return;
+  }
   /* most content is 32k */
   size = 32 * 1024;
 
-  if (GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 16) == 0)   /* but some of it is less! */
+  if (0 != i && GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 16) == 0)   /* but some of it is less! */
     size = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 32 * 1024);
   size = size - (size & 7);     /* always multiple of 8 */
 
@@ -113,57 +158,80 @@ put_value (struct GNUNET_DATASTORE_PluginFunctions *api, int i, int k)
   memset (value, i, size);
   if (i > 255)
     memset (value, i - 255, size / 2);
-  value[0] = k;
-  msg = NULL;
+  value[0] = crc->i;
   prio = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 100);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "putting type %u, anon %u under key %s\n", i + 1, i,
 	      GNUNET_h2s (&key));
-  if (GNUNET_OK != api->put (api->cls, &key, size, value, i + 1 /* type */ ,
-                             prio, i /* anonymity */ ,
-                             0 /* replication */ ,
-                             GNUNET_TIME_relative_to_absolute
-                             (GNUNET_TIME_relative_multiply
-                              (GNUNET_TIME_UNIT_MILLISECONDS,
-                               60 * 60 * 60 * 1000 +
-                               GNUNET_CRYPTO_random_u32
-                               (GNUNET_CRYPTO_QUALITY_WEAK, 1000))), &msg))
-  {
-    FPRINTF (stderr, "ERROR: `%s'\n", msg);
-    GNUNET_free_non_null (msg);
-    return;
-  }
-  stored_bytes += size;
-  stored_ops++;
-  stored_entries++;
+  crc->api->put (crc->api->cls,
+                 &key,
+                 false /* absent */,
+                 size,
+                 value, i + 1 /* type */ ,
+                 prio,
+                 i /* anonymity */ ,
+                 0 /* replication */ ,
+                 GNUNET_TIME_relative_to_absolute
+                   (GNUNET_TIME_relative_multiply
+                     (GNUNET_TIME_UNIT_MILLISECONDS,
+                      60 * 60 * 60 * 1000 +
+                      GNUNET_CRYPTO_random_u32
+                      (GNUNET_CRYPTO_QUALITY_WEAK, 1000))),
+                 put_continuation,
+                 crc);
+  i++;
 }
-
-
-static void
-test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc);
 
 
 static uint64_t guid;
 
 
 static int
-iterate_one_shot (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
-                  const void *data, enum GNUNET_BLOCK_Type type,
-                  uint32_t priority, uint32_t anonymity,
-                  struct GNUNET_TIME_Absolute expiration, uint64_t uid)
+iterate_one_shot (void *cls,
+                  const struct GNUNET_HashCode *key,
+                  uint32_t size,
+                  const void *data,
+                  enum GNUNET_BLOCK_Type type,
+                  uint32_t priority,
+                  uint32_t anonymity,
+                  uint32_t replication,
+                  struct GNUNET_TIME_Absolute expiration,
+                  uint64_t uid)
 {
   struct CpsRunContext *crc = cls;
 
-  GNUNET_assert (key != NULL);
+  GNUNET_assert (NULL != key);
   guid = uid;
   crc->phase++;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Found result type=%u, priority=%u, size=%u, expire=%s, key %s\n",
-	      type, priority, size,
+	      (unsigned int) type,
+              (unsigned int) priority,
+              (unsigned int) size,
 	      GNUNET_STRINGS_absolute_time_to_string (expiration),
 	      GNUNET_h2s (key));
-  GNUNET_SCHEDULER_add_now (&test, crc);
+  GNUNET_SCHEDULER_add_now (&test,
+                            crc);
   return GNUNET_OK;
+}
+
+
+static void
+remove_continuation (void *cls,
+                     const struct GNUNET_HashCode *key,
+                     uint32_t size,
+                     int status,
+                     const char *msg)
+{
+  struct CpsRunContext *crc = cls;
+
+  GNUNET_assert (NULL != key);
+  GNUNET_assert (32768 == size);
+  GNUNET_assert (GNUNET_OK == status);
+  GNUNET_assert (NULL == msg);
+  crc->phase++;
+  GNUNET_SCHEDULER_add_now (&test,
+                            crc);
 }
 
 
@@ -182,11 +250,14 @@ unload_plugin (struct GNUNET_DATASTORE_PluginFunctions *api,
   char *libname;
 
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (cfg, "DATASTORE", "DATABASE",
+      GNUNET_CONFIGURATION_get_value_string (cfg,
+                                             "DATASTORE",
+                                             "DATABASE",
                                              &name))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("No `%s' specified for `%s' in configuration!\n"), "DATABASE",
+                _("No `%s' specified for `%s' in configuration!\n"),
+                "DATABASE",
                 "DATASTORE");
     return;
   }
@@ -203,7 +274,7 @@ unload_plugin (struct GNUNET_DATASTORE_PluginFunctions *api,
  * the transport and core.
  */
 static void
-cleaning_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleaning_task (void *cls)
 {
   struct CpsRunContext *crc = cls;
 
@@ -213,19 +284,11 @@ cleaning_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+test (void *cls)
 {
   struct CpsRunContext *crc = cls;
-  int j;
-  unsigned long long os;
-  unsigned long long cs;
   struct GNUNET_HashCode key;
 
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Test aborted.\n");
-    crc->phase = RP_ERROR;
-  }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "In phase %d, iteration %u\n", crc->phase, crc->cnt);
   switch (crc->phase)
@@ -237,16 +300,7 @@ test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_SCHEDULER_add_now (&cleaning_task, crc);
     break;
   case RP_PUT:
-    os = 0;
-    for (j = 0; j < PUT_10; j++)
-    {
-      put_value (crc->api, j, crc->i);
-      cs = crc->api->estimate_size (crc->api->cls);
-      GNUNET_assert (os <= cs);
-      os = cs;
-    }
-    crc->phase++;
-    GNUNET_SCHEDULER_add_now (&test, crc);
+    do_put (crc);
     break;
   case RP_GET:
     if (crc->cnt == 1)
@@ -257,17 +311,17 @@ test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
       break;
     }
     gen_key (5, &key);
-    crc->api->get_key (crc->api->cls, crc->offset++, &key, NULL,
-                       GNUNET_BLOCK_TYPE_ANY, &iterate_one_shot, crc);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Looking for %s\n",
+                GNUNET_h2s (&key));
+    crc->api->get_key (crc->api->cls,
+                       0,
+                       false,
+                       &key,
+                       GNUNET_BLOCK_TYPE_ANY,
+                       &iterate_one_shot,
+                       crc);
     break;
-  case RP_UPDATE:
-    GNUNET_assert (GNUNET_OK ==
-                   crc->api->update (crc->api->cls, guid, 1,
-                                     GNUNET_TIME_UNIT_ZERO_ABS, NULL));
-    crc->phase++;
-    GNUNET_SCHEDULER_add_now (&test, crc);
-    break;
-
   case RP_ITER_ZERO:
     if (crc->cnt == 1)
     {
@@ -284,6 +338,23 @@ test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   case RP_EXPI_GET:
     crc->api->get_expiration (crc->api->cls, &iterate_one_shot, crc);
     break;
+  case RP_REMOVE:
+    {
+      struct GNUNET_HashCode key;
+      uint32_t size = 32768;
+      char value[size];
+
+      gen_key (0, &key);
+      memset (value, 0, size);
+      value[0] = crc->i;
+      crc->api->remove_key (crc->api->cls,
+                            &key,
+                            size,
+                            value,
+                            &remove_continuation,
+                            crc);
+      break;
+    }
   case RP_DROP:
     crc->api->drop (crc->api->cls);
     GNUNET_SCHEDULER_add_now (&cleaning_task, crc);
@@ -304,11 +375,14 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
   char *libname;
 
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (cfg, "DATASTORE", "DATABASE",
+      GNUNET_CONFIGURATION_get_value_string (cfg,
+					     "DATASTORE",
+					     "DATABASE",
                                              &name))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("No `%s' specified for `%s' in configuration!\n"), "DATABASE",
+                _("No `%s' specified for `%s' in configuration!\n"),
+		"DATABASE",
                 "DATASTORE");
     return NULL;
   }
@@ -323,6 +397,7 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
     FPRINTF (stderr, "Failed to load plugin `%s'!\n", name);
     GNUNET_free (libname);
     GNUNET_free (name);
+    ok = 77; /* mark test as skipped */
     return NULL;
   }
   GNUNET_free (libname);
@@ -380,7 +455,7 @@ main (int argc, char *argv[])
                    "test_plugin_datastore_data_%s.conf", plugin_name);
   GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1, xargv,
                       "test-plugin-datastore", "nohelp", options, &run, NULL);
-  if (0 != ok)
+  if ( (0 != ok) && (77 != ok) )
     FPRINTF (stderr, "Missed some testcases: %u\n", ok);
   GNUNET_DISK_directory_remove (dir_name);
   return ok;

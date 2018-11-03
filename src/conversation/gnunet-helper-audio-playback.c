@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file conversation/gnunet-helper-audio-playback.c
@@ -137,9 +132,11 @@ struct OpusHeadPacket
 
 GNUNET_NETWORK_STRUCT_END
 
-/*Process an Opus header and setup the opus decoder based on it.
-  It takes several pointers for header values which are needed
-  elsewhere in the code.*/
+/**
+ * Process an Opus header and setup the opus decoder based on it.
+ * It takes several pointers for header values which are needed
+ * elsewhere in the code.
+ */
 static OpusDecoder *
 process_header (ogg_packet *op)
 {
@@ -147,35 +144,45 @@ process_header (ogg_packet *op)
   OpusDecoder *dec;
   struct OpusHeadPacket header;
 
-  if (op->bytes < sizeof (header))
+  if ( ((unsigned int) op->bytes) < sizeof (header))
     return NULL;
-  memcpy (&header, op->packet, sizeof (header));
+  GNUNET_memcpy (&header,
+		 op->packet,
+		 sizeof (header));
   header.preskip = GNUNET_le16toh (header.preskip);
   header.sampling_rate = GNUNET_le32toh (header.sampling_rate);
   header.gain = GNUNET_le16toh (header.gain);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Header: v%u, %u-ch, skip %u, %uHz, %u gain\n",
-               header.version, header.channels, header.preskip, header.sampling_rate, header.gain);
-
+	      header.version,
+	      header.channels,
+	      header.preskip,
+	      header.sampling_rate,
+	      header.gain);
   channels = header.channels;
   preskip = header.preskip;
 
   if (header.channel_mapping != 0)
   {
-    fprintf (stderr, "This implementation does not support non-mono streams\n");
+    fprintf (stderr,
+	     "This implementation does not support non-mono streams\n");
     return NULL;
   }
 
   dec = opus_decoder_create (SAMPLING_RATE, channels, &err);
   if (OPUS_OK != err)
   {
-    fprintf (stderr, "Cannot create encoder: %s\n", opus_strerror (err));
+    fprintf (stderr,
+	     "Cannot create encoder: %s\n",
+	     opus_strerror (err));
     return NULL;
   }
-  if (!dec)
+  if (! dec)
   {
-    fprintf (stderr, "Decoder initialization failed: %s\n", opus_strerror (err));
+    fprintf (stderr,
+	     "Decoder initialization failed: %s\n",
+	     opus_strerror (err));
     return NULL;
   }
 
@@ -202,7 +209,8 @@ process_header (ogg_packet *op)
 
 
 #ifdef DEBUG_DUMP_DECODED_OGG
-static size_t fwrite_le32(opus_int32 i32, FILE *file)
+static size_t
+fwrite_le32(opus_int32 i32, FILE *file)
 {
    unsigned char buf[4];
    buf[0]=(unsigned char)(i32&0xFF);
@@ -212,7 +220,9 @@ static size_t fwrite_le32(opus_int32 i32, FILE *file)
    return fwrite(buf,4,1,file);
 }
 
-static size_t fwrite_le16(int i16, FILE *file)
+
+static size_t
+fwrite_le16(int i16, FILE *file)
 {
    unsigned char buf[2];
    buf[0]=(unsigned char)(i16&0xFF);
@@ -220,7 +230,9 @@ static size_t fwrite_le16(int i16, FILE *file)
    return fwrite(buf,2,1,file);
 }
 
-static int write_wav_header()
+
+static int
+write_wav_header()
 {
    int ret;
    FILE *file = stdout;
@@ -244,6 +256,7 @@ static int write_wav_header()
 }
 
 #endif
+
 
 static int64_t
 audio_write (int64_t maxout)
@@ -279,9 +292,11 @@ audio_write (int64_t maxout)
       int64_t wrote = 0;
       wrote = to_write;
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Writing %u * %u * %u = %u bytes into PA\n",
-                  to_write, channels, sizeof (float),
-                  to_write * channels * sizeof (float));
+                  "Writing %u * %u * %u = %llu bytes into PA\n",
+                  to_write,
+                  channels,
+                  (unsigned int) sizeof (float),
+                  (unsigned long long) (to_write * channels * sizeof (float)));
 #ifdef DEBUG_DUMP_DECODED_OGG
       if (dump_to_stdout)
       {
@@ -323,7 +338,8 @@ audio_write (int64_t maxout)
 static void
 quit (int ret)
 {
-  mainloop_api->quit (mainloop_api, ret);
+  mainloop_api->quit (mainloop_api,
+		      ret);
   exit (ret);
 }
 
@@ -440,12 +456,14 @@ ogg_demux_and_decode ()
           so that we can adjust the timestamp counting.*/
         gran_offset = preskip;
 
-        if (!pcm_buffer)
+        if (! pcm_buffer)
         {
           GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Allocating %u * %u * %u = %u bytes of buffer space\n",
-                  MAX_FRAME_SIZE, channels, sizeof (float),
-                  MAX_FRAME_SIZE * channels * sizeof (float));
+                      "Allocating %u * %u * %u = %llu bytes of buffer space\n",
+                      MAX_FRAME_SIZE,
+                      channels,
+                      (unsigned int) sizeof (float),
+                      (unsigned long long) (MAX_FRAME_SIZE * channels * sizeof (float)));
           pcm_buffer = pa_xmalloc (sizeof (float) * MAX_FRAME_SIZE * channels);
         }
       }
@@ -488,7 +506,9 @@ ogg_demux_and_decode ()
         frame_size = ret;
         GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                     "Decoded %d bytes/channel (%d bytes) from %u compressed bytes\n",
-                    ret, ret * channels, op.bytes);
+                    ret,
+                    ret * channels,
+                    (unsigned int) op.bytes);
 
         /*Apply header gain, if we're not using an opus library new
           enough to do this internally.*/
@@ -525,18 +545,24 @@ ogg_demux_and_decode ()
   }
 }
 
+
 /**
  * Message callback
+ *
+ * @param msg message we received.
+ * @return #GNUNET_OK on success,
+ *     #GNUNET_NO to stop further processing due to disconnect (no error)
+ *     #GNUNET_SYSERR to stop further processing due to error
  */
 static int
 stdin_receiver (void *cls,
-		void *client,
 		const struct GNUNET_MessageHeader *msg)
 {
   struct AudioMessage *audio;
   char *data;
   size_t payload_len;
 
+  (void) cls;
   switch (ntohs (msg->type))
   {
   case GNUNET_MESSAGE_TYPE_CONVERSATION_AUDIO:
@@ -546,7 +572,7 @@ stdin_receiver (void *cls,
     /*Get the ogg buffer for writing*/
     data = ogg_sync_buffer (&oy, payload_len);
     /*Read bitstream from input file*/
-    memcpy (data, (const unsigned char *) &audio[1], payload_len);
+    GNUNET_memcpy (data, (const unsigned char *) &audio[1], payload_len);
     ogg_sync_wrote (&oy, payload_len);
 
     ogg_demux_and_decode ();
@@ -562,16 +588,19 @@ stdin_receiver (void *cls,
  * Callback when data is there for playback
  */
 static void
-stream_write_callback (pa_stream * s,
+stream_write_callback (pa_stream *s,
 		       size_t length,
 		       void *userdata)
 {
   /* unblock 'main' */
+  (void) userdata;
+  (void) length;
+  (void) s;
   if (-1 != ready_pipe[1])
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		"Unblocking main loop!\n");
-    write (ready_pipe[1], "r", 1);
+    (void) write (ready_pipe[1], "r", 1);
   }
 }
 
@@ -580,9 +609,15 @@ stream_write_callback (pa_stream * s,
  * Exit callback for SIGTERM and SIGINT
  */
 static void
-exit_signal_callback (pa_mainloop_api * m, pa_signal_event * e, int sig,
+exit_signal_callback (pa_mainloop_api *m,
+                      pa_signal_event *e,
+                      int sig,
 		      void *userdata)
 {
+  (void) m;
+  (void) e;
+  (void) sig;
+  (void) userdata;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 	      _("gnunet-helper-audio-playback - Got signal, exiting\n"));
   quit (1);
@@ -593,11 +628,12 @@ exit_signal_callback (pa_mainloop_api * m, pa_signal_event * e, int sig,
  * Pulseaudio stream state callback
  */
 static void
-context_state_callback (pa_context * c,
+context_state_callback (pa_context *c,
 			void *userdata)
 {
   int p;
 
+  (void) userdata;
   GNUNET_assert (NULL != c);
   switch (pa_context_get_state (c))
   {
@@ -607,11 +643,11 @@ context_state_callback (pa_context * c,
     break;
   case PA_CONTEXT_READY:
   {
-    GNUNET_assert (!stream_out);
+    GNUNET_assert (! stream_out);
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 		_("Connection established.\n"));
-    if (!(stream_out =
-	  pa_stream_new (c, "GNUNET VoIP playback", &sample_spec, NULL)))
+    if (! (stream_out =
+           pa_stream_new (c, "GNUNET VoIP playback", &sample_spec, NULL)))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		  _("pa_stream_new() failed: %s\n"),
@@ -706,11 +742,17 @@ ogg_init ()
   ogg_sync_init (&oy);
 }
 
+
 static void
 drain_callback (pa_stream*s, int success, void *userdata)
 {
-  pa_threaded_mainloop_signal (m, 0);
+  (void) s;
+  (void) success;
+  (void) userdata;
+  pa_threaded_mainloop_signal (m,
+			       0);
 }
+
 
 /**
  * The main function for the playback helper.
@@ -723,15 +765,16 @@ int
 main (int argc, char *argv[])
 {
   static unsigned long long toff;
-
   char readbuf[MAXLINE];
-  struct GNUNET_SERVER_MessageStreamTokenizer *stdin_mst;
+  struct GNUNET_MessageStreamTokenizer *stdin_mst;
   char c;
   ssize_t ret;
 #ifdef DEBUG_READ_PURE_OGG
   int read_pure_ogg = getenv ("GNUNET_READ_PURE_OGG") ? 1 : 0;
 #endif
 
+  (void) argc;
+  (void) argv;
   GNUNET_assert (GNUNET_OK ==
 		 GNUNET_log_setup ("gnunet-helper-audio-playback",
 				   "WARNING",
@@ -741,7 +784,7 @@ main (int argc, char *argv[])
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "pipe");
     return 1;
   }
-  stdin_mst = GNUNET_SERVER_mst_create (&stdin_receiver, NULL);
+  stdin_mst = GNUNET_MST_create (&stdin_receiver, NULL);
   ogg_init ();
   pa_init ();
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -756,7 +799,9 @@ main (int argc, char *argv[])
 #endif
   while (1)
   {
-    ret = read (0, readbuf, sizeof (readbuf));
+    ret = read (STDIN_FILENO,
+		readbuf,
+		sizeof (readbuf));
     toff += ret;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		"Received %d bytes of audio data (total: %llu)\n",
@@ -775,17 +820,17 @@ main (int argc, char *argv[])
     if (read_pure_ogg)
     {
       char *data = ogg_sync_buffer (&oy, ret);
-      memcpy (data, readbuf, ret);
+      GNUNET_memcpy (data, readbuf, ret);
       ogg_sync_wrote (&oy, ret);
       ogg_demux_and_decode ();
     }
     else
 #endif
-    GNUNET_SERVER_mst_receive (stdin_mst, NULL,
-			       readbuf, ret,
-			       GNUNET_NO, GNUNET_NO);
+    GNUNET_MST_from_buffer (stdin_mst,
+                            readbuf, ret,
+                            GNUNET_NO, GNUNET_NO);
   }
-  GNUNET_SERVER_mst_destroy (stdin_mst);
+  GNUNET_MST_destroy (stdin_mst);
   if (stream_out)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,

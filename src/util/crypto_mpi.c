@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -26,10 +21,10 @@
  */
 #include "platform.h"
 #include <gcrypt.h>
-#include "gnunet_util_lib.h"
+#include "gnunet_crypto_lib.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-mpi", __VA_ARGS__)
 
 /**
  * Log an error message at log-level 'level' that indicates
@@ -77,6 +72,7 @@ GNUNET_CRYPTO_mpi_print_unsigned (void *buf,
                                   gcry_mpi_t val)
 {
   size_t rsize;
+  int rc;
 
   if (gcry_mpi_get_flag (val, GCRYMPI_FLAG_OPAQUE))
   {
@@ -89,7 +85,7 @@ GNUNET_CRYPTO_mpi_print_unsigned (void *buf,
     rsize = (nbits+7)/8;
     if (rsize > size)
       rsize = size;
-    memcpy (buf, p, rsize);
+    GNUNET_memcpy (buf, p, rsize);
     if (rsize < size)
       memset (buf+rsize, 0, size - rsize);
   }
@@ -98,9 +94,17 @@ GNUNET_CRYPTO_mpi_print_unsigned (void *buf,
     /* Store regular MPIs as unsigned integers right aligned into
        the buffer.  */
     rsize = size;
-    GNUNET_assert (0 ==
-                   gcry_mpi_print (GCRYMPI_FMT_USG, buf, rsize, &rsize,
-                                   val));
+    if (0 !=
+        (rc = gcry_mpi_print (GCRYMPI_FMT_USG,
+                              buf,
+                              rsize, &rsize,
+                              val)))
+    {
+      LOG_GCRY (GNUNET_ERROR_TYPE_ERROR,
+                "gcry_mpi_print",
+                rc);
+      GNUNET_assert (0);
+    }
     adjust (buf, rsize, size);
   }
 }
@@ -126,7 +130,9 @@ GNUNET_CRYPTO_mpi_scan_unsigned (gcry_mpi_t *result,
 				GCRYMPI_FMT_USG,
 				data, size, &size)))
   {
-    LOG_GCRY (GNUNET_ERROR_TYPE_ERROR, "gcry_mpi_scan", rc);
+    LOG_GCRY (GNUNET_ERROR_TYPE_ERROR,
+              "gcry_mpi_scan",
+              rc);
     GNUNET_assert (0);
   }
 }

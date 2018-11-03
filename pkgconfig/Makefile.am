@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 pcfiles = \
        gnunetarm.pc \
        gnunetats.pc \
@@ -18,7 +19,7 @@ pcfiles = \
        gnunetgns.pc \
        gnunethello.pc \
        gnunetidentity.pc \
-       gnunetmesh.pc \
+       gnunetcadet.pc \
        gnunetmicrophone.pc \
        gnunetmulticast.pc \
        gnunetmysql.pc \
@@ -26,11 +27,11 @@ pcfiles = \
        gnunetnat.pc \
        gnunetnse.pc \
        gnunetpeerinfo.pc \
-       gnunetpostgres.pc \
        gnunetpsyc.pc \
        gnunetpsycstore.pc \
        gnunetregex.pc \
        gnunetrevocation.pc \
+       gnunetrps.pc \
        gnunetscalarproduct.pc \
        gnunetset.pc \
        gnunetspeaker.pc \
@@ -74,7 +75,7 @@ EXTRA_DIST = \
        gnunetgns.pc.in \
        gnunethello.pc.in \
        gnunetidentity.pc.in \
-       gnunetmesh.pc.in \
+       gnunetcadet.pc.in \
        gnunetmicrophone.pc.in \
        gnunetmulticast.pc.in \
        gnunetmysql.pc.in \
@@ -87,6 +88,7 @@ EXTRA_DIST = \
        gnunetpsycstore.pc.in \
        gnunetregex.pc.in \
        gnunetrevocation.pc.in \
+       gnunetrps.pc.in \
        gnunetscalarproduct.pc.in \
        gnunetset.pc.in \
        gnunetspeaker.pc.in \

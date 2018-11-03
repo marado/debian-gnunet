@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -40,9 +35,6 @@ GNUNET_BANDWIDTH_value_init (uint32_t bytes_per_second)
 {
   struct GNUNET_BANDWIDTH_Value32NBO ret;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Initializing bandwidth of %u Bps\n",
-       (unsigned int) bytes_per_second);
   ret.value__ = htonl (bytes_per_second);
   return ret;
 }
@@ -61,7 +53,26 @@ GNUNET_BANDWIDTH_value_min (struct GNUNET_BANDWIDTH_Value32NBO b1,
 {
   return
       GNUNET_BANDWIDTH_value_init (GNUNET_MIN
-                                   (ntohl (b1.value__), ntohl (b2.value__)));
+                                   (ntohl (b1.value__),
+                                    ntohl (b2.value__)));
+}
+
+
+/**
+ * Compute the MAX of two bandwidth values.
+ *
+ * @param b1 first value
+ * @param b2 second value
+ * @return the min of b1 and b2
+ */
+struct GNUNET_BANDWIDTH_Value32NBO
+GNUNET_BANDWIDTH_value_max (struct GNUNET_BANDWIDTH_Value32NBO b1,
+                            struct GNUNET_BANDWIDTH_Value32NBO b2)
+{
+  return
+      GNUNET_BANDWIDTH_value_init (GNUNET_MAX
+                                   (ntohl (b1.value__),
+                                    ntohl (b2.value__)));
 }
 
 
@@ -123,18 +134,19 @@ GNUNET_BANDWIDTH_value_get_delay_for (struct GNUNET_BANDWIDTH_Value32NBO bps,
  * Task run whenever we hit the bandwidth limit for a tracker.
  *
  * @param cls the `struct GNUNET_BANDWIDTH_Tracker`
- * @param tc scheduler context
  */
 static void
-excess_trigger (void *cls,
-                const struct GNUNET_SCHEDULER_TaskContext *tc)
+excess_trigger (void *cls)
 {
   struct GNUNET_BANDWIDTH_Tracker *av = cls;
 
-  av->excess_task = GNUNET_SCHEDULER_NO_TASK;
-
+  av->excess_task = NULL;
   if (NULL != av->excess_cb)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+		"Notifying application about excess bandwidth\n");
     av->excess_cb (av->excess_cb_cls);
+  }
 }
 
 
@@ -160,11 +172,23 @@ update_excess (struct GNUNET_BANDWIDTH_Tracker *av)
       (delta_time * ((unsigned long long) av->available_bytes_per_s__) +
        500000LL) / 1000000LL;
   current_consumption = av->consumption_since_last_update__ - delta_avail;
+  if (current_consumption > av->consumption_since_last_update__)
+  {
+    /* integer underflow, cap! */
+    current_consumption = INT64_MIN;
+  }
   /* negative current_consumption means that we have savings */
-  max_carry = av->available_bytes_per_s__ * av->max_carry_s__;
-  if (max_carry < GNUNET_SERVER_MAX_MESSAGE_SIZE)
-    max_carry = GNUNET_SERVER_MAX_MESSAGE_SIZE;
-  left_bytes = max_carry + current_consumption;
+  max_carry = ((uint64_t) av->available_bytes_per_s__) * av->max_carry_s__;
+  if (max_carry < GNUNET_MAX_MESSAGE_SIZE)
+    max_carry = GNUNET_MAX_MESSAGE_SIZE;
+  if (max_carry > INT64_MAX)
+    max_carry = INT64_MAX;
+  left_bytes = current_consumption + max_carry;
+  if (left_bytes < current_consumption)
+  {
+    /* integer overflow, cap! */
+    left_bytes = INT64_MAX;
+  }
   /* left_bytes now contains the number of bytes needed until
      we have more savings than allowed */
   if (left_bytes < 0)
@@ -174,12 +198,17 @@ update_excess (struct GNUNET_BANDWIDTH_Tracker *av)
   }
   else
   {
-    delay = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                           left_bytes);
-    delay = GNUNET_TIME_relative_divide (delay,
-                                         av->available_bytes_per_s__);
+    double factor = 1.0 * left_bytes / (double) av->available_bytes_per_s__; 
+    delay = GNUNET_TIME_relative_saturating_multiply (GNUNET_TIME_UNIT_SECONDS,
+                                                      (unsigned long long) factor);
   }
-  if (GNUNET_SCHEDULER_NO_TASK != av->excess_task)
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "At %llu bps it will take us %s for %lld bytes to reach excess threshold\n",
+	      (unsigned long long) av->available_bytes_per_s__,
+	      GNUNET_STRINGS_relative_time_to_string (delay,
+						      GNUNET_NO),
+	      (long long) left_bytes);
+  if (NULL != av->excess_task)
     GNUNET_SCHEDULER_cancel (av->excess_task);
   av->excess_task = GNUNET_SCHEDULER_add_delayed (delay,
                                                   &excess_trigger,
@@ -190,14 +219,14 @@ update_excess (struct GNUNET_BANDWIDTH_Tracker *av)
 /**
  * Initialize bandwidth tracker.  Note that in addition to the
  * 'max_carry_s' limit, we also always allow at least
- * #GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.  So if the
+ * #GNUNET_MAX_MESSAGE_SIZE to accumulate.  So if the
  * bytes-per-second limit is so small that within 'max_carry_s' not
- * even #GNUNET_SERVER_MAX_MESSAGE_SIZE is allowed to accumulate, it is
- * ignored and replaced by #GNUNET_SERVER_MAX_MESSAGE_SIZE (which is in
+ * even #GNUNET_MAX_MESSAGE_SIZE is allowed to accumulate, it is
+ * ignored and replaced by #GNUNET_MAX_MESSAGE_SIZE (which is in
  * bytes).
  *
  * To stop notifications about updates and excess callbacks use
- * #GNUNET_BANDWIDTH_tracker_notification_stop
+ * #GNUNET_BANDWIDTH_tracker_notification_stop().
  *
  * @param av tracker to initialize
  * @param update_cb callback to notify a client about the tracker being updated
@@ -237,10 +266,10 @@ GNUNET_BANDWIDTH_tracker_init2 (struct GNUNET_BANDWIDTH_Tracker *av,
 /**
  * Initialize bandwidth tracker.  Note that in addition to the
  * 'max_carry_s' limit, we also always allow at least
- * GNUNET_SERVER_MAX_MESSAGE_SIZE to accumulate.  So if the
+ * #GNUNET_MAX_MESSAGE_SIZE to accumulate.  So if the
  * bytes-per-second limit is so small that within 'max_carry_s' not
- * even GNUNET_SERVER_MAX_MESSAGE_SIZE is allowed to accumulate, it is
- * ignored and replaced by GNUNET_SERVER_MAX_MESSAGE_SIZE (which is in
+ * even #GNUNET_MAX_MESSAGE_SIZE is allowed to accumulate, it is
+ * ignored and replaced by #GNUNET_MAX_MESSAGE_SIZE (which is in
  * bytes).
  *
  * @param av tracker to initialize
@@ -273,15 +302,14 @@ GNUNET_BANDWIDTH_tracker_init (struct GNUNET_BANDWIDTH_Tracker *av,
 void
 GNUNET_BANDWIDTH_tracker_notification_stop (struct GNUNET_BANDWIDTH_Tracker *av)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != av->excess_task)
+  if (NULL != av->excess_task)
     GNUNET_SCHEDULER_cancel (av->excess_task);
-  av->excess_task = GNUNET_SCHEDULER_NO_TASK;
+  av->excess_task = NULL;
   av->excess_cb = NULL;
   av->excess_cb_cls = NULL;
   av->update_cb = NULL;
   av->update_cb_cls = NULL;
 }
-
 
 
 /**
@@ -294,7 +322,6 @@ static void
 update_tracker (struct GNUNET_BANDWIDTH_Tracker *av)
 {
   struct GNUNET_TIME_Absolute now;
-  struct GNUNET_TIME_Relative delta;
   uint64_t delta_time;
   uint64_t delta_avail;
   uint64_t left_bytes;
@@ -309,20 +336,32 @@ update_tracker (struct GNUNET_BANDWIDTH_Tracker *av)
   av->last_update__ = now;
   if (av->consumption_since_last_update__ < 0)
   {
-    left_bytes = -av->consumption_since_last_update__;
-    max_carry = av->available_bytes_per_s__ * av->max_carry_s__;
-    if (max_carry < GNUNET_SERVER_MAX_MESSAGE_SIZE)
-      max_carry = GNUNET_SERVER_MAX_MESSAGE_SIZE;
+    left_bytes = - av->consumption_since_last_update__;
+    max_carry = ((unsigned long long) av->available_bytes_per_s__) *
+                av->max_carry_s__;
+    if (max_carry < GNUNET_MAX_MESSAGE_SIZE)
+      max_carry = GNUNET_MAX_MESSAGE_SIZE;
+    if (max_carry > INT64_MAX)
+      max_carry = INT64_MAX;
     if (max_carry > left_bytes)
-      av->consumption_since_last_update__ = -left_bytes;
+      av->consumption_since_last_update__ = - left_bytes;
     else
-      av->consumption_since_last_update__ = -max_carry;
+      av->consumption_since_last_update__ = - max_carry;
   }
-  delta.rel_value_us = delta_time;
-  LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Tracker %p updated, have %u Bps, last update was %s ago\n", av,
-       (unsigned int) av->available_bytes_per_s__,
-       GNUNET_STRINGS_relative_time_to_string (delta, GNUNET_YES));
+#if !defined(GNUNET_CULL_LOGGING)
+  {
+    struct GNUNET_TIME_Relative delta;
+
+    delta.rel_value_us = delta_time;
+    LOG (GNUNET_ERROR_TYPE_DEBUG,
+	 "Tracker %p updated, consumption at %lld at %u Bps, last update was %s ago\n",
+	 av,
+	 (long long) av->consumption_since_last_update__,
+	 (unsigned int) av->available_bytes_per_s__,
+	 GNUNET_STRINGS_relative_time_to_string (delta,
+						 GNUNET_YES));
+  }
+#endif
 }
 
 
@@ -352,6 +391,7 @@ GNUNET_BANDWIDTH_tracker_consume (struct GNUNET_BANDWIDTH_Tracker *av,
     nc = av->consumption_since_last_update__ + size;
     if (nc < av->consumption_since_last_update__)
     {
+      /* integer overflow, very bad */
       GNUNET_break (0);
       return GNUNET_SYSERR;
     }
@@ -361,14 +401,22 @@ GNUNET_BANDWIDTH_tracker_consume (struct GNUNET_BANDWIDTH_Tracker *av,
     if (av->consumption_since_last_update__ > 0)
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-           "Tracker %p consumption %llu bytes above limit\n", av,
+           "Tracker %p consumption %llu bytes above limit\n",
+	   av,
            (unsigned long long) av->consumption_since_last_update__);
       return GNUNET_YES;
     }
   }
   else
   {
-    av->consumption_since_last_update__ += size;
+    nc = av->consumption_since_last_update__ + size;
+    if (nc > av->consumption_since_last_update__)
+    {
+      /* integer underflow, very bad */
+      GNUNET_break (0);
+      return GNUNET_SYSERR;
+    }
+    av->consumption_since_last_update__ = nc;
     update_excess (av);
   }
   return GNUNET_NO;
@@ -411,7 +459,8 @@ GNUNET_BANDWIDTH_tracker_get_delay (struct GNUNET_BANDWIDTH_Tracker *av,
       (unsigned long long) av->available_bytes_per_s__;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Tracker %p delay for %u bytes is %s\n",
-       av, (unsigned int) size,
+       av,
+       (unsigned int) size,
        GNUNET_STRINGS_relative_time_to_string (ret, GNUNET_YES));
   return ret;
 }

@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2012-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 /**
  * @file gnunet-namestore-fcfsd.c
@@ -112,7 +107,7 @@ struct Request
   /**
    * Associated session.
    */
-  struct Session *session;
+  // FIXME: struct Session *session;
 
   /**
    * Post processor handling form data (IF this is
@@ -194,7 +189,7 @@ static struct MHD_Daemon *httpd;
 /**
  * Main HTTP task.
  */
-static GNUNET_SCHEDULER_TaskIdentifier httpd_task;
+static struct GNUNET_SCHEDULER_Task * httpd_task;
 
 /**
  * Handle to the namestore.
@@ -226,11 +221,9 @@ static unsigned long long port;
  * Task run whenever HTTP server operations are pending.
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-do_httpd (void *cls,
-	  const struct GNUNET_SCHEDULER_TaskContext *tc);
+do_httpd (void *cls);
 
 
 /**
@@ -239,15 +232,81 @@ do_httpd (void *cls,
 static void
 run_httpd_now ()
 {
-  if (GNUNET_SCHEDULER_NO_TASK != httpd_task)
+  if (NULL != httpd_task)
   {
     GNUNET_SCHEDULER_cancel (httpd_task);
-    httpd_task = GNUNET_SCHEDULER_NO_TASK;
+    httpd_task = NULL;
   }
   httpd_task = GNUNET_SCHEDULER_add_now (&do_httpd, NULL);
 }
 
 
+/**
+ * Function called on error in zone iteration.
+ */
+static void
+zone_iteration_error (void *cls)
+{
+  struct ZoneinfoRequest *zr = cls;
+  struct MHD_Response *response;
+
+  zr->list_it = NULL;
+  response = MHD_create_response_from_buffer (strlen ("internal error"),
+					      (void *) "internal error",
+					      MHD_RESPMEM_PERSISTENT);
+  MHD_queue_response (zr->connection,
+                      MHD_HTTP_INTERNAL_SERVER_ERROR,
+                      response);
+  MHD_destroy_response (response);
+  GNUNET_free (zr->zoneinfo);
+  GNUNET_free (zr);
+  run_httpd_now ();
+}
+
+
+/**
+ * Function called once the zone iteration is done.
+ */
+static void
+zone_iteration_end (void *cls)
+{
+  struct ZoneinfoRequest *zr = cls;
+  struct MHD_Response *response;
+  char* full_page;
+
+  zr->list_it = NULL;
+
+  /* return static form */
+  GNUNET_asprintf (&full_page,
+                   ZONEINFO_PAGE,
+                   zr->zoneinfo,
+                   zr->zoneinfo);
+  response = MHD_create_response_from_buffer (strlen (full_page),
+					      (void *) full_page,
+					      MHD_RESPMEM_MUST_FREE);
+  MHD_add_response_header (response,
+			   MHD_HTTP_HEADER_CONTENT_TYPE,
+			   MIME_HTML);
+  MHD_queue_response (zr->connection,
+                      MHD_HTTP_OK,
+                      response);
+  MHD_destroy_response (response);
+  GNUNET_free (zr->zoneinfo);
+  GNUNET_free (zr);
+  run_httpd_now ();
+}
+
+
+/**
+ * Process a record that was stored in the namestore, adding
+ * the information to the HTML.
+ *
+ * @param cls closure with the `struct ZoneinfoRequest *`
+ * @param zone_key private key of the zone; NULL on disconnect
+ * @param name label of the records; NULL on disconnect
+ * @param rd_len number of entries in @a rd array, 0 if label was deleted
+ * @param rd array of records with data to store
+ */
 static void
 iterate_cb (void *cls,
 	    const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
@@ -256,47 +315,22 @@ iterate_cb (void *cls,
 	    const struct GNUNET_GNSRECORD_Data *rd)
 {
   struct ZoneinfoRequest *zr = cls;
-  struct MHD_Response *response;
-  char* full_page;
   size_t bytes_free;
   char* pkey;
   char* new_buf;
 
-
-  if (NULL == name)
-  {
-    zr->list_it = NULL;
-
-    /* return static form */
-    GNUNET_asprintf (&full_page,
-                     ZONEINFO_PAGE,
-                     zr->zoneinfo,
-                     zr->zoneinfo);
-    response = MHD_create_response_from_buffer (strlen (full_page),
-					      (void *) full_page,
-					      MHD_RESPMEM_MUST_FREE);
-    MHD_add_response_header (response,
-			   MHD_HTTP_HEADER_CONTENT_TYPE,
-			   MIME_HTML);
-    MHD_queue_response (zr->connection,
-			    MHD_HTTP_OK,
-			    response);
-    MHD_destroy_response (response);
-    GNUNET_free (zr->zoneinfo);
-    GNUNET_free (zr);
-    run_httpd_now ();
-    return;
-  }
-
+  (void) zone_key;
   if (1 != rd_len)
   {
-    GNUNET_NAMESTORE_zone_iterator_next (zr->list_it);
+    GNUNET_NAMESTORE_zone_iterator_next (zr->list_it,
+                                         1);
     return;
   }
 
   if (GNUNET_GNSRECORD_TYPE_PKEY != rd->record_type)
   {
-    GNUNET_NAMESTORE_zone_iterator_next (zr->list_it);
+    GNUNET_NAMESTORE_zone_iterator_next (zr->list_it,
+                                         1);
     return;
   }
 
@@ -304,11 +338,17 @@ iterate_cb (void *cls,
   pkey = GNUNET_GNSRECORD_value_to_string (rd->record_type,
                                            rd->data,
                                            rd->data_size);
-
+  if (NULL == pkey)
+  {
+    GNUNET_break (0);
+    GNUNET_NAMESTORE_zone_iterator_next (zr->list_it,
+                                         1);
+    return;
+  }
   if (bytes_free < (strlen (name) + strlen (pkey) + 40))
   {
     new_buf = GNUNET_malloc (zr->buf_len * 2);
-    memcpy (new_buf, zr->zoneinfo, zr->write_offset);
+    GNUNET_memcpy (new_buf, zr->zoneinfo, zr->write_offset);
     GNUNET_free (zr->zoneinfo);
     zr->zoneinfo = new_buf;
     zr->buf_len *= 2;
@@ -318,10 +358,10 @@ iterate_cb (void *cls,
 	   name,
 	   pkey);
   zr->write_offset = strlen (zr->zoneinfo);
-  GNUNET_NAMESTORE_zone_iterator_next (zr->list_it);
+  GNUNET_NAMESTORE_zone_iterator_next (zr->list_it,
+                                       1);
   GNUNET_free (pkey);
 }
-
 
 
 /**
@@ -342,8 +382,12 @@ serve_zoneinfo_page (struct MHD_Connection *connection)
   zr->write_offset = 0;
   zr->list_it = GNUNET_NAMESTORE_zone_iteration_start (ns,
 						       &fcfs_zone_pkey,
+                                                       &zone_iteration_error,
+                                                       zr,
 						       &iterate_cb,
-						       zr);
+						       zr,
+                                                       &zone_iteration_end,
+                                                       zr);
   return MHD_YES;
 }
 
@@ -391,6 +435,7 @@ fill_s_reply (const char *info,
   char *reply;
   struct MHD_Response *response;
 
+  (void) request;
   GNUNET_asprintf (&reply,
 		   SUBMIT_PAGE,
 		   info,
@@ -436,15 +481,21 @@ post_iterator (void *cls,
 	       const char *filename,
 	       const char *content_type,
 	       const char *transfer_encoding,
-	       const char *data, uint64_t off, size_t size)
+	       const char *data,
+	       uint64_t off,
+	       size_t size)
 {
   struct Request *request = cls;
 
+  (void) kind;
+  (void) filename;
+  (void) content_type;
+  (void) transfer_encoding;
   if (0 == strcmp ("domain", key))
     {
       if (size + off >= sizeof(request->domain_name))
 	size = sizeof (request->domain_name) - off - 1;
-      memcpy (&request->domain_name[off],
+      GNUNET_memcpy (&request->domain_name[off],
 	      data,
 	      size);
       request->domain_name[size+off] = '\0';
@@ -454,7 +505,7 @@ post_iterator (void *cls,
     {
       if (size + off >= sizeof(request->public_key))
 	size = sizeof (request->public_key) - off - 1;
-      memcpy (&request->public_key[off],
+      GNUNET_memcpy (&request->public_key[off],
 	      data,
 	      size);
       request->public_key[size+off] = '\0';
@@ -500,6 +551,21 @@ put_continuation (void *cls,
 
 
 /**
+ * Function called if we had an error in zone-to-name mapping.
+ */
+static void
+zone_to_name_error (void *cls)
+{
+  struct Request *request = cls;
+
+  GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+              _("Error when mapping zone to name\n"));
+  request->phase = RP_FAIL;
+  run_httpd_now ();
+}
+
+
+/**
  * Test if a name mapping was found, if so, refuse.  If not, initiate storing of the record.
  *
  * @param cls closure
@@ -517,8 +583,10 @@ zone_to_name_cb (void *cls,
 {
   struct Request *request = cls;
   struct GNUNET_GNSRECORD_Data r;
-  request->qe = NULL;
 
+  (void) rd;
+  (void) zone_key;
+  request->qe = NULL;
   if (0 != rd_count)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -528,15 +596,6 @@ zone_to_name_cb (void *cls,
     run_httpd_now ();
     return;
   }
-  if (NULL == zone_key)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Error when mapping zone to name\n"));
-    request->phase = RP_FAIL;
-    run_httpd_now ();
-    return;
-  }
-
   r.data = &request->pub;
   r.data_size = sizeof (request->pub);
   r.expiration_time = UINT64_MAX;
@@ -548,6 +607,20 @@ zone_to_name_cb (void *cls,
 						1, &r,
 						&put_continuation,
 						request);
+}
+
+
+/**
+ * We encountered an error in the name lookup.
+ */
+static void
+lookup_block_error (void *cls)
+{
+  struct Request *request = cls;
+
+  request->qe = NULL;
+  request->phase = RP_FAIL;
+  run_httpd_now ();
 }
 
 
@@ -570,10 +643,12 @@ lookup_block_processor (void *cls,
 {
   struct Request *request = cls;
 
+  (void) label;
+  (void) rd;
+  (void) zone;
   request->qe = NULL;
   if (0 == rd_count)
   {
-
     if (GNUNET_OK !=
         GNUNET_CRYPTO_ecdsa_public_key_from_string (request->public_key,
                                                     strlen (request->public_key),
@@ -587,6 +662,8 @@ lookup_block_processor (void *cls,
     request->qe = GNUNET_NAMESTORE_zone_to_name (ns,
                                                  &fcfs_zone_pkey,
                                                  &request->pub,
+                                                 &zone_to_name_error,
+                                                 request,
                                                  &zone_to_name_cb,
                                                  request);
     return;
@@ -640,6 +717,8 @@ create_response (void *cls,
   struct GNUNET_CRYPTO_EcdsaPublicKey pub;
   int ret;
 
+  (void) cls;
+  (void) version;
   if ( (0 == strcmp (method, MHD_HTTP_METHOD_GET)) ||
        (0 == strcmp (method, MHD_HTTP_METHOD_HEAD)) )
     {
@@ -660,8 +739,10 @@ create_response (void *cls,
       {
 	request = GNUNET_new (struct Request);
 	*ptr = request;
-	request->pp = MHD_create_post_processor (connection, 1024,
-						 &post_iterator, request);
+	request->pp = MHD_create_post_processor (connection,
+						 1024,
+						 &post_iterator,
+						 request);
 	if (NULL == request->pp)
 	  {
 	    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -704,7 +785,8 @@ create_response (void *cls,
 			_("Domain name must not contain `.'\n"));
 	    request->phase = RP_FAIL;
 	    return fill_s_reply ("Domain name must not contain `.', sorry.",
-				 request, connection);
+				 request,
+				 connection);
 	  }
 	  if (NULL != strchr (request->domain_name, (int) '+'))
 	  {
@@ -715,11 +797,14 @@ create_response (void *cls,
 				 request, connection);
 	  }
 	  request->phase = RP_LOOKUP;
-	  request->qe = GNUNET_NAMESTORE_records_lookup (ns,
-                                                       &fcfs_zone_pkey,
-                                                       request->domain_name,
-                                                       &lookup_block_processor,
-                                                       request);
+	  request->qe
+	    = GNUNET_NAMESTORE_records_lookup (ns,
+					       &fcfs_zone_pkey,
+					       request->domain_name,
+					       &lookup_block_error,
+					       request,
+					       &lookup_block_processor,
+					       request);
 	  break;
 	case RP_LOOKUP:
 	  break;
@@ -742,7 +827,7 @@ create_response (void *cls,
 					      (void *) METHOD_ERROR,
 					      MHD_RESPMEM_PERSISTENT);
   ret = MHD_queue_response (connection,
-			    MHD_HTTP_METHOD_NOT_ACCEPTABLE,
+			    MHD_HTTP_NOT_ACCEPTABLE,
 			    response);
   MHD_destroy_response (response);
   return ret;
@@ -766,6 +851,9 @@ request_completed_callback (void *cls,
 {
   struct Request *request = *con_cls;
 
+  (void) cls;
+  (void) connection;
+  (void) toe;
   if (NULL == request)
     return;
   if (NULL != request->pp)
@@ -803,19 +891,34 @@ run_httpd ()
   wes = GNUNET_NETWORK_fdset_create ();
   wws = GNUNET_NETWORK_fdset_create ();
   max = -1;
-  GNUNET_assert (MHD_YES == MHD_get_fdset (httpd, &rs, &ws, &es, &max));
-  haveto = MHD_get_timeout (httpd, &timeout);
+  GNUNET_assert (MHD_YES ==
+		 MHD_get_fdset (httpd,
+				&rs,
+				&ws,
+				&es,
+				&max));
+  haveto = MHD_get_timeout (httpd,
+			    &timeout);
   if (haveto == MHD_YES)
     tv.rel_value_us = (uint64_t) timeout * 1000LL;
   else
     tv = GNUNET_TIME_UNIT_FOREVER_REL;
-  GNUNET_NETWORK_fdset_copy_native (wrs, &rs, max + 1);
-  GNUNET_NETWORK_fdset_copy_native (wws, &ws, max + 1);
-  GNUNET_NETWORK_fdset_copy_native (wes, &es, max + 1);
+  GNUNET_NETWORK_fdset_copy_native (wrs,
+				    &rs,
+				    max + 1);
+  GNUNET_NETWORK_fdset_copy_native (wws,
+				    &ws,
+				    max + 1);
+  GNUNET_NETWORK_fdset_copy_native (wes,
+				    &es,
+				    max + 1);
   httpd_task =
       GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_HIGH,
-                                   tv, wrs, wws,
-                                   &do_httpd, NULL);
+                                   tv,
+				   wrs,
+				   wws,
+                                   &do_httpd,
+				   NULL);
   GNUNET_NETWORK_fdset_destroy (wrs);
   GNUNET_NETWORK_fdset_destroy (wws);
   GNUNET_NETWORK_fdset_destroy (wes);
@@ -826,13 +929,12 @@ run_httpd ()
  * Task run whenever HTTP server operations are pending.
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-do_httpd (void *cls,
-	  const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_httpd (void *cls)
 {
-  httpd_task = GNUNET_SCHEDULER_NO_TASK;
+  (void) cls;
+  httpd_task = NULL;
   MHD_run (httpd);
   run_httpd ();
 }
@@ -842,16 +944,15 @@ do_httpd (void *cls,
  * Task run on shutdown.  Cleans up everything.
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-do_shutdown (void *cls,
-	     const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != httpd_task)
+  (void) cls;
+  if (NULL != httpd_task)
   {
     GNUNET_SCHEDULER_cancel (httpd_task);
-    httpd_task = GNUNET_SCHEDULER_NO_TASK;
+    httpd_task = NULL;
   }
   if (NULL != ns)
   {
@@ -903,6 +1004,9 @@ identity_cb (void *cls,
 {
   int options;
 
+  (void) cls;
+  (void) ctx;
+  (void) name;
   id_op = NULL;
   if (NULL == ego)
   {
@@ -950,9 +1054,14 @@ identity_cb (void *cls,
  * @param cfg configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
+  (void) cls;
+  (void) args;
+  (void) cfgfile;
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_number (cfg,
 					     "fcfsd",
@@ -980,8 +1089,7 @@ run (void *cls, char *const *args, const char *cfgfile,
   }
   id_op = GNUNET_IDENTITY_get (identity, "fcfsd",
 			       &identity_cb, NULL);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-				&do_shutdown, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
 }
 
 
@@ -993,21 +1101,27 @@ run (void *cls, char *const *args, const char *cfgfile,
  * @return 0 ok, 1 on error
  */
 int
-main (int argc, char *const *argv)
+main (int argc,
+      char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
-
   int ret;
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv,
+				    &argc, &argv))
     return 2;
 
-  GNUNET_log_setup ("fcfsd", "WARNING", NULL);
+  GNUNET_log_setup ("fcfsd",
+		    "WARNING",
+		    NULL);
   ret =
       (GNUNET_OK ==
-       GNUNET_PROGRAM_run (argc, argv, "fcfsd",
+       GNUNET_PROGRAM_run (argc,
+			   argv,
+			   "gnunet-namestore-fcfsd",
                            _("GNU Name System First Come First Serve name registration service"),
 			   options,
                            &run, NULL)) ? 0 : 1;

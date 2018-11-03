@@ -1,21 +1,16 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
-
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     Affero General Public License for more details.
 */
 
 /**
@@ -79,16 +74,19 @@ static const struct GNUNET_CONFIGURATION_Handle *cfg;
  */
 static unsigned long long matching_bits;
 
+/**
+ * Task used for proof-of-work calculation.
+ */
+static struct GNUNET_SCHEDULER_Task *pow_task;
+
 
 /**
  * Function run if the user aborts with CTRL-C.
  *
  * @param cls closure
- * @param tc scheduler context
  */
 static void
-do_shutdown (void *cls,
-             const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
   if (NULL != el)
   {
@@ -228,32 +226,61 @@ perform_revocation (const struct RevocationData *rd)
 
 
 /**
+ * Write the current state of the revocation data
+ * to disk.
+ *
+ * @param rd data to sync
+ */
+static void
+sync_rd (const struct RevocationData *rd)
+{
+  if ( (NULL != filename) &&
+       (sizeof (struct RevocationData) ==
+	GNUNET_DISK_fn_write (filename,
+			      &rd,
+			      sizeof (rd),
+			      GNUNET_DISK_PERM_USER_READ |
+			      GNUNET_DISK_PERM_USER_WRITE)) )
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
+			      "write",
+			      filename);
+}
+
+
+/**
  * Perform the proof-of-work calculation.
  *
  * @param cls the `struct RevocationData`
- * @param tc scheduler context
  */
 static void
-calculate_pow (void *cls,
-               const struct GNUNET_SCHEDULER_TaskContext *tc)
+calculate_pow_shutdown (void *cls)
+{
+  struct RevocationData *rd = cls;
+
+  if (NULL != pow_task)
+  {
+    GNUNET_SCHEDULER_cancel (pow_task);
+    pow_task = NULL;
+  }
+  sync_rd (rd);
+  GNUNET_free (rd);
+}
+
+
+/**
+ * Perform the proof-of-work calculation.
+ *
+ * @param cls the `struct RevocationData`
+ */
+static void
+calculate_pow (void *cls)
 {
   struct RevocationData *rd = cls;
 
   /* store temporary results */
-  if ( (0 != (GNUNET_SCHEDULER_REASON_SHUTDOWN & tc->reason)) ||
-       (0 == (rd->pow % 128) ) )
-  {
-    if ( (NULL != filename) &&
-         (sizeof (struct RevocationData) ==
-          GNUNET_DISK_fn_write (filename,
-                                &rd,
-                                sizeof (rd),
-                                GNUNET_DISK_PERM_USER_READ |
-                                GNUNET_DISK_PERM_USER_WRITE)) )
-      GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
-                                "write",
-                                filename);
-  }
+  pow_task = NULL;
+  if (0 == (rd->pow % 128))
+    sync_rd (rd);
   /* display progress estimate */
   if ( (0 == ((1 << matching_bits) / 100 / 50)) ||
        (0 == (rd->pow % ((1 << matching_bits) / 100 / 50))) )
@@ -263,11 +290,6 @@ calculate_pow (void *cls,
          (0 == (rd->pow % ((1 << matching_bits) / 100))) ) )
     FPRINTF (stderr, " - @ %3u%% (estimate)\n",
              (unsigned int) (rd->pow * 100) / (1 << matching_bits));
-  if (0 != (GNUNET_SCHEDULER_REASON_SHUTDOWN & tc->reason))
-  {
-    GNUNET_free (rd);
-    return;
-  }
   /* actually do POW calculation */
   rd->pow++;
   if (GNUNET_OK ==
@@ -286,7 +308,9 @@ calculate_pow (void *cls,
                                 "write",
                                 filename);
     if (perform)
+    {
       perform_revocation (rd);
+    }
     else
     {
       FPRINTF (stderr, "%s", "\n");
@@ -296,11 +320,10 @@ calculate_pow (void *cls,
                filename);
       GNUNET_SCHEDULER_shutdown ();
     }
-    GNUNET_free (rd);
     return;
   }
-  GNUNET_SCHEDULER_add_now (&calculate_pow,
-                            rd);
+  pow_task = GNUNET_SCHEDULER_add_now (&calculate_pow,
+				       rd);
 }
 
 
@@ -373,8 +396,10 @@ ego_callback (void *cls,
   FPRINTF (stderr,
            "%s",
            _("Revocation certificate not ready, calculating proof of work\n"));
-  GNUNET_SCHEDULER_add_now (&calculate_pow,
-                            rd);
+  pow_task = GNUNET_SCHEDULER_add_now (&calculate_pow,
+				       rd);
+  GNUNET_SCHEDULER_add_shutdown (&calculate_pow_shutdown,
+				 rd);
 }
 
 
@@ -408,9 +433,8 @@ run (void *cls,
                test_ego);
       return;
     }
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                  &do_shutdown,
-                                  NULL);
+    GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+				   NULL);
     q = GNUNET_REVOCATION_query (cfg,
                                  &pk,
                                  &print_query_result,
@@ -446,9 +470,8 @@ run (void *cls,
                                      revoke_ego,
                                      &ego_callback,
                                      NULL);
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                  &do_shutdown,
-                                  NULL);
+    GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+				   NULL);
     return;
   }
   if ( (NULL != filename) &&
@@ -464,9 +487,8 @@ run (void *cls,
                filename);
       return;
     }
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                  &do_shutdown,
-                                  NULL);
+    GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+				   NULL);
     if (GNUNET_YES !=
         GNUNET_REVOCATION_check_pow (&rd.key,
                                      rd.pow,
@@ -475,10 +497,11 @@ run (void *cls,
       struct RevocationData *cp = GNUNET_new (struct RevocationData);
 
       *cp = rd;
-      GNUNET_SCHEDULER_add_now (&calculate_pow,
-                                cp);
+      pow_task = GNUNET_SCHEDULER_add_now (&calculate_pow,
+					   cp);
+      GNUNET_SCHEDULER_add_shutdown (&calculate_pow_shutdown,
+				     cp);
       return;
-
     }
     perform_revocation (&rd);
     return;
@@ -499,19 +522,31 @@ run (void *cls,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'f', "filename", "NAME",
-     gettext_noop ("use NAME for the name of the revocation file"),
-     1, &GNUNET_GETOPT_set_string, &filename},
-    {'R', "revoke", "NAME",
-     gettext_noop ("revoke the private key associated for the the private key associated with the ego NAME "),
-     1, &GNUNET_GETOPT_set_string, &revoke_ego},
-    {'p', "perform", NULL,
-     gettext_noop ("actually perform revocation, otherwise we just do the precomputation"),
-     0, &GNUNET_GETOPT_set_one, &perform},
-    {'t', "test", "KEY",
-     gettext_noop ("test if the public key KEY has been revoked"),
-     1, &GNUNET_GETOPT_set_string, &test_ego},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_string ('f',
+                                 "filename",
+                                 "NAME",
+                                 gettext_noop ("use NAME for the name of the revocation file"),
+                                 &filename),
+
+    GNUNET_GETOPT_option_string ('R',
+                                 "revoke",
+                                 "NAME",
+                                 gettext_noop ("revoke the private key associated for the the private key associated with the ego NAME "),
+                                 &revoke_ego), 
+
+    GNUNET_GETOPT_option_flag ('p',
+                                  "perform",
+                                  gettext_noop ("actually perform revocation, otherwise we just do the precomputation"),
+                                  &perform),
+
+    GNUNET_GETOPT_option_string ('t',
+                                 "test",
+                                 "KEY",
+                                 gettext_noop ("test if the public key KEY has been revoked"),
+                                 &test_ego), 
+
     GNUNET_GETOPT_OPTION_END
   };
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))

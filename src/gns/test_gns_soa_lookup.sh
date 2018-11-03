@@ -15,8 +15,9 @@ fi
 
 which timeout &> /dev/null && DO_TIMEOUT="timeout 5"
 
-rm -rf /tmp/test-gnunet-gns-peer-1/
-TEST_DOMAIN="homepage.gnu"
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
+MY_EGO="myego"
+TEST_DOMAIN="homepage.$MY_EGO"
 # some public DNS resolver we can use
 TEST_IP_GNS2DNS="184.172.157.218"
 TEST_RECORD_NAME="homepage"
@@ -29,13 +30,13 @@ then
 fi
 
 gnunet-arm -s -c test_gns_lookup.conf
-gnunet-identity -C testego -c test_gns_lookup.conf
-gnunet-namestore -p -z testego -a -n $TEST_RECORD_NAME -t GNS2DNS -V ${TEST_RECORD_GNS2DNS}@${TEST_IP_GNS2DNS} -e never -c test_gns_lookup.conf
-RES_SOA=`$DO_TIMEOUT gnunet-gns --raw -z testego -u $TEST_DOMAIN -t SOA -c test_gns_lookup.conf`
-gnunet-namestore -z testego -d -n $TEST_RECORD_NAME -t GNS2DNS -V ${TEST_RECORD_GNS2DNS}@${TEST_IP_GNS2DNS} -e never -c test_gns_lookup.conf &> /dev/null
-gnunet-identity -D testego -c test_gns_lookup.conf
+gnunet-identity -C $MY_EGO -c test_gns_lookup.conf
+gnunet-namestore -p -z $MY_EGO -a -n $TEST_RECORD_NAME -t GNS2DNS -V ${TEST_RECORD_GNS2DNS}@${TEST_IP_GNS2DNS} -e never -c test_gns_lookup.conf
+RES_SOA=`$DO_TIMEOUT gnunet-gns --raw -u $TEST_DOMAIN -t SOA -c test_gns_lookup.conf`
+gnunet-namestore -z $MY_EGO -d -n $TEST_RECORD_NAME -t GNS2DNS -V ${TEST_RECORD_GNS2DNS}@${TEST_IP_GNS2DNS} -e never -c test_gns_lookup.conf &> /dev/null
+gnunet-identity -D $MY_EGO -c test_gns_lookup.conf
 gnunet-arm -e -c test_gns_lookup.conf
-rm -rf /tmp/test-gnunet-gns-peer-1/
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
 
 if [ "x$RES_SOA" != "x" ]
 then
