@@ -3,7 +3,7 @@
  Copyright (C) 2011-2014 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -271,7 +276,7 @@ bandwidth_changed_cb (void *cls,
 static unsigned long long
 parse_quota (const char *quota_str,
              const char *direction,
-             enum GNUNET_ATS_Network_Type network)
+             enum GNUNET_NetworkType network)
 {
   int res;
   unsigned long long ret;
@@ -298,7 +303,7 @@ parse_quota (const char *quota_str,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _("Could not load %s quota for network `%s':  `%s', assigning default bandwidth %llu\n"),
                 direction,
-                GNUNET_ATS_print_network_type (network),
+                GNUNET_NT_to_string (network),
                 quota_str,
                 (unsigned long long) GNUNET_ATS_DefaultBandwidth);
     ret = GNUNET_ATS_DefaultBandwidth;
@@ -308,7 +313,7 @@ parse_quota (const char *quota_str,
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 _("%s quota configured for network `%s' is %llu\n"),
                 direction,
-                GNUNET_ATS_print_network_type (network),
+                GNUNET_NT_to_string (network),
                 ret);
   }
   return ret;
@@ -326,7 +331,7 @@ parse_quota (const char *quota_str,
  */
 static unsigned long long
 load_quota (const struct GNUNET_CONFIGURATION_Handle *cfg,
-            enum GNUNET_ATS_Network_Type type,
+            enum GNUNET_NetworkType type,
             const char *direction)
 {
   char *entry;
@@ -335,7 +340,7 @@ load_quota (const struct GNUNET_CONFIGURATION_Handle *cfg,
 
   GNUNET_asprintf (&entry,
                    "%s_QUOTA_%s",
-                   GNUNET_ATS_print_network_type (type),
+                   GNUNET_NT_to_string (type),
                    direction);
   if (GNUNET_OK ==
       GNUNET_CONFIGURATION_get_value_string (cfg,
@@ -353,7 +358,7 @@ load_quota (const struct GNUNET_CONFIGURATION_Handle *cfg,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _("No %s-quota configured for network `%s', assigning default bandwidth %llu\n"),
                 direction,
-                GNUNET_ATS_print_network_type (type),
+                GNUNET_NT_to_string (type),
                 (unsigned long long) GNUNET_ATS_DefaultBandwidth);
     ret = GNUNET_ATS_DefaultBandwidth;
   }
@@ -379,7 +384,7 @@ load_quotas (const struct GNUNET_CONFIGURATION_Handle *cfg,
 {
   unsigned int c;
 
-  for (c = 0; (c < GNUNET_ATS_NetworkTypeCount) && (c < dest_length); c++)
+  for (c = 0; (c < GNUNET_NT_COUNT) && (c < dest_length); c++)
   {
     in_dest[c] = load_quota (cfg,
                              c,
@@ -389,7 +394,7 @@ load_quotas (const struct GNUNET_CONFIGURATION_Handle *cfg,
                               "in");
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Loaded quota for network `%s' (in/out): %llu %llu\n",
-                GNUNET_ATS_print_network_type (c),
+                GNUNET_NT_to_string (c),
                 in_dest[c],
                 out_dest[c]);
   }
@@ -428,11 +433,11 @@ GAS_plugin_init (const struct GNUNET_CONFIGURATION_Handle *cfg)
   env.cfg = cfg;
   env.stats = GSA_stats;
   env.addresses = GSA_addresses;
-  env.network_count = GNUNET_ATS_NetworkTypeCount;
+  env.network_count = GNUNET_NT_COUNT;
   load_quotas (cfg,
                env.out_quota,
                env.in_quota,
-               GNUNET_ATS_NetworkTypeCount);
+               GNUNET_NT_COUNT);
   GNUNET_asprintf (&plugin,
                    "libgnunet_plugin_ats_%s",
                    mode_str);

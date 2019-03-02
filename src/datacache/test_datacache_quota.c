@@ -3,7 +3,7 @@
      Copyright (C) 2006, 2009, 2010 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /*
  * @file datacache/test_datacache_quota.c
@@ -38,7 +43,9 @@ static const char *plugin_name;
  * some of the data from the last iteration is still there.
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_DATACACHE_Handle *h;
@@ -47,8 +54,12 @@ run (void *cls, char *const *args, const char *cfgfile,
   char buf[3200];
   struct GNUNET_TIME_Absolute exp;
 
+  (void) cls;
+  (void) args;
+  (void) cfgfile;
   ok = 0;
-  h = GNUNET_DATACACHE_create (cfg, "testcache");
+  h = GNUNET_DATACACHE_create (cfg,
+			       "testcache");
 
   if (h == NULL)
   {
@@ -109,9 +120,10 @@ FAILURE:
 
 
 int
-main (int argc, char *argv[])
+main (int argc,
+      char *argv[])
 {
-  char cfg_name[128];
+  char cfg_name[PATH_MAX];
   char *const xargv[] = {
     "test-datacache-quota",
     "-c",
@@ -122,17 +134,27 @@ main (int argc, char *argv[])
     GNUNET_GETOPT_OPTION_END
   };
 
+  (void) argc;
   GNUNET_log_setup ("test-datacache-quota",
                     "WARNING",
                     NULL);
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_snprintf (cfg_name, sizeof (cfg_name), "test_datacache_data_%s.conf",
+  GNUNET_snprintf (cfg_name,
+		   sizeof (cfg_name),
+		   "test_datacache_data_%s.conf",
                    plugin_name);
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1, xargv,
-                      "test-datacache-quota", "nohelp", options, &run, NULL);
+  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1,
+		      xargv,
+                      "test-datacache-quota",
+		      "nohelp",
+		      options,
+		      &run,
+		      NULL);
   if (0 != ok)
-    FPRINTF (stderr, "Missed some testcases: %d\n", ok);
+    FPRINTF (stderr,
+	     "Missed some testcases: %d\n",
+	     ok);
   return ok;
 }
 

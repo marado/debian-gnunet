@@ -3,7 +3,7 @@
      Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2010, 2011 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -38,7 +43,6 @@ extern "C"
 #endif
 
 #include "gnunet_util_lib.h"
-
 
 /**
  * Prefix that every HELLO URI must start with.
@@ -468,6 +472,63 @@ GNUNET_HELLO_parse_uri (const char *uri,
                         struct GNUNET_CRYPTO_EddsaPublicKey *pubkey,
                         struct GNUNET_HELLO_Message **hello,
                         GNUNET_HELLO_TransportPluginsFind plugins_find);
+
+
+
+/* NG API */
+#include "gnunet_nt_lib.h"
+
+/**
+ * Key used for storing HELLOs in the peerstore
+ */
+#define GNUNET_HELLO_PEERSTORE_KEY "hello"
+
+/**
+ * Build address record by signing raw information with private key.
+ *
+ * @param address text address to sign
+ * @param nt network type of @a address
+ * @param expiration how long is @a address valid
+ * @param private_key signing key to use
+ * @param result[out] where to write address record (allocated)
+ * @param result_size[out] set to size of @a result
+ */
+void
+GNUNET_HELLO_sign_address (const char *address,
+			   enum GNUNET_NetworkType nt,
+			   struct GNUNET_TIME_Absolute expiration,
+			   const struct GNUNET_CRYPTO_EddsaPrivateKey *private_key,
+			   void **result,
+			   size_t *result_size);
+
+
+/**
+ * Check signature and extract address record.
+ *
+ * @param raw raw signed address
+ * @param raw_size size of @a raw
+ * @param pid public key to use for signature verification
+ * @param nt[out] set to network type
+ * @param expiration[out] how long is the address valid
+ * @return NULL on error, otherwise the address
+ */
+char *
+GNUNET_HELLO_extract_address (const void *raw,
+			      size_t raw_size,
+			      const struct GNUNET_PeerIdentity *pid,
+			      enum GNUNET_NetworkType *nt,
+			      struct GNUNET_TIME_Absolute *expiration);
+
+
+/**
+ * Given an address as a string, extract the prefix that identifies
+ * the communicator offering transmissions to that address.
+ *
+ * @param address a peer's address
+ * @return NULL if the address is mal-formed, otherwise the prefix
+ */
+char *
+GNUNET_HELLO_address_to_prefix (const char *address);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

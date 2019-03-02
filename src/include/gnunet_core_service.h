@@ -3,7 +3,7 @@
      Copyright (C) 2009-2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @author Christian Grothoff
@@ -85,6 +90,8 @@ struct GNUNET_CORE_Handle;
  *
  * @param cls closure
  * @param peer peer identity this notification is about
+ * @return closure associated with @a peer. given to mq callbacks and
+ *         #GNUNET_CORE_DisconnectEventHandler
  */
 typedef void *
 (*GNUNET_CORE_ConnectEventHandler) (void *cls,
@@ -97,6 +104,8 @@ typedef void *
  *
  * @param cls closure
  * @param peer peer identity this notification is about
+ * @param peer_cls closure associated with peer. given in
+ *        #GNUNET_CORE_ConnectEventHandler
  */
 typedef void
 (*GNUNET_CORE_DisconnectEventHandler) (void *cls,
@@ -229,7 +238,7 @@ enum GNUNET_CORE_KxState
 
   /**
    * The other peer has confirmed our session key + PING with a PONG
-   * message encrypted with his session key (which we got).  Key
+   * message encrypted with their session key (which we got).  Key
    * exchange is done.
    */
   GNUNET_CORE_KX_STATE_UP,

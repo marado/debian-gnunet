@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file arm/test_gnunet_service_arm.c
@@ -41,6 +46,8 @@ static int resolved_ok;
 static int asked_for_a_list;
 
 static struct GNUNET_ARM_Handle *arm;
+
+static const char hostname[] = "www.gnu.org"; /* any domain should do */
 
 
 static void
@@ -109,7 +116,7 @@ hostname_resolve_cb (void *cls,
   if (NULL == addr)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                "Name not resolved!\n");
+                "Failed to resolve hostname!\n");
     GNUNET_break (0);
     ret = 3;
     GNUNET_ARM_request_service_stop (arm,
@@ -139,13 +146,14 @@ arm_start_cb (void *cls,
   GNUNET_break (status == GNUNET_ARM_REQUEST_SENT_OK);
   GNUNET_break (result == GNUNET_ARM_RESULT_STARTING);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Trying to resolve our own hostname!\n");
+              "Trying to resolve a hostname via the resolver service!\n");
   /* connect to the resolver service */
   if (NULL ==
-      GNUNET_RESOLVER_hostname_resolve (AF_UNSPEC,
-                                        TIMEOUT,
-                                        &hostname_resolve_cb,
-                                        NULL))
+      GNUNET_RESOLVER_ip_get (hostname,
+			      AF_UNSPEC,
+			      TIMEOUT,
+			      &hostname_resolve_cb,
+			      NULL))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Unable initiate connection to resolver service\n");
@@ -188,28 +196,7 @@ main (int argc, char *av[])
   static struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
-  char hostname[GNUNET_OS_get_hostname_max_length () + 1];
 
-  if (0 != gethostname (hostname, sizeof (hostname) - 1))
-  {
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-                         "gethostname");
-    FPRINTF (stderr,
-             "%s",
-             "Failed to determine my own hostname, testcase not run.\n");
-    return 0;
-  }
-  if ( (0 == strcmp (hostname,
-		     "localhost")) ||
-       (0 == strcmp (hostname,
-		     "ipv6-localnet")) )
-  {
-    /* we cannot use 'localhost' as this would not trigger the
-       resolver service (see resolver_api.c); so in this case,
-       we fall back to (ab)using gnu.org. */
-    strcpy (hostname,
-	    "www.gnu.org");
-  }
   /* trigger DNS lookup */
 #if HAVE_GETADDRINFO
   {
@@ -219,9 +206,9 @@ main (int argc, char *av[])
     if (0 != (ret = getaddrinfo (hostname, NULL, NULL, &ai)))
     {
       FPRINTF (stderr,
-               "Failed to resolve my hostname `%s', testcase not run.\n",
+               "Failed to resolve `%s', testcase not run.\n",
                hostname);
-      return 0;
+      return 77;
     }
     freeaddrinfo (ai);
   }
@@ -235,9 +222,9 @@ main (int argc, char *av[])
     if (NULL == host)
       {
         FPRINTF (stderr,
-                 "Failed to resolve my hostname `%s', testcase not run.\n",
+                 "Failed to resolve `%s', testcase not run.\n",
                  hostname);
-        return 0;
+        return 77;
       }
   }
 #elif HAVE_GETHOSTBYNAME
@@ -248,15 +235,15 @@ main (int argc, char *av[])
     if (NULL == host)
       {
         FPRINTF (stderr,
-                 "Failed to resolve my hostname `%s', testcase not run.\n",
+                 "Failed to resolve `%s', testcase not run.\n",
                  hostname);
-        return 0;
+        return 77;
       }
   }
 #else
   FPRINTF (stderr,
            "libc fails to have resolver function, testcase not run.\n");
-  return 0;
+  return 77;
 #endif
   GNUNET_log_setup ("test-gnunet-service-arm",
 		    "WARNING",

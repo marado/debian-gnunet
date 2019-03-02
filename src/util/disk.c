@@ -3,7 +3,7 @@
      Copyright (C) 2001--2013, 2016, 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file util/disk.c
@@ -233,7 +238,8 @@ GNUNET_DISK_file_handle_size (struct GNUNET_DISK_FileHandle *fh,
  * @return the new position on success, #GNUNET_SYSERR otherwise
  */
 off_t
-GNUNET_DISK_file_seek (const struct GNUNET_DISK_FileHandle * h, off_t offset,
+GNUNET_DISK_file_seek (const struct GNUNET_DISK_FileHandle *h,
+		       off_t offset,
                        enum GNUNET_DISK_Seek whence)
 {
   if (h == NULL)
@@ -619,7 +625,8 @@ GNUNET_DISK_mktemp (const char *t)
  *           does not exist or stat'ed
  */
 int
-GNUNET_DISK_directory_test (const char *fil, int is_readable)
+GNUNET_DISK_directory_test (const char *fil,
+                            int is_readable)
 {
   struct stat filestat;
   int ret;
@@ -633,7 +640,7 @@ GNUNET_DISK_directory_test (const char *fil, int is_readable)
   }
   if (!S_ISDIR (filestat.st_mode))
   {
-    LOG (GNUNET_ERROR_TYPE_DEBUG,
+    LOG (GNUNET_ERROR_TYPE_INFO,
          "A file already exits with the same name %s\n", fil);
     return GNUNET_NO;
   }
@@ -714,7 +721,10 @@ GNUNET_DISK_directory_create (const char *dir)
 
   rdir = GNUNET_STRINGS_filename_expand (dir);
   if (rdir == NULL)
+  {
+    GNUNET_break (0);
     return GNUNET_SYSERR;
+  }
 
   len = strlen (rdir);
 #ifndef MINGW
@@ -750,6 +760,9 @@ GNUNET_DISK_directory_create (const char *dir)
       ret = GNUNET_DISK_directory_test (rdir, GNUNET_NO);
       if (GNUNET_NO == ret)
       {
+        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                    "Creating directory `%s' failed",
+                    rdir);
         GNUNET_free (rdir);
         return GNUNET_SYSERR;
       }
@@ -774,6 +787,9 @@ GNUNET_DISK_directory_create (const char *dir)
       ret = GNUNET_DISK_directory_test (rdir, GNUNET_NO);
       if (GNUNET_NO == ret)
       {
+        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                    "Creating directory `%s' failed",
+                    rdir);
         GNUNET_free (rdir);
         return GNUNET_SYSERR;
       }
@@ -827,6 +843,12 @@ GNUNET_DISK_directory_create_for_file (const char *filename)
     errno = EINVAL;
     return GNUNET_SYSERR;
   }
+  if (0 == ACCESS (rdir, W_OK))
+  {
+    GNUNET_free (rdir);
+    return GNUNET_OK;
+  }
+
   len = strlen (rdir);
   while ((len > 0) && (rdir[len] != DIR_SEPARATOR))
     len--;
@@ -1025,7 +1047,8 @@ GNUNET_DISK_fn_read (const char *fn,
  */
 ssize_t
 GNUNET_DISK_file_write (const struct GNUNET_DISK_FileHandle * h,
-                        const void *buffer, size_t n)
+                        const void *buffer,
+			size_t n)
 {
   if (NULL == h)
   {
@@ -1683,16 +1706,19 @@ GNUNET_DISK_file_open (const char *fn,
     return NULL;
   }
   if (flags & GNUNET_DISK_OPEN_FAILIFEXISTS)
-    oflags |= (O_CREAT | O_EXCL);
+      oflags |= (O_CREAT | O_EXCL);
   if (flags & GNUNET_DISK_OPEN_TRUNCATE)
     oflags |= O_TRUNC;
   if (flags & GNUNET_DISK_OPEN_APPEND)
     oflags |= O_APPEND;
-  if (flags & GNUNET_DISK_OPEN_CREATE)
-  {
-    (void) GNUNET_DISK_directory_create_for_file (expfn);
-    oflags |= O_CREAT;
-    mode = translate_unix_perms (perm);
+  if(GNUNET_NO == GNUNET_DISK_file_test(fn))
+   {
+      if (flags & GNUNET_DISK_OPEN_CREATE )
+	{
+	  (void) GNUNET_DISK_directory_create_for_file (expfn);
+	  oflags |= O_CREAT;
+	  mode = translate_unix_perms (perm);
+	}
   }
 
   fd = open (expfn, oflags
@@ -2656,6 +2682,45 @@ GNUNET_DISK_internal_file_handle_ (const struct GNUNET_DISK_FileHandle *fh,
 
 
 /**
+ * Helper function for #GNUNET_DISK_purge_cfg_dir.
+ *
+ * @param cls a `const char *` with the option to purge
+ * @param cfg our configuration
+ * @return #GNUNET_OK on success
+ */
+static int
+purge_cfg_dir (void *cls,
+	       const struct GNUNET_CONFIGURATION_Handle *cfg)
+{
+  const char *option = cls;
+  char *tmpname;
+
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_get_value_filename (cfg,
+                                               "PATHS",
+                                               option,
+                                               &tmpname))
+  {
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
+                               "PATHS",
+                               option);
+    return GNUNET_NO;
+  }
+  if (GNUNET_SYSERR ==
+      GNUNET_DISK_directory_remove (tmpname))
+  {
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
+                              "remove",
+                              tmpname);
+    GNUNET_free (tmpname);
+    return GNUNET_OK;
+  }
+  GNUNET_free (tmpname);
+  return GNUNET_OK;
+}
+
+
+/**
  * Remove the directory given under @a option in
  * section [PATHS] in configuration under @a cfg_filename
  *
@@ -2666,43 +2731,11 @@ void
 GNUNET_DISK_purge_cfg_dir (const char *cfg_filename,
                            const char *option)
 {
-  struct GNUNET_CONFIGURATION_Handle *cfg;
-  char *tmpname;
-
-  cfg = GNUNET_CONFIGURATION_create ();
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_load (cfg,
-                                 cfg_filename))
-  {
-    GNUNET_break (0);
-    GNUNET_CONFIGURATION_destroy (cfg);
-    return;
-  }
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (cfg,
-                                               "PATHS",
-                                               option,
-                                               &tmpname))
-  {
-    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-                               "PATHS",
-                               option);
-    GNUNET_CONFIGURATION_destroy (cfg);
-    return;
-  }
-  GNUNET_CONFIGURATION_destroy (cfg);
-  if (GNUNET_SYSERR ==
-      GNUNET_DISK_directory_remove (tmpname))
-  {
-    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
-                              "remove",
-                              tmpname);
-    GNUNET_free (tmpname);
-    return;
-  }
-  GNUNET_free (tmpname);
+  GNUNET_break (GNUNET_OK ==
+		GNUNET_CONFIGURATION_parse_and_run (cfg_filename,
+						    &purge_cfg_dir,
+						    (void *) option));
 }
-
 
 
 /* end of disk.c */

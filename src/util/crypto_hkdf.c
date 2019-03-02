@@ -53,6 +53,7 @@
 #if GNUNET_BUILD
 #include "platform.h"
 #include "gnunet_crypto_lib.h"
+#include "benchmark.h"
 #else
 #define GNUNET_NO 0
 #define GNUNET_YES 1
@@ -154,6 +155,8 @@ GNUNET_CRYPTO_hkdf_v (void *result, size_t out_len, int xtr_algo, int prf_algo,
   int ret;
   size_t ctx_len;
   va_list args;
+
+  BENCHMARK_START (hkdf);
 
   if (0 == k)
     return GNUNET_SYSERR;
@@ -265,6 +268,7 @@ hkdf_error:
 hkdf_ok:
   gcry_md_close (xtr);
   gcry_md_close (prf);
+  BENCHMARK_END (hkdf);
   return ret;
 }
 

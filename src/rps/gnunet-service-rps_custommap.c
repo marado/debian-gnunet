@@ -3,7 +3,7 @@
      Copyright (C)
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -77,7 +82,8 @@ CustomPeerMap_create (unsigned int len)
 
   c_peer_map = GNUNET_new (struct CustomPeerMap);
   c_peer_map->hash_map = GNUNET_CONTAINER_multihashmap32_create (len);
-  c_peer_map->peer_map = GNUNET_CONTAINER_multipeermap_create (len, GNUNET_NO);
+  c_peer_map->peer_map = GNUNET_CONTAINER_multipeermap_create (len,
+                                                               GNUNET_NO);
   return c_peer_map;
 }
 
@@ -88,7 +94,7 @@ CustomPeerMap_create (unsigned int len)
  *
  * @return size of the map
  */
-int
+unsigned int
 CustomPeerMap_size (const struct CustomPeerMap *c_peer_map)
 {
   GNUNET_assert (GNUNET_CONTAINER_multihashmap32_size (c_peer_map->hash_map) ==
@@ -124,10 +130,16 @@ CustomPeerMap_put (const struct CustomPeerMap *c_peer_map,
     p = GNUNET_new (struct GNUNET_PeerIdentity);
     *p = *peer;
     GNUNET_assert (p != peer);
-    GNUNET_assert (0 == memcmp (p, peer, sizeof(struct GNUNET_PeerIdentity)));
-    GNUNET_CONTAINER_multipeermap_put (c_peer_map->peer_map, p, index,
+    GNUNET_assert (0 == memcmp (p,
+                                peer,
+                                sizeof(struct GNUNET_PeerIdentity)));
+    GNUNET_CONTAINER_multipeermap_put (c_peer_map->peer_map,
+                                       p,
+                                       index,
         GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
-    GNUNET_CONTAINER_multihashmap32_put (c_peer_map->hash_map, *index, p,
+    GNUNET_CONTAINER_multihashmap32_put (c_peer_map->hash_map,
+                                         *index,
+                                         p,
         GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
     GNUNET_assert (GNUNET_CONTAINER_multihashmap32_size (c_peer_map->hash_map) ==
                    GNUNET_CONTAINER_multipeermap_size (c_peer_map->peer_map));
@@ -189,34 +201,44 @@ CustomPeerMap_remove_peer (const struct CustomPeerMap *c_peer_map,
   uint32_t *last_index;
   struct GNUNET_PeerIdentity *last_p;
 
-  if (GNUNET_NO == CustomPeerMap_contains_peer (c_peer_map, peer))
+  if (GNUNET_NO == CustomPeerMap_contains_peer (c_peer_map,
+                                                peer))
   {
     return GNUNET_NO;
   }
-  index = CustomPeerMap_get_index_pointer (c_peer_map, peer);
+  index = CustomPeerMap_get_index_pointer (c_peer_map,
+                                           peer);
   GNUNET_assert (*index < CustomPeerMap_size (c_peer_map));
   /* Need to get the pointer stored in the hashmap to free it */
-  p = GNUNET_CONTAINER_multihashmap32_get (c_peer_map->hash_map, *index);
+  p = GNUNET_CONTAINER_multihashmap32_get (c_peer_map->hash_map,
+                                           *index);
   GNUNET_assert (NULL != p);
-  GNUNET_CONTAINER_multihashmap32_remove_all (c_peer_map->hash_map, *index);
-  GNUNET_CONTAINER_multipeermap_remove_all (c_peer_map->peer_map, peer);
+  GNUNET_CONTAINER_multihashmap32_remove_all (c_peer_map->hash_map,
+                                              *index);
+  // TODO wrong peerid?
+  GNUNET_CONTAINER_multipeermap_remove_all (c_peer_map->peer_map,
+                                            peer);
   if (*index != CustomPeerMap_size (c_peer_map))
   { /* fill 'gap' with peer at last index */
     last_p =
       GNUNET_CONTAINER_multihashmap32_get (c_peer_map->hash_map,
                                            CustomPeerMap_size (c_peer_map));
     GNUNET_assert (NULL != last_p);
-    last_index = GNUNET_CONTAINER_multipeermap_get (c_peer_map->peer_map, last_p);
+    last_index = GNUNET_CONTAINER_multipeermap_get (c_peer_map->peer_map,
+                                                    last_p);
     GNUNET_assert (NULL != last_index);
     GNUNET_assert (CustomPeerMap_size (c_peer_map) == *last_index);
-    GNUNET_CONTAINER_multihashmap32_put (c_peer_map->hash_map, *index, last_p,
-        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
-    GNUNET_CONTAINER_multihashmap32_remove_all (c_peer_map->hash_map, *last_index);
+    GNUNET_CONTAINER_multihashmap32_put (c_peer_map->hash_map,
+                                         *index, last_p,
+        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+    GNUNET_CONTAINER_multihashmap32_remove_all (c_peer_map->hash_map,
+                                                *last_index);
     *last_index = *index;
   }
   GNUNET_free (index);
   GNUNET_assert (GNUNET_CONTAINER_multihashmap32_size (c_peer_map->hash_map) ==
                  GNUNET_CONTAINER_multipeermap_size (c_peer_map->peer_map));
+  GNUNET_free (p);
   return GNUNET_OK;
 }
 

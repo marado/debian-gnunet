@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file arm/test_exponential_backoff.c
@@ -340,7 +345,10 @@ init ()
   cfg = GNUNET_CONFIGURATION_create ();
   if (GNUNET_OK != GNUNET_CONFIGURATION_parse (cfg,
                                                "test_arm_api_data.conf"))
+  {
+    GNUNET_CONFIGURATION_destroy (cfg);
     return GNUNET_SYSERR;
+  }
   if (NULL == getcwd (pwd, PATH_MAX))
     return GNUNET_SYSERR;
   GNUNET_assert (0 < GNUNET_asprintf (&binary,

@@ -3,7 +3,7 @@
   Copyright (C) 2017 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file pq/pq_exec.c
@@ -76,6 +81,10 @@ GNUNET_PQ_exec_statements (PGconn *connection,
   {
     PGresult *result;
 
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Running statement `%s' on %p\n",
+                es[i].sql,
+                connection);
     result = PQexec (connection,
                      es[i].sql);
     if ( (GNUNET_NO == es[i].ignore_errors) &&

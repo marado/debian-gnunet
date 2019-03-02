@@ -3,7 +3,7 @@
      Copyright (C) 2006, 2009, 2015 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -746,7 +751,8 @@ libgnunet_plugin_datacache_sqlite_init (void *cls)
                 "  value BLOB NOT NULL,"
 		"  path BLOB DEFAULT '')");
   SQLITE3_EXEC (dbh, "CREATE INDEX idx_hashidx ON ds091 (key,type,expire)");
-  SQLITE3_EXEC (dbh, "CREATE INDEX idx_expire ON ds091 (prox,expire)");
+  SQLITE3_EXEC (dbh, "CREATE INDEX idx_prox_expire ON ds091 (prox,expire)");
+  SQLITE3_EXEC (dbh, "CREATE INDEX idx_expire_only ON ds091 (expire)");
   plugin = GNUNET_new (struct Plugin);
   plugin->env = env;
   plugin->dbh = dbh;

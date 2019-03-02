@@ -17,6 +17,9 @@
 /* Not building only the documentation */
 #undef DOCUMENTATION_ONLY
 
+/* Benchmarks are enabled */
+#undef ENABLE_BENCHMARK
+
 /* enable expensive heap statistics */
 #undef ENABLE_HEAP_STATISTICS
 
@@ -144,6 +147,9 @@
 /* Define this if getaddrinfo() is available */
 #undef HAVE_GETADDRINFO
 
+/* getaddrinfo_a supported */
+#undef HAVE_GETADDRINFO_A
+
 /* Define this if gethostbyaddr() is available */
 #undef HAVE_GETHOSTBYADDR
 
@@ -207,6 +213,18 @@
 /* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
 
+/* Define to 1 if you have the <idn2.h> header file. */
+#undef HAVE_IDN2_H
+
+/* Define to 1 if you have the <idn2/idn2.h> header file. */
+#undef HAVE_IDN2_IDN2_H
+
+/* Define to 1 if you have the <idna.h> header file. */
+#undef HAVE_IDNA_H
+
+/* Define to 1 if you have the <idn/idna.h> header file. */
+#undef HAVE_IDN_IDNA_H
+
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #undef HAVE_IFADDRS_H
 
@@ -222,6 +240,9 @@
 /* Lacking jansson library */
 #undef HAVE_JANSSON
 
+/* Define to 1 if you have the <jansson.h> header file. */
+#undef HAVE_JANSSON_H
+
 /* Define to 1 if you have the <kstat.h> header file. */
 #undef HAVE_KSTAT_H
 
@@ -230,6 +251,9 @@
 
 /* Define to 1 if you have the <langinfo.h> header file. */
 #undef HAVE_LANGINFO_H
+
+/* external libatomic */
+#undef HAVE_LIBATOMIC
 
 /* Lacking bluetooth library */
 #undef HAVE_LIBBLUETOOTH
@@ -251,6 +275,12 @@
 
 /* Define to 1 if you have the `gnurx' library (-lgnurx). */
 #undef HAVE_LIBGNURX
+
+/* Define to 1 if you have 'libidn' (-lidn). */
+#undef HAVE_LIBIDN
+
+/* Define to 1 if you have 'libidn2' (-lidn2). */
+#undef HAVE_LIBIDN2
 
 /* Define to 1 if you have the `intl' library (-lintl). */
 #undef HAVE_LIBINTL
@@ -321,6 +351,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* memrchr supported */
+#undef HAVE_MEMRCHR
+
 /* We have libmicrohttpd */
 #undef HAVE_MHD
 
@@ -363,7 +396,7 @@
 /* Have libopus library */
 #undef HAVE_OPUS
 
-/* Lacking glib library */
+/* Lacking pbc library */
 #undef HAVE_PBC
 
 /* Define to 1 if PostgreSQL libraries are available */
@@ -429,6 +462,9 @@
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #undef HAVE_STDARG_H
+
+/* Define to 1 if you have the <stdatomic.h> header file. */
+#undef HAVE_STDATOMIC_H
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -572,6 +608,12 @@
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
+
+/* Path to ifconfig */
+#undef IFCONFIG
+
+/* Path to iptables */
+#undef IPTABLES
 
 /* Defined if libcurl supports AsynchDNS */
 #undef LIBCURL_FEATURE_ASYNCHDNS
@@ -772,11 +814,17 @@
 /* Canonical compilation */
 #undef TALER_WALLET_ONLY
 
+/* Not building section 7 mdoc output */
+#undef TEXI2MDOC_GENERATION
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #undef TIME_WITH_SYS_TIME
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 #undef TM_IN_SYS_TIME
+
+/* Path to upnpc binary */
+#undef UPNPC
 
 /* VCS revision/hash or tarball version */
 #undef VCS_VERSION

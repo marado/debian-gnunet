@@ -36,7 +36,7 @@ libexec_PROGRAMS = \
  gnunet-service-peerinfo
 
 gnunet_service_peerinfo_SOURCES = \
- gnunet-service-peerinfo.c
+  gnunet-service-peerinfo.c
 gnunet_service_peerinfo_LDADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \

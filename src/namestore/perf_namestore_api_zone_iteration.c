@@ -3,7 +3,7 @@
      Copyright (C) 2013, 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file namestore/perf_namestore_api_zone_iteration.c
@@ -271,7 +276,12 @@ put_cont (void *cls,
 {
   (void) cls;
   qe = NULL;
-  GNUNET_assert (GNUNET_OK == success);
+  if (GNUNET_OK != success)
+  {
+    GNUNET_break (0);
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
   t = GNUNET_SCHEDULER_add_now (&publish_record,
                                 NULL);
 }
@@ -344,6 +354,9 @@ run (void *cls,
 }
 
 
+#include "test_common.c"
+
+
 int
 main (int argc,
       char *argv[])
@@ -351,13 +364,8 @@ main (int argc,
   const char *plugin_name;
   char *cfg_name;
 
-  plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_asprintf (&cfg_name,
-                   "perf_namestore_api_%s.conf",
-                   plugin_name);
+  SETUP_CFG (plugin_name, cfg_name);
   res = 1;
-  GNUNET_DISK_purge_cfg_dir (cfg_name,
-                             "GNUNET_TEST_HOME");
   if (0 !=
       GNUNET_TESTING_peer_run ("perf-namestore-api-zone-iteration",
                                cfg_name,

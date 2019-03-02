@@ -3,7 +3,7 @@
      Copyright (C) 2009-2014, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -962,15 +967,9 @@ static int
 check_client_index_start (void *cls,
                           const struct IndexStartMessage *ism)
 {
-  uint16_t msize;
   char *fn;
 
-  msize = ntohs (ism->header.size);
-  if (((const char *) ism)[msize - 1] != '\0')
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
+  GNUNET_MQ_check_zero_termination (ism);
   if (0 != ism->reserved)
   {
     GNUNET_break (0);
@@ -1229,7 +1228,7 @@ peer_init_handler (void *cls,
                                             my_identity))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                "Peer identity missmatch, refusing to start!\n");
+                "Peer identity mismatch, refusing to start!\n");
     GNUNET_SCHEDULER_shutdown ();
   }
 }

@@ -19,7 +19,9 @@ pkgcfg_DATA = \
 
 bin_PROGRAMS = gnunet-rps
 
-gnunet_rps_SOURCES = gnunet-rps.c
+gnunet_rps_SOURCES = \
+  gnunet-rps.c
+
 gnunet_rps_LDADD = \
   libgnunetrps.la \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -28,6 +30,10 @@ gnunet_rps_LDADD = \
 lib_LTLIBRARIES = libgnunetrps.la
 
 libgnunetrps_la_SOURCES = \
+ gnunet-service-rps_sampler_elem.h gnunet-service-rps_sampler_elem.c \
+  rps-test_util.h rps-test_util.c \
+  rps-sampler_common.h rps-sampler_common.c \
+  rps-sampler_client.h rps-sampler_client.c \
   rps_api.c rps.h
 libgnunetrps_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -35,6 +41,8 @@ libgnunetrps_la_LIBADD = \
 libgnunetrps_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
   -version-info 0:0:0
+# Fix 'created both with libtool and without' error:
+libgnunetrps_la_CFLAGS = $(AM_CFLAGS)
 
 
 libexec_PROGRAMS = \
@@ -48,10 +56,10 @@ endif
 
 gnunet_service_rps_SOURCES = \
  gnunet-service-rps_sampler_elem.h gnunet-service-rps_sampler_elem.c \
+ rps-sampler_common.h rps-sampler_common.c \
  gnunet-service-rps_sampler.h gnunet-service-rps_sampler.c \
  gnunet-service-rps_custommap.h gnunet-service-rps_custommap.c \
  gnunet-service-rps_view.h gnunet-service-rps_view.c \
- rps-test_util.h rps-test_util.c \
  gnunet-service-rps.c
 
 
@@ -63,6 +71,7 @@ gnunet_service_rps_LDADD = \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/nse/libgnunetnse.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/core/libgnunetcore.la \
   $(LIBGCRYPT_LIBS) \
   -lm -lgcrypt \
   $(GN_LIBINTL)
@@ -73,20 +82,23 @@ check_PROGRAMS = \
  test_service_rps_view \
  test_service_rps_custommap \
  test_service_rps_sampler_elem \
- test_rps_malicious_1 \
- test_rps_malicious_2 \
- test_rps_malicious_3 \
- test_rps_seed_request \
  test_rps_single_req \
  test_rps_req_cancel \
+ test_rps_sub \
+ test_rps_seed_request \
  test_rps_seed_big \
- test_rps_churn
+ test_rps_churn \
+ test_rps_malicious_1 \
+ test_rps_malicious_2 \
+ test_rps_malicious_3
 endif
 
 rps_test_src = \
 	test_rps.c \
 	rps-test_util.h rps-test_util.c \
- gnunet-service-rps_sampler_elem.h gnunet-service-rps_sampler_elem.c
+ gnunet-service-rps_sampler_elem.h gnunet-service-rps_sampler_elem.c \
+ rps-sampler_common.h rps-sampler_common.c \
+ gnunet-service-rps_sampler.h gnunet-service-rps_sampler.c
 
 ld_rps_test_lib = \
 	libgnunetrps.la \
@@ -117,15 +129,6 @@ test_service_rps_sampler_elem_SOURCES = \
   test_service_rps_sampler_elem.c
 test_service_rps_sampler_elem_LDADD = $(top_builddir)/src/util/libgnunetutil.la
 
-test_rps_malicious_1_SOURCES = $(rps_test_src)
-test_rps_malicious_1_LDADD = $(ld_rps_test_lib)
-
-test_rps_malicious_2_SOURCES = $(rps_test_src)
-test_rps_malicious_2_LDADD = $(ld_rps_test_lib)
-
-test_rps_malicious_3_SOURCES = $(rps_test_src)
-test_rps_malicious_3_LDADD = $(ld_rps_test_lib)
-
 test_rps_single_req_SOURCES = $(rps_test_src)
 test_rps_single_req_LDADD = $(ld_rps_test_lib)
 
@@ -135,13 +138,32 @@ test_rps_seed_request_LDADD = $(ld_rps_test_lib)
 test_rps_req_cancel_SOURCES = $(rps_test_src)
 test_rps_req_cancel_LDADD = $(ld_rps_test_lib)
 
+test_rps_sub_SOURCES = $(rps_test_src)
+test_rps_sub_LDADD = $(ld_rps_test_lib)
+
 test_rps_seed_big_SOURCES = $(rps_test_src)
 test_rps_seed_big_LDADD = $(ld_rps_test_lib)
 
 test_rps_churn_SOURCES = $(rps_test_src)
 test_rps_churn_LDADD = $(ld_rps_test_lib)
 
-gnunet_rps_profiler_SOURCES = $(rps_test_src)
+test_rps_malicious_1_SOURCES = $(rps_test_src)
+test_rps_malicious_1_LDADD = $(ld_rps_test_lib)
+
+test_rps_malicious_2_SOURCES = $(rps_test_src)
+test_rps_malicious_2_LDADD = $(ld_rps_test_lib)
+
+test_rps_malicious_3_SOURCES = $(rps_test_src)
+test_rps_malicious_3_LDADD = $(ld_rps_test_lib)
+
+gnunet_rps_profiler_SOURCES = \
+ gnunet-service-rps_sampler_elem.h gnunet-service-rps_sampler_elem.c \
+ rps-sampler_common.h rps-sampler_common.c \
+ gnunet-service-rps_sampler.h gnunet-service-rps_sampler.c \
+ rps-test_util.h rps-test_util.c \
+ gnunet-rps-profiler.c
+
+
 gnunet_rps_profiler_LDADD = \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   libgnunetrps.la \

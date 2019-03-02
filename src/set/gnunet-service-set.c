@@ -3,7 +3,7 @@
       Copyright (C) 2013-2017 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file set/gnunet-service-set.c
@@ -201,7 +206,6 @@ static void
 incoming_destroy (struct Operation *op)
 {
   struct Listener *listener;
-  struct GNUNET_CADET_Channel *channel;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Destroying incoming operation %p\n",
@@ -218,11 +222,7 @@ incoming_destroy (struct Operation *op)
     GNUNET_SCHEDULER_cancel (op->timeout_task);
     op->timeout_task = NULL;
   }
-  if (NULL != (channel = op->channel))
-  {
-    op->channel = NULL;
-    GNUNET_CADET_channel_destroy (channel);
-  }
+  _GSS_operation_destroy2 (op);
 }
 
 
@@ -1196,12 +1196,36 @@ channel_end_cb (void *channel_ctx,
 {
   struct Operation *op = channel_ctx;
 
+  op->channel = NULL;
+  _GSS_operation_destroy2 (op);
+}
+
+
+/**
+ * This function probably should not exist
+ * and be replaced by inlining more specific
+ * logic in the various places where it is called.
+ */
+void
+_GSS_operation_destroy2 (struct Operation *op)
+{
+  struct GNUNET_CADET_Channel *channel;
+
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "channel_end_cb called\n");
-  op->channel = NULL;
+  if (NULL != (channel = op->channel))
+  {
+    /* This will free op; called conditionally as this helper function
+       is also called from within the channel disconnect handler. */
+    op->channel = NULL;
+    GNUNET_CADET_channel_destroy (channel);
+  }
   if (NULL != op->listener)
+  {
     incoming_destroy (op);
-  else if (NULL != op->set)
+    return;
+  }
+  if (NULL != op->set)
     op->set->vt->channel_death (op);
   else
     _GSS_operation_destroy (op,
@@ -1373,7 +1397,7 @@ handle_client_reject (void *cls,
               "Peer request (op %u, app %s) rejected by client\n",
               op->listener->operation,
               GNUNET_h2s (&cs->listener->app_id));
-  GNUNET_CADET_channel_destroy (op->channel);
+  _GSS_operation_destroy2 (op);
   GNUNET_SERVICE_client_continue (cs->client);
 }
 

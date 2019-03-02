@@ -3,7 +3,7 @@
      Copyright (C) 2012 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -72,12 +77,37 @@ print_option (void *cls,
 	      const char *option,
 	      const char *value)
 {
-  (void) cls;
+  const struct GNUNET_CONFIGURATION_Handle *cfg = cls;
+
   (void) section;
-  fprintf (stdout,
-	   "%s = %s\n",
-	   option,
-	   value);
+  if (is_filename)
+  {
+    char *value_fn;
+    char *fn;
+
+    GNUNET_assert (GNUNET_OK ==
+		   GNUNET_CONFIGURATION_get_value_filename (cfg,
+							    section,
+							    option,
+							    &value_fn));
+    fn = GNUNET_STRINGS_filename_expand (value_fn);
+    if (NULL == fn)
+      fn = value_fn;
+    else
+      GNUNET_free (value_fn);
+    fprintf (stdout,
+	     "%s = %s\n",
+	     option,
+	     fn);
+    GNUNET_free (fn);
+  }
+  else
+  {
+    fprintf (stdout,
+	     "%s = %s\n",
+	     option,
+	     value);
+  }
 }
 
 
@@ -114,6 +144,7 @@ run (void *cls,
 {
   struct GNUNET_CONFIGURATION_Handle *out = NULL;
   struct GNUNET_CONFIGURATION_Handle *diff = NULL;
+  char *cfg_fn;
 
   (void) cls;
   (void) args;
@@ -139,14 +170,19 @@ run (void *cls,
     if (! list_sections)
     {
       fprintf (stderr,
-               _("--section argument is required\n"));
+               _("%s or %s argument is required\n"),
+               "--section",
+               "--list-sections");
+      ret = 1;
     }
-    fprintf (stderr,
-             _("The following sections are available:\n"));
-    GNUNET_CONFIGURATION_iterate_sections (cfg,
-                                           &print_section_name,
-                                           NULL);
-    ret = 1;
+    else
+    {
+      fprintf (stderr,
+               _("The following sections are available:\n"));
+      GNUNET_CONFIGURATION_iterate_sections (cfg,
+                                             &print_section_name,
+                                             NULL);
+    }
     goto cleanup;
   }
 
@@ -156,8 +192,8 @@ run (void *cls,
     {
       GNUNET_CONFIGURATION_iterate_section_values (cfg,
                                                    section,
-						   &print_option,
-                                                   NULL);
+                                                  &print_option,
+                                                   (void *) cfg);
     }
     else
     {
@@ -203,6 +239,20 @@ run (void *cls,
                                            option,
                                            value);
   }
+  cfg_fn = NULL;
+  if (NULL == cfgfile)
+  {
+    const char *xdg = getenv ("XDG_CONFIG_HOME");
+    if (NULL != xdg)
+      GNUNET_asprintf (&cfg_fn,
+		       "%s%s%s",
+		       xdg,
+		       DIR_SEPARATOR_STR,
+		       GNUNET_OS_project_data_get ()->config_file);
+    else
+      cfg_fn = GNUNET_strdup (GNUNET_OS_project_data_get ()->user_config_file);
+    cfgfile = cfg_fn;
+  }
   if ( (NULL != diff) || (NULL != out) )
   {
     if (GNUNET_OK !=
@@ -210,6 +260,7 @@ run (void *cls,
                                     cfgfile))
       ret = 2;
   }
+  GNUNET_free_non_null (cfg_fn);
   if (NULL != out)
     GNUNET_CONFIGURATION_destroy (out);
  cleanup:

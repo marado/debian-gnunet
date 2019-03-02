@@ -3,7 +3,7 @@
   Copyright (C) 2010-2014 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -101,7 +106,7 @@ plugin_env_update_distance (void *cls,
  * @param addrlen length of the @a addr
  * @return type of the network @a addr belongs to
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 plugin_env_address_to_type (void *cls,
                             const struct sockaddr *addr,
                             size_t addrlen)
@@ -109,9 +114,9 @@ plugin_env_address_to_type (void *cls,
   if (NULL == GST_is)
   {
     GNUNET_break(0);
-    return GNUNET_ATS_NET_UNSPECIFIED;
+    return GNUNET_NT_UNSPECIFIED;
   }
-  return GNUNET_ATS_scanner_address_get_type (GST_is,
+  return GNUNET_NT_scanner_get_type (GST_is,
                                               addr,
                                               addrlen);
 }

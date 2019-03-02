@@ -3,7 +3,7 @@
      (and other contributing authors)
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 
 */
 
@@ -266,6 +271,28 @@ GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode, uint64_t max)
 
 
 /**
+ * Allocation wrapper for libgcrypt, used to avoid bad locking
+ * strategy of libgcrypt implementation.
+ */
+static void *
+w_malloc (size_t n)
+{
+  return calloc (n, 1);
+}
+
+
+/**
+ * Allocation wrapper for libgcrypt, used to avoid bad locking
+ * strategy of libgcrypt implementation.
+ */
+static int
+w_check (const void *p)
+{
+  return 0; /* not secure memory */
+}
+
+
+/**
  * Initialize libgcrypt.
  */
 void __attribute__ ((constructor))
@@ -280,6 +307,13 @@ GNUNET_CRYPTO_random_init ()
              NEED_LIBGCRYPT_VERSION);
     GNUNET_assert (0);
   }
+  /* set custom allocators */
+  gcry_set_allocation_handler (&w_malloc,
+                               &w_malloc,
+                               &w_check,
+                               &realloc,
+                               &free);
+  /* Disable use of secure memory */
   if ((rc = gcry_control (GCRYCTL_DISABLE_SECMEM, 0)))
     FPRINTF (stderr,
              "Failed to set libgcrypt option %s: %s\n",

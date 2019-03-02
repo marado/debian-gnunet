@@ -3,7 +3,7 @@
      Copyright (C) 2009-2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -169,7 +174,7 @@ struct DisconnectNotifyMessage
  * messages being received or transmitted.  This overall message is
  * followed by the real message, or just the header of the real
  * message (depending on the client's preferences).  The receiver can
- * tell if he got the full message or only a partial message by
+ * tell if it got the full message or only a partial message by
  * looking at the size field in the header of NotifyTrafficMessage and
  * checking it with the size field in the message that follows.
  */

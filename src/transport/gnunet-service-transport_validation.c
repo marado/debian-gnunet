@@ -3,7 +3,7 @@
      Copyright (C) 2010-2015 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -314,7 +319,7 @@ struct ValidationEntry
   /**
    * Which network type does our address belong to?
    */
-  enum GNUNET_ATS_Network_Type network;
+  enum GNUNET_NetworkType network;
 };
 
 
@@ -651,7 +656,7 @@ transmit_ping_if_allowed (void *cls,
                 ve->address->transport_name);
     ve->network = papi->get_network (papi->cls,
                                      session);
-    GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != ve->network);
+    GNUNET_break (GNUNET_NT_UNSPECIFIED != ve->network);
     GST_neighbours_notify_data_sent (ve->address,
                                      session,
                                      tsize);
@@ -902,7 +907,7 @@ add_valid_address (void *cls,
   ve = find_validation_entry (address);
   ve->network = papi->get_network_for_address (papi->cls,
                                                address);
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != ve->network);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != ve->network);
   ve->valid_until = GNUNET_TIME_absolute_max (ve->valid_until,
                                               expiration);
   if (NULL == ve->revalidation_task)
@@ -1110,7 +1115,8 @@ GST_validation_handle_ping (const struct GNUNET_PeerIdentity *sender,
   }
   ping = (const struct TransportPingMessage *) hdr;
   if (0 !=
-      memcmp (&ping->target, &GST_my_identity,
+      memcmp (&ping->target,
+              &GST_my_identity,
               sizeof (struct GNUNET_PeerIdentity)))
   {
     GNUNET_STATISTICS_update (GST_stats,
@@ -1586,7 +1592,7 @@ GST_validation_handle_pong (const struct GNUNET_PeerIdentity *sender,
       struct GNUNET_ATS_Properties prop;
 
       memset (&prop, 0, sizeof (prop));
-      GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != ve->network);
+      GNUNET_break (GNUNET_NT_UNSPECIFIED != ve->network);
       prop.scope = ve->network;
       prop.delay = GNUNET_TIME_relative_divide (ve->latency, 2);
       GNUNET_assert (GNUNET_NO ==

@@ -3,7 +3,7 @@
      Copyright (C) 2011, 2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file cadet/cadet_api.c
@@ -26,39 +31,6 @@
 #include "cadet_protocol.h"
 
 #define LOG(kind,...) GNUNET_log_from (kind, "cadet-api",__VA_ARGS__)
-
-/**
- * Ugly legacy hack.
- */
-union CadetInfoCB
-{
-
-  /**
-   * Channel callback.
-   */
-  GNUNET_CADET_ChannelCB channel_cb;
-
-  /**
-   * Monitor callback
-   */
-  GNUNET_CADET_PeersCB peers_cb;
-
-  /**
-   * Monitor callback
-   */
-  GNUNET_CADET_PeerCB peer_cb;
-
-  /**
-   * Monitor callback
-   */
-  GNUNET_CADET_TunnelsCB tunnels_cb;
-
-  /**
-   * Tunnel callback.
-   */
-  GNUNET_CADET_TunnelCB tunnel_cb;
-};
-
 
 /**
  * Opaque handle to the service.
@@ -94,16 +66,6 @@ struct GNUNET_CADET_Handle
    * Task for trying to reconnect.
    */
   struct GNUNET_SCHEDULER_Task *reconnect_task;
-
-  /**
-   * Callback for an info task (only one active at a time).
-   */
-  union CadetInfoCB info_cb;
-
-  /**
-   * Info callback closure for @c info_cb.
-   */
-  void *info_cls;
 
   /**
    * Time to the next reconnect in case one reconnect fails
@@ -354,6 +316,35 @@ reconnect (struct GNUNET_CADET_Handle *h);
 
 
 /**
+ * Function called during #reconnect_cbk() to (re)open
+ * all ports that are still open.
+ *
+ * @param cls the `struct GNUNET_CADET_Handle`
+ * @param id port ID
+ * @param value a `struct GNUNET_CADET_Channel` to open
+ * @return #GNUNET_OK (continue to iterate)
+ */
+static int
+open_port_cb (void *cls,
+	      const struct GNUNET_HashCode *id,
+	      void *value)
+{
+  struct GNUNET_CADET_Handle *h = cls;
+  struct GNUNET_CADET_Port *port = value;
+  struct GNUNET_CADET_PortMessage *msg;
+  struct GNUNET_MQ_Envelope *env;
+
+  (void) id;
+  env = GNUNET_MQ_msg (msg,
+                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_OPEN);
+  msg->port = port->id;
+  GNUNET_MQ_send (h->mq,
+                  env);
+  return GNUNET_OK;
+}
+
+
+/**
  * Reconnect callback: tries to reconnect again after a failer previous
  * reconnecttion
  *
@@ -365,56 +356,12 @@ reconnect_cbk (void *cls)
   struct GNUNET_CADET_Handle *h = cls;
 
   h->reconnect_task = NULL;
-  reconnect (h);
-}
-
-
-/**
- * Function called during #reconnect() to destroy
- * all channels that are still open.
- *
- * @param cls the `struct GNUNET_CADET_Handle`
- * @param cid chanenl ID
- * @param value a `struct GNUNET_CADET_Channel` to destroy
- * @return #GNUNET_OK (continue to iterate)
- */
-static int
-destroy_channel_on_reconnect_cb (void *cls,
-                                 uint32_t cid,
-                                 void *value)
-{
-  /* struct GNUNET_CADET_Handle *handle = cls; */
-  struct GNUNET_CADET_Channel *ch = value;
-
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      "Destroying channel due to reconnect\n");
-  destroy_channel (ch);
-  return GNUNET_OK;
-}
-
-
-/**
- * Reconnect to the service, retransmit all infomation to try to restore the
- * original state.
- *
- * @param h handle to the cadet
- *
- * @return #GNUNET_YES in case of sucess, #GNUNET_NO otherwise (service down...)
- */
-static void
-schedule_reconnect (struct GNUNET_CADET_Handle *h)
-{
-  if (NULL != h->reconnect_task)
-    return;
-  GNUNET_CONTAINER_multihashmap32_iterate (h->channels,
-                                           &destroy_channel_on_reconnect_cb,
-                                           h);
-  h->reconnect_task
-    = GNUNET_SCHEDULER_add_delayed (h->reconnect_time,
-                                    &reconnect_cbk,
-                                    h);
   h->reconnect_time
     = GNUNET_TIME_STD_BACKOFF (h->reconnect_time);
+  reconnect (h);
+  GNUNET_CONTAINER_multihashmap_iterate (h->ports,
+                                         &open_port_cb,
+                                         h);
 }
 
 
@@ -552,15 +499,21 @@ cadet_mq_error_handler (void *cls,
 {
   struct GNUNET_CADET_Channel *ch = cls;
 
-  GNUNET_break (0);
   if (GNUNET_MQ_ERROR_NO_MATCH == error)
   {
     /* Got a message we did not understand, still try to continue! */
+    GNUNET_break_op (0);
     GNUNET_CADET_receive_done (ch);
   }
   else
   {
-    schedule_reconnect (ch->cadet);
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		"MQ error in communication with CADET: %d\n",
+		error);
+    if (NULL != ch->disconnects)
+      ch->disconnects (ch->ctx,
+		       ch);
+    GNUNET_CADET_channel_destroy (ch);
   }
 }
 
@@ -578,6 +531,7 @@ cadet_mq_cancel_impl (struct GNUNET_MQ_Handle *mq,
 {
   struct GNUNET_CADET_Channel *ch = impl_state;
 
+  (void) mq;
   GNUNET_assert (NULL != ch->pending_env);
   GNUNET_MQ_discard (ch->pending_env);
   ch->pending_env = NULL;
@@ -706,6 +660,7 @@ check_local_data (void *cls,
 {
   uint16_t size;
 
+  (void) cls;
   size = ntohs (message->header.size);
   if (sizeof (*message) + sizeof (struct GNUNET_MessageHeader) > size)
   {
@@ -803,6 +758,32 @@ handle_local_ack (void *cls,
 
 
 /**
+ * Function called during #GNUNET_CADET_disconnect() to destroy
+ * all channels that are still open.
+ *
+ * @param cls the `struct GNUNET_CADET_Handle`
+ * @param cid chanenl ID
+ * @param value a `struct GNUNET_CADET_Channel` to destroy
+ * @return #GNUNET_OK (continue to iterate)
+ */
+static int
+destroy_channel_cb (void *cls,
+                    uint32_t cid,
+                    void *value)
+{
+  /* struct GNUNET_CADET_Handle *handle = cls; */
+  struct GNUNET_CADET_Channel *ch = value;
+
+  (void) cls;
+  (void) cid;
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+	      "Destroying channel due to GNUNET_CADET_disconnect()\n");
+  destroy_channel (ch);
+  return GNUNET_OK;
+}
+
+
+/**
  * Generic error handler, called with the appropriate error code and
  * the same closure specified at the creation of the message queue.
  * Not every message queue implementation supports an error handler.
@@ -819,300 +800,15 @@ handle_mq_error (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "MQ ERROR: %u\n",
               error);
+  GNUNET_CONTAINER_multihashmap32_iterate (h->channels,
+                                           &destroy_channel_cb,
+                                           h);
   GNUNET_MQ_destroy (h->mq);
   h->mq = NULL;
-  reconnect (h);
-}
-
-
-/**
- * Check that message received from CADET service is well-formed.
- *
- * @param cls the `struct GNUNET_CADET_Handle`
- * @param message the message we got
- * @return #GNUNET_OK if the message is well-formed,
- *         #GNUNET_SYSERR otherwise
- */
-static int
-check_get_peers (void *cls,
-                 const struct GNUNET_MessageHeader *message)
-{
-  size_t esize;
-
-  esize = ntohs (message->size);
-  if (sizeof (struct GNUNET_CADET_LocalInfoPeer) == esize)
-    return GNUNET_OK;
-  if (sizeof (struct GNUNET_MessageHeader) == esize)
-    return GNUNET_OK;
-  return GNUNET_SYSERR;
-}
-
-
-/**
- * Process a local reply about info on all tunnels, pass info to the user.
- *
- * @param cls Closure (Cadet handle).
- * @param msg Message itself.
- */
-static void
-handle_get_peers (void *cls,
-                  const struct GNUNET_MessageHeader *msg)
-{
-  struct GNUNET_CADET_Handle *h = cls;
-  const struct GNUNET_CADET_LocalInfoPeer *info =
-    (const struct GNUNET_CADET_LocalInfoPeer *) msg;
-
-  if (NULL == h->info_cb.peers_cb)
-    return;
-  if (sizeof (struct GNUNET_CADET_LocalInfoPeer) == ntohs (msg->size))
-    h->info_cb.peers_cb (h->info_cls,
-                         &info->destination,
-                         (int) ntohs (info->tunnel),
-                         (unsigned int) ntohs (info->paths),
-                         0);
-  else
-    h->info_cb.peers_cb (h->info_cls,
-                         NULL,
-                         0,
-                         0,
-                         0);
-}
-
-
-/**
- * Check that message received from CADET service is well-formed.
- *
- * @param cls the `struct GNUNET_CADET_Handle`
- * @param message the message we got
- * @return #GNUNET_OK if the message is well-formed,
- *         #GNUNET_SYSERR otherwise
- */
-static int
-check_get_peer (void *cls,
-                const struct GNUNET_CADET_LocalInfoPeer *message)
-{
-  size_t msize = sizeof (struct GNUNET_CADET_LocalInfoPeer);
-  const struct GNUNET_PeerIdentity *paths_array;
-  size_t esize;
-  unsigned int epaths;
-  unsigned int paths;
-  unsigned int peers;
-
-  esize = ntohs (message->header.size);
-  if (esize < msize)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  if (0 != ((esize - msize) % sizeof (struct GNUNET_PeerIdentity)))
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  peers = (esize - msize) / sizeof (struct GNUNET_PeerIdentity);
-  epaths = ntohs (message->paths);
-  paths_array = (const struct GNUNET_PeerIdentity *) &message[1];
-  paths = 0;
-  for (unsigned int i = 0; i < peers; i++)
-    if (0 == memcmp (&paths_array[i],
-                     &message->destination,
-                     sizeof (struct GNUNET_PeerIdentity)))
-      paths++;
-  if (paths != epaths)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  return GNUNET_OK;
-}
-
-
-/**
- * Process a local peer info reply, pass info to the user.
- *
- * @param cls Closure (Cadet handle).
- * @param message Message itself.
- */
-static void
-handle_get_peer (void *cls,
-                 const struct GNUNET_CADET_LocalInfoPeer *message)
-{
-  struct GNUNET_CADET_Handle *h = cls;
-  const struct GNUNET_PeerIdentity *paths_array;
-  unsigned int paths;
-  unsigned int path_length;
-  int neighbor;
-  unsigned int peers;
-
-  if (NULL == h->info_cb.peer_cb)
-    return;
-  paths = ntohs (message->paths);
-  paths_array = (const struct GNUNET_PeerIdentity *) &message[1];
-  peers = (ntohs (message->header.size) - sizeof (*message))
-          / sizeof (struct GNUNET_PeerIdentity);
-  path_length = 0;
-  neighbor = GNUNET_NO;
-
-  for (unsigned int i = 0; i < peers; i++)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                " %s\n",
-                GNUNET_i2s (&paths_array[i]));
-    path_length++;
-    if (0 == memcmp (&paths_array[i], &message->destination,
-                     sizeof (struct GNUNET_PeerIdentity)))
-    {
-      if (1 == path_length)
-        neighbor = GNUNET_YES;
-      path_length = 0;
-    }
-  }
-
-  /* Call Callback with tunnel info. */
-  paths_array = (const struct GNUNET_PeerIdentity *) &message[1];
-  h->info_cb.peer_cb (h->info_cls,
-                      &message->destination,
-                      (int) ntohs (message->tunnel),
-                      neighbor,
-                      paths,
-                      paths_array);
-}
-
-
-/**
- * Check that message received from CADET service is well-formed.
- *
- * @param cls the `struct GNUNET_CADET_Handle`
- * @param message the message we got
- * @return #GNUNET_OK if the message is well-formed,
- *         #GNUNET_SYSERR otherwise
- */
-static int
-check_get_tunnels (void *cls,
-                   const struct GNUNET_MessageHeader *message)
-{
-  size_t esize;
-
-  (void) cls;
-  esize = ntohs (message->size);
-  if (sizeof (struct GNUNET_CADET_LocalInfoTunnel) == esize)
-    return GNUNET_OK;
-  if (sizeof (struct GNUNET_MessageHeader) == esize)
-    return GNUNET_OK;
-  return GNUNET_SYSERR;
-}
-
-
-/**
- * Process a local reply about info on all tunnels, pass info to the user.
- *
- * @param cls Closure (Cadet handle).
- * @param message Message itself.
- */
-static void
-handle_get_tunnels (void *cls,
-                    const struct GNUNET_MessageHeader *msg)
-{
-  struct GNUNET_CADET_Handle *h = cls;
-  const struct GNUNET_CADET_LocalInfoTunnel *info =
-    (const struct GNUNET_CADET_LocalInfoTunnel *) msg;
-
-  if (NULL == h->info_cb.tunnels_cb)
-    return;
-  if (sizeof (struct GNUNET_CADET_LocalInfoTunnel) == ntohs (msg->size))
-    h->info_cb.tunnels_cb (h->info_cls,
-                           &info->destination,
-                           ntohl (info->channels),
-                           ntohl (info->connections),
-                           ntohs (info->estate),
-                           ntohs (info->cstate));
-  else
-    h->info_cb.tunnels_cb (h->info_cls,
-                           NULL,
-                           0,
-                           0,
-                           0,
-                           0);
-}
-
-
-/**
- * Check that message received from CADET service is well-formed.
- *
- * @param cls the `struct GNUNET_CADET_Handle`
- * @param msg the message we got
- * @return #GNUNET_OK if the message is well-formed,
- *         #GNUNET_SYSERR otherwise
- */
-static int
-check_get_tunnel (void *cls,
-                  const struct GNUNET_CADET_LocalInfoTunnel *msg)
-{
-  unsigned int ch_n;
-  unsigned int c_n;
-  size_t esize;
-  size_t msize;
-
-  (void) cls;
-  /* Verify message sanity */
-  msize = ntohs (msg->header.size);
-  esize = sizeof (struct GNUNET_CADET_LocalInfoTunnel);
-  if (esize > msize)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  ch_n = ntohl (msg->channels);
-  c_n = ntohl (msg->connections);
-  esize += ch_n * sizeof (struct GNUNET_CADET_ChannelTunnelNumber);
-  esize += c_n * sizeof (struct GNUNET_CADET_ConnectionTunnelIdentifier);
-  if (msize != esize)
-  {
-    GNUNET_break_op (0);
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "m:%u, e: %u (%u ch, %u conn)\n",
-                (unsigned int) msize,
-                (unsigned int) esize,
-                ch_n,
-                c_n);
-    return GNUNET_SYSERR;
-  }
-  return GNUNET_OK;
-}
-
-
-/**
- * Process a local tunnel info reply, pass info to the user.
- *
- * @param cls Closure (Cadet handle).
- * @param msg Message itself.
- */
-static void
-handle_get_tunnel (void *cls,
-                   const struct GNUNET_CADET_LocalInfoTunnel *msg)
-{
-  struct GNUNET_CADET_Handle *h = cls;
-  unsigned int ch_n;
-  unsigned int c_n;
-  const struct GNUNET_CADET_ConnectionTunnelIdentifier *conns;
-  const struct GNUNET_CADET_ChannelTunnelNumber *chns;
-
-  if (NULL == h->info_cb.tunnel_cb)
-    return;
-  ch_n = ntohl (msg->channels);
-  c_n = ntohl (msg->connections);
-
-  /* Call Callback with tunnel info. */
-  conns = (const struct GNUNET_CADET_ConnectionTunnelIdentifier *) &msg[1];
-  chns = (const struct GNUNET_CADET_ChannelTunnelNumber *) &conns[c_n];
-  h->info_cb.tunnel_cb (h->info_cls,
-                        &msg->destination,
-                        ch_n,
-                        c_n,
-                        chns,
-                        conns,
-                        ntohs (msg->estate),
-                        ntohs (msg->cstate));
+  GNUNET_assert (NULL == h->reconnect_task);
+  h->reconnect_task = GNUNET_SCHEDULER_add_delayed (h->reconnect_time,
+						    &reconnect_cbk,
+						    h);
 }
 
 
@@ -1142,22 +838,6 @@ reconnect (struct GNUNET_CADET_Handle *h)
                              GNUNET_MESSAGE_TYPE_CADET_LOCAL_ACK,
                              struct GNUNET_CADET_LocalAck,
                              h),
-    GNUNET_MQ_hd_var_size (get_peers,
-                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS,
-                           struct GNUNET_MessageHeader,
-                           h),
-    GNUNET_MQ_hd_var_size (get_peer,
-                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEER,
-                           struct GNUNET_CADET_LocalInfoPeer,
-                           h),
-    GNUNET_MQ_hd_var_size (get_tunnels,
-                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS,
-                           struct GNUNET_MessageHeader,
-                           h),
-    GNUNET_MQ_hd_var_size (get_tunnel,
-                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNEL,
-                           struct GNUNET_CADET_LocalInfoTunnel,
-                           h),
     GNUNET_MQ_handler_end ()
   };
 
@@ -1167,38 +847,6 @@ reconnect (struct GNUNET_CADET_Handle *h)
                                  handlers,
                                  &handle_mq_error,
                                  h);
-  if (NULL == h->mq)
-  {
-    schedule_reconnect (h);
-    return;
-  }
-  h->reconnect_time = GNUNET_TIME_UNIT_MILLISECONDS;
-}
-
-
-/**
- * Function called during #GNUNET_CADET_disconnect() to destroy
- * all channels that are still open.
- *
- * @param cls the `struct GNUNET_CADET_Handle`
- * @param cid chanenl ID
- * @param value a `struct GNUNET_CADET_Channel` to destroy
- * @return #GNUNET_OK (continue to iterate)
- */
-static int
-destroy_channel_cb (void *cls,
-                    uint32_t cid,
-                    void *value)
-{
-  /* struct GNUNET_CADET_Handle *handle = cls; */
-  struct GNUNET_CADET_Channel *ch = value;
-
-  (void) cls;
-  (void) cid;
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      "Destroying channel due to GNUNET_CADET_disconnect()\n");
-  destroy_channel (ch);
-  return GNUNET_OK;
 }
 
 
@@ -1220,6 +868,7 @@ destroy_port_cb (void *cls,
   struct GNUNET_CADET_Port *port = value;
 
   (void) cls;
+  (void) id;
   /* This is a warning, the app should have cleanly closed all open ports */
   GNUNET_break (0);
   GNUNET_CADET_close_port (port);
@@ -1271,18 +920,21 @@ GNUNET_CADET_disconnect (struct GNUNET_CADET_Handle *handle)
 void
 GNUNET_CADET_close_port (struct GNUNET_CADET_Port *p)
 {
-  struct GNUNET_CADET_PortMessage *msg;
-  struct GNUNET_MQ_Envelope *env;
-
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap_remove (p->cadet->ports,
                                                        &p->id,
                                                        p));
-  env = GNUNET_MQ_msg (msg,
-                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_CLOSE);
-  msg->port = p->id;
-  GNUNET_MQ_send (p->cadet->mq,
-                  env);
+  if (NULL != p->cadet->mq)
+  {
+    struct GNUNET_CADET_PortMessage *msg;
+    struct GNUNET_MQ_Envelope *env;
+
+    env = GNUNET_MQ_msg (msg,
+                         GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_CLOSE);
+    msg->port = p->id;
+    GNUNET_MQ_send (p->cadet->mq,
+                    env);
+  }
   GNUNET_free_non_null (p->handlers);
   GNUNET_free (p);
 }
@@ -1291,7 +943,7 @@ GNUNET_CADET_close_port (struct GNUNET_CADET_Port *p)
 /**
  * Destroy an existing channel.
  *
- * The existing end callback for the channel will be called immediately.
+ * The existing end callback for the channel will NOT be called.
  * Any pending outgoing messages will be sent but no incoming messages will be
  * accepted and no data callbacks will be called.
  *
@@ -1314,6 +966,7 @@ GNUNET_CADET_channel_destroy (struct GNUNET_CADET_Channel *channel)
   }
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 	      "Destroying channel due to GNUNET_CADET_channel_destroy()\n");
+  channel->disconnects = NULL;
   destroy_channel (channel);
 }
 
@@ -1378,236 +1031,6 @@ GNUNET_CADET_receive_done (struct GNUNET_CADET_Channel *channel)
 
 
 /**
- * Send message of @a type to CADET service of @a h
- *
- * @param h handle to CADET service
- * @param type message type of trivial information request to send
- */
-static void
-send_info_request (struct GNUNET_CADET_Handle *h,
-                   uint16_t type)
-{
-  struct GNUNET_MessageHeader *msg;
-  struct GNUNET_MQ_Envelope *env;
-
-  env = GNUNET_MQ_msg (msg,
-                       type);
-  GNUNET_MQ_send (h->mq,
-                  env);
-}
-
-
-/**
- * Request a debug dump on the service's STDERR.
- *
- * WARNING: unstable API, likely to change in the future!
- *
- * @param h cadet handle
- */
-void
-GNUNET_CADET_request_dump (struct GNUNET_CADET_Handle *h)
-{
-  send_info_request (h,
-                     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_DUMP);
-}
-
-
-/**
- * Request information about peers known to the running cadet service.
- * The callback will be called for every peer known to the service.
- * Only one info request (of any kind) can be active at once.
- *
- * WARNING: unstable API, likely to change in the future!
- *
- * @param h Handle to the cadet peer.
- * @param callback Function to call with the requested data.
- * @param callback_cls Closure for @c callback.
- * @return #GNUNET_OK / #GNUNET_SYSERR
- */
-int
-GNUNET_CADET_get_peers (struct GNUNET_CADET_Handle *h,
-                       GNUNET_CADET_PeersCB callback,
-                       void *callback_cls)
-{
-  if (NULL != h->info_cb.peers_cb)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  send_info_request (h,
-                     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS);
-  h->info_cb.peers_cb = callback;
-  h->info_cls = callback_cls;
-  return GNUNET_OK;
-}
-
-
-/**
- * Cancel a peer info request. The callback will not be called (anymore).
- *
- * WARNING: unstable API, likely to change in the future!
- *
- * @param h Cadet handle.
- * @return Closure given to GNUNET_CADET_get_peers().
- */
-void *
-GNUNET_CADET_get_peers_cancel (struct GNUNET_CADET_Handle *h)
-{
-  void *cls = h->info_cls;
-
-  h->info_cb.peers_cb = NULL;
-  h->info_cls = NULL;
-  return cls;
-}
-
-
-/**
- * Request information about a peer known to the running cadet peer.
- * The callback will be called for the tunnel once.
- * Only one info request (of any kind) can be active at once.
- *
- * WARNING: unstable API, likely to change in the future!
- *
- * @param h Handle to the cadet peer.
- * @param id Peer whose tunnel to examine.
- * @param callback Function to call with the requested data.
- * @param callback_cls Closure for @c callback.
- * @return #GNUNET_OK / #GNUNET_SYSERR
- */
-int
-GNUNET_CADET_get_peer (struct GNUNET_CADET_Handle *h,
-                       const struct GNUNET_PeerIdentity *id,
-                       GNUNET_CADET_PeerCB callback,
-                       void *callback_cls)
-{
-  struct GNUNET_CADET_LocalInfo *msg;
-  struct GNUNET_MQ_Envelope *env;
-
-  if (NULL != h->info_cb.peer_cb)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  env = GNUNET_MQ_msg (msg,
-                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEER);
-  msg->peer = *id;
-  GNUNET_MQ_send (h->mq,
-                  env);
-  h->info_cb.peer_cb = callback;
-  h->info_cls = callback_cls;
-  return GNUNET_OK;
-}
-
-
-/**
- * Request information about tunnels of the running cadet peer.
- * The callback will be called for every tunnel of the service.
- * Only one info request (of any kind) can be active at once.
- *
- * WARNING: unstable API, likely to change in the future!
- *
- * @param h Handle to the cadet peer.
- * @param callback Function to call with the requested data.
- * @param callback_cls Closure for @c callback.
- * @return #GNUNET_OK / #GNUNET_SYSERR
- */
-int
-GNUNET_CADET_get_tunnels (struct GNUNET_CADET_Handle *h,
-                         GNUNET_CADET_TunnelsCB callback,
-                         void *callback_cls)
-{
-  if (NULL != h->info_cb.tunnels_cb)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  send_info_request (h,
-                     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS);
-  h->info_cb.tunnels_cb = callback;
-  h->info_cls = callback_cls;
-  return GNUNET_OK;
-}
-
-
-/**
- * Cancel a monitor request. The monitor callback will not be called.
- *
- * @param h Cadet handle.
- * @return Closure given to GNUNET_CADET_get_tunnels().
- */
-void *
-GNUNET_CADET_get_tunnels_cancel (struct GNUNET_CADET_Handle *h)
-{
-  void *cls = h->info_cls;
-
-  h->info_cb.tunnels_cb = NULL;
-  h->info_cls = NULL;
-  return cls;
-}
-
-
-/**
- * Request information about a tunnel of the running cadet peer.
- * The callback will be called for the tunnel once.
- * Only one info request (of any kind) can be active at once.
- *
- * WARNING: unstable API, likely to change in the future!
- *
- * @param h Handle to the cadet peer.
- * @param id Peer whose tunnel to examine.
- * @param callback Function to call with the requested data.
- * @param callback_cls Closure for @c callback.
- * @return #GNUNET_OK / #GNUNET_SYSERR
- */
-int
-GNUNET_CADET_get_tunnel (struct GNUNET_CADET_Handle *h,
-                        const struct GNUNET_PeerIdentity *id,
-                        GNUNET_CADET_TunnelCB callback,
-                        void *callback_cls)
-{
-  struct GNUNET_CADET_LocalInfo *msg;
-  struct GNUNET_MQ_Envelope *env;
-
-  if (NULL != h->info_cb.tunnel_cb)
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
-  env = GNUNET_MQ_msg (msg,
-                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNEL);
-  msg->peer = *id;
-  GNUNET_MQ_send (h->mq,
-                  env);
-  h->info_cb.tunnel_cb = callback;
-  h->info_cls = callback_cls;
-  return GNUNET_OK;
-}
-
-
-/**
- * Transitional function to convert an unsigned int port to a hash value.
- * WARNING: local static value returned, NOT reentrant!
- * WARNING: do not use this function for new code!
- *
- * @param port Numerical port (unsigned int format).
- *
- * @return A GNUNET_HashCode usable for the new CADET API.
- */
-const struct GNUNET_HashCode *
-GC_u2h (uint32_t port)
-{
-  static struct GNUNET_HashCode hash;
-
-  GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-              "This is a transitional function, use proper crypto hashes as CADET ports\n");
-  GNUNET_CRYPTO_hash (&port,
-                      sizeof (port),
-                      &hash);
-  return &hash;
-}
-
-
-/**
  * Connect to the MQ-based cadet service.
  *
  * @param cfg Configuration to use.
@@ -1634,9 +1057,6 @@ GNUNET_CADET_connect (const struct GNUNET_CONFIGURATION_Handle *cfg)
     return NULL;
   }
   h->next_ccn.channel_of_client = htonl (GNUNET_CADET_LOCAL_CHANNEL_ID_CLI);
-  h->reconnect_time = GNUNET_TIME_UNIT_MILLISECONDS;
-  h->reconnect_task = NULL;
-
   return h;
 }
 
@@ -1662,8 +1082,6 @@ GNUNET_CADET_open_port (struct GNUNET_CADET_Handle *h,
                         GNUNET_CADET_DisconnectEventHandler disconnects,
                         const struct GNUNET_MQ_MessageHandler *handlers)
 {
-  struct GNUNET_CADET_PortMessage *msg;
-  struct GNUNET_MQ_Envelope *env;
   struct GNUNET_CADET_Port *p;
 
   GNUNET_assert (NULL != connects);
@@ -1689,13 +1107,11 @@ GNUNET_CADET_open_port (struct GNUNET_CADET_Handle *h,
   p->window_changes = window_changes;
   p->disconnects = disconnects;
   p->handlers = GNUNET_MQ_copy_handlers (handlers);
-
-
-  env = GNUNET_MQ_msg (msg,
-                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_OPEN);
-  msg->port = p->id;
-  GNUNET_MQ_send (h->mq,
-                  env);
+  
+  GNUNET_assert (GNUNET_OK ==
+		 open_port_cb (h,
+			       &p->id,
+			       p));
   return p;
 }
 
@@ -1754,7 +1170,8 @@ GNUNET_CADET_channel_create (struct GNUNET_CADET_Handle *h,
                                           handlers,
                                           &cadet_mq_error_handler,
                                           ch);
-  GNUNET_MQ_set_handlers_closure (ch->mq, channel_cls);
+  GNUNET_MQ_set_handlers_closure (ch->mq,
+				  channel_cls);
 
   /* Request channel creation to service */
   env = GNUNET_MQ_msg (msg,

@@ -3,7 +3,7 @@
   Copyright (C) 2014, 2015, 2016 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file src/include/gnunet_curl_lib.h
@@ -46,6 +51,52 @@
 typedef void
 (*GNUNET_CURL_RescheduleCallback)(void *cls);
 
+/**
+ * @brief Buffer data structure we use to buffer the HTTP download
+ * before giving it to the JSON parser.
+ */
+struct GNUNET_CURL_DownloadBuffer
+{
+
+  /**
+   * Download buffer
+   */
+  void *buf;
+
+  /**
+   * The size of the download buffer
+   */
+  size_t buf_size;
+
+  /**
+   * Error code (based on libc errno) if we failed to download
+   * (i.e. response too large).
+   */
+  int eno;
+
+};
+
+
+/**
+ * Parses the raw response we got from the Web server.
+ *
+ * @param db the raw data
+ * @param eh handle
+ * @param response_code HTTP response code
+ * @return the parsed object
+ */
+typedef void *
+(*GNUNET_CURL_RawParser) (struct GNUNET_CURL_DownloadBuffer *db,
+                          CURL *eh,
+                          long *response_code);
+
+/**
+ * Deallocate the response.
+ * 
+ * @param response object to clean
+ */
+typedef void
+(*GNUNET_CURL_ResponseCleaner) (void *response);
 
 /**
  * Initialise this library.  This function should be called before using any of
@@ -96,6 +147,17 @@ GNUNET_CURL_get_select_info (struct GNUNET_CURL_Context *ctx,
 
 
 /**
+ * Add custom request header.
+ *
+ * @param ctx cURL context.
+ * @param header header string; will be given to the context AS IS.
+ * @return #GNUNET_OK if no errors occurred, #GNUNET_SYSERR otherwise.
+ */
+int
+GNUNET_CURL_append_header (struct GNUNET_CURL_Context *ctx,
+                           const char *header);
+
+/**
  * Run the main event loop for the CURL interaction.
  *
  * @param ctx the library context
@@ -103,6 +165,19 @@ GNUNET_CURL_get_select_info (struct GNUNET_CURL_Context *ctx,
 void
 GNUNET_CURL_perform (struct GNUNET_CURL_Context *ctx);
 
+
+/**
+ * Run the main event loop for the Taler interaction.
+ *
+ * @param ctx the library context
+ * @param rp parses the raw response returned from
+ *        the Web server.
+ * @param rc cleans/frees the response
+ */
+void
+GNUNET_CURL_perform2 (struct GNUNET_CURL_Context *ctx,
+                      GNUNET_CURL_RawParser rp,
+                      GNUNET_CURL_ResponseCleaner rc);
 
 /**
  * Cleanup library initialisation resources.  This function should be called
@@ -130,7 +205,7 @@ struct GNUNET_CURL_Job;
 typedef void
 (*GNUNET_CURL_JobCompletionCallback)(void *cls,
                                      long response_code,
-                                     const json_t *json);
+                                     const void *response);
 
 
 /**
@@ -184,6 +259,18 @@ struct GNUNET_CURL_RescheduleContext;
  */
 struct GNUNET_CURL_RescheduleContext *
 GNUNET_CURL_gnunet_rc_create (struct GNUNET_CURL_Context *ctx);
+
+/**
+ * Initialize reschedule context; with custom response parser
+ *
+ * @param ctx context to manage
+ * @return closure for #GNUNET_CURL_gnunet_scheduler_reschedule().
+ */
+struct GNUNET_CURL_RescheduleContext *
+GNUNET_CURL_gnunet_rc_create_with_parser (struct GNUNET_CURL_Context *ctx,
+                                          GNUNET_CURL_RawParser rp,
+                                          GNUNET_CURL_ResponseCleaner rc);
+
 
 /**
  * Destroy reschedule context.

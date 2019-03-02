@@ -3,7 +3,7 @@
      Copyright (C) 2010-2015 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -176,7 +181,7 @@ struct GNUNET_ATS_SessionQuotaMessage
 
 
 /**
- * Message we send to the other peer to notify him that we intentionally
+ * Message we send to the other peer to notify it that we intentionally
  * are disconnecting (to reduce timeouts).  This is just a friendly
  * notification, peers must not rely on always receiving disconnect
  * messages.
@@ -568,7 +573,6 @@ neighbours_connect_notification (struct NeighbourMapEntry *n)
   connect_msg->header.size = htons (sizeof(buf));
   connect_msg->header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT);
   connect_msg->id = n->id;
-  connect_msg->quota_in = n->primary_address.bandwidth_in;
   connect_msg->quota_out = bandwidth_min;
   GST_clients_broadcast (&connect_msg->header,
                          GNUNET_NO);
@@ -709,7 +713,7 @@ set_state_and_timeout (struct NeighbourMapEntry *n,
 		       struct GNUNET_TIME_Absolute timeout)
 {
   if (GNUNET_TRANSPORT_is_connected (s) &&
-      ! GNUNET_TRANSPORT_is_connected (n->state) )
+      (! GNUNET_TRANSPORT_is_connected (n->state)) )
   {
     neighbours_connect_notification (n);
     GNUNET_STATISTICS_set (GST_stats,
@@ -717,8 +721,8 @@ set_state_and_timeout (struct NeighbourMapEntry *n,
 			   ++neighbours_connected,
 			   GNUNET_NO);
   }
-  if (! GNUNET_TRANSPORT_is_connected (s) &&
-        GNUNET_TRANSPORT_is_connected (n->state) )
+  if ((! GNUNET_TRANSPORT_is_connected (s)) &&
+      GNUNET_TRANSPORT_is_connected (n->state) )
   {
     GNUNET_STATISTICS_set (GST_stats,
 			   gettext_noop ("# peers connected"),
@@ -944,7 +948,8 @@ free_neighbour (struct NeighbourMapEntry *n)
   }
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multipeermap_remove (neighbours,
-                                                       &n->id, n));
+                                                       &n->id,
+						       n));
 
   /* Cancel address requests for this peer */
   if (NULL != n->suggest_handle)
@@ -3078,7 +3083,7 @@ master_task (void *cls)
 
 /**
  * Send a ACK message to the neighbour to confirm that we
- * got his SYN_ACK.
+ * got its SYN_ACK.
  *
  * @param n neighbour to send the ACK to
  */

@@ -1,17 +1,22 @@
- /*
-  * This file is part of GNUnet
-  * Copyright (C) 2009-2017 GNUnet e.V.
-  *
-  * GNUnet is free software: you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published
-  * by the Free Software Foundation, either version 3 of the License,
-  * or (at your option) any later version.
-  *
-  * GNUnet is distributed in the hope that it will be useful, but
-  * WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Affero General Public License for more details.
-  */
+/*
+ * This file is part of GNUnet
+ * Copyright (C) 2009-2017 GNUnet e.V.
+ *
+ * GNUnet is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * GNUnet is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
+ */
 
 /**
  * @file namestore/plugin_namestore_sqlite.c
@@ -119,6 +124,7 @@ database_setup (struct Plugin *plugin)
     GNUNET_SQ_make_try_execute ("PRAGMA auto_vacuum=INCREMENTAL"),
     GNUNET_SQ_make_try_execute ("PRAGMA encoding=\"UTF-8\""),
     GNUNET_SQ_make_try_execute ("PRAGMA locking_mode=EXCLUSIVE"),
+    GNUNET_SQ_make_try_execute ("PRAGMA journal_mode=WAL"),
     GNUNET_SQ_make_try_execute ("PRAGMA page_size=4092"),
     GNUNET_SQ_make_execute ("CREATE TABLE IF NOT EXISTS ns098records ("
                             " uid INTEGER PRIMARY KEY,"
@@ -149,17 +155,17 @@ database_setup (struct Plugin *plugin)
                             &plugin->zone_to_name),
     GNUNET_SQ_make_prepare ("SELECT uid,record_count,record_data,label"
                             " FROM ns098records"
-                            " WHERE zone_private_key=? AND _rowid_ >= ?"
-                            " ORDER BY _rowid_ ASC"
+                            " WHERE zone_private_key=? AND uid > ?"
+                            " ORDER BY uid ASC"
                             " LIMIT ?",
                             &plugin->iterate_zone),
     GNUNET_SQ_make_prepare ("SELECT uid,record_count,record_data,label,zone_private_key"
                             " FROM ns098records"
-                            " WHERE _rowid_ >= ?"
-                            " ORDER BY _rowid_ ASC"
+                            " WHERE uid > ?"
+                            " ORDER BY uid ASC"
                             " LIMIT ?",
                             &plugin->iterate_all_zones),
-    GNUNET_SQ_make_prepare ("SELECT uid,record_count,record_data,label,zone_private_key"
+    GNUNET_SQ_make_prepare ("SELECT uid,record_count,record_data,label"
                             " FROM ns098records"
                             " WHERE zone_private_key=? AND label=?",
                             &plugin->lookup_label),
@@ -173,7 +179,7 @@ database_setup (struct Plugin *plugin)
                                                &sqlite_filename))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "namestore-sqlite",
+                               "namestore-sqlite",
                                "FILENAME");
     return GNUNET_SYSERR;
   }
@@ -197,8 +203,8 @@ database_setup (struct Plugin *plugin)
                     &plugin->dbh))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-	 _("Unable to initialize SQLite: %s.\n"),
-	 sqlite3_errmsg (plugin->dbh));
+         _("Unable to initialize SQLite: %s.\n"),
+         sqlite3_errmsg (plugin->dbh));
     return GNUNET_SYSERR;
   }
   GNUNET_break (SQLITE_OK ==
@@ -210,8 +216,8 @@ database_setup (struct Plugin *plugin)
   {
     GNUNET_break (0);
     LOG (GNUNET_ERROR_TYPE_ERROR,
-	 _("Failed to setup database at `%s'\n"),
-	 plugin->fn);
+         _("Failed to setup database at `%s'\n"),
+         plugin->fn);
     return GNUNET_SYSERR;
   }
 
@@ -221,8 +227,8 @@ database_setup (struct Plugin *plugin)
   {
     GNUNET_break (0);
     LOG (GNUNET_ERROR_TYPE_ERROR,
-	 _("Failed to setup database at `%s'\n"),
-	 plugin->fn);
+         _("Failed to setup database at `%s'\n"),
+         plugin->fn);
     return GNUNET_SYSERR;
   }
   return GNUNET_OK;
@@ -256,7 +262,7 @@ database_shutdown (struct Plugin *plugin)
   if (result == SQLITE_BUSY)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-	 _("Tried to close sqlite without finalizing all prepared statements.\n"));
+         _("Tried to close sqlite without finalizing all prepared statements.\n"));
     stmt = sqlite3_next_stmt (plugin->dbh,
                               NULL);
     while (NULL != stmt)
@@ -299,10 +305,10 @@ database_shutdown (struct Plugin *plugin)
  */
 static int
 namestore_sqlite_store_records (void *cls,
-				const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
-				const char *label,
-				unsigned int rd_count,
-				const struct GNUNET_GNSRECORD_Data *rd)
+                                const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
+                                const char *label,
+                                unsigned int rd_count,
+                                const struct GNUNET_GNSRECORD_Data *rd)
 {
   struct Plugin *plugin = cls;
   int n;
@@ -311,8 +317,8 @@ namestore_sqlite_store_records (void *cls,
   ssize_t data_size;
 
   memset (&pkey,
-	  0,
-	  sizeof (pkey));
+          0,
+          sizeof (pkey));
   for (unsigned int i=0;i<rd_count;i++)
     if (GNUNET_GNSRECORD_TYPE_PKEY == rd[i].record_type)
     {
@@ -348,11 +354,11 @@ namestore_sqlite_store_records (void *cls,
     ssize_t ret;
 
     ret = GNUNET_GNSRECORD_records_serialize (rd_count,
-					      rd,
-					      data_size,
-					      data);
+                                              rd,
+                                              data_size,
+                                              data);
     if ( (ret < 0) ||
-	 (data_size != ret) )
+         (data_size != ret) )
     {
       GNUNET_break (0);
       return GNUNET_SYSERR;
@@ -362,8 +368,8 @@ namestore_sqlite_store_records (void *cls,
                         dparams))
     {
       LOG_SQLITE (plugin,
-		  GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-		  "sqlite3_bind_XXXX");
+                  GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
+                  "sqlite3_bind_XXXX");
       GNUNET_SQ_reset (plugin->dbh,
                        plugin->delete_records);
       return GNUNET_SYSERR;
@@ -390,12 +396,12 @@ namestore_sqlite_store_records (void *cls,
           GNUNET_SQ_bind (plugin->store_records,
                           sparams))
       {
-	LOG_SQLITE (plugin,
-		    GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-		    "sqlite3_bind_XXXX");
+        LOG_SQLITE (plugin,
+                    GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
+                    "sqlite3_bind_XXXX");
         GNUNET_SQ_reset (plugin->dbh,
                          plugin->store_records);
-	return GNUNET_SYSERR;
+        return GNUNET_SYSERR;
       }
       n = sqlite3_step (plugin->store_records);
       GNUNET_SQ_reset (plugin->dbh,
@@ -404,26 +410,26 @@ namestore_sqlite_store_records (void *cls,
   }
   switch (n)
   {
-  case SQLITE_DONE:
-    if (0 != rd_count)
-      GNUNET_log_from (GNUNET_ERROR_TYPE_DEBUG,
-                       "sqlite",
-                       "Record stored\n");
-    else
-      GNUNET_log_from (GNUNET_ERROR_TYPE_DEBUG,
-                       "sqlite",
-                       "Record deleted\n");
-    return GNUNET_OK;
-  case SQLITE_BUSY:
-    LOG_SQLITE (plugin,
-                GNUNET_ERROR_TYPE_WARNING | GNUNET_ERROR_TYPE_BULK,
-		"sqlite3_step");
-    return GNUNET_NO;
-  default:
-    LOG_SQLITE (plugin,
-                GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-		"sqlite3_step");
-    return GNUNET_SYSERR;
+    case SQLITE_DONE:
+      if (0 != rd_count)
+        GNUNET_log_from (GNUNET_ERROR_TYPE_DEBUG,
+                         "sqlite",
+                         "Record stored\n");
+      else
+        GNUNET_log_from (GNUNET_ERROR_TYPE_DEBUG,
+                         "sqlite",
+                         "Record deleted\n");
+      return GNUNET_OK;
+    case SQLITE_BUSY:
+      LOG_SQLITE (plugin,
+                  GNUNET_ERROR_TYPE_WARNING | GNUNET_ERROR_TYPE_BULK,
+                  "sqlite3_step");
+      return GNUNET_NO;
+    default:
+      LOG_SQLITE (plugin,
+                  GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
+                  "sqlite3_step");
+      return GNUNET_SYSERR;
   }
 }
 
@@ -460,15 +466,15 @@ get_records_and_call_iterator (struct Plugin *plugin,
     if (SQLITE_DONE == sret)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		  "Iteration done (no results)\n");
+                  "Iteration done (no results)\n");
       ret = GNUNET_NO;
       break;
     }
     if (SQLITE_ROW != sret)
     {
       LOG_SQLITE (plugin,
-		  GNUNET_ERROR_TYPE_ERROR,
-		  "sqlite_step");
+                  GNUNET_ERROR_TYPE_ERROR,
+                  "sqlite_step");
       ret = GNUNET_SYSERR;
       break;
     }
@@ -484,7 +490,7 @@ get_records_and_call_iterator (struct Plugin *plugin,
         GNUNET_SQ_result_spec_uint64 (&seq),
         GNUNET_SQ_result_spec_uint32 (&record_count),
         GNUNET_SQ_result_spec_variable_size (&data,
-					     &data_size),
+                                             &data_size),
         GNUNET_SQ_result_spec_string (&label),
         GNUNET_SQ_result_spec_end
       };
@@ -492,23 +498,16 @@ get_records_and_call_iterator (struct Plugin *plugin,
         GNUNET_SQ_result_spec_uint64 (&seq),
         GNUNET_SQ_result_spec_uint32 (&record_count),
         GNUNET_SQ_result_spec_variable_size (&data,
-					     &data_size),
+                                             &data_size),
         GNUNET_SQ_result_spec_string (&label),
         GNUNET_SQ_result_spec_auto_from_type (&zk),
         GNUNET_SQ_result_spec_end
       };
 
-      if (NULL == zone_key)
-      {
-        zone_key = &zk;
-        ret = GNUNET_SQ_extract_result (stmt,
-                                        rsx);
-      }
-      else
-      {
-        ret = GNUNET_SQ_extract_result (stmt,
-                                        rs);
-      }
+      ret = GNUNET_SQ_extract_result (stmt,
+                                      (NULL == zone_key)
+                                      ? rsx
+                                      : rs);
       if ( (GNUNET_OK != ret) ||
            (record_count > 64 * 1024) )
       {
@@ -522,6 +521,7 @@ get_records_and_call_iterator (struct Plugin *plugin,
       {
         struct GNUNET_GNSRECORD_Data rd[record_count];
 
+        GNUNET_assert (0 != seq);
         if (GNUNET_OK !=
             GNUNET_GNSRECORD_records_deserialize (data_size,
                                                   data,
@@ -534,10 +534,12 @@ get_records_and_call_iterator (struct Plugin *plugin,
         }
         else
         {
+          if (NULL != zone_key)
+            zk = *zone_key;
           if (NULL != iter)
             iter (iter_cls,
-		  seq + 1,
-                  zone_key,
+                  seq,
+                  &zk,
                   label,
                   record_count,
                   rd);
@@ -614,10 +616,10 @@ namestore_sqlite_lookup_records (void *cls,
  */
 static int
 namestore_sqlite_iterate_records (void *cls,
-				  const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
-				  uint64_t serial,
+                                  const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
+                                  uint64_t serial,
                                   uint64_t limit,
-				  GNUNET_NAMESTORE_RecordIterator iter,
+                                  GNUNET_NAMESTORE_RecordIterator iter,
                                   void *iter_cls)
 {
   struct Plugin *plugin = cls;
@@ -653,7 +655,7 @@ namestore_sqlite_iterate_records (void *cls,
   {
     LOG_SQLITE (plugin,
                 GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-		"sqlite3_bind_XXXX");
+                "sqlite3_bind_XXXX");
     GNUNET_SQ_reset (plugin->dbh,
                      stmt);
     return GNUNET_SYSERR;
@@ -680,10 +682,10 @@ namestore_sqlite_iterate_records (void *cls,
  */
 static int
 namestore_sqlite_zone_to_name (void *cls,
-			       const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
-			       const struct GNUNET_CRYPTO_EcdsaPublicKey *value_zone,
-			       GNUNET_NAMESTORE_RecordIterator iter,
-			       void *iter_cls)
+                               const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
+                               const struct GNUNET_CRYPTO_EcdsaPublicKey *value_zone,
+                               GNUNET_NAMESTORE_RecordIterator iter,
+                               void *iter_cls)
 {
   struct Plugin *plugin = cls;
   struct GNUNET_SQ_QueryParam params[] = {
@@ -698,7 +700,7 @@ namestore_sqlite_zone_to_name (void *cls,
   {
     LOG_SQLITE (plugin,
                 GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
-		"sqlite3_bind_XXXX");
+                "sqlite3_bind_XXXX");
     GNUNET_SQ_reset (plugin->dbh,
                      plugin->zone_to_name);
     return GNUNET_SYSERR;

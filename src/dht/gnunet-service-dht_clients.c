@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2010, 2011, 2016, 2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -1015,7 +1020,7 @@ forward_reply (void *cls,
        (record->type != frc->type))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "Record type missmatch, not passing request for key %s to local client\n",
+         "Record type mismatch, not passing request for key %s to local client\n",
          GNUNET_h2s (key));
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop

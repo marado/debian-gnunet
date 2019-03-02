@@ -3,7 +3,7 @@
  Copyright (C) 2002-2013 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -893,17 +898,17 @@ http_common_cmp_addresses (const void *addr1,
  * @param address the address
  * @return the network type
  */
-enum GNUNET_ATS_Network_Type
+enum GNUNET_NetworkType
 http_common_get_network_for_address (struct GNUNET_TRANSPORT_PluginEnvironment *env,
                                      const struct GNUNET_HELLO_Address *address)
 {
 
   struct sockaddr *sa;
-  enum GNUNET_ATS_Network_Type net_type;
+  enum GNUNET_NetworkType net_type;
   size_t salen = 0;
   int res;
 
-  net_type = GNUNET_ATS_NET_UNSPECIFIED;
+  net_type = GNUNET_NT_UNSPECIFIED;
   sa = http_common_socket_from_address (address->address,
                                         address->address_length,
                                         &res);

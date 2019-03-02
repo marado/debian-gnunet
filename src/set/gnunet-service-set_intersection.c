@@ -3,7 +3,7 @@
       Copyright (C) 2013-2017 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file set/gnunet-service-set_intersection.c
@@ -20,6 +25,7 @@
  */
 #include "platform.h"
 #include "gnunet_util_lib.h"
+#include "gnunet_statistics_service.h"
 #include "gnunet-service-set.h"
 #include "gnunet_block_lib.h"
 #include "gnunet-service-set_protocol.h"
@@ -212,6 +218,10 @@ send_client_removed_element (struct Operation *op,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sending removed element (size %u) to client\n",
               element->size);
+  GNUNET_STATISTICS_update (_GSS_statistics,
+                            "# Element removed messages sent",
+                            1,
+                            GNUNET_NO);
   GNUNET_assert (0 != op->client_request_id);
   ev = GNUNET_MQ_msg_extra (rm,
                             element->size,
@@ -403,6 +413,10 @@ fail_intersection_operation (struct Operation *op)
 
   GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
               "Intersection operation failed\n");
+  GNUNET_STATISTICS_update (_GSS_statistics,
+                            "# Intersection operations failed",
+                            1,
+                            GNUNET_NO);
   if (NULL != op->state->my_elements)
   {
     GNUNET_CONTAINER_multihashmap_destroy (op->state->my_elements);
@@ -463,6 +477,10 @@ send_bloomfilter (struct Operation *op)
                                          op);
 
   /* send our Bloom filter */
+  GNUNET_STATISTICS_update (_GSS_statistics,
+                            "# Intersection Bloom filters sent",
+                            1,
+                            GNUNET_NO);
   chunk_size = 60 * 1024 - sizeof (struct BFMessage);
   if (bf_size <= chunk_size)
   {
@@ -531,6 +549,10 @@ send_client_done_and_destroy (void *cls)
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Intersection succeeded, sending DONE to local client\n");
+  GNUNET_STATISTICS_update (_GSS_statistics,
+                            "# Intersection operations succeeded",
+                            1,
+                            GNUNET_NO);
   ev = GNUNET_MQ_msg (rm,
                       GNUNET_MESSAGE_TYPE_SET_RESULT);
   rm->request_id = htonl (op->client_request_id);
@@ -692,7 +714,7 @@ initialize_map_unfiltered (void *cls,
 
 /**
  * Send our element count to the peer, in case our element count is
- * lower than his.
+ * lower than theirs.
  *
  * @param op intersection operation
  */
@@ -1074,7 +1096,7 @@ handle_intersection_p2p_done (void *cls,
  * @param op operation that is created, should be initialized to
  *        begin the evaluation
  * @param opaque_context message to be transmitted to the listener
- *        to convince him to accept, may be NULL
+ *        to convince it to accept, may be NULL
  * @return operation-specific state to keep in @a op
  */
 static struct OperationState *

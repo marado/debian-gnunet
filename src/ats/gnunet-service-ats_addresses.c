@@ -3,7 +3,7 @@
  Copyright (C) 2011-2015 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -220,7 +225,7 @@ GAS_addresses_add (const struct GNUNET_PeerIdentity *peer,
     GNUNET_break (0);
     return;
   }
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != prop->scope);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != prop->scope);
   new_address = create_address (peer,
                                 plugin_name,
                                 plugin_addr,
@@ -290,7 +295,7 @@ GAS_addresses_update (const struct GNUNET_PeerIdentity *peer,
               "Received ADDRESS_UPDATE for peer `%s' slot %u\n",
               GNUNET_i2s (peer),
               (unsigned int) session_id);
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != prop->scope);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != prop->scope);
   /* Update address */
   aa->t_last_activity = GNUNET_TIME_absolute_get();
   aa->properties = *prop;

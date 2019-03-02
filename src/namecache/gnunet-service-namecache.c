@@ -3,7 +3,7 @@
      Copyright (C) 2012, 2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -22,6 +27,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 #include "gnunet_dnsparser_lib.h"
+#include "gnunet_statistics_service.h"
 #include "gnunet_namecache_service.h"
 #include "gnunet_namecache_plugin.h"
 #include "gnunet_signatures.h"
@@ -55,6 +61,11 @@ struct NamecacheClient
 static const struct GNUNET_CONFIGURATION_Handle *GSN_cfg;
 
 /**
+ * Handle to the statistics service
+ */
+static struct GNUNET_STATISTICS_Handle *statistics;
+
+/**
  * Database handle
  */
 static struct GNUNET_NAMECACHE_PluginFunctions *GSN_database;
@@ -80,6 +91,12 @@ cleanup_task (void *cls)
 				      GSN_database));
   GNUNET_free (db_lib_name);
   db_lib_name = NULL;
+  if (NULL != statistics)
+  {
+    GNUNET_STATISTICS_destroy (statistics,
+                               GNUNET_NO);
+    statistics = NULL;
+  }
 }
 
 
@@ -145,7 +162,11 @@ struct LookupBlockContext
    * Operation id for the name lookup
    */
   uint32_t request_id;
-
+  
+  /**
+   * Lookup status
+   */
+  int status;
 };
 
 
@@ -163,7 +184,17 @@ handle_lookup_block_it (void *cls,
   struct GNUNET_MQ_Envelope *env;
   struct LookupBlockResponseMessage *r;
   size_t esize;
+  size_t bsize;
 
+  bsize = ntohl (block->purpose.size);
+  if (bsize < 
+      (sizeof (struct GNUNET_CRYPTO_EccSignaturePurpose) + sizeof (struct GNUNET_TIME_AbsoluteNBO)))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "Malformed block.");
+    lnc->status = GNUNET_SYSERR;
+    return;
+  }
   esize = ntohl (block->purpose.size)
     - sizeof (struct GNUNET_CRYPTO_EccSignaturePurpose)
     - sizeof (struct GNUNET_TIME_AbsoluteNBO);
@@ -177,6 +208,10 @@ handle_lookup_block_it (void *cls,
   GNUNET_memcpy (&r[1],
 		 &block[1],
 		 esize);
+  GNUNET_STATISTICS_update (statistics,
+                            "blocks found in cache",
+                            1,
+                            GNUNET_NO);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Sending NAMECACHE_LOOKUP_BLOCK_RESPONSE message with expiration time %s\n",
               GNUNET_STRINGS_absolute_time_to_string (GNUNET_TIME_absolute_ntoh (r->expire)));
@@ -203,9 +238,13 @@ handle_lookup_block (void *cls,
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Received NAMECACHE_LOOKUP_BLOCK message\n");
-
+  GNUNET_STATISTICS_update (statistics,
+                            "blocks looked up",
+                            1,
+                            GNUNET_NO);
   lnc.request_id = ntohl (ln_msg->gns_header.r_id);
   lnc.nc = nc;
+  lnc.status = GNUNET_OK;
   if (GNUNET_SYSERR ==
       (ret = GSN_database->lookup_block (GSN_database->cls,
 					 &ln_msg->query,
@@ -219,7 +258,7 @@ handle_lookup_block (void *cls,
     GNUNET_SERVICE_client_drop (nc->client);
     return;
   }
-  if (0 == ret)
+  if ((0 == ret) || (GNUNET_SYSERR == lnc.status))
   {
     /* no records match at all, generate empty response */
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -266,6 +305,10 @@ handle_block_cache (void *cls,
   size_t esize;
   int res;
 
+  GNUNET_STATISTICS_update (statistics,
+                            "blocks cached",
+                            1,
+                            GNUNET_NO);
   esize = ntohs (rp_msg->gns_header.header.size) - sizeof (struct BlockCacheMessage);
   block = GNUNET_malloc (sizeof (struct GNUNET_GNSRECORD_Block) + esize);
   block->signature = rp_msg->signature;
@@ -335,6 +378,8 @@ run (void *cls,
 			      NULL);
     return;
   }
+  statistics = GNUNET_STATISTICS_create ("namecache",
+                                         cfg);
 
   /* Configuring server handles */
   GNUNET_SCHEDULER_add_shutdown (&cleanup_task,

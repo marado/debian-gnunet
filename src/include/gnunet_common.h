@@ -3,7 +3,7 @@
      Copyright (C) 2006-2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -21,6 +26,7 @@
  *
  * @author Christian Grothoff
  * @author Nils Durner
+ * @author Martin Schanzenbach
  *
  * @defgroup logging Logging
  * @see [Documentation](https://gnunet.org/logging)
@@ -107,6 +113,12 @@ extern "C"
 #endif
 #endif
 #endif
+
+/**
+ * wrap va_arg for enums
+ */
+#define GNUNET_VA_ARG_ENUM(va,X) ((enum X) va_arg (va, int))
+
 
 /**
  * @ingroup logging
@@ -399,7 +411,7 @@ GNUNET_get_log_call_status (int caller_level,
  */
 void
 GNUNET_log_nocheck (enum GNUNET_ErrorType kind, const char *message, ...)
-  __attribute__ ((format (gnu_printf, 2, 3)));
+  __attribute__ ((format (printf, 2, 3)));
 
 /* from glib */
 #if defined(__GNUC__) && (__GNUC__ > 2) && defined(__OPTIMIZE__)
@@ -758,14 +770,14 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind);
  * @ingroup logging
  * Use this for fatal errors that cannot be handled
  */
-#define GNUNET_assert(cond) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d.\n"), __FILE__, __LINE__); GNUNET_abort_(); } } while(0)
+#define GNUNET_assert(cond) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d. Aborting.\n"), __FILE__, __LINE__); GNUNET_abort_(); } } while(0)
 
 
 /**
  * @ingroup logging
  * Use this for fatal errors that cannot be handled
  */
-#define GNUNET_assert_at(cond, f, l) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d.\n"), f, l); GNUNET_abort_(); } } while(0)
+#define GNUNET_assert_at(cond, f, l) do { if (! (cond)) { GNUNET_log(GNUNET_ERROR_TYPE_ERROR, _("Assertion failed at %s:%d. Aborting.\n"), f, l); GNUNET_abort_(); } } while(0)
 
 
 /**
@@ -775,7 +787,7 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind);
  * @param cond Condition to evaluate
  * @param comp Component string to use for logging
  */
-#define GNUNET_assert_from(cond, comp) do { if (! (cond)) { GNUNET_log_from(GNUNET_ERROR_TYPE_ERROR, comp, _("Assertion failed at %s:%d.\n"), __FILE__, __LINE__); GNUNET_abort_(); } } while(0)
+#define GNUNET_assert_from(cond, comp) do { if (! (cond)) { GNUNET_log_from(GNUNET_ERROR_TYPE_ERROR, comp, _("Assertion failed at %s:%d. Aborting.\n"), __FILE__, __LINE__); GNUNET_abort_(); } } while(0)
 
 
 /**
@@ -1065,7 +1077,7 @@ GNUNET_ntoh_double (double d);
  * @param tsize the target size for the resulting vector, use 0 to
  *        free the vector (then, arr will be NULL afterwards).
  */
-#define GNUNET_array_grow(arr,size,tsize) GNUNET_xgrow_((void**)&arr, sizeof(arr[0]), &size, tsize, __FILE__, __LINE__)
+#define GNUNET_array_grow(arr,size,tsize) GNUNET_xgrow_((void**)&(arr), sizeof((arr)[0]), &size, tsize, __FILE__, __LINE__)
 
 /**
  * @ingroup memory
@@ -1080,7 +1092,7 @@ GNUNET_ntoh_double (double d);
  *        array size
  * @param element the element that will be appended to the array
  */
-#define GNUNET_array_append(arr,size,element) do { GNUNET_array_grow(arr,size,size+1); arr[size-1] = element; } while(0)
+#define GNUNET_array_append(arr,size,element) do { GNUNET_array_grow(arr,size,size+1); (arr)[size-1] = element; } while(0)
 
 /**
  * @ingroup memory

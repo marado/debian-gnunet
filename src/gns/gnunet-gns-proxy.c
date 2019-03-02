@@ -1,9 +1,9 @@
 /*
      This file is part of GNUnet.
-     Copyright (C) 2012-2014 GNUnet e.V.
+     Copyright (C) 2012-2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @author Martin Schanzenbach
@@ -43,6 +48,7 @@
 #include "gns.h"
 
 
+
 /**
  * Default Socks5 listen port.
  */
@@ -53,6 +59,12 @@
  * Should die. @deprecated
  */
 #define MAX_HTTP_URI_LENGTH 2048
+
+/**
+ * Maximum number of DANE records we support
+ * per domain name (and port and protocol).
+ */
+#define MAX_DANES 32
 
 /**
  * Size of the buffer for the data upload / download.  Must be
@@ -539,9 +551,9 @@ struct Socks5Request
   char *leho;
 
   /**
-   * Payload of the (last) DANE record encountered.
+   * Payload of the DANE records encountered.
    */
-  char *dane_data;
+  char *dane_data[MAX_DANES + 1];
 
   /**
    * The URL to fetch
@@ -571,7 +583,13 @@ struct Socks5Request
   /**
    * Number of bytes in @e dane_data.
    */
-  size_t dane_data_len;
+  int dane_data_len[MAX_DANES + 1];
+
+  /**
+   * Number of entries used in @e dane_data_len
+   * and @e dane_data.
+   */
+  unsigned int num_danes;
 
   /**
    * Number of bytes already in read buffer
@@ -622,6 +640,11 @@ struct Socks5Request
    * Was the hostname resolved via GNS?
    */
   int is_gns;
+
+  /**
+   * This is (probably) a TLS connection
+   */
+  int is_tls;
 
   /**
    * Did we suspend MHD processing?
@@ -683,6 +706,11 @@ static CURLM *curl_multi;
  * Handle to the GNS service
  */
 static struct GNUNET_GNS_Handle *gns_handle;
+
+/**
+ * Disable IPv6.
+ */
+static int disable_v6;
 
 /**
  * DLL for http/https daemons
@@ -779,7 +807,7 @@ cleanup_s5r (struct Socks5Request *s5r)
     s5r->rtask = NULL;
   }
   if (NULL != s5r->timeout_task)
-  {    
+  {
     GNUNET_SCHEDULER_cancel (s5r->timeout_task);
     s5r->timeout_task = NULL;
   }
@@ -807,7 +835,8 @@ cleanup_s5r (struct Socks5Request *s5r)
   GNUNET_free_non_null (s5r->domain);
   GNUNET_free_non_null (s5r->leho);
   GNUNET_free_non_null (s5r->url);
-  GNUNET_free_non_null (s5r->dane_data);
+  for (unsigned int i=0;i<s5r->num_danes;i++)
+    GNUNET_free (s5r->dane_data[i]);
   GNUNET_free (s5r);
 }
 
@@ -890,7 +919,7 @@ mhd_content_cb (void *cls,
     return MHD_CONTENT_READER_END_OF_STREAM;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Writing %llu/%llu bytes for %s%s\n",
+              "Writing %llu/%llu bytes to %s%s\n",
               (unsigned long long) bytes_to_copy,
               (unsigned long long) s5r->io_len,
 	      s5r->domain,
@@ -909,7 +938,7 @@ mhd_content_cb (void *cls,
                 "Continuing CURL interaction for %s%s\n",
 		s5r->domain,
 		s5r->url);
-    s5r->curl_paused = GNUNET_NO;  
+    s5r->curl_paused = GNUNET_NO;
     curl_easy_pause (s5r->curl,
                      CURLPAUSE_CONT);
   }
@@ -943,7 +972,7 @@ check_ssl_certificate (struct Socks5Request *s5r)
   if (CURLE_OK !=
       curl_easy_getinfo (s5r->curl,
 			 CURLINFO_TLS_SESSION,
-			 (struct curl_slist **) &tlsinfo))
+			 &tlsinfo))
     return GNUNET_SYSERR;
   if (CURLSSLBACKEND_GNUTLS != tlsinfo->backend)
   {
@@ -952,8 +981,10 @@ check_ssl_certificate (struct Socks5Request *s5r)
                 tlsinfo->backend);
     return GNUNET_SYSERR;
   }
-  chainp = gnutls_certificate_get_peers (tlsinfo->internals, &cert_list_size);
-  if ( (! chainp) || (0 == cert_list_size) )
+  chainp = gnutls_certificate_get_peers (tlsinfo->internals,
+					 &cert_list_size);
+  if ( (! chainp) ||
+       (0 == cert_list_size) )
     return GNUNET_SYSERR;
 
   size = sizeof (certdn);
@@ -978,10 +1009,8 @@ check_ssl_certificate (struct Socks5Request *s5r)
   }
   /* check for TLSA/DANE records */
 #if HAVE_GNUTLS_DANE
-  if (NULL != s5r->dane_data)
+  if (0 != s5r->num_danes)
   {
-    char *dd[] = { s5r->dane_data, NULL };
-    int dlen[] = { s5r->dane_data_len, 0};
     dane_state_t dane_state;
     dane_query_t dane_query;
     unsigned int verify;
@@ -999,10 +1028,12 @@ check_ssl_certificate (struct Socks5Request *s5r)
       gnutls_x509_crt_deinit (x509_cert);
       return GNUNET_SYSERR;
     }
+    s5r->dane_data[s5r->num_danes] = NULL;
+    s5r->dane_data_len[s5r->num_danes] = 0;
     if (0 != (rc = dane_raw_tlsa (dane_state,
                                   &dane_query,
-                                  dd,
-                                  dlen,
+                                  s5r->dane_data,
+                                  s5r->dane_data_len,
                                   GNUNET_YES,
                                   GNUNET_NO)))
     {
@@ -1056,9 +1087,10 @@ check_ssl_certificate (struct Socks5Request *s5r)
                                                      name)))
       {
         GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                    _("TLS certificate subject name (%s) does not match `%s'\n"),
+                    _("TLS certificate subject name (%s) does not match `%s': %d\n"),
                     certdn,
-                    name);
+                    name,
+		    rc);
         gnutls_x509_crt_deinit (x509_cert);
         return GNUNET_SYSERR;
       }
@@ -1111,20 +1143,23 @@ curl_check_hdr (void *buffer,
               "Receiving HTTP response header from CURL\n");
   /* first, check TLS certificate */
   if ( (GNUNET_YES != s5r->ssl_checked) &&
-       (HTTPS_PORT == s5r->port))
+       (GNUNET_YES == s5r->is_tls))
+       //(HTTPS_PORT == s5r->port))
   {
     if (GNUNET_OK != check_ssl_certificate (s5r))
       return 0;
   }
-
-  ndup = GNUNET_strndup (buffer, bytes);
-  hdr_type = strtok (ndup, ":");
+  ndup = GNUNET_strndup (buffer,
+			 bytes);
+  hdr_type = strtok (ndup,
+		     ":");
   if (NULL == hdr_type)
   {
     GNUNET_free (ndup);
     return bytes;
   }
-  hdr_val = strtok (NULL, "");
+  hdr_val = strtok (NULL,
+		    "");
   if (NULL == hdr_val)
   {
     GNUNET_free (ndup);
@@ -1173,6 +1208,15 @@ curl_check_hdr (void *buffer,
                              s5r->domain);
           continue;
         }
+        else if ( ('.' == cookie_domain[0]) &&
+		  (0 == strcmp (&cookie_domain[1],
+				s5r->leho)) )
+        {
+          offset += sprintf (new_cookie_hdr + offset,
+                             " domain=.%s;",
+                             s5r->domain);
+          continue;
+        }
         GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                     _("Cookie domain `%s' supplied by server is invalid\n"),
                     tok);
@@ -1187,13 +1231,19 @@ curl_check_hdr (void *buffer,
   }
 
   new_location = NULL;
-  if (0 == strcasecmp (MHD_HTTP_HEADER_LOCATION,
+  if (0 == strcasecmp (MHD_HTTP_HEADER_TRANSFER_ENCODING,
 		       hdr_type))
+  {
+    /* Ignore transfer encoding, set automatically by MHD if required */
+    goto cleanup;
+  }
+  if ((0 == strcasecmp (MHD_HTTP_HEADER_LOCATION,
+		       hdr_type)))
   {
     char *leho_host;
 
     GNUNET_asprintf (&leho_host,
-                     (HTTPS_PORT != s5r->port)
+                     (GNUNET_YES != s5r->is_tls) //(HTTPS_PORT != s5r->port)
                      ? "http://%s"
                      : "https://%s",
                      s5r->leho);
@@ -1203,7 +1253,7 @@ curl_check_hdr (void *buffer,
     {
       GNUNET_asprintf (&new_location,
                        "%s%s%s",
-                       (HTTPS_PORT != s5r->port)
+                       (GNUNET_YES != s5r->is_tls) //(HTTPS_PORT != s5r->port)
                        ? "http://"
                        : "https://",
                        s5r->domain,
@@ -1212,6 +1262,31 @@ curl_check_hdr (void *buffer,
     }
     GNUNET_free (leho_host);
   }
+  if (0 == strcasecmp (MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN,
+       hdr_type))
+  {
+    char *leho_host;
+
+    GNUNET_asprintf (&leho_host,
+                     (GNUNET_YES != s5r->is_tls) //(HTTPS_PORT != s5r->port)
+                     ? "http://%s"
+                     : "https://%s",
+                     s5r->leho);
+    if (0 == strncmp (leho_host,
+                      hdr_val,
+                      strlen (leho_host)))
+    {
+      GNUNET_asprintf (&new_location,
+                       "%s%s",
+                       (GNUNET_YES != s5r->is_tls) //(HTTPS_PORT != s5r->port)
+                       ? "http://"
+                       : "https://",
+                       s5r->domain);
+      hdr_val = new_location;
+    }
+    GNUNET_free (leho_host);
+  }
+
   /* MHD does not allow certain characters in values, remove those */
   if (NULL != (tok = strchr (hdr_val, '\n')))
     *tok = '\0';
@@ -1232,6 +1307,7 @@ curl_check_hdr (void *buffer,
                                  s5r->header_tail,
                                  header);
   }
+ cleanup:
   GNUNET_free (ndup);
   GNUNET_free_non_null (new_cookie_hdr);
   GNUNET_free_non_null (new_location);
@@ -1286,27 +1362,27 @@ create_mhd_response_from_s5r (struct Socks5Request *s5r)
        NULL != header;
        header = header->next)
   {
-    GNUNET_break (MHD_YES ==
-                  MHD_add_response_header (s5r->response,
-                                           header->type,
-                                           header->value));
-
-  }
-  if (NULL != s5r->leho)
-  {
-    char *cors_hdr;
-
-    GNUNET_asprintf (&cors_hdr,
-                     (HTTPS_PORT == s5r->port)
-                     ? "https://%s"
-                     : "http://%s",
-                     s5r->leho);
-
-    GNUNET_break (MHD_YES ==
-                  MHD_add_response_header (s5r->response,
-                                           MHD_HTTP_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN,
-                                           cors_hdr));
-    GNUNET_free (cors_hdr);
+    if (0 == strcasecmp (header->type,
+                         MHD_HTTP_HEADER_CONTENT_LENGTH))
+      continue; /* MHD won't let us mess with those, for good reason */
+    if ( (0 == strcasecmp (header->type,
+                           MHD_HTTP_HEADER_TRANSFER_ENCODING)) &&
+         ( (0 == strcasecmp (header->value,
+                             "identity")) ||
+           (0 == strcasecmp (header->value,
+                             "chunked")) ) )
+      continue; /* MHD won't let us mess with those, for good reason */
+    if (MHD_YES !=
+        MHD_add_response_header (s5r->response,
+                                 header->type,
+                                 header->value))
+    {
+      GNUNET_break (0);
+      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                  "Failed to add header `%s:%s'\n",
+                  header->type,
+                  header->value);
+    }
   }
   /* force connection to be closed after each request, as we
      do not support HTTP pipelining (yet, FIXME!) */
@@ -1340,7 +1416,7 @@ curl_download_cb (void *ptr,
   size_t total = size * nmemb;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Receiving %ux%u bytes for `%s%s' from cURL\n",
+	      "Receiving %ux%u bytes for `%s%s' from cURL to download\n",
 	      (unsigned int) size,
 	      (unsigned int) nmemb,
 	      s5r->domain,
@@ -1348,7 +1424,13 @@ curl_download_cb (void *ptr,
   if (NULL == s5r->response)
     GNUNET_assert (GNUNET_OK ==
                    create_mhd_response_from_s5r (s5r));
-
+  if ( (SOCKS5_SOCKET_UPLOAD_DONE == s5r->state) &&
+       (0 == s5r->io_len))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Previous upload finished... starting DOWNLOAD.\n");
+    s5r->state = SOCKS5_SOCKET_DOWNLOAD_STARTED;
+  }
   if ( (SOCKS5_SOCKET_UPLOAD_STARTED == s5r->state) ||
        (SOCKS5_SOCKET_UPLOAD_DONE == s5r->state) )
   {
@@ -1413,6 +1495,13 @@ curl_upload_cb (void *buf,
   size_t len = size * nmemb;
   size_t to_copy;
 
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Receiving %ux%u bytes for `%s%s' from cURL to upload\n",
+	      (unsigned int) size,
+	      (unsigned int) nmemb,
+	      s5r->domain,
+	      s5r->url);
+
   if ( (0 == s5r->io_len) &&
        (SOCKS5_SOCKET_UPLOAD_DONE != s5r->state) )
   {
@@ -1431,7 +1520,7 @@ curl_upload_cb (void *buf,
       s5r->curl_paused = GNUNET_NO;
       curl_easy_pause (s5r->curl,
 		       CURLPAUSE_CONT);
-    }    
+    }
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Completed CURL UPLOAD %s%s\n",
                 s5r->domain,
@@ -1692,12 +1781,6 @@ con_val_iter (void *cls,
 			 key)) &&
        (NULL != s5r->leho) )
     value = s5r->leho;
-  if (0 == strcasecmp (MHD_HTTP_HEADER_CONTENT_LENGTH,
-		       key))
-    return MHD_YES;
-  if (0 == strcasecmp (MHD_HTTP_HEADER_ACCEPT_ENCODING,
-		       key))
-    return MHD_YES;
   GNUNET_asprintf (&hdr,
                    "%s: %s",
                    key,
@@ -1761,7 +1844,7 @@ create_response (void *cls,
     return MHD_NO;
   }
   s5r->con = con;
-  //Fresh connection.
+  /* Fresh connection. */
   if (SOCKS5_SOCKET_WITH_MHD == s5r->state)
   {
     /* first time here, initialize curl handle */
@@ -1875,7 +1958,7 @@ create_response (void *cls,
     if (s5r->is_gns)
     {
       GNUNET_asprintf (&curlurl,
-                       (HTTPS_PORT != s5r->port)
+                       (GNUNET_YES != s5r->is_tls) //(HTTPS_PORT != s5r->port)
                        ? "http://%s:%d%s"
                        : "https://%s:%d%s",
                        (NULL != s5r->leho)
@@ -1887,7 +1970,7 @@ create_response (void *cls,
     else
     {
       GNUNET_asprintf (&curlurl,
-                       (HTTPS_PORT != s5r->port)
+                       (GNUNET_YES != s5r->is_tls) //(HTTPS_PORT != s5r->port)
                        ? "http://%s:%d%s"
                        : "https://%s:%d%s",
                        s5r->domain,
@@ -1924,7 +2007,7 @@ create_response (void *cls,
 			s5r);
       {
         const char *us;
-        long upload_size;
+        long upload_size = 0;
 
         us = MHD_lookup_connection_value (con,
                                           MHD_HEADER_KIND,
@@ -1962,14 +2045,20 @@ create_response (void *cls,
         const char *us;
         long upload_size;
 
+        upload_size = 0;
         us = MHD_lookup_connection_value (con,
                                           MHD_HEADER_KIND,
                                           MHD_HTTP_HEADER_CONTENT_LENGTH);
-        if ( (1 == sscanf (us,
+        if ( (NULL != us) &&
+       	     (1 == sscanf (us,
                            "%ld",
                            &upload_size)) &&
              (upload_size >= 0) )
         {
+          curl_easy_setopt (s5r->curl,
+                            CURLOPT_INFILESIZE,
+                            upload_size);
+        } else {
           curl_easy_setopt (s5r->curl,
                             CURLOPT_INFILESIZE,
                             upload_size);
@@ -1991,20 +2080,41 @@ create_response (void *cls,
       curl_easy_setopt (s5r->curl,
 			CURLOPT_CUSTOMREQUEST,
 			"OPTIONS");
+      curl_easy_setopt (s5r->curl,
+                        CURLOPT_WRITEFUNCTION,
+                        &curl_download_cb);
+      curl_easy_setopt (s5r->curl,
+                        CURLOPT_WRITEDATA,
+                        s5r);
+
     }
     else if (0 == strcasecmp (meth,
-			      MHD_HTTP_METHOD_GET))
+                              MHD_HTTP_METHOD_GET))
     {
       s5r->state = SOCKS5_SOCKET_DOWNLOAD_STARTED;
       curl_easy_setopt (s5r->curl,
-			CURLOPT_HTTPGET,
-			1L);
+                        CURLOPT_HTTPGET,
+                        1L);
       curl_easy_setopt (s5r->curl,
-			CURLOPT_WRITEFUNCTION,
-			&curl_download_cb);
+                        CURLOPT_WRITEFUNCTION,
+                        &curl_download_cb);
       curl_easy_setopt (s5r->curl,
-			CURLOPT_WRITEDATA,
-			s5r);
+                        CURLOPT_WRITEDATA,
+                        s5r);
+    }
+    else if (0 == strcasecmp (meth,
+                              MHD_HTTP_METHOD_DELETE))
+    {
+      s5r->state = SOCKS5_SOCKET_DOWNLOAD_STARTED;
+      curl_easy_setopt (s5r->curl,
+                        CURLOPT_CUSTOMREQUEST,
+                        "DELETE");
+      curl_easy_setopt (s5r->curl,
+                        CURLOPT_WRITEFUNCTION,
+                        &curl_download_cb);
+      curl_easy_setopt (s5r->curl,
+                        CURLOPT_WRITEDATA,
+                        s5r);
     }
     else
     {
@@ -2019,46 +2129,46 @@ create_response (void *cls,
     if (0 == strcasecmp (ver, MHD_HTTP_VERSION_1_0))
     {
       curl_easy_setopt (s5r->curl,
-			CURLOPT_HTTP_VERSION,
-			CURL_HTTP_VERSION_1_0);
+                        CURLOPT_HTTP_VERSION,
+                        CURL_HTTP_VERSION_1_0);
     }
     else if (0 == strcasecmp (ver, MHD_HTTP_VERSION_1_1))
     {
       curl_easy_setopt (s5r->curl,
-			CURLOPT_HTTP_VERSION,
-			CURL_HTTP_VERSION_1_1);
+                        CURLOPT_HTTP_VERSION,
+                        CURL_HTTP_VERSION_1_1);
     }
     else
     {
       curl_easy_setopt (s5r->curl,
-			CURLOPT_HTTP_VERSION,
-			CURL_HTTP_VERSION_NONE);
+                        CURLOPT_HTTP_VERSION,
+                        CURL_HTTP_VERSION_NONE);
     }
 
-    if (HTTPS_PORT == s5r->port)
+    if (GNUNET_YES == s5r->is_tls) //(HTTPS_PORT == s5r->port)
     {
       curl_easy_setopt (s5r->curl,
-			CURLOPT_USE_SSL,
-			CURLUSESSL_ALL);
-      if (NULL != s5r->dane_data)
+                        CURLOPT_USE_SSL,
+                        CURLUSESSL_ALL);
+      if (0 < s5r->num_danes)
         curl_easy_setopt (s5r->curl,
-			  CURLOPT_SSL_VERIFYPEER,
-			  0L);
+                          CURLOPT_SSL_VERIFYPEER,
+                          0L);
       else
         curl_easy_setopt (s5r->curl,
-			  CURLOPT_SSL_VERIFYPEER,
-			  1L);
+                          CURLOPT_SSL_VERIFYPEER,
+                          1L);
       /* Disable cURL checking the hostname, as we will check ourselves
          as only we have the domain name or the LEHO or the DANE record */
       curl_easy_setopt (s5r->curl,
-			CURLOPT_SSL_VERIFYHOST,
-			0L);
+                        CURLOPT_SSL_VERIFYHOST,
+                        0L);
     }
     else
     {
       curl_easy_setopt (s5r->curl,
-			CURLOPT_USE_SSL,
-			CURLUSESSL_NONE);
+                        CURLOPT_USE_SSL,
+                        CURLUSESSL_NONE);
     }
 
     if (CURLM_OK !=
@@ -2086,14 +2196,14 @@ create_response (void *cls,
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Processing %u bytes UPLOAD\n",
-		(unsigned int) *upload_data_size);
+                (unsigned int) *upload_data_size);
 
     /* FIXME: This must be set or a header with Transfer-Encoding: chunked. Else
      * upload callback is not called!
      */
     curl_easy_setopt (s5r->curl,
-		      CURLOPT_POSTFIELDSIZE,
-		      *upload_data_size);
+                      CURLOPT_POSTFIELDSIZE,
+                      *upload_data_size);
 
     left = GNUNET_MIN (*upload_data_size,
                        sizeof (s5r->io_buf) - s5r->io_len);
@@ -2107,7 +2217,7 @@ create_response (void *cls,
     {
       s5r->curl_paused = GNUNET_NO;
       curl_easy_pause (s5r->curl,
-		       CURLPAUSE_CONT);
+                       CURLPAUSE_CONT);
     }
     return MHD_YES;
   }
@@ -2487,9 +2597,9 @@ load_file (const char* filename,
 
   if (GNUNET_OK !=
       GNUNET_DISK_file_size (filename,
-			     &fsize,
+                             &fsize,
                              GNUNET_YES,
-			     GNUNET_YES))
+                             GNUNET_YES))
     return NULL;
   if (fsize > MAX_PEM_SIZE)
     return NULL;
@@ -2522,7 +2632,7 @@ load_key_from_file (gnutls_x509_privkey_t key,
   int ret;
 
   key_data.data = load_file (keyfile,
-			     &key_data.size);
+                             &key_data.size);
   if (NULL == key_data.data)
     return GNUNET_SYSERR;
   ret = gnutls_x509_privkey_import (key, &key_data,
@@ -2553,17 +2663,17 @@ load_cert_from_file (gnutls_x509_crt_t crt,
   int ret;
 
   cert_data.data = load_file (certfile,
-			      &cert_data.size);
+                              &cert_data.size);
   if (NULL == cert_data.data)
     return GNUNET_SYSERR;
   ret = gnutls_x509_crt_import (crt,
-				&cert_data,
+                                &cert_data,
                                 GNUTLS_X509_FMT_PEM);
   if (GNUTLS_E_SUCCESS != ret)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _("Unable to import certificate from `%s'\n"),
-		certfile);
+                certfile);
   }
   GNUNET_free_non_null (cert_data.data);
   return (GNUTLS_E_SUCCESS != ret) ? GNUNET_SYSERR : GNUNET_OK;
@@ -2594,26 +2704,29 @@ generate_gns_certificate (const char *name)
   GNUNET_break (GNUTLS_E_SUCCESS == gnutls_x509_crt_set_key (request, proxy_ca.key));
   pgc = GNUNET_new (struct ProxyGNSCertificate);
   gnutls_x509_crt_set_dn_by_oid (request,
-				 GNUTLS_OID_X520_COUNTRY_NAME,
+                                 GNUTLS_OID_X520_COUNTRY_NAME,
                                  0,
-				 "ZZ",
-				 strlen ("ZZ"));
+                                 "ZZ",
+                                 strlen ("ZZ"));
   gnutls_x509_crt_set_dn_by_oid (request,
-				 GNUTLS_OID_X520_ORGANIZATION_NAME,
+                                 GNUTLS_OID_X520_ORGANIZATION_NAME,
                                  0,
-				 "GNU Name System",
-				 strlen ("GNU Name System"));
+                                 "GNU Name System",
+                                 strlen ("GNU Name System"));
   gnutls_x509_crt_set_dn_by_oid (request,
-				 GNUTLS_OID_X520_COMMON_NAME,
+                                 GNUTLS_OID_X520_COMMON_NAME,
                                  0,
-				 name,
-				 strlen (name));
+                                 name,
+                                 strlen (name));
+  gnutls_x509_crt_set_subject_alternative_name (request,
+                                        GNUTLS_SAN_DNSNAME,
+                                        name);
   GNUNET_break (GNUTLS_E_SUCCESS ==
-		gnutls_x509_crt_set_version (request,
-					     3));
+                gnutls_x509_crt_set_version (request,
+                                             3));
   gnutls_rnd (GNUTLS_RND_NONCE,
-	      &serial,
-	      sizeof (serial));
+              &serial,
+              sizeof (serial));
   gnutls_x509_crt_set_serial (request,
                               &serial,
                               sizeof (serial));
@@ -2628,20 +2741,20 @@ generate_gns_certificate (const char *name)
   gnutls_x509_crt_set_expiration_time (request,
                                        etime);
   gnutls_x509_crt_sign2 (request,
-			 proxy_ca.cert,
-			 proxy_ca.key,
-			 GNUTLS_DIG_SHA512,
-			 0);
+                         proxy_ca.cert,
+                         proxy_ca.key,
+                         GNUTLS_DIG_SHA512,
+                         0);
   key_buf_size = sizeof (pgc->key);
   cert_buf_size = sizeof (pgc->cert);
   gnutls_x509_crt_export (request,
-			  GNUTLS_X509_FMT_PEM,
+                          GNUTLS_X509_FMT_PEM,
                           pgc->cert,
-			  &cert_buf_size);
+                          &cert_buf_size);
   gnutls_x509_privkey_export (proxy_ca.key,
-			      GNUTLS_X509_FMT_PEM,
+                              GNUTLS_X509_FMT_PEM,
                               pgc->key,
-			      &key_buf_size);
+                              &key_buf_size);
   gnutls_x509_crt_deinit (request);
   return pgc;
 }
@@ -2751,29 +2864,25 @@ setup_data_transfer (struct Socks5Request *s5r)
   socklen_t len;
   char *domain;
 
-  switch (s5r->port)
+  if (GNUNET_YES == s5r->is_tls)
   {
-    case HTTPS_PORT:
-      GNUNET_asprintf (&domain,
-                       "%s",
-                       s5r->domain);
-      hd = lookup_ssl_httpd (domain);
-      if (NULL == hd)
-      {
-        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    _("Failed to start HTTPS server for `%s'\n"),
-                    s5r->domain);
-        cleanup_s5r (s5r);
-        GNUNET_free (domain);
-        return;
-      }
-      break;
-    case HTTP_PORT:
-    default:
+    GNUNET_asprintf (&domain,
+                     "%s",
+                     s5r->domain);
+    hd = lookup_ssl_httpd (domain);
+    if (NULL == hd)
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  _("Failed to start HTTPS server for `%s'\n"),
+                  s5r->domain);
+      cleanup_s5r (s5r);
+      GNUNET_free (domain);
+      return;
+    }
+  } else {
       domain = NULL;
       GNUNET_assert (NULL != httpd);
       hd = httpd;
-      break;
   }
   fd = GNUNET_NETWORK_get_fd (s5r->sock);
   addr = GNUNET_NETWORK_get_addr (s5r->sock);
@@ -2980,8 +3089,10 @@ handle_gns_result (void *cls,
           }
           if (GNUNET_YES == got_ip)
             break;
+          if (GNUNET_YES == disable_v6)
+            break;
           if (GNUNET_OK !=
-              GNUNET_NETWORK_test_pf (PF_INET))
+              GNUNET_NETWORK_test_pf (PF_INET6))
             break;
           /* FIXME: allow user to disable IPv6 per configuration option... */
           got_ip = GNUNET_YES;
@@ -3018,12 +3129,18 @@ handle_gns_result (void *cls,
                (ntohs (box->protocol) != IPPROTO_TCP) ||
                (ntohs (box->service) != s5r->port) )
             break; /* BOX record does not apply */
-          GNUNET_free_non_null (s5r->dane_data);
-          s5r->dane_data_len = r->data_size - sizeof (struct GNUNET_GNSRECORD_BoxRecord);
-          s5r->dane_data = GNUNET_malloc (s5r->dane_data_len);
-          GNUNET_memcpy (s5r->dane_data,
-                         &box[1],
-                         s5r->dane_data_len);
+	  if (s5r->num_danes >= MAX_DANES)
+	    {
+	      GNUNET_break (0); /* MAX_DANES too small */
+	      break;
+	    }
+          s5r->is_tls = GNUNET_YES; /* This should be TLS */
+          s5r->dane_data_len[s5r->num_danes]
+	    = r->data_size - sizeof (struct GNUNET_GNSRECORD_BoxRecord);
+          s5r->dane_data[s5r->num_danes]
+	    = GNUNET_memdup (&box[1],
+			     s5r->dane_data_len[s5r->num_danes]);
+	  s5r->num_danes++;
           break;
         }
       default:
@@ -3083,7 +3200,7 @@ do_s5r_read (void *cls)
   tc = GNUNET_SCHEDULER_get_task_context ();
   if ( (NULL != tc->read_ready) &&
        (GNUNET_NETWORK_fdset_isset (tc->read_ready,
-				    s5r->sock)) )
+                                    s5r->sock)) )
   {
     rlen = GNUNET_NETWORK_socket_recv (s5r->sock,
                                        &s5r->rbuf[s5r->rbuf_len],
@@ -3210,10 +3327,12 @@ do_s5r_read (void *cls)
                                           *dom_len);
             GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                         "Requested connection is to %s:%d\n",
+                        //(HTTPS_PORT == s5r->port) ? "s" : "",
                         s5r->domain,
                         ntohs (*port));
             s5r->state = SOCKS5_RESOLVING;
             s5r->port = ntohs (*port);
+            s5r->is_tls = (HTTPS_PORT == s5r->port) ? GNUNET_YES : GNUNET_NO;
             s5r->gns_lookup = GNUNET_GNS_lookup_with_tld (gns_handle,
                                                           s5r->domain,
                                                           GNUNET_DNSPARSER_TYPE_A,
@@ -3281,21 +3400,21 @@ do_accept (void *cls)
     ltask4 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
                                             lsock,
                                             &do_accept,
-					    lsock);
+                                            lsock);
   else if (lsock == lsock6)
     ltask6 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
                                             lsock,
                                             &do_accept,
-					    lsock);
+                                            lsock);
   else
     GNUNET_assert (0);
   s = GNUNET_NETWORK_socket_accept (lsock,
-				    NULL,
-				    NULL);
+                                    NULL,
+                                    NULL);
   if (NULL == s)
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
-			 "accept");
+                         "accept");
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -3309,7 +3428,7 @@ do_accept (void *cls)
   s5r->rtask = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
                                               s5r->sock,
                                               &do_s5r_read,
-					      s5r);
+                                              s5r);
 }
 
 
@@ -3407,7 +3526,7 @@ bind_v4 ()
     return NULL;
   if (GNUNET_OK !=
       GNUNET_NETWORK_socket_bind (ls,
-				  (const struct sockaddr *) &sa4,
+                                  (const struct sockaddr *) &sa4,
                                   sizeof (sa4)))
   {
     eno = errno;
@@ -3444,7 +3563,7 @@ bind_v6 ()
     return NULL;
   if (GNUNET_OK !=
       GNUNET_NETWORK_socket_bind (ls,
-				  (const struct sockaddr *) &sa6,
+                                  (const struct sockaddr *) &sa6,
                                   sizeof (sa6)))
   {
     eno = errno;
@@ -3499,8 +3618,8 @@ run (void *cls,
     cafile = cafile_cfg;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Using `%s' as CA\n",
-	      cafile);
+              "Using `%s' as CA\n",
+              cafile);
 
   gnutls_global_init ();
   gnutls_x509_crt_init (&proxy_ca.cert);
@@ -3640,15 +3759,19 @@ main (int argc,
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_option_uint16 ('p',
-				 "port",
-				 NULL,
-				 gettext_noop ("listen on specified port (default: 7777)"),
-				 &port),
+                                 "port",
+                                 NULL,
+                                 gettext_noop ("listen on specified port (default: 7777)"),
+                                 &port),
     GNUNET_GETOPT_option_string ('a',
                                  "authority",
                                  NULL,
                                  gettext_noop ("pem file to use as CA"),
                                  &cafile_opt),
+    GNUNET_GETOPT_option_flag ('6',
+                               "disable-ivp6",
+                               gettext_noop ("disable use of IPv6"),
+                               &disable_v6),
 
     GNUNET_GETOPT_OPTION_END
   };
@@ -3659,7 +3782,7 @@ main (int argc,
 
   if (GNUNET_OK !=
       GNUNET_STRINGS_get_utf8_args (argc, argv,
-				    &argc, &argv))
+                                    &argc, &argv))
     return 2;
   GNUNET_log_setup ("gnunet-gns-proxy",
                     "WARNING",

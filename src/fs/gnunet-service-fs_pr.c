@@ -3,7 +3,7 @@
      Copyright (C) 2009-2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -1598,7 +1603,7 @@ called_from_on_demand:
       GNUNET_BLOCK_get_key (GSF_block_ctx, type, data, size, &query))
   {
     GNUNET_break (0);
-    GNUNET_DATASTORE_remove (GSF_dsh, key, size, data, -1, -1,
+    GNUNET_DATASTORE_remove (GSF_dsh, key, size, data, UINT_MAX, UINT_MAX,
                              NULL, NULL);
     start_local_query (pr,
                        uid + 1 /* next_uid */,

@@ -3,7 +3,7 @@
      Copyright (C) 2006, 2011 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -105,9 +110,10 @@ format_help (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
   (void) value;
   if (NULL != about)
   {
-    printf ("%s\n%s\n", ctx->binaryOptions, gettext (about));
-    printf (_
-	    ("Arguments mandatory for long options are also mandatory for short options.\n"));
+    printf ("%s\n%s\n",
+	    ctx->binaryOptions,
+	    gettext (about));
+    printf (_("Arguments mandatory for long options are also mandatory for short options.\n"));
   }
   i = 0;
   opt = ctx->allOptions;
@@ -546,11 +552,13 @@ set_ulong (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
            const char *value)
 {
   unsigned long long *val = scls;
+  char dummy[2];
 
   (void) ctx;
   if (1 != SSCANF (value,
-                   "%llu",
-                   val))
+                   "%llu%1s",
+                   val,
+		   dummy))
   {
     FPRINTF (stderr,
              _("You must pass a number to the `%s' option.\n"),
@@ -743,11 +751,20 @@ set_uint (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
           const char *value)
 {
   unsigned int *val = scls;
+  char dummy[2];
 
   (void) ctx;
+  if('-' == *value)
+  {
+	FPRINTF (stderr,
+		_("Your input for the '%s' option has to be a non negative number \n"),
+		option);
+    	return GNUNET_SYSERR;
+  }
   if (1 != SSCANF (value,
-                   "%u",
-                   val))
+                   "%u%1s",
+                   val,
+		   dummy))
   {
     FPRINTF (stderr,
              _("You must pass a number to the `%s' option.\n"),
@@ -810,11 +827,13 @@ set_uint16 (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
 {
   uint16_t *val = scls;
   unsigned int v;
+  char dummy[2];
   
   (void) ctx;
   if (1 != SSCANF (value,
-                   "%u",
-                   &v))
+                   "%u%1s",
+                   &v,
+		   dummy))
   {
     FPRINTF (stderr,
              _("You must pass a number to the `%s' option.\n"),

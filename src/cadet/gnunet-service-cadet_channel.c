@@ -3,7 +3,7 @@
      Copyright (C) 2001-2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file cadet/gnunet-service-cadet_channel.c
@@ -496,6 +501,11 @@ channel_destroy (struct CadetChannel *ch)
                                  crm);
     GNUNET_free (crm->data_message);
     GNUNET_free (crm);
+  }
+  if (CADET_CHANNEL_LOOSE == ch->state)
+  {
+    GSC_drop_loose_channel (&ch->h_port,
+			    ch);
   }
   if (NULL != ch->owner)
   {
@@ -1133,8 +1143,6 @@ GCCH_channel_local_destroy (struct CadetChannel *ch,
          target, but that never went anywhere. Nothing to do here. */
       break;
     case CADET_CHANNEL_LOOSE:
-      GSC_drop_loose_channel (&ch->h_port,
-                              ch);
       break;
     default:
       GCT_send_channel_destroy (ch->t,
@@ -1298,23 +1306,48 @@ GCCH_handle_channel_plaintext_data (struct CadetChannel *ch,
                  &msg[1],
                  payload_size);
   ccc = (NULL != ch->owner) ? ch->owner : ch->dest;
-  if ( (GNUNET_YES == ccc->client_ready) &&
-       ( (GNUNET_YES == ch->out_of_order) ||
-         (msg->mid.mid == ch->mid_recv.mid) ) )
+  if (GNUNET_YES == ccc->client_ready)
   {
-    LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "Giving %u bytes of payload with MID %u from %s to client %s\n",
-         (unsigned int) payload_size,
-         ntohl (msg->mid.mid),
-         GCCH_2s (ch),
-         GSC_2s (ccc->c));
-    ccc->client_ready = GNUNET_NO;
-    GSC_send_to_client (ccc->c,
-                        env);
-    ch->mid_recv.mid = htonl (1 + ntohl (ch->mid_recv.mid));
-    ch->mid_futures >>= 1;
-    send_channel_data_ack (ch);
-    return;
+    /*
+     * We ad-hoc send the message if
+     * - The channel is out-of-order
+     * - The channel is reliable and MID matches next expected MID
+     * - The channel is unreliable and MID is before lowest seen MID
+     */
+    if ( (GNUNET_YES == ch->out_of_order) ||
+         ((msg->mid.mid == ch->mid_recv.mid) &&
+          (GNUNET_YES == ch->reliable)) ||
+         ((GNUNET_NO == ch->reliable) &&
+          (ntohl (msg->mid.mid) >= ntohl (ch->mid_recv.mid)) &&
+          ((NULL == ccc->head_recv) ||
+           (ntohl (msg->mid.mid) < ntohl (ccc->head_recv->mid.mid)))) )
+    {
+      LOG (GNUNET_ERROR_TYPE_DEBUG,
+           "Giving %u bytes of payload with MID %u from %s to client %s\n",
+           (unsigned int) payload_size,
+           ntohl (msg->mid.mid),
+           GCCH_2s (ch),
+           GSC_2s (ccc->c));
+      ccc->client_ready = GNUNET_NO;
+      GSC_send_to_client (ccc->c,
+                          env);
+      ch->mid_recv.mid = htonl (1 + ntohl (ch->mid_recv.mid));
+      ch->mid_futures >>= 1;
+      if ( (GNUNET_YES == ch->out_of_order) &&
+	   (GNUNET_NO == ch->reliable) )
+      {
+	/* possibly shift by more if we skipped messages */
+	uint64_t delta = htonl (msg->mid.mid) - 1 - ntohl (ch->mid_recv.mid);
+	
+	if (delta > 63)
+	  ch->mid_futures = 0;
+	else
+	  ch->mid_futures >>= delta;
+	ch->mid_recv.mid = htonl (1 + ntohl (msg->mid.mid));
+      }
+      send_channel_data_ack (ch);
+      return;
+    }
   }
 
   if (GNUNET_YES == ch->reliable)
@@ -1371,6 +1404,57 @@ GCCH_handle_channel_plaintext_data (struct CadetChannel *ch,
   }
   else /* ! ch->reliable */
   {
+    struct CadetOutOfOrderMessage *next_msg;
+
+    /**
+     * We always send if possible in this case.
+     * It is guaranteed that the queued MID < received MID
+     **/
+    if ((NULL != ccc->head_recv) &&
+        (GNUNET_YES == ccc->client_ready))
+    {
+      next_msg = ccc->head_recv;
+      LOG (GNUNET_ERROR_TYPE_DEBUG,
+           "Giving queued MID %u from %s to client %s\n",
+           ntohl (next_msg->mid.mid),
+           GCCH_2s (ch),
+           GSC_2s (ccc->c));
+      ccc->client_ready = GNUNET_NO;
+      GSC_send_to_client (ccc->c,
+                          next_msg->env);
+      ch->mid_recv.mid = htonl (1 + ntohl (ch->mid_recv.mid));
+      ch->mid_futures >>= 1;
+      send_channel_data_ack (ch);
+      GNUNET_CONTAINER_DLL_remove (ccc->head_recv,
+                                   ccc->tail_recv,
+                                   next_msg);
+      ccc->num_recv--;
+      /* Do not process duplicate MID */
+      if (msg->mid.mid == next_msg->mid.mid) /* Duplicate */
+      {
+        /* Duplicate within the queue, drop */
+        LOG (GNUNET_ERROR_TYPE_DEBUG,
+             "Message on %s (mid %u) dropped, duplicate\n",
+             GCCH_2s (ch),
+             ntohl (msg->mid.mid));
+        GNUNET_free (next_msg);
+        GNUNET_MQ_discard (env);
+        return;
+      }
+      GNUNET_free (next_msg);
+    }
+
+    if (ntohl (msg->mid.mid) < ntohl (ch->mid_recv.mid)) /* Old */
+    {
+      /* Duplicate within the queue, drop */
+      LOG (GNUNET_ERROR_TYPE_DEBUG,
+           "Message on %s (mid %u) dropped, old.\n",
+           GCCH_2s (ch),
+           ntohl (msg->mid.mid));
+      GNUNET_MQ_discard (env);
+      return;
+    }
+
     /* Channel is unreliable, so we do not ACK. But we also cannot
        allow buffering everything, so check if we have space... */
     if (ccc->num_recv >= ch->max_pending_messages)
@@ -1576,7 +1660,7 @@ GCCH_handle_channel_plaintext_data_ack (struct CadetChannel *ch,
   mid_mask = GNUNET_htonll (ack->futures);
   found = GNUNET_NO;
   for (crm = ch->head_sent;
-        NULL != crm;
+       NULL != crm;
        crm = crmn)
   {
     crmn = crm->next;
@@ -1819,7 +1903,7 @@ GCCH_handle_local_data (struct CadetChannel *ch,
 
   if (ch->pending_messages >= ch->max_pending_messages)
   {
-    GNUNET_break (0);
+    GNUNET_break (0); /* Fails: #5370 */
     return GNUNET_SYSERR;
   }
   if (GNUNET_YES == ch->destroy)

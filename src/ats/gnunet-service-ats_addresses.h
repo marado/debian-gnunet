@@ -3,7 +3,7 @@
  Copyright (C) 2011-2014 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -54,14 +59,14 @@
  *    network an inbound and outbound quota will be specified. The available
  *    networks and addtional helper varaibles are defined in
  *    gnunet_ats_service.h. At the moment 5 networks are defined:
- *      * GNUNET_ATS_NET_UNSPECIFIED
- *      * GNUNET_ATS_NET_LOOPBACK
- *      * GNUNET_ATS_NET_LAN
- *      * GNUNET_ATS_NET_WAN
- *      * GNUNET_ATS_NET_WLAN
+ *      * GNUNET_NT_UNSPECIFIED
+ *      * GNUNET_NT_LOOPBACK
+ *      * GNUNET_NT_LAN
+ *      * GNUNET_NT_WAN
+ *      * GNUNET_NT_WLAN
  *
  *    The total number of networks defined is stored in
- *    GNUNET_ATS_NetworkTypeCount GNUNET_ATS_NetworkType can be used array
+ *    GNUNET_NT_COUNT GNUNET_ATS_NetworkType can be used array
  *    initializer for an int array, while GNUNET_ATS_NetworkType is an
  *    initializer for a char array containing a string description of all
  *    networks
@@ -148,7 +153,7 @@
  *     1.7 Address management
  *
  *    Transport service notifies ATS about changes to the addresses known to
- *    him.
+ *    it.
  *
  *       1.7.1 Adding an address
  *

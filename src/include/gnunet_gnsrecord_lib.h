@@ -3,7 +3,7 @@
      Copyright (C) 2012, 2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -127,6 +132,16 @@ extern "C"
  * Record type for ABE master keys
  */
 #define GNUNET_GNSRECORD_TYPE_ABE_MASTER 65551
+
+/**
+ * Record type for reclaim OIDC clients
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT 65552
+
+/**
+ * Record type for reclaim OIDC redirect URIs
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT 65553
 
 /**
  * Flags that can be set for a record.
@@ -496,10 +511,10 @@ GNUNET_GNSRECORD_pkey_to_zkey (const struct GNUNET_CRYPTO_EcdsaPublicKey *pkey);
 
 
 /**
- * Convert an absolute domain name in the ".zkey" pTLD to the
+ * Convert an absolute domain name to the
  * respective public key.
  *
- * @param zkey string "X.zkey" where X is the public
+ * @param zkey string "X" where X is the public
  *         key in an encoding suitable for DNS labels.
  * @param pkey set to a public key on the eliptic curve
  * @return #GNUNET_SYSERR if @a zkey has the wrong syntax

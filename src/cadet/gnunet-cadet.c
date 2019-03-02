@@ -1,9 +1,9 @@
 /*
      This file is part of GNUnet.
-     Copyright (C) 2012, 2017 GNUnet e.V.
+     Copyright (C) 2012, 2017, 2019 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -24,6 +29,7 @@
 #include "gnunet_cadet_service.h"
 #include "cadet.h"
 
+#define STREAM_BUFFER_SIZE 1024  // Pakets
 
 /**
  * Option -P.
@@ -39,11 +45,6 @@ static char *peer_id;
  * Option -T.
  */
 static int request_tunnels;
-
-/**
- * Option --tunnel
- */
-static char *tunnel_id;
 
 /**
  * Option --connection
@@ -64,11 +65,6 @@ static char *listen_port;
  * Request echo service
  */
 static int echo;
-
-/**
- * Request a debug dump
- */
-static int dump;
 
 /**
  * Time of last echo request.
@@ -96,6 +92,26 @@ static char *target_port = "default";
 static struct GNUNET_CADET_Handle *mh;
 
 /**
+ * Our configuration.
+ */
+static const struct GNUNET_CONFIGURATION_Handle *my_cfg;
+
+/**
+ * Active get path operation.
+ */
+static struct GNUNET_CADET_GetPath *gpo;
+
+/**
+ * Active peer listing operation.
+ */
+static struct GNUNET_CADET_PeersLister *plo;
+
+/**
+ * Active tunnel listing operation.
+ */
+static struct GNUNET_CADET_ListTunnels *tio;
+
+/**
  * Channel handle.
  */
 static struct GNUNET_CADET_Channel *ch;
@@ -119,6 +135,8 @@ static struct GNUNET_SCHEDULER_Task *rd_task;
  * Task for main job.
  */
 static struct GNUNET_SCHEDULER_Task *job;
+
+static unsigned int sent_pkt;
 
 
 /**
@@ -193,10 +211,30 @@ shutdown_task (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Shutdown\n");
+  if (NULL != lp)
+  {
+    GNUNET_CADET_close_port (lp);
+    lp = NULL;
+  }
   if (NULL != ch)
   {
     GNUNET_CADET_channel_destroy (ch);
     ch = NULL;
+  }
+  if (NULL != gpo)
+  {
+    GNUNET_CADET_get_path_cancel (gpo);
+    gpo = NULL;
+  }
+  if (NULL != plo)
+  {
+    GNUNET_CADET_list_peers_cancel (plo);
+    plo = NULL;
+  }
+  if (NULL != tio)
+  {
+    GNUNET_CADET_list_tunnels_cancel (tio);
+    tio = NULL;
   }
   if (NULL != mh)
   {
@@ -220,6 +258,12 @@ shutdown_task (void *cls)
   }
 }
 
+void
+mq_cb(void *cls)
+{
+  listen_stdio ();
+}
+
 
 /**
  * Task run in stdio mode, after some data is available at stdin.
@@ -240,6 +284,8 @@ read_stdio (void *cls)
                     60000);
   if (data_size < 1)
   {
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "read() returned  %s\n", strerror(errno));
     GNUNET_SCHEDULER_shutdown();
     return;
   }
@@ -254,9 +300,21 @@ read_stdio (void *cls)
                  data_size);
   GNUNET_MQ_send (GNUNET_CADET_get_mq (ch),
                   env);
+
+  sent_pkt++;
+
   if (GNUNET_NO == echo)
   {
-    listen_stdio ();
+    // Use MQ's notification if too much data of stdin is pooring in too fast.
+    if (STREAM_BUFFER_SIZE < sent_pkt)
+    {
+      GNUNET_MQ_notify_sent (env, mq_cb, cls);
+      sent_pkt = 0;
+    }
+    else
+    {
+      listen_stdio ();
+    }
   }
   else
   {
@@ -363,19 +421,6 @@ send_echo (void *cls)
 
 
 /**
- * Call CADET's monitor API, request debug dump on the service.
- *
- * @param cls Closure (unused).
- */
-static void
-request_dump (void *cls)
-{
-  GNUNET_CADET_request_dump (mh);
-  GNUNET_SCHEDULER_shutdown ();
-}
-
-
-/**
  * Check data message sanity. Does nothing so far (all messages are OK).
  *
  * @param cls Closure (unused).
@@ -476,79 +521,52 @@ handle_data (void *cls,
  * After last peer has been reported, an additional call with NULL is done.
  *
  * @param cls Closure.
- * @param peer Peer, or NULL on "EOF".
- * @param tunnel Do we have a tunnel towards this peer?
- * @param n_paths Number of known paths towards this peer.
- * @param best_path How long is the best path?
- *                  (0 = unknown, 1 = ourselves, 2 = neighbor)
+ * @param ple information about peer, or NULL on "EOF".
  */
 static void
 peers_callback (void *cls,
-		const struct GNUNET_PeerIdentity *peer,
-                int tunnel,
-		unsigned int n_paths,
-		unsigned int best_path)
+		const struct GNUNET_CADET_PeerListEntry *ple)
 {
-  if (NULL == peer)
+  if (NULL == ple)
   {
+    plo = NULL;
     GNUNET_SCHEDULER_shutdown();
     return;
   }
   FPRINTF (stdout,
            "%s tunnel: %c, paths: %u\n",
-           GNUNET_i2s_full (peer),
-           tunnel ? 'Y' : 'N',
-           n_paths);
+           GNUNET_i2s_full (&ple->peer),
+           ple->have_tunnel ? 'Y' : 'N',
+           ple->n_paths);
 }
 
 
 /**
- * Method called to retrieve information about a specific peer
+ * Method called to retrieve information about paths to a specific peer
  * known to the service.
  *
  * @param cls Closure.
- * @param peer Peer ID.
- * @param tunnel Do we have a tunnel towards this peer? #GNUNET_YES/#GNUNET_NO
- * @param neighbor Is this a direct neighbor? #GNUNET_YES/#GNUNET_NO
- * @param n_paths Number of paths known towards peer.
- * @param paths Array of PEER_IDs representing all paths to reach the peer.
- *              Each path starts with the local peer.
- *              Each path ends with the destination peer (given in @c peer).
+ * @param ppd path detail
  */
 static void
-peer_callback (void *cls,
-               const struct GNUNET_PeerIdentity *peer,
-               int tunnel,
-               int neighbor,
-               unsigned int n_paths,
-               const struct GNUNET_PeerIdentity *paths)
+path_callback (void *cls,
+               const struct GNUNET_CADET_PeerPathDetail *ppd)
 {
-  unsigned int i;
-  const struct GNUNET_PeerIdentity *p;
-
-  FPRINTF (stdout,
-           "%s [TUNNEL: %s, NEIGHBOR: %s, PATHS: %u]\n",
-           GNUNET_i2s_full (peer),
-           tunnel ? "Y" : "N",
-           neighbor ? "Y" : "N",
-           n_paths);
-  p = paths;
-  for (i = 0; i < n_paths && NULL != p;)
+  if (NULL == ppd)
   {
-    FPRINTF (stdout,
-             "%s ",
-             GNUNET_i2s (p));
-    if (0 == memcmp (p,
-                     peer,
-                     sizeof (*p)))
-    {
-      FPRINTF (stdout, "\n");
-      i++;
-    }
-    p++;
+    gpo = NULL;
+    GNUNET_SCHEDULER_shutdown();
+    return;
   }
-
-  GNUNET_SCHEDULER_shutdown();
+  FPRINTF (stdout,
+	   "Path of length %u: ",
+	   ppd->path_length);
+  for (unsigned int i = 0; i < ppd->path_length; i++)
+    FPRINTF (stdout,
+	     (i == ppd->target_offset) ? "*%s* " : "%s ",
+	     GNUNET_i2s (&ppd->path[i]));
+  FPRINTF (stdout,
+	   "\n");
 }
 
 
@@ -556,73 +574,25 @@ peer_callback (void *cls,
  * Method called to retrieve information about all tunnels in CADET.
  *
  * @param cls Closure.
- * @param peer Destination peer.
- * @param channels Number of channels.
- * @param connections Number of connections.
- * @param estate Encryption state.
- * @param cstate Connectivity state.
+ * @param td tunnel details
  */
 static void
 tunnels_callback (void *cls,
-                  const struct GNUNET_PeerIdentity *peer,
-                  unsigned int channels,
-                  unsigned int connections,
-                  uint16_t estate,
-                  uint16_t cstate)
+		  const struct GNUNET_CADET_TunnelDetails *td)
 {
-  if (NULL == peer)
+  if (NULL == td)
   {
+    tio = NULL;
     GNUNET_SCHEDULER_shutdown();
     return;
   }
   FPRINTF (stdout,
            "%s [ENC: %s, CON: %s] CHs: %u, CONNs: %u\n",
-           GNUNET_i2s_full (peer),
-           enc_2s (estate),
-           conn_2s (cstate),
-           channels,
-           connections);
-}
-
-
-/**
- * Method called to retrieve information about a specific tunnel the cadet peer
- * has established, o`r is trying to establish.
- *
- * @param cls Closure.
- * @param peer Peer towards whom the tunnel is directed.
- * @param n_channels Number of channels.
- * @param n_connections Number of connections.
- * @param channels Channels.
- * @param connections Connections.
- * @param estate Encryption status.
- * @param cstate Connectivity status.
- */
-static void
-tunnel_callback (void *cls,
-                 const struct GNUNET_PeerIdentity *peer,
-                 unsigned int n_channels,
-                 unsigned int n_connections,
-                 const struct GNUNET_CADET_ChannelTunnelNumber *channels,
-                 const struct GNUNET_CADET_ConnectionTunnelIdentifier *connections,
-                 unsigned int estate,
-                 unsigned int cstate)
-{
-  unsigned int i;
-
-  if (NULL != peer)
-  {
-    FPRINTF (stdout, "Tunnel %s\n", GNUNET_i2s_full (peer));
-    FPRINTF (stdout, "\t%u channels\n", n_channels);
-    for (i = 0; i < n_channels; i++)
-      FPRINTF (stdout, "\t\t%X\n", ntohl (channels[i].cn));
-    FPRINTF (stdout, "\t%u connections\n", n_connections);
-    for (i = 0; i < n_connections; i++)
-      FPRINTF (stdout, "\t\t%s\n", GNUNET_sh2s (&connections[i].connection_of_tunnel));
-    FPRINTF (stdout, "\tencryption state: %s\n", enc_2s (estate));
-    FPRINTF (stdout, "\tconnection state: %s\n", conn_2s (cstate));
-  }
-  GNUNET_SCHEDULER_shutdown ();
+           GNUNET_i2s_full (&td->peer),
+           enc_2s (td->estate),
+           conn_2s (td->cstate),
+           td->channels,
+           td->connections);
 }
 
 
@@ -635,7 +605,9 @@ static void
 get_peers (void *cls)
 {
   job = NULL;
-  GNUNET_CADET_get_peers (mh, &peers_callback, NULL);
+  plo = GNUNET_CADET_list_peers (my_cfg,
+				 &peers_callback,
+				 NULL);
 }
 
 
@@ -654,14 +626,17 @@ show_peer (void *cls)
       GNUNET_CRYPTO_eddsa_public_key_from_string (peer_id,
                                                   strlen (peer_id),
                                                   &pid.public_key))
-    {
+  {
     fprintf (stderr,
              _("Invalid peer ID `%s'\n"),
              peer_id);
     GNUNET_SCHEDULER_shutdown();
     return;
   }
-  GNUNET_CADET_get_peer (mh, &pid, peer_callback, NULL);
+  gpo = GNUNET_CADET_get_path (my_cfg,
+			       &pid,
+			       &path_callback,
+			       NULL);
 }
 
 
@@ -674,36 +649,9 @@ static void
 get_tunnels (void *cls)
 {
   job = NULL;
-  GNUNET_CADET_get_tunnels (mh, &tunnels_callback, NULL);
-}
-
-
-/**
- * Call CADET's monitor API, get info of one tunnel.
- *
- * @param cls Closure (unused).
- */
-static void
-show_tunnel (void *cls)
-{
-  struct GNUNET_PeerIdentity pid;
-
-  job = NULL;
-  if (GNUNET_OK !=
-      GNUNET_CRYPTO_eddsa_public_key_from_string (tunnel_id,
-                                                  strlen (tunnel_id),
-                                                  &pid.public_key))
-  {
-    fprintf (stderr,
-             _("Invalid tunnel owner `%s'\n"),
-             tunnel_id);
-    GNUNET_SCHEDULER_shutdown ();
-    return;
-  }
-  GNUNET_CADET_get_tunnel (mh,
-                           &pid,
-                           &tunnel_callback,
-                           NULL);
+  tio = GNUNET_CADET_list_tunnels (my_cfg,
+				   &tunnels_callback,
+				   NULL);
 }
 
 
@@ -756,13 +704,12 @@ run (void *cls,
   };
 
   /* FIXME add option to monitor apps */
-
+  my_cfg = cfg;
   target_id = args[0];
   if (target_id && args[1])
     target_port = args[1];
 
   if ( (0 != (request_peers | request_tunnels)
-        || NULL != tunnel_id
         || NULL != conn_id
         || NULL != channel_id)
        && target_id != NULL)
@@ -773,25 +720,11 @@ run (void *cls,
     return;
   }
 
-  if (GNUNET_YES == dump)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "Requesting debug dump\n");
-    job = GNUNET_SCHEDULER_add_now (&request_dump,
-                                    NULL);
-  }
-  else if (NULL != peer_id)
+  if (NULL != peer_id)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Show peer\n");
     job = GNUNET_SCHEDULER_add_now (&show_peer,
-                                    NULL);
-  }
-  else if (NULL != tunnel_id)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "Show tunnel\n");
-    job = GNUNET_SCHEDULER_add_now (&show_tunnel,
                                     NULL);
   }
   else if (NULL != channel_id)
@@ -923,48 +856,28 @@ main (int argc,
                                  "CONNECTION_ID",
                                  gettext_noop ("Provide information about a particular connection"),
                                  &conn_id),
-
     GNUNET_GETOPT_option_flag ('e',
-                                  "echo",
-                                  gettext_noop ("Activate echo mode"),
-                                  &echo), 
-
-    GNUNET_GETOPT_option_flag ('d',
-                                  "dump",
-                                  gettext_noop ("Dump debug information to STDERR"),
-                                  &dump),
-
+			       "echo",
+			       gettext_noop ("Activate echo mode"),
+			       &echo),
     GNUNET_GETOPT_option_string ('o',
                                  "open-port",
                                  "SHARED_SECRET",
                                  gettext_noop ("Listen for connections using a shared secret among sender and recipient"),
                                  &listen_port),
-
-
     GNUNET_GETOPT_option_string ('p',
                                  "peer",
                                  "PEER_ID",
                                  gettext_noop ("Provide information about a patricular peer"),
                                  &peer_id),
-
-
     GNUNET_GETOPT_option_flag ('P',
-                                  "peers",
-                                  gettext_noop ("Provide information about all peers"),
-                                  &request_peers),
-
-    GNUNET_GETOPT_option_string ('t',
-                                 "tunnel",
-                                 "TUNNEL_ID",
-                                 gettext_noop ("Provide information about a particular tunnel"),
-                                 &tunnel_id),
-
-
+			       "peers",
+			       gettext_noop ("Provide information about all peers"),
+			       &request_peers),
     GNUNET_GETOPT_option_flag ('T',
-                                  "tunnels",
-                                  gettext_noop ("Provide information about all tunnels"),
-                                  &request_tunnels),
-
+			       "tunnels",
+			       gettext_noop ("Provide information about all tunnels"),
+			       &request_tunnels),
     GNUNET_GETOPT_OPTION_END
   };
 

@@ -3,7 +3,7 @@
      Copyright (C) 2012, 2013, 2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file gnunet-namestore.c
@@ -27,6 +32,24 @@
 #include <gnunet_gnsrecord_lib.h>
 #include <gnunet_gns_service.h>
 #include <gnunet_namestore_service.h>
+
+
+/**
+ * Entry in record set for bulk processing.
+ */
+struct RecordSetEntry
+{
+  /**
+   * Kept in a linked list.
+   */
+  struct RecordSetEntry *next;
+
+  /**
+   * The record to add/remove.
+   */
+  struct GNUNET_GNSRECORD_Data record;
+  
+};
 
 
 /**
@@ -115,6 +138,11 @@ static int is_shadow;
 static struct GNUNET_NAMESTORE_QueueEntry *del_qe;
 
 /**
+ * Queue entry for the 'set/replace' operation.
+ */
+static struct GNUNET_NAMESTORE_QueueEntry *set_qe;
+
+/**
  * Name of the records to add/list/remove.
  */
 static char *name;
@@ -170,14 +198,9 @@ static void *data;
 static size_t data_size;
 
 /**
- * Expirationstring converted to relative time.
+ * Expiration string converted to numeric value.
  */
-static struct GNUNET_TIME_Relative etime_rel;
-
-/**
- * Expirationstring converted to absolute time.
- */
-static struct GNUNET_TIME_Absolute etime_abs;
+static uint64_t etime;
 
 /**
  * Is expiration time relative or absolute time?
@@ -193,6 +216,11 @@ static struct GNUNET_NAMESTORE_ZoneMonitor *zm;
  * Enables monitor mode.
  */
 static int monitor;
+
+/**
+ * Entry in record set for processing records in bulk.
+ */
+static struct RecordSetEntry *recordset;
 
 
 /**
@@ -228,6 +256,11 @@ do_shutdown (void *cls)
   {
     GNUNET_NAMESTORE_cancel (add_qe);
     add_qe = NULL;
+  }
+  if (NULL != set_qe)
+  {
+    GNUNET_NAMESTORE_cancel (set_qe);
+    set_qe = NULL;
   }
   if (NULL != add_qe_uri)
   {
@@ -513,6 +546,8 @@ display_record_lookup (void *cls,
                        unsigned int rd_len,
                        const struct GNUNET_GNSRECORD_Data *rd)
 {
+  (void) cls;
+  (void) zone_key;
   get_qe = NULL;
   display_record (rname,
                   rd_len,
@@ -691,14 +726,10 @@ get_existing_record (void *cls,
     rde->flags |= GNUNET_GNSRECORD_RF_SHADOW_RECORD;
   if (1 != is_public)
     rde->flags |= GNUNET_GNSRECORD_RF_PRIVATE;
+  rde->expiration_time = etime;
   if (GNUNET_YES == etime_is_rel)
-  {
-    rde->expiration_time = etime_rel.rel_value_us;
     rde->flags |= GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION;
-  }
-  else if (GNUNET_NO == etime_is_rel)
-    rde->expiration_time = etime_abs.abs_value_us;
-  else
+  else if (GNUNET_NO != etime_is_rel)
     rde->expiration_time = GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us;
   GNUNET_assert (NULL != name);
   add_qe = GNUNET_NAMESTORE_records_store (ns,
@@ -749,12 +780,13 @@ handle_reverse_lookup (void *cls,
   reverse_qe = NULL;
   if (NULL == label)
     FPRINTF (stdout,
-             "%s.zkey\n",
+             "%s\n",
              reverse_pkey);
   else
     FPRINTF (stdout,
-             "%s.gnu\n",
-             label);
+             "%s.%s\n",
+             label,
+             ego_name);
   test_finished ();
 }
 
@@ -860,6 +892,85 @@ del_monitor (void *cls,
 
 
 /**
+ * Parse expiration time.
+ *
+ * @param expirationstring text to parse
+ * @param etime_is_rel[out] set to #GNUNET_YES if time is relative
+ * @param etime[out] set to expiration time (abs or rel)
+ * @return #GNUNET_OK on success
+ */
+static int
+parse_expiration (const char *expirationstring,
+		  int *etime_is_rel,
+		  uint64_t *etime)
+{
+  struct GNUNET_TIME_Relative etime_rel;
+  struct GNUNET_TIME_Absolute etime_abs;
+  
+  if (0 == strcmp (expirationstring,
+		   "never"))
+  {
+    *etime = GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us;
+    *etime_is_rel = GNUNET_NO;
+    return GNUNET_OK;
+  }
+  if (GNUNET_OK ==
+      GNUNET_STRINGS_fancy_time_to_relative (expirationstring,
+					     &etime_rel))
+  {
+    *etime_is_rel = GNUNET_YES;
+    *etime = etime_rel.rel_value_us;
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+		"Storing record with relative expiration time of %s\n",
+		GNUNET_STRINGS_relative_time_to_string (etime_rel,
+							GNUNET_NO));
+    return GNUNET_OK;
+  }
+  if (GNUNET_OK ==
+      GNUNET_STRINGS_fancy_time_to_absolute (expirationstring,
+					     &etime_abs))
+  {
+    *etime_is_rel = GNUNET_NO;
+    *etime = etime_abs.abs_value_us;
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+		"Storing record with absolute expiration time of %s\n",
+		GNUNET_STRINGS_absolute_time_to_string (etime_abs));
+    return GNUNET_OK;
+  }
+  return GNUNET_SYSERR;
+}
+
+
+/**
+ * Function called when namestore is done with the replace
+ * operation.
+ *
+ * @param cls NULL
+ * @param success #GNUNET_SYSERR on failure (including timeout/queue drop/failure to validate)
+ *                #GNUNET_NO if content was already there or not found
+ *                #GNUNET_YES (or other positive value) on success
+ * @param emsg NULL on success, otherwise an error message
+ */
+static void
+replace_cont (void *cls,
+	      int success,
+	      const char *emsg)
+{
+  (void) cls;
+  
+  set_qe = NULL;
+  if (GNUNET_OK != success)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_MESSAGE,
+		_("Failed to replace records: %s\n"),
+		emsg);
+    ret = 1; /* fail from 'main' */
+  }
+  GNUNET_SCHEDULER_shutdown ();
+}
+
+
+/**
  * Callback invoked from identity service with ego information.
  * An @a ego of NULL means the ego was not found.
  *
@@ -891,7 +1002,7 @@ identity_cb (void *cls,
   GNUNET_free_non_null (ego_name);
   ego_name = NULL;
 
-  if (! (add|del|list|(NULL != nickstring)|(NULL != uri)|(NULL != reverse_pkey)) )
+  if (! (add|del|list|(NULL != nickstring)|(NULL != uri)|(NULL != reverse_pkey)|(NULL != recordset)) )
   {
     /* nothing more to be done */
     fprintf (stderr,
@@ -900,8 +1011,7 @@ identity_cb (void *cls,
     return;
   }
   GNUNET_CRYPTO_ecdsa_key_get_public (&zone_pkey,
-                                    &pub);
-
+				      &pub);
   ns = GNUNET_NAMESTORE_connect (cfg);
   if (NULL == ns)
   {
@@ -909,6 +1019,44 @@ identity_cb (void *cls,
                 _("Failed to connect to namestore\n"));
     return;
   }
+
+  if (NULL != recordset)
+  {
+    /* replace entire record set */
+    unsigned int rd_count;
+    struct GNUNET_GNSRECORD_Data *rd;
+
+    if (NULL == name)
+    {
+      fprintf (stderr,
+               _("Missing option `%s' for operation `%s'\n"),
+               "-R", _("replace"));
+      GNUNET_SCHEDULER_shutdown ();
+      ret = 1;
+      return;
+    }
+    rd_count = 0;
+    for (struct RecordSetEntry *e = recordset; NULL != e; e = e->next)
+      rd_count++;
+    rd = GNUNET_new_array (rd_count,
+			   struct GNUNET_GNSRECORD_Data);
+    rd_count = 0;
+    for (struct RecordSetEntry *e = recordset; NULL != e; e = e->next)
+    {
+      rd[rd_count] = e->record;
+      rd_count++;
+    }
+    set_qe = GNUNET_NAMESTORE_records_store (ns,
+					     &zone_pkey,
+					     name,
+					     rd_count,
+					     rd,
+					     &replace_cont,
+					     NULL);
+    GNUNET_free (rd);
+    return;
+  }
+  
   if (add)
   {
     if (NULL == name)
@@ -972,32 +1120,10 @@ identity_cb (void *cls,
       ret = 1;
       return;
     }
-    if (0 == strcmp (expirationstring,
-                     "never"))
-    {
-      etime_abs = GNUNET_TIME_UNIT_FOREVER_ABS;
-      etime_is_rel = GNUNET_NO;
-    }
-    else if (GNUNET_OK ==
-             GNUNET_STRINGS_fancy_time_to_relative (expirationstring,
-                                                    &etime_rel))
-    {
-      etime_is_rel = GNUNET_YES;
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Storing record with relative expiration time of %s\n",
-                  GNUNET_STRINGS_relative_time_to_string (etime_rel,
-                                                          GNUNET_NO));
-    }
-    else if (GNUNET_OK ==
-             GNUNET_STRINGS_fancy_time_to_absolute (expirationstring,
-                                                    &etime_abs))
-    {
-      etime_is_rel = GNUNET_NO;
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Storing record with absolute expiration time of %s\n",
-                  GNUNET_STRINGS_absolute_time_to_string (etime_abs));
-    }
-    else
+    if (GNUNET_OK !=
+	parse_expiration (expirationstring,
+			  &etime_is_rel,
+			  &etime))
     {
       fprintf (stderr,
                _("Invalid time format `%s'\n"),
@@ -1102,16 +1228,9 @@ identity_cb (void *cls,
     rd.data = &pkey;
     rd.data_size = sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey);
     rd.record_type = GNUNET_GNSRECORD_TYPE_PKEY;
-    if (GNUNET_YES == etime_is_rel)
-    {
-      rd.expiration_time = etime_rel.rel_value_us;
+    rd.expiration_time = etime;
+    if (GNUNET_YES == etime_is_rel)    
       rd.flags |= GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION;
-    }
-    else if (GNUNET_NO == etime_is_rel)
-      rd.expiration_time = etime_abs.abs_value_us;
-    else
-      rd.expiration_time = GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us;
-
     if (1 == is_shadow)
       rd.flags |= GNUNET_GNSRECORD_RF_SHADOW_RECORD;
     add_qe_uri = GNUNET_NAMESTORE_records_store (ns,
@@ -1217,6 +1336,10 @@ run (void *cls,
   (void) cls;
   (void) args;
   (void) cfgfile;
+  if (NULL != args[0])
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+		_("Superfluous command line arguments (starting with `%s') ignored\n"),
+		args[0]);
   if ( (NULL != args[0]) &&
        (NULL == uri) )
     uri = GNUNET_strdup (args[0]);
@@ -1240,6 +1363,172 @@ run (void *cls,
                                    &identity_cb,
                                    (void *) cfg);
 }
+
+
+/**
+ * Command-line option parser function that allows the user to specify
+ * a complete record as one argument for adding/removing.  A pointer
+ * to the head of the list of record sets must be passed as the "scls"
+ * argument.
+ *
+ * @param ctx command line processor context
+ * @param scls must be of type "struct GNUNET_FS_Uri **"
+ * @param option name of the option (typically 'R')
+ * @param value command line argument given; format is
+ *        "TTL TYPE FLAGS VALUE" where TTL is an expiration time (rel or abs),
+ *        always given in seconds (without the unit),
+ *         TYPE is a DNS/GNS record type, FLAGS is either "n" for no flags or
+ *         a combination of 's' (shadow) and 'p' (public) and VALUE is the 
+ *         value (in human-readable format)
+ * @return #GNUNET_OK on success
+ */
+static int
+multirecord_process (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
+		     void *scls,
+		     const char *option,
+		     const char *value)
+{
+  struct RecordSetEntry **head = scls;
+  struct RecordSetEntry *r;
+  struct GNUNET_GNSRECORD_Data record;
+  char *cp;
+  char *tok;
+  char *saveptr;
+  int etime_is_rel;
+  void *raw_data;
+
+  (void) ctx;
+  (void) option;
+  cp = GNUNET_strdup (value);
+  tok = strtok_r (cp, " ", &saveptr);
+  if (NULL == tok)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		_("Empty record line argument is not allowed.\n"));
+    GNUNET_free (cp);
+    return GNUNET_SYSERR;
+  }
+  {
+    char *etime_in_s;
+
+    GNUNET_asprintf (&etime_in_s,
+		     "%s s",
+		     tok);
+    if (GNUNET_OK !=
+	parse_expiration (etime_in_s,
+			  &etime_is_rel,
+			  &record.expiration_time))
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		  _("Invalid expiration time `%s' (must be without unit)\n"),
+		  tok);
+      GNUNET_free (cp);
+      GNUNET_free (etime_in_s);
+      return GNUNET_SYSERR;
+    }
+    GNUNET_free (etime_in_s);
+  }
+  tok = strtok_r (NULL, " ", &saveptr);
+  if (NULL == tok)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		_("Missing entries in record line `%s'.\n"),
+		value);
+    GNUNET_free (cp);
+    return GNUNET_SYSERR;
+  }
+  record.record_type = GNUNET_GNSRECORD_typename_to_number (tok);
+  if (UINT32_MAX == record.record_type)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		_("Unknown record type `%s'\n"),
+		tok);
+    GNUNET_free (cp);
+    return GNUNET_SYSERR;
+  }
+  tok = strtok_r (NULL, " ", &saveptr);
+  if (NULL == tok)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		_("Missing entries in record line `%s'.\n"),
+		value);
+    GNUNET_free (cp);
+    return GNUNET_SYSERR;
+  }
+  record.flags = GNUNET_GNSRECORD_RF_NONE;
+  if (etime_is_rel)
+    record.flags |= GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION;
+  if (NULL == strchr (tok, (unsigned char) 'p')) /* p = public */
+    record.flags |= GNUNET_GNSRECORD_RF_PRIVATE; 
+  if (NULL != strchr (tok, (unsigned char) 's'))
+    record.flags |= GNUNET_GNSRECORD_RF_SHADOW_RECORD;
+  /* find beginning of record value */
+  tok = strchr (&value[tok - cp], (unsigned char) ' ');
+  if (NULL == tok)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		_("Missing entries in record line `%s'.\n"),
+		value);
+    GNUNET_free (cp);
+    return GNUNET_SYSERR;
+  }
+  GNUNET_free (cp);
+  tok++; /* skip space */
+  if (GNUNET_OK !=
+      GNUNET_GNSRECORD_string_to_value (record.record_type,
+					tok,
+					&raw_data,
+					&record.data_size))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		_("Invalid record data for type %s: `%s'.\n"),
+		GNUNET_GNSRECORD_number_to_typename (record.record_type),		
+		tok);
+    return GNUNET_SYSERR;
+  }
+  
+  r = GNUNET_malloc (sizeof (struct RecordSetEntry) + record.data_size);
+  r->next = *head;
+  record.data = &r[1];
+  memcpy (&r[1],	  
+	  raw_data,
+	  record.data_size);
+  GNUNET_free (raw_data);
+  r->record = record;  
+  *head = r;
+  return GNUNET_OK;
+}
+
+
+/**
+ * Allow user to specify keywords.
+ *
+ * @param shortName short name of the option
+ * @param name long name of the option
+ * @param argumentHelp help text for the option argument
+ * @param description long help text for the option
+ * @param[out] topKeywords set to the desired value
+ */
+struct GNUNET_GETOPT_CommandLineOption
+multirecord_option (char shortName,
+		    const char *name,
+		    const char *argumentHelp,
+		    const char *description,
+		    struct RecordSetEntry **rs)
+{
+  struct GNUNET_GETOPT_CommandLineOption clo = {
+    .shortName = shortName,
+    .name = name,
+    .argumentHelp = argumentHelp,
+    .description = description,
+    .require_argument = 1,
+    .processor = &multirecord_process,
+    .scls = (void *) rs  
+  };
+
+  return clo;
+}
+
 
 
 /**
@@ -1290,6 +1579,11 @@ main (int argc,
                                  "PKEY",
                                  gettext_noop ("determine our name for the given PKEY"),
                                  &reverse_pkey),
+    multirecord_option ('R',
+			"replace",
+			"RECORDLINE",
+			gettext_noop ("set record set to values given by (possibly multiple) RECORDLINES; can be specified multiple times"),
+			&recordset),
     GNUNET_GETOPT_option_string ('t',
                                  "type",
                                  "TYPE",

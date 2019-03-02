@@ -4,7 +4,10 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/include
 if DOCUMENTATION_ONLY
   SUBDIRS = doc
 else
-  SUBDIRS = doc m4 src po pkgconfig
+  SUBDIRS = m4 src po pkgconfig
+if DOCUMENTATION
+  SUBDIRS += doc
+endif
 endif
 
 if !TALER_ONLY
@@ -14,7 +17,6 @@ endif
 EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath \
- install-sh \
  acinclude.m4 \
  README.1st
 
@@ -25,4 +27,3 @@ docdir = $(datadir)/doc/gnunet/
 doc_DATA = COPYING README
 
 ACLOCAL_AMFLAGS = -I m4
-

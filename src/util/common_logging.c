@@ -3,7 +3,7 @@
      Copyright (C) 2006-2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -623,6 +628,11 @@ parse_definitions (const char *constname, int force)
           to_line = INT_MAX;
         }
         break;
+      default:
+        fprintf(stderr,
+                _("ERROR: Unable to parse log definition: Syntax error at `%s'.\n"),
+                p);
+        break;
       }
       start = p + 1;
       state++;
@@ -649,6 +659,9 @@ parse_definitions (const char *constname, int force)
         start = p + 1;
         break;
       default:
+        fprintf(stderr,
+                _("ERROR: Unable to parse log definition: Syntax error at `%s'.\n"),
+                p);
         break;
       }
     default:
@@ -666,13 +679,14 @@ parse_definitions (const char *constname, int force)
 static void
 parse_all_definitions ()
 {
-  if (GNUNET_NO == gnunet_log_parsed)
-    parse_definitions ("GNUNET_LOG", 0);
-  gnunet_log_parsed = GNUNET_YES;
   if (GNUNET_NO == gnunet_force_log_parsed)
     gnunet_force_log_present =
         parse_definitions ("GNUNET_FORCE_LOG", 1) > 0 ? GNUNET_YES : GNUNET_NO;
   gnunet_force_log_parsed = GNUNET_YES;
+
+  if (GNUNET_NO == gnunet_log_parsed)
+    parse_definitions ("GNUNET_LOG", 0);
+  gnunet_log_parsed = GNUNET_YES;
 }
 #endif
 
@@ -810,32 +824,39 @@ output_message (enum GNUNET_ErrorType kind,
   if ( (NULL != GNUNET_stderr) &&
        (NULL == loggers) )
   {
-    if (kind == GNUNET_ERROR_TYPE_MESSAGE) {
-	/* The idea here is to produce "normal" output messages
-	 * for end users while still having the power of the
-	 * logging engine for developer needs. So ideally this
-	 * is what it should look like when CLI tools are used
-	 * interactively, yet the same message shouldn't look
-	 * this way if the output is going to logfiles or robots
-	 * instead. Is this the right place to do this?	--lynX
-	 */
-	FPRINTF (GNUNET_stderr,
-             "* %s",
-             msg);
-    } else {
-	FPRINTF (GNUNET_stderr,
-             "%s %s %s %s",
-             datestr,
-             comp,
-             GNUNET_error_type_to_string (kind),
-             msg);
+    if (kind == GNUNET_ERROR_TYPE_MESSAGE)
+    {
+      /* The idea here is to produce "normal" output messages
+       * for end users while still having the power of the
+       * logging engine for developer needs. So ideally this
+       * is what it should look like when CLI tools are used
+       * interactively, yet the same message shouldn't look
+       * this way if the output is going to logfiles or robots
+       * instead.
+       */
+      FPRINTF (GNUNET_stderr,
+               "* %s",
+               msg);
+    }
+    else
+    {
+      FPRINTF (GNUNET_stderr,
+               "%s %s %s %s",
+               datestr,
+               comp,
+               GNUNET_error_type_to_string (kind),
+               msg);
     }
     fflush (GNUNET_stderr);
   }
   pos = loggers;
-  while (pos != NULL)
+  while (NULL != pos)
   {
-    pos->logger (pos->logger_cls, kind, comp, datestr, msg);
+    pos->logger (pos->logger_cls,
+                 kind,
+                 comp,
+                 datestr,
+                 msg);
     pos = pos->next;
   }
 #if WINDOWS

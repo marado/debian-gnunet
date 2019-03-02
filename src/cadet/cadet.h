@@ -3,7 +3,7 @@
      Copyright (C) 2001 - 2011 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -244,15 +249,93 @@ struct GNUNET_CADET_LocalInfo
 
 
 /**
- * Message to inform the client about one of the peers in the service.
- *
- * TODO: split into two messages!
+ * Message to inform the client about channels in the service.
  */
-struct GNUNET_CADET_LocalInfoPeer
+struct GNUNET_CADET_RequestPathInfoMessage
 {
   /**
-   * Type: #GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEER or
-   * #GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS
+   * Type: #GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PATH
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Always zero.
+   */
+  uint32_t resered GNUNET_PACKED;
+
+  /**
+   * ID of the destination of the channel (can be local peer).
+   */
+  struct GNUNET_PeerIdentity peer;
+};
+
+
+/**
+ * Message to inform the client about channels in the service.
+ */
+struct GNUNET_CADET_ChannelInfoMessage
+{
+  /**
+   * Type: #GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_CHANNEL.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Root of the channel
+   */
+  struct GNUNET_PeerIdentity root;
+
+  /**
+   * Destination of the channel
+   */
+  struct GNUNET_PeerIdentity dest;
+
+  /* FIXME: expand! */
+};
+
+
+/**
+ * Message to as the service about information on a channel.
+ */
+struct GNUNET_CADET_RequestChannelInfoMessage
+{
+  /**
+   * Type: #GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_CHANNEL.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Target of the channel.
+   */
+  struct GNUNET_PeerIdentity target;
+
+};
+
+
+/**
+ * Message to inform the client about one of the paths known to the service.
+ */
+struct GNUNET_CADET_LocalInfoPath
+{
+  /**
+   * Type: #GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PATH.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Offset of the peer that was requested.
+   */
+  uint32_t off GNUNET_PACKED;
+};
+
+
+/**
+ * Message to inform the client about one of the peers in the service.
+ */
+struct GNUNET_CADET_LocalInfoPeers
+{
+  /**
+   * Type: #GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS
    */
   struct GNUNET_MessageHeader header;
 
@@ -267,12 +350,15 @@ struct GNUNET_CADET_LocalInfoPeer
   int16_t tunnel GNUNET_PACKED;
 
   /**
+   * Shortest known path.
+   */
+  uint32_t best_path_length GNUNET_PACKED;
+
+  /**
    * ID of the peer (can be local peer).
    */
   struct GNUNET_PeerIdentity destination;
 
-  /* If type == PEER (no 'S'): GNUNET_PeerIdentity paths[]
-   * (each path ends in destination) */
 };
 
 

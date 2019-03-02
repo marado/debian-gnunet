@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2010, 2011, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file transport/test_quota_compliance.c
@@ -62,6 +67,8 @@ report ()
   unsigned long long datarate;
 
   delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
+  if (0 == delta)
+    delta = 1;
   datarate = (total_bytes_recv * 1000 * 1000) / delta;
 
   FPRINTF (stderr,
@@ -204,14 +211,14 @@ generate_config (const char *cfg_file,
                                          "PATHS",
                                          "DEFAULTCONFIG",
                                          fname);
-  for (int c = 0; c < GNUNET_ATS_NetworkTypeCount; c++)
+  for (int c = 0; c < GNUNET_NT_COUNT; c++)
   {
     GNUNET_asprintf (&in_name,
                      "%s_QUOTA_IN",
-                     GNUNET_ATS_print_network_type (c));
+                     GNUNET_NT_to_string (c));
     GNUNET_asprintf (&out_name,
                      "%s_QUOTA_OUT",
-                     GNUNET_ATS_print_network_type (c));
+                     GNUNET_NT_to_string (c));
     GNUNET_CONFIGURATION_set_value_number (cfg,
                                            "ats",
                                            in_name,

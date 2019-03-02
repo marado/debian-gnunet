@@ -3,7 +3,7 @@
      Copyright (C) 2012-2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -498,6 +503,76 @@ struct GNUNET_MQ_MessageHandler
 
 
 /**
+ * Insert code for a "check_" function that verifies that
+ * a given variable-length message received over the network
+ * is followed by a 0-terminated string.  If the message @a m
+ * is not followed by a 0-terminated string, an error is logged
+ * and the function is returned with #GNUNET_NO.
+ *
+ * @param an IPC message with proper type to determine
+ *  the size, starting with a `struct GNUNET_MessageHeader`
+ */
+#define GNUNET_MQ_check_zero_termination(m)           \
+  {                                                   \
+    const char *str = (const char *) &m[1];           \
+    const struct GNUNET_MessageHeader *hdr =          \
+      (const struct GNUNET_MessageHeader *) m;        \
+    uint16_t slen = ntohs (hdr->size) - sizeof (*m);  \
+    if ( (0 == slen) ||                               \
+         (memchr (str, 0, slen) != &str[slen - 1]) )  \
+    {                                                 \
+      GNUNET_break (0);                               \
+      return GNUNET_NO;                               \
+    }                                                 \
+  }
+
+
+/**
+ * Insert code for a "check_" function that verifies that
+ * a given variable-length message received over the network
+ * is followed by another variable-length message that fits
+ * exactly with the given size.  If the message @a m
+ * is not followed by another `struct GNUNET_MessageHeader`
+ * with a size that adds up to the total size, an error is logged
+ * and the function is returned with #GNUNET_NO.
+ *
+ * @param an IPC message with proper type to determine
+ *  the size, starting with a `struct GNUNET_MessageHeader`
+ */
+#define GNUNET_MQ_check_boxed_message(m)                \
+  {                                                     \
+    const struct GNUNET_MessageHeader *inbox =          \
+      (const struct GNUNET_MessageHeader *) &m[1];      \
+    const struct GNUNET_MessageHeader *hdr =            \
+      (const struct GNUNET_MessageHeader *) m;          \
+    uint16_t slen = ntohs (hdr->size) - sizeof (*m);    \
+    if ( (slen < sizeof (struct GNUNET_MessageHeader))||\
+         (slen != ntohs (inbox->size)) )                \
+    {                                                   \
+      GNUNET_break (0);                                 \
+      return GNUNET_NO;                                 \
+    }                                                   \
+  }
+
+
+/**
+ * Call the message message handler that was registered
+ * for the type of the given message in the given @a handlers list.
+ *
+ * This function is indended to be used for the implementation
+ * of message queues.
+ *
+ * @param handlers a set of handlers
+ * @param mh message to dispatch
+ * @return #GNUNET_OK on success, #GNUNET_NO if no handler matched,
+ *         #GNUNET_SYSERR if message was rejected by check function
+ */
+int
+GNUNET_MQ_handle_message (const struct GNUNET_MQ_MessageHandler *handlers,
+                          const struct GNUNET_MessageHeader *mh);
+
+
+/**
  * Create a new envelope.
  *
  * @param mhp message header to store the allocated message header in, can be NULL
@@ -870,6 +945,56 @@ GNUNET_MQ_impl_state (struct GNUNET_MQ_Handle *mq);
  */
 const struct GNUNET_MessageHeader *
 GNUNET_MQ_impl_current (struct GNUNET_MQ_Handle *mq);
+
+
+
+/**
+ * Enum defining all known preference categories.
+ */
+enum GNUNET_MQ_PreferenceKind
+{
+
+  /**
+   * No preference was expressed.
+   */
+  GNUNET_MQ_PREFERENCE_NONE = 0,
+
+  /**
+   * The preferred transmission for this envelope focuses on
+   * maximizing bandwidth.
+   */
+  GNUNET_MQ_PREFERENCE_BANDWIDTH = 1,
+
+  /**
+   * The preferred transmission for this envelope foces on
+   * minimizing latency.
+   */
+  GNUNET_MQ_PREFERENCE_LATENCY = 2,
+
+  /**
+   * The preferred transmission for this envelope foces on
+   * reliability.
+   */
+  GNUNET_MQ_PREFERENCE_RELIABILITY = 3
+
+  /**
+   * Number of preference values allowed.
+   */
+#define GNUNET_MQ_PREFERENCE_COUNT 4
+
+};
+
+
+/**
+ * Convert an `enum GNUNET_MQ_PreferenceType` to a string
+ *
+ * @param type the preference type
+ * @return a string or NULL if invalid
+ */
+const char *
+GNUNET_MQ_preference_to_string (enum GNUNET_MQ_PreferenceKind type);
+
+
 
 
 #endif

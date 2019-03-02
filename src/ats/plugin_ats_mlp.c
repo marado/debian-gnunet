@@ -3,7 +3,7 @@
      Copyright (C) 2011-2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -145,7 +150,7 @@ struct MLP_Problem
   /* Row indices quality metrics  */
   int r_q[RQ_QUALITY_METRIC_COUNT];
   /* Row indices ATS network quotas */
-  int r_quota[GNUNET_ATS_NetworkTypeCount];
+  int r_quota[GNUNET_NT_COUNT];
 
   /* Column index Diversity (D) column */
   int c_d;
@@ -208,12 +213,12 @@ struct MLP_Variables
 
   /* Quotas */
   /* Array mapping array index to ATS network */
-  int quota_index[GNUNET_ATS_NetworkTypeCount];
+  int quota_index[GNUNET_NT_COUNT];
   /* Outbound quotas */
-  unsigned long long quota_out[GNUNET_ATS_NetworkTypeCount];
+  unsigned long long quota_out[GNUNET_NT_COUNT];
   /* Inbound quotas */
 
-  unsigned long long quota_in[GNUNET_ATS_NetworkTypeCount];
+  unsigned long long quota_in[GNUNET_NT_COUNT];
 
   /* ATS ressource costs
    * array with GNUNET_ATS_QualityPropertiesCount elements
@@ -598,7 +603,7 @@ mlp_delete_problem (struct GAS_MLP_Handle *mlp)
   mlp->p.r_c9 = MLP_UNDEFINED;
   for (c = 0; c < RQ_QUALITY_METRIC_COUNT ; c ++)
     mlp->p.r_q[c] = MLP_UNDEFINED;
-  for (c = 0; c < GNUNET_ATS_NetworkTypeCount; c ++)
+  for (c = 0; c < GNUNET_NT_COUNT; c ++)
     mlp->p.r_quota[c] = MLP_UNDEFINED;
   mlp->p.ci = MLP_UNDEFINED;
 
@@ -966,20 +971,20 @@ mlp_create_problem_add_address_information (void *cls,
   }
 
   addr_net = address->properties.scope;
-  for (addr_net_index = 0; addr_net_index < GNUNET_ATS_NetworkTypeCount; addr_net_index++)
+  for (addr_net_index = 0; addr_net_index < GNUNET_NT_COUNT; addr_net_index++)
   {
     if (mlp->pv.quota_index[addr_net_index] == addr_net)
       break;
   }
 
-  if (addr_net_index >= GNUNET_ATS_NetworkTypeCount)
+  if (addr_net_index >= GNUNET_NT_COUNT)
   {
     GNUNET_break (0);
     return GNUNET_OK;
   }
 
   max_quota = 0;
-  for (c = 0; c < GNUNET_ATS_NetworkTypeCount; c++)
+  for (c = 0; c < GNUNET_NT_COUNT; c++)
   {
     if (mlp->pv.quota_out[c] > max_quota)
       max_quota = mlp->pv.quota_out[c];
@@ -1128,11 +1133,11 @@ mlp_create_problem_add_invariant_rows (struct GAS_MLP_Handle *mlp, struct MLP_Pr
   p->r_c4 = mlp_create_problem_create_constraint (p, "c4", GLP_LO, (mlp->pv.n_min > p->num_peers) ? p->num_peers : mlp->pv.n_min, 0.0);
 
   /* Rows for c 10) Enforce network quotas */
-  for (c = 0; c < GNUNET_ATS_NetworkTypeCount; c++)
+  for (c = 0; c < GNUNET_NT_COUNT; c++)
   {
     char * text;
     GNUNET_asprintf(&text, "c10_quota_ats_%s",
-        GNUNET_ATS_print_network_type(mlp->pv.quota_index[c]));
+        GNUNET_NT_to_string(mlp->pv.quota_index[c]));
     p->r_quota[c] = mlp_create_problem_create_constraint (p, text, GLP_DB, 0.0, mlp->pv.quota_out[c]);
     GNUNET_free (text);
   }
@@ -1551,6 +1556,7 @@ GAS_mlp_solve_problem (void *solver)
   struct GNUNET_TIME_Relative dur_mlp;
 
   GNUNET_assert(NULL != solver);
+  dur_lp = GNUNET_TIME_UNIT_ZERO; 
 
   if (GNUNET_YES == mlp->stat_bulk_lock)
     {
@@ -1849,7 +1855,7 @@ GAS_mlp_address_add (void *solver,
 {
   struct GAS_MLP_Handle *mlp = solver;
 
-  if (GNUNET_ATS_NetworkTypeCount <= network)
+  if (GNUNET_NT_COUNT <= network)
   {
     GNUNET_break (0);
     return;
@@ -2647,7 +2653,7 @@ libgnunet_plugin_ats_mlp_init (void *cls)
     n_min = MLP_DEFAULT_MIN_CONNECTIONS;
 
   /* Init network quotas */
-  for (c = 0; c < GNUNET_ATS_NetworkTypeCount; c++)
+  for (c = 0; c < GNUNET_NT_COUNT; c++)
   {
     mlp->pv.quota_index[c] = c;
     mlp->pv.quota_out[c] = env->out_quota[c];
@@ -2655,7 +2661,7 @@ libgnunet_plugin_ats_mlp_init (void *cls)
 
     LOG (GNUNET_ERROR_TYPE_INFO,
          "Quota for network `%s' (in/out) %llu/%llu\n",
-         GNUNET_ATS_print_network_type (c),
+         GNUNET_NT_to_string (c),
          mlp->pv.quota_out[c],
          mlp->pv.quota_in[c]);
     /* Check if defined quota could make problem unsolvable */
@@ -2663,7 +2669,7 @@ libgnunet_plugin_ats_mlp_init (void *cls)
     {
       LOG (GNUNET_ERROR_TYPE_INFO,
            _("Adjusting inconsistent outbound quota configuration for network `%s', is %llu must be at least %llu\n"),
-           GNUNET_ATS_print_network_type(mlp->pv.quota_index[c]),
+           GNUNET_NT_to_string(mlp->pv.quota_index[c]),
            mlp->pv.quota_out[c],
            (n_min * b_min));
       mlp->pv.quota_out[c] = (n_min * b_min);
@@ -2672,7 +2678,7 @@ libgnunet_plugin_ats_mlp_init (void *cls)
     {
       LOG (GNUNET_ERROR_TYPE_INFO,
            _("Adjusting inconsistent inbound quota configuration for network `%s', is %llu must be at least %llu\n"),
-           GNUNET_ATS_print_network_type(mlp->pv.quota_index[c]),
+           GNUNET_NT_to_string(mlp->pv.quota_index[c]),
            mlp->pv.quota_in[c],
            (n_min * b_min));
       mlp->pv.quota_in[c] = (n_min * b_min);
@@ -2682,7 +2688,7 @@ libgnunet_plugin_ats_mlp_init (void *cls)
     {
       LOG (GNUNET_ERROR_TYPE_INFO,
            _("Adjusting outbound quota configuration for network `%s'from %llu to %.0f\n"),
-           GNUNET_ATS_print_network_type(mlp->pv.quota_index[c]),
+           GNUNET_NT_to_string(mlp->pv.quota_index[c]),
            mlp->pv.quota_out[c],
            mlp->pv.BIG_M);
       mlp->pv.quota_out[c] = mlp->pv.BIG_M ;
@@ -2691,7 +2697,7 @@ libgnunet_plugin_ats_mlp_init (void *cls)
     {
       LOG (GNUNET_ERROR_TYPE_INFO,
            _("Adjusting inbound quota configuration for network `%s' from %llu to %.0f\n"),
-           GNUNET_ATS_print_network_type(mlp->pv.quota_index[c]),
+           GNUNET_NT_to_string(mlp->pv.quota_index[c]),
            mlp->pv.quota_in[c],
            mlp->pv.BIG_M);
       mlp->pv.quota_in[c] = mlp->pv.BIG_M ;

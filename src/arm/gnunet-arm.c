@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2012, 2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -71,7 +76,7 @@ static char *term;
 /**
  * Set to the name of the config file used.
  */
-static const char *config_file;
+static char *config_file;
 
 /**
  * Set to the directory where runtime files are stored.
@@ -143,8 +148,8 @@ delete_files ()
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Will attempt to remove configuration file %s and service directory %s\n",
-	      config_file, dir);
-
+	      config_file,
+	      dir);
   if (0 != UNLINK (config_file))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
@@ -156,7 +161,6 @@ delete_files ()
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
 		_("Failed to remove servicehome directory %s\n"),
                 dir);
-
   }
 }
 
@@ -170,6 +174,7 @@ delete_files ()
 static void
 shutdown_task (void *cls)
 {
+  (void) cls;
   if (NULL != al_task)
   {
     GNUNET_SCHEDULER_cancel (al_task);
@@ -282,6 +287,7 @@ conn_status (void *cls,
 {
   static int once;
 
+  (void) cls;
   if ( (GNUNET_SYSERR == connected) &&
        (0 == once) )
   {
@@ -310,6 +316,7 @@ start_callback (void *cls,
 		enum GNUNET_ARM_RequestStatus rs,
 		enum GNUNET_ARM_Result result)
 {
+  (void) cls;
   op = NULL;
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
   {
@@ -353,6 +360,7 @@ stop_callback (void *cls,
 {
   char *msg;
 
+  (void) cls;
   op = NULL;
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
   {
@@ -403,6 +411,7 @@ init_callback (void *cls,
 	       enum GNUNET_ARM_RequestStatus rs,
 	       enum GNUNET_ARM_Result result)
 {
+  (void) cls;
   op = NULL;
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
   {
@@ -450,6 +459,7 @@ term_callback (void *cls,
 {
   char *msg;
 
+  (void) cls;
   op = NULL;
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
   {
@@ -499,6 +509,7 @@ list_callback (void *cls,
 {
   unsigned int i;
 
+  (void) cls;
   op = NULL;
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
   {
@@ -536,6 +547,7 @@ list_callback (void *cls,
 static void
 action_loop (void *cls)
 {
+  (void) cls;
   al_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Running requested actions\n");
@@ -635,6 +647,7 @@ srv_status (void *cls,
 {
   const char *msg;
 
+  (void) cls;
   switch (status)
   {
   case GNUNET_ARM_SERVICE_MONITORING_STARTED:
@@ -677,6 +690,7 @@ srv_status (void *cls,
 static void
 timeout_task_cb (void *cls)
 {
+  (void) cls;
   timeout_task = NULL;
   ret = 2;
   GNUNET_SCHEDULER_shutdown ();
@@ -697,10 +711,10 @@ run (void *cls,
      const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
-  char *armconfig;
-
+  (void) cls;
+  (void) args;
+  (void) cfgfile;
   cfg = GNUNET_CONFIGURATION_dup (c);
-  config_file = cfgfile;
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_string (cfg,
                                              "PATHS",
@@ -712,30 +726,18 @@ run (void *cls,
                                "GNUNET_HOME");
     return;
   }
-  if (NULL != cfgfile)
-  {
-    if (GNUNET_OK !=
-        GNUNET_CONFIGURATION_get_value_filename (cfg,
-                                                 "arm",
-                                                 "CONFIG",
-						 &armconfig))
-    {
-      GNUNET_CONFIGURATION_set_value_string (cfg,
-                                             "arm",
-                                             "CONFIG",
-                                             cfgfile);
-    }
-    else
-      GNUNET_free (armconfig);
-  }
+  (void) GNUNET_CONFIGURATION_get_value_filename (cfg,
+						  "arm",
+						  "CONFIG",
+						  &config_file);
   if (NULL == (h = GNUNET_ARM_connect (cfg,
                                        &conn_status,
                                        NULL)))
     return;
   if (monitor)
     m = GNUNET_ARM_monitor_start (cfg,
-                            &srv_status,
-                            NULL);
+				  &srv_status,
+				  NULL);
   al_task = GNUNET_SCHEDULER_add_now (&action_loop,
                                       NULL);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
@@ -755,84 +757,77 @@ run (void *cls,
  * @return 0 ok, 1 on error, 2 on timeout
  */
 int
-main (int argc, char *const *argv)
+main (int argc,
+      char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_flag ('e',
-                                  "end",
-                                  gettext_noop ("stop all GNUnet services"),
-                                  &end),
-
+			       "end",
+			       gettext_noop ("stop all GNUnet services"),
+			       &end),
     GNUNET_GETOPT_option_string ('i',
                                  "init",
                                  "SERVICE",
                                  gettext_noop ("start a particular service"),
                                  &init),
-
     GNUNET_GETOPT_option_string ('k',
                                  "kill",
                                  "SERVICE",
                                  gettext_noop ("stop a particular service"),
                                  &term),
-
     GNUNET_GETOPT_option_flag ('s',
-                                  "start",
-                                  gettext_noop ("start all GNUnet default services"),
-                                  &start),
-
+			       "start",
+			       gettext_noop ("start all GNUnet default services"),
+			       &start),
     GNUNET_GETOPT_option_flag ('r',
-                                  "restart",
-                                  gettext_noop ("stop and start all GNUnet default services"),
-                                  &restart),
+			       "restart",
+			       gettext_noop ("stop and start all GNUnet default services"),
+			       &restart),
     GNUNET_GETOPT_option_flag ('d',
-                                  "delete",
-                                  gettext_noop ("delete config file and directory on exit"),
-                                  &delete),
-
+			       "delete",
+			       gettext_noop ("delete config file and directory on exit"),
+			       &delete),
     GNUNET_GETOPT_option_flag ('m',
-                                  "monitor",
-                                  gettext_noop ("monitor ARM activities"),
-                                  &monitor),
-
+			       "monitor",
+			       gettext_noop ("monitor ARM activities"),
+			       &monitor),
     GNUNET_GETOPT_option_flag ('q',
-                                  "quiet",
-                                  gettext_noop ("don't print status messages"),
-                                  &quiet),
-
+			       "quiet",
+			       gettext_noop ("don't print status messages"),
+			       &quiet),
     GNUNET_GETOPT_option_relative_time ('T',
-                                            "timeout",
-                                            "DELAY",
-                                            gettext_noop ("exit with error status if operation does not finish after DELAY"),
-                                            &timeout),
-
+					"timeout",
+					"DELAY",
+					gettext_noop ("exit with error status if operation does not finish after DELAY"),
+					&timeout),
     GNUNET_GETOPT_option_flag ('I',
-                                  "info",
-                                  gettext_noop ("list currently running services"),
-                                  &list), 
-
+			       "info",
+			       gettext_noop ("list currently running services"),
+			       &list), 
     GNUNET_GETOPT_option_flag ('O',
-                                  "no-stdout",
-                                  gettext_noop ("don't let gnunet-service-arm inherit standard output"),
-                                  &no_stdout),
-
+			       "no-stdout",
+			       gettext_noop ("don't let gnunet-service-arm inherit standard output"),
+			       &no_stdout),
     GNUNET_GETOPT_option_flag ('E',
-                                  "no-stderr",
-                                  gettext_noop ("don't let gnunet-service-arm inherit standard error"),
-                                  &no_stderr),
-
+			       "no-stderr",
+			       gettext_noop ("don't let gnunet-service-arm inherit standard error"),
+			       &no_stderr),
     GNUNET_GETOPT_OPTION_END
   };
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv,
-                                                 &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv,
+				    &argc, &argv))
     return 2;
 
   if (GNUNET_OK ==
-      GNUNET_PROGRAM_run (argc, argv, "gnunet-arm",
+      GNUNET_PROGRAM_run (argc,
+			  argv,
+			  "gnunet-arm",
 			  gettext_noop
 			  ("Control services and the Automated Restart Manager (ARM)"),
-			  options, &run, NULL))
+			  options,
+			  &run, NULL))
   {
     GNUNET_free ((void *) argv);
     return ret;

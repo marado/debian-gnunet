@@ -3,7 +3,7 @@
       Copyright (C) 2012 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -50,7 +55,7 @@ extern "C"
 
 
 /**
- * Called when a new element was received from another peer, or an error occured.
+ * Called when a new element was received from another peer, or an error occurred.
  * May deliver duplicate values.
  * Elements given to a consensus operation by the local peer are NOT given
  * to this callback.

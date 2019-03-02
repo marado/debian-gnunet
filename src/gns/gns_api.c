@@ -3,7 +3,7 @@
      Copyright (C) 2009-2013, 2016, 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file gns/gns_api.c
@@ -229,7 +234,6 @@ reconnect (struct GNUNET_GNS_Handle *handle)
                            handle),
     GNUNET_MQ_handler_end ()
   };
-  struct GNUNET_GNS_LookupRequest *lh;
 
   GNUNET_assert (NULL == handle->mq);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -241,7 +245,9 @@ reconnect (struct GNUNET_GNS_Handle *handle)
                                       handle);
   if (NULL == handle->mq)
     return;
-  for (lh = handle->lookup_head; NULL != lh; lh = lh->next)
+  for (struct GNUNET_GNS_LookupRequest *lh = handle->lookup_head;
+       NULL != lh;
+       lh = lh->next)
     GNUNET_MQ_send_copy (handle->mq,
                          lh->env);
 }
@@ -297,17 +303,21 @@ GNUNET_GNS_disconnect (struct GNUNET_GNS_Handle *handle)
  * Cancel pending lookup request
  *
  * @param lr the lookup request to cancel
+ * @return closure from the lookup result processor
  */
-void
+void *
 GNUNET_GNS_lookup_cancel (struct GNUNET_GNS_LookupRequest *lr)
 {
   struct GNUNET_GNS_Handle *handle = lr->gns_handle;
+  void *ret;
 
   GNUNET_CONTAINER_DLL_remove (handle->lookup_head,
                                handle->lookup_tail,
                                lr);
   GNUNET_MQ_discard (lr->env);
+  ret = lr->proc_cls;
   GNUNET_free (lr);
+  return ret;
 }
 
 

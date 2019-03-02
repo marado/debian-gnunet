@@ -3,7 +3,7 @@
      Copyright (C) 2006, 2009, 2010 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /*
  * @file datacache/test_datacache.c
@@ -41,6 +46,11 @@ checkIt (void *cls,
 	 unsigned int path_len,
 	 const struct GNUNET_PeerIdentity *path)
 {
+  (void) key;
+  (void) type;
+  (void) exp;
+  (void) path_len;
+  (void) path;
   if (size != sizeof (struct GNUNET_HashCode))
   {
     GNUNET_break (0);
@@ -56,17 +66,22 @@ checkIt (void *cls,
 
 
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_DATACACHE_Handle *h;
   struct GNUNET_HashCode k;
   struct GNUNET_HashCode n;
   struct GNUNET_TIME_Absolute exp;
-  unsigned int i;
 
+  (void) cls;
+  (void) args;
+  (void) cfgfile;
   ok = 0;
-  h = GNUNET_DATACACHE_create (cfg, "testcache");
+  h = GNUNET_DATACACHE_create (cfg,
+			       "testcache");
   if (h == NULL)
   {
     FPRINTF (stderr,
@@ -78,7 +93,7 @@ run (void *cls, char *const *args, const char *cfgfile,
   exp = GNUNET_TIME_absolute_get ();
   exp.abs_value_us += 5 * 60 * 1000 * 1000LL;
   memset (&k, 0, sizeof (struct GNUNET_HashCode));
-  for (i = 0; i < 100; i++)
+  for (unsigned int i = 0; i < 100; i++)
   {
     GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);
     ASSERT (GNUNET_OK ==
@@ -90,26 +105,43 @@ run (void *cls, char *const *args, const char *cfgfile,
 				  0, NULL));
     k = n;
   }
-  memset (&k, 0, sizeof (struct GNUNET_HashCode));
-  for (i = 0; i < 100; i++)
+  memset (&k,
+	  0,
+	  sizeof (struct GNUNET_HashCode));
+  for (unsigned int i = 0; i < 100; i++)
   {
-    GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);
-    ASSERT (1 == GNUNET_DATACACHE_get (h, &k, 1 + i % 16, &checkIt, &n));
+    GNUNET_CRYPTO_hash (&k,
+			sizeof (struct GNUNET_HashCode),
+			&n);
+    ASSERT (1 == GNUNET_DATACACHE_get (h,
+				       &k,
+				       1 + i % 16,
+				       &checkIt,
+				       &n));
     k = n;
   }
 
-  memset (&k, 42, sizeof (struct GNUNET_HashCode));
-  GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);
+  memset (&k,
+	  42,
+	  sizeof (struct GNUNET_HashCode));
+  GNUNET_CRYPTO_hash (&k,
+		      sizeof (struct GNUNET_HashCode),
+		      &n);
   ASSERT (GNUNET_OK ==
           GNUNET_DATACACHE_put (h,
                                 &k,
                                 GNUNET_YES,
                                 sizeof (struct GNUNET_HashCode),
-                                (const char *) &n, 792,
+                                (const char *) &n,
+				792,
                                 GNUNET_TIME_UNIT_FOREVER_ABS,
-				0, NULL));
-  ASSERT (0 != GNUNET_DATACACHE_get (h, &k, 792, &checkIt, &n));
-
+				0,
+				NULL));
+  ASSERT (0 != GNUNET_DATACACHE_get (h,
+				     &k,
+				     792,
+				     &checkIt,
+				     &n));
   GNUNET_DATACACHE_destroy (h);
   ASSERT (ok == 0);
   return;
@@ -123,7 +155,7 @@ FAILURE:
 int
 main (int argc, char *argv[])
 {
-  char cfg_name[128];
+  char cfg_name[PATH_MAX];
   char *const xargv[] = {
     "test-datacache",
     "-c",
@@ -134,16 +166,26 @@ main (int argc, char *argv[])
     GNUNET_GETOPT_OPTION_END
   };
 
+  (void) argc;
   GNUNET_log_setup ("test-datacache",
                     "WARNING",
                     NULL);
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_snprintf (cfg_name, sizeof (cfg_name), "test_datacache_data_%s.conf",
+  GNUNET_snprintf (cfg_name,
+		   sizeof (cfg_name),
+		   "test_datacache_data_%s.conf",
                    plugin_name);
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1, xargv,
-                      "test-datacache", "nohelp", options, &run, NULL);
+  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1,
+		      xargv,
+                      "test-datacache",
+		      "nohelp",
+		      options,
+		      &run,
+		      NULL);
   if ( (0 != ok) && (77 != ok) )
-    FPRINTF (stderr, "Missed some testcases: %d\n", ok);
+    FPRINTF (stderr,
+	     "Missed some testcases: %d\n",
+	     ok);
   return ok;
 }
 

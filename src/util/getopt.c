@@ -3,7 +3,7 @@
    "Keep this file name-space clean" means, talk to roland@gnu.ai.mit.edu
    before changing it!
 
-   Copyright Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97
+   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97
      Free Software Foundation, Inc.
 
 NOTE: The canonical source of this file is maintained with the GNU C Library.
@@ -26,7 +26,7 @@ USA.
 
 
 This code was heavily modified for GNUnet.
-Copyright Copyright (C) 2006, 2017 Christian Grothoff
+Copyright (C) 2006, 2017 Christian Grothoff
 */
 
 /**
@@ -866,7 +866,7 @@ GNgetopt_long (int argc,
  * @param argc number of arguments
  * @param argv actual arguments
  * @return index into argv with first non-option
- *   argument, or -1 on error
+ *   argument, or #GNUNET_SYSERR on error
  */
 int
 GNUNET_GETOPT_run (const char *binaryOptions,
@@ -967,9 +967,9 @@ GNUNET_GETOPT_run (const char *binaryOptions,
   GNUNET_free (seen);
 
   /* call cleaners, if available */
-  for (count = 0; NULL != allOptions[count].name; count++)
-    if (NULL != allOptions[count].cleaner)
-      allOptions[count].cleaner (allOptions[count].scls);
+  for (unsigned int i = 0; NULL != allOptions[i].name; i++)
+    if (NULL != allOptions[i].cleaner)
+      allOptions[i].cleaner (allOptions[i].scls);
 
   if (GNUNET_OK != cont)
     return cont;

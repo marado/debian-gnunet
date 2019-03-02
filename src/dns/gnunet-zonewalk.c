@@ -3,7 +3,7 @@
      Copyright (C) 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -491,6 +496,7 @@ queue (const char *hostname)
   struct Request *req;
   char *raw;
   size_t raw_size;
+  int ret;
 
   if (GNUNET_OK !=
       GNUNET_DNSPARSER_check_name (hostname))
@@ -511,13 +517,14 @@ queue (const char *hostname)
   p.queries = &q;
   p.id = (uint16_t) GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_NONCE,
                                               UINT16_MAX);
-
-  if (GNUNET_OK !=
-      GNUNET_DNSPARSER_pack (&p,
-                             UINT16_MAX,
-                             &raw,
-                             &raw_size))
+  ret = GNUNET_DNSPARSER_pack (&p,
+			       UINT16_MAX,
+			       &raw,
+			       &raw_size);
+  if (GNUNET_OK != ret)
   {
+    if (GNUNET_NO == ret)
+      GNUNET_free (raw); 
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Failed to pack query for hostname `%s'\n",
                 hostname);
