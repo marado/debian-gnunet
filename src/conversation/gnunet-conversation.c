@@ -3,7 +3,7 @@
   Copyright (C) 2013 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file conversation/gnunet-conversation.c
@@ -261,6 +266,13 @@ phone_event_handler (void *cls,
   switch (code)
   {
   case GNUNET_CONVERSATION_EC_PHONE_RING:
+    /*
+     * FIXME: we should be playing our ringtones from contrib/sounds now!
+     *
+    ring_my_bell();
+     *
+     * see https://gstreamer.freedesktop.org/documentation/application-development/highlevel/playback-components.html on how to play a wav using the gst framework being used here
+     */
     FPRINTF (stdout,
              _("Incoming call from `%s'. Please /accept %u or /cancel %u the call.\n"),
              GNUNET_GNSRECORD_pkey_to_zkey (caller_id),
@@ -714,7 +726,7 @@ do_status (const char *args)
       break;
     case CS_RINGING:
       FPRINTF (stdout,
-               _("We are calling `%s', his phone should be ringing.\n"),
+               _("We are calling `%s', their phone should be ringing.\n"),
                peer_name);
       break;
     case CS_CONNECTED:

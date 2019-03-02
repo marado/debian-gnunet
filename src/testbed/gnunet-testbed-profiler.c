@@ -3,7 +3,7 @@
      Copyright (C) 2008--2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -271,27 +276,23 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_uint ('p',
-                                   "num-peers",
-                                   "COUNT",
-                                   gettext_noop ("create COUNT number of peers"),
-                                   &num_peers),
-
+                               "num-peers",
+                               "COUNT",
+                               gettext_noop ("create COUNT number of peers"),
+                               &num_peers),
     GNUNET_GETOPT_option_uint ('e',
-                                   "num-errors",
-                                   "COUNT",
-                                   gettext_noop ("tolerate COUNT number of continious timeout failures"),
-                                   &num_cont_fails),
-
+                               "num-errors",
+                               "COUNT",
+                               gettext_noop ("tolerate COUNT number of continious timeout failures"),
+                               &num_cont_fails),
     GNUNET_GETOPT_option_flag ('n',
-                                  "non-interactive",
-                                  gettext_noop ("run profiler in non-interactive mode where upon "
-                                                "testbed setup the profiler does not wait for a "
-                                                "keystroke but continues to run until a termination "
-                                                "signal is received"),
+                               "non-interactive",
+                               gettext_noop ("run profiler in non-interactive mode where upon "
+                                             "testbed setup the profiler does not wait for a "
+                                             "keystroke but continues to run until a termination "
+                                             "signal is received"),
                                   &noninteractive),
-
 #if !ENABLE_SUPERMUC
     GNUNET_GETOPT_option_string ('H',
                                  "hosts",

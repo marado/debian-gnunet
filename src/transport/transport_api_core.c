@@ -3,7 +3,7 @@
      Copyright (C) 2009-2013, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -25,6 +30,7 @@
 #include "gnunet_hello_lib.h"
 #include "gnunet_protocols.h"
 #include "gnunet_transport_core_service.h"
+#include "gnunet_transport_service.h"
 #include "transport.h"
 
 #define LOG(kind,...) GNUNET_log_from (kind, "transport-api-core",__VA_ARGS__)
@@ -133,17 +139,17 @@ struct GNUNET_TRANSPORT_CoreHandle
   /**
    * function to call on connect events
    */
-  GNUNET_TRANSPORT_NotifyConnecT nc_cb;
+  GNUNET_TRANSPORT_NotifyConnect nc_cb;
 
   /**
    * function to call on disconnect events
    */
-  GNUNET_TRANSPORT_NotifyDisconnecT nd_cb;
+  GNUNET_TRANSPORT_NotifyDisconnect nd_cb;
 
   /**
    * function to call on excess bandwidth events
    */
-  GNUNET_TRANSPORT_NotifyExcessBandwidtH neb_cb;
+  GNUNET_TRANSPORT_NotifyExcessBandwidth neb_cb;
 
   /**
    * My client connection to the transport service.
@@ -296,8 +302,9 @@ mq_error_handler (void *cls,
 {
   struct GNUNET_TRANSPORT_CoreHandle *h = cls;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Error receiving from transport service, disconnecting temporarily.\n");
+  LOG (GNUNET_ERROR_TYPE_ERROR,
+       "Error receiving from transport service (%d), disconnecting temporarily.\n",
+       error);
   disconnect_and_schedule_reconnect (h);
 }
 
@@ -548,10 +555,11 @@ handle_connect (void *cls,
        "Receiving CONNECT message for `%s' with quota %u\n",
        GNUNET_i2s (&cim->id),
        ntohl (cim->quota_out.value__));
-  n = neighbour_find (h, &cim->id);
+  n = neighbour_find (h,
+                      &cim->id);
   if (NULL != n)
   {
-    GNUNET_break (0);
+    GNUNET_break (0); /* FIXME: this assertion seems to fail sometimes!? */
     disconnect_and_schedule_reconnect (h);
     return;
   }
@@ -740,18 +748,18 @@ handle_set_quota (void *cls,
   struct GNUNET_TRANSPORT_CoreHandle *h = cls;
   struct Neighbour *n;
 
-  n = neighbour_find (h,
-		      &qm->peer);
-  if (NULL == n)
-  {
-    GNUNET_break (0);
-    disconnect_and_schedule_reconnect (h);
-    return;
-  }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Receiving SET_QUOTA message for `%s' with quota %u\n",
        GNUNET_i2s (&qm->peer),
        ntohl (qm->quota.value__));
+  n = neighbour_find (h,
+		      &qm->peer);
+  if (NULL == n)
+  {
+    GNUNET_break (0); /* FIXME: julius reports this assertion fails sometimes? */
+    disconnect_and_schedule_reconnect (h);
+    return;
+  }
   GNUNET_BANDWIDTH_tracker_update_quota (&n->out_tracker,
                                          qm->quota);
 }
@@ -893,9 +901,9 @@ GNUNET_TRANSPORT_core_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
 			       const struct GNUNET_PeerIdentity *self,
 			       const struct GNUNET_MQ_MessageHandler *handlers,
 			       void *cls,
-			       GNUNET_TRANSPORT_NotifyConnecT nc,
-			       GNUNET_TRANSPORT_NotifyDisconnecT nd,
-			       GNUNET_TRANSPORT_NotifyExcessBandwidtH neb)
+			       GNUNET_TRANSPORT_NotifyConnect nc,
+			       GNUNET_TRANSPORT_NotifyDisconnect nd,
+			       GNUNET_TRANSPORT_NotifyExcessBandwidth neb)
 {
   struct GNUNET_TRANSPORT_CoreHandle *h;
   unsigned int i;

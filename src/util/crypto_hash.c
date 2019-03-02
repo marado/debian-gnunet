@@ -3,7 +3,7 @@
      Copyright (C) 2001-2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 
 */
 /**
@@ -21,6 +26,7 @@
 #include "platform.h"
 #include "gnunet_crypto_lib.h"
 #include "gnunet_strings_lib.h"
+#include "benchmark.h"
 #include <gcrypt.h>
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-hash", __VA_ARGS__)
@@ -39,7 +45,9 @@ GNUNET_CRYPTO_hash (const void *block,
                     size_t size,
                     struct GNUNET_HashCode *ret)
 {
+  BENCHMARK_START (hash);
   gcry_md_hash_buffer (GCRY_MD_SHA512, ret, block, size);
+  BENCHMARK_END (hash);
 }
 
 
@@ -362,14 +370,17 @@ GNUNET_CRYPTO_hmac_derive_key_v (struct GNUNET_CRYPTO_AuthKey *key,
 
 /**
  * Calculate HMAC of a message (RFC 2104)
+ * TODO: Shouldn' this be the standard hmac function and
+ * the above be renamed?
  *
  * @param key secret key
+ * @param key_len secret key length
  * @param plaintext input plaintext
  * @param plaintext_len length of @a plaintext
  * @param hmac where to store the hmac
  */
 void
-GNUNET_CRYPTO_hmac (const struct GNUNET_CRYPTO_AuthKey *key,
+GNUNET_CRYPTO_hmac_raw (const void *key, size_t key_len,
                     const void *plaintext, size_t plaintext_len,
                     struct GNUNET_HashCode *hmac)
 {
@@ -387,11 +398,30 @@ GNUNET_CRYPTO_hmac (const struct GNUNET_CRYPTO_AuthKey *key,
   {
     gcry_md_reset (md);
   }
-  gcry_md_setkey (md, key->key, sizeof (key->key));
+  gcry_md_setkey (md, key, key_len);
   gcry_md_write (md, plaintext, plaintext_len);
   mc = gcry_md_read (md, GCRY_MD_SHA512);
   GNUNET_assert (NULL != mc);
   GNUNET_memcpy (hmac->bits, mc, sizeof (hmac->bits));
+}
+
+
+/**
+ * Calculate HMAC of a message (RFC 2104)
+ *
+ * @param key secret key
+ * @param plaintext input plaintext
+ * @param plaintext_len length of @a plaintext
+ * @param hmac where to store the hmac
+ */
+void
+GNUNET_CRYPTO_hmac (const struct GNUNET_CRYPTO_AuthKey *key,
+                    const void *plaintext, size_t plaintext_len,
+                    struct GNUNET_HashCode *hmac)
+{
+  GNUNET_CRYPTO_hmac_raw ((void*) key->key, sizeof (key->key),
+                          plaintext, plaintext_len,
+                          hmac);
 }
 
 
@@ -417,11 +447,16 @@ GNUNET_CRYPTO_hash_context_start ()
 {
   struct GNUNET_HashContext *hc;
 
+  BENCHMARK_START (hash_context_start);
+
   hc = GNUNET_new (struct GNUNET_HashContext);
   GNUNET_assert (0 ==
                  gcry_md_open (&hc->hd,
                                GCRY_MD_SHA512,
                                0));
+
+  BENCHMARK_END (hash_context_start);
+
   return hc;
 }
 
@@ -438,7 +473,9 @@ GNUNET_CRYPTO_hash_context_read (struct GNUNET_HashContext *hc,
 				 const void *buf,
 				 size_t size)
 {
+  BENCHMARK_START (hash_context_read);
   gcry_md_write (hc->hd, buf, size);
+  BENCHMARK_END (hash_context_read);
 }
 
 
@@ -454,12 +491,15 @@ GNUNET_CRYPTO_hash_context_finish (struct GNUNET_HashContext *hc,
 {
   const void *res = gcry_md_read (hc->hd, 0);
 
+  BENCHMARK_START (hash_context_finish);
+
   GNUNET_assert (NULL != res);
   if (NULL != r_hash)
     GNUNET_memcpy (r_hash,
             res,
             sizeof (struct GNUNET_HashCode));
   GNUNET_CRYPTO_hash_context_abort (hc);
+  BENCHMARK_END (hash_context_finish);
 }
 
 

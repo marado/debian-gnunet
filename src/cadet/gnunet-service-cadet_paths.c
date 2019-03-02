@@ -3,7 +3,7 @@
      Copyright (C) 2001-2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,10 +11,15 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file cadet/gnunet-service-cadet_paths.c
- * @brief Information we track per path.
+ * @brief Information we track per path.    
  * @author Bartlomiej Polot
  * @author Christian Grothoff
  */
@@ -351,7 +356,7 @@ check_match (void *cls,
        (off + 1 != cm_ctx->cpath_length) )
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "check_match missmatch because path %s is too long (%u vs. %u vs. %u)\n",
+         "check_match mismatch because path %s is too long (%u vs. %u vs. %u)\n",
          GCPP_2s (path),
          path->entries_length,
          off + 1,
@@ -364,10 +369,10 @@ check_match (void *cls,
                                  i))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-           "check_match path %s missmatches at offset %u\n",
+           "check_match path %s mismatches at offset %u\n",
            GCPP_2s (path),
            i);
-      return GNUNET_YES; /* missmatch, ignore */
+      return GNUNET_YES; /* mismatch, ignore */
     }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "check_match found match with path %s\n",
@@ -474,7 +479,6 @@ GCPP_try_path_from_dht (const struct GNUNET_PeerIdentity *get_path,
   struct CadetPeer *cpath[get_path_length + put_path_length];
   struct CheckMatchContext cm_ctx;
   struct CadetPeerPath *path;
-  int i;
   unsigned int skip;
   unsigned int total_len;
 
@@ -524,7 +528,7 @@ GCPP_try_path_from_dht (const struct GNUNET_PeerIdentity *get_path,
   cm_ctx.cpath_length = total_len;
   cm_ctx.cpath = cpath;
   cm_ctx.match = NULL;
-  for (i=total_len-1;i>=0;i--)
+  for (int i=total_len-1;i>=0;i--)
   {
     GCP_iterate_paths_at (cpath[i],
                           (unsigned int) i,
@@ -559,7 +563,7 @@ GCPP_try_path_from_dht (const struct GNUNET_PeerIdentity *get_path,
   path->entries_length = total_len;
   path->entries = GNUNET_new_array (path->entries_length,
                                     struct CadetPeerPathEntry *);
-  for (i=path->entries_length-1;i>=0;i--)
+  for (int i=path->entries_length-1;i>=0;i--)
   {
     struct CadetPeerPathEntry *entry = GNUNET_new (struct CadetPeerPathEntry);
 
@@ -567,7 +571,7 @@ GCPP_try_path_from_dht (const struct GNUNET_PeerIdentity *get_path,
     entry->peer = cpath[i];
     entry->path = path;
   }
-  for (i=path->entries_length-1;i>=0;i--)
+  for (int i=path->entries_length-1;i>=0;i--)
   {
     struct CadetPeerPathEntry *entry = path->entries[i];
 

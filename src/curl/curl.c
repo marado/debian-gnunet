@@ -3,7 +3,7 @@
   Copyright (C) 2014, 2015, 2016, 2018 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file curl/curl.c
@@ -26,6 +31,10 @@
 #endif
 #include <jansson.h>
 #include "gnunet_curl_lib.h"
+
+#if ENABLE_BENCHMARK
+#include "../util/benchmark.h"
+#endif
 
 
 /**
@@ -54,33 +63,6 @@
  * the Curl library.
  */
 static int curl_fail;
-
-
-/**
- * @brief Buffer data structure we use to buffer the HTTP download
- * before giving it to the JSON parser.
- */
-struct DownloadBuffer
-{
-
-  /**
-   * Download buffer
-   */
-  void *buf;
-
-  /**
-   * The size of the download buffer
-   */
-  size_t buf_size;
-
-  /**
-   * Error code (based on libc errno) if we failed to download
-   * (i.e. response too large).
-   */
-  int eno;
-
-};
-
 
 /**
  * Jobs are CURL requests running within a `struct GNUNET_CURL_Context`.
@@ -121,7 +103,7 @@ struct GNUNET_CURL_Job
   /**
    * Buffer for response received from CURL.
    */
-  struct DownloadBuffer db;
+  struct GNUNET_CURL_DownloadBuffer db;
 
 };
 
@@ -235,7 +217,7 @@ download_cb (char *bufptr,
              size_t nitems,
              void *cls)
 {
-  struct DownloadBuffer *db = cls;
+  struct GNUNET_CURL_DownloadBuffer *db = cls;
   size_t msize;
   void *buf;
 
@@ -373,10 +355,10 @@ GNUNET_CURL_job_cancel (struct GNUNET_CURL_Job *job)
  *             (or zero if we aborted the download, i.e.
  *              because the response was too big, or if
  *              the JSON we received was malformed).
- * @return NULL if downloading a JSON reply failed
+ * @return NULL if downloading a JSON reply failed.
  */
-static json_t *
-download_get_result (struct DownloadBuffer *db,
+void *
+download_get_result (struct GNUNET_CURL_DownloadBuffer *db,
                      CURL *eh,
                      long *response_code)
 {
@@ -408,8 +390,9 @@ download_get_result (struct DownloadBuffer *db,
       GNUNET_break (0);
       *response_code = 0;
     }
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                "Did NOT detect response as JSON\n");
+    if (0 != db->buf_size)
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  "Did NOT detect response as JSON\n");
     return NULL;
   }
   json = NULL;
@@ -445,19 +428,44 @@ download_get_result (struct DownloadBuffer *db,
 
 
 /**
+ * Add custom request header.
+ *
+ * @param ctx cURL context.
+ * @param header header string; will be given to the context AS IS.
+ * @return #GNUNET_OK if no errors occurred, #GNUNET_SYSERR otherwise.
+ */
+int
+GNUNET_CURL_append_header (struct GNUNET_CURL_Context *ctx,
+                           const char *header)
+{
+  ctx->json_header = curl_slist_append (ctx->json_header,
+                                        header);
+  if (NULL == ctx->json_header)
+    return GNUNET_SYSERR;
+
+  return GNUNET_OK;
+}
+
+
+/**
  * Run the main event loop for the Taler interaction.
  *
  * @param ctx the library context
+ * @param rp parses the raw response returned from
+ *        the Web server.
+ * @param rc cleans/frees the response
  */
 void
-GNUNET_CURL_perform (struct GNUNET_CURL_Context *ctx)
+GNUNET_CURL_perform2 (struct GNUNET_CURL_Context *ctx,
+                      GNUNET_CURL_RawParser rp,
+                      GNUNET_CURL_ResponseCleaner rc)
 {
   CURLMsg *cmsg;
   struct GNUNET_CURL_Job *job;
   int n_running;
   int n_completed;
   long response_code;
-  json_t *j;
+  void *response;
 
   (void) curl_multi_perform (ctx->multi,
                              &n_running);
@@ -471,16 +479,48 @@ GNUNET_CURL_perform (struct GNUNET_CURL_Context *ctx)
                                       CURLINFO_PRIVATE,
                                       (char **) &job));
     GNUNET_assert (job->ctx == ctx);
-    response_code = 0;
-    j = download_get_result (&job->db,
-                             job->easy_handle,
-                             &response_code);
+    response_code = 0 ;
+    response = rp (&job->db,
+                   job->easy_handle,
+                   &response_code);
+#if ENABLE_BENCHMARK
+  {
+    char *url = NULL;
+    double total_as_double = 0;
+    struct GNUNET_TIME_Relative total;
+    struct UrlRequestData *urd;
+    CURLcode res;
+    res = curl_easy_getinfo (cmsg->easy_handle, CURLINFO_TOTAL_TIME, &total_as_double);
+    GNUNET_break (CURLE_OK == res);
+    curl_easy_getinfo (cmsg->easy_handle, CURLINFO_EFFECTIVE_URL, &url);
+    total.rel_value_us = total_as_double * 1000 * 1000;
+    urd = get_url_benchmark_data (url, (unsigned int) response_code);
+    urd->count++;
+    urd->time = GNUNET_TIME_relative_add (urd->time, total);
+    urd->time_max = GNUNET_TIME_relative_max (total, urd->time_max);
+  }
+#endif
     job->jcc (job->jcc_cls,
               response_code,
-              j);
-    json_decref (j);
+              response);
+    rc (response);
     GNUNET_CURL_job_cancel (job);
   }
+}
+
+
+/**
+ * Run the main event loop for the Taler interaction.
+ *
+ * @param ctx the library context
+ */
+void
+GNUNET_CURL_perform (struct GNUNET_CURL_Context *ctx)
+{
+  
+  GNUNET_CURL_perform2 (ctx,
+                        download_get_result,
+                        (GNUNET_CURL_ResponseCleaner) &json_decref);
 }
 
 

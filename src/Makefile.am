@@ -11,19 +11,15 @@ endif
 
 if HAVE_EXPERIMENTAL
  EXP_DIR = \
-  rps \
-  multicast \
-  psycutil \
-  psycstore \
-  psyc \
-  social 
-#  dv (FTBFS)
+  rps
 if HAVE_ABE
+if HAVE_JSON
  EXP_DIR += \
     abe \
     credential \
-    identity-attribute \
-    identity-provider 
+    reclaim-attribute \
+    reclaim
+endif
 endif
 if HAVE_JSON
  EXP_DIR += \
@@ -63,9 +59,8 @@ if HAVE_POSTGRESQL
 endif
 
 if HAVE_MHD
- REST_DIR = rest
 if HAVE_JSON
- JSONAPI_DIR = jsonapi
+ REST_DIR = rest rest-plugins
 endif
 endif
 
@@ -79,11 +74,9 @@ else
 SUBDIRS = \
   include $(INTLEMU_SUBDIRS) \
   util \
-  $(JSON_DIR) \
-  $(REST_DIR) \
-  $(JSONAPI_DIR) \
+  nt \
+  gnsrecord \
   hello \
-  tun \
   block \
   statistics \
   arm \
@@ -95,6 +88,7 @@ SUBDIRS = \
   datacache \
   datastore \
   template \
+  peerstore \
   ats \
   nat \
   nat-auto \
@@ -112,10 +106,8 @@ SUBDIRS = \
   regex \
   dns \
   identity \
-  gnsrecord \
   namecache \
   namestore \
-  peerstore \
   cadet \
   set \
   consensus \
@@ -129,7 +121,9 @@ SUBDIRS = \
   exit \
   pt \
   secretsharing \
-  integration-tests \
-  $(EXP_DIR)
+	$(EXP_DIR) \
+  $(JSON_DIR) \
+  $(REST_DIR) \
+  integration-tests
 
 endif

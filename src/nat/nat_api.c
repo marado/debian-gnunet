@@ -3,7 +3,7 @@
      Copyright (C) 2007-2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -43,6 +48,12 @@ struct AddrEntry
    */
   struct AddrEntry *prev;
 
+  /**
+   * Place where the application can store data (on add,
+   * and retrieve on remove).
+   */
+  void *app_ctx;
+  
   /**
    * Address class of the address.
    */
@@ -143,6 +154,7 @@ reconnect (struct GNUNET_NAT_Handle *nh)
 				 nh->ae_tail,
 				 ae);
     nh->address_callback (nh->callback_cls,
+			  &ae->app_ctx,
 			  GNUNET_NO,
 			  ae->ac,
 			  (const struct sockaddr *) &ae[1],
@@ -294,6 +306,7 @@ handle_address_change_notification (void *cls,
     GNUNET_free (ae);
   }
   nh->address_callback (nh->callback_cls,
+			&ae->app_ctx,
 			ntohl (acn->add_remove),
 			ac,
 			sa,

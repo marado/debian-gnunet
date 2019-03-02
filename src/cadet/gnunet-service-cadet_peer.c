@@ -3,7 +3,7 @@
      Copyright (C) 2001-2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -240,7 +245,17 @@ GCP_2s (const struct CadetPeer *cp)
   static char buf[5];
   char *ret;
 
+  if ((NULL == cp) || 
+      (NULL == &cp->pid.public_key))
+    return "NULL";
+  
+      
   ret = GNUNET_CRYPTO_eddsa_public_key_to_string (&cp->pid.public_key);
+  
+  if (NULL == ret)
+    return "NULL";
+  
+  
   strncpy (buf,
            ret,
            sizeof (buf) - 1);
@@ -1204,6 +1219,8 @@ GCP_iterate_paths (struct CadetPeer *cp,
        (NULL == cp->core_mq) ? "" : " including direct link");
   if (NULL != cp->core_mq)
   {
+    /* FIXME: this branch seems to duplicate the 
+       i=0 case below (direct link). Leave out!??? -CG */
     struct CadetPeerPath *path;
 
     path = GCPP_get_path_from_route (1,
@@ -1216,6 +1233,41 @@ GCP_iterate_paths (struct CadetPeer *cp,
       return ret;
   }
   for (unsigned int i=0;i<cp->path_dll_length;i++)
+  {
+    for (struct CadetPeerPathEntry *pe = cp->path_heads[i];
+         NULL != pe;
+         pe = pe->next)
+    {
+      ret++;
+      if (GNUNET_NO ==
+          callback (callback_cls,
+                    pe->path,
+                    i))
+        return ret;
+    }
+  }
+  return ret;
+}
+
+/**
+ * Iterate over the paths to a peer without direct link.
+ *
+ * @param cp Peer to get path info.
+ * @param callback Function to call for every path.
+ * @param callback_cls Closure for @a callback.
+ * @return Number of iterated paths.
+ */
+unsigned int
+GCP_iterate_indirect_paths (struct CadetPeer *cp,
+                               GCP_PathIterator callback,
+                               void *callback_cls)
+{
+  unsigned int ret = 0;
+
+  LOG (GNUNET_ERROR_TYPE_DEBUG,
+       "Iterating over paths to peer %s without direct link\n",
+       GCP_2s (cp));
+  for (unsigned int i=1;i<cp->path_dll_length;i++)
   {
     for (struct CadetPeerPathEntry *pe = cp->path_heads[i];
          NULL != pe;

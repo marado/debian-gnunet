@@ -3,7 +3,7 @@
      Copyright (C) 2011, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file nat/nat_auto_api_test.c
@@ -352,6 +357,8 @@ mq_error_handler (void *cls,
  * Address-callback, used to send message to gnunet-nat-server.
  *
  * @param cls closure
+ * @param app_ctx[in,out] location where the app can store stuff
+ *                  on add and retrieve it on remove
  * @param add_remove #GNUNET_YES to mean the new public IP address, #GNUNET_NO to mean
  *     the previous (now invalid) one
  * @param ac address class the address belongs to
@@ -360,6 +367,7 @@ mq_error_handler (void *cls,
  */
 static void
 addr_cb (void *cls,
+	 void **app_ctx,
          int add_remove,
          enum GNUNET_NAT_AddressClass ac,
          const struct sockaddr *addr,
@@ -371,6 +379,7 @@ addr_cb (void *cls,
   struct GNUNET_NAT_AUTO_TestMessage *msg;
   const struct sockaddr_in *sa;
 
+  (void) app_ctx;
   if (GNUNET_YES != add_remove)
     return;
   if (addrlen != sizeof (struct sockaddr_in))

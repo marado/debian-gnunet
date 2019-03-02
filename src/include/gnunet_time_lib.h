@@ -3,7 +3,7 @@
      Copyright (C) 2001-2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -169,6 +174,20 @@ GNUNET_NETWORK_STRUCT_END
  */
 #define GNUNET_TIME_STD_BACKOFF(r) GNUNET_TIME_relative_min (GNUNET_TIME_STD_EXPONENTIAL_BACKOFF_THRESHOLD, \
    GNUNET_TIME_relative_multiply (GNUNET_TIME_relative_max (GNUNET_TIME_UNIT_MILLISECONDS, (r)), 2));
+
+
+/**
+ * Randomized exponential back-off, starting at 1 ms
+ * and going up by a factor of 2+r, where 0 <= r <= 0.5, up
+ * to a maximum of the given threshold.
+ *
+ * @param rt current backoff time, initially zero
+ * @param threshold maximum value for backoff
+ * @return the next backoff time
+ */
+struct GNUNET_TIME_Relative
+GNUNET_TIME_randomized_backoff(struct GNUNET_TIME_Relative rt, struct GNUNET_TIME_Relative threshold);
+
 
 /**
  * Return relative time of 0ms.
@@ -348,7 +367,8 @@ GNUNET_TIME_absolute_get_remaining (struct GNUNET_TIME_Absolute future);
  *        assuming it continues at the same speed
  */
 struct GNUNET_TIME_Relative
-GNUNET_TIME_calculate_eta (struct GNUNET_TIME_Absolute start, uint64_t finished,
+GNUNET_TIME_calculate_eta (struct GNUNET_TIME_Absolute start,
+			   uint64_t finished,
                            uint64_t total);
 
 
@@ -546,6 +566,34 @@ GNUNET_TIME_year_to_time (unsigned int year);
  */
 unsigned int
 GNUNET_TIME_time_to_year (struct GNUNET_TIME_Absolute at);
+
+
+/**
+ * A configuration object.
+ */
+struct GNUNET_CONFIGURATION_Handle;
+
+
+/**
+ * Obtain the current time and make sure it is monotonically
+ * increasing.  Guards against systems without an RTC or
+ * clocks running backwards and other nasty surprises. Does
+ * not guarantee that the returned time is near the current
+ * time returned by #GNUNET_TIME_absolute_get().  Two 
+ * subsequent calls (within a short time period) may return the
+ * same value. Persists the last returned time on disk to
+ * ensure that time never goes backwards. As a result, the
+ * resulting value can be used to check if a message is the 
+ * "most recent" value and replays of older messages (from
+ * the same origin) would be discarded.
+ * 
+ * @param cfg configuration, used to determine where to 
+ *   store the time; user can also insist RTC is working
+ *   nicely and disable the feature
+ * @return monotonically increasing time
+ */
+struct GNUNET_TIME_Absolute
+GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cfg);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -3,7 +3,7 @@
   Copyright (C) 2014, 2015, 2016 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file json/json_generator.c
@@ -151,6 +156,61 @@ GNUNET_JSON_from_rsa_signature (const struct GNUNET_CRYPTO_RsaSignature *sig)
   ret = GNUNET_JSON_from_data (buf,
                                buf_len);
   GNUNET_free (buf);
+  return ret;
+}
+
+/**
+ * Convert Gns record to JSON.
+ *
+ * @param rname name of record
+ * @param rd record data
+ * @return corresponding JSON encoding
+ */
+json_t *
+GNUNET_JSON_from_gns_record (const char* rname,
+			     const struct GNUNET_GNSRECORD_Data *rd)
+{
+  struct GNUNET_TIME_Absolute expiration_time;
+  const char *expiration_time_str;
+  const char *record_type_str;
+  char *value_str;
+  json_t *ret;
+  int flags;
+
+  value_str = GNUNET_GNSRECORD_value_to_string(rd->record_type,rd->data,rd->data_size);
+  expiration_time = GNUNET_GNSRECORD_record_get_expiration_time(1, rd);
+  expiration_time_str = GNUNET_STRINGS_absolute_time_to_string(expiration_time);
+  flags = (int)rd->flags; //maybe necessary
+  record_type_str = GNUNET_GNSRECORD_number_to_typename(rd->record_type);
+
+  // ? for possible NULL values
+  if (NULL != rname)
+  {
+    ret = json_pack ("{s:s?,s:s?,s:s?,s:i,s:s?}",
+		     "value",
+		     value_str,
+		     "record_type",
+		     record_type_str,
+		     "expiration_time",
+		     expiration_time_str,
+		     "flag",
+		     flags,
+		     "record_name",
+		     rname);
+  }
+  else
+  {
+    ret = json_pack ("{s:s?,s:s?,s:s?,s:i}",
+		     "value",
+		     value_str,
+		     "record_type",
+		     record_type_str,
+		     "expiration_time",
+		     expiration_time_str,
+		     "flag",
+		     flags);
+  }
+  GNUNET_free_non_null(value_str);
   return ret;
 }
 

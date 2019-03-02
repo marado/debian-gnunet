@@ -10,6 +10,8 @@ if USE_COVERAGE
   XLIB = -lgcov
 endif
 
+plugindir = $(libdir)/gnunet
+
 bin_PROGRAMS = \
  gnunet-peerinfo
 

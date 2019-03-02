@@ -3,7 +3,7 @@
      Copyright (C) 2009-2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -64,6 +69,11 @@ static struct GNUNET_RESOLVER_RequestHandle *req_head;
  * Tail of DLL of requests.
  */
 static struct GNUNET_RESOLVER_RequestHandle *req_tail;
+
+/**
+ * ID of the last request we sent to the service
+ */
+static uint32_t last_request_id;
 
 /**
  * How long should we wait to reconnect?
@@ -134,6 +144,11 @@ struct GNUNET_RESOLVER_RequestHandle
   int af;
 
   /**
+   * Identifies the request. The response will contain this id.
+   */
+  uint32_t id;
+
+  /**
    * Has this request been transmitted to the service?
    * #GNUNET_YES if transmitted
    * #GNUNET_YES if not transmitted
@@ -177,6 +192,11 @@ check_config ()
   struct sockaddr_in v4;
   struct sockaddr_in6 v6;
 
+  if (GNUNET_OK ==
+      GNUNET_CONFIGURATION_have_value (resolver_cfg,
+				       "resolver",
+				       "UNIXPATH"))
+    return GNUNET_OK;
   memset (&v4, 0, sizeof (v4));
   v4.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
   v4.sin_family = AF_INET;
@@ -427,11 +447,13 @@ process_requests ()
                              GNUNET_MESSAGE_TYPE_RESOLVER_REQUEST);
   msg->direction = htonl (rh->direction);
   msg->af = htonl (rh->af);
+  msg->client_id = rh->id;
   GNUNET_memcpy (&msg[1],
 		 &rh[1],
 		 rh->data_len);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Transmitting DNS resolution request to DNS service\n");
+       "Transmitting DNS resolution request (ID %u) to DNS service\n",
+       rh->id);
   GNUNET_MQ_send (mq,
                   env);
   rh->was_transmitted = GNUNET_YES;
@@ -446,7 +468,7 @@ process_requests ()
  */
 static int
 check_response (void *cls,
-                const struct GNUNET_MessageHeader *msg)
+                const struct GNUNET_RESOLVER_ResponseMessage *msg)
 {
   (void) cls;
   (void) msg;
@@ -466,11 +488,18 @@ check_response (void *cls,
  */
 static void
 handle_response (void *cls,
-                 const struct GNUNET_MessageHeader *msg)
+                 const struct GNUNET_RESOLVER_ResponseMessage *msg)
 {
   struct GNUNET_RESOLVER_RequestHandle *rh = req_head;
   uint16_t size;
   char *nret;
+  uint32_t client_request_id = msg->client_id;
+
+  for (; rh != NULL; rh = rh->next)
+  {
+    if (rh->id == client_request_id)
+      break;
+  }
 
   (void) cls;
   if (NULL == rh)
@@ -482,8 +511,8 @@ handle_response (void *cls,
     reconnect ();
     return;
   }
-  size = ntohs (msg->size);
-  if (size == sizeof (struct GNUNET_MessageHeader))
+  size = ntohs (msg->header.size);
+  if (size == sizeof (struct GNUNET_RESOLVER_ResponseMessage))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Received empty response from DNS service\n");
@@ -524,7 +553,7 @@ handle_response (void *cls,
     const char *hostname;
 
     hostname = (const char *) &msg[1];
-    if (hostname[size - sizeof (struct GNUNET_MessageHeader) - 1] != '\0')
+    if (hostname[size - sizeof (struct GNUNET_RESOLVER_ResponseMessage) - 1] != '\0')
     {
       GNUNET_break (0);
       if (GNUNET_SYSERR != rh->was_transmitted)
@@ -558,7 +587,7 @@ handle_response (void *cls,
     size_t ip_len;
 
     ip = &msg[1];
-    ip_len = size - sizeof (struct GNUNET_MessageHeader);
+    ip_len = size - sizeof (struct GNUNET_RESOLVER_ResponseMessage);
     if (ip_len == sizeof (struct in_addr))
     {
       memset (&v4, 0, sizeof (v4));
@@ -755,7 +784,7 @@ reconnect_task (void *cls)
   struct GNUNET_MQ_MessageHandler handlers[] = {
     GNUNET_MQ_hd_var_size (response,
                            GNUNET_MESSAGE_TYPE_RESOLVER_RESPONSE,
-                           struct GNUNET_MessageHeader,
+                           struct GNUNET_RESOLVER_ResponseMessage,
                            NULL),
     GNUNET_MQ_handler_end ()
   };
@@ -918,6 +947,7 @@ GNUNET_RESOLVER_ip_get (const char *hostname,
        hostname);
   rh = GNUNET_malloc (sizeof (struct GNUNET_RESOLVER_RequestHandle) + slen);
   rh->af = af;
+  rh->id = ++last_request_id;
   rh->addr_callback = callback;
   rh->cls = callback_cls;
   GNUNET_memcpy (&rh[1],
@@ -1064,6 +1094,7 @@ GNUNET_RESOLVER_hostname_get (const struct sockaddr *sa,
   rh->name_callback = callback;
   rh->cls = cls;
   rh->af = sa->sa_family;
+  rh->id = ++last_request_id;
   rh->timeout = GNUNET_TIME_relative_to_absolute (timeout);
   GNUNET_memcpy (&rh[1],
 		 ip,

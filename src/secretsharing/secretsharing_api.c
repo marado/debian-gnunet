@@ -3,7 +3,7 @@
      Copyright (C) 2012, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -311,7 +316,7 @@ handle_decrypt_done (void *cls,
  * published the same value, it will be decrypted.
  *
  * When the operation is canceled, the decrypt_cb is not called anymore, but the calling
- * peer may already have irrevocably contributed his share for the decryption of the value.
+ * peer may already have irrevocably contributed its share for the decryption of the value.
  *
  * @param share our secret share to use for decryption
  * @param ciphertext ciphertext to publish in order to decrypt it (if enough peers agree)
@@ -482,7 +487,7 @@ GNUNET_SECRETSHARING_encrypt (const struct GNUNET_SECRETSHARING_PublicKey *publi
  * Cancel a decryption.
  *
  * The decrypt_cb is not called anymore, but the calling
- * peer may already have irrevocably contributed his share for the decryption of the value.
+ * peer may already have irrevocably contributed its share for the decryption of the value.
  *
  * @param dh to cancel
  */

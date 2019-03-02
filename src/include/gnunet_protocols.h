@@ -3,7 +3,7 @@
      Copyright (C) 2001--2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -1349,6 +1354,12 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_ITERATION_STOP 448
 
+/**
+ * Service to client: end of list of results
+ */
+#define GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT_END 449
+
+
 /*******************************************************************************
  * LOCKMANAGER message types
  ******************************************************************************/
@@ -2616,33 +2627,29 @@ extern "C"
 
 /* Client-Service Messages */
 
-/**
- * RPS CS REQUEST Message for the Client to request (a) random peer(s)
- */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_REQUEST        954
-
-/**
- * RPS CS REPLY Message for the Server to send (a) random peer(s)
- */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_REPLY          955
-
-/**
- * RPS CS REQUEST CANCEL Message for the Client to cancel a request
- */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_REQUEST_CANCEL 956
 
 /**
  * RPS CS SEED Message for the Client to seed peers into rps
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_SEED           957
+#define GNUNET_MESSAGE_TYPE_RPS_CS_SEED           954
 
-#ifdef ENABLE_MALICIOUS
+#if ENABLE_MALICIOUS
 /**
  * Turn RPS service malicious
  */
-#define GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS     958
+#define GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS     955
 
 #endif /* ENABLE_MALICIOUS */
+
+/**
+ * RPS client-service message to start a sub sampler
+ */
+#define GNUNET_MESSAGE_TYPE_RPS_CS_SUB_START           956
+
+/**
+ * RPS client-service message to stop a sub sampler
+ */
+#define GNUNET_MESSAGE_TYPE_RPS_CS_SUB_STOP            957
 
 /* Debugging API continues at 1130 */
 
@@ -2653,35 +2660,35 @@ extern "C"
  *
  * IDENTITY PROVIDER MESSAGE TYPES
  */
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ATTRIBUTE_STORE 961
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_STORE 961
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ATTRIBUTE_STORE_RESPONSE 962
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_STORE_RESPONSE 962
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ATTRIBUTE_ITERATION_START 963
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_START 963
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ATTRIBUTE_ITERATION_STOP 964
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_STOP 964
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ATTRIBUTE_ITERATION_NEXT 965
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_NEXT 965
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ATTRIBUTE_RESULT 966
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_RESULT 966
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_ISSUE_TICKET 967
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ISSUE_TICKET 967
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_TICKET_RESULT 968
+#define GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT 968
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_REVOKE_TICKET 969
+#define GNUNET_MESSAGE_TYPE_RECLAIM_REVOKE_TICKET 969
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_REVOKE_TICKET_RESULT 970
+#define GNUNET_MESSAGE_TYPE_RECLAIM_REVOKE_TICKET_RESULT 970
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_CONSUME_TICKET 971
+#define GNUNET_MESSAGE_TYPE_RECLAIM_CONSUME_TICKET 971
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_CONSUME_TICKET_RESULT 972
+#define GNUNET_MESSAGE_TYPE_RECLAIM_CONSUME_TICKET_RESULT 972
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_TICKET_ITERATION_START 973
+#define GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_START 973
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_TICKET_ITERATION_STOP 974
+#define GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_STOP 974
 
-#define GNUNET_MESSAGE_TYPE_IDENTITY_PROVIDER_TICKET_ITERATION_NEXT 975
+#define GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_NEXT 975
 
 /**************************************************
  *
@@ -2847,7 +2854,7 @@ extern "C"
 /**
  * Local information about all channels of service.
  */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_CHANNELS 1030
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_CHANNEL 1030
 
 /**
  * Local information of service about a specific channel.
@@ -2855,51 +2862,62 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_CHANNEL 1031
 
 /**
- * Local information about all tunnels of service.
+ * End of local information of service about channels.
  */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS 1032
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_CHANNEL_END 1032
 
 /**
- * Local information of service about a specific tunnel.
+ * Request local information about all peers known to the service.
  */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNEL 1033
-
-/**
- * Local information about all connections of service.
- */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_CONNECTIONS 1034
-
-/**
- * Local information of service about a specific connection.
- */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_CONNECTION 1035
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PEERS 1033
 
 /**
  * Local information about all peers known to the service.
  */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS 1036
-
-/**
- * Local information of service about a specific peer.
- */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEER 1037
-
-/**
- * Debug request.
- */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_DUMP 1038
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS 1034
 
 /**
  * End of local information about all peers known to the service.
  */
-#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEER_END 1039
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS_END 1035
+
+/**
+ * Request local information of service about paths to specific peer.
+ */
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PATH 1036
+
+/**
+ * Local information of service about a specific path.
+ */
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PATH 1037
+
+/**
+ * End of local information of service about a specific path.
+ */
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PATH_END 1038
+
+/**
+ * Request local information about all tunnels of service.
+ */
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_TUNNELS 1039
+
+/**
+ * Local information about all tunnels of service.
+ */
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS 1040
+
+/**
+ * End of local information about all tunnels of service.
+ */
+#define GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS_END 1041
+
 
 /********************************  Application  *******************************/
 
 /**
  * Traffic (net-cat style) used by the Command Line Interface.
  */
-#define GNUNET_MESSAGE_TYPE_CADET_CLI 1040
+#define GNUNET_MESSAGE_TYPE_CADET_CLI 1059
 
 /******************************************************************************/
 
@@ -2990,10 +3008,252 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_CANCEL  1132
 
 
+/**
+ * @brief Request biased input stream
+ */
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REQUEST 1133
 
 /**
- * Next available: 1200
+ * @brief Send peer of biased stream
  */
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REPLY   1134
+
+/**
+ * @brief Cancel getting biased strem
+ */
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_CANCEL  1135
+
+
+/*******************************************************
+  NEW (TNG) Transport service
+  ******************************************************* */
+
+/**
+ * @brief inform transport to add an address of this peer
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADD_ADDRESS 1200
+
+/**
+ * @brief inform transport to delete an address of this peer
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_DEL_ADDRESS 1201
+
+/**
+ * @brief inform transport about an incoming message
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG 1202
+
+/**
+ * @brief transport acknowledges processing an incoming message
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG_ACK 1203
+
+/**
+ * @brief inform transport that a queue was setup to talk to some peer
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_SETUP 1204
+
+/**
+ * @brief inform transport that a queue was torn down
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_TEARDOWN 1205
+
+/**
+ * @brief transport tells communicator it wants a queue
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE 1206
+
+/**
+ * Response from communicator: will try to create queue.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE_OK 1207
+
+/**
+ * Response from communicator: address bogus, will not try to create queue.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE_FAIL 1208
+
+/**
+ * @brief transport tells communicator it wants to transmit
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG 1209
+
+/**
+ * @brief communicator tells transports that message was sent
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG_ACK 1210
+
+/**
+ * Message sent to indicate to the transport which address
+ * prefix is supported by a communicator.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_NEW_COMMUNICATOR 1211
+
+/**
+ * Tell transport that it should assist with exchanging a
+ * message between communicators.  Usually used when
+ * communciators are uni-directional and need an alternative
+ * back-channel.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL 1212
+
+/**
+ * Message type used between transport services when they
+ * internally forward communicator backchannel messages.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_BACKCHANNEL_ENCAPSULATION 1213
+
+/**
+ * Type of a fragment of a CORE message created by transport to adjust
+ * message length to a queue's MTU.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT 1214
+
+/**
+ * Acknowledgement generated for a fragment.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT_ACK 1215
+
+/**
+ * Wrapper around non-fragmented CORE message used to measure RTT
+ * and ensure reliability.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_BOX 1216
+
+/**
+ * Confirmation for a #GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_BOX.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_ACK 1217
+
+/**
+ * Message sent for topology discovery at transport level.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_DV_LEARN 1218
+
+/**
+ * Source-routed transport message based DV information gathered.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_DV_BOX 1219
+
+/**
+ * Transport signalling incoming backchannel message to a communicator.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL_INCOMING 1220
+
+/**
+ * We learned a possible network address of another peer. Transport
+ * should consider verifying it, and if successful, remembering it
+ * in the Peerstore.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_CONSIDER_VERIFY 1221
+
+
+/**
+ * Message sent to indicate to the transport that a monitor
+ * wants to observe certain events.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_START 1250
+
+/**
+ * Message sent to indicate to a monitor about events.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_DATA 1251
+
+/**
+ * Message sent to indicate to a monitor that a one-shot
+ * iteration over events is done.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_END 1252
+
+/**
+ * Message exchanged between communicators to confirm
+ * successful KX (and address validation).
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_KX_CONFIRMATION 1275
+
+/**
+ * Message exchanged between communicators to exchange
+ * flow control (FC) limits and acknowledgemets.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_FC_LIMITS 1276
+
+
+/* ************** NEW (NG) ATS Messages ************* */
+
+/**
+ * Type of the 'struct ExpressPreferenceMessage' send by clients to ATS
+ * to establish bandwidth preference.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SUGGEST 1400
+
+/**
+ * Type of the 'struct ExpressPreferenceMessage' send by clients to ATS
+ * to abandon bandwidth preference.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SUGGEST_CANCEL 1401
+
+
+/**
+ * Type of the 'struct SessionAddMessage' send by transport clients to ATS
+ * to ask ATS to allocate resources to a session.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SESSION_ADD 1402
+
+/**
+ * Type of the 'struct SessionAddMessage' send by transport clients to ATS
+ * to inform ATS about a session where resources are consumed but allocation
+ * is impossible (unidirectional).
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SESSION_ADD_INBOUND_ONLY 1403
+
+/**
+ * Type of the 'struct SessionUpdateMessage' send by transport clients to ATS
+ * to inform ATS about property changes of a session.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SESSION_UPDATE 1404
+
+/**
+ * Type of the 'struct SessionDelMessage' send by transport clients to ATS
+ * to tell ATS that a session is no longer available.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SESSION_DEL 1405
+
+/**
+ * Type of the 'struct SessionAllocationMessage' send by ATS to the
+ * transport to tell it about resources to allocate to the session.
+ */
+#define GNUNET_MESSAGE_TYPE_ATS_SESSION_ALLOCATION 1406
+
+
+/**
+ * TCP communicator rekey message.
+ */
+#define GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_REKEY 1450
+
+/**
+ * TCP communicator payload box
+ */
+#define GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_BOX 1451
+
+/**
+ * TCP communicator end of stream.
+ */
+#define GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_FINISH 1452
+
+/**
+ * UDP KX acknowledgement.
+ */
+#define GNUNET_MESSAGE_TYPE_COMMUNICATOR_UDP_ACK 1460
+
+/**
+ * UDP communicator padding.
+ */
+#define GNUNET_MESSAGE_TYPE_COMMUNICATOR_UDP_PAD 1461
+
+/**
+ * Next available: 1500
+ */
+
 
 
 /**

@@ -3,7 +3,7 @@
      Copyright (C) 2015 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file transport/gnunet-service-transport_ats.c
@@ -439,7 +444,7 @@ GST_ats_add_inbound_address (const struct GNUNET_HELLO_Address *address,
     GNUNET_break(0);
     return;
   }
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != prop->scope);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != prop->scope);
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_HELLO_address_check_option (address,
                                                     GNUNET_HELLO_ADDRESS_INFO_INBOUND));
@@ -458,7 +463,7 @@ GST_ats_add_inbound_address (const struct GNUNET_HELLO_Address *address,
        GNUNET_i2s (&address->peer),
        GST_plugins_a2s (address),
        session,
-       GNUNET_ATS_print_network_type (prop->scope));
+       GNUNET_NT_to_string (prop->scope));
   ar = GNUNET_ATS_address_add (GST_ats,
                                address,
                                session,
@@ -507,7 +512,7 @@ GST_ats_add_address (const struct GNUNET_HELLO_Address *address,
                                                     GNUNET_HELLO_ADDRESS_INFO_INBOUND));
   ai = find_ai_no_session (address);
   GNUNET_assert (NULL == ai);
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != prop->scope);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != prop->scope);
 
   /* address seems sane, let's tell ATS */
   LOG (GNUNET_ERROR_TYPE_INFO,

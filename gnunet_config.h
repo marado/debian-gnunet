@@ -18,6 +18,9 @@
 /* Not building only the documentation */
 #define DOCUMENTATION_ONLY 0
 
+/* Benchmarks are enabled */
+/* #undef ENABLE_BENCHMARK */
+
 /* enable expensive heap statistics */
 #define ENABLE_HEAP_STATISTICS 0
 
@@ -61,7 +64,7 @@
 #define GNUNET_EXTRA_LOGGING GNUNET_YES
 
 /* Lacking ABE library */
-#define HAVE_ABE 1
+#define HAVE_ABE 0
 
 /* Define to 1 if you have the <argz.h> header file. */
 #define HAVE_ARGZ_H 1
@@ -145,6 +148,9 @@
 /* Define this if getaddrinfo() is available */
 #define HAVE_GETADDRINFO 1
 
+/* getaddrinfo_a supported */
+#define HAVE_GETADDRINFO_A 1
+
 /* Define this if gethostbyaddr() is available */
 #define HAVE_GETHOSTBYADDR 1
 
@@ -185,10 +191,10 @@
 #define HAVE_GETTEXT 1
 
 /* Define to 1 if you have the <glpk.h> header file. */
-/* #undef HAVE_GLPK_H */
+#define HAVE_GLPK_H 1
 
 /* Define to 1 if `presolve' is a member of `glp_iocp'. */
-/* #undef HAVE_GLP_IOCP_PRESOLVE */
+#define HAVE_GLP_IOCP_PRESOLVE 1
 
 /* Define to 1 if you have the <gnurl/curl.h> header file. */
 /* #undef HAVE_GNURL_CURL_H */
@@ -208,6 +214,18 @@
 /* Define if you have the iconv() function and it works. */
 #define HAVE_ICONV 1
 
+/* Define to 1 if you have the <idn2.h> header file. */
+#define HAVE_IDN2_H 1
+
+/* Define to 1 if you have the <idn2/idn2.h> header file. */
+/* #undef HAVE_IDN2_IDN2_H */
+
+/* Define to 1 if you have the <idna.h> header file. */
+#define HAVE_IDNA_H 1
+
+/* Define to 1 if you have the <idn/idna.h> header file. */
+/* #undef HAVE_IDN_IDNA_H */
+
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
 
@@ -223,6 +241,9 @@
 /* Lacking jansson library */
 #define HAVE_JANSSON 1
 
+/* Define to 1 if you have the <jansson.h> header file. */
+#define HAVE_JANSSON_H 1
+
 /* Define to 1 if you have the <kstat.h> header file. */
 /* #undef HAVE_KSTAT_H */
 
@@ -231,6 +252,9 @@
 
 /* Define to 1 if you have the <langinfo.h> header file. */
 #define HAVE_LANGINFO_H 1
+
+/* external libatomic */
+#define HAVE_LIBATOMIC 1
 
 /* Lacking bluetooth library */
 #define HAVE_LIBBLUETOOTH 1
@@ -245,13 +269,19 @@
 #define HAVE_LIBEXTRACTOR 1
 
 /* Have GLPK */
-/* #undef HAVE_LIBGLPK */
+#define HAVE_LIBGLPK 1
 
 /* Lacking libgnurl */
 #define HAVE_LIBGNURL 0
 
 /* Define to 1 if you have the `gnurx' library (-lgnurx). */
 /* #undef HAVE_LIBGNURX */
+
+/* Define to 1 if you have 'libidn' (-lidn). */
+/* #undef HAVE_LIBIDN */
+
+/* Define to 1 if you have 'libidn2' (-lidn2). */
+#define HAVE_LIBIDN2 1
 
 /* Define to 1 if you have the `intl' library (-lintl). */
 /* #undef HAVE_LIBINTL */
@@ -322,6 +352,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
 
+/* memrchr supported */
+#define HAVE_MEMRCHR 1
+
 /* We have libmicrohttpd */
 #define HAVE_MHD 1
 
@@ -362,16 +395,16 @@
 #define HAVE_OGG_OGG_H 1
 
 /* Have libopus library */
-#define HAVE_OPUS 1
+/* #undef HAVE_OPUS */
 
-/* Lacking glib library */
-#define HAVE_PBC 1
+/* Lacking pbc library */
+#define HAVE_PBC 0
 
 /* Define to 1 if PostgreSQL libraries are available */
 #define HAVE_POSTGRESQL 1
 
 /* Have libpulse(audio) library */
-#define HAVE_PULSE 1
+/* #undef HAVE_PULSE */
 
 /* Define to 1 if you have the `random' function. */
 #define HAVE_RANDOM 1
@@ -430,6 +463,9 @@
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #define HAVE_STDARG_H 1
+
+/* Define to 1 if you have the <stdatomic.h> header file. */
+#define HAVE_STDATOMIC_H 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #define HAVE_STDBOOL_H 1
@@ -573,6 +609,12 @@
 
 /* Define as const if the declaration of iconv() needs const. */
 #define ICONV_CONST 
+
+/* Path to ifconfig */
+#define IFCONFIG "/sbin/ifconfig"
+
+/* Path to iptables */
+#define IPTABLES "/sbin/iptables"
 
 /* Defined if libcurl supports AsynchDNS */
 #define LIBCURL_FEATURE_ASYNCHDNS 1
@@ -735,7 +777,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.11.0pre66"
+#define PACKAGE_STRING "gnunet 0.11.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -744,7 +786,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.11.0pre66"
+#define PACKAGE_VERSION "0.11.0"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -773,17 +815,23 @@
 /* Canonical compilation */
 #define TALER_WALLET_ONLY 0
 
+/* Not building section 7 mdoc output */
+#define TEXI2MDOC_GENERATION 0
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 /* #undef TM_IN_SYS_TIME */
 
+/* Path to upnpc binary */
+#define UPNPC "/usr/bin/upnpc"
+
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "release"
+#define VCS_VERSION "git-965cf32ea"
 
 /* Version number of package */
-#define VERSION "0.11.0pre66"
+#define VERSION "0.11.0"
 
 /* This is a Windows system */
 /* #undef WINDOWS */

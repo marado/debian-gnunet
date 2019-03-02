@@ -3,7 +3,7 @@
      Copyright (C) 2001-2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -203,14 +208,15 @@ struct GNUNET_CRYPTO_EcdsaSignature
 
 
 /**
- * Public ECC key (always for Curve25519) encoded in a format suitable
- * for network transmission and EdDSA signatures.
+ * Public ECC key (always for curve Ed25519) encoded in a format
+ * suitable for network transmission and EdDSA signatures.
  */
 struct GNUNET_CRYPTO_EddsaPublicKey
 {
   /**
-   * Q consists of an x- and a y-value, each mod p (256 bits), given
-   * here in affine coordinates and Ed25519 standard compact format.
+   * Point Q consists of a y-value mod p (256 bits); the x-value is
+   * always positive. The point is stored in Ed25519 standard
+   * compact format.
    */
   unsigned char q_y[256 / 8];
 
@@ -719,6 +725,23 @@ GNUNET_CRYPTO_hash_context_finish (struct GNUNET_HashContext *hc,
  */
 void
 GNUNET_CRYPTO_hash_context_abort (struct GNUNET_HashContext *hc);
+
+
+/**
+ * Calculate HMAC of a message (RFC 2104)
+ * TODO: Shouldn' this be the standard hmac function and
+ * the above be renamed?
+ *
+ * @param key secret key
+ * @param key_len secret key length
+ * @param plaintext input plaintext
+ * @param plaintext_len length of @a plaintext
+ * @param hmac where to store the hmac
+ */
+void
+GNUNET_CRYPTO_hmac_raw (const void *key, size_t key_len,
+			const void *plaintext, size_t plaintext_len,
+			struct GNUNET_HashCode *hmac);
 
 
 /**

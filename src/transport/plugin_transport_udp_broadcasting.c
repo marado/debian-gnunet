@@ -3,7 +3,7 @@
      Copyright (C) 2010, 2011 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -114,7 +119,7 @@ struct MstContext
   /**
    * ATS network type.
    */
-  enum GNUNET_ATS_Network_Type ats_address_network_type;
+  enum GNUNET_NetworkType ats_address_network_type;
 };
 
 
@@ -183,7 +188,7 @@ udp_broadcast_receive (struct Plugin *plugin,
                        ssize_t size,
                        const union UdpAddress *udp_addr,
                        size_t udp_addr_len,
-                       enum GNUNET_ATS_Network_Type network_type)
+                       enum GNUNET_NetworkType network_type)
 {
   struct GNUNET_MessageStreamTokenizer *broadcast_mst;
   struct MstContext mc;
@@ -407,7 +412,7 @@ iface_proc (void *cls,
 {
   struct Plugin *plugin = cls;
   struct BroadcastAddress *ba;
-  enum GNUNET_ATS_Network_Type network;
+  enum GNUNET_NetworkType network;
 
   if (NULL == addr)
     return GNUNET_OK;
@@ -423,7 +428,7 @@ iface_proc (void *cls,
               GNUNET_a2s (netmask, addrlen), name, netmask);
 
   network = plugin->env->get_address_type (plugin->env->cls, broadcast_addr, addrlen);
-  if (GNUNET_ATS_NET_LOOPBACK == network)
+  if (GNUNET_NT_LOOPBACK == network)
   {
     /* Broadcasting on loopback does not make sense */
     return GNUNET_YES;

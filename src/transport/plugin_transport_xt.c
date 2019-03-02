@@ -3,7 +3,7 @@
   Copyright (C) 2002--2015 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file transport/plugin_transport_xt.c
@@ -856,7 +861,7 @@ struct GNUNET_ATS_Session
   /**
    * Network type of the address.
    */
-  enum GNUNET_ATS_Network_Type scope;
+  enum GNUNET_NetworkType scope;
 
   /**
    * Are we still expecting the welcome message? (#GNUNET_YES/#GNUNET_NO)
@@ -1893,7 +1898,7 @@ reschedule_session_timeout (struct GNUNET_ATS_Session *s)
 static struct GNUNET_ATS_Session *
 create_session (struct Plugin *plugin,
                 const struct GNUNET_HELLO_Address *address,
-                enum GNUNET_ATS_Network_Type scope,
+                enum GNUNET_NetworkType scope,
                 struct GNUNET_SERVER_Client *client,
                 int is_nat)
 {
@@ -2439,7 +2444,7 @@ tcp_plugin_get_session (void *cls,
   const struct IPv4TcpAddress *t4;
   const struct IPv6TcpAddress *t6;
   unsigned int options;
-  enum GNUNET_ATS_Network_Type net_type;
+  enum GNUNET_NetworkType net_type;
   unsigned int is_natd = GNUNET_NO;
   size_t addrlen;
 #ifdef TCP_STEALTH
@@ -2542,7 +2547,7 @@ tcp_plugin_get_session (void *cls,
   net_type = plugin->env->get_address_type (plugin->env->cls,
                                             sb,
                                             sbs);
-  GNUNET_break (net_type != GNUNET_ATS_NET_UNSPECIFIED);
+  GNUNET_break (net_type != GNUNET_NT_UNSPECIFIED);
 
   if ( (is_natd == GNUNET_YES) &&
        (addrlen == sizeof(struct IPv6TcpAddress)) )
@@ -3266,7 +3271,7 @@ handle_tcp_welcome (void *cls,
                                                                alen),
                                 client,
                                 GNUNET_NO);
-      GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != session->scope);
+      GNUNET_break (GNUNET_NT_UNSPECIFIED != session->scope);
       GNUNET_HELLO_address_free (address);
       LOG (GNUNET_ERROR_TYPE_DEBUG,
            "Creating new%s session %p for peer `%s' client %p\n",
@@ -3626,7 +3631,7 @@ try_connection_reversal (void *cls,
  * @param session the session
  * @return the network type in HBO or #GNUNET_SYSERR
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 tcp_plugin_get_network (void *cls,
                         struct GNUNET_ATS_Session *session)
 {
@@ -3641,7 +3646,7 @@ tcp_plugin_get_network (void *cls,
  * @param address the address
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 tcp_plugin_get_network_for_address (void *cls,
                                     const struct GNUNET_HELLO_Address *address)
 {
@@ -3686,7 +3691,7 @@ tcp_plugin_get_network_for_address (void *cls,
   else
   {
     GNUNET_break (0);
-    return GNUNET_ATS_NET_UNSPECIFIED;
+    return GNUNET_NT_UNSPECIFIED;
   }
   return plugin->env->get_address_type (plugin->env->cls,
                                         sb,

@@ -3,7 +3,7 @@
      Copyright (C) 2012, 2013, 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -42,7 +47,8 @@ extern "C"
  * Function called for each matching record.
  *
  * @param cls closure
- * @param serial unique serial number of the record
+ * @param serial unique serial number of the record, MUST NOT BE ZERO,
+ *               and must be monotonically increasing while iterating
  * @param zone_key private key of the zone
  * @param label name that is being mapped (at most 255 characters long)
  * @param rd_count number of entries in @a rd array
@@ -110,7 +116,9 @@ struct GNUNET_NAMESTORE_PluginFunctions
    *
    * @param cls closure (internal context for the plugin)
    * @param zone private key of the zone, NULL for all zones
-   * @param serial serial (to exclude) in the list of matching records
+   * @param serial serial (to exclude) in the list of matching records;
+   *        0 means to exclude nothing; results must be returned using
+   *        the minimum possible sequence number first (ordered by serial)
    * @param limit maximum number of results to return to @a iter
    * @param iter function to call with the result
    * @param iter_cls closure for @a iter

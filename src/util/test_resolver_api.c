@@ -3,7 +3,7 @@
  Copyright (C) 2009 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file resolver/test_resolver_api.c
@@ -253,6 +258,8 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "System's own forward name resolution is working\n");
   /* Resolve the same using GNUNET */
+  GNUNET_RESOLVER_ip_get (ROOTSERVER_NAME, AF_INET, timeout,
+                          &check_rootserver_ip, cls);
   GNUNET_RESOLVER_ip_get (ROOTSERVER_NAME, AF_INET, timeout,
                           &check_rootserver_ip, cls);
 

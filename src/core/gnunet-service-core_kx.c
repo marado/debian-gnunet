@@ -3,7 +3,7 @@
      Copyright (C) 2009-2013, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -120,7 +125,7 @@ struct EphemeralKeyMessage
 
 
 /**
- * We're sending an (encrypted) PING to the other peer to check if he
+ * We're sending an (encrypted) PING to the other peer to check if it
  * can decrypt.  The other peer should respond with a PONG with the
  * same content, except this time encrypted with the receiver's key.
  */
@@ -851,8 +856,8 @@ handle_transport_notify_connect (void *cls,
   }
   else
   {
-    /* peer with "higher" identity starts a delayed  KX, if the "lower" peer
-     * does not start a KX since he sees no reasons to do so  */
+    /* peer with "higher" identity starts a delayed KX, if the "lower" peer
+     * does not start a KX since it sees no reasons to do so  */
     kx->retry_set_key_task
       = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
 				      &set_key_retry_task,

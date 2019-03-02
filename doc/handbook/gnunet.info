@@ -1,0 +1,515 @@
+This is gnunet.info, produced by makeinfo version 6.5 from gnunet.texi.
+
+Copyright © 2001-2018 GNUnet e.V.
+
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled “GNU Free
+Documentation License”.
+
+   A copy of the license is also available from the Free Software
+Foundation Web site at <http://www.gnu.org/licenses/fdl.html>.
+
+   Alternately, this document is also available under the General Public
+License, version 3 or later, as published by the Free Software
+Foundation.  A copy of the license is included in the section entitled
+“GNU General Public License”.
+
+   A copy of the license is also available from the Free Software
+Foundation Web site at <http://www.gnu.org/licenses/gpl.html>.
+INFO-DIR-SECTION Networking
+START-INFO-DIR-ENTRY
+* GNUnet: (gnunet).       Framework for secure peer-to-peer networking
+END-INFO-DIR-ENTRY
+
+
+Indirect:
+gnunet.info-1: 1127
+gnunet.info-2: 301329
+gnunet.info-3: 602463
+
+Tag Table:
+(Indirect)
+Node: Top1127
+Node: Preface4118
+Node: About this book4805
+Node: Contributing to this book5746
+Node: Introduction7028
+Node: Project governance11167
+Node: Typography12249
+Node: Philosophy12688
+Node: Design Principles13446
+Node: Privacy and Anonymity14824
+Node: Practicality15795
+Node: Key Concepts16421
+Node: Authentication17016
+Node: Accounting to Encourage Resource Sharing19969
+Node: Confidentiality22198
+Node: Anonymity23302
+Node: How file-sharing achieves Anonymity24838
+Node: Deniability27446
+Node: Peer Identities28764
+Node: Zones in the GNU Name System (GNS Zones)29452
+Node: Egos31091
+Node: Installing GNUnet31484
+Node: Installing dependencies32149
+Node: Getting the Source Code33815
+Node: Create gnunet user and group34473
+Node: Preparing and Compiling the Source Code35199
+Node: Installation36822
+Node: MOVED FROM USER Checking the Installation38797
+Node: gnunet-gtk39526
+Node: Statistics39949
+Node: Peer Information41356
+Node: MOVED FROM USER The graphical configuration interface42138
+Node: Configuring your peer43660
+Node: Configuring the Friend-to-Friend (F2F) mode44537
+Node: Configuring the hostlist to bootstrap46267
+Node: Configuration of the HOSTLIST proxy settings48952
+Node: Configuring your peer to provide a hostlist50728
+Node: Configuring the datastore52977
+Node: Configuring the MySQL database53850
+Node: Reasons for using MySQL54349
+Node: Reasons for not using MySQL54924
+Node: Setup Instructions55267
+Node: Testing56508
+Node: Performance Tuning57160
+Node: Setup for running Testcases57831
+Node: Configuring the Postgres database58273
+Node: Reasons to use Postgres58716
+Node: Reasons not to use Postgres59026
+Node: Manual setup instructions59339
+Node: Testing the setup manually60503
+Node: Configuring the datacache61053
+Node: Configuring the file-sharing service61785
+Node: Configuring logging63531
+Node: Configuring the transport service and plugins65717
+Node: Configuring the WLAN transport plugin69633
+Node: Requirements for the WLAN plugin70466
+Node: Configuration71010
+Node: Before starting GNUnet71739
+Node: Limitations and known bugs72446
+Node: Configuring HTTP(S) reverse proxy functionality using Apache or nginx73195
+Node: Reverse Proxy - Configure your Apache2 HTTP webserver74909
+Node: Reverse Proxy - Configure your Apache2 HTTPS webserver75712
+Node: Reverse Proxy - Configure your nginx HTTPS webserver76861
+Node: Reverse Proxy - Configure your nginx HTTP webserver78066
+Node: Reverse Proxy - Configure your GNUnet peer79003
+Node: Blacklisting peers79718
+Node: Configuration of the HTTP and HTTPS transport plugins81829
+Node: Configuring the GNU Name System83620
+Node: Configuring system-wide DNS interception84151
+Node: Configuring the GNS nsswitch plugin87584
+Node: Configuring GNS on W3289180
+Node: GNS Proxy Setup90797
+Node: Setup of the GNS CA92718
+Node: Testing the GNS setup93899
+Node: Migrating existing DNS zones into GNS95063
+Node: Configuring the GNUnet VPN96747
+Node: IPv4 address for interface97980
+Node: IPv6 address for interface98849
+Node: Configuring the GNUnet VPN DNS99341
+Node: Configuring the GNUnet VPN Exit Service99664
+Node: IP Address of external DNS resolver101658
+Node: IPv4 address for Exit interface102056
+Node: IPv6 address for Exit interface102580
+Node: Bandwidth Configuration103506
+Node: Configuring NAT103899
+Node: Peer configuration for distributions107138
+Node: MOVED FROM USER Config Leftovers108407
+Node: The Single-User Setup110188
+Node: The Multi-User Setup112384
+Node: Killing GNUnet services114445
+Node: Access Control for GNUnet115145
+Node: Recommendation - Disable access to services via TCP118185
+Node: Recommendation - Run most services as system user "gnunet"119352
+Node: Recommendation - Control access to services using group "gnunet"120147
+Node: Recommendation - Limit access to certain SUID binaries by group "gnunet"121227
+Node: Recommendation - Limit access to critical gnunet-helper-dns to group "gnunetdns"121962
+Node: Differences between "make install" and these recommendations123271
+Node: Using GNUnet124166
+Node: Start and stop GNUnet125304
+Node: First steps - Using the GNU Name System125625
+Node: Preliminaries126129
+Node: Managing Egos126841
+Node: The GNS Tab127849
+Node: Creating a Record129432
+Node: Resolving GNS records131017
+Node: Integration with Browsers131823
+Node: Creating a Business Card134926
+Node: Be Social136939
+Node: Backup of Identities and Egos138573
+Node: Revocation139516
+Node: What's Next?142103
+Node: First steps - Using GNUnet Conversation143067
+Node: Testing your Audio Equipment143529
+Node: GNS Zones144216
+Node: Picking an Identity144610
+Node: Calling somebody146592
+Node: First steps - Using the GNUnet VPN147733
+Node: VPN Preliminaries148094
+Node: GNUnet-Exit configuration149225
+Node: GNS configuration150038
+Node: Accessing the service150983
+Node: Using a Browser151953
+Node: File-sharing152527
+Node: fs-Searching153860
+Node: fs-Downloading155288
+Node: fs-Publishing156610
+Node: Important command-line options157117
+Node: Indexing vs. Inserting158293
+Node: fs-Concepts160350
+Node: Files161352
+Node: Keywords161780
+Node: Directories162594
+Node: Pseudonyms163720
+Node: Namespaces164606
+Node: Advertisements165337
+Node: Anonymity level166673
+Node: Content Priority167444
+Node: Replication168403
+Node: Namespace Management168886
+Node: Creating Pseudonyms169464
+Node: Deleting Pseudonyms170105
+Node: Advertising namespaces170716
+Node: Namespace names171750
+Node: Namespace root172461
+Node: File-Sharing URIs173019
+Node: Encoding of hash values in URIs173879
+Node: Content Hash Key (chk)174161
+Node: Location identifiers (loc)174978
+Node: Keyword queries (ksk)175748
+Node: Namespace content (sks)176502
+Node: GTK User Interface177612
+Node: gtk-Publishing178076
+Node: gtk-Searching180935
+Node: gtk-Downloading182242
+Node: The GNU Name System183516
+Node: Creating a Zone185207
+Node: Maintaining your own Zones185737
+Node: Obtaining your Zone Key187174
+Node: Adding Links to Other Zones188184
+Node: Using Public Keys as Top Level Domains189725
+Node: Resource Records in GNS190302
+Node: NICK191906
+Node: PKEY192816
+Node: BOX193342
+Node: LEHO194111
+Node: VPN194633
+Node: A AAAA and TXT195474
+Node: CNAME195692
+Node: GNS2DNS196132
+Node: SOA SRV PTR and MX197541
+Node: PLACE198239
+Node: PHONE198409
+Node: ID ATTR198579
+Node: ID TOKEN198764
+Node: ID TOKEN METADATA198967
+Node: CREDENTIAL199215
+Node: POLICY199396
+Node: ATTRIBUTE199559
+Node: ABE KEY199732
+Node: ABE MASTER199901
+Node: RECLAIM OIDC CLIENT200090
+Node: RECLAIM OIDC REDIRECT200316
+Node: Synchronizing with legacy DNS200533
+Node: Migrating an existing DNS zone into GNS202107
+Node: reclaimID Identity Provider205416
+Node: Managing Attributes206263
+Node: Sharing Attributes with Third Parties207104
+Node: Revoking Authorizations of Third Parties208565
+Node: OpenID Connect209346
+Node: Using the Virtual Public Network212197
+Node: Setting up an Exit node214189
+Node: Fedora and the Firewall217290
+Node: Setting up VPN node for protocol translation and tunneling218741
+Node: GNUnet Contributors Handbook222194
+Node: Contributing to GNUnet222540
+Node: Licenses of contributions222716
+Node: Copyright Assignment223619
+Node: Contributing to the Reference Manual224879
+Node: Contributing testcases225591
+Node: GNUnet Developer Handbook226604
+Node: Developer Introduction229398
+Node: Project overview233049
+Node: Internal dependencies235698
+Node: Code overview238357
+Node: System Architecture249926
+Node: Subsystem stability252424
+Node: Naming conventions and coding style guide256763
+Node: Naming conventions257123
+Node: include files257510
+Node: binaries258115
+Node: logging258584
+Node: configuration259785
+Node: exported symbols260205
+Node: private (library-internal) symbols (including structs and macros)260572
+Node: testcases261234
+Node: performance tests261572
+Node: src/ directories261956
+Node: Coding style262616
+Node: Build-system268740
+Node: Developing extensions for GNUnet using the gnunet-ext template269759
+Node: Writing testcases271090
+Node: Building GNUnet and its dependencies273419
+Node: TESTING library283655
+Node: API285464
+Node: Finer control over peer stop288041
+Node: Helper functions289547
+Node: Testing with multiple processes290513
+Node: Performance regression analysis with Gauger292695
+Node: TESTBED Subsystem295602
+Node: Supported Topologies301329
+Node: Hosts file format304888
+Node: Topology file format306220
+Node: Testbed Barriers306940
+Node: Implementation309887
+Node: Automatic large-scale deployment in the PlanetLab testbed313713
+Node: PlanetLab Automation for Fedora8 nodes314823
+Node: Install buildslave on PlanetLab nodes running fedora core 8315120
+Node: Setup a new PlanetLab testbed using GPLMT316662
+Node: Why do i get an ssh error when using the regex profiler?319044
+Node: TESTBED Caveats320091
+Node: CORE must be started320421
+Node: ATS must want the connections321381
+Node: libgnunetutil322375
+Node: Logging324450
+Node: Examples333771
+Node: Log files335846
+Node: Updated behavior of GNUNET_log338160
+Node: Interprocess communication API (IPC)341480
+Node: Define new message types342613
+Node: Define message struct343119
+Node: Client - Establish connection344013
+Node: Client - Initialize request message344531
+Node: Client - Send request and receive response345933
+Node: Server - Startup service346927
+Node: Server - Add new handles for specified messages347472
+Node: Server - Process request message349537
+Node: Server - Response to client351633
+Node: Server - Notification of clients352948
+Node: Conversion between Network Byte Order (Big Endian) and Host Byte Order354272
+Node: Cryptography API356999
+Node: Message Queue API359045
+Node: Service API364567
+Node: Optimizing Memory Consumption of GNUnet's (Multi-) Hash Maps368500
+Node: Analysis369465
+Node: Solution371691
+Node: Migration372692
+Node: Conclusion374476
+Node: Availability375127
+Node: CONTAINER_MDLL API375631
+Node: Automatic Restart Manager (ARM)378289
+Node: Basic functionality379173
+Node: Key configuration options380371
+Node: ARM - Availability382743
+Node: Reliability384733
+Node: TRANSPORT Subsystem386723
+Node: Address validation protocol389120
+Node: NAT library392691
+Node: Distance-Vector plugin395447
+Node: SMTP plugin399214
+Node: Why use SMTP for a peer-to-peer transport?400153
+Node: How does it work?401712
+Node: How do I configure my peer?402475
+Node: How do I test if it works?404501
+Node: How fast is it?405690
+Node: Bluetooth plugin409790
+Node: What do I need to use the Bluetooth plugin transport?410647
+Node: How does it work2?412110
+Node: What possible errors should I be aware of?413608
+Node: How do I configure my peer2?415557
+Node: How can I test it?416686
+Node: The implementation of the Bluetooth transport plugin418657
+Node: Linux functionality419756
+Node: THE INITIALIZATION420290
+Node: THE LOOP421770
+Node: Details about the broadcast implementation424343
+Node: Windows functionality426749
+Node: Pending features429556
+Node: WLAN plugin430198
+Node: ATS Subsystem430508
+Node: CORE Subsystem431763
+Node: Limitations433555
+Node: When is a peer "connected"?435514
+Node: libgnunetcore437397
+Node: The CORE Client-Service Protocol440878
+Node: Setup2441287
+Node: Notifications442466
+Node: Sending443345
+Node: The CORE Peer-to-Peer Protocol444385
+Node: Creating the EphemeralKeyMessage444705
+Node: Establishing a connection447063
+Node: Encryption and Decryption448092
+Node: Type maps449699
+Node: CADET Subsystem451765
+Node: libgnunetcadet453750
+Node: NSE Subsystem458119
+Node: Motivation459132
+Node: Security459871
+Node: Principle460540
+Node: Example461053
+Node: Algorithm461771
+Node: Target value462111
+Node: Timing462571
+Node: Controlled Flooding463472
+Node: Calculating the estimate464530
+Node: libgnunetnse465542
+Node: Results466449
+Node: libgnunetnse - Examples468001
+Node: The NSE Client-Service Protocol469018
+Node: The NSE Peer-to-Peer Protocol469900
+Node: HOSTLIST Subsystem472524
+Node: HELLOs473968
+Node: Overview for the HOSTLIST subsystem474480
+Node: Features475695
+Node: HOSTLIST - Limitations476262
+Node: Interacting with the HOSTLIST daemon476596
+Node: Hostlist security address validation477860
+Node: The HOSTLIST daemon478946
+Node: The HOSTLIST server480408
+Node: The HTTP Server480909
+Node: Advertising the URL482288
+Node: The HOSTLIST client482734
+Node: Bootstrapping483387
+Node: Learning484724
+Node: Usage485608
+Node: IDENTITY Subsystem486051
+Node: libgnunetidentity488809
+Node: Connecting to the service489149
+Node: Operations on Egos490996
+Node: The anonymous Ego492203
+Node: Convenience API to lookup a single ego492849
+Node: Associating egos with service functions493596
+Node: The IDENTITY Client-Service Protocol494108
+Node: NAMESTORE Subsystem495826
+Node: libgnunetnamestore497414
+Node: Editing Zone Information498314
+Node: Iterating Zone Information500230
+Node: Monitoring Zone Information501218
+Node: PEERINFO Subsystem502117
+Node: PEERINFO - Features503403
+Node: PEERINFO - Limitations503746
+Node: DeveloperPeer Information503988
+Node: Startup505726
+Node: Managing Information506552
+Node: Obtaining Information507616
+Node: The PEERINFO Client-Service Protocol508402
+Node: libgnunetpeerinfo510000
+Node: Connecting to the PEERINFO Service510544
+Node: Adding Information to the PEERINFO Service511065
+Node: Obtaining Information from the PEERINFO Service511963
+Node: PEERSTORE Subsystem513232
+Node: Functionality513987
+Node: Architecture514840
+Node: libgnunetpeerstore515359
+Node: SET Subsystem517691
+Node: Local Sets518395
+Node: Set Modifications519013
+Node: Set Operations519615
+Node: Result Elements520350
+Node: libgnunetset521458
+Node: Sets521717
+Node: Listeners522368
+Node: Operations522931
+Node: Supplying a Set523287
+Node: The Result Callback523867
+Node: The SET Client-Service Protocol524547
+Node: Creating Sets524919
+Node: Listeners2525365
+Node: Initiating Operations526024
+Node: Modifying Sets526412
+Node: Results and Operation Status526713
+Node: Iterating Sets527073
+Node: The SET Intersection Peer-to-Peer Protocol527639
+Node: The Bloom filter exchange529066
+Node: Salt530388
+Node: The SET Union Peer-to-Peer Protocol531236
+Node: STATISTICS Subsystem533462
+Node: libgnunetstatistics536129
+Node: Statistics retrieval537450
+Node: Setting statistics and updating them538680
+Node: Watches540110
+Node: The STATISTICS Client-Service Protocol541020
+Node: Statistics retrieval2541333
+Node: Setting and updating statistics542028
+Node: Watching for updates543135
+Node: Distributed Hash Table (DHT)543620
+Node: Block library and plugins545697
+Node: What is a Block?545980
+Node: The API of libgnunetblock546759
+Node: Queries548433
+Node: Sample Code549940
+Node: Conclusion2550348
+Node: libgnunetdht550955
+Node: GET551453
+Node: PUT552803
+Node: MONITOR553894
+Node: DHT Routing Options554925
+Node: The DHT Client-Service Protocol556549
+Node: PUTting data into the DHT556876
+Node: GETting data from the DHT557938
+Node: Monitoring the DHT560084
+Node: The DHT Peer-to-Peer Protocol560938
+Node: Routing GETs or PUTs561244
+Node: PUTting data into the DHT2562022
+Node: GETting data from the DHT2563242
+Node: GNU Name System (GNS)565262
+Node: libgnunetgns567730
+Node: Looking up records568274
+Node: Accessing the records570334
+Node: Creating records570971
+Node: Future work571427
+Node: libgnunetgnsrecord571769
+Node: Value handling572856
+Node: Type handling573408
+Node: GNS plugins574154
+Node: The GNS Client-Service Protocol575473
+Node: Hijacking the DNS-Traffic using gnunet-service-dns576516
+Node: Network Setup Details578226
+Node: Serving DNS lookups via GNS on W32579010
+Node: Importing DNS Zones into GNS582258
+Node: Conversions between DNS and GNS582693
+Node: DNS Zone Size586418
+Node: Performance587967
+Node: GNS Namecache589315
+Node: libgnunetnamecache591079
+Node: The NAMECACHE Client-Service Protocol592197
+Node: Lookup592771
+Node: Store593336
+Node: The NAMECACHE Plugin API593834
+Node: Lookup2594215
+Node: Store2594623
+Node: REVOCATION Subsystem595453
+Node: Dissemination596189
+Node: Revocation Message Design Requirements597398
+Node: libgnunetrevocation598663
+Node: Querying for revoked keys599056
+Node: Preparing revocations599489
+Node: Issuing revocations602463
+Node: The REVOCATION Client-Service Protocol603064
+Node: The REVOCATION Peer-to-Peer Protocol604150
+Node: File-sharing (FS) Subsystem605784
+Node: Encoding for Censorship-Resistant Sharing (ECRS)607380
+Node: Namespace Advertisements608417
+Node: KSBlocks609122
+Node: File-sharing persistence directory structure610355
+Node: REGEX Subsystem614608
+Node: How to run the regex profiler615263
+Node: REST Subsystem619319
+Node: Namespace considerations620254
+Node: Endpoint documentation620887
+Node: GNU Free Documentation License621145
+Node: GNU General Public License646529
+Node: GNU Affero General Public License684356
+Node: Concept Index721575
+Node: Programming Index732908
+
+End Tag Table
+
+
+Local Variables:
+coding: utf-8
+End:

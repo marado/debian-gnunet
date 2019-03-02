@@ -1,9 +1,9 @@
 /*
      This file is part of GNUnet
-     Copyright (C) 2016 Inria & GNUnet e.V.
+     Copyright (C) 2016, 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file my/my.c
@@ -40,19 +45,20 @@ GNUNET_MY_exec_prepared (struct GNUNET_MYSQL_Context *mc,
 {
   const struct GNUNET_MY_QueryParam *p;
   unsigned int num;
-  unsigned int i;
   MYSQL_STMT *stmt;
 
   num = 0;
-  for (i=0;NULL != params[i].conv;i++)
+  for (unsigned int i=0;NULL != params[i].conv;i++)
     num += params[i].num_params;
   {
     MYSQL_BIND qbind[num];
     unsigned int off;
 
-    memset (qbind, 0, sizeof(qbind));
+    memset (qbind,
+	    0,
+	    sizeof(qbind));
     off = 0;
-    for (i=0;NULL != (p = &params[i])->conv;i++)
+    for (unsigned int i=0;NULL != (p = &params[i])->conv;i++)
     {
       if (GNUNET_OK !=
           p->conv (p->conv_cls,
@@ -108,9 +114,7 @@ void
 GNUNET_MY_cleanup_query (struct GNUNET_MY_QueryParam *qp,
                          MYSQL_BIND *qbind)
 {
-  unsigned int i;
-
-  for (i=0; NULL != qp[i].conv ;i++)
+  for (unsigned int i=0; NULL != qp[i].conv ;i++)
     if (NULL != qp[i].cleaner)
       qp[i].cleaner (qp[i].conv_cls,
                      &qbind[i]);
@@ -133,7 +137,6 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
                           struct GNUNET_MY_ResultSpec *rs)
 {
   unsigned int num_fields;
-  unsigned int i;
   int ret;
   MYSQL_STMT *stmt;
 
@@ -150,13 +153,13 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
   }
 
   num_fields = 0;
-  for (i=0;NULL != rs[i].pre_conv;i++)
+  for (unsigned int i=0;NULL != rs[i].pre_conv;i++)
     num_fields += rs[i].num_fields;
 
   if (mysql_stmt_field_count (stmt) != num_fields)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                "Number of fields missmatch between SQL result and result specification\n");
+                "Number of fields mismatch between SQL result and result specification\n");
     return GNUNET_SYSERR;
   }
 
@@ -166,7 +169,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
 
     memset (result, 0, sizeof (MYSQL_BIND) * num_fields);
     field_off = 0;
-    for (i=0;NULL != rs[i].pre_conv;i++)
+    for (unsigned int i=0;NULL != rs[i].pre_conv;i++)
     {
       struct GNUNET_MY_ResultSpec *rp = &rs[i];
 
@@ -218,7 +221,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
       return GNUNET_SYSERR;
     }
     field_off = 0;
-    for (i=0;NULL != rs[i].post_conv;i++)
+    for (unsigned int i=0;NULL != rs[i].post_conv;i++)
     {
       struct GNUNET_MY_ResultSpec *rp = &rs[i];
 
@@ -253,9 +256,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
 void
 GNUNET_MY_cleanup_result (struct GNUNET_MY_ResultSpec *rs)
 {
-  unsigned int i;
-
-  for (i=0;NULL != rs[i].post_conv;i++)
+  for (unsigned int i=0;NULL != rs[i].post_conv;i++)
     if (NULL != rs[i].cleaner)
       rs[i].cleaner (rs[i].conv_cls,
                      &rs[i]);

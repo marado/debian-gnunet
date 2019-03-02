@@ -8,7 +8,8 @@ pkgcfgdir= $(pkgdatadir)/config.d/
 libexecdir= $(pkglibdir)/libexec/
 
 pkgcfg_DATA = \
-  transport.conf
+  transport.conf \
+  communicator-unix.conf
 
 if HAVE_MHD
  GN_LIBMHD = -lmicrohttpd
@@ -140,6 +141,10 @@ endif
 
 noinst_PROGRAMS = \
  gnunet-transport-profiler \
+ gnunet-communicator-unix \
+ gnunet-communicator-tcp \
+ gnunet-communicator-udp \
+ gnunet-service-tng \
  $(WLAN_BIN_SENDER) \
  $(WLAN_BIN_RECEIVER)
 
@@ -149,6 +154,10 @@ endif
 
 lib_LTLIBRARIES = \
   libgnunettransport.la \
+  libgnunettransportaddress.la \
+  libgnunettransportcore.la \
+  libgnunettransportcommunicator.la \
+  libgnunettransportmonitor.la \
   $(TESTING_LIBS)
 
 libgnunettransporttesting_la_SOURCES = \
@@ -187,6 +196,46 @@ libgnunettransport_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 4:0:2
 
+
+
+libgnunettransportaddress_la_SOURCES = \
+  transport_api2_address.c
+libgnunettransportaddress_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
+libgnunettransportaddress_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  -version-info 0:0:0
+
+libgnunettransportcore_la_SOURCES = \
+  transport_api2_core.c
+libgnunettransportcore_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
+libgnunettransportcore_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  -version-info 0:0:0
+
+libgnunettransportcommunicator_la_SOURCES = \
+  transport_api2_communication.c
+libgnunettransportcommunicator_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
+libgnunettransportcommunicator_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  -version-info 0:0:0
+
+
+libgnunettransportmonitor_la_SOURCES = \
+  transport_api2_monitor.c
+libgnunettransportmonitor_la_LIBADD = \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
+libgnunettransportmonitor_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  -version-info 0:0:0
+
+
 libexec_PROGRAMS = \
  $(WLAN_BIN) \
  $(WLAN_BIN_DUMMY) \
@@ -206,6 +255,34 @@ gnunet_transport_certificate_creation_SOURCES = \
  gnunet-transport-certificate-creation.c
 gnunet_transport_certificate_creation_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_communicator_unix_SOURCES = \
+ gnunet-communicator-unix.c
+gnunet_communicator_unix_LDADD = \
+  libgnunettransportcommunicator.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_communicator_tcp_SOURCES = \
+ gnunet-communicator-tcp.c
+gnunet_communicator_tcp_LDADD = \
+  libgnunettransportcommunicator.la \
+  $(top_builddir)/src/nat/libgnunetnatnew.la \
+  $(top_builddir)/src/nt/libgnunetnt.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LIBGCRYPT_LIBS)
+
+gnunet_communicator_udp_SOURCES = \
+ gnunet-communicator-udp.c
+gnunet_communicator_udp_LDADD = \
+  libgnunettransportcommunicator.la \
+  $(top_builddir)/src/nat/libgnunetnatnew.la \
+  $(top_builddir)/src/nt/libgnunetnt.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(LIBGCRYPT_LIBS)
+
 
 gnunet_helper_transport_wlan_SOURCES = \
  gnunet-helper-transport-wlan.c
@@ -269,6 +346,7 @@ gnunet_service_transport_LDADD = \
   libgnunettransport.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/nt/libgnunetnt.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -277,6 +355,17 @@ gnunet_service_transport_LDADD = \
 gnunet_service_transport_CFLAGS = \
   $(CFLAGS)
 # -DANALYZE
+
+
+gnunet_service_tng_SOURCES = \
+ gnunet-service-tng.c
+gnunet_service_tng_LDADD = \
+  $(top_builddir)/src/ats/libgnunetatstransport.la \
+  $(top_builddir)/src/peerstore/libgnunetpeerstore.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  $(GN_LIBINTL)
 
 plugin_LTLIBRARIES = \
   libgnunet_plugin_transport_tcp.la \
@@ -1001,6 +1090,7 @@ test_quota_compliance_http_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1010,6 +1100,7 @@ test_quota_compliance_http_asymmetric_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1019,6 +1110,7 @@ test_quota_compliance_https_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1028,6 +1120,7 @@ test_quota_compliance_https_asymmetric_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1146,6 +1239,7 @@ test_quota_compliance_tcp_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1154,6 +1248,7 @@ test_quota_compliance_tcp_asymmetric_SOURCES = \
 test_quota_compliance_tcp_asymmetric_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/ats/libgnunetats.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
@@ -1164,6 +1259,7 @@ test_quota_compliance_udp_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1173,6 +1269,7 @@ test_quota_compliance_unix_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1182,6 +1279,7 @@ test_quota_compliance_unix_asymmetric_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1191,6 +1289,7 @@ test_quota_compliance_wlan_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1200,6 +1299,7 @@ test_quota_compliance_wlan_asymmetric_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1209,6 +1309,7 @@ test_quota_compliance_bluetooth_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1218,6 +1319,7 @@ test_quota_compliance_bluetooth_asymmetric_LDADD = \
  libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
@@ -1247,6 +1349,7 @@ test_transport_api_slow_ats_LDADD = \
 
 
 EXTRA_DIST = \
+communicator-unix.conf \
 test_plugin_hostkey \
 test_plugin_hostkey.ecc \
 test_delay \

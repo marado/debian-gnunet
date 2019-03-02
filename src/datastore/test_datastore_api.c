@@ -3,7 +3,7 @@
      Copyright (C) 2004, 2005, 2006, 2007, 2009, 2015 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /*
  * @file datastore/test_datastore_api.c
@@ -630,7 +635,7 @@ duc_dummy (void *cls,
 
 
 /**
- * check if plugin is actually working 
+ * check if plugin is actually working
  */
 static int
 test_plugin (const char *cfg_name)
@@ -639,7 +644,7 @@ test_plugin (const char *cfg_name)
   struct GNUNET_CONFIGURATION_Handle *cfg;
   struct GNUNET_DATASTORE_PluginFunctions *api;
   struct GNUNET_DATASTORE_PluginEnvironment env;
-  
+
   cfg = GNUNET_CONFIGURATION_create ();
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_load (cfg,
@@ -686,9 +691,9 @@ int
 main (int argc,
       char *argv[])
 {
-  char cfg_name[128];
+  char cfg_name[PATH_MAX];
   int ret;
-    
+
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
                    sizeof (cfg_name),

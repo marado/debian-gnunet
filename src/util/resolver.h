@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2012 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -38,7 +43,7 @@ GNUNET_NETWORK_STRUCT_BEGIN
 struct GNUNET_RESOLVER_GetMessage
 {
   /**
-   * Type:  GNUNET_MESSAGE_TYPE_RESOLVER_REQUEST
+   * Type:  #GNUNET_MESSAGE_TYPE_RESOLVER_REQUEST
    */
   struct GNUNET_MessageHeader header;
 
@@ -53,10 +58,37 @@ struct GNUNET_RESOLVER_GetMessage
    */
   int32_t af GNUNET_PACKED;
 
+  /**
+   * identifies the request and is contained in the response message. The
+   * client has to match response to request by this identifier.
+   */
+  uint32_t client_id GNUNET_PACKED;
+
   /* followed by 0-terminated string for A/AAAA-lookup or
      by 'struct in_addr' / 'struct in6_addr' for reverse lookup */
 
 };
+
+
+struct GNUNET_RESOLVER_ResponseMessage
+{
+  /**
+   * Type: #GNUNET_MESSAGE_TYPE_RESOLVER_RESPONSE
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * identifies the request this message responds to. The client
+   * has to match response to request by this identifier.
+   */
+  uint32_t client_id GNUNET_PACKED;
+
+  /* followed by 0-terminated string for response to a reverse lookup
+   * or by 'struct in_addr' / 'struct in6_addr' for response to
+   * A/AAAA-lookup
+   */
+};
+
 GNUNET_NETWORK_STRUCT_END
 
 #endif

@@ -3,7 +3,7 @@
      Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file fs/gnunet-search.c
@@ -167,8 +172,11 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     is_directory =
         GNUNET_FS_meta_data_test_for_directory (info->value.search.
                                                 specifics.result.meta);
-    if (filename != NULL)
+    if (NULL != filename)
     {
+      while ( (filename[0] != '\0') &&
+	      ('/' == filename[strlen(filename)-1]) )
+	filename[strlen(filename)-1] = '\0';
       GNUNET_DISK_filename_canonicalize (filename);
       if (GNUNET_YES == is_directory)
         printf ("gnunet-download -o \"%s%s\" -R %s\n", filename, GNUNET_FS_DIRECTORY_EXT, uri);
@@ -301,49 +309,44 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_uint ('a',
-                                   "anonymity",
-                                   "LEVEL",
-                                   gettext_noop ("set the desired LEVEL of receiver-anonymity"),
-                                   &anonymity),
-
-
+			       "anonymity",
+			       "LEVEL",
+			       gettext_noop ("set the desired LEVEL of receiver-anonymity"),
+			       &anonymity),
     GNUNET_GETOPT_option_flag ('n',
-                                  "no-network",
-                                  gettext_noop ("only search the local peer (no P2P network search)"),
-                                  &local_only),
-                                  
+			       "no-network",
+			       gettext_noop ("only search the local peer (no P2P network search)"),
+			       &local_only),                                 
     GNUNET_GETOPT_option_string ('o',
                                  "output",
                                  "PREFIX",
                                  gettext_noop ("write search results to file starting with PREFIX"),
                                  &output_filename),                              
-
     GNUNET_GETOPT_option_relative_time ('t', 
-                                            "timeout",
-                                            "DELAY",
-                                            gettext_noop ("automatically terminate search after DELAY"),
-                                            &timeout),
-
-
+					"timeout",
+					"DELAY",
+					gettext_noop ("automatically terminate search after DELAY"),
+					&timeout),
     GNUNET_GETOPT_option_verbose (&verbose),
-
     GNUNET_GETOPT_option_uint ('N',
-                                   "results",
-                                   "VALUE",
-                                   gettext_noop ("automatically terminate search "
-                                                 "after VALUE results are found"),
-                                   &results_limit),
-
+			       "results",
+			       "VALUE",
+			       gettext_noop ("automatically terminate search "
+					     "after VALUE results are found"),
+			       &results_limit),
     GNUNET_GETOPT_OPTION_END
   };
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv,
+				    &argc, &argv))
     return 2;
 
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv, "gnunet-search [OPTIONS] KEYWORD",
+	 GNUNET_PROGRAM_run (argc,
+			     argv,
+			     "gnunet-search [OPTIONS] KEYWORD",
 			     gettext_noop
 			     ("Search GNUnet for files that were published on GNUnet"),
 			     options, &run, NULL)) ? ret : 1;

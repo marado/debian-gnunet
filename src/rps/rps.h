@@ -3,7 +3,7 @@
       Copyright (C) 2012-2013 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file rps/rps.h
@@ -57,66 +62,6 @@ struct GNUNET_RPS_P2P_PullReplyMessage
 ***********************************************************************/
 
 /**
- * Message from client to RPS service to request random peer(s).
- */
-struct GNUNET_RPS_CS_RequestMessage
-{
-  /**
-   * Header including size and type in NBO
-   */
-  struct GNUNET_MessageHeader header;
-
-  /**
-   * Identifyer of the message.
-   */
-  uint32_t id GNUNET_PACKED;
-
-  /**
-   * Number of random peer requested
-   */
-  uint32_t num_peers GNUNET_PACKED;
-};
-
-/**
- * Message from RPS service to client to reply with random peer(s).
- */
-struct GNUNET_RPS_CS_ReplyMessage
-{
-  /**
-   * Type is #GNUNET_MESSAGE_TYPE_RPS_CS_REPLY.
-   */
-  struct GNUNET_MessageHeader header;
-
-  /**
-   * Identifyer of the message.
-   */
-  uint32_t id GNUNET_PACKED;
-
-  /**
-   * Number of random peer replied
-   */
-  uint32_t num_peers GNUNET_PACKED;
-
-  /* Followed by num_peers * GNUNET_PeerIdentity */
-};
-
-/**
- * Message from client to RPS service to cancel request.
- */
-struct GNUNET_RPS_CS_RequestCancelMessage
-{
-  /**
-   * Header including size and type in NBO
-   */
-  struct GNUNET_MessageHeader header;
-
-  /**
-   * Identifyer of the message.
-   */
-  uint32_t id GNUNET_PACKED;
-};
-
-/**
  * Message from client to service with seed of peers.
  */
 struct GNUNET_RPS_CS_SeedMessage
@@ -134,7 +79,7 @@ struct GNUNET_RPS_CS_SeedMessage
   /* Followed by num_peers * GNUNET_PeerIdentity */
 };
 
-#ifdef ENABLE_MALICIOUS
+#if ENABLE_MALICIOUS
 /**
  * Message from client to service to turn service malicious.
  */
@@ -169,6 +114,50 @@ struct GNUNET_RPS_CS_ActMaliciousMessage
      behaviour is 1 */
 };
 #endif /* ENABLE_MALICIOUS */
+
+
+/**
+ * Message from client to service telling it to start a new sub
+ */
+struct GNUNET_RPS_CS_SubStartMessage
+{
+  /**
+   * Header including size and type in NBO
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * For alignment.
+   */
+  uint32_t reserved GNUNET_PACKED;
+
+  /**
+   * Mean interval between two rounds
+   */
+  struct GNUNET_TIME_RelativeNBO round_interval;
+
+  /**
+   * Length of the shared value represented as string.
+   */
+  struct GNUNET_HashCode hash GNUNET_PACKED;
+};
+
+
+/**
+ * Message from client to service telling it to stop a new sub
+ */
+struct GNUNET_RPS_CS_SubStopMessage
+{
+  /**
+   * Header including size and type in NBO
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Length of the shared value represented as string.
+   */
+  struct GNUNET_HashCode hash GNUNET_PACKED;
+};
 
 
 /* Debug messages */
@@ -213,6 +202,39 @@ struct GNUNET_RPS_CS_DEBUG_ViewReply
 };
   /* Followed by num_peers * GNUNET_PeerIdentity */
 
+/**
+ * Message from client to service indicating that
+ * clients wants to get stream of biased peers
+ */
+struct GNUNET_RPS_CS_DEBUG_StreamRequest
+{
+  /**
+   * Header including size and type in NBO
+   */
+  struct GNUNET_MessageHeader header;
+};
+
+/**
+ * Message from service to client containing peer from biased stream
+ */
+struct GNUNET_RPS_CS_DEBUG_StreamReply
+{
+  /**
+   * Header including size and type in NBO
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Number of peers
+   */
+  uint64_t num_peers GNUNET_PACKED;
+
+  // TODO maybe source of peer (pull/push list, peerinfo, ...)
+
+  /* Followed by num_peers * GNUNET_PeerIdentity */
+};
+
+GNUNET_NETWORK_STRUCT_END
 
 /***********************************************************************
  * Defines from old gnunet-service-rps_peers.h
@@ -309,4 +331,8 @@ typedef int
                   const struct GNUNET_PeerIdentity *peer);
 
 
-GNUNET_NETWORK_STRUCT_END
+/**
+ * Handle to the statistics service.
+ */
+extern struct GNUNET_STATISTICS_Handle *stats;
+

@@ -3,7 +3,7 @@
       Copyright (C) 2008--2013 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -1388,7 +1393,7 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
   }
   do
   {
-    secondary_option = va_arg (va, enum GNUNET_TESTBED_TopologyOption);
+    secondary_option = GNUNET_VA_ARG_ENUM (va, GNUNET_TESTBED_TopologyOption);
 
     switch (secondary_option)
     {
@@ -1549,7 +1554,7 @@ GNUNET_TESTBED_underlay_construct_ (int num_peers,
   tc.type = TOPOLOGYCONTEXT_TYPE_UNDERLAY;
   underlay = &tc.u.underlay;
   va_start (vargs, cls);
-  topology = va_arg (vargs, enum GNUNET_TESTBED_TopologyOption);
+  topology = GNUNET_VA_ARG_ENUM (vargs, GNUNET_TESTBED_TopologyOption);
   switch (topology)
   {
   case GNUNET_TESTBED_TOPOLOGY_LINE:

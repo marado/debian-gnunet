@@ -3,7 +3,7 @@
      Copyright (C) 2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file namestore/test_namestore_api_zone_iteration.c
@@ -31,8 +36,6 @@
 
 
 static struct GNUNET_NAMESTORE_Handle * nsh;
-
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey * privkey;
 
@@ -66,7 +69,7 @@ static struct GNUNET_NAMESTORE_QueueEntry *nsqe;
  * @param tc scheduler context
  */
 static void
-endbadly (void *cls)
+end (void *cls)
 {
   if (NULL != zi)
   {
@@ -78,9 +81,9 @@ endbadly (void *cls)
     GNUNET_NAMESTORE_disconnect (nsh);
     nsh = NULL;
   }
-  GNUNET_free_non_null(s_name_1);
-  GNUNET_free_non_null(s_name_2);
-  GNUNET_free_non_null(s_name_3);
+  GNUNET_free_non_null (s_name_1);
+  GNUNET_free_non_null (s_name_2);
+  GNUNET_free_non_null (s_name_3);
 
   if (s_rd_1 != NULL)
   {
@@ -99,99 +102,50 @@ endbadly (void *cls)
   }
 
   if (privkey != NULL)
+  {
     GNUNET_free (privkey);
-  privkey = NULL;
-
+    privkey = NULL;
+  }
   if (privkey2 != NULL)
+  {
     GNUNET_free (privkey2);
-  privkey2 = NULL;
-  res = 1;
-}
-
-
-static void
-end (void *cls)
-{
-  if (NULL != zi)
-  {
-    GNUNET_NAMESTORE_zone_iteration_stop (zi);
-    zi = NULL;
+    privkey2 = NULL;
   }
-  if (endbadly_task != NULL)
-  {
-    GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = NULL;
-  }
-
-  if (privkey != NULL)
-    GNUNET_free (privkey);
-  privkey = NULL;
-
-  if (privkey2 != NULL)
-    GNUNET_free (privkey2);
-  privkey2 = NULL;
-
-  GNUNET_free (s_name_1);
-  GNUNET_free (s_name_2);
-  GNUNET_free (s_name_3);
-  if (s_rd_1 != NULL)
-  {
-    GNUNET_free ((void *)s_rd_1->data);
-    GNUNET_free (s_rd_1);
-  }
-  if (s_rd_2 != NULL)
-  {
-    GNUNET_free ((void *)s_rd_2->data);
-    GNUNET_free (s_rd_2);
-  }
-  if (s_rd_3 != NULL)
-  {
-    GNUNET_free ((void *)s_rd_3->data);
-    GNUNET_free (s_rd_3);
-  }
-  if (nsh != NULL)
-    GNUNET_NAMESTORE_disconnect (nsh);
-  nsh = NULL;
 }
 
 
 static int
 check_zone_1 (const char *label, unsigned int rd_count,
-    const struct GNUNET_GNSRECORD_Data *rd)
+	      const struct GNUNET_GNSRECORD_Data *rd)
 {
-  int failed = GNUNET_NO;
-  int c;
-  for (c = 0; c< rd_count ; c++)
+  for (unsigned int c = 0; c< rd_count ; c++)
   {
-    if (rd[c].record_type == GNUNET_GNSRECORD_TYPE_NICK)
-        if (0 != strcmp (rd[c].data, ZONE_NICK_1))
-        {
-          GNUNET_break (0);
-          return GNUNET_YES;
-        }
+    if ( (rd[c].record_type == GNUNET_GNSRECORD_TYPE_NICK) &&
+	 (0 != strcmp (rd[c].data, ZONE_NICK_1)) )
+    {
+      GNUNET_break (0);
+      return GNUNET_YES;
+    }
   }
-  return failed;
+  return GNUNET_NO;
 }
+
 
 static int
 check_zone_2 (const char *label,
-           unsigned int rd_count,
-           const struct GNUNET_GNSRECORD_Data *rd)
+	      unsigned int rd_count,
+	      const struct GNUNET_GNSRECORD_Data *rd)
 {
-  int failed = GNUNET_NO;
-  int c;
-
-  for (c = 0; c< rd_count ; c++)
+  for (unsigned int c = 0; c< rd_count ; c++)
   {
-    if (rd[c].record_type == GNUNET_GNSRECORD_TYPE_NICK)
-        if (0 != strcmp (rd[c].data, ZONE_NICK_2))
-        {
-          GNUNET_break (0);
-          return GNUNET_YES;
-        }
+    if ( (rd[c].record_type == GNUNET_GNSRECORD_TYPE_NICK) &&
+	 (0 != strcmp (rd[c].data, ZONE_NICK_2)) )
+    {
+      GNUNET_break (0);
+      return GNUNET_YES;
+    }
   }
-
-  return failed;
+  return GNUNET_NO;
 }
 
 
@@ -203,7 +157,7 @@ zone_proc_end (void *cls)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received last result, iteration done after receing %u results\n",
               returned_records);
-  GNUNET_SCHEDULER_add_now (&end, NULL);
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -249,7 +203,7 @@ zone_proc (void *cls,
   {
     GNUNET_break (0);
     res = 1;
-    GNUNET_SCHEDULER_add_now (&end, NULL);
+    GNUNET_SCHEDULER_shutdown ();
   }
 }
 
@@ -278,9 +232,7 @@ put_cont (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to created records: `%s'\n",
     		emsg);
     GNUNET_break (0);
-    if (NULL != endbadly_task)
-    	GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    GNUNET_SCHEDULER_shutdown ();
     return;
   }
 
@@ -301,9 +253,7 @@ put_cont (void *cls,
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to create zone iterator\n");
       GNUNET_break (0);
-      if (NULL != endbadly_task)
-      	GNUNET_SCHEDULER_cancel (endbadly_task);
-      endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+      GNUNET_SCHEDULER_shutdown ();
       return;
     }
   }
@@ -401,9 +351,7 @@ empty_zone_proc (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		_("Expected empty zone but received zone private key\n"));
     GNUNET_break (0);
-    if (endbadly_task != NULL)
-      GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    GNUNET_SCHEDULER_shutdown ();
     return;
   }
   if ((NULL != label) || (NULL != rd) || (0 != rd_count))
@@ -411,9 +359,7 @@ empty_zone_proc (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		_("Expected no zone content but received data\n"));
     GNUNET_break (0);
-    if (endbadly_task != NULL)
-      GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    GNUNET_SCHEDULER_shutdown ();
     return;
   }
   GNUNET_assert (0);
@@ -449,12 +395,10 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
-  endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-                                                &endbadly,
-                                                NULL);
   nsh = GNUNET_NAMESTORE_connect (cfg);
   GNUNET_break (NULL != nsh);
-
+  GNUNET_SCHEDULER_add_shutdown (&end,
+				 NULL);
   /* first, iterate over empty namestore */
   zi = GNUNET_NAMESTORE_zone_iteration_start(nsh,
 					     NULL,
@@ -469,10 +413,12 @@ run (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Failed to create zone iterator\n");
     GNUNET_break (0);
-    GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    GNUNET_SCHEDULER_shutdown ();
   }
 }
+
+
+#include "test_common.c"
 
 
 int
@@ -481,13 +427,8 @@ main (int argc, char *argv[])
   const char *plugin_name;
   char *cfg_name;
 
-  plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_asprintf (&cfg_name,
-                   "test_namestore_api_%s.conf",
-                   plugin_name);
+  SETUP_CFG (plugin_name, cfg_name);
   res = 1;
-  GNUNET_DISK_purge_cfg_dir (cfg_name,
-                             "GNUNET_TEST_HOME");
   if (0 !=
       GNUNET_TESTING_peer_run ("test-namestore-api-zone-iteration-nick",
                                cfg_name,

@@ -3,7 +3,7 @@
      Copyright (C) 2009-2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -86,7 +91,7 @@ typedef void
 (*GNUNET_TRANSPORT_SessionStart) (void *cls,
                                   const struct GNUNET_HELLO_Address *address,
                                   struct GNUNET_ATS_Session *session,
-                                  enum GNUNET_ATS_Network_Type net);
+                                  enum GNUNET_NetworkType net);
 
 
 /**
@@ -128,7 +133,7 @@ typedef struct GNUNET_TIME_Relative
  * @param addrlen length of the @a addr
  * @return type of the network the address belongs to
  */
-typedef enum GNUNET_ATS_Network_Type
+typedef enum GNUNET_NetworkType
 (*GNUNET_TRANSPORT_AddressToType) (void *cls,
                                    const struct sockaddr *addr,
                                    size_t addrlen);
@@ -544,7 +549,7 @@ typedef int
  * @param session the session
  * @return the network type
  */
-typedef enum GNUNET_ATS_Network_Type
+typedef enum GNUNET_NetworkType
 (*GNUNET_TRANSPORT_GetNetworkType) (void *cls,
                                     struct GNUNET_ATS_Session *session);
 
@@ -556,7 +561,7 @@ typedef enum GNUNET_ATS_Network_Type
  * @param address the address
  * @return the network type
  */
-typedef enum GNUNET_ATS_Network_Type
+typedef enum GNUNET_NetworkType
 (*GNUNET_TRANSPORT_GetNetworkTypeForAddress) (void *cls,
                                               const struct GNUNET_HELLO_Address *address);
 

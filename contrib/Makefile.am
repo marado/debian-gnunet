@@ -5,17 +5,6 @@ tap32dir = $(pkgdatadir)/openvpn-tap32/tapw32/
 
 tap64dir = $(pkgdatadir)/openvpn-tap32/tapw64/
 
-noinst_PROGRAMS = \
- timeout_watchdog
-
-if !MINGW
-timeout_watchdog_SOURCES = \
- timeout_watchdog.c
-else
-timeout_watchdog_SOURCES = \
- timeout_watchdog_w32.c
-endif
-
 noinst_SCRIPTS = \
  scripts/terminate.py \
  scripts/pydiffer.py \
@@ -32,7 +21,6 @@ dist_pkgdata_DATA = \
  gns/gns-form.xslt \
  branding/logo/gnunet-logo.pdf \
  branding/logo/gnunet-logo-color.png \
- scripts/report.sh \
  testing_hostkeys.ecc
 
 if MINGW
@@ -59,6 +47,7 @@ EXTRA_DIST = \
  scripts/gnunet_pyexpect.py.in \
  scripts/gnunet_janitor.py.in \
  scripts/gnunet-chk.py.in \
+ scripts/gnunet-bugreport \
  scripts/removetrailingwhitespace.py.in \
  scripts/pydiffer.py.in \
  packages/nix/default.nix \
@@ -88,8 +77,6 @@ do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 #	chmod +x $@
 #
 # instead of this:
-
-SUFFIXES =
 SUFFIXES = .py.in .py
 
 .py.in.py:
@@ -126,6 +113,7 @@ install-data-local:
 	    $(INSTALL_DATA) $$hello $(DESTDIR)$(pkghellodir)/ ; \
 	  fi \
 	done
+	install scripts/gnunet-bugreport $(DESTDIR)$(bindir)/gnunet-bugreport
 
 dist-hook:
 	if test -d $(srcdir)/hellos; then \

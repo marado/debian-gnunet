@@ -3,7 +3,7 @@
  Copyright (C) 2010-2016 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file transport/gnunet-service-transport.c
@@ -108,7 +113,12 @@ enum ClientType
   /**
    * It is a blacklist, query about allowed connections.
    */
-  CT_BLACKLIST = 3
+  CT_BLACKLIST = 3,
+
+  /**
+   * CORE client without any handlers.
+   */
+  CT_CORE_NO_HANDLERS = 4
 };
 
 
@@ -412,7 +422,7 @@ static struct GNUNET_ATS_SessionKiller *sk_tail;
 /**
  * Interface scanner determines our LAN address range(s).
  */
-struct GNUNET_ATS_InterfaceScanner *GST_is;
+struct GNUNET_NT_InterfaceScanner *GST_is;
 
 
 /**
@@ -439,8 +449,8 @@ unicast (struct TransportClient *tc,
                 GNUNET_MQ_get_length (tc->mq),
                 MAX_PENDING);
     GNUNET_STATISTICS_update (GST_stats,
-                              gettext_noop
-                              ("# messages dropped due to slow client"), 1,
+                              gettext_noop ("# messages dropped due to slow client"),
+                              1,
                               GNUNET_NO);
     return;
   }
@@ -565,6 +575,8 @@ client_disconnect_cb (void *cls,
 					     bc);
     }
     break;
+  case CT_CORE_NO_HANDLERS:
+    break;
   }
   GNUNET_free (tc);
 }
@@ -599,7 +611,6 @@ notify_client_about_neighbour (void *cls,
   cim.header.size = htons (sizeof (struct ConnectInfoMessage));
   cim.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT);
   cim.id = *peer;
-  cim.quota_in = bandwidth_in;
   cim.quota_out = bandwidth_out;
   unicast (tc,
 	   &cim.header,
@@ -609,7 +620,7 @@ notify_client_about_neighbour (void *cls,
 
 /**
  * Initialize a normal client.  We got a start message from this
- * client, add him to the list of clients for broadcasting of inbound
+ * client, add it to the list of clients for broadcasting of inbound
  * messages.
  *
  * @param cls the client
@@ -646,6 +657,8 @@ handle_client_start (void *cls,
   }
   if (0 != (2 & options))
     tc->type = CT_CORE;
+  else
+    tc->type = CT_CORE_NO_HANDLERS;
   hello = GST_hello_get ();
   if (NULL != hello)
     unicast (tc,
@@ -1337,7 +1350,6 @@ void
 GST_clients_broadcast (const struct GNUNET_MessageHeader *msg,
                        int may_drop)
 {
-  struct TransportClient *tc;
   int done;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -1345,8 +1357,12 @@ GST_clients_broadcast (const struct GNUNET_MessageHeader *msg,
               (unsigned int) ntohs (msg->type),
               (unsigned int) ntohs (msg->size));
   done = GNUNET_NO;
-  for (tc = clients_head; NULL != tc; tc = tc->next)
+  for (struct TransportClient *tc = clients_head;
+       NULL != tc;
+       tc = tc->next)
   {
+    if (CT_NONE == tc->type)
+      continue; /* client not yet ready */
     if ( (GNUNET_YES == may_drop) &&
          (CT_CORE != tc->type) )
       continue; /* skip, this client does not care about payload */
@@ -1378,13 +1394,14 @@ GST_clients_broadcast_peer_notification (const struct GNUNET_PeerIdentity *peer,
 {
   struct GNUNET_MQ_Envelope *env;
   struct PeerIterateResponseMessage *msg;
-  struct TransportClient *tc;
 
   msg = compose_address_iterate_response_message (peer,
 						  address);
   msg->state = htonl (state);
   msg->state_timeout = GNUNET_TIME_absolute_hton (state_timeout);
-  for (tc = clients_head; NULL != tc; tc = tc->next)
+  for (struct TransportClient *tc = clients_head;
+       NULL != tc;
+       tc = tc->next)
   {
     if (CT_MONITOR != tc->type)
       continue;
@@ -1973,7 +1990,7 @@ static void
 plugin_env_session_start (void *cls,
                           const struct GNUNET_HELLO_Address *address,
                           struct GNUNET_ATS_Session *session,
-                          enum GNUNET_ATS_Network_Type scope)
+                          enum GNUNET_NetworkType scope)
 {
   struct GNUNET_ATS_Properties prop;
 
@@ -2003,7 +2020,7 @@ plugin_env_session_start (void *cls,
     memset (&prop,
 	    0,
 	    sizeof (prop));
-    GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != scope);
+    GNUNET_break (GNUNET_NT_UNSPECIFIED != scope);
     prop.scope = scope;
     GST_ats_add_inbound_address (address,
                                  session,
@@ -2170,7 +2187,7 @@ test_connection_ok (void *cls,
 
 /**
  * Initialize a blacklisting client.  We got a blacklist-init
- * message from this client, add him to the list of clients
+ * message from this client, add it to the list of clients
  * to query for blacklisting.
  *
  * @param cls the client
@@ -2259,7 +2276,7 @@ shutdown_task (void *cls)
   GST_ats = NULL;
   GNUNET_ATS_connectivity_done (GST_ats_connect);
   GST_ats_connect = NULL;
-  GNUNET_ATS_scanner_done (GST_is);
+  GNUNET_NT_scanner_done (GST_is);
   GST_is = NULL;
   while (NULL != (cur = a2s_head))
   {
@@ -2857,7 +2874,7 @@ run (void *cls,
   /* start subsystems */
   read_blacklist_configuration (GST_cfg,
 				&GST_my_identity);
-  GST_is = GNUNET_ATS_scanner_init ();
+  GST_is = GNUNET_NT_scanner_init ();
   GST_ats_connect = GNUNET_ATS_connectivity_init (GST_cfg);
   GST_ats = GNUNET_ATS_scheduling_init (GST_cfg,
                                         &ats_request_address_change,

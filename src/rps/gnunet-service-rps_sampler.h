@@ -3,7 +3,7 @@
      Copyright (C)
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -22,6 +27,7 @@
 #ifndef RPS_SAMPLER_H
 #define RPS_SAMPLER_H
 #include <inttypes.h>
+#include "rps-sampler_common.h"
 
 
 /**
@@ -33,18 +39,6 @@ struct RPS_Sampler;
  * A handle to cancel a request.
  */
 struct RPS_SamplerRequestHandle;
-
-
-/**
- * Callback that is called from _get_n_rand_peers() when the PeerIDs are ready.
- *
- * @param cls the closure given alongside this function.
- * @param ids the PeerIDs that were returned
- *        to be freed
- */
-  typedef void
-(*RPS_sampler_n_rand_peers_ready_cb) (void *cls,
-    struct GNUNET_PeerIdentity *ids, uint32_t num_peers);
 
 
 /**
@@ -80,19 +74,7 @@ RPS_sampler_init (size_t init_size,
 
 
 /**
- * Initialise a modified tuple of sampler elements.
- *
- * @param init_size the size the sampler is initialised with
- * @param max_round_interval maximum time a round takes
- * @return a handle to a sampler that consists of sampler elements.
- */
-struct RPS_Sampler *
-RPS_sampler_mod_init (size_t init_size,
-                      struct GNUNET_TIME_Relative max_round_interval);
-
-
-/**
- * A fuction to update every sampler in the given list
+ * Update every sampler element of this sampler with given peer
  *
  * @param sampler the sampler to update.
  * @param id the PeerID that is put in the sampler
@@ -107,6 +89,12 @@ RPS_sampler_update (struct RPS_Sampler *sampler,
  * value.
  *
  * Used to get rid of a PeerID.
+ *
+ * FIXME: This should also consider currently pending requests
+ *        (Pending requests already collect peerids. As long as not all
+ *        requested IDs have been collected, they are kept.
+ *        Ideally, the @p id should be removed from all pending requests. This
+ *        seems quite complicated.)
  *
  * @param sampler the sampler to reinitialise a sampler in.
  * @param id the id of the samplers to update.
@@ -132,8 +120,9 @@ RPS_sampler_reinitialise_by_value (struct RPS_Sampler *sampler,
  */
 struct RPS_SamplerRequestHandle *
 RPS_sampler_get_n_rand_peers (struct RPS_Sampler *sampler,
+                              uint32_t num_peers,
                               RPS_sampler_n_rand_peers_ready_cb cb,
-                              void *cls, uint32_t num_peers);
+                              void *cls);
 
 /**
  * Cancle a request issued through #RPS_sampler_n_rand_peers_ready_cb.

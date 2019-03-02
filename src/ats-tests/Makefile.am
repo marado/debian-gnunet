@@ -59,6 +59,8 @@ libgnunetatstesting_la_SOURCES = \
   ats-testing-experiment.c ats-testing-preferences.c
 libgnunetatstesting_la_LIBADD = \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
+  $(top_builddir)/src/core/libgnunetcore.la \
+	$(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)

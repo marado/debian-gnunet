@@ -3,7 +3,7 @@
      Copyright (C) 2002-2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -263,7 +268,7 @@ struct GNUNET_ATS_Session
   /**
    * ATS network type.
    */
-  enum GNUNET_ATS_Network_Type scope;
+  enum GNUNET_NetworkType scope;
 };
 
 
@@ -1917,7 +1922,7 @@ client_connect (struct GNUNET_ATS_Session *s)
  * @param session the session
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 http_client_plugin_get_network (void *cls,
                                 struct GNUNET_ATS_Session *session)
 {
@@ -1932,7 +1937,7 @@ http_client_plugin_get_network (void *cls,
  * @param address the address
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 http_client_plugin_get_network_for_address (void *cls,
                                             const struct GNUNET_HELLO_Address *address)
 {
@@ -1994,7 +1999,7 @@ http_client_plugin_get_session (void *cls,
   struct HTTP_Client_Plugin *plugin = cls;
   struct GNUNET_ATS_Session *s;
   struct sockaddr *sa;
-  enum GNUNET_ATS_Network_Type net_type;
+  enum GNUNET_NetworkType net_type;
   size_t salen = 0;
   int res;
 
@@ -2017,7 +2022,7 @@ http_client_plugin_get_session (void *cls,
   }
 
   /* Determine network location */
-  net_type = GNUNET_ATS_NET_UNSPECIFIED;
+  net_type = GNUNET_NT_UNSPECIFIED;
   sa = http_common_socket_from_address (address->address,
                                         address->address_length,
                                         &res);
@@ -2040,9 +2045,9 @@ http_client_plugin_get_session (void *cls,
   else if (GNUNET_NO == res)
   {
     /* Cannot convert to sockaddr -> is external hostname */
-    net_type = GNUNET_ATS_NET_WAN;
+    net_type = GNUNET_NT_WAN;
   }
-  if (GNUNET_ATS_NET_UNSPECIFIED == net_type)
+  if (GNUNET_NT_UNSPECIFIED == net_type)
   {
     GNUNET_break (0);
     return NULL;

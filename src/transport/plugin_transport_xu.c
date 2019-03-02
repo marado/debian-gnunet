@@ -3,7 +3,7 @@
  Copyright (C) 2010-2017 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -200,7 +205,7 @@ struct GNUNET_ATS_Session
   /**
    * Network type of the address.
    */
-  enum GNUNET_ATS_Network_Type scope;
+  enum GNUNET_NetworkType scope;
 
   /**
    * Is this session about to be destroyed (sometimes we cannot
@@ -359,7 +364,7 @@ xu_query_keepalive_factor (void *cls)
  * @param session the session
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 xu_plugin_get_network (void *cls,
 		       struct GNUNET_ATS_Session *session)
 {
@@ -375,7 +380,7 @@ xu_plugin_get_network (void *cls,
  * @param address the address
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 xu_plugin_get_network_for_address (void *cls,
 				   const struct GNUNET_HELLO_Address *address)
 {
@@ -420,7 +425,7 @@ xu_plugin_get_network_for_address (void *cls,
   else
   {
     GNUNET_break (0);
-    return GNUNET_ATS_NET_UNSPECIFIED;
+    return GNUNET_NT_UNSPECIFIED;
   }
   return plugin->env->get_address_type (plugin->env->cls,
                                         sb,
@@ -1212,13 +1217,13 @@ analyze_send_error (struct Plugin *plugin,
                     socklen_t slen,
                     int error)
 {
-  enum GNUNET_ATS_Network_Type type;
+  enum GNUNET_NetworkType type;
 
   type = plugin->env->get_address_type (plugin->env->cls,
                                         sa,
                                         slen);
-  if ( ( (GNUNET_ATS_NET_LAN == type) ||
-         (GNUNET_ATS_NET_WAN == type) ) &&
+  if ( ( (GNUNET_NT_LAN == type) ||
+         (GNUNET_NT_WAN == type) ) &&
        ( (ENETUNREACH == errno) ||
          (ENETDOWN == errno) ) )
   {
@@ -1616,7 +1621,7 @@ session_timeout (void *cls)
 static struct GNUNET_ATS_Session *
 xu_plugin_create_session (void *cls,
                            const struct GNUNET_HELLO_Address *address,
-                           enum GNUNET_ATS_Network_Type network_type)
+                           enum GNUNET_NetworkType network_type)
 {
   struct Plugin *plugin = cls;
   struct GNUNET_ATS_Session *s;
@@ -1676,7 +1681,7 @@ xu_plugin_get_session (void *cls,
 {
   struct Plugin *plugin = cls;
   struct GNUNET_ATS_Session *s;
-  enum GNUNET_ATS_Network_Type network_type = GNUNET_ATS_NET_UNSPECIFIED;
+  enum GNUNET_NetworkType network_type = GNUNET_NT_UNSPECIFIED;
   const struct IPv4XuAddress *xu_v4;
   const struct IPv6XuAddress *xu_v6;
 
@@ -1728,7 +1733,7 @@ xu_plugin_get_session (void *cls,
                                                   (const struct sockaddr *) &v6,
                                                   sizeof (v6));
   }
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != network_type);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != network_type);
   return xu_plugin_create_session (cls,
 				    address,
 				    network_type);
@@ -1749,12 +1754,12 @@ process_xu_message (struct Plugin *plugin,
                      const struct XUMessage *msg,
                      const union XuAddress *xu_addr,
                      size_t xu_addr_len,
-                     enum GNUNET_ATS_Network_Type network_type)
+                     enum GNUNET_NetworkType network_type)
 {
   struct GNUNET_ATS_Session *s;
   struct GNUNET_HELLO_Address *address;
 
-  GNUNET_break (GNUNET_ATS_NET_UNSPECIFIED != network_type);
+  GNUNET_break (GNUNET_NT_UNSPECIFIED != network_type);
   if (0 != ntohl (msg->reserved))
   {
     GNUNET_break_op(0);
@@ -1824,7 +1829,7 @@ xu_select_read (struct Plugin *plugin,
   const struct sockaddr_in6 *sa6;
   const union XuAddress *int_addr;
   size_t int_addr_len;
-  enum GNUNET_ATS_Network_Type network_type;
+  enum GNUNET_NetworkType network_type;
 
   fromlen = sizeof (addr);
   memset (&addr,

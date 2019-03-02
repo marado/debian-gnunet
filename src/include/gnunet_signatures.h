@@ -3,7 +3,7 @@
      Copyright (C) 2009 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -131,7 +136,7 @@ extern "C"
 
 /**
  * Accept state in regex DFA.  Peer affirms that
- * he offers the matching service.
+ * it offers the matching service.
  */
 #define GNUNET_SIGNATURE_PURPOSE_REGEX_ACCEPT 18
 
@@ -148,12 +153,12 @@ extern "C"
 /**
  * Signature for the first round of distributed key generation.
  */
-#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG1 22
+#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG1 21
 
 /**
  * Signature for the second round of distributed key generation.
  */
-#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG2 23
+#define GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG2 22
 
 /**
  * Signature for cooperatice decryption.
@@ -178,12 +183,44 @@ extern "C"
 /**
  * Signature for a GNUid Ticket
  */
-#define GNUNET_SIGNATURE_PURPOSE_GNUID_TICKET 27
+#define GNUNET_SIGNATURE_PURPOSE_RECLAIM_CODE_SIGN 27
 
 /**
  * Signature for a GNUnet credential
  */
 #define GNUNET_SIGNATURE_PURPOSE_CREDENTIAL 28
+
+/**
+ * Signature by a peer affirming that this is one of its
+ * addresses (for the given time period).
+ */
+#define GNUNET_SIGNATURE_PURPOSE_TRANSPORT_ADDRESS 29
+
+/**
+ * Signature by a peer affirming that the given ephemeral
+ * key is currently in use by that peer's transport service.
+ */
+#define GNUNET_SIGNATURE_PURPOSE_TRANSPORT_EPHEMERAL 30
+
+/**
+ * Signature used by TCP communicator handshake,
+ */ 
+#define GNUNET_SIGNATURE_COMMUNICATOR_TCP_HANDSHAKE 31
+
+/**
+ * Signature used by TCP communicator rekey.
+ */ 
+#define GNUNET_SIGNATURE_COMMUNICATOR_TCP_REKEY 32
+
+/**
+ * Signature used by UDP communicator handshake
+ */ 
+#define GNUNET_SIGNATURE_COMMUNICATOR_UDP_HANDSHAKE 33
+
+/**
+ * Signature used by UDP broadcasts.
+ */ 
+#define GNUNET_SIGNATURE_COMMUNICATOR_UDP_BROADCAST 34
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

@@ -3,7 +3,7 @@
      Copyright (C) 2002-2014 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -281,12 +286,12 @@ template_plugin_query_keepalive_factor (void *cls)
  * @param session the session
  * @return the network type in HBO or #GNUNET_SYSERR
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 template_plugin_get_network (void *cls,
 			     struct GNUNET_ATS_Session *session)
 {
   GNUNET_assert (NULL != session);
-  return GNUNET_ATS_NET_UNSPECIFIED; /* Change to correct network type */
+  return GNUNET_NT_UNSPECIFIED; /* Change to correct network type */
 }
 
 
@@ -297,11 +302,11 @@ template_plugin_get_network (void *cls,
  * @param address the address
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 template_plugin_get_network_for_address (void *cls,
                                          const struct GNUNET_HELLO_Address *address)
 {
-  return GNUNET_ATS_NET_WAN; /* FOR NOW */
+  return GNUNET_NT_WAN; /* FOR NOW */
 }
 
 

@@ -3,7 +3,7 @@
      Copyright (C) 2002-2014, 2017 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -257,7 +262,7 @@ struct GNUNET_ATS_Session
   /**
    * ATS network type.
    */
-  enum GNUNET_ATS_Network_Type scope;
+  enum GNUNET_NetworkType scope;
 
   /**
    * #GNUNET_YES if this session is known to the service.
@@ -1379,7 +1384,7 @@ server_lookup_connection (struct HTTP_Server_Plugin *plugin,
   uint32_t options;
   int direction = GNUNET_SYSERR;
   unsigned int to;
-  enum GNUNET_ATS_Network_Type scope;
+  enum GNUNET_NetworkType scope;
 
   conn_info = MHD_get_connection_info (mhd_connection,
                                        MHD_CONNECTION_INFO_CLIENT_ADDRESS);
@@ -2530,6 +2535,8 @@ server_remove_address (void *cls,
  * Our external IP address/port mapping has changed.
  *
  * @param cls closure, the 'struct LocalAddrList'
+ * @param app_ctx[in,out] location where the app can store stuff
+ *                  on add and retrieve it on remove
  * @param add_remove #GNUNET_YES to mean the new public IP address, #GNUNET_NO to mean
  *     the previous (now invalid) one
  * @param ac address class the address belongs to
@@ -2538,6 +2545,7 @@ server_remove_address (void *cls,
  */
 static void
 server_nat_port_map_callback (void *cls,
+			      void **app_ctx,
                               int add_remove,
 			      enum GNUNET_NAT_AddressClass ac,
                               const struct sockaddr *addr,
@@ -2545,6 +2553,7 @@ server_nat_port_map_callback (void *cls,
 {
   struct HTTP_Server_Plugin *plugin = cls;
 
+  (void) app_ctx;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "NAT called to %s address `%s'\n",
        (add_remove == GNUNET_NO) ? "remove" : "add",
@@ -3341,7 +3350,7 @@ http_server_plugin_address_to_string (void *cls,
  * @param session the session
  * @return the network type in HBO or #GNUNET_SYSERR
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 http_server_plugin_get_network (void *cls,
                                 struct GNUNET_ATS_Session *session)
 {
@@ -3356,7 +3365,7 @@ http_server_plugin_get_network (void *cls,
  * @param address the address
  * @return the network type
  */
-static enum GNUNET_ATS_Network_Type
+static enum GNUNET_NetworkType
 http_server_plugin_get_network_for_address (void *cls,
                                             const struct GNUNET_HELLO_Address *address)
 {

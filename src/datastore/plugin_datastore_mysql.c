@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2010, 2011 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -73,7 +78,7 @@
  * a safe partition etc. The $HOME/.my.cnf can of course be a symbolic
  * link. Even greater security risk can be achieved by setting no
  * password for $USER.  Luckily $USER has only priviledges to mess
- * up GNUnet's tables, nothing else (unless you give him more,
+ * up GNUnet's tables, nothing else (unless you give them more,
  * of course).<p>
  *
  * 4) Still, perhaps you should briefly try if the DB connection

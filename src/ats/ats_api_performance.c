@@ -3,7 +3,7 @@
   Copyright (C) 2010, 2011, 2016 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file ats/ats_api_performance.c
@@ -846,7 +851,7 @@ GNUNET_ATS_performance_change_preference (struct GNUNET_ATS_PerformanceHandle *p
   count = 0;
   va_start(ap, peer);
   while (GNUNET_ATS_PREFERENCE_END !=
-         (kind = va_arg (ap, enum GNUNET_ATS_PreferenceKind) ))
+         (kind = GNUNET_VA_ARG_ENUM (ap, GNUNET_ATS_PreferenceKind) ))
   {
     switch (kind)
     {
@@ -872,7 +877,7 @@ GNUNET_ATS_performance_change_preference (struct GNUNET_ATS_PerformanceHandle *p
   count = 0;
   va_start(ap, peer);
   while (GNUNET_ATS_PREFERENCE_END != (kind =
-      va_arg (ap, enum GNUNET_ATS_PreferenceKind) ))
+      GNUNET_VA_ARG_ENUM (ap, GNUNET_ATS_PreferenceKind) ))
   {
     pi[count].preference_kind = htonl (kind);
     switch (kind)
@@ -924,7 +929,7 @@ GNUNET_ATS_performance_give_feedback (struct GNUNET_ATS_PerformanceHandle *ph,
   count = 0;
   va_start(ap, scope);
   while (GNUNET_ATS_PREFERENCE_END !=
-         (kind = va_arg (ap, enum GNUNET_ATS_PreferenceKind) ))
+         (kind = GNUNET_VA_ARG_ENUM (ap, GNUNET_ATS_PreferenceKind) ))
   {
     switch (kind)
     {
@@ -951,7 +956,7 @@ GNUNET_ATS_performance_give_feedback (struct GNUNET_ATS_PerformanceHandle *ph,
   count = 0;
   va_start(ap, scope);
   while (GNUNET_ATS_PREFERENCE_END != (kind =
-      va_arg (ap, enum GNUNET_ATS_PreferenceKind) ))
+      GNUNET_VA_ARG_ENUM (ap, GNUNET_ATS_PreferenceKind) ))
   {
     pi[count].preference_kind = htonl (kind);
     switch (kind)

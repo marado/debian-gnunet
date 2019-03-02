@@ -3,7 +3,7 @@
      Copyright (C)
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -96,10 +101,10 @@ struct RPS_SamplerElement
 /**
  * Reinitialise a previously initialised sampler element.
  *
- * @param sampler pointer to the memory that keeps the value.
+ * @param sampler_el The sampler element to (re-) initialise
  */
 void
-RPS_sampler_elem_reinit (struct RPS_SamplerElement *sampler_el);
+RPS_sampler_elem_reinit (struct RPS_SamplerElement *sampler_elem);
 
 
 /**
@@ -124,23 +129,23 @@ RPS_sampler_elem_destroy (struct RPS_SamplerElement *sampler_elem);
 
 
 /**
- * Input an PeerID into the given sampler element.
+ * Update a sampler element with a PeerID
  *
- * @param sampler the sampler the @a s_elem belongs to.
- *                Needed to know the
+ * @param sampler_elem The sampler element to update
+ * @param new_ID The PeerID to update with
  */
 void
-RPS_sampler_elem_next (struct RPS_SamplerElement *s_elem,
+RPS_sampler_elem_next (struct RPS_SamplerElement *sampler_elem,
                        const struct GNUNET_PeerIdentity *new_ID);
 
 /**
- * Initialise the min-wise independent function of the given sampler element.
+ * Set the min-wise independent function of the given sampler element.
  *
- * @param s_elem the sampler element
+ * @param sampler_elem the sampler element
  * @param auth_key the key to use
  */
 void
-RPS_sampler_elem_set (struct RPS_SamplerElement *s_elem,
+RPS_sampler_elem_set (struct RPS_SamplerElement *sampler_elem,
                       struct GNUNET_CRYPTO_AuthKey auth_key);
 
 

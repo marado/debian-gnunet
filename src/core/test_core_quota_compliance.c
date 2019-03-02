@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2010, 2015, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file core/test_core_quota_compliance.c
@@ -224,7 +229,8 @@ measurement_stop (void *cls)
   running = GNUNET_NO;
 
   delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
-
+  if (0 == delta)
+    delta = 1;
   throughput_out = total_bytes_sent * 1000000LL / delta;     /* convert to bytes/s */
   throughput_in = total_bytes_recv * 1000000LL / delta;      /* convert to bytes/s */
 

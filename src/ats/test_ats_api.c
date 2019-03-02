@@ -3,7 +3,7 @@
      Copyright (C) 2010-2015 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file ats/test_ats_api.c
@@ -38,7 +43,7 @@ static struct Command test_commands[] = {
       .addr_flags = GNUNET_HELLO_ADDRESS_INFO_NONE,
       .session = 0,
       .properties = {
-        .scope = GNUNET_ATS_NET_LAN
+        .scope = GNUNET_NT_LAN
       }
     }
   },
@@ -52,7 +57,7 @@ static struct Command test_commands[] = {
       .addr_flags = GNUNET_HELLO_ADDRESS_INFO_NONE,
       .session = 0,
       .properties = {
-        .scope = GNUNET_ATS_NET_LAN
+        .scope = GNUNET_NT_LAN
       },
       .expect_fail = 1
     }
@@ -152,7 +157,7 @@ static struct Command test_commands[] = {
       .addr_num = 0,
       .session = 0,
       .properties = {
-        .scope = GNUNET_ATS_NET_LAN
+        .scope = GNUNET_NT_LAN
       }
     }
   },
@@ -181,7 +186,7 @@ static struct Command test_commands[] = {
       .addr_flags = GNUNET_HELLO_ADDRESS_INFO_NONE,
       .session = 0,
       .properties = {
-        .scope = GNUNET_ATS_NET_LAN
+        .scope = GNUNET_NT_LAN
       }
     }
   },

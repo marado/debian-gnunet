@@ -3,7 +3,7 @@
  Copyright (C) 2011-2015 GNUnet e.V.
 
  GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU General Public License as published
+ under the terms of the GNU Affero General Public License as published
  by the Free Software Foundation, either version 3 of the License,
  or (at your option) any later version.
 
@@ -11,6 +11,11 @@
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file ats/plugin_ats_proportional.c
@@ -136,7 +141,7 @@ struct Network
   /**
    * ATS network type
    */
-  enum GNUNET_ATS_Network_Type type;
+  enum GNUNET_NetworkType type;
 
   /**
    * Number of active addresses for this network
@@ -426,7 +431,7 @@ distribute_bandwidth_in_network (struct GAS_PROPORTIONAL_Handle *s,
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
         "Redistributing bandwidth in network %s with %u active and %u total addresses\n",
-         GNUNET_ATS_print_network_type(n->type),
+         GNUNET_NT_to_string(n->type),
          n->active_addresses,
          n->total_addresses);
     s->env->info_cb (s->env->cls,
@@ -1002,7 +1007,7 @@ GAS_proportional_address_property_changed (void *solver,
 static void
 GAS_proportional_address_add (void *solver,
                               struct ATS_Address *address,
-                              enum GNUNET_ATS_Network_Type network)
+                              uint32_t network)
 {
   struct GAS_PROPORTIONAL_Handle *s = solver;
   struct Network *net;
@@ -1178,7 +1183,7 @@ libgnunet_plugin_ats_proportional_init (void *cls)
     cur->type = c;
     cur->total_quota_in = env->in_quota[c];
     cur->total_quota_out = env->out_quota[c];
-    cur->desc = GNUNET_ATS_print_network_type (c);
+    cur->desc = GNUNET_NT_to_string (c);
     GNUNET_asprintf (&cur->stat_total,
                      "# ATS addresses %s total",
                      cur->desc);

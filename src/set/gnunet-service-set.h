@@ -3,7 +3,7 @@
       Copyright (C) 2013-2017 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file set/gnunet-service-set.h
@@ -122,7 +127,7 @@ typedef struct OperationState *
  * @param op operation that is created, should be initialized to
  *        begin the evaluation
  * @param opaque_context message to be transmitted to the listener
- *        to convince him to accept, may be NULL
+ *        to convince it to accept, may be NULL
  * @return operation-specific state to keep in @a op
  */
 typedef struct OperationState *
@@ -624,6 +629,15 @@ extern struct GNUNET_STATISTICS_Handle *_GSS_statistics;
 void
 _GSS_operation_destroy (struct Operation *op,
                         int gc);
+
+
+/**
+ * This function probably should not exist
+ * and be replaced by inlining more specific
+ * logic in the various places where it is called.
+ */
+void
+_GSS_operation_destroy2 (struct Operation *op);
 
 
 /**

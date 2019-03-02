@@ -3,7 +3,7 @@
      Copyright (C) 2009 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file util/test_os_start_process.c
@@ -214,6 +219,12 @@ check_kill ()
                              fn,
 			     "gnunet-service-resolver", "-",
 			     NULL);
+  if (NULL == proc)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failed to launch gnunet-service-resolver. Is your system setup correct?\n");
+    return 77;
+  }
   sleep (1); /* give process time to start, so we actually use the pipe-kill mechanism! */
   GNUNET_free (fn);
   if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
@@ -247,7 +258,14 @@ check_instant_kill ()
                              hello_pipe_stdin, hello_pipe_stdout, NULL,
                              fn,
 			     "gnunet-service-resolver", "-", NULL);
-  if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
+  if (NULL == proc)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failed to launch gnunet-service-resolver. Is your system setup correct?\n");
+    return 77;
+  }
+  if (0 != GNUNET_OS_process_kill (proc,
+                                   GNUNET_TERM_SIG))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
   }

@@ -3,7 +3,7 @@
   Copyright (C) 2015, 2016 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file curl/curl_reschedule.c
@@ -21,6 +26,10 @@
 #include "gnunet_curl_lib.h"
 #include "gnunet_util_lib.h"
 
+extern void *
+download_get_result (struct GNUNET_CURL_DownloadBuffer *db,
+                     CURL *eh,
+                     long *response_code);
 
 /**
  * Closure for #GNUNET_CURL_gnunet_scheduler_reschedule().
@@ -36,8 +45,51 @@ struct GNUNET_CURL_RescheduleContext
    * Context we manage.
    */
   struct GNUNET_CURL_Context *ctx;
+
+  /**
+   * Parser of the raw response.
+   */
+  GNUNET_CURL_RawParser parser;
+
+  /**
+   * Deallocate the response object.
+   */
+  GNUNET_CURL_ResponseCleaner cleaner;
 };
 
+
+/**
+ * Initialize reschedule context; with custom response parser
+ *
+ * @param ctx context to manage
+ * @return closure for #GNUNET_CURL_gnunet_scheduler_reschedule().
+ */
+struct GNUNET_CURL_RescheduleContext *
+GNUNET_CURL_gnunet_rc_create_with_parser (struct GNUNET_CURL_Context *ctx,
+                                          GNUNET_CURL_RawParser rp,
+                                          GNUNET_CURL_ResponseCleaner rc)
+{
+  struct GNUNET_CURL_RescheduleContext *rctx;
+
+  rctx = GNUNET_new (struct GNUNET_CURL_RescheduleContext);
+  rctx->ctx = ctx;
+  rctx->parser = rp;
+  rctx->cleaner = rc;
+
+  return rctx;
+}
+
+
+/**
+ * Just a wrapper to avoid casting of function pointers.
+ *
+ * @param response the (JSON) response to clean.
+ */
+static void
+clean_result (void *response)
+{
+  json_decref (response);
+}
 
 /**
  * Initialize reschedule context.
@@ -52,6 +104,8 @@ GNUNET_CURL_gnunet_rc_create (struct GNUNET_CURL_Context *ctx)
 
   rc = GNUNET_new (struct GNUNET_CURL_RescheduleContext);
   rc->ctx = ctx;
+  rc->parser = &download_get_result;
+  rc->cleaner = &clean_result;
   return rc;
 }
 
@@ -89,7 +143,10 @@ context_task (void *cls)
   struct GNUNET_TIME_Relative delay;
 
   rc->task = NULL;
-  GNUNET_CURL_perform (rc->ctx);
+
+  GNUNET_CURL_perform2 (rc->ctx,
+                        rc->parser,
+                        rc->cleaner);
   max_fd = -1;
   timeout = -1;
   FD_ZERO (&read_fd_set);

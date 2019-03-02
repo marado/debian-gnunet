@@ -3,7 +3,7 @@
      Copyright (C) 2009, 2010 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file fs/fs_publish.c
@@ -711,17 +716,21 @@ handle_index_start_failed (void *cls,
   struct GNUNET_FS_PublishContext *pc = cls;
   struct GNUNET_FS_FileInformation *p;
   const char *emsg = (const char *) &msg[1];
+  char *msgtxt;
 
   GNUNET_MQ_destroy (pc->mq);
   pc->mq = NULL;
   p = pc->fi_pos;
-  GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-              _("Can not index file `%s': %s.  Will try to insert instead.\n"),
-              p->filename,
-              gettext (emsg));
-  p->data.file.do_index = GNUNET_NO;
+  GNUNET_asprintf (&msgtxt,
+                   _("Can not index file `%s': %s.\n"),
+                   p->filename,
+                   gettext (emsg));
+  signal_publish_error (p,
+                        pc,
+                        msgtxt);
+  GNUNET_free (msgtxt);
   GNUNET_FS_file_information_sync_ (p);
-  publish_content (pc);
+  GNUNET_FS_publish_sync_ (pc);
 }
 
 

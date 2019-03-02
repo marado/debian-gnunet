@@ -1,9 +1,9 @@
 /*
      This file is part of GNUnet.
-     Copyright (C) 2012-2017 GNUnet e.V.
+     Copyright (C) 2012-2019 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -210,6 +215,35 @@ void
 GNUNET_MQ_inject_message (struct GNUNET_MQ_Handle *mq,
                           const struct GNUNET_MessageHeader *mh)
 {
+  int ret;
+
+  ret = GNUNET_MQ_handle_message (mq->handlers,
+				  mh);
+  if (GNUNET_SYSERR == ret)
+  {
+    GNUNET_MQ_inject_error (mq,
+			    GNUNET_MQ_ERROR_MALFORMED);
+    return;
+  }
+}
+
+
+/**
+ * Call the message message handler that was registered
+ * for the type of the given message in the given @a handlers list.
+ *
+ * This function is indended to be used for the implementation
+ * of message queues.
+ *
+ * @param handlers a set of handlers
+ * @param mh message to dispatch
+ * @return #GNUNET_OK on success, #GNUNET_NO if no handler matched,
+ *         #GNUNET_SYSERR if message was rejected by check function
+ */
+int
+GNUNET_MQ_handle_message (const struct GNUNET_MQ_MessageHandler *handlers,
+                          const struct GNUNET_MessageHeader *mh)
+{
   const struct GNUNET_MQ_MessageHandler *handler;
   int handled = GNUNET_NO;
   uint16_t msize = ntohs (mh->size);
@@ -219,9 +253,9 @@ GNUNET_MQ_inject_message (struct GNUNET_MQ_Handle *mq,
        "Received message of type %u and size %u\n",
        mtype, msize);
 
-  if (NULL == mq->handlers)
+  if (NULL == handlers)
     goto done;
-  for (handler = mq->handlers; NULL != handler->cb; handler++)
+  for (handler = handlers; NULL != handler->cb; handler++)
   {
     if (handler->type == mtype)
     {
@@ -235,9 +269,7 @@ GNUNET_MQ_inject_message (struct GNUNET_MQ_Handle *mq,
         LOG (GNUNET_ERROR_TYPE_ERROR,
              "Received malformed message of type %u\n",
              (unsigned int) handler->type);
-	GNUNET_MQ_inject_error (mq,
-				GNUNET_MQ_ERROR_MALFORMED);
-	break;
+	return GNUNET_SYSERR;
       }
       if ( (NULL == handler->mv) ||
 	   (GNUNET_OK ==
@@ -252,17 +284,20 @@ GNUNET_MQ_inject_message (struct GNUNET_MQ_Handle *mq,
         LOG (GNUNET_ERROR_TYPE_ERROR,
              "Received malformed message of type %u\n",
              (unsigned int) handler->type);
-	GNUNET_MQ_inject_error (mq,
-				GNUNET_MQ_ERROR_MALFORMED);
+	return GNUNET_SYSERR;
       }
       break;
     }
   }
  done:
   if (GNUNET_NO == handled)
+  {
     LOG (GNUNET_ERROR_TYPE_INFO,
          "No handler for message of type %u and size %u\n",
          mtype, msize);
+    return GNUNET_NO;
+  }
+  return GNUNET_OK;
 }
 
 
@@ -339,7 +374,14 @@ GNUNET_MQ_send (struct GNUNET_MQ_Handle *mq,
   GNUNET_assert (NULL == ev->parent_queue);
 
   mq->queue_length++;
-  GNUNET_break (mq->queue_length < 10000); /* This would seem like a bug... */
+  if (mq->queue_length >= 10000)
+  {
+    /* This would seem like a bug... */
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+		"MQ with %u entries extended by message of type %u (FC broken?)\n",
+		(unsigned int) mq->queue_length,
+		(unsigned int) ntohs (ev->mh->type));
+  }
   ev->parent_queue = mq;
   /* is the implementation busy? queue it! */
   if ( (NULL != mq->current_envelope) ||
@@ -929,6 +971,7 @@ GNUNET_MQ_send_cancel (struct GNUNET_MQ_Envelope *ev)
   {
     /* complex case, we already started with transmitting
        the message using the callbacks. */
+    GNUNET_assert (GNUNET_NO == mq->in_flight);
     GNUNET_assert (0 < mq->queue_length);
     mq->queue_length--;
     mq->cancel_impl (mq,
@@ -1266,6 +1309,28 @@ GNUNET_MQ_count_handlers (const struct GNUNET_MQ_MessageHandler *handlers)
   return i;
 }
 
+
+/**
+ * Convert an `enum GNUNET_MQ_PreferenceType` to a string
+ *
+ * @param type the preference type
+ * @return a string or NULL if invalid
+ */
+const char *
+GNUNET_MQ_preference_to_string (enum GNUNET_MQ_PreferenceKind type)
+{
+  switch (type) {
+  case GNUNET_MQ_PREFERENCE_NONE:
+    return "NONE";
+  case GNUNET_MQ_PREFERENCE_BANDWIDTH:
+    return "BANDWIDTH";
+  case GNUNET_MQ_PREFERENCE_LATENCY:
+    return "LATENCY";
+  case GNUNET_MQ_PREFERENCE_RELIABILITY:
+    return "RELIABILITY";
+  };
+  return NULL;
+}
 
 
 /* end of mq.c */

@@ -3,7 +3,7 @@
   Copyright (C) 2014,2016 GNUnet e.V.
 
   GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU General Public License as published
+  under the terms of the GNU Affero General Public License as published
   by the Free Software Foundation, either version 3 of the License,
   or (at your option) any later version.
 
@@ -11,6 +11,11 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -23,6 +28,7 @@
 #include "platform.h"
 #include <gcrypt.h>
 #include "gnunet_crypto_lib.h"
+#include "benchmark.h"
 
 #define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-rsa", __VA_ARGS__)
 
@@ -146,6 +152,8 @@ GNUNET_CRYPTO_rsa_private_key_create (unsigned int len)
   gcry_sexp_t s_key;
   gcry_sexp_t s_keyparam;
 
+  BENCHMARK_START (rsa_private_key_create);
+
   GNUNET_assert (0 ==
                  gcry_sexp_build (&s_keyparam,
                                   NULL,
@@ -161,6 +169,7 @@ GNUNET_CRYPTO_rsa_private_key_create (unsigned int len)
 #endif
   ret = GNUNET_new (struct GNUNET_CRYPTO_RsaPrivateKey);
   ret->sexp = s_key;
+  BENCHMARK_END (rsa_private_key_create);
   return ret;
 }
 
@@ -258,6 +267,8 @@ GNUNET_CRYPTO_rsa_private_key_get_public (const struct GNUNET_CRYPTO_RsaPrivateK
   int rc;
   gcry_sexp_t result;
 
+  BENCHMARK_START (rsa_private_key_get_public);
+
   rc = key_from_sexp (ne, priv->sexp, "public-key", "ne");
   if (0 != rc)
     rc = key_from_sexp (ne, priv->sexp, "private-key", "ne");
@@ -277,6 +288,7 @@ GNUNET_CRYPTO_rsa_private_key_get_public (const struct GNUNET_CRYPTO_RsaPrivateK
   gcry_mpi_release (ne[1]);
   pub = GNUNET_new (struct GNUNET_CRYPTO_RsaPublicKey);
   pub->sexp = result;
+  BENCHMARK_END (rsa_private_key_get_public);
   return pub;
 }
 
@@ -733,6 +745,8 @@ GNUNET_CRYPTO_rsa_blind (const struct GNUNET_HashCode *hash,
   gcry_mpi_t data_r_e;
   int ret;
 
+  BENCHMARK_START (rsa_blind);
+
   GNUNET_assert (buf != NULL && buf_size != NULL);
   ret = key_from_sexp (ne, pkey->sexp, "public-key", "ne");
   if (0 != ret)
@@ -773,6 +787,9 @@ GNUNET_CRYPTO_rsa_blind (const struct GNUNET_HashCode *hash,
 
   *buf_size = numeric_mpi_alloc_n_print (data_r_e, buf);
   gcry_mpi_release (data_r_e);
+
+  BENCHMARK_END (rsa_blind);
+
   return GNUNET_YES;
 
 rsa_gcd_validate_failure:
@@ -882,6 +899,8 @@ GNUNET_CRYPTO_rsa_sign_blinded (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
   gcry_mpi_t v = NULL;
   struct GNUNET_CRYPTO_RsaSignature *sig;
 
+  BENCHMARK_START (rsa_sign_blinded);
+
   GNUNET_assert (0 ==
                  gcry_mpi_scan (&v,
                                 GCRYMPI_FMT_USG,
@@ -891,6 +910,7 @@ GNUNET_CRYPTO_rsa_sign_blinded (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
 
   sig = rsa_sign_mpi (key, v);
   gcry_mpi_release (v);
+  BENCHMARK_END (rsa_sign_blinded);
   return sig;
 }
 
@@ -1056,6 +1076,8 @@ GNUNET_CRYPTO_rsa_unblind (const struct GNUNET_CRYPTO_RsaSignature *sig,
   int ret;
   struct GNUNET_CRYPTO_RsaSignature *sret;
 
+  BENCHMARK_START (rsa_unblind);
+
   ret = key_from_sexp (&n, pkey->sexp, "public-key", "n");
   if (0 != ret)
     ret = key_from_sexp (&n, pkey->sexp, "rsa", "n");
@@ -1117,6 +1139,7 @@ GNUNET_CRYPTO_rsa_unblind (const struct GNUNET_CRYPTO_RsaSignature *sig,
                                   "(sig-val (rsa (s %M)))",
                                   ubsig));
   gcry_mpi_release (ubsig);
+  BENCHMARK_END (rsa_unblind);
   return sret;
 }
 
@@ -1138,6 +1161,8 @@ GNUNET_CRYPTO_rsa_verify (const struct GNUNET_HashCode *hash,
   gcry_sexp_t data;
   gcry_mpi_t r;
   int rc;
+
+  BENCHMARK_START (rsa_verify);
 
   r = rsa_full_domain_hash (pkey, hash);
   if (NULL == r) {
@@ -1166,7 +1191,9 @@ GNUNET_CRYPTO_rsa_verify (const struct GNUNET_HashCode *hash,
          __LINE__,
          gcry_strerror (rc));
     return GNUNET_SYSERR;
+    BENCHMARK_END (rsa_verify);
   }
+  BENCHMARK_END (rsa_verify);
   return GNUNET_OK;
 }
 

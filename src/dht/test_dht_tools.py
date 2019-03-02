@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # This testcase simply checks that the DHT command-line tools work.
 # It launches a single peer, stores a value "testdata" under "testkey",
@@ -124,7 +124,7 @@ time.sleep(1)
 
 print("TEST: Testing get...", end='')
 rc, stdo, stde = r_get(['-k', 'testkey', '-T', '50 ms', '-t', '8'], want_stdo=True, failer=end_arm_failer)
-stdo = stdo.replace('\r', '').splitlines()
+stdo = stdo.decode('utf-8').replace('\r', '').splitlines()
 expect = "Result 0, type 8:\ntestdata".splitlines()
 if len(stdo) != 2 or len(expect) != 2 or stdo[0] != expect[0] or stdo[1] != expect[1]:
     fail("output `{}' differs from expected `{}'".format(stdo, expect))

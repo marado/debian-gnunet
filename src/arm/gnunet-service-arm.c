@@ -3,7 +3,7 @@
      Copyright (C) 2009-2011, 2015, 2016 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -232,6 +237,11 @@ static struct GNUNET_DISK_PipeHandle *sigpipe;
 static int in_shutdown;
 
 /**
+ * Return value from main
+ */
+static int global_ret;
+
+/**
  * Are we starting user services?
  */
 static int start_user = GNUNET_YES;
@@ -343,11 +353,15 @@ get_server_addresses (const char *service_name,
   *addrs = NULL;
   *addr_lens = NULL;
   desc = NULL;
-  if (GNUNET_CONFIGURATION_have_value (cfg, service_name, "DISABLEV6"))
+  if (GNUNET_CONFIGURATION_have_value (cfg,
+				       service_name,
+				       "DISABLEV6"))
   {
     if (GNUNET_SYSERR ==
         (disablev6 =
-         GNUNET_CONFIGURATION_get_value_yesno (cfg, service_name, "DISABLEV6")))
+         GNUNET_CONFIGURATION_get_value_yesno (cfg,
+					       service_name,
+					       "DISABLEV6")))
       return GNUNET_SYSERR;
   }
   else
@@ -356,18 +370,24 @@ get_server_addresses (const char *service_name,
   if (! disablev6)
   {
     /* probe IPv6 support */
-    desc = GNUNET_NETWORK_socket_create (PF_INET6, SOCK_STREAM, 0);
+    desc = GNUNET_NETWORK_socket_create (PF_INET6,
+					 SOCK_STREAM,
+					 0);
     if (NULL == desc)
     {
-      if ((ENOBUFS == errno) || (ENOMEM == errno) || (ENFILE == errno) ||
-          (EACCES == errno))
+      if ( (ENOBUFS == errno) ||
+	   (ENOMEM == errno) ||
+	   (ENFILE == errno) ||
+	   (EACCES == errno) )
       {
-        LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR, "socket");
+        LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR,
+		      "socket");
         return GNUNET_SYSERR;
       }
       LOG (GNUNET_ERROR_TYPE_INFO,
            _("Disabling IPv6 support for service `%s', failed to create IPv6 socket: %s\n"),
-           service_name, STRERROR (errno));
+           service_name,
+	   STRERROR (errno));
       disablev6 = GNUNET_YES;
     }
     else
@@ -378,11 +398,15 @@ get_server_addresses (const char *service_name,
   }
 
   port = 0;
-  if (GNUNET_CONFIGURATION_have_value (cfg, service_name, "PORT"))
+  if (GNUNET_CONFIGURATION_have_value (cfg,
+				       service_name,
+				       "PORT"))
   {
     if (GNUNET_OK !=
-	GNUNET_CONFIGURATION_get_value_number (cfg, service_name,
-					       "PORT", &port))
+	GNUNET_CONFIGURATION_get_value_number (cfg,
+					       service_name,
+					       "PORT",
+					       &port))
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
            _("Require valid port number for service `%s' in configuration!\n"),
@@ -397,11 +421,15 @@ get_server_addresses (const char *service_name,
     }
   }
 
-  if (GNUNET_CONFIGURATION_have_value (cfg, service_name, "BINDTO"))
+  if (GNUNET_CONFIGURATION_have_value (cfg,
+				       service_name,
+				       "BINDTO"))
   {
     GNUNET_break (GNUNET_OK ==
-                  GNUNET_CONFIGURATION_get_value_string (cfg, service_name,
-                                                         "BINDTO", &hostname));
+                  GNUNET_CONFIGURATION_get_value_string (cfg,
+							 service_name,
+                                                         "BINDTO",
+							 &hostname));
   }
   else
     hostname = NULL;
@@ -410,10 +438,14 @@ get_server_addresses (const char *service_name,
   abstract = GNUNET_NO;
 #ifdef AF_UNIX
   if ((GNUNET_YES ==
-       GNUNET_CONFIGURATION_have_value (cfg, service_name, "UNIXPATH")) &&
+       GNUNET_CONFIGURATION_have_value (cfg,
+					service_name,
+					"UNIXPATH")) &&
       (GNUNET_OK ==
-       GNUNET_CONFIGURATION_get_value_filename (cfg, service_name, "UNIXPATH",
-                                              &unixpath)) &&
+       GNUNET_CONFIGURATION_get_value_filename (cfg,
+						service_name,
+						"UNIXPATH",
+						&unixpath)) &&
       (0 < strlen (unixpath)))
   {
     /* probe UNIX support */
@@ -422,7 +454,8 @@ get_server_addresses (const char *service_name,
     if (strlen (unixpath) >= sizeof (s_un.sun_path))
     {
       LOG (GNUNET_ERROR_TYPE_WARNING,
-           _("UNIXPATH `%s' too long, maximum length is %llu\n"), unixpath,
+           _("UNIXPATH `%s' too long, maximum length is %llu\n"),
+	   unixpath,
            (unsigned long long) sizeof (s_un.sun_path));
       unixpath = GNUNET_NETWORK_shorten_unixpath (unixpath);
       LOG (GNUNET_ERROR_TYPE_INFO,
@@ -436,9 +469,9 @@ get_server_addresses (const char *service_name,
     if (GNUNET_SYSERR == abstract)
       abstract = GNUNET_NO;
 #endif
-    if ((GNUNET_YES != abstract)
-        && (GNUNET_OK !=
-            GNUNET_DISK_directory_create_for_file (unixpath)))
+    if ( (GNUNET_YES != abstract) &&
+	 (GNUNET_OK !=
+	  GNUNET_DISK_directory_create_for_file (unixpath)) )
       GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
 				"mkdir",
 				unixpath);
@@ -448,8 +481,10 @@ get_server_addresses (const char *service_name,
     desc = GNUNET_NETWORK_socket_create (AF_UNIX, SOCK_STREAM, 0);
     if (NULL == desc)
     {
-      if ((ENOBUFS == errno) || (ENOMEM == errno) || (ENFILE == errno) ||
-          (EACCES == errno))
+      if ( (ENOBUFS == errno) ||
+	   (ENOMEM == errno) ||
+	   (ENFILE == errno) ||
+	   (EACCES == errno) )
       {
         LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR, "socket");
         GNUNET_free_non_null (hostname);
@@ -471,19 +506,29 @@ get_server_addresses (const char *service_name,
   }
 #endif
 
-  if ((0 == port) && (NULL == unixpath))
+  if ( (0 == port) &&
+       (NULL == unixpath) )
   {
-    LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Have neither PORT nor UNIXPATH for service `%s', but one is required\n"),
-         service_name);
+    if (GNUNET_YES ==
+	GNUNET_CONFIGURATION_get_value_yesno (cfg,
+					      service_name,
+					      "START_ON_DEMAND"))
+      LOG (GNUNET_ERROR_TYPE_ERROR,
+	   _("Have neither PORT nor UNIXPATH for service `%s', but one is required\n"),
+	   service_name);
     GNUNET_free_non_null (hostname);
     return GNUNET_SYSERR;
   }
   if (0 == port)
   {
-    saddrs = GNUNET_malloc (2 * sizeof (struct sockaddr *));
-    saddrlens = GNUNET_malloc (2 * sizeof (socklen_t));
-    add_unixpath (saddrs, saddrlens, unixpath, abstract);
+    saddrs = GNUNET_new_array (2,
+			       struct sockaddr *);
+    saddrlens = GNUNET_new_array (2,
+				  socklen_t);
+    add_unixpath (saddrs,
+		  saddrlens,
+		  unixpath,
+		  abstract);
     GNUNET_free_non_null (unixpath);
     GNUNET_free_non_null (hostname);
     *addrs = saddrs;
@@ -501,7 +546,10 @@ get_server_addresses (const char *service_name,
     if (disablev6)
       hints.ai_family = AF_INET;
     hints.ai_protocol = IPPROTO_TCP;
-    if ((0 != (ret = getaddrinfo (hostname, NULL, &hints, &res))) ||
+    if ((0 != (ret = getaddrinfo (hostname,
+				  NULL,
+				  &hints,
+				  &res))) ||
         (NULL == res))
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
@@ -535,8 +583,10 @@ get_server_addresses (const char *service_name,
     resi = i;
     if (NULL != unixpath)
       resi++;
-    saddrs = GNUNET_malloc ((resi + 1) * sizeof (struct sockaddr *));
-    saddrlens = GNUNET_malloc ((resi + 1) * sizeof (socklen_t));
+    saddrs = GNUNET_new_array (resi + 1,
+			       struct sockaddr *);
+    saddrlens = GNUNET_new_array (resi + 1,
+				  socklen_t);
     i = 0;
     if (NULL != unixpath)
     {
@@ -588,8 +638,10 @@ get_server_addresses (const char *service_name,
       if (NULL != unixpath)
         resi++;
       i = 0;
-      saddrs = GNUNET_malloc ((resi + 1) * sizeof (struct sockaddr *));
-      saddrlens = GNUNET_malloc ((resi + 1) * sizeof (socklen_t));
+      saddrs = GNUNET_new_array (resi + 1,
+				 struct sockaddr *);
+      saddrlens = GNUNET_new_array (resi + 1,
+				    socklen_t);
       if (NULL != unixpath)
       {
         add_unixpath (saddrs, saddrlens, unixpath, abstract);
@@ -609,12 +661,17 @@ get_server_addresses (const char *service_name,
       resi = 2;
       if (NULL != unixpath)
         resi++;
-      saddrs = GNUNET_malloc ((resi + 1) * sizeof (struct sockaddr *));
-      saddrlens = GNUNET_malloc ((resi + 1) * sizeof (socklen_t));
+      saddrs = GNUNET_new_array (resi + 1,
+				 struct sockaddr *);
+      saddrlens = GNUNET_new_array (resi + 1,
+				    socklen_t);
       i = 0;
       if (NULL != unixpath)
       {
-        add_unixpath (saddrs, saddrlens, unixpath, abstract);
+        add_unixpath (saddrs,
+		      saddrlens,
+		      unixpath,
+		      abstract);
         i++;
       }
       saddrlens[i] = sizeof (struct sockaddr_in6);
@@ -660,6 +717,7 @@ signal_result (struct GNUNET_SERVICE_Client *client,
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_ARM_ResultMessage *msg;
 
+  (void) name;
   env = GNUNET_MQ_msg (msg,
                        GNUNET_MESSAGE_TYPE_ARM_RESULT);
   msg->result = htonl (result);
@@ -1178,17 +1236,8 @@ static int
 check_start (void *cls,
              const struct GNUNET_ARM_Message *amsg)
 {
-  uint16_t size;
-  const char *servicename;
-
-  size = ntohs (amsg->header.size) - sizeof (struct GNUNET_ARM_Message);
-  servicename = (const char *) &amsg[1];
-  if ( (0 == size) ||
-       (servicename[size - 1] != '\0') )
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
+  (void) cls;
+  GNUNET_MQ_check_zero_termination (amsg);
   return GNUNET_OK;
 }
 
@@ -1251,6 +1300,7 @@ handle_start (void *cls,
 static void
 trigger_shutdown (void *cls)
 {
+  (void) cls;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Triggering shutdown\n");
   GNUNET_SCHEDULER_shutdown ();
@@ -1269,17 +1319,8 @@ static int
 check_stop (void *cls,
             const struct GNUNET_ARM_Message *amsg)
 {
-  uint16_t size;
-  const char *servicename;
-
-  size = ntohs (amsg->header.size) - sizeof (struct GNUNET_ARM_Message);
-  servicename = (const char *) &amsg[1];
-  if ( (0 == size) ||
-       (servicename[size - 1] != '\0') )
-  {
-    GNUNET_break (0);
-    return GNUNET_SYSERR;
-  }
+  (void) cls;
+  GNUNET_MQ_check_zero_termination (amsg);
   return GNUNET_OK;
 }
 
@@ -1448,6 +1489,7 @@ handle_test (void *cls,
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_MessageHeader *msg;
 
+  (void) message;
   env = GNUNET_MQ_msg (msg,
                        GNUNET_MESSAGE_TYPE_ARM_TEST);
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client),
@@ -1495,7 +1537,7 @@ list_count (struct ServiceList *running_head)
   struct ServiceList *i;
   unsigned int res;
 
-  for (res = 0, i = running_head; i; i = i->next, res++)
+  for (res = 0, i = running_head; NULL != i; i = i->next, res++)
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 		"%s\n",
 		i->name);
@@ -1515,6 +1557,7 @@ shutdown_task (void *cls)
   struct ServiceList *nxt;
   struct ServiceListeningInfo *sli;
 
+  (void) cls;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "First shutdown phase\n");
   if (NULL != child_restart_task)
@@ -1586,6 +1629,7 @@ delayed_restart_task (void *cls)
   struct GNUNET_TIME_Relative lowestRestartDelay;
   struct ServiceListeningInfo *sli;
 
+  (void) cls;
   child_restart_task = NULL;
   GNUNET_assert (GNUNET_NO == in_shutdown);
   lowestRestartDelay = GNUNET_TIME_UNIT_FOREVER_REL;
@@ -1653,7 +1697,7 @@ delayed_restart_task (void *cls)
  * Task triggered whenever we receive a SIGCHLD (child
  * process died).
  *
- * @param cls closure, NULL if we need to self-restart
+ * @param cls closure, NULL
  */
 static void
 maint_child_death (void *cls)
@@ -1669,6 +1713,7 @@ maint_child_death (void *cls)
   unsigned long statusCode;
   const struct GNUNET_DISK_FileHandle *pr;
 
+  (void) cls;
   pr = GNUNET_DISK_pipe_handle (sigpipe,
 				GNUNET_DISK_PIPE_END_READ);
   child_death_task = NULL;
@@ -1911,6 +1956,7 @@ setup_service (void *cls,
   socklen_t *addr_lens;
   int ret;
 
+  (void) cls;
   if (0 == strcasecmp (section,
                        "arm"))
     return;
@@ -1926,11 +1972,11 @@ setup_service (void *cls,
   if ((GNUNET_YES ==
        GNUNET_CONFIGURATION_have_value (cfg,
                                         section,
-                                        "USER_SERVICE")) &&
+                                        "RUN_PER_USER")) &&
       (GNUNET_YES ==
        GNUNET_CONFIGURATION_get_value_yesno (cfg,
                                              section,
-                                             "USER_SERVICE")))
+                                             "RUN_PER_USER")))
   {
     if (GNUNET_NO == start_user)
     {
@@ -1998,7 +2044,7 @@ setup_service (void *cls,
   if (GNUNET_YES ==
       GNUNET_CONFIGURATION_get_value_yesno (cfg,
                                             section,
-                                            "FORCESTART"))
+                                            "IMMEDIATE_START"))
   {
     sl->force_start = GNUNET_YES;
     if (GNUNET_YES ==
@@ -2012,7 +2058,7 @@ setup_service (void *cls,
     if (GNUNET_YES !=
         GNUNET_CONFIGURATION_get_value_yesno (cfg,
                                               section,
-                                              "AUTOSTART"))
+                                              "START_ON_DEMAND"))
       return;
   }
   if (0 >= (ret = get_server_addresses (section,
@@ -2021,7 +2067,7 @@ setup_service (void *cls,
 					&addr_lens)))
     return;
   /* this will free (or capture) addrs[i] */
-  for (unsigned int i = 0; i < ret; i++)
+  for (unsigned int i = 0; i < (unsigned int) ret; i++)
     create_listen_socket (addrs[i],
                           addr_lens[i],
                           sl);
@@ -2046,6 +2092,8 @@ client_connect_cb (void *cls,
   /* All clients are considered to be of the "monitor" kind
    * (that is, they don't affect ARM shutdown).
    */
+  (void) cls;
+  (void) mq;
   GNUNET_SERVICE_client_mark_monitor (client);
   return client;
 }
@@ -2063,11 +2111,9 @@ client_disconnect_cb (void *cls,
                       struct GNUNET_SERVICE_Client *client,
                       void *app_ctx)
 {
-  struct ServiceList *sl;
-
+  (void) cls;
   GNUNET_assert (client == app_ctx);
-
-  for (sl = running_head; NULL != sl; sl = sl->next)
+  for (struct ServiceList *sl = running_head; NULL != sl; sl = sl->next)
     if (sl->killing_client == client)
       sl->killing_client = NULL;
 }
@@ -2087,6 +2133,7 @@ handle_monitor (void *cls,
 {
   struct GNUNET_SERVICE_Client *client = cls;
 
+  (void) message;
   /* FIXME: might want to start by letting monitor know about
      services that are already running */
   /* Removal is handled by the server implementation, internally. */
@@ -2102,7 +2149,7 @@ handle_monitor (void *cls,
 /**
  * Process arm requests.
  *
- * @param cls closure
+ * @param cls closure, NULL
  * @param serv the initialized service
  * @param c configuration to use
  */
@@ -2113,6 +2160,7 @@ run (void *cls,
 {
   struct ServiceList *sl;
 
+  (void) cls;
   cfg = c;
   service = serv;
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
@@ -2158,21 +2206,20 @@ run (void *cls,
   else
     final_option = GNUNET_CONFIGURATION_expand_dollar (cfg,
                                                        final_option);
-  if (GNUNET_YES ==
-      GNUNET_CONFIGURATION_get_value_yesno (cfg,
+  start_user = GNUNET_CONFIGURATION_get_value_yesno (cfg,
                                             "ARM",
-                                            "USER_ONLY"))
-  {
-    GNUNET_break (GNUNET_YES == start_user);
-    start_system = GNUNET_NO;
-  }
-  if (GNUNET_YES ==
-      GNUNET_CONFIGURATION_get_value_yesno (cfg,
+                                            "START_USER_SERVICES");
+  start_system = GNUNET_CONFIGURATION_get_value_yesno (cfg,
                                             "ARM",
-                                            "SYSTEM_ONLY"))
+                                            "START_SYSTEM_SERVICES");
+  if ( (GNUNET_NO == start_user) &&
+       (GNUNET_NO == start_system) )
   {
-    GNUNET_break (GNUNET_YES == start_system);
-    start_user = GNUNET_NO;
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+	"Please configure either START_USER_SERVICES or START_SYSTEM_SERVICES or both.\n");
+    GNUNET_SCHEDULER_shutdown ();
+    global_ret = 1;
+    return;
   }
   GNUNET_CONFIGURATION_iterate_sections (cfg,
                                          &setup_service,
@@ -2199,7 +2246,6 @@ int
 main (int argc,
       char *const *argv)
 {
-  int ret;
   struct GNUNET_SIGNAL_Context *shc_chld;
   struct GNUNET_MQ_MessageHandler handlers[] = {
     GNUNET_MQ_hd_var_size (start,
@@ -2233,7 +2279,7 @@ main (int argc,
   shc_chld =
     GNUNET_SIGNAL_handler_install (GNUNET_SIGCHLD,
                                    &sighandler_child_death);
-  ret = GNUNET_SERVICE_run_ (argc,
+  if ( GNUNET_OK != GNUNET_SERVICE_run_ (argc,
                              argv,
                              "arm",
                              GNUNET_SERVICE_OPTION_MANUAL_SHUTDOWN,
@@ -2241,7 +2287,8 @@ main (int argc,
                              &client_connect_cb,
                              &client_disconnect_cb,
                              NULL,
-                             handlers);
+                             handlers))
+    global_ret = 2;
 #if HAVE_WAIT4
   if (NULL != wait_file)
   {
@@ -2258,7 +2305,7 @@ main (int argc,
   shc_chld = NULL;
   GNUNET_DISK_pipe_close (sigpipe);
   sigpipe = NULL;
-  return ret;
+  return global_ret;
 }
 
 

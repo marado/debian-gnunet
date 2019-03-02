@@ -3,7 +3,7 @@
      Copyright (C) 2013 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file namestore/test_namestore_api_zone_iteration_specific_zone.c
@@ -93,9 +98,9 @@ end (void *cls)
     GNUNET_free (privkey2);
     privkey2 = NULL;
   }
-  GNUNET_free (s_name_1);
-  GNUNET_free (s_name_2);
-  GNUNET_free (s_name_3);
+  GNUNET_free_non_null (s_name_1);
+  GNUNET_free_non_null (s_name_2);
+  GNUNET_free_non_null (s_name_3);
   if (s_rd_1 != NULL)
   {
     GNUNET_free ((void *)s_rd_1->data);
@@ -424,19 +429,17 @@ run (void *cls,
 }
 
 
+#include "test_common.c"
+
+
 int
 main (int argc, char *argv[])
 {
   const char *plugin_name;
   char *cfg_name;
 
-  plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_asprintf (&cfg_name,
-                   "test_namestore_api_%s.conf",
-                   plugin_name);
+  SETUP_CFG (plugin_name, cfg_name);
   res = 1;
-  GNUNET_DISK_purge_cfg_dir (cfg_name,
-                             "GNUNET_TEST_HOME");
   if (0 !=
       GNUNET_TESTING_peer_run ("test-namestore-api-zone-iteration-specific-zone",
                                cfg_name,

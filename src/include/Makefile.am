@@ -26,10 +26,14 @@ else
 
 gnunetinclude_HEADERS = \
   platform.h plibc.h $(WINPROC) gettext.h \
+  compat.h \
   gnunet_applications.h \
   gnunet_arm_service.h \
   gnunet_ats_service.h \
+  gnunet_ats_application_service.h \
+  gnunet_ats_transport_service.h \
   gnunet_ats_plugin.h \
+  gnunet_ats_plugin_new.h \
   gnunet_bandwidth_lib.h \
   gnunet_bio_lib.h \
   gnunet_block_lib.h \
@@ -55,7 +59,6 @@ gnunetinclude_HEADERS = \
   gnunet_dnsparser_lib.h \
   gnunet_dnsstub_lib.h \
   gnunet_dns_service.h \
-  gnunet_dv_service.h \
   gnunet_fragmentation_lib.h \
   gnunet_friends_lib.h \
   gnunet_fs_service.h \
@@ -66,14 +69,15 @@ gnunetinclude_HEADERS = \
   gnunet_hello_lib.h \
   gnunet_helper_lib.h \
   gnunet_identity_service.h \
-  gnunet_identity_provider_service.h \
+  gnunet_abe_lib.h \
+  gnunet_reclaim_attribute_lib.h \
+  gnunet_reclaim_attribute_plugin.h \
+  gnunet_reclaim_plugin.h \
+  gnunet_reclaim_service.h \
   gnunet_json_lib.h \
-  gnunet_jsonapi_lib.h \
-  gnunet_jsonapi_util.h \
   gnunet_load_lib.h \
   gnunet_cadet_service.h \
   gnunet_microphone_lib.h \
-  gnunet_multicast_service.h \
   gnunet_mst_lib.h \
   gnunet_mq_lib.h \
   gnunet_my_lib.h \
@@ -87,6 +91,7 @@ gnunetinclude_HEADERS = \
   gnunet_nc_lib.h \
   gnunet_network_lib.h \
   gnunet_nse_service.h \
+  gnunet_nt_lib.h \
   gnunet_op_lib.h \
   gnunet_os_lib.h \
   gnunet_peer_lib.h \
@@ -95,19 +100,13 @@ gnunetinclude_HEADERS = \
   gnunet_peerstore_service.h \
   gnunet_plugin_lib.h \
   gnunet_pq_lib.h \
-  gnunet_psycstore_plugin.h \
-  gnunet_psycstore_service.h \
-  gnunet_psyc_service.h \
-  gnunet_psyc_util_lib.h \
-  gnunet_psyc_env.h \
-  gnunet_psyc_message.h \
-  gnunet_psyc_slicer.h \
   gnunet_program_lib.h \
   gnunet_protocols.h \
   gnunet_resolver_service.h \
   gnunet_regex_service.h \
   gnunet_rest_lib.h \
   gnunet_rest_plugin.h \
+	gnunet_rps_service.h \
   gnunet_revocation_service.h \
   gnunet_scalarproduct_service.h \
   gnunet_scheduler_lib.h \
@@ -116,7 +115,6 @@ gnunetinclude_HEADERS = \
   gnunet_set_service.h \
   gnunet_signal_lib.h \
   gnunet_signatures.h \
-  gnunet_social_service.h \
   gnunet_socks.h \
   gnunet_speaker_lib.h \
   gnunet_sq_lib.h \
@@ -127,6 +125,7 @@ gnunetinclude_HEADERS = \
   gnunet_testing_lib.h \
   gnunet_time_lib.h \
   gnunet_transport_service.h \
+  gnunet_transport_address_service.h \
   gnunet_transport_communication_service.h \
   gnunet_transport_core_service.h \
   gnunet_transport_hello_service.h \

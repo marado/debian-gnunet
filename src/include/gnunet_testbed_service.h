@@ -3,7 +3,7 @@
       Copyright (C) 2008--2013 GNUnet e.V.
 
       GNUnet is free software: you can redistribute it and/or modify it
-      under the terms of the GNU General Public License as published
+      under the terms of the GNU Affero General Public License as published
       by the Free Software Foundation, either version 3 of the License,
       or (at your option) any later version.
 
@@ -11,6 +11,11 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -440,7 +445,7 @@ typedef void
 
 
 /**
- * Starts a controller process at the given host.  The given host's configration
+ * Starts a controller process at the given host.  The given host's configuration
  * is used as a Template configuration to use for the remote controller; the
  * remote controller will be started with a slightly modified configuration
  * (port numbers, unix domain sockets and service home values are changed as per
@@ -483,7 +488,7 @@ GNUNET_TESTBED_controller_stop (struct GNUNET_TESTBED_ControllerProc *cproc);
 
 /**
  * Connect to a controller process.  The configuration to use for the connection
- * is retreived from the given host where a controller is started using
+ * is retrieved from the given host where a controller is started using
  * GNUNET_TESTBED_controller_start().
  *
  * @param host host to run the controller on; This should be the same host if

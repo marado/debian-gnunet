@@ -3,7 +3,7 @@
      Copyright (C) 2006, 2009, 2010, 2012, 2015, 2017, 2018 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -79,12 +84,12 @@ init_connection (struct Plugin *plugin)
   struct GNUNET_PQ_PreparedStatement ps[] = {
     GNUNET_PQ_make_prepare ("getkt",
                             "SELECT discard_time,type,value,path FROM gn011dc "
-                            "WHERE key=$1 AND type=$2",
-                            2),
+                            "WHERE key=$1 AND type=$2 AND discard_time >= $3",
+                            3),
     GNUNET_PQ_make_prepare ("getk",
                             "SELECT discard_time,type,value,path FROM gn011dc "
-                            "WHERE key=$1",
-                            1),
+                            "WHERE key=$1 AND discard_time >= $2",
+                            2),
     GNUNET_PQ_make_prepare ("getex",
                             "SELECT length(value) AS len,oid,key FROM gn011dc"
 			    " WHERE discard_time < $1"
@@ -94,18 +99,15 @@ init_connection (struct Plugin *plugin)
                             "SELECT length(value) AS len,oid,key FROM gn011dc"
                             " ORDER BY prox ASC, discard_time ASC LIMIT 1",
                             0),
-    GNUNET_PQ_make_prepare ("getp",
-                            "SELECT length(value) AS len,oid,key FROM gn011dc "
-                            "ORDER BY discard_time ASC LIMIT 1",
-                            0),
     GNUNET_PQ_make_prepare ("get_random",
-                            "SELECT discard_time,type,value,path,key FROM gn011dc "
-                            "ORDER BY key ASC LIMIT 1 OFFSET $1",
-                            1),
+                            "SELECT discard_time,type,value,path,key FROM gn011dc"
+			    " WHERE discard_time >= $1"
+                            " ORDER BY key ASC LIMIT 1 OFFSET $2",
+                            2),
     GNUNET_PQ_make_prepare ("get_closest",
                             "SELECT discard_time,type,value,path,key FROM gn011dc "
-                            "WHERE key>=$1 ORDER BY key ASC LIMIT $2",
-                            1),
+                            "WHERE key>=$1 AND discard_time >= $2 ORDER BY key ASC LIMIT $3",
+                            3),
     GNUNET_PQ_make_prepare ("delrow",
                             "DELETE FROM gn011dc WHERE oid=$1",
                             1),
@@ -310,18 +312,22 @@ postgres_plugin_get (void *cls,
 {
   struct Plugin *plugin = cls;
   uint32_t type32 = (uint32_t) type;
+  struct GNUNET_TIME_Absolute now;
   struct GNUNET_PQ_QueryParam paramk[] = {
     GNUNET_PQ_query_param_auto_from_type (key),
+    GNUNET_PQ_query_param_absolute_time (&now),
     GNUNET_PQ_query_param_end
   };
   struct GNUNET_PQ_QueryParam paramkt[] = {
     GNUNET_PQ_query_param_auto_from_type (key),
     GNUNET_PQ_query_param_uint32 (&type32),
+    GNUNET_PQ_query_param_absolute_time (&now),
     GNUNET_PQ_query_param_end
   };
   enum GNUNET_DB_QueryStatus res;
   struct HandleResultContext hr_ctx;
 
+  now = GNUNET_TIME_absolute_get ();
   hr_ctx.iter = iter;
   hr_ctx.iter_cls = iter_cls;
   hr_ctx.key = key;
@@ -424,6 +430,7 @@ postgres_plugin_get_random (void *cls,
 {
   struct Plugin *plugin = cls;
   uint32_t off;
+  struct GNUNET_TIME_Absolute now;
   struct GNUNET_TIME_Absolute expiration_time;
   size_t data_size;
   void *data;
@@ -433,6 +440,7 @@ postgres_plugin_get_random (void *cls,
   uint32_t type;
   enum GNUNET_DB_QueryStatus res;
   struct GNUNET_PQ_QueryParam params[] = {
+    GNUNET_PQ_query_param_absolute_time (&now),
     GNUNET_PQ_query_param_uint32 (&off),
     GNUNET_PQ_query_param_end
   };
@@ -456,6 +464,7 @@ postgres_plugin_get_random (void *cls,
     return 0;
   if (NULL == iter)
     return 1;
+  now = GNUNET_TIME_absolute_get ();
   off = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_NONCE,
                                   plugin->num_items);
   res = GNUNET_PQ_eval_prepared_singleton_select (plugin->dbh,
@@ -617,8 +626,10 @@ postgres_plugin_get_closest (void *cls,
 {
   struct Plugin *plugin = cls;
   uint32_t num_results32 = (uint32_t) num_results;
+  struct GNUNET_TIME_Absolute now;
   struct GNUNET_PQ_QueryParam params[] = {
     GNUNET_PQ_query_param_auto_from_type (key),
+    GNUNET_PQ_query_param_absolute_time (&now),
     GNUNET_PQ_query_param_uint32 (&num_results32),
     GNUNET_PQ_query_param_end
   };
@@ -627,6 +638,7 @@ postgres_plugin_get_closest (void *cls,
 
   erc.iter = iter;
   erc.iter_cls = iter_cls;
+  now = GNUNET_TIME_absolute_get ();
   res = GNUNET_PQ_eval_prepared_multi_select (plugin->dbh,
                                               "get_closest",
                                               params,

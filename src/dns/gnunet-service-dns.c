@@ -3,7 +3,7 @@
      Copyright (C) 2012 GNUnet e.V.
 
      GNUnet is free software: you can redistribute it and/or modify it
-     under the terms of the GNU General Public License as published
+     under the terms of the GNU Affero General Public License as published
      by the Free Software Foundation, either version 3 of the License,
      or (at your option) any later version.
 
@@ -11,6 +11,11 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -1094,7 +1099,10 @@ run (void *cls,
 
   helper_argv[0] = GNUNET_strdup ("gnunet-dns");
   if (GNUNET_SYSERR ==
-      GNUNET_CONFIGURATION_get_value_string (cfg, "dns", "IFNAME", &ifc_name))
+      GNUNET_CONFIGURATION_get_value_string (cfg,
+					     "dns",
+					     "IFNAME",
+					     &ifc_name))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "No entry 'IFNAME' in configuration!\n");
@@ -1103,7 +1111,9 @@ run (void *cls,
   }
   helper_argv[1] = ifc_name;
   if ( (GNUNET_SYSERR ==
-	GNUNET_CONFIGURATION_get_value_string (cfg, "dns", "IPV6ADDR",
+	GNUNET_CONFIGURATION_get_value_string (cfg,
+					       "dns",
+					       "IPV6ADDR",
 					       &ipv6addr)) )
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -1113,7 +1123,9 @@ run (void *cls,
   }
   helper_argv[2] = ipv6addr;
   if (GNUNET_SYSERR ==
-      GNUNET_CONFIGURATION_get_value_string (cfg, "dns", "IPV6PREFIX",
+      GNUNET_CONFIGURATION_get_value_string (cfg,
+					     "dns",
+					     "IPV6PREFIX",
                                              &ipv6prefix))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -1124,7 +1136,9 @@ run (void *cls,
   helper_argv[3] = ipv6prefix;
 
   if (GNUNET_SYSERR ==
-      GNUNET_CONFIGURATION_get_value_string (cfg, "dns", "IPV4ADDR",
+      GNUNET_CONFIGURATION_get_value_string (cfg,
+					     "dns",
+					     "IPV4ADDR",
                                              &ipv4addr))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
