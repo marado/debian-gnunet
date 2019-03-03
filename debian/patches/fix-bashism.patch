@@ -3,9 +3,9 @@ Bug: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=772233
 Author: Raphael Geissert <geissert@debian.org>
 Forwarded: https://gnunet.org/bugs/view.php?id=3588
 
---- a/src/gns/gnunet-gns-proxy-setup-ca
-+++ b/src/gns/gnunet-gns-proxy-setup-ca
-@@ -23,7 +23,7 @@
+--- a/src/gns/gnunet-gns-proxy-setup-ca.in
++++ b/src/gns/gnunet-gns-proxy-setup-ca.in
+@@ -15,7 +15,7 @@
  while getopts "c:" opt; do
    case $opt in
      c)
