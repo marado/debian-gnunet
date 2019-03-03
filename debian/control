@@ -10,13 +10,14 @@ Build-Depends:
  autopoint,
  autoconf (>=2.59),
  automake (>=1.11.1),
+ iptables,
  libbluetooth-dev,
  libcurl4-gnutls-dev (>=7.35.0),
  libextractor-dev (>=1:0.6.3),
  libgcrypt20-dev (>=1.6),
  libglpk-dev (>=4.45),
  libgnutls28-dev (>=3.2.12),
- libidn11-dev (>=1.0),
+ libidn2-0-dev,
  libjansson-dev,
  libltdl-dev (>=2.2),
  libmicrohttpd-dev (>=0.9.52),
@@ -25,10 +26,14 @@ Build-Depends:
  libopus-dev (>=1.0.1),
  libpq-dev (>=9.5),
  libpulse-dev (>=2.0),
- libunistring-dev  (>=0.9.2),
+ libunistring-dev (>=0.9.2),
  libsqlite3-dev (>=3.8),
- python2-dev,
- texinfo (>=5.2)
+ miniupnpc,
+ net-tools,
+ python3.7-dev,
+ python-future,
+ texinfo (>=5.2),
+ zlib1g-dev
 Build-Conflicts: autoconf2.13, automake1.4
 Standards-Version: 4.1.1
 Vcs-Git: https://salsa.debian.org/debian/gnunet.git
