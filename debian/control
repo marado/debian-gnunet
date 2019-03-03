@@ -35,7 +35,7 @@ Build-Depends:
  texinfo (>=5.2),
  zlib1g-dev
 Build-Conflicts: autoconf2.13, automake1.4
-Standards-Version: 4.1.1
+Standards-Version: 4.3.0
 Vcs-Git: https://salsa.debian.org/debian/gnunet.git
 Vcs-browser: https://salsa.debian.org/debian/gnunet
 Homepage: http://gnunet.org/
