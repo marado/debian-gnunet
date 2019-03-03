@@ -1,3 +1,17 @@
+gnunet (0.11.0-1) experimental; urgency=medium
+
+  * New upstream version 0.11.0.
+  * debian/patches:
+    + remove testbed_path.patch, typos.diff, included upstream.
+    + refresh fix-bashism.patch.
+  * debian/control: update build-dependencies according to README.
+  * debian/rules: remove obsolete options passed to configure.
+  * debian/upstream/signing-key.asc: reexport upstream signing key with minimal
+    options.
+  * Standards-version: 4.3.0, no changes needed.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sun, 03 Mar 2019 12:22:32 +0100
+
 gnunet (0.11.0~pre666-1) experimental; urgency=medium
 
   [ Bertrand Marc ]
