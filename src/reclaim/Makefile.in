@@ -181,6 +181,44 @@ libgnunet_plugin_reclaim_sqlite_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$(libgnunet_plugin_reclaim_sqlite_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_SQLITE_TRUE@am_libgnunet_plugin_reclaim_sqlite_la_rpath =  \
 @HAVE_SQLITE_TRUE@	-rpath $(plugindir)
+libgnunet_plugin_rest_openid_connect_la_DEPENDENCIES =  \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
+	libgnunetreclaim.la $(top_builddir)/src/rest/libgnunetrest.la \
+	$(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
+	$(top_builddir)/src/namestore/libgnunetnamestore.la \
+	$(top_builddir)/src/gns/libgnunetgns.la \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_openid_connect_la_OBJECTS =  \
+	plugin_rest_openid_connect.lo oidc_helper.lo
+libgnunet_plugin_rest_openid_connect_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_openid_connect_la_OBJECTS)
+libgnunet_plugin_rest_openid_connect_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_openid_connect_la_LDFLAGS) $(LDFLAGS) \
+	-o $@
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_openid_connect_la_rpath =  \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
+libgnunet_plugin_rest_reclaim_la_DEPENDENCIES =  \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
+	libgnunetreclaim.la $(top_builddir)/src/json/libgnunetjson.la \
+	$(top_builddir)/src/rest/libgnunetrest.la \
+	$(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
+	$(top_builddir)/src/namestore/libgnunetnamestore.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_reclaim_la_OBJECTS = plugin_rest_reclaim.lo \
+	json_reclaim.lo
+libgnunet_plugin_rest_reclaim_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_reclaim_la_OBJECTS)
+libgnunet_plugin_rest_reclaim_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_reclaim_la_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_reclaim_la_rpath =  \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
 libgnunetreclaim_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -229,8 +267,11 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/gnunet-reclaim.Po \
 	./$(DEPDIR)/gnunet-service-reclaim.Po \
+	./$(DEPDIR)/json_reclaim.Plo ./$(DEPDIR)/oidc_helper.Plo \
 	./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo \
 	./$(DEPDIR)/plugin_reclaim_sqlite.Plo \
+	./$(DEPDIR)/plugin_rest_openid_connect.Plo \
+	./$(DEPDIR)/plugin_rest_reclaim.Plo \
 	./$(DEPDIR)/reclaim_api.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -253,10 +294,14 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libgnunet_plugin_gnsrecord_reclaim_la_SOURCES) \
 	$(libgnunet_plugin_reclaim_sqlite_la_SOURCES) \
+	$(libgnunet_plugin_rest_openid_connect_la_SOURCES) \
+	$(libgnunet_plugin_rest_reclaim_la_SOURCES) \
 	$(libgnunetreclaim_la_SOURCES) $(gnunet_reclaim_SOURCES) \
 	$(gnunet_service_reclaim_SOURCES)
 DIST_SOURCES = $(libgnunet_plugin_gnsrecord_reclaim_la_SOURCES) \
 	$(libgnunet_plugin_reclaim_sqlite_la_SOURCES) \
+	$(libgnunet_plugin_rest_openid_connect_la_SOURCES) \
+	$(libgnunet_plugin_rest_reclaim_la_SOURCES) \
 	$(libgnunetreclaim_la_SOURCES) $(gnunet_reclaim_SOURCES) \
 	$(gnunet_service_reclaim_SOURCES)
 am__can_run_installinfo = \
@@ -571,6 +616,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -598,8 +644,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -688,10 +737,15 @@ plugindir = $(libdir)/gnunet
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 @HAVE_SQLITE_TRUE@SQLITE_PLUGIN = libgnunet_plugin_reclaim_sqlite.la
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@  libgnunet_plugin_rest_openid_connect.la \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@  libgnunet_plugin_rest_reclaim.la
+
 EXTRA_DIST = \
+  reclaim.conf \
   test_reclaim_defaults.conf \
-	test_reclaim.conf \
-	$(check_SCRIPTS)
+  test_reclaim.conf \
+  $(check_SCRIPTS)
 
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
@@ -702,7 +756,45 @@ lib_LTLIBRARIES = \
 
 plugin_LTLIBRARIES = \
   libgnunet_plugin_gnsrecord_reclaim.la \
-	$(SQLITE_PLUGIN)
+  $(SQLITE_PLUGIN) \
+  $(REST_PLUGIN)
+
+libgnunet_plugin_rest_reclaim_la_SOURCES = \
+  plugin_rest_reclaim.c \
+  json_reclaim.h \
+  json_reclaim.c
+
+libgnunet_plugin_rest_reclaim_la_LIBADD = \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  libgnunetreclaim.la \
+  $(top_builddir)/src/json/libgnunetjson.la \
+  $(top_builddir)/src/rest/libgnunetrest.la \
+  $(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -ljansson -lmicrohttpd
+
+libgnunet_plugin_rest_reclaim_la_LDFLAGS = \
+  $(GN_PLUGIN_LDFLAGS)
+
+libgnunet_plugin_rest_openid_connect_la_SOURCES = \
+  plugin_rest_openid_connect.c \
+  oidc_helper.h \
+  oidc_helper.c
+
+libgnunet_plugin_rest_openid_connect_la_LIBADD = \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  libgnunetreclaim.la \
+  $(top_builddir)/src/rest/libgnunetrest.la \
+  $(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
+$(top_builddir)/src/gns/libgnunetgns.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -ljansson -lmicrohttpd
+
+libgnunet_plugin_rest_openid_connect_la_LDFLAGS = \
+  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_gnsrecord_reclaim_la_SOURCES = \
   plugin_gnsrecord_reclaim.c
@@ -982,6 +1074,12 @@ libgnunet_plugin_gnsrecord_reclaim.la: $(libgnunet_plugin_gnsrecord_reclaim_la_O
 libgnunet_plugin_reclaim_sqlite.la: $(libgnunet_plugin_reclaim_sqlite_la_OBJECTS) $(libgnunet_plugin_reclaim_sqlite_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_reclaim_sqlite_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_reclaim_sqlite_la_LINK) $(am_libgnunet_plugin_reclaim_sqlite_la_rpath) $(libgnunet_plugin_reclaim_sqlite_la_OBJECTS) $(libgnunet_plugin_reclaim_sqlite_la_LIBADD) $(LIBS)
 
+libgnunet_plugin_rest_openid_connect.la: $(libgnunet_plugin_rest_openid_connect_la_OBJECTS) $(libgnunet_plugin_rest_openid_connect_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_openid_connect_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_openid_connect_la_LINK) $(am_libgnunet_plugin_rest_openid_connect_la_rpath) $(libgnunet_plugin_rest_openid_connect_la_OBJECTS) $(libgnunet_plugin_rest_openid_connect_la_LIBADD) $(LIBS)
+
+libgnunet_plugin_rest_reclaim.la: $(libgnunet_plugin_rest_reclaim_la_OBJECTS) $(libgnunet_plugin_rest_reclaim_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_reclaim_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_reclaim_la_LINK) $(am_libgnunet_plugin_rest_reclaim_la_rpath) $(libgnunet_plugin_rest_reclaim_la_OBJECTS) $(libgnunet_plugin_rest_reclaim_la_LIBADD) $(LIBS)
+
 libgnunetreclaim.la: $(libgnunetreclaim_la_OBJECTS) $(libgnunetreclaim_la_DEPENDENCIES) $(EXTRA_libgnunetreclaim_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetreclaim_la_LINK) -rpath $(libdir) $(libgnunetreclaim_la_OBJECTS) $(libgnunetreclaim_la_LIBADD) $(LIBS)
 
@@ -1001,8 +1099,12 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-reclaim.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-reclaim.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json_reclaim.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oidc_helper.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_reclaim_sqlite.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_openid_connect.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_reclaim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reclaim_api.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -1381,8 +1483,12 @@ clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/gnunet-reclaim.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-reclaim.Po
+	-rm -f ./$(DEPDIR)/json_reclaim.Plo
+	-rm -f ./$(DEPDIR)/oidc_helper.Plo
 	-rm -f ./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo
 	-rm -f ./$(DEPDIR)/plugin_reclaim_sqlite.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_openid_connect.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_reclaim.Plo
 	-rm -f ./$(DEPDIR)/reclaim_api.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -1432,8 +1538,12 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/gnunet-reclaim.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-reclaim.Po
+	-rm -f ./$(DEPDIR)/json_reclaim.Plo
+	-rm -f ./$(DEPDIR)/oidc_helper.Plo
 	-rm -f ./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo
 	-rm -f ./$(DEPDIR)/plugin_reclaim_sqlite.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_openid_connect.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_reclaim.Plo
 	-rm -f ./$(DEPDIR)/reclaim_api.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

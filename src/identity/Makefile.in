@@ -151,16 +151,30 @@ am__uninstall_files_from_dir = { \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+libgnunet_plugin_rest_identity_la_DEPENDENCIES = libgnunetidentity.la \
+	$(top_builddir)/src/rest/libgnunetrest.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_identity_la_OBJECTS =  \
+	plugin_rest_identity.lo
+libgnunet_plugin_rest_identity_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_identity_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libgnunet_plugin_rest_identity_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_identity_la_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_identity_la_rpath =  \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(libdir)
 libgnunetidentity_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunetidentity_la_OBJECTS = identity_api.lo \
 	identity_api_lookup.lo
 libgnunetidentity_la_OBJECTS = $(am_libgnunetidentity_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 libgnunetidentity_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetidentity_la_LDFLAGS) \
@@ -208,6 +222,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-identity.Po \
 	./$(DEPDIR)/gnunet-service-identity.Po \
 	./$(DEPDIR)/identity_api.Plo \
 	./$(DEPDIR)/identity_api_lookup.Plo \
+	./$(DEPDIR)/plugin_rest_identity.Plo \
 	./$(DEPDIR)/test_identity.Po \
 	./$(DEPDIR)/test_identity_defaults.Po
 am__mv = mv -f
@@ -229,12 +244,14 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgnunetidentity_la_SOURCES) $(gnunet_identity_SOURCES) \
+SOURCES = $(libgnunet_plugin_rest_identity_la_SOURCES) \
+	$(libgnunetidentity_la_SOURCES) $(gnunet_identity_SOURCES) \
 	$(gnunet_service_identity_SOURCES) $(test_identity_SOURCES) \
 	$(test_identity_defaults_SOURCES)
-DIST_SOURCES = $(libgnunetidentity_la_SOURCES) \
-	$(gnunet_identity_SOURCES) $(gnunet_service_identity_SOURCES) \
-	$(test_identity_SOURCES) $(test_identity_defaults_SOURCES)
+DIST_SOURCES = $(libgnunet_plugin_rest_identity_la_SOURCES) \
+	$(libgnunetidentity_la_SOURCES) $(gnunet_identity_SOURCES) \
+	$(gnunet_service_identity_SOURCES) $(test_identity_SOURCES) \
+	$(test_identity_defaults_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -547,6 +564,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -574,8 +592,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -663,12 +684,26 @@ plugindir = $(libdir)/gnunet
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = libgnunet_plugin_rest_identity.la
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   identity.conf
 
 lib_LTLIBRARIES = \
-	libgnunetidentity.la
+  libgnunetidentity.la \
+  $(REST_PLUGIN)
+
+libgnunet_plugin_rest_identity_la_SOURCES = \
+  plugin_rest_identity.c
+
+libgnunet_plugin_rest_identity_la_LIBADD = \
+  libgnunetidentity.la \
+  $(top_builddir)/src/rest/libgnunetrest.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -ljansson -lmicrohttpd
+
+libgnunet_plugin_rest_identity_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunetidentity_la_SOURCES = \
   identity_api.c \
@@ -899,6 +934,9 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
+libgnunet_plugin_rest_identity.la: $(libgnunet_plugin_rest_identity_la_OBJECTS) $(libgnunet_plugin_rest_identity_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_identity_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_identity_la_LINK) $(am_libgnunet_plugin_rest_identity_la_rpath) $(libgnunet_plugin_rest_identity_la_OBJECTS) $(libgnunet_plugin_rest_identity_la_LIBADD) $(LIBS)
+
 libgnunetidentity.la: $(libgnunetidentity_la_OBJECTS) $(libgnunetidentity_la_DEPENDENCIES) $(EXTRA_libgnunetidentity_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetidentity_la_LINK) -rpath $(libdir) $(libgnunetidentity_la_OBJECTS) $(libgnunetidentity_la_LIBADD) $(LIBS)
 
@@ -928,6 +966,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-identity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/identity_api.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/identity_api_lookup.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_identity.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_identity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_identity_defaults.Po@am__quote@ # am--include-marker
 
@@ -1295,6 +1334,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/gnunet-service-identity.Po
 	-rm -f ./$(DEPDIR)/identity_api.Plo
 	-rm -f ./$(DEPDIR)/identity_api_lookup.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_identity.Plo
 	-rm -f ./$(DEPDIR)/test_identity.Po
 	-rm -f ./$(DEPDIR)/test_identity_defaults.Po
 	-rm -f Makefile
@@ -1347,6 +1387,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/gnunet-service-identity.Po
 	-rm -f ./$(DEPDIR)/identity_api.Plo
 	-rm -f ./$(DEPDIR)/identity_api_lookup.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_identity.Plo
 	-rm -f ./$(DEPDIR)/test_identity.Po
 	-rm -f ./$(DEPDIR)/test_identity_defaults.Po
 	-rm -f Makefile

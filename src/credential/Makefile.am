@@ -24,9 +24,9 @@ pkgcfg_DATA = \
 lib_LTLIBRARIES = \
   libgnunetcredential.la
 
-# /usr/lib/gnunet/libexec - Business logic . Separate process 
+# /usr/lib/gnunet/libexec - Business logic . Separate process
 libexec_PROGRAMS = \
-  gnunet-service-credential 
+  gnunet-service-credential
 
 bin_PROGRAMS = \
   gnunet-credential
@@ -68,11 +68,13 @@ gnunet_service_credential_LDADD = \
 
 
 libgnunetcredential_la_SOURCES = \
- credential_api.c \
+ credential_api.c credential.h \
  credential_serialization.c \
- credential_misc.c
+ credential_serialization.h \
+ credential_misc.c \
+ credential_misc.h
 libgnunetcredential_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la $(XLIB) 
+ $(top_builddir)/src/util/libgnunetutil.la $(XLIB)
 libgnunetcredential_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
 
@@ -90,3 +92,19 @@ if HAVE_SQLITE
  TESTS = $(check_SCRIPTS)
 endif
 endif
+
+#libgnunet_plugin_rest_credential_la_SOURCES = \
+#  plugin_rest_credential.c
+#libgnunet_plugin_rest_credential_la_LIBADD = \
+#  $(top_builddir)/src/credential/libgnunetcredential.la \
+#	$(top_builddir)/src/rest/libgnunetrest.la \
+#	$(top_builddir)/src/identity/libgnunetidentity.la \
+#  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+#  $(LTLIBINTL) -ljansson -lmicrohttpd
+#libgnunet_plugin_rest_credential_la_LDFLAGS = \
+# $(GN_PLUGIN_LDFLAGS)
+
+
+
+
+

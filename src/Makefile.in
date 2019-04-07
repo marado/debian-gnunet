@@ -183,14 +183,14 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = include util nt gnsrecord hello block statistics arm \
-	testing peerinfo sq mysql my pq datacache datastore template \
-	peerstore ats nat nat-auto fragmentation transport ats-tool \
-	peerinfo-tool core testbed-logger testbed ats-tests nse dht \
-	hostlist topology regex dns identity namecache namestore cadet \
-	set consensus scalarproduct revocation vpn gns zonemaster \
-	conversation fs exit pt secretsharing rps abe credential \
-	reclaim-attribute reclaim auction json curl rest rest-plugins \
-	integration-tests
+	testing json curl rest peerinfo sq mysql my pq datacache \
+	datastore template peerstore ats nat nat-auto fragmentation \
+	transport ats-tool peerinfo-tool core testbed-logger testbed \
+	ats-tests nse dht hostlist topology regex dns identity \
+	namecache namestore cadet set consensus scalarproduct \
+	revocation vpn gns zonemaster conversation fs exit pt \
+	secretsharing rps abe credential reclaim-attribute reclaim \
+	auction integration-tests
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
@@ -324,6 +324,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -351,8 +352,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -443,7 +447,7 @@ top_srcdir = @top_srcdir@
 @HAVE_SQLITE_TRUE@SQLITE_DIR = sq
 @HAVE_MYSQL_TRUE@MYSQL_DIR = mysql my
 @HAVE_POSTGRESQL_TRUE@POSTGRES_DIR = pq
-@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_DIR = rest rest-plugins
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_DIR = rest
 @TALER_ONLY_FALSE@SUBDIRS = \
 @TALER_ONLY_FALSE@  include $(INTLEMU_SUBDIRS) \
 @TALER_ONLY_FALSE@  util \
@@ -454,6 +458,8 @@ top_srcdir = @top_srcdir@
 @TALER_ONLY_FALSE@  statistics \
 @TALER_ONLY_FALSE@  arm \
 @TALER_ONLY_FALSE@  $(TESTING) \
+@TALER_ONLY_FALSE@  $(JSON_DIR) \
+@TALER_ONLY_FALSE@  $(REST_DIR) \
 @TALER_ONLY_FALSE@  peerinfo \
 @TALER_ONLY_FALSE@  $(SQLITE_DIR) \
 @TALER_ONLY_FALSE@  $(MYSQL_DIR) \
@@ -494,9 +500,7 @@ top_srcdir = @top_srcdir@
 @TALER_ONLY_FALSE@  exit \
 @TALER_ONLY_FALSE@  pt \
 @TALER_ONLY_FALSE@  secretsharing \
-@TALER_ONLY_FALSE@	$(EXP_DIR) \
-@TALER_ONLY_FALSE@  $(JSON_DIR) \
-@TALER_ONLY_FALSE@  $(REST_DIR) \
+@TALER_ONLY_FALSE@  $(EXP_DIR) \
 @TALER_ONLY_FALSE@  integration-tests
 
 @TALER_ONLY_TRUE@SUBDIRS = \

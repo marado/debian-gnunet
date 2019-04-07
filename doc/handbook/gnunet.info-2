@@ -1,6 +1,6 @@
 This is gnunet.info, produced by makeinfo version 6.5 from gnunet.texi.
 
-Copyright © 2001-2018 GNUnet e.V.
+Copyright © 2001-2019 GNUnet e.V.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -331,7 +331,7 @@ not work):
 
      export PYPI=https://pypi.python.org/packages/source
      wget $PYPI/z/zope.interface/zope.interface-3.8.0.tar.gz
-     tar zvfz zope.interface-3.8.0.tar.gz
+     tar xzvf zope.interface-3.8.0.tar.gz
      cd zope.interface-3.8.0
      sudo python setup.py install
 
@@ -546,10 +546,11 @@ the program at various levels.
 
    ‘gnunet_common.h’ defines several *log levels*:
 
-ERROR for errors (really problematic situations, often leading to
-     crashes)
-WARNING for warnings (troubling situations that might have
-     negative consequences, although not fatal)
+ERROR for errors
+     (really problematic situations, often leading to crashes)
+WARNING for warnings
+     (troubling situations that might have negative consequences,
+     although not fatal)
 INFO for various information.
      Used somewhat rarely, as GNUnet statistics is used to hold and
      display most of the information that users might find interesting.
@@ -1626,11 +1627,12 @@ File: gnunet.info,  Node: Availability,  Prev: Conclusion,  Up: Optimizing Memor
 7.14.6.5 Availability
 .....................
 
-The new multi hash map code was committed in SVN 24319 (will be in
-GNUnet 0.9.4).  Various subsystems (transport, core, dht, file-sharing)
-were previously audited and modified to take advantage of the new
-capability.  In particular, memory consumption of the file-sharing
-service is expected to drop by 20-30% due to this change.
+The new multi hash map code was committed in SVN 24319 (which made its
+way into GNUnet version 0.9.4).  Various subsystems (transport, core,
+dht, file-sharing) were previously audited and modified to take
+advantage of the new capability.  In particular, memory consumption of
+the file-sharing service is expected to drop by 20-30% due to this
+change.
 
 
 File: gnunet.info,  Node: CONTAINER_MDLL API,  Prev: Optimizing Memory Consumption of GNUnet's (Multi-) Hash Maps,  Up: libgnunetutil
@@ -2130,7 +2132,10 @@ exists in the 0.7.x and 0.8.x branch.  SMTP support is currently not
 available in GNUnet 0.9.x.  This page also describes the transport layer
 abstraction (as it existed in 0.7.x and 0.8.x) in more detail and gives
 some benchmarking results.  The performance results presented are quite
-old and maybe outdated at this point.
+old and maybe outdated at this point.  For the readers in the year 2019,
+you will notice by the mention of version 0.7, 0.8, and 0.9 that this
+section has to be taken with your usual grain of salt and be updated
+eventually.
 
    • Why use SMTP for a peer-to-peer transport?
    • SMTPHow does it work?
@@ -3279,7 +3284,7 @@ several times to CADET, even do one connection per listening port).  The
 function returns a handle which has to be used for any further
 interaction with the service.
 
-   To connect to a remote peer a client has to call the
+   To connect to a remote peer, a client has to call the
 ‘GNUNET_CADET_channel_create’ function.  The most important parameters
 given are the remote peer’s identity (it public key) and a port, which
 specifies which application on the remote peer to connect to, similar to
@@ -6124,7 +6129,7 @@ record:
 
      # SRV
      # _service._proto.name. TTL class SRV priority weight port target
-     _sip._tcp.example.com. 14000 IN	SRV	0 0 5060 www.example.com.
+     _sip._tcp.example.com. 14000 IN SRV     0 0 5060 www.example.com.
      # BOX
      # TTL BOX flags port protocol recordtype priority weight port target
      14000 BOX n 5060 6 33 0 0 5060 www.example.com
@@ -6134,6 +6139,7 @@ as well as the SOA record type.
 
    Transformation of a SOA record into GNS works as described in the
 following example.  Very important to note are the rname and mname keys.
+
      # BIND syntax for a clean SOA record
         IN SOA master.example.com. hostmaster.example.com. (
          2017030300 ; serial
@@ -6450,87 +6456,4 @@ revocation service performs efficient set reconciliation over the sets
 of known revocation messages whenever two peers (that both support
 REVOCATION dissemination) connect.  The SET service is used to perform
 this operation efficiently.
-
-
-File: gnunet.info,  Node: Revocation Message Design Requirements,  Next: libgnunetrevocation,  Prev: Dissemination,  Up: REVOCATION Subsystem
-
-7.36.2 Revocation Message Design Requirements
----------------------------------------------
-
-However, flooding is also quite costly, creating O(|E|) messages on a
-network with |E| edges.  Thus, revocation messages are required to
-contain a proof-of-work, the result of an expensive computation (which,
-however, is cheap to verify).  Only peers that have expended the CPU
-time necessary to provide this proof will be able to flood the network
-with the revocation message.  This ensures that an attacker cannot
-simply flood the network with millions of revocation messages.  The
-proof-of-work required by GNUnet is set to take days on a typical PC to
-compute; if the ability to quickly revoke a key is needed, users have
-the option to pre-compute revocation messages to store off-line and use
-instantly after their key has expired.
-
-   Revocation messages must also be signed by the private key that is
-being revoked.  Thus, they can only be created while the private key is
-in the possession of the respective user.  This is another reason to
-create a revocation message ahead of time and store it in a secure
-location.
-
-
-File: gnunet.info,  Node: libgnunetrevocation,  Next: The REVOCATION Client-Service Protocol,  Prev: Revocation Message Design Requirements,  Up: REVOCATION Subsystem
-
-7.36.3 libgnunetrevocation
---------------------------
-
-The REVOCATION API consists of two parts, to query and to issue
-revocations.
-
-* Menu:
-
-* Querying for revoked keys::
-* Preparing revocations::
-* Issuing revocations::
-
-
-File: gnunet.info,  Node: Querying for revoked keys,  Next: Preparing revocations,  Up: libgnunetrevocation
-
-7.36.3.1 Querying for revoked keys
-..................................
-
-‘GNUNET_REVOCATION_query’ is used to check if a given ECDSA public key
-has been revoked.  The given callback will be invoked with the result of
-the check.  The query can be canceled using
-‘GNUNET_REVOCATION_query_cancel’ on the return value.
-
-
-File: gnunet.info,  Node: Preparing revocations,  Next: Issuing revocations,  Prev: Querying for revoked keys,  Up: libgnunetrevocation
-
-7.36.3.2 Preparing revocations
-..............................
-
-It is often desirable to create a revocation record ahead-of-time and
-store it in an off-line location to be used later in an emergency.  This
-is particularly true for GNUnet revocations, where performing the
-revocation operation itself is computationally expensive and thus is
-likely to take some time.  Thus, if users want the ability to perform
-revocations quickly in an emergency, they must pre-compute the
-revocation message.  The revocation API enables this with two functions
-that are used to compute the revocation message, but not trigger the
-actual revocation operation.
-
-   ‘GNUNET_REVOCATION_check_pow’ should be used to calculate the
-proof-of-work required in the revocation message.  This function takes
-the public key, the required number of bits for the proof of work (which
-in GNUnet is a network-wide constant) and finally a proof-of-work number
-as arguments.  The function then checks if the given proof-of-work
-number is a valid proof of work for the given public key.  Clients
-preparing a revocation are expected to call this function repeatedly
-(typically with a monotonically increasing sequence of numbers of the
-proof-of-work number) until a given number satisfies the check.  That
-number should then be saved for later use in the revocation operation.
-
-   ‘GNUNET_REVOCATION_sign_revocation’ is used to generate the signature
-that is required in a revocation message.  It takes the private key that
-(possibly in the future) is to be revoked and returns the signature.
-The signature can again be saved to disk for later use, which will then
-allow performing a revocation even without access to the private key.
 

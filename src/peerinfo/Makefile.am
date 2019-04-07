@@ -5,6 +5,8 @@ pkgcfgdir= $(pkgdatadir)/config.d/
 
 libexecdir= $(pkglibdir)/libexec/
 
+plugindir = $(libdir)/gnunet
+
 pkgcfg_DATA = \
   peerinfo.conf
 
@@ -18,6 +20,7 @@ if USE_COVERAGE
 endif
 
 lib_LTLIBRARIES = libgnunetpeerinfo.la
+
 
 libgnunetpeerinfo_la_SOURCES = \
   peerinfo_api.c peerinfo.h \

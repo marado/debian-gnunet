@@ -88,6 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@INCLUDE_MANPAGES_TRUE@am__append_1 = man
 subdir = doc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -166,7 +167,7 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = man doxygen handbook tutorial
+DIST_SUBDIRS = doxygen man handbook tutorial
 am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
@@ -300,6 +301,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -327,8 +329,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -409,10 +414,11 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-@DOCUMENTATION_FALSE@SUBDIRS = man doxygen
+@DOCUMENTATION_FALSE@SUBDIRS = doxygen $(am__append_1)
 
 # This Makefile.am is in the public domain
-@DOCUMENTATION_TRUE@SUBDIRS = man doxygen handbook tutorial
+@DOCUMENTATION_TRUE@SUBDIRS = doxygen handbook tutorial \
+@DOCUMENTATION_TRUE@	$(am__append_1)
 EXTRA_DIST = \
 	system_specific/outdated-and-old-installation-instructions.txt \
 	system_specific/FROM_SOURCE

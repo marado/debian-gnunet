@@ -106,6 +106,10 @@
    to 0 if you don't. */
 #undef HAVE_DECL_GCRY_MPI_SET_OPAQUE_COPY
 
+/* Define to 1 if you have the declaration of `struct in6_ifreq', and to 0 if
+   you don't. */
+#undef HAVE_DECL_STRUCT_IN6_IFREQ
+
 /* Define to 1 if you have the declaration of `_stati64', and to 0 if you
    don't. */
 #undef HAVE_DECL__STATI64
@@ -600,6 +604,12 @@
 /* Define to 1 if `vfork' works. */
 #undef HAVE_WORKING_VFORK
 
+/* Lacking zbar library */
+#undef HAVE_ZBAR
+
+/* Define to 1 if you have the <zbar.h> header file. */
+#undef HAVE_ZBAR_H
+
 /* Have compression library */
 #undef HAVE_ZLIB
 
@@ -611,6 +621,12 @@
 
 /* Path to ifconfig */
 #undef IFCONFIG
+
+/* Not including the man pages in the build and installation */
+#undef INCLUDE_MANPAGES
+
+/* Path to ip6tables */
+#undef IP6TABLES
 
 /* Path to iptables */
 #undef IPTABLES
@@ -787,6 +803,9 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Path to ip */
+#undef PATH_TO_IP
+
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
@@ -810,6 +829,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
+
+/* Path to sysctl */
+#undef SYSCTL
 
 /* Canonical compilation */
 #undef TALER_WALLET_ONLY

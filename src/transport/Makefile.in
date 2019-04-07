@@ -100,10 +100,6 @@ libexec_PROGRAMS = $(am__EXEEXT_33) $(am__EXEEXT_34) $(am__EXEEXT_35) \
 	gnunet-service-transport$(EXEEXT)
 bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 	gnunet-transport-certificate-creation$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@am__append_1 = \
-@HAVE_EXPERIMENTAL_TRUE@  libgnunet_plugin_transport_xt.la \
-@HAVE_EXPERIMENTAL_TRUE@  libgnunet_plugin_transport_xu.la
-
 @HAVE_TESTING_TRUE@check_PROGRAMS =  \
 @HAVE_TESTING_TRUE@	test_transport_address_switch_tcp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_address_switch_udp$(EXEEXT) \
@@ -157,7 +153,7 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_27) $(am__EXEEXT_28) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_29) $(am__EXEEXT_30) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_31) $(am__EXEEXT_32)
-@HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__append_2 = \
+@HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__append_1 = \
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@test_transport_api_slow_ats
 
 @ENABLE_TEST_RUN_TRUE@TESTS = test_transport_address_switch_tcp$(EXEEXT) \
@@ -207,7 +203,7 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_9) $(am__EXEEXT_13) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_16) $(am__EXEEXT_19) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) $(am__EXEEXT_38)
-@ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__append_3 = \
+@ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__append_2 = \
 @ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@test_transport_api_slow_ats
 
 subdir = src/transport
@@ -504,39 +500,6 @@ libgnunet_plugin_transport_wlan_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$(libgnunet_plugin_transport_wlan_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am_libgnunet_plugin_transport_wlan_la_rpath =  \
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@	-rpath $(plugindir)
-libgnunet_plugin_transport_xt_la_DEPENDENCIES =  \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-	$(top_builddir)/src/nat/libgnunetnatnew.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_transport_xt_la_OBJECTS = plugin_transport_xt.lo
-libgnunet_plugin_transport_xt_la_OBJECTS =  \
-	$(am_libgnunet_plugin_transport_xt_la_OBJECTS)
-libgnunet_plugin_transport_xt_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
-	$(libgnunet_plugin_transport_xt_la_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_EXPERIMENTAL_TRUE@am_libgnunet_plugin_transport_xt_la_rpath =  \
-@HAVE_EXPERIMENTAL_TRUE@	-rpath $(plugindir)
-libgnunet_plugin_transport_xu_la_DEPENDENCIES =  \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-	$(top_builddir)/src/nat/libgnunetnatnew.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_transport_xu_la_OBJECTS = plugin_transport_xu.lo
-libgnunet_plugin_transport_xu_la_OBJECTS =  \
-	$(am_libgnunet_plugin_transport_xu_la_OBJECTS)
-libgnunet_plugin_transport_xu_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
-	$(libgnunet_plugin_transport_xu_la_LDFLAGS) $(LDFLAGS) -o $@
-@HAVE_EXPERIMENTAL_TRUE@am_libgnunet_plugin_transport_xu_la_rpath =  \
-@HAVE_EXPERIMENTAL_TRUE@	-rpath $(plugindir)
 libgnunettransport_la_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/ats/libgnunetats.la \
@@ -562,6 +525,17 @@ libgnunettransportaddress_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunettransportaddress_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+libgnunettransportapplication_la_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunettransportapplication_la_OBJECTS =  \
+	transport_api2_application.lo
+libgnunettransportapplication_la_OBJECTS =  \
+	$(am_libgnunettransportapplication_la_OBJECTS)
+libgnunettransportapplication_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunettransportapplication_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunettransportcommunicator_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -664,7 +638,6 @@ gnunet_helper_transport_wlan_dummy_DEPENDENCIES =  \
 am_gnunet_service_tng_OBJECTS = gnunet-service-tng.$(OBJEXT)
 gnunet_service_tng_OBJECTS = $(am_gnunet_service_tng_OBJECTS)
 gnunet_service_tng_DEPENDENCIES =  \
-	$(top_builddir)/src/ats/libgnunetatstransport.la \
 	$(top_builddir)/src/peerstore/libgnunetpeerstore.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -1432,8 +1405,6 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-communicator-tcp.Po \
 	./$(DEPDIR)/plugin_transport_udp.Plo \
 	./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo \
 	./$(DEPDIR)/plugin_transport_unix.Plo \
-	./$(DEPDIR)/plugin_transport_xt.Plo \
-	./$(DEPDIR)/plugin_transport_xu.Plo \
 	./$(DEPDIR)/test_http_common.Po \
 	./$(DEPDIR)/test_plugin_transport.Po \
 	./$(DEPDIR)/test_quota_compliance.Po \
@@ -1458,6 +1429,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-communicator-tcp.Po \
 	./$(DEPDIR)/transport-testing-send.Plo \
 	./$(DEPDIR)/transport-testing.Plo \
 	./$(DEPDIR)/transport_api2_address.Plo \
+	./$(DEPDIR)/transport_api2_application.Plo \
 	./$(DEPDIR)/transport_api2_communication.Plo \
 	./$(DEPDIR)/transport_api2_core.Plo \
 	./$(DEPDIR)/transport_api2_monitor.Plo \
@@ -1498,10 +1470,9 @@ SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(libgnunet_plugin_transport_udp_la_SOURCES) \
 	$(libgnunet_plugin_transport_unix_la_SOURCES) \
 	$(libgnunet_plugin_transport_wlan_la_SOURCES) \
-	$(libgnunet_plugin_transport_xt_la_SOURCES) \
-	$(libgnunet_plugin_transport_xu_la_SOURCES) \
 	$(libgnunettransport_la_SOURCES) \
 	$(libgnunettransportaddress_la_SOURCES) \
+	$(libgnunettransportapplication_la_SOURCES) \
 	$(libgnunettransportcommunicator_la_SOURCES) \
 	$(libgnunettransportcore_la_SOURCES) \
 	$(libgnunettransportmonitor_la_SOURCES) \
@@ -1600,10 +1571,9 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(libgnunet_plugin_transport_udp_la_SOURCES) \
 	$(libgnunet_plugin_transport_unix_la_SOURCES) \
 	$(libgnunet_plugin_transport_wlan_la_SOURCES) \
-	$(libgnunet_plugin_transport_xt_la_SOURCES) \
-	$(libgnunet_plugin_transport_xu_la_SOURCES) \
 	$(libgnunettransport_la_SOURCES) \
 	$(libgnunettransportaddress_la_SOURCES) \
+	$(libgnunettransportapplication_la_SOURCES) \
 	$(libgnunettransportcommunicator_la_SOURCES) \
 	$(libgnunettransportcore_la_SOURCES) \
 	$(libgnunettransportmonitor_la_SOURCES) \
@@ -2005,6 +1975,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -2032,8 +2003,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -2217,6 +2191,7 @@ pkgcfg_DATA = \
 lib_LTLIBRARIES = \
   libgnunettransport.la \
   libgnunettransportaddress.la \
+  libgnunettransportapplication.la \
   libgnunettransportcore.la \
   libgnunettransportcommunicator.la \
   libgnunettransportmonitor.la \
@@ -2260,6 +2235,17 @@ libgnunettransport_la_LIBADD = \
 libgnunettransport_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 4:0:2
+
+libgnunettransportapplication_la_SOURCES = \
+  transport_api2_application.c
+
+libgnunettransportapplication_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LTLIBINTL)
+
+libgnunettransportapplication_la_LDFLAGS = \
+  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  -version-info 0:0:0
 
 libgnunettransportaddress_la_SOURCES = \
   transport_api2_address.c
@@ -2425,18 +2411,23 @@ gnunet_service_tng_SOURCES = \
  gnunet-service-tng.c
 
 gnunet_service_tng_LDADD = \
-  $(top_builddir)/src/ats/libgnunetatstransport.la \
   $(top_builddir)/src/peerstore/libgnunetpeerstore.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
-plugin_LTLIBRARIES = libgnunet_plugin_transport_tcp.la \
-	libgnunet_plugin_transport_udp.la $(UNIX_PLUGIN_LA) \
-	$(HTTP_CLIENT_PLUGIN_LA) $(HTTPS_CLIENT_PLUGIN_LA) \
-	$(HTTP_SERVER_PLUGIN_LA) $(HTTPS_SERVER_PLUGIN_LA) \
-	$(WLAN_PLUGIN_LA) $(BT_PLUGIN_LA) $(am__append_1)
+plugin_LTLIBRARIES = \
+  libgnunet_plugin_transport_tcp.la \
+  libgnunet_plugin_transport_udp.la \
+  $(UNIX_PLUGIN_LA) \
+  $(HTTP_CLIENT_PLUGIN_LA) \
+  $(HTTPS_CLIENT_PLUGIN_LA) \
+  $(HTTP_SERVER_PLUGIN_LA) \
+  $(HTTPS_SERVER_PLUGIN_LA) \
+  $(WLAN_PLUGIN_LA) \
+  $(BT_PLUGIN_LA)
+
 
 # Note: real plugins of course need to be added
 # to the plugin_LTLIBRARIES above
@@ -2455,20 +2446,6 @@ libgnunet_plugin_transport_tcp_la_LIBADD = \
   $(LTLIBINTL)
 
 libgnunet_plugin_transport_tcp_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
-
-libgnunet_plugin_transport_xt_la_SOURCES = \
-  plugin_transport_xt.c
-
-libgnunet_plugin_transport_xt_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-  $(top_builddir)/src/nat/libgnunetnatnew.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
-
-libgnunet_plugin_transport_xt_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_template_la_SOURCES = \
@@ -2527,21 +2504,6 @@ libgnunet_plugin_transport_udp_la_LIBADD = \
   $(LTLIBINTL)
 
 libgnunet_plugin_transport_udp_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
-
-libgnunet_plugin_transport_xu_la_SOURCES = \
-  plugin_transport_xu.c plugin_transport_xu.h
-
-libgnunet_plugin_transport_xu_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-  $(top_builddir)/src/nat/libgnunetnatnew.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
-
-libgnunet_plugin_transport_xu_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_unix_la_SOURCES = \
@@ -3756,17 +3718,14 @@ libgnunet_plugin_transport_unix.la: $(libgnunet_plugin_transport_unix_la_OBJECTS
 libgnunet_plugin_transport_wlan.la: $(libgnunet_plugin_transport_wlan_la_OBJECTS) $(libgnunet_plugin_transport_wlan_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_transport_wlan_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_transport_wlan_la_LINK) $(am_libgnunet_plugin_transport_wlan_la_rpath) $(libgnunet_plugin_transport_wlan_la_OBJECTS) $(libgnunet_plugin_transport_wlan_la_LIBADD) $(LIBS)
 
-libgnunet_plugin_transport_xt.la: $(libgnunet_plugin_transport_xt_la_OBJECTS) $(libgnunet_plugin_transport_xt_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_transport_xt_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_transport_xt_la_LINK) $(am_libgnunet_plugin_transport_xt_la_rpath) $(libgnunet_plugin_transport_xt_la_OBJECTS) $(libgnunet_plugin_transport_xt_la_LIBADD) $(LIBS)
-
-libgnunet_plugin_transport_xu.la: $(libgnunet_plugin_transport_xu_la_OBJECTS) $(libgnunet_plugin_transport_xu_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_transport_xu_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_transport_xu_la_LINK) $(am_libgnunet_plugin_transport_xu_la_rpath) $(libgnunet_plugin_transport_xu_la_OBJECTS) $(libgnunet_plugin_transport_xu_la_LIBADD) $(LIBS)
-
 libgnunettransport.la: $(libgnunettransport_la_OBJECTS) $(libgnunettransport_la_DEPENDENCIES) $(EXTRA_libgnunettransport_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettransport_la_LINK) -rpath $(libdir) $(libgnunettransport_la_OBJECTS) $(libgnunettransport_la_LIBADD) $(LIBS)
 
 libgnunettransportaddress.la: $(libgnunettransportaddress_la_OBJECTS) $(libgnunettransportaddress_la_DEPENDENCIES) $(EXTRA_libgnunettransportaddress_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettransportaddress_la_LINK) -rpath $(libdir) $(libgnunettransportaddress_la_OBJECTS) $(libgnunettransportaddress_la_LIBADD) $(LIBS)
+
+libgnunettransportapplication.la: $(libgnunettransportapplication_la_OBJECTS) $(libgnunettransportapplication_la_DEPENDENCIES) $(EXTRA_libgnunettransportapplication_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunettransportapplication_la_LINK) -rpath $(libdir) $(libgnunettransportapplication_la_OBJECTS) $(libgnunettransportapplication_la_LIBADD) $(LIBS)
 
 libgnunettransportcommunicator.la: $(libgnunettransportcommunicator_la_OBJECTS) $(libgnunettransportcommunicator_la_DEPENDENCIES) $(EXTRA_libgnunettransportcommunicator_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettransportcommunicator_la_LINK) -rpath $(libdir) $(libgnunettransportcommunicator_la_OBJECTS) $(libgnunettransportcommunicator_la_LIBADD) $(LIBS)
@@ -4169,8 +4128,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_udp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_unix.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_xt.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_xu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_http_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_plugin_transport.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_quota_compliance.Po@am__quote@ # am--include-marker
@@ -4195,6 +4152,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport-testing-send.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport-testing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_address.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_application.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_communication.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_core.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_monitor.Plo@am__quote@ # am--include-marker
@@ -5206,8 +5164,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/plugin_transport_udp.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_unix.Plo
-	-rm -f ./$(DEPDIR)/plugin_transport_xt.Plo
-	-rm -f ./$(DEPDIR)/plugin_transport_xu.Plo
 	-rm -f ./$(DEPDIR)/test_http_common.Po
 	-rm -f ./$(DEPDIR)/test_plugin_transport.Po
 	-rm -f ./$(DEPDIR)/test_quota_compliance.Po
@@ -5232,6 +5188,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/transport-testing-send.Plo
 	-rm -f ./$(DEPDIR)/transport-testing.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_address.Plo
+	-rm -f ./$(DEPDIR)/transport_api2_application.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_communication.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_core.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_monitor.Plo
@@ -5325,8 +5282,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/plugin_transport_udp.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_unix.Plo
-	-rm -f ./$(DEPDIR)/plugin_transport_xt.Plo
-	-rm -f ./$(DEPDIR)/plugin_transport_xu.Plo
 	-rm -f ./$(DEPDIR)/test_http_common.Po
 	-rm -f ./$(DEPDIR)/test_plugin_transport.Po
 	-rm -f ./$(DEPDIR)/test_quota_compliance.Po
@@ -5351,6 +5306,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/transport-testing-send.Plo
 	-rm -f ./$(DEPDIR)/transport-testing.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_address.Plo
+	-rm -f ./$(DEPDIR)/transport_api2_application.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_communication.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_core.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_monitor.Plo

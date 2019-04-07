@@ -1,6 +1,6 @@
 This is gnunet.info, produced by makeinfo version 6.5 from gnunet.texi.
 
-Copyright © 2001-2018 GNUnet e.V.
+Copyright © 2001-2019 GNUnet e.V.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -23,6 +23,89 @@ INFO-DIR-SECTION Networking
 START-INFO-DIR-ENTRY
 * GNUnet: (gnunet).       Framework for secure peer-to-peer networking
 END-INFO-DIR-ENTRY
+
+
+File: gnunet.info,  Node: Revocation Message Design Requirements,  Next: libgnunetrevocation,  Prev: Dissemination,  Up: REVOCATION Subsystem
+
+7.36.2 Revocation Message Design Requirements
+---------------------------------------------
+
+However, flooding is also quite costly, creating O(|E|) messages on a
+network with |E| edges.  Thus, revocation messages are required to
+contain a proof-of-work, the result of an expensive computation (which,
+however, is cheap to verify).  Only peers that have expended the CPU
+time necessary to provide this proof will be able to flood the network
+with the revocation message.  This ensures that an attacker cannot
+simply flood the network with millions of revocation messages.  The
+proof-of-work required by GNUnet is set to take days on a typical PC to
+compute; if the ability to quickly revoke a key is needed, users have
+the option to pre-compute revocation messages to store off-line and use
+instantly after their key has expired.
+
+   Revocation messages must also be signed by the private key that is
+being revoked.  Thus, they can only be created while the private key is
+in the possession of the respective user.  This is another reason to
+create a revocation message ahead of time and store it in a secure
+location.
+
+
+File: gnunet.info,  Node: libgnunetrevocation,  Next: The REVOCATION Client-Service Protocol,  Prev: Revocation Message Design Requirements,  Up: REVOCATION Subsystem
+
+7.36.3 libgnunetrevocation
+--------------------------
+
+The REVOCATION API consists of two parts, to query and to issue
+revocations.
+
+* Menu:
+
+* Querying for revoked keys::
+* Preparing revocations::
+* Issuing revocations::
+
+
+File: gnunet.info,  Node: Querying for revoked keys,  Next: Preparing revocations,  Up: libgnunetrevocation
+
+7.36.3.1 Querying for revoked keys
+..................................
+
+‘GNUNET_REVOCATION_query’ is used to check if a given ECDSA public key
+has been revoked.  The given callback will be invoked with the result of
+the check.  The query can be canceled using
+‘GNUNET_REVOCATION_query_cancel’ on the return value.
+
+
+File: gnunet.info,  Node: Preparing revocations,  Next: Issuing revocations,  Prev: Querying for revoked keys,  Up: libgnunetrevocation
+
+7.36.3.2 Preparing revocations
+..............................
+
+It is often desirable to create a revocation record ahead-of-time and
+store it in an off-line location to be used later in an emergency.  This
+is particularly true for GNUnet revocations, where performing the
+revocation operation itself is computationally expensive and thus is
+likely to take some time.  Thus, if users want the ability to perform
+revocations quickly in an emergency, they must pre-compute the
+revocation message.  The revocation API enables this with two functions
+that are used to compute the revocation message, but not trigger the
+actual revocation operation.
+
+   ‘GNUNET_REVOCATION_check_pow’ should be used to calculate the
+proof-of-work required in the revocation message.  This function takes
+the public key, the required number of bits for the proof of work (which
+in GNUnet is a network-wide constant) and finally a proof-of-work number
+as arguments.  The function then checks if the given proof-of-work
+number is a valid proof of work for the given public key.  Clients
+preparing a revocation are expected to call this function repeatedly
+(typically with a monotonically increasing sequence of numbers of the
+proof-of-work number) until a given number satisfies the check.  That
+number should then be saved for later use in the revocation operation.
+
+   ‘GNUNET_REVOCATION_sign_revocation’ is used to generate the signature
+that is required in a revocation message.  It takes the private key that
+(possibly in the future) is to be revoked and returns the signature.
+The signature can again be saved to disk for later use, which will then
+allow performing a revocation even without access to the private key.
 
 
 File: gnunet.info,  Node: Issuing revocations,  Prev: Preparing revocations,  Up: libgnunetrevocation
@@ -2366,7 +2449,9 @@ Concept Index
 * Automatic Restart Manager:             CONTAINER_MDLL API.  (line  57)
 * Bluetooth plugin:                      How fast is it?.     (line  67)
 * Building GNUnet:                       Writing testcases.   (line  48)
-* CADET Subsystem:                       Type maps.           (line  35)
+* CADET:                                 Type maps.           (line  36)
+* cadet:                                 Type maps.           (line  35)
+* CADET Subsystem:                       Type maps.           (line  36)
 * chk-uri:                               Encoding of hash values in URIs.
                                                               (line   8)
 * Coding style:                          src/ directories.    (line  16)
@@ -2374,7 +2459,7 @@ Concept Index
                                                               (line  49)
 * Confidentiality:                       Accounting to Encourage Resource Sharing.
                                                               (line  38)
-* CONTAINER_MDLL API:                    Availability.        (line  11)
+* CONTAINER_MDLL API:                    Availability.        (line  12)
 * copyright assignment:                  Licenses of contributions.
                                                               (line  18)
 * core clinet-service protocol:          libgnunetcore.       (line  65)
@@ -2390,6 +2475,8 @@ Concept Index
                                                               (line  12)
 * Distributed Hash Table:                Watching for updates.
                                                               (line  11)
+* DNS Conversion:                        Importing DNS Zones into GNS.
+                                                              (line  15)
 * ECRS:                                  File-sharing (FS) Subsystem.
                                                               (line  34)
 * Egos:                                  Zones in the GNU Name System (GNS Zones).
@@ -2407,12 +2494,12 @@ Concept Index
 * GNS Namecache:                         Performance.         (line  28)
 * GNU Name System:                       GETting data from the DHT2.
                                                               (line  34)
-* GNUnet GTK:                            MOVED FROM USER Checking the Installation.
+* GNUnet GTK:                            Checking the Installation.
                                                               (line  19)
 * gnunet-ext:                            Build-system.        (line  23)
-* GTK:                                   MOVED FROM USER Checking the Installation.
+* GTK:                                   Checking the Installation.
                                                               (line  19)
-* GTK user interface:                    MOVED FROM USER Checking the Installation.
+* GTK user interface:                    Checking the Installation.
                                                               (line  18)
 * HOSTLIST client:                       Advertising the URL. (line  11)
 * HOSTLIST daemon:                       Hostlist security address validation.
@@ -2528,5 +2615,15 @@ Programming Index
 * gnunet-identity:                       Be Social.            (line 17)
 * gnunet-qr:                             Be Social.            (line 21)
 * gnunet-revocation:                     Revocation.           (line 17)
+* GNUNET_CADET_channel_create:           libgnunetcadet.       (line 33)
+* GNUNET_CADET_channel_destroy:          libgnunetcadet.       (line 68)
+* GNUNET_CADET_connect:                  libgnunetcadet.       (line 22)
+* GNUNET_CADET_disconnect:               libgnunetcadet.       (line 79)
+* GNUNET_CADET_notify_transmit_cancel:   libgnunetcadet.       (line 60)
+* GNUNET_CADET_notify_transmit_ready:    libgnunetcadet.       (line 44)
+* GNUNET_MESSAGE_TYPE_HOSTLIST_ADVERTISEMENT: The HOSTLIST daemon.
+                                                               (line 10)
+* GNUNET_MESSAGE_TYPE_NSE_P2P_FLOOD:     The NSE Peer-to-Peer Protocol.
+                                                               (line  6)
 * GNUNET_SERVICE_Options:                Service API.          (line 42)
 

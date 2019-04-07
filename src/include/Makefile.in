@@ -151,7 +151,8 @@ am__gnunetinclude_HEADERS_DIST = platform.h plibc.h winproc.h \
 	gnunet_constants.h gnunet_configuration_lib.h \
 	gnunet_consensus_service.h gnunet_container_lib.h \
 	gnunet_conversation_service.h gnunet_core_service.h \
-	gnunet_crypto_lib.h gnunet_curl_lib.h gnunet_datacache_lib.h \
+	gnunet_credential_service.h gnunet_crypto_lib.h \
+	gnunet_curl_lib.h gnunet_datacache_lib.h \
 	gnunet_datacache_plugin.h gnunet_datastore_service.h \
 	gnunet_datastore_plugin.h gnunet_db_lib.h gnunet_dht_service.h \
 	gnunet_disk_lib.h gnunet_dnsparser_lib.h gnunet_dnsstub_lib.h \
@@ -184,6 +185,7 @@ am__gnunetinclude_HEADERS_DIST = platform.h plibc.h winproc.h \
 	gnunet_testbed_service.h gnunet_testbed_logger_service.h \
 	gnunet_testing_lib.h gnunet_time_lib.h \
 	gnunet_transport_service.h gnunet_transport_address_service.h \
+	gnunet_transport_application_service.h \
 	gnunet_transport_communication_service.h \
 	gnunet_transport_core_service.h \
 	gnunet_transport_hello_service.h \
@@ -381,6 +383,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -408,8 +411,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -524,6 +530,7 @@ EXTRA_DIST = \
 @TALER_ONLY_FALSE@  gnunet_container_lib.h \
 @TALER_ONLY_FALSE@  gnunet_conversation_service.h \
 @TALER_ONLY_FALSE@  gnunet_core_service.h \
+@TALER_ONLY_FALSE@  gnunet_credential_service.h \
 @TALER_ONLY_FALSE@  gnunet_crypto_lib.h \
 @TALER_ONLY_FALSE@  gnunet_curl_lib.h \
 @TALER_ONLY_FALSE@  gnunet_datacache_lib.h \
@@ -603,6 +610,7 @@ EXTRA_DIST = \
 @TALER_ONLY_FALSE@  gnunet_time_lib.h \
 @TALER_ONLY_FALSE@  gnunet_transport_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_address_service.h \
+@TALER_ONLY_FALSE@  gnunet_transport_application_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_communication_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_core_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_hello_service.h \

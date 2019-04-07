@@ -313,6 +313,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -340,8 +341,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -440,7 +444,7 @@ infoimagedir = $(infodir)/images
 # We prefer not to break builds in this case, so
 # we use the include version which is backwards compatible
 # and upwards compatible, while the ref variant is neither.
-AM_MAKEINFOHTMLFLAGS = --no-split --css-include=manual.css
+AM_MAKEINFOHTMLFLAGS = --no-split --css-include=style.css --css-include=manual.css
 dist_infoimage_DATA = \
 	images/gnunet-gtk-0-10-gns-a-done.png 			\
 	images/gnunet-gtk-0-10-gns-a.png 			\
@@ -1055,12 +1059,6 @@ version.texi/replacement: version.texi/replacement/revert
 version.texi/replacement/revert:
 	@echo "@set VERSION GPACKAGE_VERSION" > gversion.texi
 	@echo "@set EDITION GPACKAGE_VERSION" >> gversion.texi
-
-@TEXI2MDOC_GENERATION_TRUE@gnunet-documentation.7: version.texi/replacement
-@TEXI2MDOC_GENERATION_TRUE@	@echo Attempting to output an mdoc formatted section 7 document
-@TEXI2MDOC_GENERATION_TRUE@	@texi2mdoc -I$(pwd):$(pwd)/chapters gnunet.texi > ../man/gnunet-documentation.7
-
-# TODO: (Maybe) other outputs resulting from this.
 
 # FIXME: rm *.html and *.pdf
 #doc-clean:
