@@ -5,12 +5,12 @@ Forwarded: https://gnunet.org/bugs/view.php?id=3588
 
 --- a/src/gns/gnunet-gns-proxy-setup-ca.in
 +++ b/src/gns/gnunet-gns-proxy-setup-ca.in
-@@ -15,7 +15,7 @@
- while getopts "c:" opt; do
-   case $opt in
-     c)
--      options="$options -c $OPTARG"
-+      options+="-c $OPTARG"
-       ;;
-     \?)
-       echo "Invalid option: -$OPTARG" >&2
+@@ -229,7 +229,7 @@
+                 verbosity=1
+                 ;;
+             c)
+-                options="$options -c $OPTARG"
++                options+="-c $OPTARG"
+                 infomsg "Using configuration file $OPTARG"
+                 GNUNET_CONFIG_FILE=${OPTARG}
+                 ;;
