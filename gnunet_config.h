@@ -107,6 +107,10 @@
    to 0 if you don't. */
 #define HAVE_DECL_GCRY_MPI_SET_OPAQUE_COPY 1
 
+/* Define to 1 if you have the declaration of `struct in6_ifreq', and to 0 if
+   you don't. */
+#define HAVE_DECL_STRUCT_IN6_IFREQ 0
+
 /* Define to 1 if you have the declaration of `_stati64', and to 0 if you
    don't. */
 #define HAVE_DECL__STATI64 0
@@ -601,6 +605,12 @@
 /* Define to 1 if `vfork' works. */
 #define HAVE_WORKING_VFORK 1
 
+/* Lacking zbar library */
+#define HAVE_ZBAR 1
+
+/* Define to 1 if you have the <zbar.h> header file. */
+#define HAVE_ZBAR_H 1
+
 /* Have compression library */
 #define HAVE_ZLIB /**/
 
@@ -612,6 +622,12 @@
 
 /* Path to ifconfig */
 #define IFCONFIG "/sbin/ifconfig"
+
+/* Not including the man pages in the build and installation */
+#define INCLUDE_MANPAGES 1
+
+/* Path to ip6tables */
+#define IP6TABLES "/sbin/ip6tables"
 
 /* Path to iptables */
 #define IPTABLES "/sbin/iptables"
@@ -777,7 +793,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.11.0"
+#define PACKAGE_STRING "gnunet 0.11.3"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -786,7 +802,10 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.11.0"
+#define PACKAGE_VERSION "0.11.3"
+
+/* Path to ip */
+#define PATH_TO_IP "/bin/ip"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -812,6 +831,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
+/* Path to sysctl */
+#define SYSCTL "/sbin/sysctl"
+
 /* Canonical compilation */
 #define TALER_WALLET_ONLY 0
 
@@ -828,10 +850,10 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-965cf32ea"
+#define VCS_VERSION "git-d7c915572"
 
 /* Version number of package */
-#define VERSION "0.11.0"
+#define VERSION "0.11.3"
 
 /* This is a Windows system */
 /* #undef WINDOWS */

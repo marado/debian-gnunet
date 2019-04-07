@@ -193,6 +193,22 @@ libgnunet_plugin_gnsrecord_gns_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_gnsrecord_gns_la_LDFLAGS) $(LDFLAGS) -o $@
+libgnunet_plugin_rest_gns_la_DEPENDENCIES =  \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+	libgnunetgns.la $(top_builddir)/src/rest/libgnunetrest.la \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
+	$(top_builddir)/src/json/libgnunetjson.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_gns_la_OBJECTS = plugin_rest_gns.lo
+libgnunet_plugin_rest_gns_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_gns_la_OBJECTS)
+libgnunet_plugin_rest_gns_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(libgnunet_plugin_rest_gns_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_gns_la_rpath =  \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
 libgnunetgns_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/identity/libgnunetidentity.la \
@@ -312,9 +328,9 @@ am__depfiles_remade = ./$(DEPDIR)/gns_api.Plo \
 	./$(DEPDIR)/gnunet_gns_proxy-gnunet-gns-proxy.Po \
 	./$(DEPDIR)/plugin_block_gns.Plo \
 	./$(DEPDIR)/plugin_gnsrecord_gns.Plo \
-	./$(DEPDIR)/test_gns_proxy.Po ./$(DEPDIR)/w32nsp-install.Po \
-	./$(DEPDIR)/w32nsp-resolve.Po ./$(DEPDIR)/w32nsp-uninstall.Po \
-	./$(DEPDIR)/w32nsp.Plo
+	./$(DEPDIR)/plugin_rest_gns.Plo ./$(DEPDIR)/test_gns_proxy.Po \
+	./$(DEPDIR)/w32nsp-install.Po ./$(DEPDIR)/w32nsp-resolve.Po \
+	./$(DEPDIR)/w32nsp-uninstall.Po ./$(DEPDIR)/w32nsp.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -336,6 +352,7 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libgnunet_plugin_block_gns_la_SOURCES) \
 	$(libgnunet_plugin_gnsrecord_gns_la_SOURCES) \
+	$(libgnunet_plugin_rest_gns_la_SOURCES) \
 	$(libgnunetgns_la_SOURCES) $(libw32nsp_la_SOURCES) \
 	$(gnunet_bcd_SOURCES) $(gnunet_dns2gns_SOURCES) \
 	$(gnunet_gns_SOURCES) $(gnunet_gns_benchmark_SOURCES) \
@@ -346,6 +363,7 @@ SOURCES = $(libgnunet_plugin_block_gns_la_SOURCES) \
 	$(w32nsp_uninstall_SOURCES)
 DIST_SOURCES = $(libgnunet_plugin_block_gns_la_SOURCES) \
 	$(libgnunet_plugin_gnsrecord_gns_la_SOURCES) \
+	$(libgnunet_plugin_rest_gns_la_SOURCES) \
 	$(libgnunetgns_la_SOURCES) $(libw32nsp_la_SOURCES) \
 	$(gnunet_bcd_SOURCES) $(gnunet_dns2gns_SOURCES) \
 	$(gnunet_gns_SOURCES) $(gnunet_gns_benchmark_SOURCES) \
@@ -707,6 +725,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -734,8 +753,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -862,9 +884,11 @@ lib_LTLIBRARIES = \
 pkgdata_DATA = \
   openssl.cnf
 
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = libgnunet_plugin_rest_gns.la
 plugin_LTLIBRARIES = \
   libgnunet_plugin_block_gns.la \
-  libgnunet_plugin_gnsrecord_gns.la
+  libgnunet_plugin_gnsrecord_gns.la \
+  $(REST_PLUGIN)
 
 bin_SCRIPTS = \
   gnunet-gns-proxy-setup-ca
@@ -872,6 +896,21 @@ bin_SCRIPTS = \
 
 # See: https://www.gnu.org/software/automake/manual/html_node/Scripts.html#Scripts
 do_subst = sed -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'
+libgnunet_plugin_rest_gns_la_SOURCES = \
+  plugin_rest_gns.c
+
+libgnunet_plugin_rest_gns_la_LIBADD = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  libgnunetgns.la \
+  $(top_builddir)/src/rest/libgnunetrest.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/json/libgnunetjson.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -ljansson -lmicrohttpd
+
+libgnunet_plugin_rest_gns_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
+
 libgnunet_plugin_gnsrecord_gns_la_SOURCES = \
   plugin_gnsrecord_gns.c
 
@@ -1266,6 +1305,9 @@ libgnunet_plugin_block_gns.la: $(libgnunet_plugin_block_gns_la_OBJECTS) $(libgnu
 libgnunet_plugin_gnsrecord_gns.la: $(libgnunet_plugin_gnsrecord_gns_la_OBJECTS) $(libgnunet_plugin_gnsrecord_gns_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_gnsrecord_gns_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_gnsrecord_gns_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_gnsrecord_gns_la_OBJECTS) $(libgnunet_plugin_gnsrecord_gns_la_LIBADD) $(LIBS)
 
+libgnunet_plugin_rest_gns.la: $(libgnunet_plugin_rest_gns_la_OBJECTS) $(libgnunet_plugin_rest_gns_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_gns_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_gns_la_LINK) $(am_libgnunet_plugin_rest_gns_la_rpath) $(libgnunet_plugin_rest_gns_la_OBJECTS) $(libgnunet_plugin_rest_gns_la_LIBADD) $(LIBS)
+
 libgnunetgns.la: $(libgnunetgns_la_OBJECTS) $(libgnunetgns_la_DEPENDENCIES) $(EXTRA_libgnunetgns_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetgns_la_LINK) -rpath $(libdir) $(libgnunetgns_la_OBJECTS) $(libgnunetgns_la_LIBADD) $(LIBS)
 
@@ -1375,6 +1417,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_gns_proxy-gnunet-gns-proxy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_block_gns.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_gnsrecord_gns.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_gns.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_gns_proxy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32nsp-install.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32nsp-resolve.Po@am__quote@ # am--include-marker
@@ -1961,6 +2004,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/gnunet_gns_proxy-gnunet-gns-proxy.Po
 	-rm -f ./$(DEPDIR)/plugin_block_gns.Plo
 	-rm -f ./$(DEPDIR)/plugin_gnsrecord_gns.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_gns.Plo
 	-rm -f ./$(DEPDIR)/test_gns_proxy.Po
 	-rm -f ./$(DEPDIR)/w32nsp-install.Po
 	-rm -f ./$(DEPDIR)/w32nsp-resolve.Po
@@ -2028,6 +2072,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/gnunet_gns_proxy-gnunet-gns-proxy.Po
 	-rm -f ./$(DEPDIR)/plugin_block_gns.Plo
 	-rm -f ./$(DEPDIR)/plugin_gnsrecord_gns.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_gns.Plo
 	-rm -f ./$(DEPDIR)/test_gns_proxy.Po
 	-rm -f ./$(DEPDIR)/w32nsp-install.Po
 	-rm -f ./$(DEPDIR)/w32nsp-resolve.Po

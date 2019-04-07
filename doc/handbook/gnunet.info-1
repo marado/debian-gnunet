@@ -1,6 +1,6 @@
 This is gnunet.info, produced by makeinfo version 6.5 from gnunet.texi.
 
-Copyright © 2001-2018 GNUnet e.V.
+Copyright © 2001-2019 GNUnet e.V.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -30,15 +30,15 @@ File: gnunet.info,  Node: Top,  Next: Preface,  Up: (dir)
 Introduction
 ************
 
-This document is the Reference Manual for GNUnet version 0.11.0.
+This document is the Reference Manual for GNUnet version 0.11.3.
 
 * Menu:
 
 
-* Preface::                         Chapter 0
+* Preface::                         Preface
 * Philosophy::                      About GNUnet
 * Key Concepts::                    Key concepts of GNUnet
-* Installing GNUnet::		    Installing GNUnet
+* Installing GNUnet::               Installing GNUnet
 * Using GNUnet::                    Using GNUnet
 * GNUnet Contributors Handbook::    Contributing to GNUnet
 * GNUnet Developer Handbook::       Developing GNUnet
@@ -82,9 +82,9 @@ Installing GNUnet
 * Create gnunet user and group::
 * Preparing and Compiling the Source Code::
 * Installation::
-* MOVED FROM USER Checking the Installation::
-* MOVED FROM USER The graphical configuration interface::
-* MOVED FROM USER Config Leftovers::
+* Checking the Installation::
+* The graphical configuration interface::
+* Config Leftovers::
 
 Using GNUnet
 
@@ -153,13 +153,13 @@ File: gnunet.info,  Node: Preface,  Next: Philosophy,  Prev: Top,  Up: Top
 1 Preface
 *********
 
-This collection of manuals describes how to use GNUnet, a framework for
-secure peer-to-peer networking with the high-level goal to provide a
-strong foundation Free Software for a global, distributed network that
-provides security and privacy.  GNUnet in that sense aims to replace the
-current Internet protocol stack.  Along with an application for secure
-publication of files, it has grown to include all kinds of basic
-applications for the foundation of a new Internet.
+This collection of manuals describes GNUnet, a framework for secure
+peer-to-peer networking with the high-level goal to provide a strong
+foundation for a global, distributed network that provides security and
+privacy.  GNUnet in that sense aims to replace the current Internet
+protocol stack.  Along with an application for secure publication of
+files, it has grown to include all kinds of basic applications for the
+foundation of a new Internet.
 
 * Menu:
 
@@ -177,9 +177,9 @@ File: gnunet.info,  Node: About this book,  Next: Contributing to this book,  Up
 
 The books (described as “book” or “books” in the following) bundled as
 the “GNUnet Reference Manual” are based on the historic work of all
-contributors to GNUnet’s documentation.  It is our hope that the content
-is described in a way that does not require any academic background,
-although some concepts will require further reading.
+contributors to previous documentation of GNUnet.  It is our hope that
+the content is described in a way that does not require any academic
+background, although some concepts will require further reading.
 
    Our (long-term) goal with these books is to keep them self-contained.
 If you see references to Wikipedia and other external sources (except
@@ -187,9 +187,24 @@ for our academic papers) it means that we are working on a solution to
 describe the explanations found there which fits our use-case and
 licensing.
 
+   Previously the documentation was contained in Drupal books, on the
+old website.  This format was considered unmaintainable for the future,
+so Texinfo was chosen.  You might find old and very old sections in here
+in addition to more recent content.  It took a long time to finish the
+move to Texinfo (from Drupal to LaTeX to wrong Texinfo output dump to
+good Texinfo) and only recently (late 2018, early 2019) content checking
+started.  We apologize to the reader for any inconvenience and hope you
+apply logic where bad advice from 10 years ago can be found (pipe to
+sudo to install software is one example).  Patches (contributions) to
+this documentation are more than welcome!
+
    The first chapter (“Preface”) as well as the the second chapter
 (“Philosophy”) give an introduction to GNUnet as a project, what GNUnet
-tries to achieve.
+tries to achieve.  “Key Concepts” explains the key concepts in GNUnet.
+These three chapters are the most complete in the documentation.  They
+are followed by chapters which explain specific parts of GNUnet (and
+need more work): “Installing GNUnet”, “GNUnet Contributors Handbook” and
+“GNUnet Developer Handbook”.
 
 
 File: gnunet.info,  Node: Contributing to this book,  Next: Introduction,  Prev: About this book,  Up: Preface
@@ -198,21 +213,29 @@ File: gnunet.info,  Node: Contributing to this book,  Next: Introduction,  Prev:
 =============================
 
 The GNUnet Reference Manual is a collective work produced by various
-people throughout the years.  The version you are reading is derived
-from many individual efforts hosted on our website.  This was a failed
-experiment, and with the conversion to Texinfo we hope to address this
-in the longterm.  Texinfo is the documentation language of the GNU
-project.  While it can be intimidating at first and look scary or
-complicated, it is just another way to express text format instructions.
-We encourage you to take this opportunity and learn about Texinfo, learn
-about GNUnet, and one word at a time we will arrive at a book which
-explains GNUnet in the least complicated way to you.  Even when you
-don’t want or can’t learn Texinfo, you can contribute.  Send us an Email
-or join our IRC chat room on freenode and talk with us about the
-documentation (the prefered way to reach out is the mailinglist, since
-you can communicate with us without waiting on someone in the chatroom).
-One way or another you can help shape the understanding of GNUnet
-without the ability to read and understand its sourcecode.
+people throughout the years.
+
+   The version you are reading is derived from many individual efforts
+hosted on one of our old websites.  In the end it was considered to be
+impractical to read by those who required the information.  With the
+conversion to Texinfo — the version you are reading right now — we hope
+to address this in the longterm.  Texinfo is the documentation language
+of the GNU project.
+
+   While it can be intimidating at first and look scary or complicated,
+it is just another way to express text format instructions.
+
+   We encourage you to take this opportunity and learn about Texinfo,
+learn about GNUnet, and one word at a time we will arrive at a book
+which explains GNUnet in the least complicated way to you.
+
+   Even when you don’t want to or can’t learn Texinfo, you can
+contribute.  Send us an Email or join our IRC chat room on freenode and
+talk with us about the documentation (the prefered way to reach out is
+the mailinglist, since you can communicate with us without waiting on
+someone in the chatroom).  One way or another you can help shape the
+understanding of GNUnet without the ability to read and understand its
+sourcecode.
 
 
 File: gnunet.info,  Node: Introduction,  Next: Project governance,  Prev: Contributing to this book,  Up: Preface
@@ -261,13 +284,13 @@ Name System.  In 2010, GNUnet was selected as the basis for the
 secushare (https://secushare.org) online social network, resulting in a
 significant growth of the core team.  In 2013, we launched GNU Taler
 (https://taler.net) to address the challenge of convenient and
-privacy-preserving online payments.  In 2015, the pEp
-(https://pep.foundation/) (pretty Easy privacy) project announced that
-they will use GNUnet as the technology for their meta-data protection
-layer, ultimately resulting in GNUnet e.V. entering into a formal
-long-term collaboration with the pEp foundation.  In 2016, Taler Systems
-SA, a first startup using GNUnet technology, was founded with support
-from the community.
+privacy-preserving online payments.  In 2015, the pretty Easy privacy
+(https://pep.foundation/) (pEp) project announced that they will use
+GNUnet as the technology for their meta-data protection layer,
+ultimately resulting in GNUnet e.V. entering into a formal long-term
+collaboration with the pEp Foundation.  In 2016, Taler Systems SA, a
+first startup using GNUnet technology, was founded with support from the
+community.
 
    GNUnet is not merely a technical project, but also a political
 mission: like the GNU project as a whole, we are writing software to
@@ -296,8 +319,8 @@ follows the governance model of a benevolent dictator.  This means that
 ultimately, the GNU project appoints the GNU maintainer and can overrule
 decisions made by the GNUnet maintainer.  Similarly, the GNUnet
 maintainer can overrule any decisions made by individual developers.
-Still, in practice neither has happened in the last 20 years, and we
-hope to keep it that way.
+Still, in practice neither has happened in the last 20 years for GNUnet,
+and we hope to keep it that way.
 
    The GNUnet project is supported by GNUnet e.V., a German association
 where any developer can become a member.  GNUnet e.V. serves as a legal
@@ -640,7 +663,7 @@ not the same encryption as the link-encryption between the nodes.
 GNUnet has encryption on the network layer (link encryption,
 confidentiality, authentication) and again on the application layer
 (provided by ‘gnunet-publish’, ‘gnunet-download’, ‘gnunet-search’ and
-‘gnunet-gtk’).
+‘gnunet-fs-gtk’).
 
    Refer to the following paper for more: Christian Grothoff, Krista
 Grothoff, Tzvetan Horozov, and Jussi T. Lindgren.  An Encoding for
@@ -724,9 +747,9 @@ manager.
 * Create gnunet user and group::
 * Preparing and Compiling the Source Code::
 * Installation::
-* MOVED FROM USER Checking the Installation::
-* MOVED FROM USER The graphical configuration interface::
-* MOVED FROM USER Config Leftovers::
+* Checking the Installation::
+* The graphical configuration interface::
+* Config Leftovers::
 
 
 File: gnunet.info,  Node: Installing dependencies,  Next: Getting the Source Code,  Up: Installing GNUnet
@@ -740,32 +763,51 @@ should be installed with a package manager.  Just in case we include a
 link to the project websites.
 
    The mandatory libraries and applications are
-   • libtool
    • autoconf 2.59 or above
    • automake 1.11.1 or above
-   • pkg-config
+   • gettext
+   • glibc (read below, other libcs should work)
+   • gnutls 3.2.12 or above, recommended to be linked against libunbound
+   • iptables (on Linux systems)
+   • libtool 2.2 or above
+   • libltdl (part of libtool)
    • libgcrypt 1.6 or above
    • libextractor
-   • libidn
+   • libidn2 or libidn
    • libmicrohttpd 0.9.52 or above
-   • libnss
    • libunistring
-   • gettext
-   • glibc
    • libgmp
-   • gnutls
-   • libcurl (has to be linked to GnuTLS) or libgnurl
+   • libgnurl or libcurl (libcurl has to be linked to GnuTLS) 7.35.0 or
+     above
+   • Texinfo 5.2 or above (for building the documentation)
+   • Texlive 2012 or above (for building the documentation, and for
+     gnunet-bcd)
+   • makeinfo 4.8 or above
    • zlib
 
+   Glibc is required for certain NSS features:
+
+     One mechanism of integrating GNS with legacy applications via NSS is
+     not available if this is disabled. But applications that don't use the
+     glibc for NS resolution won't work anyway with this, so little is lost
+     on BSD systems.
+     GNS via direct use or via the HTTP or DNS proxies is unaffected.
+
+   Other libcs should work, the resulting builds just don’t include the
+glibc NSS specific code.  One example is the build against NetBSD’s libc
+as detailed in <https://bugs.gnunet.org/view.php?id=5605>.
+
    In addition GNUnet needs one of of these three databases
-   • sqlite + libsqlite (the default, requires no further configuration)
+   • sqlite + libsqlite 3.8 or above (the default, requires no further
+     configuration)
    • postgres + libpq
    • mysql + libmysqlclient
 
    These are the dependencies only required for certain features
-   • Texinfo (for building the documentation)
-   • Texlive (for building the documentation)
+   • guile 1.6.4 for gnunet-download-manager
    • miniupnpc (for traversing NAT boxes more reliably)
+   • libnss
+   • libglpk 4.45 or above for experimental code
    • libopus (for running the GNUnet conversation telephony application)
    • libpulse (for running the GNUnet conversation telephony
      application)
@@ -775,6 +817,20 @@ link to the project websites.
      subsystem)
    • libgabe (for attribute-based encryption and the identity provider
      subsystem)
+   • texi2mdoc (for automatic mdoc generation)
+   • perl5 for some utilities
+
+   These are the test suite requirements:
+   • python3.7
+   • gnunet (installation first)
+   • which(1)
+   • a shell (possibly Bash, maybe just POSIX sh)
+
+   These are runtime requirements:
+   • nss (the certutil binary, for gnunet-gns-proxy-setup-ca)
+   • openssl (openssl binary, for gnunet-gns-proxy-setup-ca)
+   • python2.7 for gnunet-qr (at the moment only python2.7 supported)
+   • python-zbar 0.10 or above for gnunet-qr
 
 
 File: gnunet.info,  Node: Getting the Source Code,  Next: Create gnunet user and group,  Prev: Installing dependencies,  Up: Installing GNUnet
@@ -790,7 +846,7 @@ git installed) or as an archive.
 
    The archive can be found at <https://ftpmirror.gnu.org/gnu/gnunet/>.
 Extract it using a graphical archive tool or ‘tar’:
-     tar xzvf gnunet-0.11.0pre66.tar.gz
+     tar xzvf gnunet-0.11.3.tar.gz
 
    In the next chapter we will assume that the source code is available
 in the home directory at ‘~/gnunet’.
@@ -823,18 +879,25 @@ For preparing the source code for compilation a bootstrap script and
 ‘configure’ the following options can be specified to customize the
 compilation and installation process:
 
-   • ‘--disable-documentation’ - don’t build the configuration documents
+   • ‘--disable-documentation’ - don’t build the documentation
    • ‘--enable-looging=[LOGLEVEL]’ - choose a loglevel (‘debug’, ‘info’,
      ‘warning’ or ‘error’)
    • ‘--prefix=[PATH]’ - the directory where the GNUnet libraries and
      binaries will be installed
    • ‘--with-extractor=[PATH]’ - the path to libextractor
    • ‘--with-libidn=[PATH]’ - the path to libidn
+   • ‘--with-libidn2=[PATH]’ - the path to libidn2 (takes priority over
+     libidn if both are found)
    • ‘--with-microhttpd=[PATH]’ - the path to libmicrohttpd
    • ‘--with-sqlite=[PATH]’ - the path to libsqlite
    • ‘--with-zlib=[PATH]’ - the path to zlib
    • ‘--with-sudo=[PATH]’ - path to the sudo binary (no need to run
      ‘make install’ as root if specified)
+
+   Note that the list above is not always up to date and you should
+check the output of ‘./configure --help’, read the ‘configure.ac’ or
+send an email asking for assistance if you are in doubt of any configure
+options or require fixes for your operating system.
 
    The following example configures the installation prefix ‘/usr/lib’
 and disables building the documentation
@@ -848,7 +911,7 @@ threads should be used.
      $ make -j5
 
 
-File: gnunet.info,  Node: Installation,  Next: MOVED FROM USER Checking the Installation,  Prev: Preparing and Compiling the Source Code,  Up: Installing GNUnet
+File: gnunet.info,  Node: Installation,  Next: Checking the Installation,  Prev: Preparing and Compiling the Source Code,  Up: Installing GNUnet
 
 4.5 Installation
 ================
@@ -878,7 +941,7 @@ e.g.
 
    Copy the GNS NSS plugin to that directory:
 
-     cp ~/gnunet/src/gns/nss/libnss_gns.so.2 /lib
+     cp ~/gnunet/src/gns/nss/.libs/libnss_gns.so.2 /lib
 
    Now, to activate the plugin, you need to edit your
 ‘/etc/nsswitch.conf’ where you should find a line like this:
@@ -906,10 +969,10 @@ Below you find an example config which allows you to start GNUnet.
      PLUGINS = tcp
 
 
-File: gnunet.info,  Node: MOVED FROM USER Checking the Installation,  Next: MOVED FROM USER The graphical configuration interface,  Prev: Installation,  Up: Installing GNUnet
+File: gnunet.info,  Node: Checking the Installation,  Next: The graphical configuration interface,  Prev: Installation,  Up: Installing GNUnet
 
-4.6 MOVED FROM USER Checking the Installation
-=============================================
+4.6 Checking the Installation
+=============================
 
 This section describes a quick, casual way to check if your GNUnet
 installation works.  However, if it does not, we do not cover steps for
@@ -925,7 +988,7 @@ instructions are not provided as part of this handbook!.
 * Peer Information::
 
 
-File: gnunet.info,  Node: gnunet-gtk,  Next: Statistics,  Up: MOVED FROM USER Checking the Installation
+File: gnunet.info,  Node: gnunet-gtk,  Next: Statistics,  Up: Checking the Installation
 
 4.6.1 gnunet-gtk
 ----------------
@@ -937,18 +1000,26 @@ the respective GNUnet applications.  Currently these interfaces cover:
    • Peer Information
    • GNU Name System
    • File Sharing
-   • Identity Management
    • Conversation
+   • Setup
+
+   Previously, many of these interfaces were combined into one
+application called ‘gnunet-gtk’, with different tabs for each interface.
+This combined application has been removed in version 0.11.0, but each
+of the interfaces is still available as a standalone application
+(‘gnunet-statistics-gtk’ for statistics, ‘gnunet-fs-gtk’ for
+filesharing, etc).
 
 
-File: gnunet.info,  Node: Statistics,  Next: Peer Information,  Prev: gnunet-gtk,  Up: MOVED FROM USER Checking the Installation
+File: gnunet.info,  Node: Statistics,  Next: Peer Information,  Prev: gnunet-gtk,  Up: Checking the Installation
 
 4.6.2 Statistics
 ----------------
 
 We assume that you have started gnunet via ‘gnunet-arm’ or via your
 system-provided method for starting services.  First, you should launch
-GNUnet gtk.  You can do this from the command-line by typing
+GNUnet’s graphical statistics interface.  You can do this from the
+command-line by typing
 
      gnunet-statistics-gtk
 
@@ -957,7 +1028,8 @@ all of which should be “significantly” above zero (at least if your peer
 has been running for more than a few seconds).  The lines indicate how
 many other peers your peer is connected to (via different mechanisms)
 and how large the entire overlay network is currently estimated to be.
-The X-axis represents time (in seconds since the start of ‘gnunet-gtk’).
+The X-axis represents time (in seconds since the start of
+‘gnunet-statistics-gtk’).
 
    You can click on "Traffic" to see information about the amount of
 bandwidth your peer has consumed, and on "Storage" to check the amount
@@ -971,13 +1043,13 @@ network.  Thus, your Personal Computer or whatever it is you are looking
 at the Gtk+ interface describes a “Peer” or a “Node”.
 
 
-File: gnunet.info,  Node: Peer Information,  Prev: Statistics,  Up: MOVED FROM USER Checking the Installation
+File: gnunet.info,  Node: Peer Information,  Prev: Statistics,  Up: Checking the Installation
 
 4.6.3 Peer Information
 ----------------------
 
-First, you should launch the graphical user interface.  You can do this
-from the command-line by typing
+First, you should launch the peer information graphical user interface.
+You can do this from the command-line by typing
 
      $ gnunet-peerinfo-gtk
 
@@ -990,10 +1062,10 @@ and/or if there are very few peers with a green light for connectivity,
 there is likely a problem with your network configuration.
 
 
-File: gnunet.info,  Node: MOVED FROM USER The graphical configuration interface,  Next: MOVED FROM USER Config Leftovers,  Prev: MOVED FROM USER Checking the Installation,  Up: Installing GNUnet
+File: gnunet.info,  Node: The graphical configuration interface,  Next: Config Leftovers,  Prev: Checking the Installation,  Up: Installing GNUnet
 
-4.7 MOVED FROM USER The graphical configuration interface
-=========================================================
+4.7 The graphical configuration interface
+=========================================
 
 If you also would like to use ‘gnunet-gtk’ and ‘gnunet-setup’ (highly
 recommended for beginners), do:
@@ -1030,10 +1102,10 @@ recommended for beginners), do:
 * Configuring the GNUnet VPN::
 * Bandwidth Configuration::
 * Configuring NAT::
-* Peer configuration for distributions::
+* Peer configuration for distributors (e.g. Operating Systems)::
 
 
-File: gnunet.info,  Node: Configuring your peer,  Next: Configuring the Friend-to-Friend (F2F) mode,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring your peer,  Next: Configuring the Friend-to-Friend (F2F) mode,  Up: The graphical configuration interface
 
 4.7.1 Configuring your peer
 ---------------------------
@@ -1041,8 +1113,8 @@ File: gnunet.info,  Node: Configuring your peer,  Next: Configuring the Friend-t
 This chapter will describe the various configuration options in GNUnet.
 
    The easiest way to configure your peer is to use the ‘gnunet-setup’
-tool.  ‘gnunet-setup’ is part of the ‘gnunet-gtk’ application.  You
-might have to install it separately.
+tool.  ‘gnunet-setup’ is part of the ‘gnunet-gtk’ package.  You might
+have to install it separately.
 
    Many of the specific sections from this chapter actually are linked
 from within ‘gnunet-setup’ to help you while using the setup tool.
@@ -1053,7 +1125,7 @@ as it requires a more in-depth understanding of the configuration files
 and internal dependencies of GNUnet.
 
 
-File: gnunet.info,  Node: Configuring the Friend-to-Friend (F2F) mode,  Next: Configuring the hostlist to bootstrap,  Prev: Configuring your peer,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the Friend-to-Friend (F2F) mode,  Next: Configuring the hostlist to bootstrap,  Prev: Configuring your peer,  Up: The graphical configuration interface
 
 4.7.2 Configuring the Friend-to-Friend (F2F) mode
 -------------------------------------------------
@@ -1091,7 +1163,7 @@ arbitrary peers) under the "MINIMUM-FRIENDS" option.
 ‘MINIMUM-FRIENDS’ to zero and ‘FRIENDS_ONLY’ to NO. This is the default.
 
 
-File: gnunet.info,  Node: Configuring the hostlist to bootstrap,  Next: Configuration of the HOSTLIST proxy settings,  Prev: Configuring the Friend-to-Friend (F2F) mode,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the hostlist to bootstrap,  Next: Configuration of the HOSTLIST proxy settings,  Prev: Configuring the Friend-to-Friend (F2F) mode,  Up: The graphical configuration interface
 
 4.7.3 Configuring the hostlist to bootstrap
 -------------------------------------------
@@ -1157,7 +1229,7 @@ So your configuration file should include these lines:
      HOSTLISTFILE = $SERVICEHOME/hostlists.file
 
 
-File: gnunet.info,  Node: Configuration of the HOSTLIST proxy settings,  Next: Configuring your peer to provide a hostlist,  Prev: Configuring the hostlist to bootstrap,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuration of the HOSTLIST proxy settings,  Next: Configuring your peer to provide a hostlist,  Prev: Configuring the hostlist to bootstrap,  Up: The graphical configuration interface
 
 4.7.4 Configuration of the HOSTLIST proxy settings
 --------------------------------------------------
@@ -1199,7 +1271,7 @@ the following settings in the ‘[hostlist]’ section of the configuration:
      # PROXY_PASSWORD =
 
 
-File: gnunet.info,  Node: Configuring your peer to provide a hostlist,  Next: Configuring the datastore,  Prev: Configuration of the HOSTLIST proxy settings,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring your peer to provide a hostlist,  Next: Configuring the datastore,  Prev: Configuration of the HOSTLIST proxy settings,  Up: The graphical configuration interface
 
 4.7.5 Configuring your peer to provide a hostlist
 -------------------------------------------------
@@ -1252,7 +1324,7 @@ to download the list will be ‘http://example.org:12981/
      will not work.
 
 
-File: gnunet.info,  Node: Configuring the datastore,  Next: Configuring the MySQL database,  Prev: Configuring your peer to provide a hostlist,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the datastore,  Next: Configuring the MySQL database,  Prev: Configuring your peer to provide a hostlist,  Up: The graphical configuration interface
 
 4.7.6 Configuring the datastore
 -------------------------------
@@ -1271,7 +1343,7 @@ to do so.  Currently, you have the choice between sqLite, MySQL and
 Postgres.
 
 
-File: gnunet.info,  Node: Configuring the MySQL database,  Next: Reasons for using MySQL,  Prev: Configuring the datastore,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the MySQL database,  Next: Reasons for using MySQL,  Prev: Configuring the datastore,  Up: The graphical configuration interface
 
 4.7.7 Configuring the MySQL database
 ------------------------------------
@@ -1283,7 +1355,7 @@ we need prepared statements.  We are generally testing the code against
 MySQL 5.1 at this point.
 
 
-File: gnunet.info,  Node: Reasons for using MySQL,  Next: Reasons for not using MySQL,  Prev: Configuring the MySQL database,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Reasons for using MySQL,  Next: Reasons for not using MySQL,  Prev: Configuring the MySQL database,  Up: The graphical configuration interface
 
 4.7.8 Reasons for using MySQL
 -----------------------------
@@ -1297,7 +1369,7 @@ File: gnunet.info,  Node: Reasons for using MySQL,  Next: Reasons for not using 
      repair.
 
 
-File: gnunet.info,  Node: Reasons for not using MySQL,  Next: Setup Instructions,  Prev: Reasons for using MySQL,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Reasons for not using MySQL,  Next: Setup Instructions,  Prev: Reasons for using MySQL,  Up: The graphical configuration interface
 
 4.7.9 Reasons for not using MySQL
 ---------------------------------
@@ -1306,7 +1378,7 @@ File: gnunet.info,  Node: Reasons for not using MySQL,  Next: Setup Instructions
    • Complex manual setup
 
 
-File: gnunet.info,  Node: Setup Instructions,  Next: Testing,  Prev: Reasons for not using MySQL,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Setup Instructions,  Next: Testing,  Prev: Reasons for not using MySQL,  Up: The graphical configuration interface
 
 4.7.10 Setup Instructions
 -------------------------
@@ -1340,7 +1412,7 @@ symbolic link.  Luckily $USER has only privileges to mess up GNUnet’s
 tables, which should be pretty harmless.
 
 
-File: gnunet.info,  Node: Testing,  Next: Performance Tuning,  Prev: Setup Instructions,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Testing,  Next: Performance Tuning,  Prev: Setup Instructions,  Up: The graphical configuration interface
 
 4.7.11 Testing
 --------------
@@ -1369,7 +1441,7 @@ it may be resolvable by
 so there may be some additional trouble depending on your mysql setup.
 
 
-File: gnunet.info,  Node: Performance Tuning,  Next: Setup for running Testcases,  Prev: Testing,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Performance Tuning,  Next: Setup for running Testcases,  Prev: Testing,  Up: The graphical configuration interface
 
 4.7.12 Performance Tuning
 -------------------------
@@ -1386,7 +1458,7 @@ should set it if (and only if) GNUnet is the only application on your
 system using MySQL.
 
 
-File: gnunet.info,  Node: Setup for running Testcases,  Next: Configuring the Postgres database,  Prev: Performance Tuning,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Setup for running Testcases,  Next: Configuring the Postgres database,  Prev: Performance Tuning,  Up: The graphical configuration interface
 
 4.7.13 Setup for running Testcases
 ----------------------------------
@@ -1396,7 +1468,7 @@ If you want to run the testcases, you must create a second database
 then be used for testing (‘make check’).
 
 
-File: gnunet.info,  Node: Configuring the Postgres database,  Next: Reasons to use Postgres,  Prev: Setup for running Testcases,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the Postgres database,  Next: Reasons to use Postgres,  Prev: Setup for running Testcases,  Up: The graphical configuration interface
 
 4.7.14 Configuring the Postgres database
 ----------------------------------------
@@ -1407,7 +1479,7 @@ This text describes how to setup the Postgres database for GNUnet.
 for earlier versions as well.
 
 
-File: gnunet.info,  Node: Reasons to use Postgres,  Next: Reasons not to use Postgres,  Prev: Configuring the Postgres database,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Reasons to use Postgres,  Next: Reasons not to use Postgres,  Prev: Configuring the Postgres database,  Up: The graphical configuration interface
 
 4.7.15 Reasons to use Postgres
 ------------------------------
@@ -1416,7 +1488,7 @@ File: gnunet.info,  Node: Reasons to use Postgres,  Next: Reasons not to use Pos
    • Real database
 
 
-File: gnunet.info,  Node: Reasons not to use Postgres,  Next: Manual setup instructions,  Prev: Reasons to use Postgres,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Reasons not to use Postgres,  Next: Manual setup instructions,  Prev: Reasons to use Postgres,  Up: The graphical configuration interface
 
 4.7.16 Reasons not to use Postgres
 ----------------------------------
@@ -1425,7 +1497,7 @@ File: gnunet.info,  Node: Reasons not to use Postgres,  Next: Manual setup instr
    • Still some manual setup required
 
 
-File: gnunet.info,  Node: Manual setup instructions,  Next: Testing the setup manually,  Prev: Reasons not to use Postgres,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Manual setup instructions,  Next: Testing the setup manually,  Prev: Reasons not to use Postgres,  Up: The graphical configuration interface
 
 4.7.17 Manual setup instructions
 --------------------------------
@@ -1461,7 +1533,7 @@ File: gnunet.info,  Node: Manual setup instructions,  Next: Testing the setup ma
    Now you should be able to start ‘gnunet-arm’.
 
 
-File: gnunet.info,  Node: Testing the setup manually,  Next: Configuring the datacache,  Prev: Manual setup instructions,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Testing the setup manually,  Next: Configuring the datacache,  Prev: Manual setup instructions,  Up: The graphical configuration interface
 
 4.7.18 Testing the setup manually
 ---------------------------------
@@ -1476,7 +1548,7 @@ If, after you have started ‘gnunet-arm’ at least once, you get a ‘gn090’
 table here, it probably works.
 
 
-File: gnunet.info,  Node: Configuring the datacache,  Next: Configuring the file-sharing service,  Prev: Testing the setup manually,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the datacache,  Next: Configuring the file-sharing service,  Prev: Testing the setup manually,  Up: The graphical configuration interface
 
 4.7.19 Configuring the datacache
 --------------------------------
@@ -1492,7 +1564,7 @@ to store the data.  Currently, you have the choice between sqLite, MySQL
 and Postgres.
 
 
-File: gnunet.info,  Node: Configuring the file-sharing service,  Next: Configuring logging,  Prev: Configuring the datacache,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the file-sharing service,  Next: Configuring logging,  Prev: Configuring the datacache,  Up: The graphical configuration interface
 
 4.7.20 Configuring the file-sharing service
 -------------------------------------------
@@ -1529,19 +1601,19 @@ possible depending on the size of the GNUnet network and the strength of
 the adversary).
 
 
-File: gnunet.info,  Node: Configuring logging,  Next: Configuring the transport service and plugins,  Prev: Configuring the file-sharing service,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring logging,  Next: Configuring the transport service and plugins,  Prev: Configuring the file-sharing service,  Up: The graphical configuration interface
 
 4.7.21 Configuring logging
 --------------------------
 
-Logging in GNUnet 0.9.0 is controlled via the "-L" and "-l" options.
-Using ‘-L’, a log level can be specified.  With log level ‘ERROR’ only
-serious errors are logged.  The default log level is ‘WARNING’ which
-causes anything of concern to be logged.  Log level ‘INFO’ can be used
-to log anything that might be interesting information whereas ‘DEBUG’
-can be used by developers to log debugging messages (but you need to run
-‘./configure’ with ‘--enable-logging=verbose’ to get them compiled).
-The ‘-l’ option is used to specify the log file.
+Since version 0.9.0, logging in GNUnet is controlled via the ‘-L’ and
+‘-l’ options.  Using ‘-L’, a log level can be specified.  With log level
+‘ERROR’ only serious errors are logged.  The default log level is
+‘WARNING’ which causes anything of concern to be logged.  Log level
+‘INFO’ can be used to log anything that might be interesting information
+whereas ‘DEBUG’ can be used by developers to log debugging messages (but
+you need to run ‘./configure’ with ‘--enable-logging=verbose’ to get
+them compiled).  The ‘-l’ option is used to specify the log file.
 
    Since most GNUnet services are managed by ‘gnunet-arm’, using the
 ‘-l’ or ‘-L’ options directly is not possible.  Instead, they can be
@@ -1568,7 +1640,7 @@ be used:
      GLOBAL_POSTFIX = -l $SERVICEHOME/{}-logs -L INFO
 
 
-File: gnunet.info,  Node: Configuring the transport service and plugins,  Next: Configuring the WLAN transport plugin,  Prev: Configuring logging,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the transport service and plugins,  Next: Configuring the WLAN transport plugin,  Prev: Configuring logging,  Up: The graphical configuration interface
 
 4.7.22 Configuring the transport service and plugins
 ----------------------------------------------------
@@ -1677,7 +1749,7 @@ first setting specifies which transport plugins to load.
           TESTING_IGNORE_KEYS = ACCEPT_FROM;
 
 
-File: gnunet.info,  Node: Configuring the WLAN transport plugin,  Next: Configuring HTTP(S) reverse proxy functionality using Apache or nginx,  Prev: Configuring the transport service and plugins,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the WLAN transport plugin,  Next: Configuring HTTP(S) reverse proxy functionality using Apache or nginx,  Prev: Configuring the transport service and plugins,  Up: The graphical configuration interface
 
 4.7.23 Configuring the WLAN transport plugin
 --------------------------------------------
@@ -1770,7 +1842,7 @@ Channels must be set manually, i.e.  using:
      iwconfig wlan0 channel 1
 
 
-File: gnunet.info,  Node: Configuring HTTP(S) reverse proxy functionality using Apache or nginx,  Next: Blacklisting peers,  Prev: Configuring the WLAN transport plugin,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring HTTP(S) reverse proxy functionality using Apache or nginx,  Next: Blacklisting peers,  Prev: Configuring the WLAN transport plugin,  Up: The graphical configuration interface
 
 4.7.24 Configuring HTTP(S) reverse proxy functionality using Apache or nginx
 ----------------------------------------------------------------------------
@@ -1931,7 +2003,7 @@ and/or ‘[transport-https_server]’ section:
 Now restart your webserver and your peer...
 
 
-File: gnunet.info,  Node: Blacklisting peers,  Next: Configuration of the HTTP and HTTPS transport plugins,  Prev: Configuring HTTP(S) reverse proxy functionality using Apache or nginx,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Blacklisting peers,  Next: Configuration of the HTTP and HTTPS transport plugins,  Prev: Configuring HTTP(S) reverse proxy functionality using Apache or nginx,  Up: The graphical configuration interface
 
 4.7.25 Blacklisting peers
 -------------------------
@@ -1975,7 +2047,7 @@ asked if it is OK to connect to a peer ID, the plugin is omitted.
    • YES: disallow connection
 
 
-File: gnunet.info,  Node: Configuration of the HTTP and HTTPS transport plugins,  Next: Configuring the GNU Name System,  Prev: Blacklisting peers,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuration of the HTTP and HTTPS transport plugins,  Next: Configuring the GNU Name System,  Prev: Blacklisting peers,  Up: The graphical configuration interface
 
 4.7.26 Configuration of the HTTP and HTTPS transport plugins
 ------------------------------------------------------------
@@ -2019,7 +2091,7 @@ configure the following settings in the ‘[transport-http_client]’ and
      # PROXY_PASSWORD =
 
 
-File: gnunet.info,  Node: Configuring the GNU Name System,  Next: Configuring the GNUnet VPN,  Prev: Configuration of the HTTP and HTTPS transport plugins,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the GNU Name System,  Next: Configuring the GNUnet VPN,  Prev: Configuration of the HTTP and HTTPS transport plugins,  Up: The graphical configuration interface
 
 4.7.27 Configuring the GNU Name System
 --------------------------------------
@@ -2319,7 +2391,7 @@ touching your system Python installation and its dependencies.
 the tool.
 
 
-File: gnunet.info,  Node: Configuring the GNUnet VPN,  Next: Bandwidth Configuration,  Prev: Configuring the GNU Name System,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring the GNUnet VPN,  Next: Bandwidth Configuration,  Prev: Configuring the GNU Name System,  Up: The graphical configuration interface
 
 4.7.28 Configuring the GNUnet VPN
 ---------------------------------
@@ -2354,7 +2426,7 @@ File: gnunet.info,  Node: IPv4 address for interface,  Next: IPv6 address for in
 4.7.28.1 IPv4 address for interface
 ...................................
 
-This is the IPv4 address the VPN interface will get.  You should pick an
+This is the IPv4 address the VPN interface will get.  You should pick a
 ’private’ IPv4 network that is not yet in use for you system.  For
 example, if you use ‘10.0.0.1/255.255.0.0’ already, you might use
 ‘10.1.0.1/255.255.0.0’.  If you use ‘10.0.0.1/255.0.0.0’ already, then
@@ -2463,7 +2535,7 @@ entire subnet (‘2001:4ca0::1:0/112’ for example) through your computer
 disabled).
 
 
-File: gnunet.info,  Node: Bandwidth Configuration,  Next: Configuring NAT,  Prev: Configuring the GNUnet VPN,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Bandwidth Configuration,  Next: Configuring NAT,  Prev: Configuring the GNUnet VPN,  Up: The graphical configuration interface
 
 4.7.29 Bandwidth Configuration
 ------------------------------
@@ -2473,7 +2545,7 @@ and send data.  This is important for users with limited bandwidth or
 traffic volume.
 
 
-File: gnunet.info,  Node: Configuring NAT,  Next: Peer configuration for distributions,  Prev: Bandwidth Configuration,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Configuring NAT,  Next: Peer configuration for distributors (e.g. Operating Systems),  Prev: Bandwidth Configuration,  Up: The graphical configuration interface
 
 4.7.30 Configuring NAT
 ----------------------
@@ -2529,17 +2601,17 @@ connect to NATed peers using autonomous NAT traversal, you need to check
 the "Enable connecting to NATed peers using ICMP method" box.
 
 
-File: gnunet.info,  Node: Peer configuration for distributions,  Prev: Configuring NAT,  Up: MOVED FROM USER The graphical configuration interface
+File: gnunet.info,  Node: Peer configuration for distributors (e.g. Operating Systems),  Prev: Configuring NAT,  Up: The graphical configuration interface
 
-4.7.31 Peer configuration for distributions
--------------------------------------------
+4.7.31 Peer configuration for distributors (e.g. Operating Systems)
+-------------------------------------------------------------------
 
 The "GNUNET_DATA_HOME" in "[path]" in ‘/etc/gnunet.conf’ should be
 manually set to "/var/lib/gnunet/data/" as the default
 "~/.local/share/gnunet/" is probably not that appropriate in this case.
-Similarly, distributions may consider pointing "GNUNET_RUNTIME_DIR" to
+Similarly, distributors may consider pointing "GNUNET_RUNTIME_DIR" to
 "/var/run/gnunet/" and "GNUNET_HOME" to "/var/lib/gnunet/".  Also,
-should a distribution decide to override system defaults, all of these
+should a distributor decide to override system defaults, all of these
 changes should be done in a custom ‘/etc/gnunet.conf’ and not in the
 files in the ‘config.d/’ directory.
 
@@ -2547,16 +2619,16 @@ files in the ‘config.d/’ directory.
 be run as use "gnunet" (and with option "-c /etc/gnunet.conf" so that it
 modifies the system configuration).  As always, gnunet-setup should be
 run after the GNUnet peer was stopped using "gnunet-arm -e".
-Distributions might want to include a wrapper for gnunet-setup that
+Distributors might want to include a wrapper for gnunet-setup that
 allows the desktop-user to "sudo" (i.e.  using gtksudo) to the "gnunet"
 user account and then runs "gnunet-arm -e", "gnunet-setup" and
 "gnunet-arm -s" in sequence.
 
 
-File: gnunet.info,  Node: MOVED FROM USER Config Leftovers,  Prev: MOVED FROM USER The graphical configuration interface,  Up: Installing GNUnet
+File: gnunet.info,  Node: Config Leftovers,  Prev: The graphical configuration interface,  Up: Installing GNUnet
 
-4.8 MOVED FROM USER Config Leftovers
-====================================
+4.8 Config Leftovers
+====================
 
 This section describes how to start a GNUnet peer.  It assumes that you
 have already compiled and installed GNUnet and its’ dependencies.
@@ -2591,7 +2663,7 @@ more secure and generally recommended.
 * Access Control for GNUnet::
 
 
-File: gnunet.info,  Node: The Single-User Setup,  Next: The Multi-User Setup,  Up: MOVED FROM USER Config Leftovers
+File: gnunet.info,  Node: The Single-User Setup,  Next: The Multi-User Setup,  Up: Config Leftovers
 
 4.8.1 The Single-User Setup
 ---------------------------
@@ -2651,7 +2723,7 @@ and insert a line
    to automatically start your peer whenever your system boots.
 
 
-File: gnunet.info,  Node: The Multi-User Setup,  Next: Killing GNUnet services,  Prev: The Single-User Setup,  Up: MOVED FROM USER Config Leftovers
+File: gnunet.info,  Node: The Multi-User Setup,  Next: Killing GNUnet services,  Prev: The Single-User Setup,  Up: Config Leftovers
 
 4.8.2 The Multi-User Setup
 --------------------------
@@ -2700,7 +2772,7 @@ their crontab.
 USER) ‘gnunet-service-arm’ processes running in your system.
 
 
-File: gnunet.info,  Node: Killing GNUnet services,  Next: Access Control for GNUnet,  Prev: The Multi-User Setup,  Up: MOVED FROM USER Config Leftovers
+File: gnunet.info,  Node: Killing GNUnet services,  Next: Access Control for GNUnet,  Prev: The Multi-User Setup,  Up: Config Leftovers
 
 4.8.3 Killing GNUnet services
 -----------------------------
@@ -2716,7 +2788,7 @@ note that the per-user services may need to be terminated before the
 system-wide services will terminate normally.
 
 
-File: gnunet.info,  Node: Access Control for GNUnet,  Prev: Killing GNUnet services,  Up: MOVED FROM USER Config Leftovers
+File: gnunet.info,  Node: Access Control for GNUnet,  Prev: Killing GNUnet services,  Up: Config Leftovers
 
 4.8.4 Access Control for GNUnet
 -------------------------------
@@ -2788,7 +2860,7 @@ supposed to be available to all users on the local system or local
 network.  However, as TCP is generally less efficient and it is rarely
 the case that a single GNUnet peer is supposed to serve an entire local
 network, the default configuration should disable TCP access to all
-GNUnet services on systems with support for UNIX domain sockets.  As of
+GNUnet services on systems with support for UNIX domain sockets.  Since
 GNUnet 0.9.2, configuration files with TCP access disabled should be
 generated by default.  Users can re-enable TCP access to particular
 services simply by specifying a non-zero port number in the section of
@@ -2907,7 +2979,7 @@ File: gnunet.info,  Node: Start and stop GNUnet,  Next: First steps - Using the 
 5.1 Start and stop GNUnet
 =========================
 
-Previous to use any GNUnet-based application, one has to start a node:
+Prior to using any GNUnet-based application, one has to start a node:
 
      $ gnunet-arm -s -l gnunet.log
 
@@ -3133,7 +3205,7 @@ without pulling in the full distribution of TexLive.
      apt-get install texlive-full
 
 Start creating a business card by clicking the "Copy" button in
-‘gnunet-gtk’’s GNS tab.  Next, you should start the ‘gnunet-bcd’ program
+‘gnunet-namestore-gtk’.  Next, you should start the ‘gnunet-bcd’ program
 (in the terminal, on the command-line).  You do not need to pass any
 options, and please be not surprised if there is no output:
 
@@ -3144,14 +3216,15 @@ Then, start a browser and point it to <http://localhost:8888/> where
 
    First, you might want to fill in the "GNS Public Key" field by
 right-clicking and selecting "Paste", filling in the public key from the
-copy you made in ‘gnunet-gtk’.  Then, fill in all of the other fields,
-including your GNS NICKname.  Adding a GPG fingerprint is optional.
-Once finished, click "Submit Query".  If your ‘LaTeX’ installation is
-incomplete, the result will be disappointing.  Otherwise, you should get
-a PDF containing fancy 5x2 double-sided translated business cards with a
-QR code containing your public key and a GNUnet logo.  We’ll explain how
-to use those a bit later.  You can now go back to the shell running
-‘gnunet-bcd’ and press CTRL-C to shut down the Web server.
+copy you made in ‘gnunet-namestore-gtk’.  Then, fill in all of the other
+fields, including your GNS NICKname.  Adding a GPG fingerprint is
+optional.  Once finished, click "Submit Query".  If your ‘LaTeX’
+installation is incomplete, the result will be disappointing.
+Otherwise, you should get a PDF containing fancy 5x2 double-sided
+translated business cards with a QR code containing your public key and
+a GNUnet logo.  We’ll explain how to use those a bit later.  You can now
+go back to the shell running ‘gnunet-bcd’ and press CTRL-C to shut down
+the Web server.
 
 
 File: gnunet.info,  Node: Be Social,  Next: Backup of Identities and Egos,  Prev: Creating a Business Card,  Up: First steps - Using the GNU Name System
@@ -3464,9 +3537,8 @@ File: gnunet.info,  Node: GNS configuration,  Next: Accessing the service,  Prev
 -----------------------
 
 Now, using your normal user (not the ‘gnunet’ system user), run
-‘gnunet-gtk’.  Select the GNS icon and add a new label www in your
-master zone.  For the record type, select ‘VPN’.  You should then see
-the VPN dialog:
+‘gnunet-namestore-gtk’.  Add a new label www in your master zone.  For
+the record type, select ‘VPN’.  You should then see the VPN dialog:
 
    Under peer, you need to supply the peer identity of your own peer.
 You can obtain the respective string by running ‘gnunet-peerinfo -sq’ as
@@ -3475,7 +3547,7 @@ identifier that we used in the Exit setup earlier, so here supply "bcd".
 If you want others to be able to use the service, you should probably
 make the record public.  For non-public services, you should use a
 passphrase instead of the string "bcd".  Save the record and exit
-‘gnunet-gtk’.
+‘gnunet-namestore-gtk’.
 
 
 File: gnunet.info,  Node: Accessing the service,  Next: Using a Browser,  Prev: GNS configuration,  Up: First steps - Using the GNUnet VPN
@@ -4766,8 +4838,8 @@ following options:
      Usage:
          ascension <domain> [-d] [-p]
          ascension <domain> <port> [-d] [-p]
-         ascension <domain> -ns <transferns> [-d] [-p]
-         ascension <domain> -ns <transferns> <port> [-d] [-p]
+         ascension <domain> -n <transferns> [-d] [-p]
+         ascension <domain> -n <transferns> <port> [-d] [-p]
          ascension -p | --public
          ascension -h | --help
          ascension -v | --version
@@ -4789,7 +4861,7 @@ peer:
 domains that still supports zone transfers - into GNS use the following
 command:
 
-     $ ascension sy. -ns ns1.tld.sy. -p
+     $ ascension sy. -n ns1.tld.sy. -p
 
    The -p flag will tell GNS to put these records on the DHT so that
 other users may resolve these records by using the public key of the
@@ -5472,7 +5544,8 @@ line of code in them yet.
         • ‘gnunet-statistics-gtk’ (statistics over time),
         • ‘gnunet-peerinfo-gtk’ (information about current connections
           and known peers),
-        • ‘gnunet-chat-gtk’ (chat GUI) and
+        • ‘gnunet-namestore-gtk’ (GNS record editor),
+        • ‘gnunet-conversation-gtk’ (voice chat GUI) and
         • ‘gnunet-setup’ (setup tool for "everything")
 
 ‘gnunet-fuse’
@@ -6532,8 +6605,8 @@ On other Unixes and GNU systems, this should have the same effect:
 
    Now compile and install GNUnet using:
 
-     tar xvf gnunet-0.11.0.tar.gz
-     cd gnunet-0.11.0
+     tar xvf gnunet-0.11.3.tar.gz
+     cd gnunet-0.11.3
      ./configure --with-sudo=sudo --with-nssdir=/lib
      make
      sudo make install

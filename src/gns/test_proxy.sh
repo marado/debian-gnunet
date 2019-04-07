@@ -1,7 +1,9 @@
 #!/bin/bash
-
+# This file is in the public domain.
 TEST_DOMAIN="www.test"
 
+# Delete old files before starting test
+rm -rf /tmp/gnunet/test-gnunet-gns-testing/
 gnunet-arm -s -c test_gns_proxy.conf
 gnunet-gns-proxy-setup-ca -c test_gns_proxy.conf
 

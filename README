@@ -1,5 +1,26 @@
                        Welcome to GNUnet
 
+ToC
+===
+
+* ToC
+* What is GNUnet?
+* Dependencies
+  o direct dependencies
+  o test suite dependencies
+  o optional dependencies
+  o autotools
+* Requirements
+* How to install
+  o binary packages
+  o Scope of Operating System support
+  o Building GNUnet from source
+* Configuration
+* Usage
+* Hacking GNUnet
+* Running HTTP on port 80 and HTTPS on port 443
+* Further Reading
+* Stay tuned
 
 What is GNUnet?
 ===============
@@ -31,64 +52,94 @@ Dependencies:
 =============
 
 These are the direct dependencies for running GNUnet:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- libmicrohttpd      >= 0.9.42
-- libgcrypt          >= 1.6
-- libgnurl           >= 7.35.0      (recommended, available from https://gnunet.org/en/gnurl.html)
-- libcurl            >= 7.35.0      (alternative to libgnurl)
-- libunistring       >= 0.9.2
-- gnutls             >= 3.2.12      (highly recommended a gnutls linked against libunbound)
-- libidn:
-  - libidn2 (prefered)
+- Bash                              (for some scripts)
+- gettext
+- gnutls             >= 3.2.12      (highly recommended a gnutls
+                                     linked against libunbound)
+- A curl build against gnutls, or gnurl:
+  * libgnurl         >= 7.35.0      (recommended, available from
+                                     https://gnunet.org/en/gnurl.html)
   or
-  - libidn           >= 1.0
-- libextractor       >= 0.6.1       (highly recommended)
-- openssl            >= 1.0         (binary, used to generate X.509 certificate
-                                     for gnunet-gns-proxy-setup-ca)
-- nss                               (certutil binary, for
-                                     gnunet-gns-proxy-setup-ca)
-- libltdl            >= 2.2         (part of GNU libtool)
-- sqlite             >= 3.8         (default database, required)
-- mysql              >= 5.1         (alternative to sqlite)
-- postgres           >= 9.5         (alternative to sqlite)
-- Texinfo            >= 5.2         [*1]
+  * libcurl          >= 7.35.0      (alternative to libgnurl)
+- libgcrypt          >= 1.6
+- libunistring       >= 0.9.2
+- libidn:
+  * libidn2 (prefered)
+  or
+  * libidn           >= 1.0
+- libmicrohttpd      >= 0.9.52
 - makeinfo           >= 4.8
 - make[*3]
+- nss                               (certutil binary, for
+                                     gnunet-gns-proxy-setup-ca)
+- openssl            >= 1.0         (binary, used to generate
+                                     X.509 certificate
+                                     for gnunet-gns-proxy-setup-ca)
+- A Posix shell                       (for some scripts)
+- Texinfo            >= 5.2         [*1]
+- libltdl            >= 2.2         (part of GNU libtool)
+- 1 or more databases:
+  * sqlite           >= 3.8         (default database, required)
+  and/or
+  * mysql            >= 5.1         (alternative to sqlite)
+  and/or
+  * postgres         >= 9.5         (alternative to sqlite)
 - which                             (contrib/apparmor(?), gnunet-bugreport,
-                                     tests (dns, gns, namestore,
-                                            scalarproduct) and possibly more)
-- gettext
+                                     and possibly more)
 - zlib
 
-
 These are the dependencies for GNUnet's testsuite:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Bash                              (optional (?[*4]), for some tests)
-- python             >= 3.7         (only python 3.7 is supported)
-- python-future      >= 3.7         (only python 3.7 is supported)
-- which
+- Bash                              (for some tests[*4])
+- A Posix Shell                     (for some tests)
+- python             >= 3.4         (3.4 and higher technically supported,
+                                     at least python 3.7 tested to work)
+- base tools
+  - mostly:
+    - bc,
+    - curl,
+    - sed,
+    - awk,
+    - which
 
 
 These are the optional dependencies:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+- awk                               (for linting tests)
+- Bash                              (for Docker and Vagrant)
+- bluez                             (for bluetooth support)
+- grof                              (for linting of man pages)
+- guile              1.6.4          (or later up to 1.8?, for
+                                     gnunet-download-manager (see #5682))
+
+- libextractor       >= 0.6.1       (highly recommended[*5])
+- libjansson
+- libglpk            >= 4.45        (for experimental code)
 - libopus            >= 1.0.1       (for experimental conversation tool)
 - libpulse           >= 2.0         (for experimental conversation tool)
 - libogg             >= 1.3.0       (for experimental conversation tool)
-- libnss                            (certtool binary (for convenient installation of GNS proxy))
-- python2.7          = 2.7          (for gnunet-qr, only python 2.7 supported)
-- python-zbar        >= 0.10        (for gnunet-qr, not optional)
+- libnss                            (certtool binary (for convenient
+                                     installation of GNS proxy))
+- libzbar            >= 0.10        (for gnunet-qr)
+- libpbc             >= 0.5.14      (for Attribute-Based Encryption and
+                                     Identity Provider functionality)
+- libgabe                           (for Attribute-Based Encryption and
+                                     Identity Provider functionality, from
+                                     https://github.com/schanzen/libgabe)
+- mandoc                            (for linting of man pages, generation of
+                                     html output of man pages (not part of
+                                     the regular build))
+- miniupnpc
+- perl5                             (for some utilities)
 - TeX Live           >= 2012        (for gnunet-bcd[*])
 - texi2mdoc                         (for automatic mdoc generation [*2])
-- libglpk            >= 4.45        (for experimental code)
-- perl5                             (for some utilities)
-- guile              1.6.4          (or later up to 1.8?, for gnunet-download-manager)
-- bluez                             (for bluetooth support)
-- miniupnpc
-- libpbc             >= 0.5.14      (for Attribute-Based Encryption and Identity Provider functionality)
-- libgabe                           (for Attribute-Based Encryption and Identity Provider functionality,
-                                    from https://github.com/schanzen/libgabe)
 
 Recommended autotools for compiling the Git version are:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - autoconf           >= 2.59
 - automake           >= 1.11.1
@@ -116,16 +167,35 @@ Recommended autotools for compiling the Git version are:
      fix in.
 
 [*4] We are commited  to portable tools and solutions
-     where possible. While the shellscripts work with
-     NetBSD's sh, there's no warranty some bashisms
-     are leftover.
+     where possible. New scripts should be Posix SH
+     compatible, current and older scripts are
+     in the process of being rewritten to comply
+     with this requirement.
+
+[*5] While libextractor is optional, it is recommended to
+     build gnunet against it. If you install it later,
+     you won't benefit from libextractor.
+     If you are a distributor, we recommend to split
+     LE into basis + plugins rather than making LE
+     an option as an afterthought by the user.
+     LE itself is very small, but its dependency chain
+     on first, second, third etc level can be big.
+     There is a small effect on privacy if your LE build
+     differs from one which includes all
+     plugins (plugins are build as shared objects):
+     if users publish a directory with a mixture of file
+     types (for example mpeg, jpeg, png, gif) the
+     configuration of LE could leak which plugins are
+     installed for which filetypes are not providing
+     more details.
+     However, this leak is just a minor concern.
 
 Requirements
 ============
 
 GNUnet's directed acyclic graph (DAG) will require around 0.74 GiB
-Diskspace, with GNUNet itself taking around 9.2 MiB reported by the
-build on GNU Guix.
+Diskspace, with GNUNet itself taking around 8 - 9.2 MiB reported by
+the build on GNU Guix.
 
 How to install?
 ===============
@@ -366,7 +436,7 @@ together with a description.  To publish files on GNUnet, use the
 "gnunet-publish" command.
 
 
-The GTK+ (or: Gimp Toolkit) user interface is shipped separately.
+The GTK user interface is shipped separately.
 After installing gnunet-gtk, you can invoke the setup tool and
 the file-sharing GUI with:
 
@@ -401,13 +471,13 @@ $ make install
 $ export $GNUNET_PREFIX=$SOMEWHERE
 $ make check
 
-Some of the testcases require python >= 3.7, and the python modules
-"python-future" (http://python-future.org/) and "pexpect" to be installed.
+Some of the testcases require python >= 3.7, and the python module
+"pexpect" to be installed.
 If any testcases fail to pass on your system, run
 "contrib/scripts/gnunet-bugreport" (in the repository) or "gnunet-bugreport"
 when you already have GNUnet installed and report its output together with
 information about the failing testcase(s) to the Mantis bugtracking
-system at https://gnunet.org/bugs/.
+system at https://bugs.gnunet.org/.
 
 
 Running HTTP on port 80 and HTTPS on port 443
@@ -465,13 +535,13 @@ Further Reading
   GNUnet or projects around GNUnet.
   There are currently 2 ways to get them:
 
-  * Using git:
+  * Using git (NOTE: 1.1 GiB as of 2019-03-09):
     git clone https://git.gnunet.org/bibliography.git
   * Using Drupal:
     https://old.gnunet.org/bibliography
 
   The Drupal access will be replaced by a new interface to our
-  bibliography in 2019.
+  bibliography in the foreseeable future.
 
 
 Stay tuned

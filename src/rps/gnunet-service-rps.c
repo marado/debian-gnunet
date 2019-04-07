@@ -2161,7 +2161,7 @@ rem_from_list (struct GNUNET_PeerIdentity **peer_list,
 
   for ( i = 0 ; i < *list_size ; i++ )
   {
-    if (0 == GNUNET_CRYPTO_cmp_peer_identity (&tmp[i], peer))
+    if (0 == GNUNET_memcmp (&tmp[i], peer))
     {
       if (i < *list_size -1)
       { /* Not at the last entry -- shift peers left */
@@ -2742,7 +2742,7 @@ clean_peer (struct Sub *sub,
         "Going to remove send channel to peer %s\n",
         GNUNET_i2s (peer));
     #if ENABLE_MALICIOUS
-    if (0 != GNUNET_CRYPTO_cmp_peer_identity (&attacked_peer,
+    if (0 != GNUNET_memcmp (&attacked_peer,
                                               peer))
       (void) destroy_sending_channel (get_peer_ctx (sub->peer_map,
                                                     peer));
@@ -3500,6 +3500,15 @@ handle_peer_push (void *cls,
   if (channel_ctx->peer_ctx->sub == msub)
   {
     GNUNET_STATISTICS_update(stats, "# push message received", 1, GNUNET_NO);
+    if (NULL != map_single_hop &&
+        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                             peer))
+    {
+      GNUNET_STATISTICS_update (stats,
+                                "# push message received (multi-hop peer)",
+                                1,
+                                GNUNET_NO);
+    }
   }
 
   #if ENABLE_MALICIOUS
@@ -3587,7 +3596,7 @@ handle_peer_pull_request (void *cls,
 
   else if (2 == mal_type)
   { /* Try to partition network */
-    if (0 == GNUNET_CRYPTO_cmp_peer_identity (&attacked_peer, peer))
+    if (0 == GNUNET_memcmp (&attacked_peer, peer))
     {
       send_pull_reply (peer_ctx, mal_peers, num_mal_peers);
     }
@@ -3881,6 +3890,15 @@ send_push (struct PeerContext *peer_ctx)
                               "# push send issued",
                               1,
                               GNUNET_NO);
+    if (NULL != map_single_hop &&
+        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                             &peer_ctx->peer_id))
+    {
+      GNUNET_STATISTICS_update (stats,
+                                "# push send issued (multi-hop peer)",
+                                1,
+                                GNUNET_NO);
+    }
   }
 }
 

@@ -90,8 +90,14 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@DOCUMENTATION_ONLY_FALSE@@DOCUMENTATION_TRUE@am__append_1 = doc
-@TALER_ONLY_FALSE@am__append_2 = contrib
+
+# documentation on / off switch (affects all of the documentation)
+@DOCUMENTATION_TRUE@am__append_1 = doc
+@HAVE_EXPERIMENTAL_TRUE@am__append_2 = lint
+
+# only manpages, needs "doc" subdir
+@INCLUDE_MANPAGES_TRUE@am__append_3 = doc
+@TALER_ONLY_FALSE@am__append_4 = contrib
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -207,7 +213,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = m4 src po pkgconfig doc contrib
+DIST_SUBDIRS = m4 src po pkgconfig doc lint contrib
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/gnunet_config.h.in \
 	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/config.guess \
@@ -218,9 +224,9 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/gnunet_config.h.in \
 	$(top_srcdir)/build-aux/missing ABOUT-NLS AUTHORS COPYING \
 	ChangeLog INSTALL NEWS README build-aux/compile \
 	build-aux/config.guess build-aux/config.rpath \
-	build-aux/config.sub build-aux/install-sh build-aux/ltmain.sh \
-	build-aux/mdate-sh build-aux/missing build-aux/texinfo.tex \
-	config.rpath
+	build-aux/config.sub build-aux/depcomp build-aux/install-sh \
+	build-aux/ltmain.sh build-aux/mdate-sh build-aux/missing \
+	build-aux/texinfo.tex config.rpath
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -369,6 +375,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -396,8 +403,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -482,8 +492,12 @@ top_srcdir = @top_srcdir@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 @DOCUMENTATION_ONLY_FALSE@SUBDIRS = m4 src po pkgconfig \
-@DOCUMENTATION_ONLY_FALSE@	$(am__append_1) $(am__append_2)
-@DOCUMENTATION_ONLY_TRUE@SUBDIRS = doc $(am__append_1) $(am__append_2)
+@DOCUMENTATION_ONLY_FALSE@	$(am__append_1) $(am__append_2) \
+@DOCUMENTATION_ONLY_FALSE@	$(am__append_3) $(am__append_4)
+
+# only documentation (ALL of the documentation)
+@DOCUMENTATION_ONLY_TRUE@SUBDIRS = doc $(am__append_1) $(am__append_2) \
+@DOCUMENTATION_ONLY_TRUE@	$(am__append_3) $(am__append_4)
 EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath \

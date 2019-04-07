@@ -261,6 +261,24 @@ libgnunet_plugin_namestore_sqlite_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$@
 @HAVE_SQLITE_TRUE@am_libgnunet_plugin_namestore_sqlite_la_rpath =  \
 @HAVE_SQLITE_TRUE@	-rpath $(plugindir)
+libgnunet_plugin_rest_namestore_la_DEPENDENCIES =  \
+	libgnunetnamestore.la \
+	$(top_builddir)/src/rest/libgnunetrest.la \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
+	$(top_builddir)/src/json/libgnunetjson.la \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_namestore_la_OBJECTS =  \
+	plugin_rest_namestore.lo
+libgnunet_plugin_rest_namestore_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_namestore_la_OBJECTS)
+libgnunet_plugin_rest_namestore_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_namestore_la_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_namestore_la_rpath =  \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
 libgnunetnamestore_la_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -818,6 +836,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-namestore-fcfsd.Po \
 	./$(DEPDIR)/plugin_namestore_heap.Plo \
 	./$(DEPDIR)/plugin_namestore_postgres.Plo \
 	./$(DEPDIR)/plugin_namestore_sqlite.Plo \
+	./$(DEPDIR)/plugin_rest_namestore.Plo \
 	./$(DEPDIR)/test_namestore_api_lookup_nick.Po \
 	./$(DEPDIR)/test_namestore_api_lookup_private.Po \
 	./$(DEPDIR)/test_namestore_api_lookup_public.Po \
@@ -857,6 +876,7 @@ am__v_CCLD_1 =
 SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
 	$(libgnunet_plugin_namestore_postgres_la_SOURCES) \
 	$(libgnunet_plugin_namestore_sqlite_la_SOURCES) \
+	$(libgnunet_plugin_rest_namestore_la_SOURCES) \
 	$(libgnunetnamestore_la_SOURCES) $(gnunet_namestore_SOURCES) \
 	$(gnunet_namestore_fcfsd_SOURCES) \
 	$(gnunet_service_namestore_SOURCES) \
@@ -918,6 +938,7 @@ SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
 DIST_SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
 	$(libgnunet_plugin_namestore_postgres_la_SOURCES) \
 	$(libgnunet_plugin_namestore_sqlite_la_SOURCES) \
+	$(libgnunet_plugin_rest_namestore_la_SOURCES) \
 	$(libgnunetnamestore_la_SOURCES) $(gnunet_namestore_SOURCES) \
 	$(gnunet_namestore_fcfsd_SOURCES) \
 	$(gnunet_service_namestore_SOURCES) \
@@ -1288,6 +1309,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -1315,8 +1337,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -1473,8 +1498,30 @@ HEAP_PLUGIN = libgnunet_plugin_namestore_heap.la
 @ENABLE_TEST_RUN_TRUE@  $(check_PROGRAMS) \
 @ENABLE_TEST_RUN_TRUE@  $(check_SCRIPTS)
 
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = libgnunet_plugin_rest_namestore.la
 lib_LTLIBRARIES = \
   libgnunetnamestore.la
+
+plugin_LTLIBRARIES = \
+  $(SQLITE_PLUGIN) \
+  $(POSTGRES_PLUGIN) \
+  $(HEAP_PLUGIN) \
+  $(REST_PLUGIN)
+
+libgnunet_plugin_rest_namestore_la_SOURCES = \
+  plugin_rest_namestore.c
+
+libgnunet_plugin_rest_namestore_la_LIBADD = \
+  libgnunetnamestore.la \
+  $(top_builddir)/src/rest/libgnunetrest.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/json/libgnunetjson.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -ljansson -lmicrohttpd
+
+libgnunet_plugin_rest_namestore_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
 
 libgnunetnamestore_la_SOURCES = \
   namestore_api.c \
@@ -1532,11 +1579,6 @@ gnunet_service_namestore_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetnamestore.la \
   $(GN_LIBINTL)
-
-plugin_LTLIBRARIES = \
-  $(SQLITE_PLUGIN) \
-  $(POSTGRES_PLUGIN) \
-  $(HEAP_PLUGIN)
 
 libgnunet_plugin_namestore_heap_la_SOURCES = \
   plugin_namestore_heap.c
@@ -2317,6 +2359,9 @@ libgnunet_plugin_namestore_postgres.la: $(libgnunet_plugin_namestore_postgres_la
 libgnunet_plugin_namestore_sqlite.la: $(libgnunet_plugin_namestore_sqlite_la_OBJECTS) $(libgnunet_plugin_namestore_sqlite_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_namestore_sqlite_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_namestore_sqlite_la_LINK) $(am_libgnunet_plugin_namestore_sqlite_la_rpath) $(libgnunet_plugin_namestore_sqlite_la_OBJECTS) $(libgnunet_plugin_namestore_sqlite_la_LIBADD) $(LIBS)
 
+libgnunet_plugin_rest_namestore.la: $(libgnunet_plugin_rest_namestore_la_OBJECTS) $(libgnunet_plugin_rest_namestore_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_namestore_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_namestore_la_LINK) $(am_libgnunet_plugin_rest_namestore_la_rpath) $(libgnunet_plugin_rest_namestore_la_OBJECTS) $(libgnunet_plugin_rest_namestore_la_LIBADD) $(LIBS)
+
 libgnunetnamestore.la: $(libgnunetnamestore_la_OBJECTS) $(libgnunetnamestore_la_DEPENDENCIES) $(EXTRA_libgnunetnamestore_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetnamestore_la_LINK) -rpath $(libdir) $(libgnunetnamestore_la_OBJECTS) $(libgnunetnamestore_la_LIBADD) $(LIBS)
 
@@ -2568,6 +2613,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_heap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_postgres.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_sqlite.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_namestore.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_namestore_api_lookup_nick.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_namestore_api_lookup_private.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_namestore_api_lookup_public.Po@am__quote@ # am--include-marker
@@ -3341,6 +3387,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/plugin_namestore_heap.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_postgres.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_sqlite.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_namestore.Plo
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_nick.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_private.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_public.Po
@@ -3414,6 +3461,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/plugin_namestore_heap.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_postgres.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_sqlite.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_namestore.Plo
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_nick.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_private.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_public.Po

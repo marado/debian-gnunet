@@ -115,13 +115,13 @@ File: gnunet-tutorial.info,  Node: Obtaining a stable version,  Next: Installing
 ==============================
 
 Download the tarball from
-‘https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.0.tar.gz’.
+‘https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.3.tar.gz’.
 
    Make sure to download the associated ‘.sig’ file and to verify the
 authenticity of the tarball against it, like this:
 
-     $ wget https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.0.tar.gz.sig
-     $ gpg --verify-files gnunet-0.11.0.tar.gz.sig
+     $ wget https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.3.tar.gz.sig
+     $ gpg --verify-files gnunet-0.11.3.tar.gz.sig
 
 If this command fails because you do not have the required public key,
 then you need to run the following command to import it:
@@ -143,8 +143,8 @@ resulting directory will be renamed to ‘gnunet’, which we will be using
 in the remainder of this document to refer to the root of the source
 directory.
 
-     $ tar xvzf gnunet-0.11.0.tar.gz
-     $ mv gnunet-0.11.0 gnunet
+     $ tar xvzf gnunet-0.11.3.tar.gz
+     $ mv gnunet-0.11.3 gnunet
 
 However, please note that stable versions can be very outdated.  As a
 developer you are strongly encouraged to use the version from the git

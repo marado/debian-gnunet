@@ -102,10 +102,12 @@ libexec_PROGRAMS = gnunet-service-rps$(EXEEXT)
 @HAVE_TESTING_TRUE@	test_rps_sub$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_rps_seed_request$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_rps_seed_big$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_rps_churn$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_rps_malicious_1$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_rps_malicious_2$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_rps_malicious_3$(EXEEXT)
+@HAVE_TESTING_TRUE@	test_rps_churn$(EXEEXT) $(am__EXEEXT_1)
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@am__append_1 = \
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@ test_rps_malicious_1 \
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@ test_rps_malicious_2 \
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@ test_rps_malicious_3
+
 subdir = src/rps
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -132,6 +134,9 @@ CONFIG_CLEAN_FILES = rps.conf
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgcfgdir)"
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@am__EXEEXT_1 = test_rps_malicious_1$(EXEEXT) \
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@	test_rps_malicious_2$(EXEEXT) \
+@ENABLE_MALICIOUS_TRUE@@HAVE_TESTING_TRUE@	test_rps_malicious_3$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS) $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -163,6 +168,7 @@ am__uninstall_files_from_dir = { \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunetrps_la_DEPENDENCIES =  \
+	$(top_builddir)/src/nse/libgnunetnse.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunetrps_la_OBJECTS =  \
@@ -648,6 +654,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -675,8 +682,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -784,6 +794,7 @@ libgnunetrps_la_SOURCES = \
   rps_api.c rps.h
 
 libgnunetrps_la_LIBADD = \
+  $(top_builddir)/src/nse/libgnunetnse.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
 
