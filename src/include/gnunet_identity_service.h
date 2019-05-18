@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -43,9 +43,8 @@
 #define GNUNET_IDENTITY_SERVICE_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -101,7 +100,7 @@ GNUNET_IDENTITY_ego_get_anonymous (void);
  */
 void
 GNUNET_IDENTITY_ego_get_public_key (const struct GNUNET_IDENTITY_Ego *ego,
-				    struct GNUNET_CRYPTO_EcdsaPublicKey *pk);
+                                    struct GNUNET_CRYPTO_EcdsaPublicKey *pk);
 
 
 /**
@@ -138,11 +137,10 @@ GNUNET_IDENTITY_ego_get_public_key (const struct GNUNET_IDENTITY_Ego *ego,
  *                   NULL if the user just deleted the ego and it
  *                   must thus no longer be used
  */
-typedef void
-(*GNUNET_IDENTITY_Callback)(void *cls,
-                            struct GNUNET_IDENTITY_Ego *ego,
-                            void **ctx,
-                            const char *name);
+typedef void (*GNUNET_IDENTITY_Callback) (void *cls,
+                                          struct GNUNET_IDENTITY_Ego *ego,
+                                          void **ctx,
+                                          const char *name);
 
 
 /**
@@ -155,8 +153,8 @@ typedef void
  */
 struct GNUNET_IDENTITY_Handle *
 GNUNET_IDENTITY_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			 GNUNET_IDENTITY_Callback cb,
-			 void *cb_cls);
+                         GNUNET_IDENTITY_Callback cb,
+                         void *cb_cls);
 
 
 /**
@@ -170,9 +168,9 @@ GNUNET_IDENTITY_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_get (struct GNUNET_IDENTITY_Handle *id,
-		     const char *service_name,
-		     GNUNET_IDENTITY_Callback cb,
-		     void *cb_cls);
+                     const char *service_name,
+                     GNUNET_IDENTITY_Callback cb,
+                     void *cb_cls);
 
 
 /**
@@ -182,9 +180,7 @@ GNUNET_IDENTITY_get (struct GNUNET_IDENTITY_Handle *id,
  * @param cls closure
  * @param emsg NULL on success, otherwise an error message
  */
-typedef void
-(*GNUNET_IDENTITY_Continuation)(void *cls,
-                                const char *emsg);
+typedef void (*GNUNET_IDENTITY_Continuation) (void *cls, const char *emsg);
 
 
 /**
@@ -199,10 +195,10 @@ typedef void
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_set (struct GNUNET_IDENTITY_Handle *id,
-		     const char *service_name,
-		     struct GNUNET_IDENTITY_Ego *ego,
-		     GNUNET_IDENTITY_Continuation cont,
-		     void *cont_cls);
+                     const char *service_name,
+                     struct GNUNET_IDENTITY_Ego *ego,
+                     GNUNET_IDENTITY_Continuation cont,
+                     void *cont_cls);
 
 
 /**
@@ -212,6 +208,20 @@ GNUNET_IDENTITY_set (struct GNUNET_IDENTITY_Handle *id,
  */
 void
 GNUNET_IDENTITY_disconnect (struct GNUNET_IDENTITY_Handle *h);
+
+
+/**
+ * Function called once the requested operation has
+ * been completed.
+ *
+ * @param cls closure
+ * @param pk private key, NULL on error
+ * @param emsg error message, NULL on success
+ */
+typedef void (*GNUNET_IDENTITY_CreateContinuation) (
+  void *cls,
+  const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk,
+  const char *emsg);
 
 
 /**
@@ -225,9 +235,9 @@ GNUNET_IDENTITY_disconnect (struct GNUNET_IDENTITY_Handle *h);
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_create (struct GNUNET_IDENTITY_Handle *id,
-			const char *name,
-			GNUNET_IDENTITY_Continuation cont,
-			void *cont_cls);
+                        const char *name,
+                        GNUNET_IDENTITY_CreateContinuation cont,
+                        void *cont_cls);
 
 
 /**
@@ -242,10 +252,10 @@ GNUNET_IDENTITY_create (struct GNUNET_IDENTITY_Handle *id,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_rename (struct GNUNET_IDENTITY_Handle *id,
-			const char *old_name,
-			const char *new_name,
-			GNUNET_IDENTITY_Continuation cb,
-			void *cb_cls);
+                        const char *old_name,
+                        const char *new_name,
+                        GNUNET_IDENTITY_Continuation cb,
+                        void *cb_cls);
 
 
 /**
@@ -259,9 +269,9 @@ GNUNET_IDENTITY_rename (struct GNUNET_IDENTITY_Handle *id,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_delete (struct GNUNET_IDENTITY_Handle *id,
-			const char *name,
-			GNUNET_IDENTITY_Continuation cb,
-			void *cb_cls);
+                        const char *name,
+                        GNUNET_IDENTITY_Continuation cb,
+                        void *cb_cls);
 
 
 /**
@@ -284,9 +294,9 @@ GNUNET_IDENTITY_cancel (struct GNUNET_IDENTITY_Operation *op);
  * @param cls closure
  * @param ego NULL on error / ego not found
  */
-typedef void
-(*GNUNET_IDENTITY_EgoCallback)(void *cls,
-                               const struct GNUNET_IDENTITY_Ego *ego);
+typedef void (*GNUNET_IDENTITY_EgoCallback) (
+  void *cls,
+  const struct GNUNET_IDENTITY_Ego *ego);
 
 /**
  * Handle for ego lookup.
@@ -305,9 +315,9 @@ struct GNUNET_IDENTITY_EgoLookup;
  */
 struct GNUNET_IDENTITY_EgoLookup *
 GNUNET_IDENTITY_ego_lookup (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			    const char *name,
-			    GNUNET_IDENTITY_EgoCallback cb,
-			    void *cb_cls);
+                            const char *name,
+                            GNUNET_IDENTITY_EgoCallback cb,
+                            void *cb_cls);
 
 
 /**
@@ -319,7 +329,7 @@ void
 GNUNET_IDENTITY_ego_lookup_cancel (struct GNUNET_IDENTITY_EgoLookup *el);
 
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

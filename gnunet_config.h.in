@@ -91,9 +91,6 @@
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
 
-/* Define to 1 if you have the <curl/curl.h> header file. */
-#undef HAVE_CURL_CURL_H
-
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #undef HAVE_DCGETTEXT
@@ -132,6 +129,9 @@
 
 /* Define to 1 if you have the <execinfo.h> header file. */
 #undef HAVE_EXECINFO_H
+
+/* explicit_bzero supported */
+#undef HAVE_EXPLICIT_BZERO
 
 /* Define to 1 if you have the <extractor.h> header file. */
 #undef HAVE_EXTRACTOR_H
@@ -199,9 +199,6 @@
 /* Define to 1 if `presolve' is a member of `glp_iocp'. */
 #undef HAVE_GLP_IOCP_PRESOLVE
 
-/* Define to 1 if you have the <gnurl/curl.h> header file. */
-#undef HAVE_GNURL_CURL_H
-
 /* We have GnuTLS */
 #undef HAVE_GNUTLS
 
@@ -262,7 +259,7 @@
 /* Lacking bluetooth library */
 #undef HAVE_LIBBLUETOOTH
 
-/* Have CURL */
+/* Lacking libcurl */
 #undef HAVE_LIBCURL
 
 /* Define to 1 if you have the `curl-gnutls' library (-lcurl-gnutls). */
@@ -357,6 +354,9 @@
 
 /* memrchr supported */
 #undef HAVE_MEMRCHR
+
+/* memset_s supported */
+#undef HAVE_MEMSET_S
 
 /* We have libmicrohttpd */
 #undef HAVE_MHD
@@ -570,6 +570,9 @@
 
 /* Define to 1 if you have the <terminos.h> header file. */
 #undef HAVE_TERMINOS_H
+
+/* Define this if __thread is supported */
+#undef HAVE_THREAD_LOCAL_GCC
 
 /* Define if struct tm has the tm_gmtoff member. */
 #undef HAVE_TM_GMTOFF

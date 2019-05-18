@@ -95,32 +95,39 @@ struct CustomLogger
   void *logger_cls;
 };
 
+
+/**
+ * Asynchronous scope of the current thread, or NULL if we have not
+ * entered an async scope yet.
+ */
+static __thread struct GNUNET_AsyncScopeSave current_async_scope;
+
 /**
  * The last "bulk" error message that we have been logging.
  * Note that this message maybe truncated to the first BULK_TRACK_SIZE
  * characters, in which case it is NOT 0-terminated!
  */
-static char last_bulk[BULK_TRACK_SIZE] __attribute__ ((nonstring));
+static GNUNET_THREAD_LOCAL char last_bulk[BULK_TRACK_SIZE] __attribute__ ((nonstring));
 
 /**
  * Type of the last bulk message.
  */
-static enum GNUNET_ErrorType last_bulk_kind;
+static GNUNET_THREAD_LOCAL enum GNUNET_ErrorType last_bulk_kind;
 
 /**
  * Time of the last bulk error message (0 for none)
  */
-static struct GNUNET_TIME_Absolute last_bulk_time;
+static GNUNET_THREAD_LOCAL struct GNUNET_TIME_Absolute last_bulk_time;
 
 /**
  * Number of times that bulk message has been repeated since.
  */
-static unsigned int last_bulk_repeat;
+static GNUNET_THREAD_LOCAL unsigned int last_bulk_repeat;
 
 /**
  * Component when the last bulk was logged.  Will be 0-terminated.
  */
-static char last_bulk_comp[COMP_TRACK_SIZE + 1];
+static GNUNET_THREAD_LOCAL char last_bulk_comp[COMP_TRACK_SIZE + 1];
 
 /**
  * Running component.
@@ -150,7 +157,7 @@ static struct CustomLogger *loggers;
 /**
  * Number of log calls to ignore.
  */
-static int skip_log = 0;
+static GNUNET_THREAD_LOCAL int skip_log = 0;
 
 /**
  * File descriptor to use for "stderr", or NULL for none.
@@ -838,6 +845,28 @@ output_message (enum GNUNET_ErrorType kind,
                "* %s",
                msg);
     }
+    else if (GNUNET_YES == current_async_scope.have_scope)
+    {
+      static GNUNET_THREAD_LOCAL char id_buf[27];
+      char *end;
+
+      /* We're logging, so skip_log must be currently 0. */
+      skip_log = 100;
+      end = GNUNET_STRINGS_data_to_string (&current_async_scope.scope_id,
+                                           sizeof (struct GNUNET_AsyncScopeId),
+                                           id_buf,
+                                           sizeof (id_buf) - 1);
+      GNUNET_assert (NULL != end);
+      *end = '\0';
+      skip_log = 0;
+      FPRINTF (GNUNET_stderr,
+               "%s %s(%s) %s %s",
+               datestr,
+               comp,
+               id_buf,
+               GNUNET_error_type_to_string (kind),
+               msg);
+    }
     else
     {
       FPRINTF (GNUNET_stderr,
@@ -1168,8 +1197,6 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind)
 
 /**
  * Convert a hash to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
  *
  * @param hc the hash code
  * @return string form; will be overwritten by next call to GNUNET_h2s.
@@ -1177,7 +1204,7 @@ GNUNET_error_type_to_string (enum GNUNET_ErrorType kind)
 const char *
 GNUNET_h2s (const struct GNUNET_HashCode * hc)
 {
-  static struct GNUNET_CRYPTO_HashAsciiEncoded ret;
+  static GNUNET_THREAD_LOCAL struct GNUNET_CRYPTO_HashAsciiEncoded ret;
 
   GNUNET_CRYPTO_hash_to_enc (hc, &ret);
   ret.encoding[8] = '\0';
@@ -1350,8 +1377,6 @@ GNUNET_h2s_full (const struct GNUNET_HashCode * hc)
 
 /**
  * Convert a peer identity to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
  *
  * @param pid the peer identity
  * @return string form of the pid; will be overwritten by next
@@ -1360,7 +1385,7 @@ GNUNET_h2s_full (const struct GNUNET_HashCode * hc)
 const char *
 GNUNET_i2s (const struct GNUNET_PeerIdentity *pid)
 {
-  static char buf[5];
+  static GNUNET_THREAD_LOCAL char buf[5];
   char *ret;
 
   if (NULL == pid)
@@ -1377,8 +1402,7 @@ GNUNET_i2s (const struct GNUNET_PeerIdentity *pid)
 
 /**
  * Convert a peer identity to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!  Identical to #GNUNET_i2s(), except that another
+ * Identical to #GNUNET_i2s(), except that another
  * buffer is used so both #GNUNET_i2s() and #GNUNET_i2s2() can be
  * used within the same log statement.
  *
@@ -1389,7 +1413,7 @@ GNUNET_i2s (const struct GNUNET_PeerIdentity *pid)
 const char *
 GNUNET_i2s2 (const struct GNUNET_PeerIdentity *pid)
 {
-  static char buf[5];
+  static GNUNET_THREAD_LOCAL char buf[5];
   char *ret;
 
   if (NULL == pid)
@@ -1406,8 +1430,6 @@ GNUNET_i2s2 (const struct GNUNET_PeerIdentity *pid)
 
 /**
  * Convert a peer identity to a string (for printing debug messages).
- * This is one of the very few calls in the entire API that is
- * NOT reentrant!
  *
  * @param pid the peer identity
  * @return string form of the pid; will be overwritten by next
@@ -1416,7 +1438,7 @@ GNUNET_i2s2 (const struct GNUNET_PeerIdentity *pid)
 const char *
 GNUNET_i2s_full (const struct GNUNET_PeerIdentity *pid)
 {
-  static char buf[256];
+  static GNUNET_THREAD_LOCAL char buf[256];
   char *ret;
 
   ret = GNUNET_CRYPTO_eddsa_public_key_to_string (&pid->public_key);
@@ -1462,11 +1484,17 @@ GNUNET_a2s (const struct sockaddr *addr,
     if (addrlen != sizeof (struct sockaddr_in))
       return "<invalid v4 address>";
     v4 = (const struct sockaddr_in *) addr;
-    inet_ntop (AF_INET, &v4->sin_addr, buf, INET_ADDRSTRLEN);
+    inet_ntop (AF_INET,
+               &v4->sin_addr,
+               buf,
+               INET_ADDRSTRLEN);
     if (0 == ntohs (v4->sin_port))
       return buf;
     strcat (buf, ":");
-    GNUNET_snprintf (b2, sizeof (b2), "%u", ntohs (v4->sin_port));
+    GNUNET_snprintf (b2,
+                     sizeof (b2),
+                     "%u",
+                     ntohs (v4->sin_port));
     strcat (buf, b2);
     return buf;
   case AF_INET6:
@@ -1474,12 +1502,19 @@ GNUNET_a2s (const struct sockaddr *addr,
       return "<invalid v4 address>";
     v6 = (const struct sockaddr_in6 *) addr;
     buf[0] = '[';
-    inet_ntop (AF_INET6, &v6->sin6_addr, &buf[1], INET6_ADDRSTRLEN);
+    inet_ntop (AF_INET6,
+               &v6->sin6_addr,
+               &buf[1],
+               INET6_ADDRSTRLEN);
     if (0 == ntohs (v6->sin6_port))
       return &buf[1];
     strcat (buf, "]:");
-    GNUNET_snprintf (b2, sizeof (b2), "%u", ntohs (v6->sin6_port));
-    strcat (buf, b2);
+    GNUNET_snprintf (b2,
+                     sizeof (b2),
+                     "%u",
+                     ntohs (v6->sin6_port));
+    strcat (buf,
+            b2);
     return buf;
   case AF_UNIX:
     if (addrlen <= sizeof (sa_family_t))
@@ -1538,6 +1573,60 @@ GNUNET_log_config_invalid (enum GNUNET_ErrorType kind,
   GNUNET_log (kind,
 	      _("Configuration specifies invalid value for option `%s' in section `%s': %s\n"),
 	      option, section, required);
+}
+
+
+/**
+ * Set the async scope for the current thread.
+ *
+ * @param aid the async scope identifier
+ * @param old_scope[out] location to save the old scope
+ */
+void
+GNUNET_async_scope_enter (const struct GNUNET_AsyncScopeId *aid,
+                          struct GNUNET_AsyncScopeSave *old_scope)
+{
+  *old_scope = current_async_scope;
+  current_async_scope.have_scope = GNUNET_YES;
+  current_async_scope.scope_id = *aid;
+}
+
+
+/**
+ * Clear the current thread's async scope.
+ *
+ * @param old_scope scope to restore
+ */
+void
+GNUNET_async_scope_restore (struct GNUNET_AsyncScopeSave *old_scope)
+{
+  current_async_scope = *old_scope;
+}
+
+
+/**
+ * Generate a fresh async scope identifier.
+ *
+ * @param[out] aid_ret pointer to where the result is stored
+ */
+void
+GNUNET_async_scope_fresh (struct GNUNET_AsyncScopeId *aid_ret)
+{
+  GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_WEAK,
+                              aid_ret,
+                              sizeof (struct GNUNET_AsyncScopeId));
+}
+
+
+/**
+ * Get the current async scope.
+ *
+ * @param[out] scope_ret pointer to where the result is stored
+ */
+void
+GNUNET_async_scope_get (struct GNUNET_AsyncScopeSave *scope_ret)
+{
+  *scope_ret = current_async_scope;
 }
 
 

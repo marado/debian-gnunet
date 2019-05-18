@@ -25,6 +25,30 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
+File: gnunet.info,  Node: Dissemination,  Next: Revocation Message Design Requirements,  Up: REVOCATION Subsystem
+
+7.36.1 Dissemination
+--------------------
+
+When a revocation is performed, the revocation is first of all
+disseminated by flooding the overlay network.  The goal is to reach
+every peer, so that when a peer needs to check if a key has been
+revoked, this will be purely a local operation where the peer looks at
+its local revocation list.  Flooding the network is also the most robust
+form of key revocation — an adversary would have to control a separator
+of the overlay graph to restrict the propagation of the revocation
+message.  Flooding is also very easy to implement — peers that receive a
+revocation message for a key that they have never seen before simply
+pass the message to all of their neighbours.
+
+   Flooding can only distribute the revocation message to peers that are
+online.  In order to notify peers that join the network later, the
+revocation service performs efficient set reconciliation over the sets
+of known revocation messages whenever two peers (that both support
+REVOCATION dissemination) connect.  The SET service is used to perform
+this operation efficiently.
+
+
 File: gnunet.info,  Node: Revocation Message Design Requirements,  Next: libgnunetrevocation,  Prev: Dissemination,  Up: REVOCATION Subsystem
 
 7.36.2 Revocation Message Design Requirements
@@ -2508,7 +2532,7 @@ Concept Index
 * HOSTLIST server:                       The HOSTLIST daemon. (line  29)
 * HOSTLIST Subsystem:                    The NSE Peer-to-Peer Protocol.
                                                               (line  52)
-* How file-sharing achieves Anonymity:   Anonymity.           (line  30)
+* How file-sharing achieves Anonymity:   Anonymity.           (line  35)
 * ICP:                                   Updated behavior of GNUNET_log.
                                                               (line  75)
 * IDENTITY Subsystem:                    Usage.               (line  13)

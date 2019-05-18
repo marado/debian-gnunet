@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,16 +24,15 @@
  * @file
  * Identity attribute definitions
  *
- * @defgroup identity-provider  Identity Provider service
+ * @defgroup reclaim-attribute reclaim attributes
  * @{
  */
 #ifndef GNUNET_RECLAIM_ATTRIBUTE_LIB_H
 #define GNUNET_RECLAIM_ATTRIBUTE_LIB_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -52,17 +51,15 @@ extern "C"
 #define GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING 1
 
 
-
 /**
  * An attribute.
  */
 struct GNUNET_RECLAIM_ATTRIBUTE_Claim
 {
   /**
-   * The name of the attribute. Note "name" must never be individually
-   * free'd
+   * ID
    */
-  const char* name;
+  uint64_t id;
 
   /**
    * Type of Claim
@@ -73,6 +70,11 @@ struct GNUNET_RECLAIM_ATTRIBUTE_Claim
    * Version
    */
   uint32_t version;
+  /**
+   * The name of the attribute. Note "name" must never be individually
+   * free'd
+   */
+  const char *name;
 
   /**
    * Number of bytes in @e data.
@@ -85,9 +87,12 @@ struct GNUNET_RECLAIM_ATTRIBUTE_Claim
    * existing data area.
    */
   const void *data;
-
 };
 
+
+/**
+ * A list of GNUNET_RECLAIM_ATTRIBUTE_Claim structures.
+ */
 struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList
 {
   /**
@@ -100,6 +105,7 @@ struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList
    */
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *list_tail;
 };
+
 
 struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry
 {
@@ -119,6 +125,7 @@ struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry
   struct GNUNET_RECLAIM_ATTRIBUTE_Claim *claim;
 };
 
+
 /**
  * Create a new attribute claim.
  *
@@ -129,67 +136,83 @@ struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry
  * @return the new attribute
  */
 struct GNUNET_RECLAIM_ATTRIBUTE_Claim *
-GNUNET_RECLAIM_ATTRIBUTE_claim_new (const char* attr_name,
-                                     uint32_t type,
-                                     const void* data,
-                                     size_t data_size);
+GNUNET_RECLAIM_ATTRIBUTE_claim_new (const char *attr_name,
+                                    uint32_t type,
+                                    const void *data,
+                                    size_t data_size);
 
 
 /**
  * Get required size for serialization buffer
  *
  * @param attrs the attribute list to serialize
- *
  * @return the required buffer size
  */
 size_t
-GNUNET_RECLAIM_ATTRIBUTE_list_serialize_get_size (const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs);
+GNUNET_RECLAIM_ATTRIBUTE_list_serialize_get_size (
+  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs);
 
-void
-GNUNET_RECLAIM_ATTRIBUTE_list_destroy (struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs);
 
+/**
+ * Destroy claim list
+ *
+ * @param attrs list to destroy
+ */
 void
-GNUNET_RECLAIM_ATTRIBUTE_list_add (struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
-				    const char* attr_name,
-				    uint32_t type,
-				    const void* data,
-				    size_t data_size);
+GNUNET_RECLAIM_ATTRIBUTE_list_destroy (
+  struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs);
+
+
+/**
+ * Add a new attribute to a claim list
+ *
+ * @param attr_name the name of the new attribute claim
+ * @param type the type of the claim
+ * @param data claim payload
+ * @param data_size claim payload size
+ */
+void
+GNUNET_RECLAIM_ATTRIBUTE_list_add (
+  struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
+  const char *attr_name,
+  uint32_t type,
+  const void *data,
+  size_t data_size);
+
 
 /**
  * Serialize an attribute list
  *
  * @param attrs the attribute list to serialize
  * @param result the serialized attribute
- *
  * @return length of serialized data
  */
 size_t
-GNUNET_RECLAIM_ATTRIBUTE_list_serialize (const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
-                     char *result);
+GNUNET_RECLAIM_ATTRIBUTE_list_serialize (
+  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
+  char *result);
+
 
 /**
  * Deserialize an attribute list
  *
  * @param data the serialized attribute list
  * @param data_size the length of the serialized data
- *
  * @return a GNUNET_IDENTITY_PROVIDER_AttributeList, must be free'd by caller
  */
 struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *
-GNUNET_RECLAIM_ATTRIBUTE_list_deserialize (const char* data,
-                            size_t data_size);
+GNUNET_RECLAIM_ATTRIBUTE_list_deserialize (const char *data, size_t data_size);
 
 
 /**
  * Get required size for serialization buffer
  *
  * @param attr the attribute to serialize
- *
  * @return the required buffer size
  */
 size_t
-GNUNET_RECLAIM_ATTRIBUTE_serialize_get_size (const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr);
-
+GNUNET_RECLAIM_ATTRIBUTE_serialize_get_size (
+  const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr);
 
 
 /**
@@ -197,12 +220,13 @@ GNUNET_RECLAIM_ATTRIBUTE_serialize_get_size (const struct GNUNET_RECLAIM_ATTRIBU
  *
  * @param attr the attribute to serialize
  * @param result the serialized attribute
- *
  * @return length of serialized data
  */
 size_t
-GNUNET_RECLAIM_ATTRIBUTE_serialize (const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr,
-                     char *result);
+GNUNET_RECLAIM_ATTRIBUTE_serialize (
+  const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr,
+  char *result);
+
 
 /**
  * Deserialize an attribute
@@ -213,11 +237,18 @@ GNUNET_RECLAIM_ATTRIBUTE_serialize (const struct GNUNET_RECLAIM_ATTRIBUTE_Claim 
  * @return a GNUNET_IDENTITY_PROVIDER_Attribute, must be free'd by caller
  */
 struct GNUNET_RECLAIM_ATTRIBUTE_Claim *
-GNUNET_RECLAIM_ATTRIBUTE_deserialize (const char* data,
-                       size_t data_size);
+GNUNET_RECLAIM_ATTRIBUTE_deserialize (const char *data, size_t data_size);
 
-struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList*
-GNUNET_RECLAIM_ATTRIBUTE_list_dup (const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs);
+
+/**
+ * Make a (deep) copy of a claim list
+ * @param attrs claim list to copy
+ * @return copied claim list
+ */
+struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *
+GNUNET_RECLAIM_ATTRIBUTE_list_dup (
+  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs);
+
 
 /**
  * Convert a type name to the corresponding number
@@ -240,9 +271,10 @@ GNUNET_RECLAIM_ATTRIBUTE_typename_to_number (const char *typename);
  */
 int
 GNUNET_RECLAIM_ATTRIBUTE_string_to_value (uint32_t type,
-                                           const char *s,
-                                           void **data,
-                                           size_t *data_size);
+                                          const char *s,
+                                          void **data,
+                                          size_t *data_size);
+
 
 /**
  * Convert the 'claim' of an attribute to a string
@@ -254,8 +286,9 @@ GNUNET_RECLAIM_ATTRIBUTE_string_to_value (uint32_t type,
  */
 char *
 GNUNET_RECLAIM_ATTRIBUTE_value_to_string (uint32_t type,
-                                           const void* data,
-                                           size_t data_size);
+                                          const void *data,
+                                          size_t data_size);
+
 
 /**
  * Convert a type number to the corresponding type string
@@ -263,11 +296,11 @@ GNUNET_RECLAIM_ATTRIBUTE_value_to_string (uint32_t type,
  * @param type number of a type
  * @return corresponding typestring, NULL on error
  */
-const char*
+const char *
 GNUNET_RECLAIM_ATTRIBUTE_number_to_typename (uint32_t type);
 
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -278,6 +311,6 @@ GNUNET_RECLAIM_ATTRIBUTE_number_to_typename (uint32_t type);
 /* ifndef GNUNET_RECLAIM_ATTRIBUTE_LIB_H */
 #endif
 
-/** @} */ /* end of group identity */
+/** @} */ /* end of group reclaim-attribute */
 
 /* end of gnunet_reclaim_attribute_lib.h */

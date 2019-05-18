@@ -770,7 +770,7 @@ gnunet_core_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 @HAVE_TESTING_TRUE@TESTING_TESTS = \
-@HAVE_TESTING_TRUE@    test_core_api_send_to_self 
+@HAVE_TESTING_TRUE@    test_core_api_send_to_self
 
 @ENABLE_TEST_RUN_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)

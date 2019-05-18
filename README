@@ -69,7 +69,8 @@ These are the direct dependencies for running GNUnet:
   * libidn2 (prefered)
   or
   * libidn           >= 1.0
-- libmicrohttpd      >= 0.9.52
+- libmicrohttpd      >= 0.9.63      (strongly recommended for
+                                     a wide range of features)
 - makeinfo           >= 4.8
 - make[*3]
 - nss                               (certutil binary, for
@@ -113,9 +114,6 @@ These are the optional dependencies:
 - Bash                              (for Docker and Vagrant)
 - bluez                             (for bluetooth support)
 - grof                              (for linting of man pages)
-- guile              1.6.4          (or later up to 1.8?, for
-                                     gnunet-download-manager (see #5682))
-
 - libextractor       >= 0.6.1       (highly recommended[*5])
 - libjansson
 - libglpk            >= 4.45        (for experimental code)

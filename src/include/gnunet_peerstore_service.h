@@ -36,12 +36,37 @@
 #include "gnunet_util_lib.h"
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
+
+
+/**
+ * Key used for storing addresses in URL format in the peerstore
+ */
+#define GNUNET_PEERSTORE_TRANSPORT_URLADDRESS_KEY "transport-communicator-url"
+
+/**
+ * Key used for storing HELLOs in the peerstore
+ */
+#define GNUNET_PEERSTORE_TRANSPORT_HELLO_KEY "transport-peer-hello"
+
+/**
+ * Key used to store sender's monotonic time from backchannel
+ * messages.
+ */
+#define GNUNET_PEERSTORE_TRANSPORT_BACKCHANNEL_MONOTIME \
+  "transport-backchannel-monotonic-time"
+
+/**
+ * Key used to store sender's monotonic time from DV learn
+ * messages.
+ */
+#define GNUNET_PEERSTORE_TRANSPORT_DVLEARN_MONOTIME \
+  "transport-dv-learn-monotonic-time"
+
 
 /**
  * Options for storing values in PEERSTORE
@@ -122,9 +147,7 @@ struct GNUNET_PEERSTORE_Record
  * @param cls closure
  * @param success #GNUNET_OK or #GNUNET_SYSERR
  */
-typedef void
-(*GNUNET_PEERSTORE_Continuation)(void *cls,
-                                 int success);
+typedef void (*GNUNET_PEERSTORE_Continuation) (void *cls, int success);
 
 
 /**
@@ -134,10 +157,10 @@ typedef void
  * @param record peerstore record information
  * @param emsg error message, or NULL if no errors
  */
-typedef void
-(*GNUNET_PEERSTORE_Processor) (void *cls,
-                               const struct GNUNET_PEERSTORE_Record *record,
-                               const char *emsg);
+typedef void (*GNUNET_PEERSTORE_Processor) (
+  void *cls,
+  const struct GNUNET_PEERSTORE_Record *record,
+  const char *emsg);
 
 
 /**
@@ -158,8 +181,7 @@ GNUNET_PEERSTORE_connect (const struct GNUNET_CONFIGURATION_Handle *cfg);
  * @param sync_first send any pending STORE requests before disconnecting
  */
 void
-GNUNET_PEERSTORE_disconnect (struct GNUNET_PEERSTORE_Handle *h,
-                             int sync_first);
+GNUNET_PEERSTORE_disconnect (struct GNUNET_PEERSTORE_Handle *h, int sync_first);
 
 
 /**
@@ -259,7 +281,7 @@ void
 GNUNET_PEERSTORE_watch_cancel (struct GNUNET_PEERSTORE_WatchContext *wc);
 
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -268,4 +290,4 @@ GNUNET_PEERSTORE_watch_cancel (struct GNUNET_PEERSTORE_WatchContext *wc);
 
 #endif
 
-/** @} */  /* end of group */
+/** @} */ /* end of group */

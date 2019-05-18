@@ -148,16 +148,26 @@ am__uninstall_files_from_dir = { \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+libgnunet_plugin_rest_config_la_DEPENDENCIES = libgnunetrest.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_config_la_OBJECTS = plugin_rest_config.lo
+libgnunet_plugin_rest_config_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_config_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libgnunet_plugin_rest_config_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_config_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunet_plugin_rest_copying_la_DEPENDENCIES = libgnunetrest.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunet_plugin_rest_copying_la_OBJECTS = plugin_rest_copying.lo
 libgnunet_plugin_rest_copying_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_copying_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 libgnunet_plugin_rest_copying_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) \
@@ -192,6 +202,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/gnunet-rest-server.Po \
+	./$(DEPDIR)/plugin_rest_config.Plo \
 	./$(DEPDIR)/plugin_rest_copying.Plo ./$(DEPDIR)/rest.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -212,9 +223,11 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgnunet_plugin_rest_copying_la_SOURCES) \
+SOURCES = $(libgnunet_plugin_rest_config_la_SOURCES) \
+	$(libgnunet_plugin_rest_copying_la_SOURCES) \
 	$(libgnunetrest_la_SOURCES) $(gnunet_rest_server_SOURCES)
-DIST_SOURCES = $(libgnunet_plugin_rest_copying_la_SOURCES) \
+DIST_SOURCES = $(libgnunet_plugin_rest_config_la_SOURCES) \
+	$(libgnunet_plugin_rest_copying_la_SOURCES) \
 	$(libgnunetrest_la_SOURCES) $(gnunet_rest_server_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -477,7 +490,10 @@ pkgcfg_DATA = \
 lib_LTLIBRARIES = \
   libgnunetrest.la 
 
-plugin_LTLIBRARIES = libgnunet_plugin_rest_copying.la 
+plugin_LTLIBRARIES = \
+  libgnunet_plugin_rest_copying.la \
+  libgnunet_plugin_rest_config.la
+
 EXTRA_DIST = \
  rest.conf
 
@@ -490,6 +506,17 @@ libgnunet_plugin_rest_copying_la_LIBADD = \
   $(LTLIBINTL) -lmicrohttpd
 
 libgnunet_plugin_rest_copying_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
+
+libgnunet_plugin_rest_config_la_SOURCES = \
+  plugin_rest_config.c
+
+libgnunet_plugin_rest_config_la_LIBADD = \
+  libgnunetrest.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -lmicrohttpd -ljansson
+
+libgnunet_plugin_rest_config_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 gnunet_rest_server_SOURCES = \
@@ -663,6 +690,9 @@ clean-pluginLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
+libgnunet_plugin_rest_config.la: $(libgnunet_plugin_rest_config_la_OBJECTS) $(libgnunet_plugin_rest_config_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_config_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_config_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_rest_config_la_OBJECTS) $(libgnunet_plugin_rest_config_la_LIBADD) $(LIBS)
+
 libgnunet_plugin_rest_copying.la: $(libgnunet_plugin_rest_copying_la_OBJECTS) $(libgnunet_plugin_rest_copying_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_copying_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_rest_copying_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_rest_copying_la_OBJECTS) $(libgnunet_plugin_rest_copying_la_LIBADD) $(LIBS)
 
@@ -680,6 +710,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-rest-server.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_config.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_copying.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rest.Plo@am__quote@ # am--include-marker
 
@@ -866,6 +897,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/gnunet-rest-server.Po
+	-rm -f ./$(DEPDIR)/plugin_rest_config.Plo
 	-rm -f ./$(DEPDIR)/plugin_rest_copying.Plo
 	-rm -f ./$(DEPDIR)/rest.Plo
 	-rm -f Makefile
@@ -914,6 +946,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/gnunet-rest-server.Po
+	-rm -f ./$(DEPDIR)/plugin_rest_config.Plo
 	-rm -f ./$(DEPDIR)/plugin_rest_copying.Plo
 	-rm -f ./$(DEPDIR)/rest.Plo
 	-rm -f Makefile

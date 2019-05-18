@@ -11,7 +11,7 @@
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Affero General Public License for more details.
-  
+
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -597,7 +597,7 @@ schedule_httpd ()
       GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
                                    tv, wrs, wws,
                                    &do_httpd, NULL);
-    
+
   }
   if (NULL != wrs)
     GNUNET_NETWORK_fdset_destroy (wrs);
@@ -822,6 +822,17 @@ run (void *cls,
   cfg = c;
   plugin_map = GNUNET_CONTAINER_multihashmap_create (10, GNUNET_NO);
 
+  /* Get port to bind to */
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_number (cfg, "rest",
+                                                          "HTTP_PORT",
+                                                          &port))
+  {
+    //No address specified
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Using default port...\n");
+    port = GNUNET_REST_SERVICE_PORT;
+  }
+
   /* Get address to bind to */
   if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (cfg, "rest",
                                                           "BIND_TO",
@@ -830,7 +841,6 @@ run (void *cls,
     //No address specified
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Don't know what to bind to...\n");
-    GNUNET_free (addr_str);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -852,7 +862,6 @@ run (void *cls,
     //No address specified
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Don't know what to bind6 to...\n");
-    GNUNET_free (addr_str);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -980,11 +989,6 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_option_ulong ('p',
-                                "port",
-                                "PORT",
-                                gettext_noop ("listen on specified port (default: 7776)"),
-                                &port),
     GNUNET_GETOPT_OPTION_END
   };
   static const char* err_page =

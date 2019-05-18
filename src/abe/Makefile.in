@@ -146,6 +146,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunetabe_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunetabe_la_OBJECTS = abe.lo
 libgnunetabe_la_OBJECTS = $(am_libgnunetabe_la_OBJECTS)
@@ -636,6 +637,8 @@ libgnunetabe_la_LIBADD = \
   $(LTLIBICONV) \
   $(LTLIBINTL) \
 	$(ABE_LIBADD) \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	-lgmp \
 	-lgabe \
 	-lpbc \
 	-lglib-2.0 \

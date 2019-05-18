@@ -92,12 +92,12 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 noinst_PROGRAMS = gnunet-transport-profiler$(EXEEXT) \
-	gnunet-communicator-unix$(EXEEXT) \
 	gnunet-communicator-tcp$(EXEEXT) \
 	gnunet-communicator-udp$(EXEEXT) gnunet-service-tng$(EXEEXT) \
 	$(am__EXEEXT_36) $(am__EXEEXT_37)
 libexec_PROGRAMS = $(am__EXEEXT_33) $(am__EXEEXT_34) $(am__EXEEXT_35) \
-	gnunet-service-transport$(EXEEXT)
+	gnunet-service-transport$(EXEEXT) \
+	gnunet-communicator-unix$(EXEEXT)
 bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 	gnunet-transport-certificate-creation$(EXEEXT)
 @HAVE_TESTING_TRUE@check_PROGRAMS =  \
@@ -202,7 +202,8 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_9) $(am__EXEEXT_13) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_16) $(am__EXEEXT_19) \
-@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) $(am__EXEEXT_38)
+@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) test_communicator_unix \
+@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_38)
 @ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__append_2 = \
 @ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@test_transport_api_slow_ats
 
@@ -515,16 +516,6 @@ libgnunettransport_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunettransport_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-libgnunettransportaddress_la_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunettransportaddress_la_OBJECTS = transport_api2_address.lo
-libgnunettransportaddress_la_OBJECTS =  \
-	$(am_libgnunettransportaddress_la_OBJECTS)
-libgnunettransportaddress_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunettransportaddress_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
 libgnunettransportapplication_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -584,6 +575,18 @@ libgnunettransporttesting_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 @HAVE_TESTING_TRUE@am_libgnunettransporttesting_la_rpath = -rpath \
 @HAVE_TESTING_TRUE@	$(libdir)
+libgnunettransporttesting2_la_DEPENDENCIES = libgnunettransport.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/util/libgnunetutil.la
+am_libgnunettransporttesting2_la_OBJECTS = transport-testing2.lo
+libgnunettransporttesting2_la_OBJECTS =  \
+	$(am_libgnunettransporttesting2_la_OBJECTS)
+libgnunettransporttesting2_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunettransporttesting2_la_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_TESTING_TRUE@am_libgnunettransporttesting2_la_rpath = -rpath \
+@HAVE_TESTING_TRUE@	$(libdir)
 am_gnunet_communicator_tcp_OBJECTS =  \
 	gnunet-communicator-tcp.$(OBJEXT)
 gnunet_communicator_tcp_OBJECTS =  \
@@ -600,6 +603,7 @@ am_gnunet_communicator_udp_OBJECTS =  \
 gnunet_communicator_udp_OBJECTS =  \
 	$(am_gnunet_communicator_udp_OBJECTS)
 gnunet_communicator_udp_DEPENDENCIES =  \
+	libgnunettransportapplication.la \
 	libgnunettransportcommunicator.la \
 	$(top_builddir)/src/nat/libgnunetnatnew.la \
 	$(top_builddir)/src/nt/libgnunetnt.la \
@@ -642,7 +646,7 @@ gnunet_service_tng_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_gnunet_service_transport_OBJECTS =  \
 	gnunet_service_transport-gnunet-service-transport.$(OBJEXT) \
 	gnunet_service_transport-gnunet-service-transport_ats.$(OBJEXT) \
@@ -1428,7 +1432,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-communicator-tcp.Po \
 	./$(DEPDIR)/transport-testing-main.Plo \
 	./$(DEPDIR)/transport-testing-send.Plo \
 	./$(DEPDIR)/transport-testing.Plo \
-	./$(DEPDIR)/transport_api2_address.Plo \
+	./$(DEPDIR)/transport-testing2.Plo \
 	./$(DEPDIR)/transport_api2_application.Plo \
 	./$(DEPDIR)/transport_api2_communication.Plo \
 	./$(DEPDIR)/transport_api2_core.Plo \
@@ -1471,12 +1475,12 @@ SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(libgnunet_plugin_transport_unix_la_SOURCES) \
 	$(libgnunet_plugin_transport_wlan_la_SOURCES) \
 	$(libgnunettransport_la_SOURCES) \
-	$(libgnunettransportaddress_la_SOURCES) \
 	$(libgnunettransportapplication_la_SOURCES) \
 	$(libgnunettransportcommunicator_la_SOURCES) \
 	$(libgnunettransportcore_la_SOURCES) \
 	$(libgnunettransportmonitor_la_SOURCES) \
 	$(libgnunettransporttesting_la_SOURCES) \
+	$(libgnunettransporttesting2_la_SOURCES) \
 	$(gnunet_communicator_tcp_SOURCES) \
 	$(gnunet_communicator_udp_SOURCES) \
 	$(gnunet_communicator_unix_SOURCES) \
@@ -1572,12 +1576,12 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(libgnunet_plugin_transport_unix_la_SOURCES) \
 	$(libgnunet_plugin_transport_wlan_la_SOURCES) \
 	$(libgnunettransport_la_SOURCES) \
-	$(libgnunettransportaddress_la_SOURCES) \
 	$(libgnunettransportapplication_la_SOURCES) \
 	$(libgnunettransportcommunicator_la_SOURCES) \
 	$(libgnunettransportcore_la_SOURCES) \
 	$(libgnunettransportmonitor_la_SOURCES) \
 	$(libgnunettransporttesting_la_SOURCES) \
+	$(libgnunettransporttesting2_la_SOURCES) \
 	$(gnunet_communicator_tcp_SOURCES) \
 	$(gnunet_communicator_udp_SOURCES) \
 	$(gnunet_communicator_unix_SOURCES) \
@@ -2187,10 +2191,11 @@ pkgcfg_DATA = \
 @MINGW_FALSE@     test_quota_compliance_unix_asymmetric
 
 @LINUX_TRUE@@MINGW_FALSE@UNIX_API_ABSTRACT_TEST = test_transport_api_unix_abstract
-@HAVE_TESTING_TRUE@TESTING_LIBS = libgnunettransporttesting.la
+@HAVE_TESTING_TRUE@TESTING_LIBS = libgnunettransporttesting.la \
+@HAVE_TESTING_TRUE@							 libgnunettransporttesting2.la
+
 lib_LTLIBRARIES = \
   libgnunettransport.la \
-  libgnunettransportaddress.la \
   libgnunettransportapplication.la \
   libgnunettransportcore.la \
   libgnunettransportcommunicator.la \
@@ -2213,6 +2218,17 @@ libgnunettransporttesting_la_LIBADD = \
   $(GN_LIBINTL)
 
 libgnunettransporttesting_la_LDFLAGS = \
+ $(GN_LIB_LDFLAGS)
+
+libgnunettransporttesting2_la_SOURCES = \
+  transport-testing2.c transport-testing2.h
+
+libgnunettransporttesting2_la_LIBADD = \
+  libgnunettransport.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/util/libgnunetutil.la
+
+libgnunettransporttesting2_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS)
 
 libgnunettransport_la_SOURCES = \
@@ -2244,17 +2260,6 @@ libgnunettransportapplication_la_LIBADD = \
  $(LTLIBINTL)
 
 libgnunettransportapplication_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
-  -version-info 0:0:0
-
-libgnunettransportaddress_la_SOURCES = \
-  transport_api2_address.c
-
-libgnunettransportaddress_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL)
-
-libgnunettransportaddress_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 0:0:0
 
@@ -2323,6 +2328,7 @@ gnunet_communicator_udp_SOURCES = \
  gnunet-communicator-udp.c
 
 gnunet_communicator_udp_LDADD = \
+  libgnunettransportapplication.la \
   libgnunettransportcommunicator.la \
   $(top_builddir)/src/nat/libgnunetnatnew.la \
   $(top_builddir)/src/nt/libgnunetnt.la \
@@ -2415,6 +2421,7 @@ gnunet_service_tng_LDADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
+  $(LIBGCRYPT_LIBS) \
   $(GN_LIBINTL)
 
 plugin_LTLIBRARIES = \
@@ -2709,6 +2716,13 @@ test_plugin_udp_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la  \
  libgnunettransporttesting.la
+
+test_communicator_unix_SOURCES = \
+ test_communicator_unix.c
+
+test_communicator_unix_LDADD = \
+ libgnunettransporttesting2.la \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_plugin_unix_SOURCES = \
  test_plugin_transport.c
@@ -3721,9 +3735,6 @@ libgnunet_plugin_transport_wlan.la: $(libgnunet_plugin_transport_wlan_la_OBJECTS
 libgnunettransport.la: $(libgnunettransport_la_OBJECTS) $(libgnunettransport_la_DEPENDENCIES) $(EXTRA_libgnunettransport_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettransport_la_LINK) -rpath $(libdir) $(libgnunettransport_la_OBJECTS) $(libgnunettransport_la_LIBADD) $(LIBS)
 
-libgnunettransportaddress.la: $(libgnunettransportaddress_la_OBJECTS) $(libgnunettransportaddress_la_DEPENDENCIES) $(EXTRA_libgnunettransportaddress_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunettransportaddress_la_LINK) -rpath $(libdir) $(libgnunettransportaddress_la_OBJECTS) $(libgnunettransportaddress_la_LIBADD) $(LIBS)
-
 libgnunettransportapplication.la: $(libgnunettransportapplication_la_OBJECTS) $(libgnunettransportapplication_la_DEPENDENCIES) $(EXTRA_libgnunettransportapplication_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettransportapplication_la_LINK) -rpath $(libdir) $(libgnunettransportapplication_la_OBJECTS) $(libgnunettransportapplication_la_LIBADD) $(LIBS)
 
@@ -3738,6 +3749,9 @@ libgnunettransportmonitor.la: $(libgnunettransportmonitor_la_OBJECTS) $(libgnune
 
 libgnunettransporttesting.la: $(libgnunettransporttesting_la_OBJECTS) $(libgnunettransporttesting_la_DEPENDENCIES) $(EXTRA_libgnunettransporttesting_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunettransporttesting_la_LINK) $(am_libgnunettransporttesting_la_rpath) $(libgnunettransporttesting_la_OBJECTS) $(libgnunettransporttesting_la_LIBADD) $(LIBS)
+
+libgnunettransporttesting2.la: $(libgnunettransporttesting2_la_OBJECTS) $(libgnunettransporttesting2_la_DEPENDENCIES) $(EXTRA_libgnunettransporttesting2_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunettransporttesting2_la_LINK) $(am_libgnunettransporttesting2_la_rpath) $(libgnunettransporttesting2_la_OBJECTS) $(libgnunettransporttesting2_la_LIBADD) $(LIBS)
 
 gnunet-communicator-tcp$(EXEEXT): $(gnunet_communicator_tcp_OBJECTS) $(gnunet_communicator_tcp_DEPENDENCIES) $(EXTRA_gnunet_communicator_tcp_DEPENDENCIES) 
 	@rm -f gnunet-communicator-tcp$(EXEEXT)
@@ -4151,7 +4165,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport-testing-main.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport-testing-send.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport-testing.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_address.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport-testing2.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_application.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_communication.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/transport_api2_core.Plo@am__quote@ # am--include-marker
@@ -5021,6 +5035,13 @@ test_transport_api_timeout_bluetooth.log: test_transport_api_timeout_bluetooth$(
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_communicator_unix.log: test_communicator_unix
+	@p='test_communicator_unix'; \
+	b='test_communicator_unix'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_transport_api_slow_ats.log: test_transport_api_slow_ats$(EXEEXT)
 	@p='test_transport_api_slow_ats$(EXEEXT)'; \
 	b='test_transport_api_slow_ats'; \
@@ -5187,7 +5208,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/transport-testing-main.Plo
 	-rm -f ./$(DEPDIR)/transport-testing-send.Plo
 	-rm -f ./$(DEPDIR)/transport-testing.Plo
-	-rm -f ./$(DEPDIR)/transport_api2_address.Plo
+	-rm -f ./$(DEPDIR)/transport-testing2.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_application.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_communication.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_core.Plo
@@ -5305,7 +5326,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/transport-testing-main.Plo
 	-rm -f ./$(DEPDIR)/transport-testing-send.Plo
 	-rm -f ./$(DEPDIR)/transport-testing.Plo
-	-rm -f ./$(DEPDIR)/transport_api2_address.Plo
+	-rm -f ./$(DEPDIR)/transport-testing2.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_application.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_communication.Plo
 	-rm -f ./$(DEPDIR)/transport_api2_core.Plo

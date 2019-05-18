@@ -34,6 +34,7 @@
 
 #include "gnunet_constants.h"
 #include "gnunet_util_lib.h"
+#include "gnunet_nt_lib.h"
 
 /**
  * Handle to the TRANSPORT subsystem for making suggestions about
@@ -49,7 +50,8 @@ struct GNUNET_TRANSPORT_ApplicationHandle;
  * @return ats application handle, NULL on error
  */
 struct GNUNET_TRANSPORT_ApplicationHandle *
-GNUNET_TRANSPORT_application_init (const struct GNUNET_CONFIGURATION_Handle *cfg);
+GNUNET_TRANSPORT_application_init (
+  const struct GNUNET_CONFIGURATION_Handle *cfg);
 
 
 /**
@@ -58,43 +60,61 @@ GNUNET_TRANSPORT_application_init (const struct GNUNET_CONFIGURATION_Handle *cfg
  * @param ch handle to destroy
  */
 void
-GNUNET_TRANSPORT_application_done (struct GNUNET_TRANSPORT_ApplicationHandle *ch);
+GNUNET_TRANSPORT_application_done (
+  struct GNUNET_TRANSPORT_ApplicationHandle *ch);
 
 
 /**
- * Handle for suggestion requests.
- */
-struct GNUNET_TRANSPORT_ApplicationSuggestHandle;
-
-
-/**
- * An application would like to communicate with a peer.  TRANSPORT should
- * allocate bandwith using a suitable address for requiremetns @a pk
- * to transport.
+ * An application would like TRANSPORT to connect to a peer.
  *
  * @param ch handle
  * @param peer identity of the peer we need an address for
  * @param pk what kind of application will the application require (can be
- *         #GNUNET_MQ_PREFERENCE_NONE, we will still try to connect)
+ *         #GNUNET_MQ_PRIO_BACKGROUND, we will still try to connect)
  * @param bw desired bandwith, can be zero (we will still try to connect)
- * @return suggestion handle, NULL if request is already pending
+ * @return suggest handle, NULL if a request is already pending
  */
 struct GNUNET_TRANSPORT_ApplicationSuggestHandle *
-GNUNET_TRANSPORT_application_suggest (struct GNUNET_TRANSPORT_ApplicationHandle *ch,
-                                      const struct GNUNET_PeerIdentity *peer,
-                                      enum GNUNET_MQ_PreferenceKind pk,
-                                      struct GNUNET_BANDWIDTH_Value32NBO bw);
+GNUNET_TRANSPORT_application_suggest (
+  struct GNUNET_TRANSPORT_ApplicationHandle *ch,
+  const struct GNUNET_PeerIdentity *peer,
+  enum GNUNET_MQ_PriorityPreferences pk,
+  struct GNUNET_BANDWIDTH_Value32NBO bw);
 
 
 /**
- * We no longer care about communicating with a peer.
+ * We no longer care about being connected to a peer.
  *
- * @param sh handle
+ * @param sh handle to stop
  */
 void
-GNUNET_TRANSPORT_application_suggest_cancel (struct GNUNET_TRANSPORT_ApplicationSuggestHandle *sh);
+GNUNET_TRANSPORT_application_suggest_cancel (
+  struct GNUNET_TRANSPORT_ApplicationSuggestHandle *sh);
 
-/** @} */  /* end of group */
+
+/**
+ * An application (or a communicator) has received a HELLO (or other address
+ * data of another peer) and wants TRANSPORT to validate that the address is
+ * correct.  The result is NOT returned, in fact TRANSPORT may do nothing
+ * (i.e. if it has too many active validations or recently tried this one
+ * already).  If the @a addr validates, TRANSPORT will persist the address
+ * with PEERSTORE.
+ *
+ * @param ch handle
+ * @param peer identity of the peer we have an address for
+ * @param nt network type of @a addr (as claimed by the other peer);
+ *        used by TRANSPORT to avoid trying @a addr's that really cannot work
+ *        due to network type missmatches
+ * @param addr address to validate
+ */
+void
+GNUNET_TRANSPORT_application_validate (
+  struct GNUNET_TRANSPORT_ApplicationHandle *ch,
+  const struct GNUNET_PeerIdentity *peer,
+  enum GNUNET_NetworkType nt,
+  const char *addr);
+
+/** @} */ /* end of group */
 
 #endif
 /* end of file gnunet_ats_application_service.h */
