@@ -120,7 +120,8 @@ CONFIG_HEADER = $(top_builddir)/gnunet_config.h
 CONFIG_CLEAN_FILES = identity.conf
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
-	"$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgcfgdir)"
+	"$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" \
+	"$(DESTDIR)$(pkgcfgdir)"
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -149,7 +150,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-LTLIBRARIES = $(lib_LTLIBRARIES)
+LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_rest_identity_la_DEPENDENCIES = libgnunetidentity.la \
 	$(top_builddir)/src/rest/libgnunetrest.la \
@@ -168,7 +169,7 @@ libgnunet_plugin_rest_identity_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_identity_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_identity_la_rpath =  \
-@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(libdir)
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
 libgnunetidentity_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -684,14 +685,13 @@ plugindir = $(libdir)/gnunet
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
-@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = libgnunet_plugin_rest_identity.la
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@plugin_LTLIBRARIES = libgnunet_plugin_rest_identity.la
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   identity.conf
 
 lib_LTLIBRARIES = \
-  libgnunetidentity.la \
-  $(REST_PLUGIN)
+  libgnunetidentity.la
 
 libgnunet_plugin_rest_identity_la_SOURCES = \
   plugin_rest_identity.c
@@ -926,6 +926,41 @@ uninstall-libLTLIBRARIES:
 clean-libLTLIBRARIES:
 	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
 	@list='$(lib_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
+install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(plugindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(plugindir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(plugindir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(plugindir)"; \
+	}
+
+uninstall-pluginLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(plugindir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(plugindir)/$$f"; \
+	done
+
+clean-pluginLTLIBRARIES:
+	-test -z "$(plugin_LTLIBRARIES)" || rm -f $(plugin_LTLIBRARIES)
+	@list='$(plugin_LTLIBRARIES)'; \
 	locs=`for p in $$list; do echo $$p; done | \
 	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
 	      sort -u`; \
@@ -1287,7 +1322,7 @@ all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(DATA)
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgcfgdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(pkgcfgdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1327,7 +1362,7 @@ clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool \
-	mostlyclean-am
+	clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/gnunet-identity.Po
@@ -1353,7 +1388,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pkgcfgDATA
+install-data-am: install-pkgcfgDATA install-pluginLTLIBRARIES
 
 install-dvi: install-dvi-am
 
@@ -1407,28 +1442,30 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA
+	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
+	uninstall-pluginLTLIBRARIES
 
 .MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
 	check-am clean clean-binPROGRAMS clean-checkPROGRAMS \
 	clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
-	clean-libtool cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libLTLIBRARIES install-libexecPROGRAMS \
-	install-man install-pdf install-pdf-am install-pkgcfgDATA \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	recheck tags tags-am uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA
+	clean-libtool clean-pluginLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-binPROGRAMS \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
+	install-pkgcfgDATA install-pluginLTLIBRARIES install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
+	uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
+	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
 .PRECIOUS: Makefile
 

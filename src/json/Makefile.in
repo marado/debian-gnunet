@@ -89,7 +89,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-check_PROGRAMS = test_json$(EXEEXT)
+check_PROGRAMS = test_json$(EXEEXT) test_json_mhd$(EXEEXT)
 subdir = src/json
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -147,7 +147,7 @@ am__DEPENDENCIES_1 =
 libgnunetjson_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunetjson_la_OBJECTS = json.lo json_mhd.lo json_generator.lo \
 	json_helper.lo json_gnsrecord.lo
 libgnunetjson_la_OBJECTS = $(am_libgnunetjson_la_OBJECTS)
@@ -163,6 +163,11 @@ am_test_json_OBJECTS = test_json.$(OBJEXT)
 test_json_OBJECTS = $(am_test_json_OBJECTS)
 test_json_DEPENDENCIES = libgnunetjson.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+am_test_json_mhd_OBJECTS = test_json_mhd-test_json_mhd.$(OBJEXT)
+test_json_mhd_OBJECTS = $(am_test_json_mhd_OBJECTS)
+test_json_mhd_DEPENDENCIES = libgnunetjson.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -181,7 +186,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/json.Plo \
 	./$(DEPDIR)/json_generator.Plo ./$(DEPDIR)/json_gnsrecord.Plo \
 	./$(DEPDIR)/json_helper.Plo ./$(DEPDIR)/json_mhd.Plo \
-	./$(DEPDIR)/test_json.Po
+	./$(DEPDIR)/test_json.Po \
+	./$(DEPDIR)/test_json_mhd-test_json_mhd.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -201,8 +207,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgnunetjson_la_SOURCES) $(test_json_SOURCES)
-DIST_SOURCES = $(libgnunetjson_la_SOURCES) $(test_json_SOURCES)
+SOURCES = $(libgnunetjson_la_SOURCES) $(test_json_SOURCES) \
+	$(test_json_mhd_SOURCES)
+DIST_SOURCES = $(libgnunetjson_la_SOURCES) $(test_json_SOURCES) \
+	$(test_json_mhd_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -650,7 +658,9 @@ libgnunetjson_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   -ljansson \
-  $(XLIB)
+  -lmicrohttpd \
+  $(XLIB) \
+  $(Z_LIBS)
 
 TESTS = \
   $(check_PROGRAMS)
@@ -662,6 +672,24 @@ test_json_LDADD = \
   libgnunetjson.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   -ljansson
+
+@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@LIB_GNURL = @LIBCURL@
+@HAVE_LIBGNURL_TRUE@LIB_GNURL = @LIBGNURL@
+@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@CPP_GNURL = @LIBCURL_CPPFLAGS@
+@HAVE_LIBGNURL_TRUE@CPP_GNURL = @LIBGNURL_CPPFLAGS@
+test_json_mhd_SOURCES = \
+  test_json_mhd.c
+
+test_json_mhd_LDADD = \
+  libgnunetjson.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -ljansson \
+  -lmicrohttpd \
+  $(Z_LIBS) \
+  $(LIB_GNURL)
+
+test_json_mhd_CPPFLAGS = \
+ $(CPP_GNURL) $(AM_CPPFLAGS)
 
 all: all-am
 
@@ -748,6 +776,10 @@ test_json$(EXEEXT): $(test_json_OBJECTS) $(test_json_DEPENDENCIES) $(EXTRA_test_
 	@rm -f test_json$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_json_OBJECTS) $(test_json_LDADD) $(LIBS)
 
+test_json_mhd$(EXEEXT): $(test_json_mhd_OBJECTS) $(test_json_mhd_DEPENDENCIES) $(EXTRA_test_json_mhd_DEPENDENCIES) 
+	@rm -f test_json_mhd$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_json_mhd_OBJECTS) $(test_json_mhd_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -760,6 +792,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json_helper.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json_mhd.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_json.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_json_mhd-test_json_mhd.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -787,6 +820,20 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+test_json_mhd-test_json_mhd.o: test_json_mhd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_json_mhd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_json_mhd-test_json_mhd.o -MD -MP -MF $(DEPDIR)/test_json_mhd-test_json_mhd.Tpo -c -o test_json_mhd-test_json_mhd.o `test -f 'test_json_mhd.c' || echo '$(srcdir)/'`test_json_mhd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_json_mhd-test_json_mhd.Tpo $(DEPDIR)/test_json_mhd-test_json_mhd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_json_mhd.c' object='test_json_mhd-test_json_mhd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_json_mhd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_json_mhd-test_json_mhd.o `test -f 'test_json_mhd.c' || echo '$(srcdir)/'`test_json_mhd.c
+
+test_json_mhd-test_json_mhd.obj: test_json_mhd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_json_mhd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_json_mhd-test_json_mhd.obj -MD -MP -MF $(DEPDIR)/test_json_mhd-test_json_mhd.Tpo -c -o test_json_mhd-test_json_mhd.obj `if test -f 'test_json_mhd.c'; then $(CYGPATH_W) 'test_json_mhd.c'; else $(CYGPATH_W) '$(srcdir)/test_json_mhd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_json_mhd-test_json_mhd.Tpo $(DEPDIR)/test_json_mhd-test_json_mhd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_json_mhd.c' object='test_json_mhd-test_json_mhd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_json_mhd_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_json_mhd-test_json_mhd.obj `if test -f 'test_json_mhd.c'; then $(CYGPATH_W) 'test_json_mhd.c'; else $(CYGPATH_W) '$(srcdir)/test_json_mhd.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -994,6 +1041,13 @@ test_json.log: test_json$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_json_mhd.log: test_json_mhd$(EXEEXT)
+	@p='test_json_mhd$(EXEEXT)'; \
+	b='test_json_mhd'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1096,6 +1150,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/json_helper.Plo
 	-rm -f ./$(DEPDIR)/json_mhd.Plo
 	-rm -f ./$(DEPDIR)/test_json.Po
+	-rm -f ./$(DEPDIR)/test_json_mhd-test_json_mhd.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1147,6 +1202,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/json_helper.Plo
 	-rm -f ./$(DEPDIR)/json_mhd.Plo
 	-rm -f ./$(DEPDIR)/test_json.Po
+	-rm -f ./$(DEPDIR)/test_json_mhd-test_json_mhd.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

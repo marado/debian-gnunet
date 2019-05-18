@@ -22,10 +22,13 @@ libgnunetjson_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   -ljansson \
-  $(XLIB)
+  -lmicrohttpd \
+  $(XLIB) \
+  $(Z_LIBS)
 
 check_PROGRAMS = \
-  test_json
+  test_json \
+  test_json_mhd
 
 TESTS = \
   $(check_PROGRAMS)
@@ -36,3 +39,27 @@ test_json_LDADD = \
   libgnunetjson.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   -ljansson
+
+
+if HAVE_LIBGNURL
+LIB_GNURL=@LIBGNURL@
+CPP_GNURL=@LIBGNURL_CPPFLAGS@
+else
+if HAVE_LIBCURL
+LIB_GNURL=@LIBCURL@
+CPP_GNURL=@LIBCURL_CPPFLAGS@
+endif
+endif
+
+
+test_json_mhd_SOURCES = \
+  test_json_mhd.c
+test_json_mhd_LDADD = \
+  libgnunetjson.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
+  -ljansson \
+  -lmicrohttpd \
+  $(Z_LIBS) \
+  $(LIB_GNURL)
+test_json_mhd_CPPFLAGS = \
+ $(CPP_GNURL) $(AM_CPPFLAGS)

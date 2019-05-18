@@ -51,25 +51,6 @@ extern "C"
 #endif
 #endif
 
-/**
- * @brief A 512-bit hashcode.  These are the default length for GNUnet, using SHA-512.
- */
-struct GNUNET_HashCode
-{
-  uint32_t bits[512 / 8 / sizeof (uint32_t)];   /* = 16 */
-};
-
-
-
-/**
- * @brief A 256-bit hashcode.  Used under special conditions, like when space
- * is critical and security is not impacted by it.
- */
-struct GNUNET_ShortHashCode
-{
-  uint32_t bits[256 / 8 / sizeof (uint32_t)];   /* = 8 */
-};
-
 
 /**
  * The identity of the host (wraps the signing key of the peer).
@@ -475,6 +456,18 @@ int32_t
 GNUNET_CRYPTO_crc32_n (const void *buf,
                        size_t len);
 
+/**
+ * @ingroup crypto
+ * Zero out @a buffer, securely against compiler optimizations.
+ * Used to delete key material.
+ *
+ * @param buffer the buffer to zap
+ * @param length buffer length
+ */
+void
+GNUNET_CRYPTO_zero_keys (void *buffer,
+                         size_t length);
+
 
 /**
  * @ingroup crypto
@@ -740,8 +733,8 @@ GNUNET_CRYPTO_hash_context_abort (struct GNUNET_HashContext *hc);
  */
 void
 GNUNET_CRYPTO_hmac_raw (const void *key, size_t key_len,
-			const void *plaintext, size_t plaintext_len,
-			struct GNUNET_HashCode *hmac);
+                        const void *plaintext, size_t plaintext_len,
+                        struct GNUNET_HashCode *hmac);
 
 
 /**
@@ -1885,7 +1878,7 @@ GNUNET_CRYPTO_rsa_private_key_free (struct GNUNET_CRYPTO_RsaPrivateKey *key);
  */
 size_t
 GNUNET_CRYPTO_rsa_private_key_encode (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
-				      char **buffer);
+                                      char **buffer);
 
 
 /**
@@ -1898,7 +1891,7 @@ GNUNET_CRYPTO_rsa_private_key_encode (const struct GNUNET_CRYPTO_RsaPrivateKey *
  */
 struct GNUNET_CRYPTO_RsaPrivateKey *
 GNUNET_CRYPTO_rsa_private_key_decode (const char *buf,
-				      size_t len);
+                                      size_t len);
 
 
 /**
@@ -1974,7 +1967,7 @@ GNUNET_CRYPTO_rsa_public_key_encode (const struct GNUNET_CRYPTO_RsaPublicKey *ke
  */
 struct GNUNET_CRYPTO_RsaPublicKey *
 GNUNET_CRYPTO_rsa_public_key_decode (const char *buf,
-				     size_t len);
+                                     size_t len);
 
 
 /**
@@ -1996,7 +1989,7 @@ GNUNET_CRYPTO_rsa_public_key_dup (const struct GNUNET_CRYPTO_RsaPublicKey *key);
  */
 int
 GNUNET_CRYPTO_rsa_signature_cmp (struct GNUNET_CRYPTO_RsaSignature *s1,
-				 struct GNUNET_CRYPTO_RsaSignature *s2);
+                                 struct GNUNET_CRYPTO_RsaSignature *s2);
 
 /**
  * Compare the values of two private keys.
@@ -2007,7 +2000,7 @@ GNUNET_CRYPTO_rsa_signature_cmp (struct GNUNET_CRYPTO_RsaSignature *s1,
  */
 int
 GNUNET_CRYPTO_rsa_private_key_cmp (struct GNUNET_CRYPTO_RsaPrivateKey *p1,
-				  struct GNUNET_CRYPTO_RsaPrivateKey *p2);
+                                   struct GNUNET_CRYPTO_RsaPrivateKey *p2);
 
 
 /**
@@ -2019,7 +2012,7 @@ GNUNET_CRYPTO_rsa_private_key_cmp (struct GNUNET_CRYPTO_RsaPrivateKey *p1,
  */
 int
 GNUNET_CRYPTO_rsa_public_key_cmp (struct GNUNET_CRYPTO_RsaPublicKey *p1,
-				  struct GNUNET_CRYPTO_RsaPublicKey *p2);
+                                  struct GNUNET_CRYPTO_RsaPublicKey *p2);
 
 
 /**
@@ -2084,7 +2077,7 @@ GNUNET_CRYPTO_rsa_signature_free (struct GNUNET_CRYPTO_RsaSignature *sig);
  */
 size_t
 GNUNET_CRYPTO_rsa_signature_encode (const struct GNUNET_CRYPTO_RsaSignature *sig,
-				    char **buffer);
+                                    char **buffer);
 
 
 /**
@@ -2097,7 +2090,7 @@ GNUNET_CRYPTO_rsa_signature_encode (const struct GNUNET_CRYPTO_RsaSignature *sig
  */
 struct GNUNET_CRYPTO_RsaSignature *
 GNUNET_CRYPTO_rsa_signature_decode (const char *buf,
-				    size_t len);
+                                    size_t len);
 
 
 /**

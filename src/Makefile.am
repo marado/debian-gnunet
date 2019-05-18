@@ -11,22 +11,19 @@ endif
 
 if HAVE_EXPERIMENTAL
  EXP_DIR = \
-  rps
+  rps \
+  credential
 if HAVE_ABE
-if HAVE_JSON
  EXP_DIR += \
-    abe \
-    credential \
-    reclaim-attribute \
-    reclaim
-endif
+  abe
 endif
 if HAVE_JSON
  EXP_DIR += \
-    auction
+  auction
 endif
 endif
 
+if HAVE_MHD
 if HAVE_JSON
   JSON_DIR = json
 if HAVE_LIBGNURL
@@ -34,6 +31,7 @@ if HAVE_LIBGNURL
 else
 if HAVE_LIBCURL
   JSON_DIR += curl
+endif
 endif
 endif
 endif
@@ -61,6 +59,7 @@ endif
 if HAVE_MHD
 if HAVE_JSON
  REST_DIR = rest
+ RECLAIM_DIR = reclaim-attribute reclaim
 endif
 endif
 
@@ -123,6 +122,7 @@ SUBDIRS = \
   exit \
   pt \
   secretsharing \
+  $(RECLAIM_DIR) \
   $(EXP_DIR) \
   integration-tests
 

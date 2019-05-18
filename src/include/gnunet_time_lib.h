@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -187,6 +187,16 @@ GNUNET_NETWORK_STRUCT_END
  */
 struct GNUNET_TIME_Relative
 GNUNET_TIME_randomized_backoff(struct GNUNET_TIME_Relative rt, struct GNUNET_TIME_Relative threshold);
+
+
+/**
+ * Return a random time value between 0.5*r and 1.5*r.
+ * 
+ * @param r input time for scaling
+ * @return randomized time
+ */ 
+struct GNUNET_TIME_Relative
+GNUNET_TIME_randomize(struct GNUNET_TIME_Relative r);
 
 
 /**
@@ -368,7 +378,7 @@ GNUNET_TIME_absolute_get_remaining (struct GNUNET_TIME_Absolute future);
  */
 struct GNUNET_TIME_Relative
 GNUNET_TIME_calculate_eta (struct GNUNET_TIME_Absolute start,
-			   uint64_t finished,
+                           uint64_t finished,
                            uint64_t total);
 
 
@@ -579,15 +589,15 @@ struct GNUNET_CONFIGURATION_Handle;
  * increasing.  Guards against systems without an RTC or
  * clocks running backwards and other nasty surprises. Does
  * not guarantee that the returned time is near the current
- * time returned by #GNUNET_TIME_absolute_get().  Two 
+ * time returned by #GNUNET_TIME_absolute_get().  Two
  * subsequent calls (within a short time period) may return the
  * same value. Persists the last returned time on disk to
  * ensure that time never goes backwards. As a result, the
- * resulting value can be used to check if a message is the 
+ * resulting value can be used to check if a message is the
  * "most recent" value and replays of older messages (from
  * the same origin) would be discarded.
- * 
- * @param cfg configuration, used to determine where to 
+ *
+ * @param cfg configuration, used to determine where to
  *   store the time; user can also insist RTC is working
  *   nicely and disable the feature
  * @return monotonically increasing time

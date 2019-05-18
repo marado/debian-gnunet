@@ -21,7 +21,7 @@
 #
 AC_PREREQ(2.61)
 # Checks for programs.
-AC_INIT([gnunet], [0.11.3], [bug-gnunet@gnu.org])
+AC_INIT([gnunet], [0.11.4], [bug-gnunet@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 
 # check for legacy option that is no longer supported (#5627) and fail hard
@@ -212,6 +212,10 @@ AC_UNALIGNED_64_ACCESS
 AC_SEARCH_LIBS([gethostbyname], [nsl ws2_32])
 AC_SEARCH_LIBS([memrchr], [],
                AC_DEFINE(HAVE_MEMRCHR,1,[memrchr supported]), [])
+AC_SEARCH_LIBS([memset_s], [],
+               AC_DEFINE(HAVE_MEMSET_S,1,[memset_s supported]), [])
+AC_SEARCH_LIBS([memset_s], [],
+               AC_DEFINE(HAVE_EXPLICIT_BZERO,1,[explicit_bzero supported]), [])
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(m, log)
 AC_CHECK_LIB(c, getloadavg, AC_DEFINE(HAVE_GETLOADAVG,1,[getloadavg supported]))
@@ -759,14 +763,6 @@ fi
 
 # libgnurl
 LIBGNURL_CHECK_CONFIG(,7.34.0,gnurl=1,gnurl=0)
-if test "$gnurl" = 1
-then
-	AM_CONDITIONAL(HAVE_LIBGNURL, true)
-	AC_DEFINE([HAVE_LIBGNURL],[1],[Have libgnurl])
-else
-	AM_CONDITIONAL(HAVE_LIBGNURL, false)
-	AC_DEFINE([HAVE_LIBGNURL],[0],[Lacking libgnurl])
-fi
 
 SAVE_CPPFLAGS=$CPPFLAGS
 CPPFLAGS="$LIBGNURL_CPPFLAGS $LIBCURL_CPPFLAGS $CPPFLAGS"
@@ -776,38 +772,30 @@ LIBS="$LIBGNURL $LIBCURL $LIBS"
 LIBCURL_CHECK_CONFIG(,7.34.0,[curl=true],[curl=false])
 if test "x$curl" = xtrue
 then
-
- AC_CHECK_HEADERS([curl/curl.h],
+ AC_CHECK_HEADER([curl/curl.h],
   AC_CHECK_DECLS(CURLINFO_TLS_SESSION,[curl=true],[curl=false],[[#include <curl/curl.h>]]),
   [curl=false])
- AC_CHECK_HEADERS([gnurl/curl.h],
-  AC_CHECK_DECLS(CURLINFO_TLS_SESSION,[curl=true],,[[#include <gnurl/curl.h>]]))
  # need libcurl-gnutls.so, everything else is not acceptable
  AC_CHECK_LIB([curl-gnutls],[curl_easy_getinfo],,[curl=false])
  # cURL must support CURLINFO_TLS_SESSION, version >= 7.34
 fi
 
-# Check for curl/curl.h and gnurl/curl.h so we can use #ifdef
-# HAVE_CURL_CURL_H later (the above LIBCURL_CHECK_CONFIG accepted
-# *either* header set).
-AC_CHECK_HEADERS([curl/curl.h],,
-  curl=false
-  AC_CHECK_HEADERS([gnurl/curl.h],,
-  gnurl=false))
-
-
-
-if test x$curl = xfalse
-then
-	AM_CONDITIONAL(HAVE_LIBCURL, false)
-if test "$gnurl" = 0
-then
-	AC_MSG_WARN([ERROR: GNUnet requires libcurl-gnutls or gnurl >= 7.34])
-fi
-else
-	AM_CONDITIONAL(HAVE_LIBCURL, true)
-	AC_DEFINE([HAVE_LIBCURL],[1],[Have CURL])
-fi
+# libcurl and libgnurl should be mutually exclusive
+AS_IF([test "$gnurl" = 1],
+      [AM_CONDITIONAL(HAVE_LIBGNURL, true)
+       AC_DEFINE([HAVE_LIBGNURL],[1],[Have libgnurl])
+       AM_CONDITIONAL(HAVE_LIBCURL, false)
+       AC_DEFINE([HAVE_LIBCURL],[0],[Lacking libcurl])],
+      [AS_IF([test "$curl" = true],
+             [AM_CONDITIONAL(HAVE_LIBGNURL, false)
+              AC_DEFINE([HAVE_LIBGNURL],[0],[Lacking libgnurl])
+              AM_CONDITIONAL(HAVE_LIBCURL, true)
+              AC_DEFINE([HAVE_LIBCURL],[1],[Have libcurl])],
+             [AC_MSG_WARN([ERROR: GNUnet requires libcurl-gnutls or gnurl >= 7.34])
+              AM_CONDITIONAL(HAVE_LIBGNURL, false)
+              AC_DEFINE([HAVE_LIBGNURL],[0],[Lacking libgnurl])
+              AM_CONDITIONAL(HAVE_LIBCURL, false)
+              AC_DEFINE([HAVE_LIBCURL],[0],[Lacking libcurl])])])
 
 AC_SEARCH_LIBS(__atomic_load_8, atomic, [have_libatomic=1 AC_DEFINE(HAVE_LIBATOMIC,1,[external libatomic])])
 AM_CONDITIONAL(HAVE_LIBATOMIC, [test "$have_libatomic" = 1])
@@ -1293,12 +1281,12 @@ AC_ARG_WITH(microhttpd,
         AC_CHECK_HEADERS([microhttpd.h],
 	  AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
             AC_CHECK_LIB([microhttpd], [MHD_get_fdset2],
-              [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.52])
+              [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.63])
               AC_COMPILE_IFELSE([AC_LANG_SOURCE([
                 #include "$native_srcdir/src/include/platform.h"
                 #include <microhttpd.h>
-                #if (MHD_VERSION < 0x0094200)
-                #error needs at least version 0.9.42
+                #if (MHD_VERSION < 0x0096300)
+                #error needs at least version 0.9.63
                 #endif
                 int main () { return 0; }
                ])],
@@ -1807,6 +1795,20 @@ else
 fi
 AC_DEFINE_UNQUOTED([ENABLE_WINDOWS_WORKAROUNDS], $workarounds, [enable workarounds used on Windows (only useful for test cases)])
 
+
+# Check if the __thread storage class for thread-local storage is available.
+AC_MSG_CHECKING(whether __thread is supported)
+AC_LINK_IFELSE(
+ [AC_LANG_PROGRAM([#include <stdlib.h>
+                   #undef __thread
+                   static __thread int a = 1;],
+                  [exit(a-1);])],
+ [have_thread_local_gcc=1],[have_thread_local_gcc=0])
+AC_DEFINE_UNQUOTED([HAVE_THREAD_LOCAL_GCC],$have_thread_local_gcc,[Define this if __thread is supported])
+AS_IF([test "x$have_thread_local_gcc" = "x1"],
+      [AC_MSG_RESULT(yes)],
+      [AC_MSG_RESULT(no)])
+
 # gcov compilation
 AC_MSG_CHECKING(whether to compile with support for code coverage analysis)
 AC_ARG_ENABLE([coverage],
@@ -1858,7 +1860,6 @@ contrib/services/openrc/Makefile
 contrib/services/systemd/Makefile
 contrib/scripts/Makefile
 contrib/scripts/gnunet-logread/Makefile
-contrib/scripts/gnunet-download-manager/Makefile
 doc/Makefile
 doc/man/Makefile
 doc/doxygen/Makefile

@@ -490,15 +490,6 @@ ego_get_all (struct GNUNET_REST_RequestHandle *con_handle,
     json_decref (json_ego);
   }
 
-  if ((size_t) 0 == json_array_size (json_root))
-  {
-    json_decref (json_root);
-    handle->response_code = MHD_HTTP_NOT_FOUND;
-    handle->emsg = GNUNET_strdup(GNUNET_REST_IDENTITY_NOT_FOUND);
-    GNUNET_SCHEDULER_add_now (&do_error, handle);
-    return;
-  }
-
   result_str = json_dumps (json_root, 0);
   GNUNET_log(GNUNET_ERROR_TYPE_DEBUG, "Result %s\n", result_str);
   resp = GNUNET_REST_create_response (result_str);
@@ -647,6 +638,26 @@ do_finished (void *cls, const char *emsg)
   resp = GNUNET_REST_create_response (NULL);
   handle->proc (handle->proc_cls, resp, handle->response_code);
   GNUNET_SCHEDULER_add_now (&cleanup_handle, handle);
+}
+
+
+/**
+ * Processing finished, when creating an ego.
+ *
+ * @param cls request handle
+ * @param private key of the ego, or NULL on error
+ * @param emsg error message
+ */
+static void
+do_finished_create (void *cls,
+		    const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk,
+		    const char *emsg)
+{
+  struct RequestHandle *handle = cls;
+
+  (void) pk;
+  do_finished (handle,
+	       emsg);
 }
 
 
@@ -1023,7 +1034,7 @@ ego_create (struct GNUNET_REST_RequestHandle *con_handle,
   json_decref (data_js);
   handle->response_code = MHD_HTTP_CREATED;
   handle->op = GNUNET_IDENTITY_create (handle->identity_handle, handle->name,
-				       &do_finished, handle);
+				       &do_finished_create, handle);
 }
 
 /**

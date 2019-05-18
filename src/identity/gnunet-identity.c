@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -49,6 +49,16 @@ static int list;
  * Was "monitor" specified?
  */
 static int monitor;
+
+/**
+ * Was "verbose" specified?
+ */
+static unsigned int verbose;
+
+/**
+ * Was "quiet" specified?
+ */
+static int quiet;
 
 /**
  * -C option
@@ -114,6 +124,11 @@ shutdown_task (void *cls)
     GNUNET_IDENTITY_cancel (delete_op);
     delete_op = NULL;
   }
+  if (NULL != set_ego)
+  {
+    GNUNET_free (set_ego);
+    set_ego = NULL;
+  }
   GNUNET_IDENTITY_disconnect (sh);
   sh = NULL;
 }
@@ -125,12 +140,8 @@ shutdown_task (void *cls)
 static void
 test_finished ()
 {
-  if ( (NULL == create_op) &&
-       (NULL == delete_op) &&
-       (NULL == set_op) &&
-       (NULL == set_ego) &&
-       (! list) &&
-       (! monitor) )
+  if ((NULL == create_op) && (NULL == delete_op) && (NULL == set_op) &&
+      (NULL == set_subsystem) && (! list) && (! monitor))
   {
     if (TIMEOUT_STATUS_CODE == global_ret)
       global_ret = 0;
@@ -146,16 +157,13 @@ test_finished ()
  * @param emsg NULL on success, otherwise an error message
  */
 static void
-delete_finished (void *cls,
-		 const char *emsg)
+delete_finished (void *cls, const char *emsg)
 {
   struct GNUNET_IDENTITY_Operation **op = cls;
 
   *op = NULL;
   if (NULL != emsg)
-    fprintf (stderr,
-	     "%s\n",
-	     gettext (emsg));
+    fprintf (stderr, "%s\n", gettext (emsg));
   test_finished ();
 }
 
@@ -164,21 +172,31 @@ delete_finished (void *cls,
  * Creation operation finished.
  *
  * @param cls pointer to operation handle
+ * @param pk private key of the ego, or NULL on error
  * @param emsg error message, NULL on success
  */
 static void
 create_finished (void *cls,
-		 const char *emsg)
+                 const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk,
+                 const char *emsg)
 {
   struct GNUNET_IDENTITY_Operation **op = cls;
 
   *op = NULL;
-  if (NULL != emsg)
+  if (NULL == pk)
   {
-    fprintf (stderr,
-	     _("Failed to create ego: %s\n"),
-	     emsg);
+    fprintf (stderr, _ ("Failed to create ego: %s\n"), emsg);
     global_ret = 1;
+  }
+  else if (verbose)
+  {
+    struct GNUNET_CRYPTO_EcdsaPublicKey pub;
+    char *pubs;
+
+    GNUNET_CRYPTO_ecdsa_key_get_public (pk, &pub);
+    pubs = GNUNET_CRYPTO_ecdsa_public_key_to_string (&pub);
+    fprintf (stdout, "%s\n", pubs);
+    GNUNET_free (pubs);
   }
   test_finished ();
 }
@@ -191,15 +209,12 @@ create_finished (void *cls,
  * @param emsg error message (NULL on success)
  */
 static void
-set_done (void *cls,
-	  const char *emsg)
+set_done (void *cls, const char *emsg)
 {
   set_op = NULL;
   if (NULL != emsg)
   {
-    fprintf (stderr,
-	     _("Failed to set default ego: %s\n"),
-	     emsg);
+    fprintf (stderr, _ ("Failed to set default ego: %s\n"), emsg);
     global_ret = 1;
   }
   test_finished ();
@@ -241,42 +256,34 @@ set_done (void *cls,
 */
 static void
 print_ego (void *cls,
-	   struct GNUNET_IDENTITY_Ego *ego,
-	   void **ctx,
-	   const char *identifier)
+           struct GNUNET_IDENTITY_Ego *ego,
+           void **ctx,
+           const char *identifier)
 {
   struct GNUNET_CRYPTO_EcdsaPublicKey pk;
   char *s;
 
-  if ( (NULL != set_ego) &&
-       (NULL != ego) &&
-       (NULL != identifier) &&
-       (0 == strcmp (identifier,
-		     set_ego)) )
-    {
-      set_op = GNUNET_IDENTITY_set (sh,
-				    set_subsystem,
-				    ego,
-				    &set_done,
-				    NULL);
-      GNUNET_free (set_subsystem);
-      set_subsystem = NULL;
-      GNUNET_free (set_ego);
-      set_ego = NULL;
-    }
-  if ( (NULL == ego) &&
-       (NULL != set_ego) )
+  if ((NULL != set_ego) && (NULL != set_subsystem) && (NULL != ego) &&
+      (NULL != identifier) && (0 == strcmp (identifier, set_ego)))
   {
-    fprintf (stderr,
-	     "Could not set ego to `%s' for subsystem `%s', ego not known\n",
-	     set_ego,
-	     set_subsystem);
+    set_op = GNUNET_IDENTITY_set (sh, set_subsystem, ego, &set_done, NULL);
     GNUNET_free (set_subsystem);
     set_subsystem = NULL;
     GNUNET_free (set_ego);
     set_ego = NULL;
   }
-  if ( (NULL == ego) && (! monitor) )
+  if ((NULL == ego) && (NULL != set_ego) && (NULL != set_subsystem))
+  {
+    fprintf (stderr,
+             "Could not set ego to `%s' for subsystem `%s', ego not known\n",
+             set_ego,
+             set_subsystem);
+    GNUNET_free (set_subsystem);
+    set_subsystem = NULL;
+    GNUNET_free (set_ego);
+    set_ego = NULL;
+  }
+  if ((NULL == ego) && (! monitor))
   {
     list = 0;
     test_finished ();
@@ -286,15 +293,17 @@ print_ego (void *cls,
     return;
   if (NULL == ego)
     return;
-  GNUNET_IDENTITY_ego_get_public_key (ego,
-                                      &pk);
+  if ((NULL != set_ego) && (0 != strcmp (identifier, set_ego)))
+    return;
+  GNUNET_IDENTITY_ego_get_public_key (ego, &pk);
   s = GNUNET_CRYPTO_ecdsa_public_key_to_string (&pk);
-  if ( (monitor) ||
-       (NULL != identifier) )
-    fprintf (stdout,
-             "%s - %s\n",
-             identifier,
-             s);
+  if ((monitor) || (NULL != identifier))
+  {
+    if (quiet)
+      fprintf (stdout, "%s\n", s);
+    else
+      fprintf (stdout, "%s - %s\n", identifier, s);
+  }
   GNUNET_free (s);
 }
 
@@ -313,28 +322,19 @@ run (void *cls,
      const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-  if ( (NULL == set_subsystem) ^
-       (NULL == set_ego) )
+  if ((NULL != set_subsystem) && (NULL == set_ego))
   {
-    fprintf (stderr,
-	     "Options -e and -s must always be specified together\n");
+    fprintf (stderr, "Option -s requires option -e to be specified as well.\n");
     return;
   }
-  sh = GNUNET_IDENTITY_connect (cfg,
-                                &print_ego,
-                                NULL);
+  sh = GNUNET_IDENTITY_connect (cfg, &print_ego, NULL);
   if (NULL != delete_ego)
-    delete_op = GNUNET_IDENTITY_delete (sh,
-					delete_ego,
-					&delete_finished,
-					&delete_op);
+    delete_op =
+      GNUNET_IDENTITY_delete (sh, delete_ego, &delete_finished, &delete_op);
   if (NULL != create_ego)
-    create_op = GNUNET_IDENTITY_create (sh,
-					create_ego,
-					&create_finished,
-					&create_op);
-  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-                                 NULL);
+    create_op =
+      GNUNET_IDENTITY_create (sh, create_ego, &create_finished, &create_op);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
   test_finished ();
 }
 
@@ -349,55 +349,57 @@ run (void *cls,
 int
 main (int argc, char *const *argv)
 {
-  struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_option_string ('C',
-                                 "create",
-                                 "NAME",
-                                 gettext_noop ("create ego NAME"),
-                                 &create_ego),
-
-    GNUNET_GETOPT_option_string ('D',
-                                 "delete",
-                                 "NAME",
-                                 gettext_noop ("delete ego NAME "),
-                                 &delete_ego),
-
-    GNUNET_GETOPT_option_flag ('d',
-                                  "display",
-                                  gettext_noop ("display all egos"),
-                                  &list),
-    
-    GNUNET_GETOPT_option_string ('e',
-                                 "ego",
-                                 "NAME",
-                                 gettext_noop ("set default identity to EGO for a subsystem SUBSYSTEM (use together with -s)"),
-                                 &set_ego),
-
-    GNUNET_GETOPT_option_flag ('m',
-                                  "monitor",
-                                  gettext_noop ("run in monitor mode egos"),
-                                  &monitor),
-
-    GNUNET_GETOPT_option_string ('s',
-                                 "set",
-                                 "SUBSYSTEM",
-                                 gettext_noop ("set default identity to EGO for a subsystem SUBSYSTEM (use together with -e)"),
-                                 &set_subsystem),
-
-    GNUNET_GETOPT_OPTION_END
-  };
+  struct GNUNET_GETOPT_CommandLineOption options[] =
+    {GNUNET_GETOPT_option_string ('C',
+                                  "create",
+                                  "NAME",
+                                  gettext_noop ("create ego NAME"),
+                                  &create_ego),
+     GNUNET_GETOPT_option_string ('D',
+                                  "delete",
+                                  "NAME",
+                                  gettext_noop ("delete ego NAME "),
+                                  &delete_ego),
+     GNUNET_GETOPT_option_flag ('d',
+                                "display",
+                                gettext_noop ("display all egos"),
+                                &list),
+     GNUNET_GETOPT_option_flag ('q',
+                                "quiet",
+                                gettext_noop ("reduce output"),
+                                &quiet),
+     GNUNET_GETOPT_option_string (
+       'e',
+       "ego",
+       "NAME",
+       gettext_noop (
+         "set default identity to NAME for a subsystem SUBSYSTEM (use together with -s) or restrict results to NAME (use together with -d)"),
+       &set_ego),
+     GNUNET_GETOPT_option_flag ('m',
+                                "monitor",
+                                gettext_noop ("run in monitor mode egos"),
+                                &monitor),
+     GNUNET_GETOPT_option_string (
+       's',
+       "set",
+       "SUBSYSTEM",
+       gettext_noop (
+         "set default identity to EGO for a subsystem SUBSYSTEM (use together with -e)"),
+       &set_subsystem),
+     GNUNET_GETOPT_option_verbose (&verbose),
+     GNUNET_GETOPT_OPTION_END};
   int res;
 
-  if (GNUNET_OK !=
-      GNUNET_STRINGS_get_utf8_args (argc, argv,
-                                    &argc, &argv))
+  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 4;
   global_ret = TIMEOUT_STATUS_CODE; /* timeout */
-  res = GNUNET_PROGRAM_run (argc, argv,
+  res = GNUNET_PROGRAM_run (argc,
+                            argv,
                             "gnunet-identity",
-			    gettext_noop ("Maintain egos"),
-			    options, &run,
-			    NULL);
+                            gettext_noop ("Maintain egos"),
+                            options,
+                            &run,
+                            NULL);
   GNUNET_free ((void *) argv);
 
   if (GNUNET_OK != res)

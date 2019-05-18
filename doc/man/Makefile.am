@@ -37,7 +37,6 @@ man_MANS = \
   gnunet-dns2gns.1 \
   gnunet-datastore.1 \
   gnunet-download.1 \
-  gnunet-download-manager.1 \
   gnunet-ecc.1 \
   gnunet-fs.1 \
   gnunet-gns.1 \
@@ -55,6 +54,7 @@ man_MANS = \
   gnunet-peerinfo.1 \
   gnunet-publish.1 \
   gnunet-qr.1 \
+  gnunet-reclaim.1 \
   gnunet-resolver.1 \
   gnunet-revocation.1 \
   gnunet-scalarproduct.1 \

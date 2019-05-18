@@ -1,3 +1,26 @@
+.\" This file is part of GNUnet.
+.\" Copyright (C) 2001-2019 GNUnet e.V.
+.\"
+.\" Permission is granted to copy, distribute and/or modify this document
+.\" under the terms of the GNU Free Documentation License, Version 1.3 or
+.\" any later version published by the Free Software Foundation; with no
+.\" Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+.\" copy of the license is included in the file
+.\" ``FDL-1.3''.
+.\"
+.\" A copy of the license is also available from the Free Software
+.\" Foundation Web site at @url{http://www.gnu.org/licenses/fdl.html}.
+.\"
+.\" Alternately, this document is also available under the General
+.\" Public License, version 3 or later, as published by the Free Software
+.\" Foundation.  A copy of the license is included in the file
+.\" ``GPL3''.
+.\"
+.\" A copy of the license is also available from the Free Software
+.\" Foundation Web site at @url{http://www.gnu.org/licenses/gpl.html}.
+.\"
+.\" SPDX-License-Identifier: GPL3.0-or-later OR FDL1.3-or-later
+.\"
 .Dd October 17, 2015
 .Dt GNUNET-TRANSPORT 1
 .Os
@@ -40,13 +63,14 @@ Note that you can use the gnunet-ats command-line tool to suggest connects.
 .It Fl e | \-events
 provide information about all connect and disconnect events (continuously)
 .It Fl h | \-help
-print help page
+Print the help page.
 .It Fl i | \-information
 print information about our current connections (once)
 .It Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
-Change the loglevel.  Possible values for LOGLEVEL are ERROR, WARNING, INFO and DEBUG.
+Change the loglevel.
+Possible values for LOGLEVEL are ERROR, WARNING, INFO and DEBUG.
 .It Fl l Ar LOGFILE | Fl \-logfile= Ns Ar LOGFILE
-configure logging to write logs to LOGFILE
+Configure logging to write logs to LOGFILE.
 .It Fl m | \-monitor
 print information about our current connections (continuously)
 .It Fl p Ar PEER | Fl \-peer= Ns Ar PEER
@@ -54,10 +78,11 @@ the peer identity to connect to or monitor
 .It Fl P | \-plugins
 monitor session state of transport plugins
 .It Fl s | \-send
-transmit (dummy) traffic as quickly as possible to the peer specified
-with the \-p option.  The rate will still be limited by the quota(s)
-determined by the peers (ATS subsystem).  Will run until CTRL\-C is
-pressed or until the connection to the other peer is disrupted.
+Transmit (dummy) traffic as quickly as possible to the peer specified with the
+.Fl p
+option.
+The rate will still be limited by the quota(s) determined by the peers (ATS subsystem).
+Will run until CTRL-C is pressed or until the connection to the other peer is disrupted.
 .It Fl v | \-version
 print the version number
 .It Fl V | \-verbose

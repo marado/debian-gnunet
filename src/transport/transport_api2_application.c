@@ -29,7 +29,8 @@
 #include "transport.h"
 
 
-#define LOG(kind,...) GNUNET_log_from(kind, "transport-application-api", __VA_ARGS__)
+#define LOG(kind, ...) \
+  GNUNET_log_from (kind, "transport-application-api", __VA_ARGS__)
 
 
 /**
@@ -50,7 +51,7 @@ struct GNUNET_TRANSPORT_ApplicationSuggestHandle
   /**
    * What preference is being expressed?
    */
-  enum GNUNET_MQ_PreferenceKind pk;
+  enum GNUNET_MQ_PriorityPreferences pk;
 
   /**
    * How much bandwidth does the client expect?
@@ -132,9 +133,7 @@ force_reconnect (struct GNUNET_TRANSPORT_ApplicationHandle *ch)
     ch->mq = NULL;
   }
   ch->backoff = GNUNET_TIME_STD_BACKOFF (ch->backoff);
-  ch->task = GNUNET_SCHEDULER_add_delayed (ch->backoff,
-                                           &reconnect_task,
-                                           ch);
+  ch->task = GNUNET_SCHEDULER_add_delayed (ch->backoff, &reconnect_task, ch);
 }
 
 
@@ -146,8 +145,7 @@ force_reconnect (struct GNUNET_TRANSPORT_ApplicationHandle *ch)
  * @param error details about the error
  */
 static void
-error_handler (void *cls,
-               enum GNUNET_MQ_Error error)
+error_handler (void *cls, enum GNUNET_MQ_Error error)
 {
   struct GNUNET_TRANSPORT_ApplicationHandle *ch = cls;
 
@@ -179,8 +177,7 @@ transmit_suggestion (void *cls,
 
   if (NULL == ch->mq)
     return GNUNET_SYSERR;
-  ev = GNUNET_MQ_msg (m,
-                      GNUNET_MESSAGE_TYPE_TRANSPORT_SUGGEST);
+  ev = GNUNET_MQ_msg (m, GNUNET_MESSAGE_TYPE_TRANSPORT_SUGGEST);
   m->pk = htonl ((uint32_t) sh->pk);
   m->bw = sh->bw;
   m->peer = *peer;
@@ -197,16 +194,11 @@ transmit_suggestion (void *cls,
 static void
 reconnect (struct GNUNET_TRANSPORT_ApplicationHandle *ch)
 {
-  static const struct GNUNET_MQ_MessageHandler handlers[] = {
-    { NULL, 0, 0 }
-  };
+  static const struct GNUNET_MQ_MessageHandler handlers[] = {{NULL, 0, 0}};
 
   GNUNET_assert (NULL == ch->mq);
-  ch->mq = GNUNET_CLIENT_connect (ch->cfg,
-                                  "transport",
-                                  handlers,
-                                  &error_handler,
-                                  ch);
+  ch->mq =
+    GNUNET_CLIENT_connect (ch->cfg, "transport", handlers, &error_handler, ch);
   if (NULL == ch->mq)
   {
     force_reconnect (ch);
@@ -225,14 +217,14 @@ reconnect (struct GNUNET_TRANSPORT_ApplicationHandle *ch)
  * @return transport application handle, NULL on error
  */
 struct GNUNET_TRANSPORT_ApplicationHandle *
-GNUNET_TRANSPORT_application_init (const struct GNUNET_CONFIGURATION_Handle *cfg)
+GNUNET_TRANSPORT_application_init (
+  const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_TRANSPORT_ApplicationHandle *ch;
 
   ch = GNUNET_new (struct GNUNET_TRANSPORT_ApplicationHandle);
   ch->cfg = cfg;
-  ch->sug_requests = GNUNET_CONTAINER_multipeermap_create (32,
-                                                           GNUNET_YES);
+  ch->sug_requests = GNUNET_CONTAINER_multipeermap_create (32, GNUNET_YES);
   reconnect (ch);
   return ch;
 }
@@ -248,9 +240,7 @@ GNUNET_TRANSPORT_application_init (const struct GNUNET_CONFIGURATION_Handle *cfg
  * @return #GNUNET_OK (continue to iterate)
  */
 static int
-free_sug_handle (void *cls,
-                 const struct GNUNET_PeerIdentity *key,
-                 void *value)
+free_sug_handle (void *cls, const struct GNUNET_PeerIdentity *key, void *value)
 {
   struct GNUNET_TRANSPORT_ApplicationSuggestHandle *cur = value;
 
@@ -265,7 +255,8 @@ free_sug_handle (void *cls,
  * @param ch handle to release
  */
 void
-GNUNET_TRANSPORT_application_done (struct GNUNET_TRANSPORT_ApplicationHandle *ch)
+GNUNET_TRANSPORT_application_done (
+  struct GNUNET_TRANSPORT_ApplicationHandle *ch)
 {
   if (NULL != ch->mq)
   {
@@ -286,23 +277,21 @@ GNUNET_TRANSPORT_application_done (struct GNUNET_TRANSPORT_ApplicationHandle *ch
 
 
 /**
- * We would like to receive address suggestions for a peer. TRANSPORT will
- * respond with a call to the continuation immediately containing an address or
- * no address if none is available. TRANSPORT can suggest more addresses until we call
- * #GNUNET_TRANSPORT_application_suggest_cancel().
+ * An application would like TRANSPORT to connect to a peer.
  *
  * @param ch handle
  * @param peer identity of the peer we need an address for
  * @param pk what kind of application will the application require (can be
- *         #GNUNET_MQ_PREFERENCE_NONE, we will still try to connect)
+ *         #GNUNET_MQ_PRIO_BACKGROUND, we will still try to connect)
  * @param bw desired bandwith, can be zero (we will still try to connect)
  * @return suggest handle, NULL if a request is already pending
  */
 struct GNUNET_TRANSPORT_ApplicationSuggestHandle *
-GNUNET_TRANSPORT_application_suggest (struct GNUNET_TRANSPORT_ApplicationHandle *ch,
-                                      const struct GNUNET_PeerIdentity *peer,
-                                      enum GNUNET_MQ_PreferenceKind pk,
-                                      struct GNUNET_BANDWIDTH_Value32NBO bw)
+GNUNET_TRANSPORT_application_suggest (
+  struct GNUNET_TRANSPORT_ApplicationHandle *ch,
+  const struct GNUNET_PeerIdentity *peer,
+  enum GNUNET_MQ_PriorityPreferences pk,
+  struct GNUNET_BANDWIDTH_Value32NBO bw)
 {
   struct GNUNET_TRANSPORT_ApplicationSuggestHandle *s;
 
@@ -311,19 +300,17 @@ GNUNET_TRANSPORT_application_suggest (struct GNUNET_TRANSPORT_ApplicationHandle 
   s->id = *peer;
   s->pk = pk;
   s->bw = bw;
-  (void) GNUNET_CONTAINER_multipeermap_put (ch->sug_requests,
-                                            &s->id,
-                                            s,
-                                            GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
+  (void) GNUNET_CONTAINER_multipeermap_put (
+    ch->sug_requests,
+    &s->id,
+    s,
+    GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Requesting TRANSPORT to suggest address for `%s'\n",
        GNUNET_i2s (peer));
   if (NULL == ch->mq)
     return s;
-  GNUNET_assert (GNUNET_OK ==
-                 transmit_suggestion (ch,
-                                      &s->id,
-                                      s));
+  GNUNET_assert (GNUNET_OK == transmit_suggestion (ch, &s->id, s));
   return s;
 }
 
@@ -334,7 +321,8 @@ GNUNET_TRANSPORT_application_suggest (struct GNUNET_TRANSPORT_ApplicationHandle 
  * @param sh handle to stop
  */
 void
-GNUNET_TRANSPORT_application_suggest_cancel (struct GNUNET_TRANSPORT_ApplicationSuggestHandle *sh)
+GNUNET_TRANSPORT_application_suggest_cancel (
+  struct GNUNET_TRANSPORT_ApplicationSuggestHandle *sh)
 {
   struct GNUNET_TRANSPORT_ApplicationHandle *ch = sh->ch;
   struct GNUNET_MQ_Envelope *ev;
@@ -343,23 +331,67 @@ GNUNET_TRANSPORT_application_suggest_cancel (struct GNUNET_TRANSPORT_Application
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Telling TRANSPORT we no longer care for an address for `%s'\n",
        GNUNET_i2s (&sh->id));
-  GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multipeermap_remove (ch->sug_requests,
-                                                       &sh->id,
-                                                       sh));
+  GNUNET_assert (
+    GNUNET_OK ==
+    GNUNET_CONTAINER_multipeermap_remove (ch->sug_requests, &sh->id, sh));
   if (NULL == ch->mq)
   {
     GNUNET_free (sh);
     return;
   }
-  ev = GNUNET_MQ_msg (m,
-                      GNUNET_MESSAGE_TYPE_TRANSPORT_SUGGEST_CANCEL);
+  ev = GNUNET_MQ_msg (m, GNUNET_MESSAGE_TYPE_TRANSPORT_SUGGEST_CANCEL);
   m->pk = htonl ((uint32_t) sh->pk);
   m->bw = sh->bw;
   m->peer = sh->id;
-  GNUNET_MQ_send (ch->mq,
-                  ev);
+  GNUNET_MQ_send (ch->mq, ev);
   GNUNET_free (sh);
+}
+
+
+/**
+ * An application (or a communicator) has received a HELLO (or other address
+ * data of another peer) and wants TRANSPORT to validate that the address is
+ * correct.  The result is NOT returned, in fact TRANSPORT may do nothing
+ * (i.e. if it has too many active validations or recently tried this one
+ * already).  If the @a addr validates, TRANSPORT will persist the address
+ * with PEERSTORE.
+ *
+ * @param ch handle
+ * @param peer identity of the peer we have an address for
+ * @param nt network type of @a addr (as claimed by the other peer);
+ *        used by TRANSPORT to avoid trying @a addr's that really cannot work
+ *        due to network type missmatches
+ * @param addr address to validate
+ */
+void
+GNUNET_TRANSPORT_application_validate (
+  struct GNUNET_TRANSPORT_ApplicationHandle *ch,
+  const struct GNUNET_PeerIdentity *peer,
+  enum GNUNET_NetworkType nt,
+  const char *addr)
+{
+  struct GNUNET_MQ_Envelope *ev;
+  struct RequestHelloValidationMessage *m;
+  size_t alen;
+
+  if (NULL == ch->mq)
+  {
+    GNUNET_log (
+      GNUNET_ERROR_TYPE_WARNING,
+      "Address validation for %s:%s skipped as transport is not connected\n",
+      GNUNET_i2s (peer),
+      addr);
+    return;
+  }
+  alen = strlen (addr) + 1;
+  ev =
+    GNUNET_MQ_msg_extra (m,
+                         alen,
+                         GNUNET_MESSAGE_TYPE_TRANSPORT_REQUEST_HELLO_VALIDATION);
+  m->peer = *peer;
+  m->nt = htonl ((uint32_t) nt);
+  memcpy (&m[1], addr, alen);
+  GNUNET_MQ_send (ch->mq, ev);
 }
 
 

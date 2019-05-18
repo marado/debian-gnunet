@@ -29,9 +29,9 @@
  */
 #ifndef GNUNET_CURL_LIB_H
 #define GNUNET_CURL_LIB_H
-#if HAVE_CURL_CURL_H
+#if HAVE_LIBCURL
 #include <curl/curl.h>
-#elif HAVE_GNURL_CURL_H
+#elif HAVE_LIBGNURL
 #include <gnurl/curl.h>
 #else
 #error "needs curl or gnurl"
@@ -292,6 +292,16 @@ GNUNET_CURL_gnunet_rc_destroy (struct GNUNET_CURL_RescheduleContext *rc);
  */
 void
 GNUNET_CURL_gnunet_scheduler_reschedule (void *cls);
+
+
+/**
+ * Enable sending the async scope ID as a header.
+ *
+ * @param ctx the context to enable this for
+ * @param header_name name of the header to send.
+ */
+void
+GNUNET_CURL_enable_async_scope_header (struct GNUNET_CURL_Context *ctx, const char *header_name);
 
 
 #endif

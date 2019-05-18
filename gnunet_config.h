@@ -92,9 +92,6 @@
 /* Define to 1 if you have the <ctype.h> header file. */
 #define HAVE_CTYPE_H 1
 
-/* Define to 1 if you have the <curl/curl.h> header file. */
-#define HAVE_CURL_CURL_H 1
-
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #define HAVE_DCGETTEXT 1
@@ -133,6 +130,9 @@
 
 /* Define to 1 if you have the <execinfo.h> header file. */
 #define HAVE_EXECINFO_H 1
+
+/* explicit_bzero supported */
+/* #undef HAVE_EXPLICIT_BZERO */
 
 /* Define to 1 if you have the <extractor.h> header file. */
 #define HAVE_EXTRACTOR_H 1
@@ -200,9 +200,6 @@
 /* Define to 1 if `presolve' is a member of `glp_iocp'. */
 #define HAVE_GLP_IOCP_PRESOLVE 1
 
-/* Define to 1 if you have the <gnurl/curl.h> header file. */
-/* #undef HAVE_GNURL_CURL_H */
-
 /* We have GnuTLS */
 #define HAVE_GNUTLS true
 
@@ -263,7 +260,7 @@
 /* Lacking bluetooth library */
 #define HAVE_LIBBLUETOOTH 1
 
-/* Have CURL */
+/* Lacking libcurl */
 #define HAVE_LIBCURL 1
 
 /* Define to 1 if you have the `curl-gnutls' library (-lcurl-gnutls). */
@@ -358,6 +355,9 @@
 
 /* memrchr supported */
 #define HAVE_MEMRCHR 1
+
+/* memset_s supported */
+/* #undef HAVE_MEMSET_S */
 
 /* We have libmicrohttpd */
 #define HAVE_MHD 1
@@ -571,6 +571,9 @@
 
 /* Define to 1 if you have the <terminos.h> header file. */
 /* #undef HAVE_TERMINOS_H */
+
+/* Define this if __thread is supported */
+#define HAVE_THREAD_LOCAL_GCC 1
 
 /* Define if struct tm has the tm_gmtoff member. */
 #define HAVE_TM_GMTOFF 1
@@ -793,7 +796,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.11.3"
+#define PACKAGE_STRING "gnunet 0.11.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -802,7 +805,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.11.3"
+#define PACKAGE_VERSION "0.11.4"
 
 /* Path to ip */
 #define PATH_TO_IP "/bin/ip"
@@ -850,10 +853,10 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-d7c915572"
+#define VCS_VERSION "git-47ea01191"
 
 /* Version number of package */
-#define VERSION "0.11.3"
+#define VERSION "0.11.4"
 
 /* This is a Windows system */
 /* #undef WINDOWS */
