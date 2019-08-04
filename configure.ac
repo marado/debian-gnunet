@@ -21,7 +21,7 @@
 #
 AC_PREREQ(2.61)
 # Checks for programs.
-AC_INIT([gnunet], [0.11.0], [bug-gnunet@gnu.org])
+AC_INIT([gnunet], [0.11.1], [bug-gnunet@gnu.org])
 AC_CONFIG_AUX_DIR([build-aux])
 
 AC_CANONICAL_TARGET
@@ -208,11 +208,16 @@ AM_CONDITIONAL(HAVE_SSH_KEY,  ssh -D 12345 -o "BatchMode yes" -o "UserKnownHosts
 rm -f /tmp/gnunet_test_cosks_ssh_garbage
 
 # autotools' m4 for python has no maximum version!
-# python3.7 for tests
-m4_define_default([_AM_PYTHON_INTERPRETER_LIST],[python3 python3.7 python])
-AM_PATH_PYTHON([3.7],, [:])
+# python3.4 - python3.7 for tests
+m4_define_default([_AM_PYTHON_INTERPRETER_LIST],[python3 python3.4 python3.5 python3.6 python3.7 python])
+AM_PATH_PYTHON([3.4],, [:])
 AC_SUBST([PYTHON])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != :])
+
+# perl
+AC_PATH_PROG( PERL, perl, ,
+              $PATH:/usr/local/bin/perl:/usr/bin/:/usr/local/bin )
+AC_SUBST([PERL])
 
 # iptables is a soft requirement to run tests
 AC_PATH_TARGET_TOOL(VAR_IPTABLES_BINARY, iptables, false)
@@ -312,6 +317,10 @@ then
 fi
 AC_DEFINE_UNQUOTED([NEED_LIBGCRYPT_VERSION], "$NEED_LIBGCRYPT_VERSION", [required libgcrypt version])
 
+AC_CHECK_DECLS([struct in6_ifreq], [], [], [[#include <linux/if_tun.h>]])
+
+
+
 # should the build process be building the documentation?
 AC_MSG_CHECKING(whether to build documentation)
 AC_ARG_ENABLE([documentation],
@@ -328,13 +337,14 @@ else
   AC_DEFINE([DOCUMENTATION],[0],[Not building the documentation])
 fi
 
+# FIXME: Something is wrong about this in the output of ./configure runs
 AC_MSG_CHECKING(wether to include generated texi2mdoc output in installation)
 AC_ARG_ENABLE([texi2mdoc-generation],
-[AS_HELP_STRING([--disable-texi2mdoc-generation], [do not include generated texi2mdoc output in installation])],
-[texi2mdoc-generation=${enableval}],
-[texi2mdoc-generation=yes])
-AC_MSG_RESULT($texi2mdoc-generation)
-if test "x$texi2mdoc-generation" = "xyes"
+    [AS_HELP_STRING([--enable-texi2mdoc-generation], [include generated texi2mdoc output in installation])],
+    [texi2mdoc_generation=${enableval}],
+    [texi2mdoc_generation=no])
+AC_MSG_RESULT($texi2mdoc_generation)
+if test "x$texi2mdoc_generation" = "xyes"
 then
   if test "$texi2mdoc" = 0
   then
@@ -366,6 +376,21 @@ else
   AC_DEFINE([DOCUMENTATION_ONLY],[0],[Not building only the documentation])
 fi
 
+# should the build process be including the manpages? (default: yes)
+AC_MSG_CHECKING(whether to include man pages)
+AC_ARG_ENABLE([include-manpages],
+   [AS_HELP_STRING([--disable-include-manpages], [Do not include the man pages in build and installation])],
+   [include_manpages=${enableval}],
+   [include_manpages=yes])
+AC_MSG_RESULT($include_manpages)
+if test "x$include_manpages" = "xyes"
+then
+  AM_CONDITIONAL([INCLUDE_MANPAGES],true)
+  AC_DEFINE([INCLUDE_MANPAGES],[1],[Including the man pages in the build and installation])
+else
+  AM_CONDITIONAL([INCLUDE_MANPAGES],false)
+  AC_DEFINE([INCLUDE_MANPAGES],[0],[Not including the man pages in the build and installation])
+fi
 
 # Adam shostack suggests the following for Windows:
 # -D_FORTIFY_SOURCE=2 -fstack-protector-all
@@ -509,6 +534,39 @@ else
   AC_DEFINE([HAVE_LIBBLUETOOTH],[0],[Lacking bluetooth library])
 fi
 
+# check for zbar library
+zbar=0
+AC_MSG_CHECKING(for libzbar)
+AC_ARG_WITH(zbar,
+   [  --with-zbar=PFX    base of libzbar installation],
+   [AC_MSG_RESULT([$with_zbar])
+    case $with_zbar in
+      no)
+        ;;
+      yes)
+        AC_CHECK_HEADERS(zbar.h,
+          AC_CHECK_LIB([zbar], [zbar_processor_create],
+            zbar=1))
+        ;;
+      *)
+        LDFLAGS="-L$with_zbar/lib $LDFLAGS"
+        CPPFLAGS="-I$with_zbar/include $CPPFLAGS"
+        AC_CHECK_HEADERS(zbar.h,
+          AC_CHECK_LIB([zbar], [zbar_processor_create],
+            EXT_LIB_PATH="-L$with_zbar/lib $EXT_LIB_PATH"
+            zbar=1))
+        ;;
+    esac
+   ],
+   [AC_MSG_RESULT([--with-zbar not specified])
+    AC_CHECK_HEADERS(zbar.h,
+     AC_CHECK_LIB([zbar], [zbar_processor_create],
+      zbar=1))])
+AM_CONDITIONAL(HAVE_ZBAR, [test "$zbar" = 1])
+AS_IF([test "x$zbar" = x1],
+      [AC_DEFINE([HAVE_ZBAR],[1],[Have zbar library])],
+      [AC_DEFINE([HAVE_ZBAR],[0],[Lacking zbar library])])
+
 # check for jansson library
 jansson=0
 AC_MSG_CHECKING(for libjansson)
@@ -538,6 +596,7 @@ AC_ARG_WITH(jansson,
      AC_CHECK_LIB([jansson], [json_loads],
       jansson=1))])
 AM_CONDITIONAL(HAVE_JANSSON, [test "$jansson" = 1])
+AM_CONDITIONAL(HAVE_JSON, [test x$jansson = x1])
 AS_IF([test "x$jansson" = x1],
       [AC_DEFINE([HAVE_JANSSON],[1],[Have jansson library])],
       [AC_DEFINE([HAVE_JANSSON],[0],[Lacking jansson library])])
@@ -684,12 +743,12 @@ AM_CONDITIONAL(HAVE_LIBATOMIC, [test "$have_libatomic" = 1])
 LIBS=$SAVE_LIBS
 CPPFLAGS=$SAVE_CPPFLAGS
 
-AC_CHECK_HEADERS([glpk.h],[glpk=true],[gplk=false])
+AC_CHECK_HEADERS([glpk.h],[glpk=true],[glpk=false])
 # GLPK must support glpk_init_env, version >= 4.43
-AC_CHECK_LIB([glpk],[glp_init_env],,[gplk=false])
+AC_CHECK_LIB([glpk],[glp_init_env],,[glpk=false])
 # GLPK must support atm MLP presolving, version >= 4.32
-AC_CHECK_MEMBERS(glp_iocp.presolve,,[gplk=false],[[#include <glpk.h>]])
-if test x$gplk = xfalse
+AC_CHECK_MEMBERS(glp_iocp.presolve,,[glpk=false],[[#include <glpk.h>]])
+if test "x$glpk" = xfalse
 then
 	AM_CONDITIONAL(HAVE_LIBGLPK, false)
 	AC_MSG_WARN([ERROR: GNUnet requires GLPK  >= 4.32])
@@ -905,6 +964,9 @@ AS_IF([test x$working_libidn2 = x0],
                                      * --with-libidn])])])])
 AM_CONDITIONAL(HAVE_LIBIDN, test x$working_libidn1 = x1)
 
+AS_IF([test "$working_libidn1" = 0 -a "$working_libidn2" = 0],
+      [AC_MSG_ERROR([GNUnet requires libidn (or libidn2)])])
+
 AS_IF([test x$there_can_only_be_one = x0],
       [AC_MSG_FAILURE([Missing dependencies: $MISSING_DEPS])])
 
@@ -977,7 +1039,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 
 # Check for headers that are ALWAYS required
-AC_CHECK_HEADERS([fcntl.h math.h errno.h ctype.h limits.h stdio.h stdlib.h string.h unistd.h stdarg.h signal.h locale.h sys/stat.h sys/types.h],,AC_MSG_ERROR([Compiling GNUnet requires standard UNIX headers files]))
+AC_CHECK_HEADERS([fcntl.h math.h errno.h ctype.h limits.h stdio.h stdlib.h string.h unistd.h stdarg.h signal.h locale.h sys/stat.h sys/types.h],,AC_MSG_ERROR([Compiling GNUnet requires standard UNIX headers files: fcntl.h math.h errno.h ctype.h limits.h stdio.h stdlib.h string.h unistd.h stdarg.h signal.h locale.h sys/stat.h sys/types.h]))
 
 
 
@@ -1158,7 +1220,7 @@ AC_ARG_WITH(microhttpd,
         AC_CHECK_HEADERS([microhttpd.h],
 	  AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
             AC_CHECK_LIB([microhttpd], [MHD_get_fdset2],
-              [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.42])
+              [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.52])
               AC_COMPILE_IFELSE([AC_LANG_SOURCE([
                 #include "$native_srcdir/src/include/platform.h"
                 #include <microhttpd.h>
@@ -1181,7 +1243,7 @@ AC_ARG_WITH(microhttpd,
 	  AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
             AC_CHECK_LIB([microhttpd], [MHD_get_fdset2],
               EXT_LIB_PATH="-L$with_microhttpd/lib $EXT_LIB_PATH"
-              [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.42])
+              [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.52])
                AC_COMPILE_IFELSE([AC_LANG_SOURCE([
                 #include "$native_srcdir/src/include/platform.h"
                 #include <microhttpd.h>
@@ -1203,12 +1265,12 @@ AC_ARG_WITH(microhttpd,
     AC_CHECK_HEADERS([microhttpd.h],
       AC_CHECK_DECL(MHD_OPTION_PER_IP_CONNECTION_LIMIT,
         AC_CHECK_LIB([microhttpd], [MHD_get_fdset2],
-          [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.42])
+          [AC_MSG_CHECKING([for libmicrohttpd >= 0.9.52])
               AC_COMPILE_IFELSE([AC_LANG_SOURCE([
                 #include "$native_srcdir/src/include/platform.h"
 		#include <microhttpd.h>
                 #if (MHD_VERSION < 0x0094200)
-                #error needs at least version 0.9.42
+                #error needs at least version 0.9.52
                 #endif
                ])],
                [AC_MSG_RESULT(ok)
@@ -1314,6 +1376,7 @@ DATAROOTDIR=$datarootdir
 AC_SUBST(DATAROOTDIR)
 
 # test for sudo
+# TODO: do we need to change anything for "doas" on openbsd?
 AC_MSG_CHECKING(for sudo)
 AC_ARG_WITH(sudo,
   [  --with-sudo=PATH       path to sudo binary (or just yes)],
@@ -1401,6 +1464,7 @@ AM_CONDITIONAL(HAVE_GNUTLS, test x$gnutls = xtrue)
 AC_DEFINE_UNQUOTED([HAVE_GNUTLS], $gnutls, [We have GnuTLS])
 AM_CONDITIONAL(HAVE_GNUTLS_DANE, test x$gnutls_dane = x1)
 AC_DEFINE_UNQUOTED([HAVE_GNUTLS_DANE], $gnutls_dane, [We have GnuTLS with DANE support])
+
 
 
 # Test if we are building for superMUC
@@ -1715,11 +1779,14 @@ AC_DEFINE_UNQUOTED(VCS_VERSION, [$vcs_version], [VCS revision/hash or tarball ve
 AC_CONFIG_FILES([
 Makefile
 contrib/Makefile
+contrib/scripts/Makefile
+contrib/scripts/gnunet-logread/Makefile
 doc/Makefile
 doc/man/Makefile
 doc/doxygen/Makefile
 doc/handbook/Makefile
 doc/tutorial/Makefile
+lint/Makefile
 m4/Makefile
 po/Makefile.in
 src/Makefile
@@ -1815,7 +1882,6 @@ src/vpn/vpn.conf
 src/zonemaster/Makefile
 src/zonemaster/zonemaster.conf
 src/rest/Makefile
-src/rest-plugins/Makefile
 src/abe/Makefile
 src/reclaim-attribute/Makefile
 src/reclaim/Makefile
@@ -1906,6 +1972,10 @@ AS_IF([test x$gnutls != xtrue],
  [AC_MSG_NOTICE([WARNING: GnuTLS not found, gnunet-gns-proxy will not be built])],
  [AS_IF([test "x$gnutls_dane" != "x1"],
   [AC_MSG_NOTICE([WARNING: GnuTLS has no DANE support, DANE validation will not be possible])])])
+
+# warn user if libzbar is not found
+AS_IF([test "$have_zbar" = 0],
+      [AC_MSG_NOTICE([WARNING: zbar not found, gnunet-qr will not be built.])])
 
 # java ports
 AS_IF([test "x$enable_java_ports" = "xyes"],

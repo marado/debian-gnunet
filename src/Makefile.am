@@ -60,7 +60,7 @@ endif
 
 if HAVE_MHD
 if HAVE_JSON
- REST_DIR = rest rest-plugins
+ REST_DIR = rest
 endif
 endif
 
@@ -81,6 +81,8 @@ SUBDIRS = \
   statistics \
   arm \
   $(TESTING) \
+  $(JSON_DIR) \
+  $(REST_DIR) \
   peerinfo \
   $(SQLITE_DIR) \
   $(MYSQL_DIR) \
@@ -121,9 +123,7 @@ SUBDIRS = \
   exit \
   pt \
   secretsharing \
-	$(EXP_DIR) \
-  $(JSON_DIR) \
-  $(REST_DIR) \
+  $(EXP_DIR) \
   integration-tests
 
 endif
