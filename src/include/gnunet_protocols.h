@@ -1940,6 +1940,23 @@ extern "C" {
  */
 #define GNUNET_MESSAGE_TYPE_IDENTITY_DELETE 631
 
+/**
+ * First message send from identity client to service to
+ * lookup a single ego.  The service will respond with a
+ * #GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE message if the ego
+ * exists, or a #GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE if not.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP 632
+
+/**
+ * First message send from identity client to service to lookup a
+ * single ego matching the given suffix (longest match).  The service
+ * will respond with a #GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE message if
+ * the ego exists, or a #GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE if
+ * not.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX 633
+
 
 /*******************************************************************************
  * REVOCATION message types
@@ -3140,6 +3157,11 @@ extern "C" {
  * Transport signalling incoming backchannel message to a communicator.
  */
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL_INCOMING 1220
+
+/**
+ * Transport signalling incoming backchannel message to a communicator.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_FLOW_CONTROL 1221
 
 
 /**

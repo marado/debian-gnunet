@@ -78,6 +78,7 @@ libgnunetutil_la_SOURCES = \
   container_meta_data.c \
   container_multihashmap.c \
   container_multishortmap.c \
+  container_multiuuidmap.c \
   container_multipeermap.c \
   container_multihashmap32.c \
   crypto_symmetric.c \
@@ -160,7 +161,7 @@ libgnunetutil_la_LIBADD = \
 
 libgnunetutil_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
-  -version-info 13:0:0
+  -version-info 13:1:0
 
 libgnunetutil_taler_wallet_la_SOURCES = \
   common_allocation.c \

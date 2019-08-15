@@ -99,13 +99,17 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) gnunet-gns$(EXEEXT) \
 noinst_PROGRAMS = gnunet-gns-benchmark$(EXEEXT)
 @HAVE_MHD_TRUE@@LINUX_TRUE@am__append_1 = gnunet-bcd
 @HAVE_GNUTLS_DANE_TRUE@am__append_2 = -lgnutls-dane
-check_PROGRAMS = test_gns_proxy$(EXEEXT)
+@HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@check_PROGRAMS = test_gns_proxy$(EXEEXT)
+@HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__append_3 = \
+@HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@  test_proxy.sh
+
 subdir = src/gns
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -667,7 +671,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -799,6 +808,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@
@@ -843,6 +853,9 @@ top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 @HAVE_GLIBCNSS_TRUE@NSS_SUBDIR = nss
 SUBDIRS = . $(NSS_SUBDIR)
+pkgdata_DATA = \
+  gnunet-gns-proxy-ca.template
+
 EXTRA_DIST = \
   test_gns_defaults.conf \
   test_gns_lookup.conf \
@@ -855,7 +868,8 @@ EXTRA_DIST = \
   zonefiles/J7POEUT41A8PBFS7KVVDRF88GBOU4HK8PSU5QKVLVE3R9T91E99G.zkey \
   zonefiles/OEFL7A4VEF1B40QLEMTG5D8G1CN6EN16QUSG5R2DT71GRJN34LSG.zkey \
   zonefiles/test_zonekey \
-  $(check_SCRIPTS)
+  $(check_SCRIPTS) \
+  $(pkgdata_DATA)
 
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @MINGW_TRUE@DO_W32_HELPER = gnunet-gns-helper-service-w32
@@ -881,9 +895,6 @@ lib_LTLIBRARIES = \
 @HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@LIB_GNURL = @LIBGNURL@
 @HAVE_GNUTLS_TRUE@@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@CPP_GNURL = @LIBCURL_CPPFLAGS@
 @HAVE_GNUTLS_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@CPP_GNURL = @LIBGNURL_CPPFLAGS@
-pkgdata_DATA = \
-  openssl.cnf
-
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = libgnunet_plugin_rest_gns.la
 plugin_LTLIBRARIES = \
   libgnunet_plugin_block_gns.la \
@@ -1057,24 +1068,15 @@ libgnunet_plugin_block_gns_la_LIBADD = \
 libgnunet_plugin_block_gns_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
-check_SCRIPTS = \
-  test_gns_lookup.sh \
-  test_gns_config_lookup.sh \
-  test_gns_ipv6_lookup.sh\
-  test_gns_txt_lookup.sh\
-  test_gns_mx_lookup.sh \
-  test_gns_gns2dns_lookup.sh \
-  test_gns_gns2dns_cname_lookup.sh \
-  test_gns_dht_lookup.sh\
-  test_gns_delegated_lookup.sh \
-  test_gns_at_lookup.sh\
-  test_gns_zkey_lookup.sh\
-  test_gns_rel_expiration.sh\
-  test_gns_soa_lookup.sh\
-  test_gns_revocation.sh\
-  test_gns_cname_lookup.sh \
-	test_proxy.sh
-
+check_SCRIPTS = test_gns_lookup.sh test_gns_config_lookup.sh \
+	test_gns_ipv6_lookup.sh test_gns_txt_lookup.sh \
+	test_gns_caa_lookup.sh test_gns_mx_lookup.sh \
+	test_gns_gns2dns_lookup.sh test_gns_gns2dns_cname_lookup.sh \
+	test_gns_dht_lookup.sh test_gns_delegated_lookup.sh \
+	test_gns_at_lookup.sh test_gns_zkey_lookup.sh \
+	test_gns_rel_expiration.sh test_gns_soa_lookup.sh \
+	test_gns_revocation.sh test_gns_cname_lookup.sh \
+	$(am__append_3)
 @ENABLE_TEST_RUN_TRUE@@HAVE_SQLITE_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@@HAVE_SQLITE_TRUE@TESTS = $(check_SCRIPTS)
 all: all-recursive
@@ -1777,6 +1779,13 @@ test_gns_ipv6_lookup.sh.log: test_gns_ipv6_lookup.sh
 test_gns_txt_lookup.sh.log: test_gns_txt_lookup.sh
 	@p='test_gns_txt_lookup.sh'; \
 	b='test_gns_txt_lookup.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_gns_caa_lookup.sh.log: test_gns_caa_lookup.sh
+	@p='test_gns_caa_lookup.sh'; \
+	b='test_gns_caa_lookup.sh'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

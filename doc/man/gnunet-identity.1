@@ -6,18 +6,18 @@
 .\" any later version published by the Free Software Foundation; with no
 .\" Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
 .\" copy of the license is included in the file
-.\" ``FDL-1.3''.
+.\" FDL-1.3.
 .\"
 .\" A copy of the license is also available from the Free Software
-.\" Foundation Web site at @url{http://www.gnu.org/licenses/fdl.html}.
+.\" Foundation Web site at http://www.gnu.org/licenses/fdl.html}.
 .\"
 .\" Alternately, this document is also available under the General
 .\" Public License, version 3 or later, as published by the Free Software
 .\" Foundation.  A copy of the license is included in the file
-.\" ``GPL3''.
+.\" GPL3.
 .\"
 .\" A copy of the license is also available from the Free Software
-.\" Foundation Web site at @url{http://www.gnu.org/licenses/gpl.html}.
+.\" Foundation Web site at http://www.gnu.org/licenses/gpl.html
 .\"
 .\" SPDX-License-Identifier: GPL3.0-or-later OR FDL1.3-or-later
 .\"
@@ -29,15 +29,16 @@
 .Nd create, delete or list egos
 .Sh SYNOPSIS
 .Nm
-.Op Fl C Ar NAME | Fl \-create= Ns Ar NAME
-.Op Fl D Ar NAME | Fl \-delete= Ns Ar NAME
-.Op Fl d | \-display
-.Op Fl e Ar NAME | Fl \-ego= Ns Ar NAME
-.Op Fl h | \-help
-.Op Fl m | \-monitor
-.Op Fl q | \-quiet
-.Op Fl s Ar SUBSYSTEM | Fl \-set= Ns Ar SUBSYSTEM
-.Op Fl V | \-verbose
+.Op Fl C Ar NAME | Fl -create= Ns Ar NAME
+.Op Fl D Ar NAME | Fl -delete= Ns Ar NAME
+.Op Fl d | -display
+.Op Fl e Ar NAME | Fl -ego= Ns Ar NAME
+.Op Fl h | -help
+.Op Fl m | -monitor
+.Op Fl p | \-private-keys
+.Op Fl q | -quiet
+.Op Fl s Ar SUBSYSTEM | Fl -set= Ns Ar SUBSYSTEM
+.Op Fl V | -verbose
 .Sh DESCRIPTION
 .Nm
 is a tool for managing egos.
@@ -56,28 +57,32 @@ the new ego.
 This identifier is only used locally for this peer and not shared
 with other peers.
 The options are as follows:
-.Bl -tag -width Ds
-.It Fl C Ar NAME | Fl \-create= Ns Ar NAME
+.Bl -tag -width indent
+.It Fl C Ar NAME | Fl -create= Ns Ar NAME
 Creates a new ego with the given
 .Ar NAME .
-.It Fl D Ar NAME | Fl \-delete= Ns Ar NAME
+.It Fl D Ar NAME | Fl -delete= Ns Ar NAME
 Delete the ego with the given
 .Ar NAME .
-.It Fl d | \-display
+.It Fl d | -display
 Display all of our egos.
-.It Fl e Ar NAME | Fl \-ego= Ns Ar NAME
+.It Fl e Ar NAME | Fl -ego= Ns Ar NAME
 Perform "set" operation with the respective ego or restrict "display"
 operation to the respective ego.
-.It Fl h | \-help
+.It Fl h | -help
 Print the help page.
-.It Fl m | \-monitor
+.It Fl m | -monitor
 Run in monitor mode, listing all ouf our egos until CTRL-C is pressed.
 Each ego is listed together with a unique pointer value; if
 egos are renamed, that pointer value remains the same,
 if egos are deleted, they are listed one more time with a name of "<null>".
-.It Fl q | \-quiet
+.It Fl p | -private-keys
+Print the private keys (in Crockford Base32 encoding), and not just the public
+keys. The second column shows the public key, the third column shows the
+private key.
+.It Fl q | -quiet
 Be quiet, in particular outputs only the public key when listing egos.
-.It Fl s Ar SUBSYSTEM | Fl \-set= Ns Ar SUBSYSTEM
+.It Fl s Ar SUBSYSTEM | Fl -set= Ns Ar SUBSYSTEM
 Perform "set" operation for the specified
 .Ar SUBSYSTEM
 with the respective ego.
@@ -87,7 +92,7 @@ After this, the given SUBSYSTEM will use the ego with the specified NAME.
 This will fail if
 .Ar NAME
 does not yet exist.
-.It Fl V | \-verbose
+.It Fl V | -verbose
 Be verbose, in particular outputs the public key of freshly created egos.
 .El
 .Sh FILES

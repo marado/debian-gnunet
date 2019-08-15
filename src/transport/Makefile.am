@@ -249,21 +249,27 @@ libexec_PROGRAMS = \
  $(WLAN_BIN_DUMMY) \
  $(BT_BIN) \
  gnunet-service-transport \
- gnunet-communicator-unix
+ gnunet-communicator-unix \
+ gnunet-communicator-udp \
+ gnunet-communicator-tcp
 
 
 
 bin_PROGRAMS = \
- gnunet-transport \
+ gnunet-transport
+
+bin_SCRIPTS = \
  gnunet-transport-certificate-creation
 
-#bin_SCRIPTS = \
-# gnunet-transport-certificate-creation
+# See: https://www.gnu.org/software/automake/manual/html_node/Scripts.html#Scripts
+do_subst = sed -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'
 
-gnunet_transport_certificate_creation_SOURCES = \
- gnunet-transport-certificate-creation.c
-gnunet_transport_certificate_creation_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet-transport-certificate-creation: gnunet-transport-certificate-creation.in Makefile
+	$(do_subst) < $(srcdir)/gnunet-transport-certificate-creation.in > gnunet-transport-certificate-creation
+	chmod +x gnunet-transport-certificate-creation
+
+
 
 gnunet_communicator_unix_SOURCES = \
  gnunet-communicator-unix.c
@@ -595,11 +601,13 @@ check_PROGRAMS = \
  $(HTTP_QUOTA_TEST) \
  $(HTTPS_QUOTA_TEST) \
  $(WLAN_QUOTA_TEST) \
- $(BT_QUOTA_TEST) 
+ $(BT_QUOTA_TEST)
 if HAVE_GETOPT_BINARY
 check_PROGRAMS += \
 test_transport_api_slow_ats
 endif
+check_PROGRAMS += \
+test_communicator_unix
 endif
 
 if ENABLE_TEST_RUN
@@ -664,8 +672,7 @@ TESTS = \
  $(HTTP_API_TIMEOUT_TEST) \
  $(HTTPS_API_TIMEOUT_TEST) \
  $(WLAN_TIMEOUT_TEST) \
- $(BT_TIMEOUT_TEST) \
- test_communicator_unix
+ $(BT_TIMEOUT_TEST)
 if HAVE_GETOPT_BINARY
 TESTS += \
 test_transport_api_slow_ats
@@ -1335,6 +1342,7 @@ test_transport_api_slow_ats_LDADD = \
 
 
 EXTRA_DIST = \
+gnunet-transport-certificate-creation.in \
 communicator-unix.conf \
 test_plugin_hostkey \
 test_plugin_hostkey.ecc \
@@ -1473,4 +1481,6 @@ test_transport_api_slow_ats_peer2.conf \
   tcp_connection_legacy.c \
   tcp_server_mst_legacy.c \
   tcp_server_legacy.c \
-  tcp_service_legacy.c
+  tcp_service_legacy.c \
+test_communicator_1.conf \
+test_communicator_1.conf

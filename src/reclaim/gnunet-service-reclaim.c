@@ -28,34 +28,12 @@
 #include "gnunet-service-reclaim_tickets.h"
 #include "gnunet_constants.h"
 #include "gnunet_gnsrecord_lib.h"
-#include "gnunet_identity_service.h"
-#include "gnunet_namestore_service.h"
 #include "gnunet_protocols.h"
 #include "gnunet_reclaim_attribute_lib.h"
 #include "gnunet_reclaim_service.h"
 #include "gnunet_signatures.h"
 #include "reclaim.h"
 
-/**
- * First pass state
- */
-#define STATE_INIT 0
-
-/**
- * Normal operation state
- */
-#define STATE_POST_INIT 1
-
-/**
- * Minimum interval between updates
- */
-#define MIN_WAIT_TIME GNUNET_TIME_UNIT_MINUTES
-
-
-/**
- * Identity handle
- */
-static struct GNUNET_IDENTITY_Handle *identity_handle;
 
 /**
  * Namestore handle
@@ -66,11 +44,6 @@ static struct GNUNET_NAMESTORE_Handle *nsh;
  * Timeout task
  */
 static struct GNUNET_SCHEDULER_Task *timeout_task;
-
-/**
- * Update task
- */
-static struct GNUNET_SCHEDULER_Task *update_task;
 
 /**
  * Our configuration.
@@ -399,33 +372,6 @@ struct ConsumeTicketOperation
 
 
 /**
- * Updated attribute IDs
- */
-struct TicketAttributeUpdateEntry
-{
-  /**
-   * DLL
-   */
-  struct TicketAttributeUpdateEntry *next;
-
-  /**
-   * DLL
-   */
-  struct TicketAttributeUpdateEntry *prev;
-
-  /**
-   * The old ID
-   */
-  uint64_t old_id;
-
-  /**
-   * The new ID
-   */
-  uint64_t new_id;
-};
-
-
-/**
  * Ticket revocation request handle
  */
 struct TicketRevocationOperation
@@ -481,35 +427,6 @@ struct TicketIssueOperation
    * request id
    */
   uint32_t r_id;
-};
-
-
-/**
- * DLL for ego handles to egos containing the RECLAIM_ATTRS in a
- * map in json_t format
- *
- */
-struct EgoEntry
-{
-  /**
-   * DLL
-   */
-  struct EgoEntry *next;
-
-  /**
-   * DLL
-   */
-  struct EgoEntry *prev;
-
-  /**
-   * Ego handle
-   */
-  struct GNUNET_IDENTITY_Ego *ego;
-
-  /**
-   * Attribute map. Contains the attributes as json_t
-   */
-  struct GNUNET_CONTAINER_MultiHashMap *attr_map;
 };
 
 
@@ -649,10 +566,6 @@ cleanup ()
   RECLAIM_TICKETS_deinit ();
   if (NULL != timeout_task)
     GNUNET_SCHEDULER_cancel (timeout_task);
-  if (NULL != update_task)
-    GNUNET_SCHEDULER_cancel (update_task);
-  if (NULL != identity_handle)
-    GNUNET_IDENTITY_disconnect (identity_handle);
   if (NULL != nsh)
     GNUNET_NAMESTORE_disconnect (nsh);
 }
@@ -687,16 +600,11 @@ send_ticket_result (const struct IdpClient *client,
 {
   struct TicketResultMessage *irm;
   struct GNUNET_MQ_Envelope *env;
-  struct GNUNET_RECLAIM_Ticket *ticket_buf;
 
+  env = GNUNET_MQ_msg (irm,
+                       GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT);
   if (NULL != ticket) {
-    env = GNUNET_MQ_msg_extra (irm,
-                               sizeof (struct GNUNET_RECLAIM_Ticket),
-                               GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT);
-    ticket_buf = (struct GNUNET_RECLAIM_Ticket *)&irm[1];
-    *ticket_buf = *ticket;
-  } else {
-    env = GNUNET_MQ_msg (irm, GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT);
+    irm->ticket = *ticket;
   }
   // TODO add success member
   irm->id = htonl (r_id);
@@ -833,7 +741,7 @@ check_revoke_ticket_message (void *cls, const struct RevokeTicketMessage *im)
   uint16_t size;
 
   size = ntohs (im->header.size);
-  if (size <= sizeof (struct RevokeTicketMessage)) {
+  if (size != sizeof (struct RevokeTicketMessage)) {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
@@ -852,16 +760,14 @@ handle_revoke_ticket_message (void *cls, const struct RevokeTicketMessage *rm)
 {
   struct TicketRevocationOperation *rop;
   struct IdpClient *idp = cls;
-  struct GNUNET_RECLAIM_Ticket *ticket;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received REVOKE_TICKET message\n");
   rop = GNUNET_new (struct TicketRevocationOperation);
-  ticket = (struct GNUNET_RECLAIM_Ticket *)&rm[1];
   rop->r_id = ntohl (rm->id);
   rop->client = idp;
   GNUNET_CONTAINER_DLL_insert (idp->revoke_op_head, idp->revoke_op_tail, rop);
   rop->rh
-    = RECLAIM_TICKETS_revoke (ticket, &rm->identity, &revoke_result_cb, rop);
+    = RECLAIM_TICKETS_revoke (&rm->ticket, &rm->identity, &revoke_result_cb, rop);
   GNUNET_SERVICE_client_continue (idp->client);
 }
 
@@ -921,7 +827,7 @@ check_consume_ticket_message (void *cls, const struct ConsumeTicketMessage *cm)
   uint16_t size;
 
   size = ntohs (cm->header.size);
-  if (size <= sizeof (struct ConsumeTicketMessage)) {
+  if (size != sizeof (struct ConsumeTicketMessage)) {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
@@ -939,16 +845,14 @@ static void
 handle_consume_ticket_message (void *cls, const struct ConsumeTicketMessage *cm)
 {
   struct ConsumeTicketOperation *cop;
-  struct GNUNET_RECLAIM_Ticket *ticket;
   struct IdpClient *idp = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received CONSUME_TICKET message\n");
   cop = GNUNET_new (struct ConsumeTicketOperation);
   cop->r_id = ntohl (cm->id);
   cop->client = idp;
-  ticket = (struct GNUNET_RECLAIM_Ticket *)&cm[1];
   cop->ch
-    = RECLAIM_TICKETS_consume (&cm->identity, ticket, &consume_result_cb, cop);
+    = RECLAIM_TICKETS_consume (&cm->identity, &cm->ticket, &consume_result_cb, cop);
   GNUNET_CONTAINER_DLL_insert (idp->consume_op_head, idp->consume_op_tail, cop);
   GNUNET_SERVICE_client_continue (idp->client);
 }
@@ -1034,6 +938,7 @@ attr_store_task (void *cls)
                                                &attr_store_cont,
                                                ash);
   GNUNET_free (buf);
+  GNUNET_free (label);
 }
 
 
@@ -1213,10 +1118,17 @@ update_tickets (void *cls)
                                le);
   struct GNUNET_GNSRECORD_Data rd[le->rd_count];
   struct GNUNET_GNSRECORD_Data rd_new[le->rd_count - 1];
-  GNUNET_GNSRECORD_records_deserialize (le->data_size,
+  if (GNUNET_OK != GNUNET_GNSRECORD_records_deserialize (le->data_size,
                                         le->data,
                                         le->rd_count,
-                                        rd);
+                                        rd))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Unable to deserialize record data!\n");
+    send_delete_response (adh, GNUNET_SYSERR);
+    cleanup_adh (adh);
+    return;
+  }
   int j = 0;
   for (int i = 0; i < le->rd_count; i++) {
     if ((GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR_REF == rd[i].record_type)
@@ -1572,17 +1484,14 @@ ticket_iter_cb (void *cls, struct GNUNET_RECLAIM_Ticket *ticket)
   struct GNUNET_MQ_Envelope *env;
   struct TicketResultMessage *trm;
 
+  env = GNUNET_MQ_msg (trm, GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT);
   if (NULL == ticket) {
     /* send empty response to indicate end of list */
-    env = GNUNET_MQ_msg (trm, GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT);
     GNUNET_CONTAINER_DLL_remove (ti->client->ticket_iter_head,
                                  ti->client->ticket_iter_tail,
                                  ti);
   } else {
-    env = GNUNET_MQ_msg_extra (trm,
-                               sizeof (struct GNUNET_RECLAIM_Ticket),
-                               GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_RESULT);
-    memcpy (&trm[1], ticket, sizeof (struct GNUNET_RECLAIM_Ticket));
+    trm->ticket = *ticket;
   }
   trm->id = htonl (ti->r_id);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Sending TICKET_RESULT message\n");
@@ -1600,8 +1509,8 @@ ticket_iter_cb (void *cls, struct GNUNET_RECLAIM_Ticket *ticket)
  */
 static void
 handle_ticket_iteration_start (
-  void *cls,
-  const struct TicketIterationStartMessage *tis_msg)
+                               void *cls,
+                               const struct TicketIterationStartMessage *tis_msg)
 {
   struct IdpClient *client = cls;
   struct TicketIteration *ti;
@@ -1713,8 +1622,6 @@ run (void *cls,
                          "error connecting to namestore");
   }
 
-  identity_handle = GNUNET_IDENTITY_connect (cfg, NULL, NULL);
-
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
 }
 
@@ -1769,56 +1676,56 @@ client_connect_cb (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN (
-  "reclaim",
-  GNUNET_SERVICE_OPTION_NONE,
-  &run,
-  &client_connect_cb,
-  &client_disconnect_cb,
-  NULL,
-  GNUNET_MQ_hd_var_size (attribute_store_message,
-                         GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_STORE,
-                         struct AttributeStoreMessage,
-                         NULL),
-  GNUNET_MQ_hd_var_size (attribute_delete_message,
-                         GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_DELETE,
-                         struct AttributeDeleteMessage,
-                         NULL),
-  GNUNET_MQ_hd_fixed_size (
-    iteration_start,
-    GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_START,
-    struct AttributeIterationStartMessage,
-    NULL),
-  GNUNET_MQ_hd_fixed_size (iteration_next,
-                           GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_NEXT,
-                           struct AttributeIterationNextMessage,
-                           NULL),
-  GNUNET_MQ_hd_fixed_size (iteration_stop,
-                           GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_STOP,
-                           struct AttributeIterationStopMessage,
-                           NULL),
-  GNUNET_MQ_hd_var_size (issue_ticket_message,
-                         GNUNET_MESSAGE_TYPE_RECLAIM_ISSUE_TICKET,
-                         struct IssueTicketMessage,
-                         NULL),
-  GNUNET_MQ_hd_var_size (consume_ticket_message,
-                         GNUNET_MESSAGE_TYPE_RECLAIM_CONSUME_TICKET,
-                         struct ConsumeTicketMessage,
-                         NULL),
-  GNUNET_MQ_hd_fixed_size (ticket_iteration_start,
-                           GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_START,
-                           struct TicketIterationStartMessage,
-                           NULL),
-  GNUNET_MQ_hd_fixed_size (ticket_iteration_next,
-                           GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_NEXT,
-                           struct TicketIterationNextMessage,
-                           NULL),
-  GNUNET_MQ_hd_fixed_size (ticket_iteration_stop,
-                           GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_STOP,
-                           struct TicketIterationStopMessage,
-                           NULL),
-  GNUNET_MQ_hd_var_size (revoke_ticket_message,
-                         GNUNET_MESSAGE_TYPE_RECLAIM_REVOKE_TICKET,
-                         struct RevokeTicketMessage,
-                         NULL),
-  GNUNET_MQ_handler_end ());
+                     "reclaim",
+                     GNUNET_SERVICE_OPTION_NONE,
+                     &run,
+                     &client_connect_cb,
+                     &client_disconnect_cb,
+                     NULL,
+                     GNUNET_MQ_hd_var_size (attribute_store_message,
+                                            GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_STORE,
+                                            struct AttributeStoreMessage,
+                                            NULL),
+                     GNUNET_MQ_hd_var_size (attribute_delete_message,
+                                            GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_DELETE,
+                                            struct AttributeDeleteMessage,
+                                            NULL),
+                     GNUNET_MQ_hd_fixed_size (
+                                              iteration_start,
+                                              GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_START,
+                                              struct AttributeIterationStartMessage,
+                                              NULL),
+                     GNUNET_MQ_hd_fixed_size (iteration_next,
+                                              GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_NEXT,
+                                              struct AttributeIterationNextMessage,
+                                              NULL),
+                     GNUNET_MQ_hd_fixed_size (iteration_stop,
+                                              GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_STOP,
+                                              struct AttributeIterationStopMessage,
+                                              NULL),
+                     GNUNET_MQ_hd_var_size (issue_ticket_message,
+                                            GNUNET_MESSAGE_TYPE_RECLAIM_ISSUE_TICKET,
+                                            struct IssueTicketMessage,
+                                            NULL),
+                     GNUNET_MQ_hd_var_size (consume_ticket_message,
+                                            GNUNET_MESSAGE_TYPE_RECLAIM_CONSUME_TICKET,
+                                            struct ConsumeTicketMessage,
+                                            NULL),
+                     GNUNET_MQ_hd_fixed_size (ticket_iteration_start,
+                                              GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_START,
+                                              struct TicketIterationStartMessage,
+                                              NULL),
+                     GNUNET_MQ_hd_fixed_size (ticket_iteration_next,
+                                              GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_NEXT,
+                                              struct TicketIterationNextMessage,
+                                              NULL),
+                     GNUNET_MQ_hd_fixed_size (ticket_iteration_stop,
+                                              GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_STOP,
+                                              struct TicketIterationStopMessage,
+                                              NULL),
+                     GNUNET_MQ_hd_var_size (revoke_ticket_message,
+                                            GNUNET_MESSAGE_TYPE_RECLAIM_REVOKE_TICKET,
+                                            struct RevokeTicketMessage,
+                                            NULL),
+                     GNUNET_MQ_handler_end ());
 /* end of gnunet-service-reclaim.c */

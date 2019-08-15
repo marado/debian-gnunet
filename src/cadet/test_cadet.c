@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -500,7 +500,7 @@ handle_data (void *cls,
              const struct GNUNET_MessageHeader *message);
 
 /**
- * Function called whenever an MQ-channel is destroyed, even if the destruction
+ * Function called whenever an MQ-channel is destroyed, unless the destruction
  * was requested by #GNUNET_CADET_channel_destroy.
  * It must NOT call #GNUNET_CADET_channel_destroy on the channel.
  *
@@ -532,7 +532,6 @@ reconnect_op (void *cls)
   };
   long l = (long) cls;
   struct CadetTestChannelWrapper *ch;
-  enum GNUNET_CADET_ChannelOption flags;
 
   reconnect_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -543,13 +542,11 @@ reconnect_op (void *cls)
     GNUNET_CADET_channel_destroy (outgoing_ch);
     outgoing_ch = NULL;
   }
-  flags = GNUNET_CADET_OPTION_DEFAULT;
   ch = GNUNET_new (struct CadetTestChannelWrapper);
   outgoing_ch = GNUNET_CADET_channel_create (h1,
                                              ch,
                                              p_id[1],
                                              &port,
-                                             flags,
                                              NULL,
                                              &disconnect_handler,
                                              handlers);
@@ -558,7 +555,7 @@ reconnect_op (void *cls)
 }
 
 /**
- * Function called whenever an MQ-channel is destroyed, even if the destruction
+ * Function called whenever an MQ-channel is destroyed, unless the destruction
  * was requested by #GNUNET_CADET_channel_destroy.
  * It must NOT call #GNUNET_CADET_channel_destroy on the channel.
  *
@@ -998,7 +995,6 @@ start_test (void *cls)
     GNUNET_MQ_handler_end ()
   };
   struct CadetTestChannelWrapper *ch;
-  enum GNUNET_CADET_ChannelOption flags;
 
   test_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "start_test: %s\n", test_name);
@@ -1008,11 +1004,9 @@ start_test (void *cls)
     disconnect_task = NULL;
   }
 
-  flags = GNUNET_CADET_OPTION_DEFAULT;
   if (SPEED_REL == test)
   {
     test = SPEED;
-    flags |= GNUNET_CADET_OPTION_RELIABLE;
   }
 
   ch = GNUNET_new (struct CadetTestChannelWrapper);
@@ -1020,7 +1014,6 @@ start_test (void *cls)
                                              ch,
                                              p_id[1],
                                              &port,
-                                             flags,
                                              NULL,
                                              &disconnect_handler,
                                              handlers);
@@ -1228,7 +1221,7 @@ main (int argc, char *argv[])
      * 1 incoming channel (@dest)
      * total_packets received data packet (@dest)
      * total_packets received data packet (@orig)
-     * 1 received channel destroy (@dest)
+     * 1 received channel destroy (@dest) FIXME #5818
      */
     ok_goal = total_packets * 2 + 2;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "SPEED_ACK\n");
@@ -1242,7 +1235,7 @@ main (int argc, char *argv[])
      * 1 initial packet (@dest)
      * total_packets received data packet (@dest)
      * 1 received data packet (@orig)
-     * 1 received channel destroy (@dest)
+     * 1 received channel destroy (@dest)  FIXME #5818
      */
     ok_goal = total_packets + 4;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "SPEED\n");
@@ -1261,12 +1254,13 @@ main (int argc, char *argv[])
   else if (strstr (argv[0], "_keepalive") != NULL)
   {
     test = KEEPALIVE;
+    test_name = "keepalive";
     /* Test is supposed to generate the following callbacks:
      * 1 incoming channel (@dest)
      * [wait]
-     * 1 received channel destroy (@dest)
+     * 1 received channel destroy (@dest)  FIXME #5818
      */
-    ok_goal = 2;
+    ok_goal = 1;
   }
   else if (strstr (argv[0], "_reopen") != NULL)
   {
@@ -1275,9 +1269,9 @@ main (int argc, char *argv[])
     ///* Test is supposed to generate the following callbacks:
     // * 1 incoming channel (@dest)
     // * [wait]
-    // * 1 received channel destroy (@dest)
+    // * 1 received channel destroy (@dest)  FIXME #5818
     // */
-    ok_goal = 7;
+    ok_goal = 6;
   }
   else
   {

@@ -7,6 +7,9 @@ endif
 
 SUBDIRS = . $(NSS_SUBDIR)
 
+pkgdata_DATA = \
+  gnunet-gns-proxy-ca.template
+
 EXTRA_DIST = \
   test_gns_defaults.conf \
   test_gns_lookup.conf \
@@ -19,7 +22,8 @@ EXTRA_DIST = \
   zonefiles/J7POEUT41A8PBFS7KVVDRF88GBOU4HK8PSU5QKVLVE3R9T91E99G.zkey \
   zonefiles/OEFL7A4VEF1B40QLEMTG5D8G1CN6EN16QUSG5R2DT71GRJN34LSG.zkey \
   zonefiles/test_zonekey \
-  $(check_SCRIPTS)
+  $(check_SCRIPTS) \
+  $(pkgdata_DATA)
 
 if MINGW
   WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
@@ -79,9 +83,6 @@ bin_PROGRAMS = \
 
 noinst_PROGRAMS = \
   gnunet-gns-benchmark
-
-pkgdata_DATA = \
-  openssl.cnf
 
 if HAVE_MHD
 if LINUX
@@ -272,14 +273,21 @@ libgnunet_plugin_block_gns_la_LIBADD = \
 libgnunet_plugin_block_gns_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
+if HAVE_MHD
+if HAVE_GNUTLS
+if HAVE_LIBGNURL
 check_PROGRAMS = \
   test_gns_proxy
+endif
+endif
+endif
 
 check_SCRIPTS = \
   test_gns_lookup.sh \
   test_gns_config_lookup.sh \
   test_gns_ipv6_lookup.sh\
   test_gns_txt_lookup.sh\
+  test_gns_caa_lookup.sh\
   test_gns_mx_lookup.sh \
   test_gns_gns2dns_lookup.sh \
   test_gns_gns2dns_cname_lookup.sh \
@@ -290,8 +298,17 @@ check_SCRIPTS = \
   test_gns_rel_expiration.sh\
   test_gns_soa_lookup.sh\
   test_gns_revocation.sh\
-  test_gns_cname_lookup.sh \
-	test_proxy.sh
+  test_gns_cname_lookup.sh
+
+if HAVE_MHD
+if HAVE_GNUTLS
+if HAVE_LIBGNURL
+check_SCRIPTS += \
+  test_proxy.sh
+endif
+endif
+endif
+
 
 if ENABLE_TEST_RUN
 if HAVE_SQLITE

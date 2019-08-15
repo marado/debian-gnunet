@@ -25,54 +25,6 @@ START-INFO-DIR-ENTRY
 END-INFO-DIR-ENTRY
 
 
-File: gnunet.info,  Node: Dissemination,  Next: Revocation Message Design Requirements,  Up: REVOCATION Subsystem
-
-7.36.1 Dissemination
---------------------
-
-When a revocation is performed, the revocation is first of all
-disseminated by flooding the overlay network.  The goal is to reach
-every peer, so that when a peer needs to check if a key has been
-revoked, this will be purely a local operation where the peer looks at
-its local revocation list.  Flooding the network is also the most robust
-form of key revocation — an adversary would have to control a separator
-of the overlay graph to restrict the propagation of the revocation
-message.  Flooding is also very easy to implement — peers that receive a
-revocation message for a key that they have never seen before simply
-pass the message to all of their neighbours.
-
-   Flooding can only distribute the revocation message to peers that are
-online.  In order to notify peers that join the network later, the
-revocation service performs efficient set reconciliation over the sets
-of known revocation messages whenever two peers (that both support
-REVOCATION dissemination) connect.  The SET service is used to perform
-this operation efficiently.
-
-
-File: gnunet.info,  Node: Revocation Message Design Requirements,  Next: libgnunetrevocation,  Prev: Dissemination,  Up: REVOCATION Subsystem
-
-7.36.2 Revocation Message Design Requirements
----------------------------------------------
-
-However, flooding is also quite costly, creating O(|E|) messages on a
-network with |E| edges.  Thus, revocation messages are required to
-contain a proof-of-work, the result of an expensive computation (which,
-however, is cheap to verify).  Only peers that have expended the CPU
-time necessary to provide this proof will be able to flood the network
-with the revocation message.  This ensures that an attacker cannot
-simply flood the network with millions of revocation messages.  The
-proof-of-work required by GNUnet is set to take days on a typical PC to
-compute; if the ability to quickly revoke a key is needed, users have
-the option to pre-compute revocation messages to store off-line and use
-instantly after their key has expired.
-
-   Revocation messages must also be signed by the private key that is
-being revoked.  Thus, they can only be created while the private key is
-in the possession of the respective user.  This is another reason to
-create a revocation message ahead of time and store it in a secure
-location.
-
-
 File: gnunet.info,  Node: libgnunetrevocation,  Next: The REVOCATION Client-Service Protocol,  Prev: Revocation Message Design Requirements,  Up: REVOCATION Subsystem
 
 7.36.3 libgnunetrevocation
@@ -400,7 +352,8 @@ The gnunet-regex-profiler can be used to profile the usage of mesh/regex
 for a given set of regular expressions and strings.  Mesh/regex allows
 you to announce your peer ID under a certain regex and search for peers
 matching a particular regex using a string.  See szengel2012ms
-(https://old.gnunet.org/szengel2012ms) for a full introduction.
+(https://bib.gnunet.org/full/date.html#2012_5f2) for a full
+introduction.
 
    First of all, the regex profiler uses GNUnet testbed, thus all the
 implications for testbed also apply to the regex profiler (for example
@@ -500,7 +453,7 @@ to create a search strings file from the previously created regular
 expressions.
 
 
-File: gnunet.info,  Node: REST Subsystem,  Prev: REGEX Subsystem,  Up: GNUnet Developer Handbook
+File: gnunet.info,  Node: REST Subsystem,  Next: RPS Subsystem,  Prev: REGEX Subsystem,  Up: GNUnet Developer Handbook
 
 7.39 REST Subsystem
 ===================
@@ -553,6 +506,89 @@ File: gnunet.info,  Node: Endpoint documentation,  Prev: Namespace consideration
 
 This is WIP. Endpoints should be documented appropriately.  Preferably
 using annotations.
+
+
+File: gnunet.info,  Node: RPS Subsystem,  Prev: REST Subsystem,  Up: GNUnet Developer Handbook
+
+7.40 RPS Subsystem
+==================
+
+In literature, Random Peer Sampling (RPS) refers to the problem of
+reliably(1) drawing random samples from an unstructured p2p network.
+
+   Doing so in a reliable manner is not only hard because of inherent
+problems but also because of possible malicious peers that could try to
+bias the selection.
+
+   It is useful for all kind of gossip protocols that require the
+selection of random peers in the whole network like gathering
+statistics, spreading and aggregating information in the network, load
+balancing and overlay topology management.
+
+   The approach chosen in the RPS service implementation in GNUnet
+follows the Brahms (https://bib.gnunet.org/full/date.html\#2009_5f0)
+design.
+
+   The current state is "work in progress".  There are a lot of things
+that need to be done, primarily finishing the experimental evaluation
+and a re-design of the API.
+
+   The abstract idea is to subscribe to connect to/start the RPS service
+and request random peers that will be returned when they represent a
+random selection from the whole network with high probability.
+
+   An additional feature to the original Brahms-design is the selection
+of sub-groups: The GNUnet implementation of RPS enables clients to ask
+for random peers from a group that is defined by a common shared secret.
+(The secret could of course also be public, depending on the use-case.)
+
+   Another addition to the original protocol was made: The sampler
+mechanism that was introduced in Brahms was slightly adapted and used to
+actually sample the peers and returned to the client.  This is necessary
+as the original design only keeps peers connected to random other peers
+in the network.  In order to return random peers to client requests
+independently random, they cannot be drawn from the connected peers.
+The adapted sampler makes sure that each request for random peers is
+independent from the others.
+
+* Menu:
+
+* Brahms::
+
+   ---------- Footnotes ----------
+
+   (1) "Reliable" in this context means having no bias, neither spatial,
+nor temporal, nor through malicious activity.
+
+
+File: gnunet.info,  Node: Brahms,  Up: RPS Subsystem
+
+7.40.1 Brahms
+-------------
+
+The high-level concept of Brahms is two-fold: Combining push-pull gossip
+with locally fixing a assumed bias using cryptographic min-wise
+permutations.  The central data structure is the view - a peer’s current
+local sample.  This view is used to select peers to push to and pull
+from.  This simple mechanism can be biased easily.  For this reason
+Brahms ’fixes’ the bias by using the so-called sampler.  A data
+structure that takes a list of elements as input and outputs a random
+one of them independently of the frequency in the input set.  Both an
+element that was put into the sampler a single time and an element that
+was put into it a million times have the same probability of being the
+output.  This is achieved with exploiting min-wise independent
+permutations.  In the RPS service we use HMACs: On the initialisation of
+a sampler element, a key is chosen at random.  On each input the HMAC
+with the random key is computed.  The sampler element keeps the element
+with the minimal HMAC.
+
+   In order to fix the bias in the view, a fraction of the elements in
+the view are sampled through the sampler from the random stream of peer
+IDs.
+
+   According to the theoretical analysis of Bortnikov et al.  this
+suffices to keep the network connected and having random peers in the
+view.
 
 
 File: gnunet.info,  Node: GNU Free Documentation License,  Next: GNU General Public License,  Prev: GNUnet Developer Handbook,  Up: Top
@@ -2500,7 +2536,7 @@ Concept Index
 * Distributed Hash Table:                Watching for updates.
                                                               (line  11)
 * DNS Conversion:                        Importing DNS Zones into GNS.
-                                                              (line  15)
+                                                              (line  22)
 * ECRS:                                  File-sharing (FS) Subsystem.
                                                               (line  34)
 * Egos:                                  Zones in the GNU Name System (GNS Zones).
@@ -2515,16 +2551,16 @@ Concept Index
                                                               (line  31)
 * GNS:                                   GETting data from the DHT2.
                                                               (line  35)
-* GNS Namecache:                         Performance.         (line  28)
+* GNS Namecache:                         Performance.         (line  32)
 * GNU Name System:                       GETting data from the DHT2.
                                                               (line  34)
 * GNUnet GTK:                            Checking the Installation.
-                                                              (line  19)
+                                                              (line  20)
 * gnunet-ext:                            Build-system.        (line  23)
 * GTK:                                   Checking the Installation.
-                                                              (line  19)
+                                                              (line  20)
 * GTK user interface:                    Checking the Installation.
-                                                              (line  18)
+                                                              (line  19)
 * HOSTLIST client:                       Advertising the URL. (line  11)
 * HOSTLIST daemon:                       Hostlist security address validation.
                                                               (line  19)
@@ -2591,25 +2627,27 @@ Concept Index
 * PEERSTORE Subsystem:                   Obtaining Information from the PEERINFO Service.
                                                               (line  23)
 * Philosophy:                            Typography.          (line  11)
-* PlanetLab testbed:                     Implementation.      (line  68)
 * Practicality:                          Privacy and Anonymity.
                                                               (line  20)
 * Privacy and Anonymity:                 Design Principles.   (line  29)
 * REGEX subsystem:                       File-sharing persistence directory structure.
                                                               (line  77)
 * REST subsystem:                        How to run the regex profiler.
-                                                              (line 108)
+                                                              (line 109)
 * REVOCATION Subsystem:                  Store2.              (line  16)
+* RPS Subsystem:                         Endpoint documentation.
+                                                              (line   8)
 * Service API:                           Message Queue API.   (line 125)
 * SET Subsystem:                         libgnunetpeerstore.  (line  45)
 * sks-uri:                               Keyword queries (ksk).
                                                               (line  14)
 * SMTP plugin:                           Distance-Vector plugin.
                                                               (line  67)
+* Starting GNUnet:                       Checking the Installation.
+                                                              (line  20)
 * STATISTICS Subsystem:                  The SET Union Peer-to-Peer Protocol.
                                                               (line  43)
-* TESTBED Caveats:                       Why do i get an ssh error when using the regex profiler?.
-                                                              (line  23)
+* TESTBED Caveats:                       Implementation.      (line  68)
 * TESTBED Subsystem:                     Performance regression analysis with Gauger.
                                                               (line  67)
 * TESTING API:                           TESTING library.     (line  40)
