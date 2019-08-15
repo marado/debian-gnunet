@@ -15,7 +15,7 @@
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     SPDX-License-Identifier: AGPL3.0-or-later
+   SPDX-License-Identifier: AGPL3.0-or-later
    */
 /**
  * @author Martin Schanzenbach
@@ -552,7 +552,6 @@ cleanup_handle (struct RequestHandle *handle)
     GNUNET_free (ego_tmp->keystring);
     GNUNET_free (ego_tmp);
   }
-  GNUNET_free_non_null (handle->attr_it);
   GNUNET_free (handle);
 }
 
@@ -793,6 +792,7 @@ cookie_identity_interpretation (struct RequestHandle *handle)
   value = strtok (token, OIDC_COOKIE_HEADER_INFORMATION_KEY);
   GNUNET_assert (NULL != value);
   handle->oidc->login_identity = GNUNET_strdup (value);
+  GNUNET_free (cookies);
 }
 
 /**
@@ -870,7 +870,6 @@ oidc_ticket_issue_cb (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
   char *code_string;
 
   handle->idp_op = NULL;
-  handle->ticket = *ticket;
   if (NULL == ticket)
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_SERVER_ERROR);
@@ -878,6 +877,7 @@ oidc_ticket_issue_cb (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
     GNUNET_SCHEDULER_add_now (&do_redirect_error, handle);
     return;
   }
+  handle->ticket = *ticket;
   ticket_str =
     GNUNET_STRINGS_data_to_string_alloc (&handle->ticket,
                                          sizeof (struct GNUNET_RECLAIM_Ticket));
@@ -1134,18 +1134,33 @@ lookup_redirect_uri_result (void *cls,
     if (NULL == strstr (tmp, handle->oidc->client_id))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Redirect uri %s does not contain client_id %s",
+                  "Redirect uri %s does not contain client_id %s\n",
                   tmp,
                   handle->oidc->client_id);
     }
     else
     {
-
       pos = strrchr (tmp, (unsigned char) '.');
+      if (NULL == pos)
+      {
+        GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                    "Redirect uri %s contains client_id but is malformed\n",
+                    tmp);
+        GNUNET_free (tmp);
+        continue;
+      }
       *pos = '\0';
       handle->redirect_prefix = GNUNET_strdup (tmp);
       tmp_key_str = pos + 1;
       pos = strchr (tmp_key_str, (unsigned char) '/');
+      if (NULL == pos)
+      {
+        GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                    "Redirect uri %s contains client_id but is malformed\n",
+                    tmp);
+        GNUNET_free (tmp);
+        continue;
+      }
       *pos = '\0';
       handle->redirect_suffix = GNUNET_strdup (pos + 1);
 
@@ -1381,18 +1396,6 @@ authorize_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
     return;
   }
 
-  if (NULL == handle->ego_head)
-  {
-    handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_SERVER_ERROR);
-    handle->edesc = GNUNET_strdup ("Egos are missing");
-    handle->response_code = MHD_HTTP_INTERNAL_SERVER_ERROR;
-    GNUNET_SCHEDULER_add_now (&do_error, handle);
-    return;
-  }
-
-  handle->ego_entry = handle->ego_head;
-  handle->priv_key =
-    *GNUNET_IDENTITY_ego_get_private_key (handle->ego_head->ego);
   // If we know this identity, translated the corresponding TLD
   // TODO: We might want to have a reverse lookup functionality for TLDs?
   for (tmp_ego = handle->ego_head; NULL != tmp_ego; tmp_ego = tmp_ego->next)
@@ -1511,7 +1514,7 @@ check_authorization (struct RequestHandle *handle,
 
   // split header in "Basic" and [content]
   credentials = strtok (authorization, " ");
-  if (0 != strcmp ("Basic", credentials))
+  if ((NULL == credentials) || (0 != strcmp ("Basic", credentials)))
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_CLIENT);
     handle->response_code = MHD_HTTP_UNAUTHORIZED;
@@ -1577,8 +1580,7 @@ check_authorization (struct RequestHandle *handle,
   }
 
   // check client_id
-  for (handle->ego_entry = handle->ego_head;
-       NULL != handle->ego_entry;
+  for (handle->ego_entry = handle->ego_head; NULL != handle->ego_entry;
        handle->ego_entry = handle->ego_entry->next)
   {
     if (0 == strcmp (handle->ego_entry->keystring, client_id))
@@ -1628,11 +1630,12 @@ persist_access_token (const struct RequestHandle *handle,
   GNUNET_CRYPTO_hash (access_token, strlen (access_token), &hc);
   ticketbuf = GNUNET_new (struct GNUNET_RECLAIM_Ticket);
   *ticketbuf = *ticket;
-  GNUNET_CONTAINER_multihashmap_put (
-    OIDC_access_token_map,
-    &hc,
-    ticketbuf,
-    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+  GNUNET_assert (GNUNET_SYSERR !=
+                 GNUNET_CONTAINER_multihashmap_put (
+                   OIDC_access_token_map,
+                   &hc,
+                   ticketbuf,
+                   GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
 }
 
 /**
@@ -1699,10 +1702,11 @@ token_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_UNSUPPORTED_GRANT_TYPE);
     handle->response_code = MHD_HTTP_BAD_REQUEST;
+    GNUNET_free (grant_type);
     GNUNET_SCHEDULER_add_now (&do_error, handle);
     return;
   }
-
+  GNUNET_free (grant_type);
   // REQUIRED code
   code = get_url_parameter_copy (handle, OIDC_CODE_KEY);
   if (NULL == code)
@@ -1719,7 +1723,9 @@ token_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_REQUEST);
     handle->edesc = GNUNET_strdup ("Unknown client");
     handle->response_code = MHD_HTTP_BAD_REQUEST;
+    GNUNET_free (code);
     GNUNET_SCHEDULER_add_now (&do_error, handle);
+    return;
   }
   privkey = GNUNET_IDENTITY_ego_get_private_key (ego_entry->ego);
   // decode code
@@ -1728,9 +1734,11 @@ token_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_REQUEST);
     handle->edesc = GNUNET_strdup ("invalid code");
     handle->response_code = MHD_HTTP_BAD_REQUEST;
+    GNUNET_free (code);
     GNUNET_SCHEDULER_add_now (&do_error, handle);
     return;
   }
+  GNUNET_free (code);
 
   // create jwt
   if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_time (cfg,
@@ -1851,7 +1859,8 @@ userinfo_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
   // split header in "Bearer" and access_token
   authorization = GNUNET_strdup (authorization);
   authorization_type = strtok (authorization, delimiter);
-  if (0 != strcmp ("Bearer", authorization_type))
+  if ((NULL == authorization_type) ||
+      (0 != strcmp ("Bearer", authorization_type)))
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_TOKEN);
     handle->edesc = GNUNET_strdup ("No Access Token");
@@ -1992,6 +2001,7 @@ list_ego (void *cls,
     init_cont (handle);
     return;
   }
+  GNUNET_assert (NULL != ego);
   if (ID_REST_STATE_INIT == handle->state)
   {
     ego_entry = GNUNET_new (struct EgoEntry);
@@ -2133,6 +2143,7 @@ libgnunet_plugin_rest_openid_connect_done (void *cls)
   while (GNUNET_YES ==
          GNUNET_CONTAINER_multihashmap_iterator_next (hashmap_it, NULL, value))
     GNUNET_free_non_null (value);
+  GNUNET_CONTAINER_multihashmap_iterator_destroy (hashmap_it);
   GNUNET_CONTAINER_multihashmap_destroy (OIDC_cookie_jar_map);
 
   hashmap_it =

@@ -250,6 +250,33 @@ WINBASEAPI HANDLE WINAPI ReOpenFile (HANDLE, DWORD, DWORD, DWORD);
  */
 typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
 
+
+/**
+ * Like strlcpy but portable. The given string @a src is copied until its null
+ * byte or until @a n - 1 bytes have been read. The destination buffer is
+ * guaranteed to be null-terminated.
+ *
+ * @param dst destination of the copy (must be @a n bytes long)
+ * @param src source of the copy (at most @a n - 1 bytes will be read)
+ * @param n the length of the string to copy, including its terminating null
+ *          byte
+ * @return the length of the string that was copied, excluding the terminating
+ * 	   null byte
+ */
+size_t
+GNUNET_strlcpy(char *dst, const char *src, size_t n)
+{
+  size_t ret;
+  size_t slen;
+
+  GNUNET_assert (0 != n);
+  slen = strnlen (src, n - 1);
+  memcpy (dst, src, slen);
+  dst[slen] = '\0';
+  return slen;
+}
+
+
 /**
  * Determines if the host OS is win32 or win64
  *
@@ -473,7 +500,9 @@ setup_interface ()
    * Set the device's hardware ID and add it to a list.
    * This information will later on identify this device in registry.
    */
-  strncpy (hwidlist, HARDWARE_ID, LINE_LEN);
+  str_length = GNUNET_strlcpy (hwidlist,
+                               HARDWARE_ID,
+                               sizeof (hwidlist)) + 1;
   /**
    * this is kind of over-complicated, but allows keeps things independent of
    * how the openvpn-hwid is actually stored.
@@ -481,8 +510,12 @@ setup_interface ()
    * A HWID list is double-\0 terminated and \0 separated
    */
   str_length = strlen (hwidlist) + 1;
-  strncpy (&hwidlist[str_length], secondary_hwid, LINE_LEN);
-  str_length += strlen (&hwidlist[str_length]) + 1;
+  str_length += GNUNET_strlcpy (&hwidlist[str_length],
+                                secondary_hwid,
+                                sizeof (hwidlist) - str_length) + 1;
+  GNUNET_assert (str_length < sizeof (hwidlist));
+  hwidlist[str_length] = '\0';
+  ++str_length;
 
   /**
    * Locate the inf-file, we need to store it somewhere where the system can
@@ -717,8 +750,7 @@ resolve_interface_name ()
            * we have successfully found OUR instance,
            * save the device GUID before exiting
            */
-
-          strncpy (device_guid, instance_key, 256);
+          GNUNET_strlcpy (device_guid, instance_key, sizeof (device_guid));
           retval = TRUE;
           fprintf (stderr, "DEBUG: Interface Name lookup succeeded on retry %d, got \"%s\" %s\n", retrys, device_visible_name, device_guid);
 
@@ -1496,8 +1528,7 @@ main (int argc, char **argv)
       return 1;
     }
 
-  strncpy (hwid, argv[1], LINE_LEN);
-  hwid[LINE_LEN - 1] = '\0';
+  GNUNET_strlcpy (hwid, argv[1], sizeof (hwid));
 
   /*
    * We use our PID for finding/resolving the control-panel name of our virtual

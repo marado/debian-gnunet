@@ -243,7 +243,7 @@
 #define HAVE_JANSSON 1
 
 /* Define to 1 if you have the <jansson.h> header file. */
-#define HAVE_JANSSON_H 1
+/* #undef HAVE_JANSSON_H */
 
 /* Define to 1 if you have the <kstat.h> header file. */
 /* #undef HAVE_KSTAT_H */
@@ -369,7 +369,7 @@
 #define HAVE_MREMAP 1
 
 /* Define to 1 if you have the <mysql/mysql.h> header file. */
-#define HAVE_MYSQL_MYSQL_H 1
+/* #undef HAVE_MYSQL_MYSQL_H */
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
@@ -612,7 +612,7 @@
 #define HAVE_ZBAR 1
 
 /* Define to 1 if you have the <zbar.h> header file. */
-#define HAVE_ZBAR_H 1
+/* #undef HAVE_ZBAR_H */
 
 /* Have compression library */
 #define HAVE_ZLIB /**/
@@ -796,7 +796,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.11.4"
+#define PACKAGE_STRING "gnunet 0.11.6"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -805,7 +805,7 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.11.4"
+#define PACKAGE_VERSION "0.11.6"
 
 /* Path to ip */
 #define PATH_TO_IP "/bin/ip"
@@ -853,10 +853,10 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-47ea01191"
+#define VCS_VERSION "git-98f2f7c90"
 
 /* Version number of package */
-#define VERSION "0.11.4"
+#define VERSION "0.11.6"
 
 /* This is a Windows system */
 /* #undef WINDOWS */

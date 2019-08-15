@@ -11,7 +11,7 @@
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
   Affero General Public License for more details.
- 
+
   You should have received a copy of the GNU Affero General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -65,7 +65,7 @@ struct OperationQueue *GST_opq_openfds;
 /**
  * Timeout for operations which may take some time
  */
-const struct GNUNET_TIME_Relative GST_timeout;
+struct GNUNET_TIME_Relative GST_timeout;
 
 /**
  * The size of the host list
@@ -541,13 +541,11 @@ handle_add_host (void *cls,
   if (0 != username_length)
   {
     username = GNUNET_malloc (username_length + 1);
-    strncpy (username, ptr, username_length);
+    GNUNET_strlcpy (username, ptr, username_length + 1);
     ptr += username_length;
   }
   hostname = GNUNET_malloc (hostname_length + 1);
-  strncpy (hostname,
-           ptr,
-           hostname_length);
+  GNUNET_strlcpy (hostname, ptr, hostname_length + 1);
   if (NULL == (host_cfg = GNUNET_TESTBED_extract_config_ (&msg->header)))
   {
     GNUNET_free_non_null (username);
@@ -862,23 +860,22 @@ testbed_run (void *cls,
   }
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CONFIGURATION_get_value_number (cfg,
-                                                        "TESTBED",
+                                                        "testbed",
                                                         "CACHE_SIZE",
                                                         &num));
   GST_cache_init ((unsigned int) num);
   GST_connection_pool_init ((unsigned int) num);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CONFIGURATION_get_value_number (cfg,
-                                                        "TESTBED",
+                                                        "testbed",
                                                         "MAX_OPEN_FDS",
                                                         &num));
   GST_opq_openfds = GNUNET_TESTBED_operation_queue_create_ (OPERATION_QUEUE_TYPE_FIXED,
                                                             (unsigned int) num);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CONFIGURATION_get_value_time (cfg,
-                                                      "TESTBED",
+                                                      "testbed",
                                                       "OPERATION_TIMEOUT",
-                                                      (struct GNUNET_TIME_Relative *)
                                                       &GST_timeout));
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CONFIGURATION_get_value_string (cfg,

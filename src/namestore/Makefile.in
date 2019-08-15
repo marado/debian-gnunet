@@ -101,9 +101,10 @@ bin_PROGRAMS = gnunet-namestore$(EXEEXT) gnunet-zoneimport$(EXEEXT)
 subdir = src/namestore
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -161,24 +162,24 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 @HAVE_POSTGRESQL_TRUE@@HAVE_TESTING_TRUE@	test_namestore_api_monitoring_existing_postgres$(EXEEXT) \
 @HAVE_POSTGRESQL_TRUE@@HAVE_TESTING_TRUE@	test_namestore_api_zone_to_name_postgres$(EXEEXT) \
 @HAVE_POSTGRESQL_TRUE@@HAVE_TESTING_TRUE@	perf_namestore_api_zone_iteration_postgres$(EXEEXT)
-@HAVE_TESTING_TRUE@am__EXEEXT_3 = test_plugin_namestore_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_store_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_store_update_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_remove_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_lookup_nick_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_monitoring_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_lookup_public_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_lookup_private_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_lookup_shadow_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_lookup_shadow_filter_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_remove_not_existing_record_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_nick_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_specific_zone_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_stop_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_monitoring_existing_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_namestore_api_zone_to_name_heap$(EXEEXT) \
-@HAVE_TESTING_TRUE@	perf_namestore_api_zone_iteration_heap$(EXEEXT)
+@HAVE_TESTING_TRUE@am__EXEEXT_3 = test_plugin_namestore_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_store_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_store_update_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_remove_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_lookup_nick_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_monitoring_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_lookup_public_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_lookup_private_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_lookup_shadow_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_lookup_shadow_filter_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_remove_not_existing_record_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_nick_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_specific_zone_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_zone_iteration_stop_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_monitoring_existing_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_namestore_api_zone_to_name_flat$(EXEEXT) \
+@HAVE_TESTING_TRUE@	perf_namestore_api_zone_iteration_flat$(EXEEXT)
 @HAVE_MHD_TRUE@am__EXEEXT_4 = gnunet-namestore-fcfsd$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -210,23 +211,23 @@ am__uninstall_files_from_dir = { \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libgnunet_plugin_namestore_heap_la_DEPENDENCIES =  \
+libgnunet_plugin_namestore_flat_la_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_libgnunet_plugin_namestore_heap_la_OBJECTS =  \
-	plugin_namestore_heap.lo
-libgnunet_plugin_namestore_heap_la_OBJECTS =  \
-	$(am_libgnunet_plugin_namestore_heap_la_OBJECTS)
+am_libgnunet_plugin_namestore_flat_la_OBJECTS =  \
+	plugin_namestore_flat.lo
+libgnunet_plugin_namestore_flat_la_OBJECTS =  \
+	$(am_libgnunet_plugin_namestore_flat_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-libgnunet_plugin_namestore_heap_la_LINK = $(LIBTOOL) $(AM_V_lt) \
+libgnunet_plugin_namestore_flat_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgnunet_plugin_namestore_heap_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(libgnunet_plugin_namestore_flat_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunet_plugin_namestore_postgres_la_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/pq/libgnunetpq.la \
@@ -324,11 +325,11 @@ gnunet_zoneimport_DEPENDENCIES = libgnunetnamestore.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
-am_perf_namestore_api_zone_iteration_heap_OBJECTS =  \
+am_perf_namestore_api_zone_iteration_flat_OBJECTS =  \
 	perf_namestore_api_zone_iteration.$(OBJEXT)
-perf_namestore_api_zone_iteration_heap_OBJECTS =  \
-	$(am_perf_namestore_api_zone_iteration_heap_OBJECTS)
-perf_namestore_api_zone_iteration_heap_DEPENDENCIES =  \
+perf_namestore_api_zone_iteration_flat_OBJECTS =  \
+	$(am_perf_namestore_api_zone_iteration_flat_OBJECTS)
+perf_namestore_api_zone_iteration_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -351,11 +352,11 @@ perf_namestore_api_zone_iteration_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_lookup_nick_heap_OBJECTS =  \
+am_test_namestore_api_lookup_nick_flat_OBJECTS =  \
 	test_namestore_api_lookup_nick.$(OBJEXT)
-test_namestore_api_lookup_nick_heap_OBJECTS =  \
-	$(am_test_namestore_api_lookup_nick_heap_OBJECTS)
-test_namestore_api_lookup_nick_heap_DEPENDENCIES =  \
+test_namestore_api_lookup_nick_flat_OBJECTS =  \
+	$(am_test_namestore_api_lookup_nick_flat_OBJECTS)
+test_namestore_api_lookup_nick_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -381,11 +382,11 @@ test_namestore_api_lookup_nick_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/namecache/libgnunetnamecache.la \
 	libgnunetnamestore.la
-am_test_namestore_api_lookup_private_heap_OBJECTS =  \
+am_test_namestore_api_lookup_private_flat_OBJECTS =  \
 	test_namestore_api_lookup_private.$(OBJEXT)
-test_namestore_api_lookup_private_heap_OBJECTS =  \
-	$(am_test_namestore_api_lookup_private_heap_OBJECTS)
-test_namestore_api_lookup_private_heap_DEPENDENCIES =  \
+test_namestore_api_lookup_private_flat_OBJECTS =  \
+	$(am_test_namestore_api_lookup_private_flat_OBJECTS)
+test_namestore_api_lookup_private_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -411,11 +412,11 @@ test_namestore_api_lookup_private_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/namecache/libgnunetnamecache.la \
 	libgnunetnamestore.la
-am_test_namestore_api_lookup_public_heap_OBJECTS =  \
+am_test_namestore_api_lookup_public_flat_OBJECTS =  \
 	test_namestore_api_lookup_public.$(OBJEXT)
-test_namestore_api_lookup_public_heap_OBJECTS =  \
-	$(am_test_namestore_api_lookup_public_heap_OBJECTS)
-test_namestore_api_lookup_public_heap_DEPENDENCIES =  \
+test_namestore_api_lookup_public_flat_OBJECTS =  \
+	$(am_test_namestore_api_lookup_public_flat_OBJECTS)
+test_namestore_api_lookup_public_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -441,11 +442,11 @@ test_namestore_api_lookup_public_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/namecache/libgnunetnamecache.la \
 	libgnunetnamestore.la
-am_test_namestore_api_lookup_shadow_filter_heap_OBJECTS =  \
+am_test_namestore_api_lookup_shadow_filter_flat_OBJECTS =  \
 	test_namestore_api_lookup_shadow_filter.$(OBJEXT)
-test_namestore_api_lookup_shadow_filter_heap_OBJECTS =  \
-	$(am_test_namestore_api_lookup_shadow_filter_heap_OBJECTS)
-test_namestore_api_lookup_shadow_filter_heap_DEPENDENCIES =  \
+test_namestore_api_lookup_shadow_filter_flat_OBJECTS =  \
+	$(am_test_namestore_api_lookup_shadow_filter_flat_OBJECTS)
+test_namestore_api_lookup_shadow_filter_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -470,11 +471,11 @@ test_namestore_api_lookup_shadow_filter_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/namecache/libgnunetnamecache.la \
 	libgnunetnamestore.la
-am_test_namestore_api_lookup_shadow_heap_OBJECTS =  \
+am_test_namestore_api_lookup_shadow_flat_OBJECTS =  \
 	test_namestore_api_lookup_shadow.$(OBJEXT)
-test_namestore_api_lookup_shadow_heap_OBJECTS =  \
-	$(am_test_namestore_api_lookup_shadow_heap_OBJECTS)
-test_namestore_api_lookup_shadow_heap_DEPENDENCIES =  \
+test_namestore_api_lookup_shadow_flat_OBJECTS =  \
+	$(am_test_namestore_api_lookup_shadow_flat_OBJECTS)
+test_namestore_api_lookup_shadow_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -500,11 +501,11 @@ test_namestore_api_lookup_shadow_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/namecache/libgnunetnamecache.la \
 	libgnunetnamestore.la
-am_test_namestore_api_monitoring_existing_heap_OBJECTS =  \
+am_test_namestore_api_monitoring_existing_flat_OBJECTS =  \
 	test_namestore_api_monitoring_existing.$(OBJEXT)
-test_namestore_api_monitoring_existing_heap_OBJECTS =  \
-	$(am_test_namestore_api_monitoring_existing_heap_OBJECTS)
-test_namestore_api_monitoring_existing_heap_DEPENDENCIES =  \
+test_namestore_api_monitoring_existing_flat_OBJECTS =  \
+	$(am_test_namestore_api_monitoring_existing_flat_OBJECTS)
+test_namestore_api_monitoring_existing_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	libgnunetnamestore.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -527,11 +528,11 @@ test_namestore_api_monitoring_existing_sqlite_DEPENDENCIES =  \
 	libgnunetnamestore.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_namestore_api_monitoring_heap_OBJECTS =  \
+am_test_namestore_api_monitoring_flat_OBJECTS =  \
 	test_namestore_api_monitoring.$(OBJEXT)
-test_namestore_api_monitoring_heap_OBJECTS =  \
-	$(am_test_namestore_api_monitoring_heap_OBJECTS)
-test_namestore_api_monitoring_heap_DEPENDENCIES =  \
+test_namestore_api_monitoring_flat_OBJECTS =  \
+	$(am_test_namestore_api_monitoring_flat_OBJECTS)
+test_namestore_api_monitoring_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	libgnunetnamestore.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -554,19 +555,19 @@ test_namestore_api_monitoring_sqlite_DEPENDENCIES =  \
 	libgnunetnamestore.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_namestore_api_remove_heap_OBJECTS =  \
+am_test_namestore_api_remove_flat_OBJECTS =  \
 	test_namestore_api_remove.$(OBJEXT)
-test_namestore_api_remove_heap_OBJECTS =  \
-	$(am_test_namestore_api_remove_heap_OBJECTS)
-test_namestore_api_remove_heap_DEPENDENCIES =  \
+test_namestore_api_remove_flat_OBJECTS =  \
+	$(am_test_namestore_api_remove_flat_OBJECTS)
+test_namestore_api_remove_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_remove_not_existing_record_heap_OBJECTS =  \
+am_test_namestore_api_remove_not_existing_record_flat_OBJECTS =  \
 	test_namestore_api_remove_not_existing_record.$(OBJEXT)
-test_namestore_api_remove_not_existing_record_heap_OBJECTS = $(am_test_namestore_api_remove_not_existing_record_heap_OBJECTS)
-test_namestore_api_remove_not_existing_record_heap_DEPENDENCIES =  \
+test_namestore_api_remove_not_existing_record_flat_OBJECTS = $(am_test_namestore_api_remove_not_existing_record_flat_OBJECTS)
+test_namestore_api_remove_not_existing_record_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -605,11 +606,11 @@ test_namestore_api_remove_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_store_heap_OBJECTS =  \
+am_test_namestore_api_store_flat_OBJECTS =  \
 	test_namestore_api_store.$(OBJEXT)
-test_namestore_api_store_heap_OBJECTS =  \
-	$(am_test_namestore_api_store_heap_OBJECTS)
-test_namestore_api_store_heap_DEPENDENCIES =  \
+test_namestore_api_store_flat_OBJECTS =  \
+	$(am_test_namestore_api_store_flat_OBJECTS)
+test_namestore_api_store_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -632,11 +633,11 @@ test_namestore_api_store_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_store_update_heap_OBJECTS =  \
+am_test_namestore_api_store_update_flat_OBJECTS =  \
 	test_namestore_api_store_update.$(OBJEXT)
-test_namestore_api_store_update_heap_OBJECTS =  \
-	$(am_test_namestore_api_store_update_heap_OBJECTS)
-test_namestore_api_store_update_heap_DEPENDENCIES =  \
+test_namestore_api_store_update_flat_OBJECTS =  \
+	$(am_test_namestore_api_store_update_flat_OBJECTS)
+test_namestore_api_store_update_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -662,20 +663,20 @@ test_namestore_api_store_update_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/namecache/libgnunetnamecache.la \
 	libgnunetnamestore.la
-am_test_namestore_api_zone_iteration_heap_OBJECTS =  \
+am_test_namestore_api_zone_iteration_flat_OBJECTS =  \
 	test_namestore_api_zone_iteration.$(OBJEXT)
-test_namestore_api_zone_iteration_heap_OBJECTS =  \
-	$(am_test_namestore_api_zone_iteration_heap_OBJECTS)
-test_namestore_api_zone_iteration_heap_DEPENDENCIES =  \
+test_namestore_api_zone_iteration_flat_OBJECTS =  \
+	$(am_test_namestore_api_zone_iteration_flat_OBJECTS)
+test_namestore_api_zone_iteration_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_zone_iteration_nick_heap_OBJECTS =  \
+am_test_namestore_api_zone_iteration_nick_flat_OBJECTS =  \
 	test_namestore_api_zone_iteration_nick.$(OBJEXT)
-test_namestore_api_zone_iteration_nick_heap_OBJECTS =  \
-	$(am_test_namestore_api_zone_iteration_nick_heap_OBJECTS)
-test_namestore_api_zone_iteration_nick_heap_DEPENDENCIES =  \
+test_namestore_api_zone_iteration_nick_flat_OBJECTS =  \
+	$(am_test_namestore_api_zone_iteration_nick_flat_OBJECTS)
+test_namestore_api_zone_iteration_nick_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -707,10 +708,10 @@ test_namestore_api_zone_iteration_postgres_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_zone_iteration_specific_zone_heap_OBJECTS =  \
+am_test_namestore_api_zone_iteration_specific_zone_flat_OBJECTS =  \
 	test_namestore_api_zone_iteration_specific_zone.$(OBJEXT)
-test_namestore_api_zone_iteration_specific_zone_heap_OBJECTS = $(am_test_namestore_api_zone_iteration_specific_zone_heap_OBJECTS)
-test_namestore_api_zone_iteration_specific_zone_heap_DEPENDENCIES =  \
+test_namestore_api_zone_iteration_specific_zone_flat_OBJECTS = $(am_test_namestore_api_zone_iteration_specific_zone_flat_OBJECTS)
+test_namestore_api_zone_iteration_specific_zone_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -740,11 +741,11 @@ test_namestore_api_zone_iteration_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_zone_iteration_stop_heap_OBJECTS =  \
+am_test_namestore_api_zone_iteration_stop_flat_OBJECTS =  \
 	test_namestore_api_zone_iteration_stop.$(OBJEXT)
-test_namestore_api_zone_iteration_stop_heap_OBJECTS =  \
-	$(am_test_namestore_api_zone_iteration_stop_heap_OBJECTS)
-test_namestore_api_zone_iteration_stop_heap_DEPENDENCIES =  \
+test_namestore_api_zone_iteration_stop_flat_OBJECTS =  \
+	$(am_test_namestore_api_zone_iteration_stop_flat_OBJECTS)
+test_namestore_api_zone_iteration_stop_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -767,11 +768,11 @@ test_namestore_api_zone_iteration_stop_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	libgnunetnamestore.la
-am_test_namestore_api_zone_to_name_heap_OBJECTS =  \
+am_test_namestore_api_zone_to_name_flat_OBJECTS =  \
 	test_namestore_api_zone_to_name.$(OBJEXT)
-test_namestore_api_zone_to_name_heap_OBJECTS =  \
-	$(am_test_namestore_api_zone_to_name_heap_OBJECTS)
-test_namestore_api_zone_to_name_heap_DEPENDENCIES =  \
+test_namestore_api_zone_to_name_flat_OBJECTS =  \
+	$(am_test_namestore_api_zone_to_name_flat_OBJECTS)
+test_namestore_api_zone_to_name_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunetnamestore.la
@@ -791,11 +792,11 @@ test_namestore_api_zone_to_name_sqlite_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunetnamestore.la
-am_test_plugin_namestore_heap_OBJECTS =  \
+am_test_plugin_namestore_flat_OBJECTS =  \
 	test_plugin_namestore.$(OBJEXT)
-test_plugin_namestore_heap_OBJECTS =  \
-	$(am_test_plugin_namestore_heap_OBJECTS)
-test_plugin_namestore_heap_DEPENDENCIES =  \
+test_plugin_namestore_flat_OBJECTS =  \
+	$(am_test_plugin_namestore_flat_OBJECTS)
+test_plugin_namestore_flat_DEPENDENCIES =  \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_plugin_namestore_postgres_OBJECTS =  \
@@ -833,7 +834,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-namestore-fcfsd.Po \
 	./$(DEPDIR)/gnunet-zoneimport.Po ./$(DEPDIR)/namestore_api.Plo \
 	./$(DEPDIR)/namestore_api_monitor.Plo \
 	./$(DEPDIR)/perf_namestore_api_zone_iteration.Po \
-	./$(DEPDIR)/plugin_namestore_heap.Plo \
+	./$(DEPDIR)/plugin_namestore_flat.Plo \
 	./$(DEPDIR)/plugin_namestore_postgres.Plo \
 	./$(DEPDIR)/plugin_namestore_sqlite.Plo \
 	./$(DEPDIR)/plugin_rest_namestore.Plo \
@@ -873,7 +874,7 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
+SOURCES = $(libgnunet_plugin_namestore_flat_la_SOURCES) \
 	$(libgnunet_plugin_namestore_postgres_la_SOURCES) \
 	$(libgnunet_plugin_namestore_sqlite_la_SOURCES) \
 	$(libgnunet_plugin_rest_namestore_la_SOURCES) \
@@ -881,61 +882,61 @@ SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
 	$(gnunet_namestore_fcfsd_SOURCES) \
 	$(gnunet_service_namestore_SOURCES) \
 	$(gnunet_zoneimport_SOURCES) \
-	$(perf_namestore_api_zone_iteration_heap_SOURCES) \
+	$(perf_namestore_api_zone_iteration_flat_SOURCES) \
 	$(perf_namestore_api_zone_iteration_postgres_SOURCES) \
 	$(perf_namestore_api_zone_iteration_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_nick_heap_SOURCES) \
+	$(test_namestore_api_lookup_nick_flat_SOURCES) \
 	$(test_namestore_api_lookup_nick_postgres_SOURCES) \
 	$(test_namestore_api_lookup_nick_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_private_heap_SOURCES) \
+	$(test_namestore_api_lookup_private_flat_SOURCES) \
 	$(test_namestore_api_lookup_private_postgres_SOURCES) \
 	$(test_namestore_api_lookup_private_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_public_heap_SOURCES) \
+	$(test_namestore_api_lookup_public_flat_SOURCES) \
 	$(test_namestore_api_lookup_public_postgres_SOURCES) \
 	$(test_namestore_api_lookup_public_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_shadow_filter_heap_SOURCES) \
+	$(test_namestore_api_lookup_shadow_filter_flat_SOURCES) \
 	$(test_namestore_api_lookup_shadow_filter_postgres_SOURCES) \
 	$(test_namestore_api_lookup_shadow_filter_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_shadow_heap_SOURCES) \
+	$(test_namestore_api_lookup_shadow_flat_SOURCES) \
 	$(test_namestore_api_lookup_shadow_postgres_SOURCES) \
 	$(test_namestore_api_lookup_shadow_sqlite_SOURCES) \
-	$(test_namestore_api_monitoring_existing_heap_SOURCES) \
+	$(test_namestore_api_monitoring_existing_flat_SOURCES) \
 	$(test_namestore_api_monitoring_existing_postgres_SOURCES) \
 	$(test_namestore_api_monitoring_existing_sqlite_SOURCES) \
-	$(test_namestore_api_monitoring_heap_SOURCES) \
+	$(test_namestore_api_monitoring_flat_SOURCES) \
 	$(test_namestore_api_monitoring_postgres_SOURCES) \
 	$(test_namestore_api_monitoring_sqlite_SOURCES) \
-	$(test_namestore_api_remove_heap_SOURCES) \
-	$(test_namestore_api_remove_not_existing_record_heap_SOURCES) \
+	$(test_namestore_api_remove_flat_SOURCES) \
+	$(test_namestore_api_remove_not_existing_record_flat_SOURCES) \
 	$(test_namestore_api_remove_not_existing_record_postgres_SOURCES) \
 	$(test_namestore_api_remove_not_existing_record_sqlite_SOURCES) \
 	$(test_namestore_api_remove_postgres_SOURCES) \
 	$(test_namestore_api_remove_sqlite_SOURCES) \
-	$(test_namestore_api_store_heap_SOURCES) \
+	$(test_namestore_api_store_flat_SOURCES) \
 	$(test_namestore_api_store_postgres_SOURCES) \
 	$(test_namestore_api_store_sqlite_SOURCES) \
-	$(test_namestore_api_store_update_heap_SOURCES) \
+	$(test_namestore_api_store_update_flat_SOURCES) \
 	$(test_namestore_api_store_update_postgres_SOURCES) \
 	$(test_namestore_api_store_update_sqlite_SOURCES) \
-	$(test_namestore_api_zone_iteration_heap_SOURCES) \
-	$(test_namestore_api_zone_iteration_nick_heap_SOURCES) \
+	$(test_namestore_api_zone_iteration_flat_SOURCES) \
+	$(test_namestore_api_zone_iteration_nick_flat_SOURCES) \
 	$(test_namestore_api_zone_iteration_nick_postgres_SOURCES) \
 	$(test_namestore_api_zone_iteration_nick_sqlite_SOURCES) \
 	$(test_namestore_api_zone_iteration_postgres_SOURCES) \
-	$(test_namestore_api_zone_iteration_specific_zone_heap_SOURCES) \
+	$(test_namestore_api_zone_iteration_specific_zone_flat_SOURCES) \
 	$(test_namestore_api_zone_iteration_specific_zone_postgres_SOURCES) \
 	$(test_namestore_api_zone_iteration_specific_zone_sqlite_SOURCES) \
 	$(test_namestore_api_zone_iteration_sqlite_SOURCES) \
-	$(test_namestore_api_zone_iteration_stop_heap_SOURCES) \
+	$(test_namestore_api_zone_iteration_stop_flat_SOURCES) \
 	$(test_namestore_api_zone_iteration_stop_postgres_SOURCES) \
 	$(test_namestore_api_zone_iteration_stop_sqlite_SOURCES) \
-	$(test_namestore_api_zone_to_name_heap_SOURCES) \
+	$(test_namestore_api_zone_to_name_flat_SOURCES) \
 	$(test_namestore_api_zone_to_name_postgres_SOURCES) \
 	$(test_namestore_api_zone_to_name_sqlite_SOURCES) \
-	$(test_plugin_namestore_heap_SOURCES) \
+	$(test_plugin_namestore_flat_SOURCES) \
 	$(test_plugin_namestore_postgres_SOURCES) \
 	$(test_plugin_namestore_sqlite_SOURCES)
-DIST_SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
+DIST_SOURCES = $(libgnunet_plugin_namestore_flat_la_SOURCES) \
 	$(libgnunet_plugin_namestore_postgres_la_SOURCES) \
 	$(libgnunet_plugin_namestore_sqlite_la_SOURCES) \
 	$(libgnunet_plugin_rest_namestore_la_SOURCES) \
@@ -943,58 +944,58 @@ DIST_SOURCES = $(libgnunet_plugin_namestore_heap_la_SOURCES) \
 	$(gnunet_namestore_fcfsd_SOURCES) \
 	$(gnunet_service_namestore_SOURCES) \
 	$(gnunet_zoneimport_SOURCES) \
-	$(perf_namestore_api_zone_iteration_heap_SOURCES) \
+	$(perf_namestore_api_zone_iteration_flat_SOURCES) \
 	$(perf_namestore_api_zone_iteration_postgres_SOURCES) \
 	$(perf_namestore_api_zone_iteration_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_nick_heap_SOURCES) \
+	$(test_namestore_api_lookup_nick_flat_SOURCES) \
 	$(test_namestore_api_lookup_nick_postgres_SOURCES) \
 	$(test_namestore_api_lookup_nick_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_private_heap_SOURCES) \
+	$(test_namestore_api_lookup_private_flat_SOURCES) \
 	$(test_namestore_api_lookup_private_postgres_SOURCES) \
 	$(test_namestore_api_lookup_private_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_public_heap_SOURCES) \
+	$(test_namestore_api_lookup_public_flat_SOURCES) \
 	$(test_namestore_api_lookup_public_postgres_SOURCES) \
 	$(test_namestore_api_lookup_public_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_shadow_filter_heap_SOURCES) \
+	$(test_namestore_api_lookup_shadow_filter_flat_SOURCES) \
 	$(test_namestore_api_lookup_shadow_filter_postgres_SOURCES) \
 	$(test_namestore_api_lookup_shadow_filter_sqlite_SOURCES) \
-	$(test_namestore_api_lookup_shadow_heap_SOURCES) \
+	$(test_namestore_api_lookup_shadow_flat_SOURCES) \
 	$(test_namestore_api_lookup_shadow_postgres_SOURCES) \
 	$(test_namestore_api_lookup_shadow_sqlite_SOURCES) \
-	$(test_namestore_api_monitoring_existing_heap_SOURCES) \
+	$(test_namestore_api_monitoring_existing_flat_SOURCES) \
 	$(test_namestore_api_monitoring_existing_postgres_SOURCES) \
 	$(test_namestore_api_monitoring_existing_sqlite_SOURCES) \
-	$(test_namestore_api_monitoring_heap_SOURCES) \
+	$(test_namestore_api_monitoring_flat_SOURCES) \
 	$(test_namestore_api_monitoring_postgres_SOURCES) \
 	$(test_namestore_api_monitoring_sqlite_SOURCES) \
-	$(test_namestore_api_remove_heap_SOURCES) \
-	$(test_namestore_api_remove_not_existing_record_heap_SOURCES) \
+	$(test_namestore_api_remove_flat_SOURCES) \
+	$(test_namestore_api_remove_not_existing_record_flat_SOURCES) \
 	$(test_namestore_api_remove_not_existing_record_postgres_SOURCES) \
 	$(test_namestore_api_remove_not_existing_record_sqlite_SOURCES) \
 	$(test_namestore_api_remove_postgres_SOURCES) \
 	$(test_namestore_api_remove_sqlite_SOURCES) \
-	$(test_namestore_api_store_heap_SOURCES) \
+	$(test_namestore_api_store_flat_SOURCES) \
 	$(test_namestore_api_store_postgres_SOURCES) \
 	$(test_namestore_api_store_sqlite_SOURCES) \
-	$(test_namestore_api_store_update_heap_SOURCES) \
+	$(test_namestore_api_store_update_flat_SOURCES) \
 	$(test_namestore_api_store_update_postgres_SOURCES) \
 	$(test_namestore_api_store_update_sqlite_SOURCES) \
-	$(test_namestore_api_zone_iteration_heap_SOURCES) \
-	$(test_namestore_api_zone_iteration_nick_heap_SOURCES) \
+	$(test_namestore_api_zone_iteration_flat_SOURCES) \
+	$(test_namestore_api_zone_iteration_nick_flat_SOURCES) \
 	$(test_namestore_api_zone_iteration_nick_postgres_SOURCES) \
 	$(test_namestore_api_zone_iteration_nick_sqlite_SOURCES) \
 	$(test_namestore_api_zone_iteration_postgres_SOURCES) \
-	$(test_namestore_api_zone_iteration_specific_zone_heap_SOURCES) \
+	$(test_namestore_api_zone_iteration_specific_zone_flat_SOURCES) \
 	$(test_namestore_api_zone_iteration_specific_zone_postgres_SOURCES) \
 	$(test_namestore_api_zone_iteration_specific_zone_sqlite_SOURCES) \
 	$(test_namestore_api_zone_iteration_sqlite_SOURCES) \
-	$(test_namestore_api_zone_iteration_stop_heap_SOURCES) \
+	$(test_namestore_api_zone_iteration_stop_flat_SOURCES) \
 	$(test_namestore_api_zone_iteration_stop_postgres_SOURCES) \
 	$(test_namestore_api_zone_iteration_stop_sqlite_SOURCES) \
-	$(test_namestore_api_zone_to_name_heap_SOURCES) \
+	$(test_namestore_api_zone_to_name_flat_SOURCES) \
 	$(test_namestore_api_zone_to_name_postgres_SOURCES) \
 	$(test_namestore_api_zone_to_name_sqlite_SOURCES) \
-	$(test_plugin_namestore_heap_SOURCES) \
+	$(test_plugin_namestore_flat_SOURCES) \
 	$(test_plugin_namestore_postgres_SOURCES) \
 	$(test_plugin_namestore_sqlite_SOURCES)
 am__can_run_installinfo = \
@@ -1251,7 +1252,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -1383,6 +1389,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@
@@ -1433,25 +1440,25 @@ pkgcfg_DATA = \
 @MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIBS = -lgcov
-HEAP_PLUGIN = libgnunet_plugin_namestore_heap.la
-@HAVE_TESTING_TRUE@HEAP_TESTS = test_plugin_namestore_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_store_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_store_update_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_remove_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_lookup_nick_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_monitoring_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_lookup_public_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_lookup_private_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_lookup_shadow_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_lookup_shadow_filter_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_remove_not_existing_record_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_nick_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_specific_zone_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_stop_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_monitoring_existing_heap \
-@HAVE_TESTING_TRUE@ test_namestore_api_zone_to_name_heap \
-@HAVE_TESTING_TRUE@ perf_namestore_api_zone_iteration_heap
+HEAP_PLUGIN = libgnunet_plugin_namestore_flat.la
+@HAVE_TESTING_TRUE@HEAP_TESTS = test_plugin_namestore_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_store_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_store_update_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_remove_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_lookup_nick_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_monitoring_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_lookup_public_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_lookup_private_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_lookup_shadow_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_lookup_shadow_filter_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_remove_not_existing_record_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_nick_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_specific_zone_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_zone_iteration_stop_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_monitoring_existing_flat \
+@HAVE_TESTING_TRUE@ test_namestore_api_zone_to_name_flat \
+@HAVE_TESTING_TRUE@ perf_namestore_api_zone_iteration_flat
 
 @HAVE_SQLITE_TRUE@SQLITE_PLUGIN = libgnunet_plugin_namestore_sqlite.la
 @HAVE_SQLITE_TRUE@@HAVE_TESTING_TRUE@SQLITE_TESTS = test_plugin_namestore_sqlite \
@@ -1580,16 +1587,16 @@ gnunet_service_namestore_LDADD = \
   libgnunetnamestore.la \
   $(GN_LIBINTL)
 
-libgnunet_plugin_namestore_heap_la_SOURCES = \
-  plugin_namestore_heap.c
+libgnunet_plugin_namestore_flat_la_SOURCES = \
+  plugin_namestore_flat.c
 
-libgnunet_plugin_namestore_heap_la_LIBADD = \
+libgnunet_plugin_namestore_flat_la_LIBADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la  \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
   $(LTLIBINTL)
 
-libgnunet_plugin_namestore_heap_la_LDFLAGS = \
+libgnunet_plugin_namestore_flat_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_namestore_sqlite_la_SOURCES = \
@@ -1618,10 +1625,10 @@ libgnunet_plugin_namestore_postgres_la_LIBADD = \
 libgnunet_plugin_namestore_postgres_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS) $(POSTGRESQL_LDFLAGS)
 
-test_namestore_api_store_heap_SOURCES = \
+test_namestore_api_store_flat_SOURCES = \
  test_namestore_api_store.c
 
-test_namestore_api_store_heap_LDADD = \
+test_namestore_api_store_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1645,10 +1652,10 @@ test_namestore_api_store_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_store_update_heap_SOURCES = \
+test_namestore_api_store_update_flat_SOURCES = \
  test_namestore_api_store_update.c
 
-test_namestore_api_store_update_heap_LDADD = \
+test_namestore_api_store_update_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1675,10 +1682,10 @@ test_namestore_api_store_update_postgres_LDADD = \
   $(top_builddir)/src/namecache/libgnunetnamecache.la \
   libgnunetnamestore.la
 
-test_namestore_api_lookup_public_heap_SOURCES = \
+test_namestore_api_lookup_public_flat_SOURCES = \
  test_namestore_api_lookup_public.c
 
-test_namestore_api_lookup_public_heap_LDADD = \
+test_namestore_api_lookup_public_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1725,20 +1732,20 @@ test_namestore_api_lookup_nick_postgres_LDADD = \
   $(top_builddir)/src/namecache/libgnunetnamecache.la \
   libgnunetnamestore.la
 
-test_namestore_api_lookup_nick_heap_SOURCES = \
+test_namestore_api_lookup_nick_flat_SOURCES = \
  test_namestore_api_lookup_nick.c
 
-test_namestore_api_lookup_nick_heap_LDADD = \
+test_namestore_api_lookup_nick_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/namecache/libgnunetnamecache.la \
   libgnunetnamestore.la
 
-test_namestore_api_lookup_private_heap_SOURCES = \
+test_namestore_api_lookup_private_flat_SOURCES = \
  test_namestore_api_lookup_private.c
 
-test_namestore_api_lookup_private_heap_LDADD = \
+test_namestore_api_lookup_private_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1765,10 +1772,10 @@ test_namestore_api_lookup_private_postgres_LDADD = \
   $(top_builddir)/src/namecache/libgnunetnamecache.la \
   libgnunetnamestore.la
 
-test_namestore_api_lookup_shadow_heap_SOURCES = \
+test_namestore_api_lookup_shadow_flat_SOURCES = \
  test_namestore_api_lookup_shadow.c
 
-test_namestore_api_lookup_shadow_heap_LDADD = \
+test_namestore_api_lookup_shadow_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1795,10 +1802,10 @@ test_namestore_api_lookup_shadow_postgres_LDADD = \
   $(top_builddir)/src/namecache/libgnunetnamecache.la \
   libgnunetnamestore.la
 
-test_namestore_api_lookup_shadow_filter_heap_SOURCES = \
+test_namestore_api_lookup_shadow_filter_flat_SOURCES = \
  test_namestore_api_lookup_shadow_filter.c
 
-test_namestore_api_lookup_shadow_filter_heap_LDADD = \
+test_namestore_api_lookup_shadow_filter_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1843,19 +1850,19 @@ test_namestore_api_remove_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_remove_heap_SOURCES = \
+test_namestore_api_remove_flat_SOURCES = \
  test_namestore_api_remove.c
 
-test_namestore_api_remove_heap_LDADD = \
+test_namestore_api_remove_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_remove_not_existing_record_heap_SOURCES = \
+test_namestore_api_remove_not_existing_record_flat_SOURCES = \
  test_namestore_api_remove_not_existing_record.c
 
-test_namestore_api_remove_not_existing_record_heap_LDADD = \
+test_namestore_api_remove_not_existing_record_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1879,10 +1886,10 @@ test_namestore_api_remove_not_existing_record_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_zone_to_name_heap_SOURCES = \
+test_namestore_api_zone_to_name_flat_SOURCES = \
  test_namestore_api_zone_to_name.c
 
-test_namestore_api_zone_to_name_heap_LDADD = \
+test_namestore_api_zone_to_name_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetnamestore.la
@@ -1903,10 +1910,10 @@ test_namestore_api_zone_to_name_postgres_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetnamestore.la
 
-test_namestore_api_monitoring_heap_SOURCES = \
+test_namestore_api_monitoring_flat_SOURCES = \
  test_namestore_api_monitoring.c
 
-test_namestore_api_monitoring_heap_LDADD = \
+test_namestore_api_monitoring_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   libgnunetnamestore.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1930,10 +1937,10 @@ test_namestore_api_monitoring_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
-test_namestore_api_monitoring_existing_heap_SOURCES = \
+test_namestore_api_monitoring_existing_flat_SOURCES = \
  test_namestore_api_monitoring_existing.c
 
-test_namestore_api_monitoring_existing_heap_LDADD = \
+test_namestore_api_monitoring_existing_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   libgnunetnamestore.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -1957,10 +1964,10 @@ test_namestore_api_monitoring_existing_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
-test_namestore_api_zone_iteration_heap_SOURCES = \
+test_namestore_api_zone_iteration_flat_SOURCES = \
  test_namestore_api_zone_iteration.c
 
-test_namestore_api_zone_iteration_heap_LDADD = \
+test_namestore_api_zone_iteration_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -2002,19 +2009,19 @@ perf_namestore_api_zone_iteration_sqlite_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-perf_namestore_api_zone_iteration_heap_SOURCES = \
+perf_namestore_api_zone_iteration_flat_SOURCES = \
  perf_namestore_api_zone_iteration.c
 
-perf_namestore_api_zone_iteration_heap_LDADD = \
+perf_namestore_api_zone_iteration_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_zone_iteration_nick_heap_SOURCES = \
+test_namestore_api_zone_iteration_nick_flat_SOURCES = \
  test_namestore_api_zone_iteration_nick.c
 
-test_namestore_api_zone_iteration_nick_heap_LDADD = \
+test_namestore_api_zone_iteration_nick_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -2038,10 +2045,10 @@ test_namestore_api_zone_iteration_nick_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_zone_iteration_specific_zone_heap_SOURCES = \
+test_namestore_api_zone_iteration_specific_zone_flat_SOURCES = \
  test_namestore_api_zone_iteration_specific_zone.c
 
-test_namestore_api_zone_iteration_specific_zone_heap_LDADD = \
+test_namestore_api_zone_iteration_specific_zone_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -2065,10 +2072,10 @@ test_namestore_api_zone_iteration_specific_zone_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_namestore_api_zone_iteration_stop_heap_SOURCES = \
+test_namestore_api_zone_iteration_stop_flat_SOURCES = \
  test_namestore_api_zone_iteration_stop.c
 
-test_namestore_api_zone_iteration_stop_heap_LDADD = \
+test_namestore_api_zone_iteration_stop_flat_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
@@ -2092,10 +2099,10 @@ test_namestore_api_zone_iteration_stop_postgres_LDADD = \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   libgnunetnamestore.la
 
-test_plugin_namestore_heap_SOURCES = \
+test_plugin_namestore_flat_SOURCES = \
  test_plugin_namestore.c
 
-test_plugin_namestore_heap_LDADD = \
+test_plugin_namestore_flat_LDADD = \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
@@ -2123,13 +2130,13 @@ EXTRA_DIST = \
   test_namestore_api.conf \
   test_namestore_api_postgres.conf \
   test_namestore_api_sqlite.conf \
-  test_namestore_api_heap.conf \
+  test_namestore_api_flat.conf \
   perf_namestore_api_postgres.conf \
   perf_namestore_api_sqlite.conf \
-  perf_namestore_api_heap.conf \
+  perf_namestore_api_flat.conf \
   test_plugin_namestore_sqlite.conf \
   test_plugin_namestore_postgres.conf \
-  test_plugin_namestore_heap.conf \
+  test_plugin_namestore_flat.conf \
   test_hostkey \
   zonefiles/S5I9DSGQVAB5FVV16T3B3CC5H1B2JGL3Q412JBKURME8EKU0600G.zkey \
   zonefiles/AQ835GVL939H4O8QJQ7GBLPTQC0QAAO91BN7QK01BA63MDSK6I4G.zkey \
@@ -2350,8 +2357,8 @@ clean-pluginLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libgnunet_plugin_namestore_heap.la: $(libgnunet_plugin_namestore_heap_la_OBJECTS) $(libgnunet_plugin_namestore_heap_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_namestore_heap_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_namestore_heap_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_namestore_heap_la_OBJECTS) $(libgnunet_plugin_namestore_heap_la_LIBADD) $(LIBS)
+libgnunet_plugin_namestore_flat.la: $(libgnunet_plugin_namestore_flat_la_OBJECTS) $(libgnunet_plugin_namestore_flat_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_namestore_flat_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_namestore_flat_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_namestore_flat_la_OBJECTS) $(libgnunet_plugin_namestore_flat_la_LIBADD) $(LIBS)
 
 libgnunet_plugin_namestore_postgres.la: $(libgnunet_plugin_namestore_postgres_la_OBJECTS) $(libgnunet_plugin_namestore_postgres_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_namestore_postgres_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_namestore_postgres_la_LINK) $(am_libgnunet_plugin_namestore_postgres_la_rpath) $(libgnunet_plugin_namestore_postgres_la_OBJECTS) $(libgnunet_plugin_namestore_postgres_la_LIBADD) $(LIBS)
@@ -2381,9 +2388,9 @@ gnunet-zoneimport$(EXEEXT): $(gnunet_zoneimport_OBJECTS) $(gnunet_zoneimport_DEP
 	@rm -f gnunet-zoneimport$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_zoneimport_OBJECTS) $(gnunet_zoneimport_LDADD) $(LIBS)
 
-perf_namestore_api_zone_iteration_heap$(EXEEXT): $(perf_namestore_api_zone_iteration_heap_OBJECTS) $(perf_namestore_api_zone_iteration_heap_DEPENDENCIES) $(EXTRA_perf_namestore_api_zone_iteration_heap_DEPENDENCIES) 
-	@rm -f perf_namestore_api_zone_iteration_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_namestore_api_zone_iteration_heap_OBJECTS) $(perf_namestore_api_zone_iteration_heap_LDADD) $(LIBS)
+perf_namestore_api_zone_iteration_flat$(EXEEXT): $(perf_namestore_api_zone_iteration_flat_OBJECTS) $(perf_namestore_api_zone_iteration_flat_DEPENDENCIES) $(EXTRA_perf_namestore_api_zone_iteration_flat_DEPENDENCIES) 
+	@rm -f perf_namestore_api_zone_iteration_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(perf_namestore_api_zone_iteration_flat_OBJECTS) $(perf_namestore_api_zone_iteration_flat_LDADD) $(LIBS)
 
 perf_namestore_api_zone_iteration_postgres$(EXEEXT): $(perf_namestore_api_zone_iteration_postgres_OBJECTS) $(perf_namestore_api_zone_iteration_postgres_DEPENDENCIES) $(EXTRA_perf_namestore_api_zone_iteration_postgres_DEPENDENCIES) 
 	@rm -f perf_namestore_api_zone_iteration_postgres$(EXEEXT)
@@ -2393,9 +2400,9 @@ perf_namestore_api_zone_iteration_sqlite$(EXEEXT): $(perf_namestore_api_zone_ite
 	@rm -f perf_namestore_api_zone_iteration_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(perf_namestore_api_zone_iteration_sqlite_OBJECTS) $(perf_namestore_api_zone_iteration_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_lookup_nick_heap$(EXEEXT): $(test_namestore_api_lookup_nick_heap_OBJECTS) $(test_namestore_api_lookup_nick_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_nick_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_lookup_nick_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_nick_heap_OBJECTS) $(test_namestore_api_lookup_nick_heap_LDADD) $(LIBS)
+test_namestore_api_lookup_nick_flat$(EXEEXT): $(test_namestore_api_lookup_nick_flat_OBJECTS) $(test_namestore_api_lookup_nick_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_nick_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_lookup_nick_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_nick_flat_OBJECTS) $(test_namestore_api_lookup_nick_flat_LDADD) $(LIBS)
 
 test_namestore_api_lookup_nick_postgres$(EXEEXT): $(test_namestore_api_lookup_nick_postgres_OBJECTS) $(test_namestore_api_lookup_nick_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_nick_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_lookup_nick_postgres$(EXEEXT)
@@ -2405,9 +2412,9 @@ test_namestore_api_lookup_nick_sqlite$(EXEEXT): $(test_namestore_api_lookup_nick
 	@rm -f test_namestore_api_lookup_nick_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_nick_sqlite_OBJECTS) $(test_namestore_api_lookup_nick_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_lookup_private_heap$(EXEEXT): $(test_namestore_api_lookup_private_heap_OBJECTS) $(test_namestore_api_lookup_private_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_private_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_lookup_private_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_private_heap_OBJECTS) $(test_namestore_api_lookup_private_heap_LDADD) $(LIBS)
+test_namestore_api_lookup_private_flat$(EXEEXT): $(test_namestore_api_lookup_private_flat_OBJECTS) $(test_namestore_api_lookup_private_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_private_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_lookup_private_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_private_flat_OBJECTS) $(test_namestore_api_lookup_private_flat_LDADD) $(LIBS)
 
 test_namestore_api_lookup_private_postgres$(EXEEXT): $(test_namestore_api_lookup_private_postgres_OBJECTS) $(test_namestore_api_lookup_private_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_private_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_lookup_private_postgres$(EXEEXT)
@@ -2417,9 +2424,9 @@ test_namestore_api_lookup_private_sqlite$(EXEEXT): $(test_namestore_api_lookup_p
 	@rm -f test_namestore_api_lookup_private_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_private_sqlite_OBJECTS) $(test_namestore_api_lookup_private_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_lookup_public_heap$(EXEEXT): $(test_namestore_api_lookup_public_heap_OBJECTS) $(test_namestore_api_lookup_public_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_public_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_lookup_public_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_public_heap_OBJECTS) $(test_namestore_api_lookup_public_heap_LDADD) $(LIBS)
+test_namestore_api_lookup_public_flat$(EXEEXT): $(test_namestore_api_lookup_public_flat_OBJECTS) $(test_namestore_api_lookup_public_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_public_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_lookup_public_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_public_flat_OBJECTS) $(test_namestore_api_lookup_public_flat_LDADD) $(LIBS)
 
 test_namestore_api_lookup_public_postgres$(EXEEXT): $(test_namestore_api_lookup_public_postgres_OBJECTS) $(test_namestore_api_lookup_public_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_public_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_lookup_public_postgres$(EXEEXT)
@@ -2429,9 +2436,9 @@ test_namestore_api_lookup_public_sqlite$(EXEEXT): $(test_namestore_api_lookup_pu
 	@rm -f test_namestore_api_lookup_public_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_public_sqlite_OBJECTS) $(test_namestore_api_lookup_public_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_lookup_shadow_filter_heap$(EXEEXT): $(test_namestore_api_lookup_shadow_filter_heap_OBJECTS) $(test_namestore_api_lookup_shadow_filter_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_shadow_filter_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_lookup_shadow_filter_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_shadow_filter_heap_OBJECTS) $(test_namestore_api_lookup_shadow_filter_heap_LDADD) $(LIBS)
+test_namestore_api_lookup_shadow_filter_flat$(EXEEXT): $(test_namestore_api_lookup_shadow_filter_flat_OBJECTS) $(test_namestore_api_lookup_shadow_filter_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_shadow_filter_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_lookup_shadow_filter_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_shadow_filter_flat_OBJECTS) $(test_namestore_api_lookup_shadow_filter_flat_LDADD) $(LIBS)
 
 test_namestore_api_lookup_shadow_filter_postgres$(EXEEXT): $(test_namestore_api_lookup_shadow_filter_postgres_OBJECTS) $(test_namestore_api_lookup_shadow_filter_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_shadow_filter_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_lookup_shadow_filter_postgres$(EXEEXT)
@@ -2441,9 +2448,9 @@ test_namestore_api_lookup_shadow_filter_sqlite$(EXEEXT): $(test_namestore_api_lo
 	@rm -f test_namestore_api_lookup_shadow_filter_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_shadow_filter_sqlite_OBJECTS) $(test_namestore_api_lookup_shadow_filter_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_lookup_shadow_heap$(EXEEXT): $(test_namestore_api_lookup_shadow_heap_OBJECTS) $(test_namestore_api_lookup_shadow_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_shadow_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_lookup_shadow_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_shadow_heap_OBJECTS) $(test_namestore_api_lookup_shadow_heap_LDADD) $(LIBS)
+test_namestore_api_lookup_shadow_flat$(EXEEXT): $(test_namestore_api_lookup_shadow_flat_OBJECTS) $(test_namestore_api_lookup_shadow_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_shadow_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_lookup_shadow_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_shadow_flat_OBJECTS) $(test_namestore_api_lookup_shadow_flat_LDADD) $(LIBS)
 
 test_namestore_api_lookup_shadow_postgres$(EXEEXT): $(test_namestore_api_lookup_shadow_postgres_OBJECTS) $(test_namestore_api_lookup_shadow_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_lookup_shadow_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_lookup_shadow_postgres$(EXEEXT)
@@ -2453,9 +2460,9 @@ test_namestore_api_lookup_shadow_sqlite$(EXEEXT): $(test_namestore_api_lookup_sh
 	@rm -f test_namestore_api_lookup_shadow_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_lookup_shadow_sqlite_OBJECTS) $(test_namestore_api_lookup_shadow_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_monitoring_existing_heap$(EXEEXT): $(test_namestore_api_monitoring_existing_heap_OBJECTS) $(test_namestore_api_monitoring_existing_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_monitoring_existing_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_monitoring_existing_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_monitoring_existing_heap_OBJECTS) $(test_namestore_api_monitoring_existing_heap_LDADD) $(LIBS)
+test_namestore_api_monitoring_existing_flat$(EXEEXT): $(test_namestore_api_monitoring_existing_flat_OBJECTS) $(test_namestore_api_monitoring_existing_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_monitoring_existing_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_monitoring_existing_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_monitoring_existing_flat_OBJECTS) $(test_namestore_api_monitoring_existing_flat_LDADD) $(LIBS)
 
 test_namestore_api_monitoring_existing_postgres$(EXEEXT): $(test_namestore_api_monitoring_existing_postgres_OBJECTS) $(test_namestore_api_monitoring_existing_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_monitoring_existing_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_monitoring_existing_postgres$(EXEEXT)
@@ -2465,9 +2472,9 @@ test_namestore_api_monitoring_existing_sqlite$(EXEEXT): $(test_namestore_api_mon
 	@rm -f test_namestore_api_monitoring_existing_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_monitoring_existing_sqlite_OBJECTS) $(test_namestore_api_monitoring_existing_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_monitoring_heap$(EXEEXT): $(test_namestore_api_monitoring_heap_OBJECTS) $(test_namestore_api_monitoring_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_monitoring_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_monitoring_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_monitoring_heap_OBJECTS) $(test_namestore_api_monitoring_heap_LDADD) $(LIBS)
+test_namestore_api_monitoring_flat$(EXEEXT): $(test_namestore_api_monitoring_flat_OBJECTS) $(test_namestore_api_monitoring_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_monitoring_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_monitoring_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_monitoring_flat_OBJECTS) $(test_namestore_api_monitoring_flat_LDADD) $(LIBS)
 
 test_namestore_api_monitoring_postgres$(EXEEXT): $(test_namestore_api_monitoring_postgres_OBJECTS) $(test_namestore_api_monitoring_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_monitoring_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_monitoring_postgres$(EXEEXT)
@@ -2477,13 +2484,13 @@ test_namestore_api_monitoring_sqlite$(EXEEXT): $(test_namestore_api_monitoring_s
 	@rm -f test_namestore_api_monitoring_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_monitoring_sqlite_OBJECTS) $(test_namestore_api_monitoring_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_remove_heap$(EXEEXT): $(test_namestore_api_remove_heap_OBJECTS) $(test_namestore_api_remove_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_remove_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_remove_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_remove_heap_OBJECTS) $(test_namestore_api_remove_heap_LDADD) $(LIBS)
+test_namestore_api_remove_flat$(EXEEXT): $(test_namestore_api_remove_flat_OBJECTS) $(test_namestore_api_remove_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_remove_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_remove_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_remove_flat_OBJECTS) $(test_namestore_api_remove_flat_LDADD) $(LIBS)
 
-test_namestore_api_remove_not_existing_record_heap$(EXEEXT): $(test_namestore_api_remove_not_existing_record_heap_OBJECTS) $(test_namestore_api_remove_not_existing_record_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_remove_not_existing_record_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_remove_not_existing_record_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_remove_not_existing_record_heap_OBJECTS) $(test_namestore_api_remove_not_existing_record_heap_LDADD) $(LIBS)
+test_namestore_api_remove_not_existing_record_flat$(EXEEXT): $(test_namestore_api_remove_not_existing_record_flat_OBJECTS) $(test_namestore_api_remove_not_existing_record_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_remove_not_existing_record_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_remove_not_existing_record_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_remove_not_existing_record_flat_OBJECTS) $(test_namestore_api_remove_not_existing_record_flat_LDADD) $(LIBS)
 
 test_namestore_api_remove_not_existing_record_postgres$(EXEEXT): $(test_namestore_api_remove_not_existing_record_postgres_OBJECTS) $(test_namestore_api_remove_not_existing_record_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_remove_not_existing_record_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_remove_not_existing_record_postgres$(EXEEXT)
@@ -2501,9 +2508,9 @@ test_namestore_api_remove_sqlite$(EXEEXT): $(test_namestore_api_remove_sqlite_OB
 	@rm -f test_namestore_api_remove_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_remove_sqlite_OBJECTS) $(test_namestore_api_remove_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_store_heap$(EXEEXT): $(test_namestore_api_store_heap_OBJECTS) $(test_namestore_api_store_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_store_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_store_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_store_heap_OBJECTS) $(test_namestore_api_store_heap_LDADD) $(LIBS)
+test_namestore_api_store_flat$(EXEEXT): $(test_namestore_api_store_flat_OBJECTS) $(test_namestore_api_store_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_store_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_store_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_store_flat_OBJECTS) $(test_namestore_api_store_flat_LDADD) $(LIBS)
 
 test_namestore_api_store_postgres$(EXEEXT): $(test_namestore_api_store_postgres_OBJECTS) $(test_namestore_api_store_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_store_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_store_postgres$(EXEEXT)
@@ -2513,9 +2520,9 @@ test_namestore_api_store_sqlite$(EXEEXT): $(test_namestore_api_store_sqlite_OBJE
 	@rm -f test_namestore_api_store_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_store_sqlite_OBJECTS) $(test_namestore_api_store_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_store_update_heap$(EXEEXT): $(test_namestore_api_store_update_heap_OBJECTS) $(test_namestore_api_store_update_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_store_update_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_store_update_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_store_update_heap_OBJECTS) $(test_namestore_api_store_update_heap_LDADD) $(LIBS)
+test_namestore_api_store_update_flat$(EXEEXT): $(test_namestore_api_store_update_flat_OBJECTS) $(test_namestore_api_store_update_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_store_update_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_store_update_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_store_update_flat_OBJECTS) $(test_namestore_api_store_update_flat_LDADD) $(LIBS)
 
 test_namestore_api_store_update_postgres$(EXEEXT): $(test_namestore_api_store_update_postgres_OBJECTS) $(test_namestore_api_store_update_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_store_update_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_store_update_postgres$(EXEEXT)
@@ -2525,13 +2532,13 @@ test_namestore_api_store_update_sqlite$(EXEEXT): $(test_namestore_api_store_upda
 	@rm -f test_namestore_api_store_update_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_store_update_sqlite_OBJECTS) $(test_namestore_api_store_update_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_zone_iteration_heap$(EXEEXT): $(test_namestore_api_zone_iteration_heap_OBJECTS) $(test_namestore_api_zone_iteration_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_zone_iteration_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_heap_OBJECTS) $(test_namestore_api_zone_iteration_heap_LDADD) $(LIBS)
+test_namestore_api_zone_iteration_flat$(EXEEXT): $(test_namestore_api_zone_iteration_flat_OBJECTS) $(test_namestore_api_zone_iteration_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_zone_iteration_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_flat_OBJECTS) $(test_namestore_api_zone_iteration_flat_LDADD) $(LIBS)
 
-test_namestore_api_zone_iteration_nick_heap$(EXEEXT): $(test_namestore_api_zone_iteration_nick_heap_OBJECTS) $(test_namestore_api_zone_iteration_nick_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_nick_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_zone_iteration_nick_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_nick_heap_OBJECTS) $(test_namestore_api_zone_iteration_nick_heap_LDADD) $(LIBS)
+test_namestore_api_zone_iteration_nick_flat$(EXEEXT): $(test_namestore_api_zone_iteration_nick_flat_OBJECTS) $(test_namestore_api_zone_iteration_nick_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_nick_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_zone_iteration_nick_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_nick_flat_OBJECTS) $(test_namestore_api_zone_iteration_nick_flat_LDADD) $(LIBS)
 
 test_namestore_api_zone_iteration_nick_postgres$(EXEEXT): $(test_namestore_api_zone_iteration_nick_postgres_OBJECTS) $(test_namestore_api_zone_iteration_nick_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_nick_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_zone_iteration_nick_postgres$(EXEEXT)
@@ -2545,9 +2552,9 @@ test_namestore_api_zone_iteration_postgres$(EXEEXT): $(test_namestore_api_zone_i
 	@rm -f test_namestore_api_zone_iteration_postgres$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_postgres_OBJECTS) $(test_namestore_api_zone_iteration_postgres_LDADD) $(LIBS)
 
-test_namestore_api_zone_iteration_specific_zone_heap$(EXEEXT): $(test_namestore_api_zone_iteration_specific_zone_heap_OBJECTS) $(test_namestore_api_zone_iteration_specific_zone_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_specific_zone_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_zone_iteration_specific_zone_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_specific_zone_heap_OBJECTS) $(test_namestore_api_zone_iteration_specific_zone_heap_LDADD) $(LIBS)
+test_namestore_api_zone_iteration_specific_zone_flat$(EXEEXT): $(test_namestore_api_zone_iteration_specific_zone_flat_OBJECTS) $(test_namestore_api_zone_iteration_specific_zone_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_specific_zone_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_zone_iteration_specific_zone_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_specific_zone_flat_OBJECTS) $(test_namestore_api_zone_iteration_specific_zone_flat_LDADD) $(LIBS)
 
 test_namestore_api_zone_iteration_specific_zone_postgres$(EXEEXT): $(test_namestore_api_zone_iteration_specific_zone_postgres_OBJECTS) $(test_namestore_api_zone_iteration_specific_zone_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_specific_zone_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_zone_iteration_specific_zone_postgres$(EXEEXT)
@@ -2561,9 +2568,9 @@ test_namestore_api_zone_iteration_sqlite$(EXEEXT): $(test_namestore_api_zone_ite
 	@rm -f test_namestore_api_zone_iteration_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_sqlite_OBJECTS) $(test_namestore_api_zone_iteration_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_zone_iteration_stop_heap$(EXEEXT): $(test_namestore_api_zone_iteration_stop_heap_OBJECTS) $(test_namestore_api_zone_iteration_stop_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_stop_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_zone_iteration_stop_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_stop_heap_OBJECTS) $(test_namestore_api_zone_iteration_stop_heap_LDADD) $(LIBS)
+test_namestore_api_zone_iteration_stop_flat$(EXEEXT): $(test_namestore_api_zone_iteration_stop_flat_OBJECTS) $(test_namestore_api_zone_iteration_stop_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_stop_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_zone_iteration_stop_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_stop_flat_OBJECTS) $(test_namestore_api_zone_iteration_stop_flat_LDADD) $(LIBS)
 
 test_namestore_api_zone_iteration_stop_postgres$(EXEEXT): $(test_namestore_api_zone_iteration_stop_postgres_OBJECTS) $(test_namestore_api_zone_iteration_stop_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_iteration_stop_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_zone_iteration_stop_postgres$(EXEEXT)
@@ -2573,9 +2580,9 @@ test_namestore_api_zone_iteration_stop_sqlite$(EXEEXT): $(test_namestore_api_zon
 	@rm -f test_namestore_api_zone_iteration_stop_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_iteration_stop_sqlite_OBJECTS) $(test_namestore_api_zone_iteration_stop_sqlite_LDADD) $(LIBS)
 
-test_namestore_api_zone_to_name_heap$(EXEEXT): $(test_namestore_api_zone_to_name_heap_OBJECTS) $(test_namestore_api_zone_to_name_heap_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_to_name_heap_DEPENDENCIES) 
-	@rm -f test_namestore_api_zone_to_name_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_to_name_heap_OBJECTS) $(test_namestore_api_zone_to_name_heap_LDADD) $(LIBS)
+test_namestore_api_zone_to_name_flat$(EXEEXT): $(test_namestore_api_zone_to_name_flat_OBJECTS) $(test_namestore_api_zone_to_name_flat_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_to_name_flat_DEPENDENCIES) 
+	@rm -f test_namestore_api_zone_to_name_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_to_name_flat_OBJECTS) $(test_namestore_api_zone_to_name_flat_LDADD) $(LIBS)
 
 test_namestore_api_zone_to_name_postgres$(EXEEXT): $(test_namestore_api_zone_to_name_postgres_OBJECTS) $(test_namestore_api_zone_to_name_postgres_DEPENDENCIES) $(EXTRA_test_namestore_api_zone_to_name_postgres_DEPENDENCIES) 
 	@rm -f test_namestore_api_zone_to_name_postgres$(EXEEXT)
@@ -2585,9 +2592,9 @@ test_namestore_api_zone_to_name_sqlite$(EXEEXT): $(test_namestore_api_zone_to_na
 	@rm -f test_namestore_api_zone_to_name_sqlite$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_namestore_api_zone_to_name_sqlite_OBJECTS) $(test_namestore_api_zone_to_name_sqlite_LDADD) $(LIBS)
 
-test_plugin_namestore_heap$(EXEEXT): $(test_plugin_namestore_heap_OBJECTS) $(test_plugin_namestore_heap_DEPENDENCIES) $(EXTRA_test_plugin_namestore_heap_DEPENDENCIES) 
-	@rm -f test_plugin_namestore_heap$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_plugin_namestore_heap_OBJECTS) $(test_plugin_namestore_heap_LDADD) $(LIBS)
+test_plugin_namestore_flat$(EXEEXT): $(test_plugin_namestore_flat_OBJECTS) $(test_plugin_namestore_flat_DEPENDENCIES) $(EXTRA_test_plugin_namestore_flat_DEPENDENCIES) 
+	@rm -f test_plugin_namestore_flat$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_plugin_namestore_flat_OBJECTS) $(test_plugin_namestore_flat_LDADD) $(LIBS)
 
 test_plugin_namestore_postgres$(EXEEXT): $(test_plugin_namestore_postgres_OBJECTS) $(test_plugin_namestore_postgres_DEPENDENCIES) $(EXTRA_test_plugin_namestore_postgres_DEPENDENCIES) 
 	@rm -f test_plugin_namestore_postgres$(EXEEXT)
@@ -2610,7 +2617,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namestore_api.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namestore_api_monitor.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_namestore_api_zone_iteration.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_heap.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_flat.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_postgres.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_sqlite.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_namestore.Plo@am__quote@ # am--include-marker
@@ -3131,128 +3138,128 @@ perf_namestore_api_zone_iteration_postgres.log: perf_namestore_api_zone_iteratio
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_plugin_namestore_heap.log: test_plugin_namestore_heap$(EXEEXT)
-	@p='test_plugin_namestore_heap$(EXEEXT)'; \
-	b='test_plugin_namestore_heap'; \
+test_plugin_namestore_flat.log: test_plugin_namestore_flat$(EXEEXT)
+	@p='test_plugin_namestore_flat$(EXEEXT)'; \
+	b='test_plugin_namestore_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_store_heap.log: test_namestore_api_store_heap$(EXEEXT)
-	@p='test_namestore_api_store_heap$(EXEEXT)'; \
-	b='test_namestore_api_store_heap'; \
+test_namestore_api_store_flat.log: test_namestore_api_store_flat$(EXEEXT)
+	@p='test_namestore_api_store_flat$(EXEEXT)'; \
+	b='test_namestore_api_store_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_store_update_heap.log: test_namestore_api_store_update_heap$(EXEEXT)
-	@p='test_namestore_api_store_update_heap$(EXEEXT)'; \
-	b='test_namestore_api_store_update_heap'; \
+test_namestore_api_store_update_flat.log: test_namestore_api_store_update_flat$(EXEEXT)
+	@p='test_namestore_api_store_update_flat$(EXEEXT)'; \
+	b='test_namestore_api_store_update_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_remove_heap.log: test_namestore_api_remove_heap$(EXEEXT)
-	@p='test_namestore_api_remove_heap$(EXEEXT)'; \
-	b='test_namestore_api_remove_heap'; \
+test_namestore_api_remove_flat.log: test_namestore_api_remove_flat$(EXEEXT)
+	@p='test_namestore_api_remove_flat$(EXEEXT)'; \
+	b='test_namestore_api_remove_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_zone_iteration_heap.log: test_namestore_api_zone_iteration_heap$(EXEEXT)
-	@p='test_namestore_api_zone_iteration_heap$(EXEEXT)'; \
-	b='test_namestore_api_zone_iteration_heap'; \
+test_namestore_api_zone_iteration_flat.log: test_namestore_api_zone_iteration_flat$(EXEEXT)
+	@p='test_namestore_api_zone_iteration_flat$(EXEEXT)'; \
+	b='test_namestore_api_zone_iteration_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_lookup_nick_heap.log: test_namestore_api_lookup_nick_heap$(EXEEXT)
-	@p='test_namestore_api_lookup_nick_heap$(EXEEXT)'; \
-	b='test_namestore_api_lookup_nick_heap'; \
+test_namestore_api_lookup_nick_flat.log: test_namestore_api_lookup_nick_flat$(EXEEXT)
+	@p='test_namestore_api_lookup_nick_flat$(EXEEXT)'; \
+	b='test_namestore_api_lookup_nick_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_monitoring_heap.log: test_namestore_api_monitoring_heap$(EXEEXT)
-	@p='test_namestore_api_monitoring_heap$(EXEEXT)'; \
-	b='test_namestore_api_monitoring_heap'; \
+test_namestore_api_monitoring_flat.log: test_namestore_api_monitoring_flat$(EXEEXT)
+	@p='test_namestore_api_monitoring_flat$(EXEEXT)'; \
+	b='test_namestore_api_monitoring_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_lookup_public_heap.log: test_namestore_api_lookup_public_heap$(EXEEXT)
-	@p='test_namestore_api_lookup_public_heap$(EXEEXT)'; \
-	b='test_namestore_api_lookup_public_heap'; \
+test_namestore_api_lookup_public_flat.log: test_namestore_api_lookup_public_flat$(EXEEXT)
+	@p='test_namestore_api_lookup_public_flat$(EXEEXT)'; \
+	b='test_namestore_api_lookup_public_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_lookup_private_heap.log: test_namestore_api_lookup_private_heap$(EXEEXT)
-	@p='test_namestore_api_lookup_private_heap$(EXEEXT)'; \
-	b='test_namestore_api_lookup_private_heap'; \
+test_namestore_api_lookup_private_flat.log: test_namestore_api_lookup_private_flat$(EXEEXT)
+	@p='test_namestore_api_lookup_private_flat$(EXEEXT)'; \
+	b='test_namestore_api_lookup_private_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_lookup_shadow_heap.log: test_namestore_api_lookup_shadow_heap$(EXEEXT)
-	@p='test_namestore_api_lookup_shadow_heap$(EXEEXT)'; \
-	b='test_namestore_api_lookup_shadow_heap'; \
+test_namestore_api_lookup_shadow_flat.log: test_namestore_api_lookup_shadow_flat$(EXEEXT)
+	@p='test_namestore_api_lookup_shadow_flat$(EXEEXT)'; \
+	b='test_namestore_api_lookup_shadow_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_lookup_shadow_filter_heap.log: test_namestore_api_lookup_shadow_filter_heap$(EXEEXT)
-	@p='test_namestore_api_lookup_shadow_filter_heap$(EXEEXT)'; \
-	b='test_namestore_api_lookup_shadow_filter_heap'; \
+test_namestore_api_lookup_shadow_filter_flat.log: test_namestore_api_lookup_shadow_filter_flat$(EXEEXT)
+	@p='test_namestore_api_lookup_shadow_filter_flat$(EXEEXT)'; \
+	b='test_namestore_api_lookup_shadow_filter_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_remove_not_existing_record_heap.log: test_namestore_api_remove_not_existing_record_heap$(EXEEXT)
-	@p='test_namestore_api_remove_not_existing_record_heap$(EXEEXT)'; \
-	b='test_namestore_api_remove_not_existing_record_heap'; \
+test_namestore_api_remove_not_existing_record_flat.log: test_namestore_api_remove_not_existing_record_flat$(EXEEXT)
+	@p='test_namestore_api_remove_not_existing_record_flat$(EXEEXT)'; \
+	b='test_namestore_api_remove_not_existing_record_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_zone_iteration_nick_heap.log: test_namestore_api_zone_iteration_nick_heap$(EXEEXT)
-	@p='test_namestore_api_zone_iteration_nick_heap$(EXEEXT)'; \
-	b='test_namestore_api_zone_iteration_nick_heap'; \
+test_namestore_api_zone_iteration_nick_flat.log: test_namestore_api_zone_iteration_nick_flat$(EXEEXT)
+	@p='test_namestore_api_zone_iteration_nick_flat$(EXEEXT)'; \
+	b='test_namestore_api_zone_iteration_nick_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_zone_iteration_specific_zone_heap.log: test_namestore_api_zone_iteration_specific_zone_heap$(EXEEXT)
-	@p='test_namestore_api_zone_iteration_specific_zone_heap$(EXEEXT)'; \
-	b='test_namestore_api_zone_iteration_specific_zone_heap'; \
+test_namestore_api_zone_iteration_specific_zone_flat.log: test_namestore_api_zone_iteration_specific_zone_flat$(EXEEXT)
+	@p='test_namestore_api_zone_iteration_specific_zone_flat$(EXEEXT)'; \
+	b='test_namestore_api_zone_iteration_specific_zone_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_zone_iteration_stop_heap.log: test_namestore_api_zone_iteration_stop_heap$(EXEEXT)
-	@p='test_namestore_api_zone_iteration_stop_heap$(EXEEXT)'; \
-	b='test_namestore_api_zone_iteration_stop_heap'; \
+test_namestore_api_zone_iteration_stop_flat.log: test_namestore_api_zone_iteration_stop_flat$(EXEEXT)
+	@p='test_namestore_api_zone_iteration_stop_flat$(EXEEXT)'; \
+	b='test_namestore_api_zone_iteration_stop_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_monitoring_existing_heap.log: test_namestore_api_monitoring_existing_heap$(EXEEXT)
-	@p='test_namestore_api_monitoring_existing_heap$(EXEEXT)'; \
-	b='test_namestore_api_monitoring_existing_heap'; \
+test_namestore_api_monitoring_existing_flat.log: test_namestore_api_monitoring_existing_flat$(EXEEXT)
+	@p='test_namestore_api_monitoring_existing_flat$(EXEEXT)'; \
+	b='test_namestore_api_monitoring_existing_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_namestore_api_zone_to_name_heap.log: test_namestore_api_zone_to_name_heap$(EXEEXT)
-	@p='test_namestore_api_zone_to_name_heap$(EXEEXT)'; \
-	b='test_namestore_api_zone_to_name_heap'; \
+test_namestore_api_zone_to_name_flat.log: test_namestore_api_zone_to_name_flat$(EXEEXT)
+	@p='test_namestore_api_zone_to_name_flat$(EXEEXT)'; \
+	b='test_namestore_api_zone_to_name_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_namestore_api_zone_iteration_heap.log: perf_namestore_api_zone_iteration_heap$(EXEEXT)
-	@p='perf_namestore_api_zone_iteration_heap$(EXEEXT)'; \
-	b='perf_namestore_api_zone_iteration_heap'; \
+perf_namestore_api_zone_iteration_flat.log: perf_namestore_api_zone_iteration_flat$(EXEEXT)
+	@p='perf_namestore_api_zone_iteration_flat$(EXEEXT)'; \
+	b='perf_namestore_api_zone_iteration_flat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -3384,7 +3391,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/namestore_api.Plo
 	-rm -f ./$(DEPDIR)/namestore_api_monitor.Plo
 	-rm -f ./$(DEPDIR)/perf_namestore_api_zone_iteration.Po
-	-rm -f ./$(DEPDIR)/plugin_namestore_heap.Plo
+	-rm -f ./$(DEPDIR)/plugin_namestore_flat.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_postgres.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_sqlite.Plo
 	-rm -f ./$(DEPDIR)/plugin_rest_namestore.Plo
@@ -3458,7 +3465,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/namestore_api.Plo
 	-rm -f ./$(DEPDIR)/namestore_api_monitor.Plo
 	-rm -f ./$(DEPDIR)/perf_namestore_api_zone_iteration.Po
-	-rm -f ./$(DEPDIR)/plugin_namestore_heap.Plo
+	-rm -f ./$(DEPDIR)/plugin_namestore_flat.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_postgres.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_sqlite.Plo
 	-rm -f ./$(DEPDIR)/plugin_rest_namestore.Plo

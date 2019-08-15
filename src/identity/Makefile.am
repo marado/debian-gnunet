@@ -43,13 +43,14 @@ libgnunet_plugin_rest_identity_la_LDFLAGS = \
 libgnunetidentity_la_SOURCES = \
   identity_api.c \
   identity_api_lookup.c \
+  identity_api_suffix_lookup.c \
   identity.h
 libgnunetidentity_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
 libgnunetidentity_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
-  -version-info 0:0:0
+  -version-info 1:0:0
 
 bin_PROGRAMS = \
  gnunet-identity

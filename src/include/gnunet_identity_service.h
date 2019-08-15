@@ -55,7 +55,7 @@ extern "C" {
 /**
  * Version number of GNUnet Identity API.
  */
-#define GNUNET_IDENTITY_VERSION 0x00000000
+#define GNUNET_IDENTITY_VERSION 0x00000100
 
 /**
  * Handle to access the identity service.
@@ -328,6 +328,51 @@ GNUNET_IDENTITY_ego_lookup (const struct GNUNET_CONFIGURATION_Handle *cfg,
 void
 GNUNET_IDENTITY_ego_lookup_cancel (struct GNUNET_IDENTITY_EgoLookup *el);
 
+/**
+ * Function called with the result.
+ *
+ * @param cls closure
+ * @param ego NULL on error / ego not found
+ * @param ego_name NULL on error, name of the ego otherwise
+ */
+typedef void (*GNUNET_IDENTITY_EgoSuffixCallback) (
+  void *cls,
+  const struct GNUNET_CRYPTO_EcdsaPrivateKey *priv,
+  const char *ego_name);
+
+
+/**
+ * Handle for suffix lookup.
+ */
+struct GNUNET_IDENTITY_EgoSuffixLookup;
+
+
+/**
+ * Obtain the ego with the maximum suffix match between the
+ * ego's name and the given domain name @a suffix.  I.e., given
+ * a @a suffix "a.b.c" and egos with names "d.a.b.c", "b.c" and "c",
+ * we return the ego for "b.c".
+ *
+ * @param cfg configuration to use
+ * @param suffix for which domain name suffix is an identity wanted
+ * @param cb function to call with the result (will only be called once)
+ * @param cb_cls closure for @a cb
+ * @return handle to abort the operation
+ */
+struct GNUNET_IDENTITY_EgoSuffixLookup *
+GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *cfg,
+				      const char *suffix,
+				      GNUNET_IDENTITY_EgoSuffixCallback cb,
+				      void *cb_cls);
+
+
+/**
+ * Abort ego suffix lookup attempt.
+ *
+ * @param el handle for lookup to abort
+ */
+void
+GNUNET_IDENTITY_ego_lookup_by_suffix_cancel (struct GNUNET_IDENTITY_EgoSuffixLookup *el);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

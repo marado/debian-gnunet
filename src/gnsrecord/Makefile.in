@@ -97,9 +97,10 @@ check_PROGRAMS = test_gnsrecord_crypto$(EXEEXT) \
 subdir = src/gnsrecord
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -510,7 +511,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -642,6 +648,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@

@@ -16,6 +16,7 @@
 
 
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -97,9 +98,10 @@ noinst_PROGRAMS = gnunet-transport-profiler$(EXEEXT) \
 	$(am__EXEEXT_36) $(am__EXEEXT_37)
 libexec_PROGRAMS = $(am__EXEEXT_33) $(am__EXEEXT_34) $(am__EXEEXT_35) \
 	gnunet-service-transport$(EXEEXT) \
-	gnunet-communicator-unix$(EXEEXT)
-bin_PROGRAMS = gnunet-transport$(EXEEXT) \
-	gnunet-transport-certificate-creation$(EXEEXT)
+	gnunet-communicator-unix$(EXEEXT) \
+	gnunet-communicator-udp$(EXEEXT) \
+	gnunet-communicator-tcp$(EXEEXT)
+bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @HAVE_TESTING_TRUE@check_PROGRAMS =  \
 @HAVE_TESTING_TRUE@	test_transport_address_switch_tcp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_address_switch_udp$(EXEEXT) \
@@ -152,7 +154,8 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_quota_compliance_udp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_27) $(am__EXEEXT_28) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_29) $(am__EXEEXT_30) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_31) $(am__EXEEXT_32)
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_31) $(am__EXEEXT_32) \
+@HAVE_TESTING_TRUE@	test_communicator_unix$(EXEEXT)
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__append_1 = \
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@test_transport_api_slow_ats
 
@@ -202,17 +205,17 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_9) $(am__EXEEXT_13) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_16) $(am__EXEEXT_19) \
-@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) test_communicator_unix \
-@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_38)
+@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) $(am__EXEEXT_38)
 @ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__append_2 = \
 @ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@test_transport_api_slow_ats
 
 subdir = src/transport
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -233,7 +236,7 @@ CONFIG_CLEAN_FILES = transport.conf
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" \
-	"$(DESTDIR)$(pkgcfgdir)"
+	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgcfgdir)"
 @MINGW_FALSE@am__EXEEXT_1 = test_plugin_unix$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_2 =  \
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@	test_plugin_wlan$(EXEEXT)
@@ -675,12 +678,6 @@ gnunet_transport_DEPENDENCIES = libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
-am_gnunet_transport_certificate_creation_OBJECTS =  \
-	gnunet-transport-certificate-creation.$(OBJEXT)
-gnunet_transport_certificate_creation_OBJECTS =  \
-	$(am_gnunet_transport_certificate_creation_OBJECTS)
-gnunet_transport_certificate_creation_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la
 am_gnunet_transport_profiler_OBJECTS =  \
 	gnunet-transport-profiler.$(OBJEXT)
 gnunet_transport_profiler_OBJECTS =  \
@@ -701,6 +698,10 @@ am_gnunet_transport_wlan_sender_OBJECTS =  \
 gnunet_transport_wlan_sender_OBJECTS =  \
 	$(am_gnunet_transport_wlan_sender_OBJECTS)
 gnunet_transport_wlan_sender_DEPENDENCIES =  \
+	$(top_builddir)/src/util/libgnunetutil.la
+am_test_communicator_unix_OBJECTS = test_communicator_unix.$(OBJEXT)
+test_communicator_unix_OBJECTS = $(am_test_communicator_unix_OBJECTS)
+test_communicator_unix_DEPENDENCIES = libgnunettransporttesting2.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_http_common_OBJECTS = test_http_common.$(OBJEXT) \
 	plugin_transport_http_common.$(OBJEXT)
@@ -1359,6 +1360,7 @@ test_transport_testing_startstop_DEPENDENCIES =  \
 	libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	libgnunettransporttesting.la
+SCRIPTS = $(bin_SCRIPTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -1381,7 +1383,6 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-communicator-tcp.Po \
 	./$(DEPDIR)/gnunet-helper-transport-wlan-dummy.Po \
 	./$(DEPDIR)/gnunet-helper-transport-wlan.Po \
 	./$(DEPDIR)/gnunet-service-tng.Po \
-	./$(DEPDIR)/gnunet-transport-certificate-creation.Po \
 	./$(DEPDIR)/gnunet-transport-profiler.Po \
 	./$(DEPDIR)/gnunet-transport-wlan-receiver.Po \
 	./$(DEPDIR)/gnunet-transport-wlan-sender.Po \
@@ -1409,6 +1410,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-communicator-tcp.Po \
 	./$(DEPDIR)/plugin_transport_udp.Plo \
 	./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo \
 	./$(DEPDIR)/plugin_transport_unix.Plo \
+	./$(DEPDIR)/test_communicator_unix.Po \
 	./$(DEPDIR)/test_http_common.Po \
 	./$(DEPDIR)/test_plugin_transport.Po \
 	./$(DEPDIR)/test_quota_compliance.Po \
@@ -1490,11 +1492,11 @@ SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(gnunet_service_tng_SOURCES) \
 	$(gnunet_service_transport_SOURCES) \
 	$(gnunet_transport_SOURCES) \
-	$(gnunet_transport_certificate_creation_SOURCES) \
 	$(gnunet_transport_profiler_SOURCES) \
 	$(gnunet_transport_wlan_receiver_SOURCES) \
 	$(gnunet_transport_wlan_sender_SOURCES) \
-	$(test_http_common_SOURCES) $(test_plugin_bluetooth_SOURCES) \
+	$(test_communicator_unix_SOURCES) $(test_http_common_SOURCES) \
+	$(test_plugin_bluetooth_SOURCES) \
 	$(test_plugin_http_client_SOURCES) \
 	$(test_plugin_http_server_SOURCES) \
 	$(test_plugin_https_client_SOURCES) \
@@ -1591,11 +1593,11 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(gnunet_service_tng_SOURCES) \
 	$(gnunet_service_transport_SOURCES) \
 	$(gnunet_transport_SOURCES) \
-	$(gnunet_transport_certificate_creation_SOURCES) \
 	$(gnunet_transport_profiler_SOURCES) \
 	$(gnunet_transport_wlan_receiver_SOURCES) \
 	$(gnunet_transport_wlan_sender_SOURCES) \
-	$(test_http_common_SOURCES) $(test_plugin_bluetooth_SOURCES) \
+	$(test_communicator_unix_SOURCES) $(test_http_common_SOURCES) \
+	$(test_plugin_bluetooth_SOURCES) \
 	$(test_plugin_http_client_SOURCES) \
 	$(test_plugin_http_server_SOURCES) \
 	$(test_plugin_https_client_SOURCES) \
@@ -1921,7 +1923,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -2053,6 +2060,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@
@@ -2296,15 +2304,12 @@ libgnunettransportmonitor_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 0:0:0
 
+bin_SCRIPTS = \
+ gnunet-transport-certificate-creation
 
-#bin_SCRIPTS = \
-# gnunet-transport-certificate-creation
-gnunet_transport_certificate_creation_SOURCES = \
- gnunet-transport-certificate-creation.c
 
-gnunet_transport_certificate_creation_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la
-
+# See: https://www.gnu.org/software/automake/manual/html_node/Scripts.html#Scripts
+do_subst = sed -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'
 gnunet_communicator_unix_SOURCES = \
  gnunet-communicator-unix.c
 
@@ -3329,6 +3334,7 @@ test_transport_api_slow_ats_LDADD = \
  libgnunettransporttesting.la
 
 EXTRA_DIST = \
+gnunet-transport-certificate-creation.in \
 communicator-unix.conf \
 test_plugin_hostkey \
 test_plugin_hostkey.ecc \
@@ -3467,7 +3473,9 @@ test_transport_api_slow_ats_peer2.conf \
   tcp_connection_legacy.c \
   tcp_server_mst_legacy.c \
   tcp_server_legacy.c \
-  tcp_service_legacy.c
+  tcp_service_legacy.c \
+test_communicator_1.conf \
+test_communicator_1.conf
 
 all: all-am
 
@@ -3789,10 +3797,6 @@ gnunet-transport$(EXEEXT): $(gnunet_transport_OBJECTS) $(gnunet_transport_DEPEND
 	@rm -f gnunet-transport$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_transport_OBJECTS) $(gnunet_transport_LDADD) $(LIBS)
 
-gnunet-transport-certificate-creation$(EXEEXT): $(gnunet_transport_certificate_creation_OBJECTS) $(gnunet_transport_certificate_creation_DEPENDENCIES) $(EXTRA_gnunet_transport_certificate_creation_DEPENDENCIES) 
-	@rm -f gnunet-transport-certificate-creation$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_transport_certificate_creation_OBJECTS) $(gnunet_transport_certificate_creation_LDADD) $(LIBS)
-
 gnunet-transport-profiler$(EXEEXT): $(gnunet_transport_profiler_OBJECTS) $(gnunet_transport_profiler_DEPENDENCIES) $(EXTRA_gnunet_transport_profiler_DEPENDENCIES) 
 	@rm -f gnunet-transport-profiler$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_transport_profiler_OBJECTS) $(gnunet_transport_profiler_LDADD) $(LIBS)
@@ -3804,6 +3808,10 @@ gnunet-transport-wlan-receiver$(EXEEXT): $(gnunet_transport_wlan_receiver_OBJECT
 gnunet-transport-wlan-sender$(EXEEXT): $(gnunet_transport_wlan_sender_OBJECTS) $(gnunet_transport_wlan_sender_DEPENDENCIES) $(EXTRA_gnunet_transport_wlan_sender_DEPENDENCIES) 
 	@rm -f gnunet-transport-wlan-sender$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_transport_wlan_sender_OBJECTS) $(gnunet_transport_wlan_sender_LDADD) $(LIBS)
+
+test_communicator_unix$(EXEEXT): $(test_communicator_unix_OBJECTS) $(test_communicator_unix_DEPENDENCIES) $(EXTRA_test_communicator_unix_DEPENDENCIES) 
+	@rm -f test_communicator_unix$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_communicator_unix_OBJECTS) $(test_communicator_unix_LDADD) $(LIBS)
 
 test_http_common$(EXEEXT): $(test_http_common_OBJECTS) $(test_http_common_DEPENDENCIES) $(EXTRA_test_http_common_DEPENDENCIES) 
 	@rm -f test_http_common$(EXEEXT)
@@ -4100,6 +4108,41 @@ test_transport_testing_restart$(EXEEXT): $(test_transport_testing_restart_OBJECT
 test_transport_testing_startstop$(EXEEXT): $(test_transport_testing_startstop_OBJECTS) $(test_transport_testing_startstop_DEPENDENCIES) $(EXTRA_test_transport_testing_startstop_DEPENDENCIES) 
 	@rm -f test_transport_testing_startstop$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_transport_testing_startstop_OBJECTS) $(test_transport_testing_startstop_LDADD) $(LIBS)
+install-binSCRIPTS: $(bin_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(bindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(bindir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n' \
+	    -e 'h;s|.*|.|' \
+	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
+	      if (++n[d] == $(am__install_max)) { \
+		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
+	    else { print "f", d "/" $$4, $$1 } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	     test -z "$$files" || { \
+	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
+	     } \
+	; done
+
+uninstall-binSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || exit 0; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	       sed -e 's,.*/,,;$(transform)'`; \
+	dir='$(DESTDIR)$(bindir)'; $(am__uninstall_files_from_dir)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -4114,7 +4157,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-helper-transport-wlan-dummy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-helper-transport-wlan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-tng.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-transport-certificate-creation.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-transport-profiler.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-transport-wlan-receiver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-transport-wlan-sender.Po@am__quote@ # am--include-marker
@@ -4142,6 +4184,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_udp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_unix.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_communicator_unix.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_http_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_plugin_transport.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_quota_compliance.Po@am__quote@ # am--include-marker
@@ -5035,13 +5078,6 @@ test_transport_api_timeout_bluetooth.log: test_transport_api_timeout_bluetooth$(
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_communicator_unix.log: test_communicator_unix
-	@p='test_communicator_unix'; \
-	b='test_communicator_unix'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_transport_api_slow_ats.log: test_transport_api_slow_ats$(EXEEXT)
 	@p='test_transport_api_slow_ats$(EXEEXT)'; \
 	b='test_transport_api_slow_ats'; \
@@ -5101,11 +5137,11 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
-all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(DATA)
+all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(SCRIPTS) $(DATA)
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(pkgcfgdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgcfgdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -5157,7 +5193,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/gnunet-helper-transport-wlan-dummy.Po
 	-rm -f ./$(DEPDIR)/gnunet-helper-transport-wlan.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-tng.Po
-	-rm -f ./$(DEPDIR)/gnunet-transport-certificate-creation.Po
 	-rm -f ./$(DEPDIR)/gnunet-transport-profiler.Po
 	-rm -f ./$(DEPDIR)/gnunet-transport-wlan-receiver.Po
 	-rm -f ./$(DEPDIR)/gnunet-transport-wlan-sender.Po
@@ -5185,6 +5220,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/plugin_transport_udp.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_unix.Plo
+	-rm -f ./$(DEPDIR)/test_communicator_unix.Po
 	-rm -f ./$(DEPDIR)/test_http_common.Po
 	-rm -f ./$(DEPDIR)/test_plugin_transport.Po
 	-rm -f ./$(DEPDIR)/test_quota_compliance.Po
@@ -5243,8 +5279,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS install-libLTLIBRARIES \
-	install-libexecPROGRAMS
+install-exec-am: install-binPROGRAMS install-binSCRIPTS \
+	install-libLTLIBRARIES install-libexecPROGRAMS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-am
@@ -5275,7 +5311,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/gnunet-helper-transport-wlan-dummy.Po
 	-rm -f ./$(DEPDIR)/gnunet-helper-transport-wlan.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-tng.Po
-	-rm -f ./$(DEPDIR)/gnunet-transport-certificate-creation.Po
 	-rm -f ./$(DEPDIR)/gnunet-transport-profiler.Po
 	-rm -f ./$(DEPDIR)/gnunet-transport-wlan-receiver.Po
 	-rm -f ./$(DEPDIR)/gnunet-transport-wlan-sender.Po
@@ -5303,6 +5338,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/plugin_transport_udp.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_unix.Plo
+	-rm -f ./$(DEPDIR)/test_communicator_unix.Po
 	-rm -f ./$(DEPDIR)/test_http_common.Po
 	-rm -f ./$(DEPDIR)/test_plugin_transport.Po
 	-rm -f ./$(DEPDIR)/test_quota_compliance.Po
@@ -5355,9 +5391,9 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
-	uninstall-pluginLTLIBRARIES
+uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
+	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
+	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
 .MAKE: check-am install-am install-exec-am install-strip
 
@@ -5368,17 +5404,18 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
 	clean-pluginLTLIBRARIES cscopelist-am ctags ctags-am distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-exec-hook install-html install-html-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
-	install-pkgcfgDATA install-pluginLTLIBRARIES install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
-	uninstall uninstall-am uninstall-binPROGRAMS \
+	install install-am install-binPROGRAMS install-binSCRIPTS \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-exec-hook install-html \
+	install-html-am install-info install-info-am \
+	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
+	install-pdf install-pdf-am install-pkgcfgDATA \
+	install-pluginLTLIBRARIES install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
+	uninstall-am uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
 	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
@@ -5389,6 +5426,10 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@	$(top_srcdir)/src/transport/install-wlan-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@	$(top_srcdir)/src/transport/install-bluetooth-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@install-exec-hook:
+
+gnunet-transport-certificate-creation: gnunet-transport-certificate-creation.in Makefile
+	$(do_subst) < $(srcdir)/gnunet-transport-certificate-creation.in > gnunet-transport-certificate-creation
+	chmod +x gnunet-transport-certificate-creation
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
