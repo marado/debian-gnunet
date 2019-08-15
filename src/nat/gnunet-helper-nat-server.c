@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -69,6 +69,17 @@
 #ifndef ICMP_TIME_EXCEEDED
 #define ICMP_TIME_EXCEEDED 11
 #endif
+
+/**
+ * Call memcpy() but check for @a n being 0 first. In the latter
+ * case, it is now safe to pass NULL for @a src or @a dst.
+ * Unlike traditional memcpy(), returns nothing.
+ *
+ * @param dst destination of the copy, may be NULL if @a n is zero
+ * @param src source of the copy, may be NULL if @a n is zero
+ * @param n number of bytes to copy
+ */
+#define GNUNET_memcpy(dst,src,n) do { if (0 != n) { (void) memcpy (dst,src,n); } } while (0)
 
 /**
  * Should we print some debug output?
@@ -264,8 +275,11 @@ send_icmp_echo (const struct in_addr *my_ip)
   ip_pkt.src_ip = my_ip->s_addr;
   ip_pkt.dst_ip = dummy.s_addr;
   ip_pkt.checksum =
-      htons (calc_checksum ((uint16_t *) & ip_pkt, sizeof (struct ip_header)));
-  memcpy (&packet[off], &ip_pkt, sizeof (struct ip_header));
+      htons (calc_checksum ((uint16_t *) & ip_pkt,
+			    sizeof (struct ip_header)));
+  GNUNET_memcpy (&packet[off],
+                 &ip_pkt,
+                 sizeof (struct ip_header));
   off += sizeof (struct ip_header);
 
   icmp_echo.type = ICMP_ECHO;
@@ -273,9 +287,12 @@ send_icmp_echo (const struct in_addr *my_ip)
   icmp_echo.checksum = 0;
   icmp_echo.reserved = 0;
   icmp_echo.checksum =
-      htons (calc_checksum
-             ((uint16_t *) & icmp_echo, sizeof (struct icmp_echo_header)));
-  memcpy (&packet[off], &icmp_echo, sizeof (struct icmp_echo_header));
+    htons (calc_checksum
+	   ((uint16_t *) & icmp_echo,
+	    sizeof (struct icmp_echo_header)));
+  GNUNET_memcpy (&packet[off],
+                 &icmp_echo,
+                 sizeof (struct icmp_echo_header));
   off += sizeof (struct icmp_echo_header);
 
   memset (&dst, 0, sizeof (dst));
@@ -284,17 +301,24 @@ send_icmp_echo (const struct in_addr *my_ip)
   dst.sin_len = sizeof (struct sockaddr_in);
 #endif
   dst.sin_addr = dummy;
-  err =
-      sendto (rawsock, packet, off, 0, (struct sockaddr *) &dst, sizeof (dst));
+  err = sendto (rawsock,
+		packet,
+		off,
+		0,
+		(struct sockaddr *) &dst,
+		sizeof (dst));
   if (err < 0)
   {
 #if VERBOSE
-    fprintf (stderr, "sendto failed: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "sendto failed: %s\n",
+	     strerror (errno));
 #endif
   }
   else if (sizeof (packet) != err)
   {
-    fprintf (stderr, "Error: partial send of ICMP message\n");
+    fprintf (stderr,
+	     "Error: partial send of ICMP message\n");
   }
 }
 
@@ -315,16 +339,24 @@ send_udp ()
 #endif
   dst.sin_addr = dummy;
   dst.sin_port = htons (NAT_TRAV_PORT);
-  err = sendto (udpsock, NULL, 0, 0, (struct sockaddr *) &dst, sizeof (dst));
+  err = sendto (udpsock,
+		NULL,
+		0,
+		0,
+		(struct sockaddr *) &dst,
+		sizeof (dst));
   if (err < 0)
   {
 #if VERBOSE
-    fprintf (stderr, "sendto failed: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "sendto failed: %s\n",
+	     strerror (errno));
 #endif
   }
   else if (0 != err)
   {
-    fprintf (stderr, "Error: partial send of ICMP message\n");
+    fprintf (stderr,
+	     "Error: partial send of ICMP message\n");
   }
 }
 
@@ -348,11 +380,15 @@ process_icmp_response ()
   have = read (icmpsock, buf, sizeof (buf));
   if (-1 == have)
   {
-    fprintf (stderr, "Error reading raw socket: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "Error reading raw socket: %s\n",
+	     strerror (errno));
     return;
   }
 #if VERBOSE
-  fprintf (stderr, "Received message of %u bytes\n", (unsigned int) have);
+  fprintf (stderr,
+	   "Received message of %u bytes\n",
+	   (unsigned int) have);
 #endif
   if (have <
       (ssize_t) (sizeof (struct ip_header) +
@@ -363,17 +399,26 @@ process_icmp_response ()
     return;
   }
   off = 0;
-  memcpy (&ip_pkt, &buf[off], sizeof (struct ip_header));
+  GNUNET_memcpy (&ip_pkt,
+                 &buf[off],
+                 sizeof (struct ip_header));
   off += sizeof (struct ip_header);
-  memcpy (&icmp_ttl, &buf[off], sizeof (struct icmp_ttl_exceeded_header));
+  GNUNET_memcpy (&icmp_ttl,
+                 &buf[off],
+                 sizeof (struct icmp_ttl_exceeded_header));
   off += sizeof (struct icmp_ttl_exceeded_header);
   if ((ICMP_TIME_EXCEEDED != icmp_ttl.type) || (0 != icmp_ttl.code))
   {
     /* different type than what we want */
     return;
   }
+  /* grab source IP of 1st IP header */
+  source_ip.s_addr = ip_pkt.src_ip;
+
   /* skip 2nd IP header */
-  memcpy (&ip_pkt, &buf[off], sizeof (struct ip_header));
+  GNUNET_memcpy (&ip_pkt,
+                 &buf[off],
+                 sizeof (struct ip_header));
   off += sizeof (struct ip_header);
 
   switch (ip_pkt.proto)
@@ -388,7 +433,9 @@ process_icmp_response ()
       return;
     }
     /* grab ICMP ECHO content */
-    memcpy (&icmp_echo, &buf[off], sizeof (struct icmp_echo_header));
+    GNUNET_memcpy (&icmp_echo,
+                   &buf[off],
+                   sizeof (struct icmp_echo_header));
     port = (uint16_t) ntohl (icmp_echo.reserved);
     break;
   case IPPROTO_UDP:
@@ -400,7 +447,9 @@ process_icmp_response ()
       return;
     }
     /* grab UDP content */
-    memcpy (&udp_pkt, &buf[off], sizeof (struct udp_header));
+    GNUNET_memcpy (&udp_pkt,
+                   &buf[off],
+                   sizeof (struct udp_header));
     port = ntohs (udp_pkt.length);
     break;
   default:
@@ -408,7 +457,6 @@ process_icmp_response ()
     return;
   }
 
-  source_ip.s_addr = ip_pkt.src_ip;
   if (port == 0)
     fprintf (stdout, "%s\n",
              inet_ntop (AF_INET, &source_ip, buf, sizeof (buf)));
@@ -431,15 +479,27 @@ setup_raw_socket ()
   const int one = 1;
 
   if (-1 ==
-      setsockopt (rawsock, SOL_SOCKET, SO_BROADCAST, (char *) &one, sizeof (one)))
+      setsockopt (rawsock,
+		  SOL_SOCKET,
+		  SO_BROADCAST,
+		  (char *) &one,
+		  sizeof (one)))
   {
-    fprintf (stderr, "setsockopt failed: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "setsockopt failed: %s\n",
+	     strerror (errno));
     return -1;
   }
   if (-1 ==
-      setsockopt (rawsock, IPPROTO_IP, IP_HDRINCL, (char *) &one, sizeof (one)))
+      setsockopt (rawsock,
+		  IPPROTO_IP,
+		  IP_HDRINCL,
+		  (char *) &one,
+		  sizeof (one)))
   {
-    fprintf (stderr, "setsockopt failed: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "setsockopt failed: %s\n",
+	     strerror (errno));
     return -1;
   }
   return 0;
@@ -461,7 +521,9 @@ make_udp_socket (const struct in_addr *my_ip)
   ret = socket (AF_INET, SOCK_DGRAM, 0);
   if (-1 == ret)
   {
-    fprintf (stderr, "Error opening UDP socket: %s\n", strerror (errno));
+    fprintf (stderr,
+             "Error opening UDP socket: %s\n",
+             strerror (errno));
     return -1;
   }
   memset (&addr, 0, sizeof (addr));
@@ -472,9 +534,13 @@ make_udp_socket (const struct in_addr *my_ip)
   addr.sin_addr = *my_ip;
   addr.sin_port = htons (NAT_TRAV_PORT);
 
-  if (0 != bind (ret, &addr, sizeof (addr)))
+  if (0 != bind (ret,
+                 (struct sockaddr *) &addr,
+                 sizeof (addr)))
   {
-    fprintf (stderr, "Error binding UDP socket to port %u: %s\n", NAT_TRAV_PORT,
+    fprintf (stderr,
+             "Error binding UDP socket to port %u: %s\n",
+             NAT_TRAV_PORT,
              strerror (errno));
     (void) close (ret);
     return -1;
@@ -484,7 +550,8 @@ make_udp_socket (const struct in_addr *my_ip)
 
 
 int
-main (int argc, char *const *argv)
+main (int argc,
+      char *const *argv)
 {
   struct in_addr external;
   fd_set rs;
@@ -496,11 +563,15 @@ main (int argc, char *const *argv)
   int global_ret;
 
   /* Create an ICMP raw socket for reading (we'll check errors later) */
-  icmpsock = socket (AF_INET, SOCK_RAW, IPPROTO_ICMP);
+  icmpsock = socket (AF_INET,
+		     SOCK_RAW,
+		     IPPROTO_ICMP);
   icmp_eno = errno;
 
   /* Create an (ICMP) raw socket for writing (we'll check errors later) */
-  rawsock = socket (AF_INET, SOCK_RAW, IPPROTO_RAW);
+  rawsock = socket (AF_INET,
+		    SOCK_RAW,
+		    IPPROTO_RAW);
   raw_eno = errno;
   udpsock = -1;
 
@@ -509,14 +580,18 @@ main (int argc, char *const *argv)
 #ifdef HAVE_SETRESUID
   if (0 != setresuid (uid, uid, uid))
   {
-    fprintf (stderr, "Failed to setresuid: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "Failed to setresuid: %s\n",
+	     strerror (errno));
     global_ret = 1;
     goto error_exit;
   }
 #else
   if (0 != (setuid (uid) | seteuid (uid)))
   {
-    fprintf (stderr, "Failed to setuid: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "Failed to setuid: %s\n",
+	     strerror (errno));
     global_ret = 2;
     goto error_exit;
   }
@@ -532,13 +607,16 @@ main (int argc, char *const *argv)
   }
   if (1 != inet_pton (AF_INET, argv[1], &external))
   {
-    fprintf (stderr, "Error parsing IPv4 address: %s\n", strerror (errno));
+    fprintf (stderr,
+	     "Error parsing IPv4 address: %s\n",
+	     strerror (errno));
     global_ret = 4;
     goto error_exit;
   }
   if (1 != inet_pton (AF_INET, DUMMY_IP, &dummy))
   {
-    fprintf (stderr, "Internal error converting dummy IP to binary.\n");
+    fprintf (stderr,
+	     "Internal error converting dummy IP to binary.\n");
     global_ret = 5;
     goto error_exit;
   }
@@ -546,7 +624,9 @@ main (int argc, char *const *argv)
   /* error checking icmpsock */
   if (-1 == icmpsock)
   {
-    fprintf (stderr, "Error opening RAW socket: %s\n", strerror (icmp_eno));
+    fprintf (stderr,
+	     "Error opening RAW socket: %s\n",
+	     strerror (icmp_eno));
     global_ret = 6;
     goto error_exit;
   }
@@ -554,7 +634,9 @@ main (int argc, char *const *argv)
   {
     /* this could happen if we were started with a large number of already-open
        file descriptors... */
-    fprintf (stderr, "Socket number too large (%d > %u)\n", icmpsock,
+    fprintf (stderr,
+	     "Socket number too large (%d > %u)\n",
+	     icmpsock,
              (unsigned int) FD_SETSIZE);
     global_ret = 7;
     goto error_exit;
@@ -563,7 +645,9 @@ main (int argc, char *const *argv)
   /* error checking rawsock */
   if (-1 == rawsock)
   {
-    fprintf (stderr, "Error opening RAW socket: %s\n", strerror (raw_eno));
+    fprintf (stderr,
+	     "Error opening RAW socket: %s\n",
+	     strerror (raw_eno));
     global_ret = 8;
     goto error_exit;
   }
@@ -593,13 +677,18 @@ main (int argc, char *const *argv)
     {
       if (errno == EINTR)
         continue;
-      fprintf (stderr, "select failed: %s\n", strerror (errno));
+      fprintf (stderr,
+	       "select failed: %s\n",
+	       strerror (errno));
       break;
     }
     if (1 == getppid ())        /* Check the parent process id, if 1 the parent has died, so we should die too */
       break;
     if (FD_ISSET (icmpsock, &rs))
+    {
       process_icmp_response ();
+      continue;
+    }
     if (0 == (++alt % 2))
       send_icmp_echo (&external);
     else

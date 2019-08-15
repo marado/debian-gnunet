@@ -1,16 +1,16 @@
 [ats]
-AUTOSTART = @AUTOSTART@
+START_ON_DEMAND = @START_ON_DEMAND@
 @UNIXONLY@ PORT = 2098
 HOSTNAME = localhost
 BINARY = gnunet-service-ats
 ACCEPT_FROM = 127.0.0.1;
 ACCEPT_FROM6 = ::1;
 UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-service-ats.sock
-UNIX_MATCH_UID = YES
+UNIX_MATCH_UID = NO
 UNIX_MATCH_GID = YES
-
+# PREFIX = valgrind
 # Designated assignment mode: PROPORTIONAL / MLP / RIL
-MODE = PROPORTIONAL
+MODE = proportional
 
 # Network specific inbound/outbound quotas
 UNSPECIFIED_QUOTA_IN = 64 KiB
@@ -32,12 +32,27 @@ BLUETOOTH_QUOTA_IN = 128 KiB
 BLUETOOTH_QUOTA_OUT = 128 KiB
 # ATS options
 
+# Proportional specific settings
+# How proportional to preferences is bandwidth distribution in a network
+# 1.0: Fair with respect to addresses without preferences
+# > 1.0: The bigger, the more respect is payed to preferences
+PROP_PROPORTIONALITY_FACTOR = 2.00
+# Should we stick to existing connections are prefer to switch?
+# [1.0...2.0], lower value prefers to switch, bigger value is more tolerant
+PROP_STABILITY_FACTOR = 1.25
 
 # MLP specific settings
 # MLP defaults
 
-# Maximum duration for a solution process
+# Maximum duration for a solution process (both LP and MILP)
 # MLP_MAX_DURATION = 3 s
+# Maximum numbero of iterations for a solution process (only LP)
+# MLP_MAX_ITERATIONS =
+# Tolerated MIP Gap [0.0 .. 1.0], default 0.025
+MLP_MAX_MIP_GAP = 0.025
+# Tolerated LP/MIP Gap [0.0 .. 1.0], default 0.025
+MLP_MAX_LP_MIP_GAP = 0.025
+
 
 # Maximum number of iterations for a solution process
 # MLP_MAX_ITERATIONS = 1024
@@ -59,3 +74,15 @@ BLUETOOTH_QUOTA_OUT = 128 KiB
 MLP_DUMP_PROBLEM_ON_FAIL = YES
 # Dump all solution to disk
 MLP_DUMP_SOLUTION_ON_FAIL = YES
+
+# RIL specifc settings
+RIL_STEP_TIME_MIN = 500 ms
+RIL_STEP_TIME_MAX = 1000 ms
+
+# SARSA or Q-LEARNING
+RIL_ALGORITHM = Q-LEARNING
+RIL_DISCOUNT_BETA = 0.7
+RIL_GRADIENT_STEP_SIZE = 0.3
+RIL_TRACE_DECAY = 0.2
+RIL_EXPLORE_RATIO = 0.1
+RIL_GLOBAL_REWARD_SHARE = 1

@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -31,7 +31,6 @@
 #include "gnunet_gnsrecord_lib.h"
 #include "gnunet_gnsrecord_plugin.h"
 #include "gnunet_tun_lib.h"
-
 
 #define LOG(kind,...) GNUNET_log_from (kind, "gnsrecord",__VA_ARGS__)
 
@@ -114,10 +113,9 @@ init ()
 void __attribute__ ((destructor))
 GNSRECORD_fini ()
 {
-  unsigned int i;
   struct Plugin *plugin;
 
-  for (i = 0; i < num_plugins; i++)
+  for (unsigned int i = 0; i < num_plugins; i++)
   {
     plugin = gns_plugins[i];
     GNUNET_break (NULL ==
@@ -146,12 +144,11 @@ GNUNET_GNSRECORD_value_to_string (uint32_t type,
 				  const void *data,
 				  size_t data_size)
 {
-  unsigned int i;
   struct Plugin *plugin;
   char *ret;
 
   init ();
-  for (i = 0; i < num_plugins; i++)
+  for (unsigned int i = 0; i < num_plugins; i++)
   {
     plugin = gns_plugins[i];
     if (NULL != (ret = plugin->api->value_to_string (plugin->api->cls,
@@ -180,11 +177,10 @@ GNUNET_GNSRECORD_string_to_value (uint32_t type,
 				  void **data,
 				  size_t *data_size)
 {
-  unsigned int i;
   struct Plugin *plugin;
 
   init ();
-  for (i = 0; i < num_plugins; i++)
+  for (unsigned int i = 0; i < num_plugins; i++)
   {
     plugin = gns_plugins[i];
     if (GNUNET_OK == plugin->api->string_to_value (plugin->api->cls,
@@ -207,12 +203,14 @@ GNUNET_GNSRECORD_string_to_value (uint32_t type,
 uint32_t
 GNUNET_GNSRECORD_typename_to_number (const char *dns_typename)
 {
-  unsigned int i;
   struct Plugin *plugin;
   uint32_t ret;
 
+  if (0 == strcasecmp (dns_typename,
+                       "ANY"))
+    return GNUNET_GNSRECORD_TYPE_ANY;
   init ();
-  for (i = 0; i < num_plugins; i++)
+  for (unsigned int i = 0; i < num_plugins; i++)
   {
     plugin = gns_plugins[i];
     if (UINT32_MAX != (ret = plugin->api->typename_to_number (plugin->api->cls,
@@ -232,12 +230,13 @@ GNUNET_GNSRECORD_typename_to_number (const char *dns_typename)
 const char *
 GNUNET_GNSRECORD_number_to_typename (uint32_t type)
 {
-  unsigned int i;
   struct Plugin *plugin;
   const char * ret;
 
+  if (GNUNET_GNSRECORD_TYPE_ANY == type)
+    return "ANY";
   init ();
-  for (i = 0; i < num_plugins; i++)
+  for (unsigned int i = 0; i < num_plugins; i++)
   {
     plugin = gns_plugins[i];
     if (NULL != (ret = plugin->api->number_to_typename (plugin->api->cls,
@@ -246,6 +245,5 @@ GNUNET_GNSRECORD_number_to_typename (uint32_t type)
   }
   return NULL;
 }
-
 
 /* end of gnsrecord.c */

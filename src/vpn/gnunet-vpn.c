@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -78,7 +78,7 @@ static int udp;
 /**
  * Selected level of verbosity.
  */
-static int verbosity;
+static unsigned int verbosity;
 
 /**
  * Global return value.
@@ -95,7 +95,7 @@ static struct GNUNET_TIME_Relative duration = { 5 * 60 * 1000} ;
  * Shutdown.
  */
 static void
-do_disconnect (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_disconnect (void *cls)
 {
   if (NULL != request)
   {
@@ -163,7 +163,9 @@ allocation_cb (void *cls,
  * @param cfg configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   int dst_af;
@@ -177,8 +179,7 @@ run (void *cls, char *const *args, const char *cfgfile,
   struct GNUNET_TIME_Absolute etime;
 
   etime = GNUNET_TIME_relative_to_absolute (duration);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-				&do_disconnect, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_disconnect, NULL);
   handle = GNUNET_VPN_connect (cfg);
   if (NULL == handle)
     goto error;
@@ -285,33 +286,53 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'4', "ipv4", NULL,
-     gettext_noop ("request that result should be an IPv4 address"),
-     0, &GNUNET_GETOPT_set_one, &ipv4},
-    {'6', "ipv6", NULL,
-     gettext_noop ("request that result should be an IPv6 address"),
-     0, &GNUNET_GETOPT_set_one, &ipv6},
-    {'d', "duration", "TIME",
-     gettext_noop ("how long should the mapping be valid for new tunnels?"),
-     1, &GNUNET_GETOPT_set_relative_time, &duration},
-    {'i', "ip", "IP",
-     gettext_noop ("destination IP for the tunnel"),
-     1, &GNUNET_GETOPT_set_string, &target_ip},
-    {'p', "peer", "PEERID",
-     gettext_noop ("peer offering the service we would like to access"),
-     1, &GNUNET_GETOPT_set_string, &peer_id},
-    {'s', "service", "NAME",
-     gettext_noop ("name of the service we would like to access"),
-     1, &GNUNET_GETOPT_set_string, &service_name},
-    {'t', "tcp", NULL,
-     gettext_noop ("service is offered via TCP"),
-     0, &GNUNET_GETOPT_set_one, &tcp},
-    {'u', "udp", NULL,
-     gettext_noop ("service is offered via UDP"),
-     0, &GNUNET_GETOPT_set_one, &udp},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_flag ('4',
+                                  "ipv4",
+                                  gettext_noop ("request that result should be an IPv4 address"),
+                                  &ipv4),
 
-    GNUNET_GETOPT_OPTION_VERBOSE (&verbosity),
+    GNUNET_GETOPT_option_flag ('6',
+                                  "ipv6",
+                                  gettext_noop ("request that result should be an IPv6 address"),
+                                  &ipv6),
+
+    GNUNET_GETOPT_option_relative_time ('d',
+                                            "duration",
+                                            "TIME",
+                                            gettext_noop ("how long should the mapping be valid for new tunnels?"),
+                                            &duration),
+
+    GNUNET_GETOPT_option_string ('i',
+                                 "ip",
+                                 "IP",
+                                 gettext_noop ("destination IP for the tunnel"),
+                                 &target_ip),
+
+    GNUNET_GETOPT_option_string ('p',
+                                 "peer",
+                                 "PEERID",
+                                 gettext_noop ("peer offering the service we would like to access"),
+                                 &peer_id),
+
+    GNUNET_GETOPT_option_string ('s', 
+                                 "service",
+                                 "NAME",
+                                 gettext_noop ("name of the service we would like to access"),
+                                 &service_name),
+
+    GNUNET_GETOPT_option_flag ('t',
+                                  "tcp",
+                                  gettext_noop ("service is offered via TCP"),
+                                  &tcp),
+
+    GNUNET_GETOPT_option_flag ('u',
+                                  "udp",
+                                  gettext_noop ("service is offered via UDP"),
+                                  &udp),
+
+    GNUNET_GETOPT_option_verbose (&verbosity),
+
     GNUNET_GETOPT_OPTION_END
   };
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))

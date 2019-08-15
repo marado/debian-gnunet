@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2011, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file statistics/test_statistics_api_watch.c
@@ -33,11 +33,11 @@ static struct GNUNET_STATISTICS_Handle *h;
 
 static struct GNUNET_STATISTICS_Handle *h2;
 
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
+static struct GNUNET_SCHEDULER_Task *shutdown_task;
 
 
 static void
-force_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+force_shutdown (void *cls)
 {
   fprintf (stderr, "Timeout, failed to receive notifications: %d\n", ok);
   GNUNET_STATISTICS_destroy (h, GNUNET_NO);
@@ -47,7 +47,7 @@ force_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-normal_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+normal_shutdown (void *cls)
 {
   GNUNET_STATISTICS_destroy (h, GNUNET_NO);
   GNUNET_STATISTICS_destroy (h2, GNUNET_NO);
@@ -55,7 +55,10 @@ normal_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static int
-watch_1 (void *cls, const char *subsystem, const char *name, uint64_t value,
+watch_1 (void *cls,
+	 const char *subsystem,
+	 const char *name,
+	 uint64_t value,
          int is_persistent)
 {
   GNUNET_assert (value == 42);
@@ -71,7 +74,10 @@ watch_1 (void *cls, const char *subsystem, const char *name, uint64_t value,
 
 
 static int
-watch_2 (void *cls, const char *subsystem, const char *name, uint64_t value,
+watch_2 (void *cls,
+	 const char *subsystem,
+	 const char *name,
+	 uint64_t value,
          int is_persistent)
 {
   GNUNET_assert (value == 43);
@@ -87,7 +93,9 @@ watch_2 (void *cls, const char *subsystem, const char *name, uint64_t value,
 
 
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   h = GNUNET_STATISTICS_create ("dummy", cfg);
@@ -101,7 +109,8 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_STATISTICS_set (h2, "test-1", 42, GNUNET_NO);
   GNUNET_STATISTICS_set (h2, "test-2", 43, GNUNET_NO);
   shutdown_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES, &force_shutdown,
+      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
+				    &force_shutdown,
                                     NULL);
 }
 

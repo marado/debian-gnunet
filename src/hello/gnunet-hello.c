@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file hello/gnunet-hello.c
@@ -27,7 +27,7 @@
 #include "gnunet_hello_lib.h"
 
 /**
- * Closure for 'add_to_buf'.
+ * Closure for #add_to_buf().
  */
 struct AddContext
 {
@@ -56,10 +56,11 @@ static int address_count;
  * @param cls closure
  * @param address address to add
  * @param expiration old expiration
- * @return GNUNET_OK keep iterating
+ * @return #GNUNET_OK keep iterating
  */
 static int
-add_to_buf (void *cls, const struct GNUNET_HELLO_Address *address,
+add_to_buf (void *cls,
+            const struct GNUNET_HELLO_Address *address,
             struct GNUNET_TIME_Absolute expiration)
 {
   struct AddContext *ac = cls;
@@ -85,14 +86,16 @@ add_to_buf (void *cls, const struct GNUNET_HELLO_Address *address,
  * @param buf where to add the addresses
  * @return number of bytes added, 0 to terminate
  */
-static size_t
-add_from_hello (void *cls, size_t max, void *buf)
+static ssize_t
+add_from_hello (void *cls,
+                size_t max,
+                void *buf)
 {
   struct GNUNET_HELLO_Message **orig = cls;
   struct AddContext ac;
 
   if (NULL == *orig)
-    return 0; /* already done */
+    return GNUNET_SYSERR; /* already done */
   ac.buf = buf;
   ac.max = max;
   ac.ret = 0;
@@ -111,7 +114,7 @@ main (int argc, char *argv[])
   struct GNUNET_DISK_FileHandle *fh;
   struct GNUNET_HELLO_Message *orig;
   struct GNUNET_HELLO_Message *result;
-  struct GNUNET_CRYPTO_EddsaPublicKey pk;
+  struct GNUNET_PeerIdentity pid;
   uint64_t fsize;
   address_count = 0;
 
@@ -163,19 +166,31 @@ main (int argc, char *argv[])
 		   GNUNET_DISK_file_read (fh, buf, fsize));
     GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fh));
     orig = (struct GNUNET_HELLO_Message *) buf;
-    if ( (fsize != GNUNET_HELLO_size (orig)) ||
-	 (GNUNET_OK != GNUNET_HELLO_get_key (orig, &pk)) )
+    if ( (fsize < GNUNET_HELLO_size (orig)) ||
+	 (GNUNET_OK != GNUNET_HELLO_get_id (orig,
+                                            &pid)) )
     {
       FPRINTF (stderr,
 	       _("Did not find well-formed HELLO in file `%s'\n"),
 	       argv[1]);
       return 1;
     }
-    result = GNUNET_HELLO_create (&pk, &add_from_hello, &orig,
-    		GNUNET_HELLO_is_friend_only (orig));
+    {
+      char *pids;
+
+      pids = GNUNET_CRYPTO_eddsa_public_key_to_string (&pid.public_key);
+      fprintf (stdout,
+               "Processing HELLO for peer `%s'\n",
+               pids);
+      GNUNET_free (pids);
+    }
+    result = GNUNET_HELLO_create (&pid.public_key,
+                                  &add_from_hello,
+                                  &orig,
+                                  GNUNET_HELLO_is_friend_only (orig));
     GNUNET_assert (NULL != result);
      fh = GNUNET_DISK_file_open (argv[1],
-				 GNUNET_DISK_OPEN_WRITE,
+				 GNUNET_DISK_OPEN_WRITE | GNUNET_DISK_OPEN_TRUNCATE,
 				 GNUNET_DISK_PERM_USER_READ | GNUNET_DISK_PERM_USER_WRITE);
      if (NULL == fh)
      {
@@ -200,7 +215,10 @@ main (int argc, char *argv[])
      }
     GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fh));
   }
-  FPRINTF (stderr, _("Modified %u addresses \n"), address_count);
+  FPRINTF (stderr,
+           _("Modified %u addresses, wrote %u bytes\n"),
+           address_count,
+           (unsigned int) fsize);
   return 0;
 }
 

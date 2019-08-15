@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -50,7 +50,7 @@ static struct GNUNET_TIME_Relative timeout;
 /**
  * Handle to the task run during termination.
  */
-static GNUNET_SCHEDULER_TaskIdentifier terminate_taskid;
+static struct GNUNET_SCHEDULER_Task * terminate_taskid;
 
 
 /**
@@ -105,22 +105,38 @@ process_stats (void *cls,
 
 
 /**
- * Task run on timeout to terminate.  Triggers printing out
+ * Task run on shutdown to terminate.  Triggers printing out
  * all statistics.
  *
  * @param cls NULL
- * @param tc unused
  */
 static void
-terminate_task (void *cls,
-		const struct GNUNET_SCHEDULER_TaskContext *tc)
+terminate_task (void *cls)
 {
-  terminate_taskid = GNUNET_SCHEDULER_NO_TASK;
+  if (NULL != terminate_taskid)
+  {
+    GNUNET_SCHEDULER_cancel (terminate_taskid);
+    terminate_taskid = NULL;
+  }
   GNUNET_TESTBED_get_statistics (0, NULL,
                                  NULL, NULL,
 				 &process_stats,
 				 &shutdown_task,
 				 NULL);
+}
+
+
+/**
+ * Task run on timeout to terminate.  Triggers printing out
+ * all statistics.
+ *
+ * @param cls NULL
+ */
+static void
+timeout_task (void *cls)
+{
+  terminate_taskid = NULL;
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -150,11 +166,10 @@ test_master (void *cls,
 
   if (0 != timeout.rel_value_us)
     terminate_taskid = GNUNET_SCHEDULER_add_delayed (timeout,
-						     &terminate_task, NULL);
-  else
-    terminate_taskid = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-						     &terminate_task,
+						     &timeout_task,
 						     NULL);
+   GNUNET_SCHEDULER_add_shutdown (&terminate_task,
+				  NULL);
 }
 
 
@@ -188,16 +203,26 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'n', "num-peers", "COUNT",
-     gettext_noop ("run the experiment with COUNT peers"),
-     1, &GNUNET_GETOPT_set_uint, &num_peers},
-    {'H', "hosts", "HOSTFILE",
-     gettext_noop ("specifies name of a file with the HOSTS the testbed should use"),
-     1, &GNUNET_GETOPT_set_string, &host_filename},
-    {'t', "timeout", "DELAY",
-     gettext_noop ("automatically terminate experiment after DELAY"),
-     1, &GNUNET_GETOPT_set_relative_time, &timeout},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_uint ('n',
+                                   "num-peers",
+                                   "COUNT",
+                                   gettext_noop ("run the experiment with COUNT peers"),
+                                   &num_peers),
+
+    GNUNET_GETOPT_option_string ('H',
+                                 "hosts",
+                                 "HOSTFILE",
+                                 gettext_noop ("specifies name of a file with the HOSTS the testbed should use"),
+                                 &host_filename),
+
+    GNUNET_GETOPT_option_relative_time ('t',
+                                            "timeout",
+                                            "DELAY",
+                                            gettext_noop ("automatically terminate experiment after DELAY"),
+                                            &timeout),
+
     GNUNET_GETOPT_OPTION_END
   };
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))

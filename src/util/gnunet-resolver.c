@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -27,7 +27,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_resolver_service.h"
 
-#define GET_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
+#define GET_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5)
 
 /**
  * Flag for reverse lookup.
@@ -46,9 +46,12 @@ static void
 print_hostname (void *cls,
 		const char *hostname)
 {
+  (void) cls;
   if (NULL == hostname)
     return;
-  FPRINTF (stdout, "%s\n", hostname);
+  FPRINTF (stdout,
+	   "%s\n",
+	   hostname);
 }
 
 
@@ -60,11 +63,17 @@ print_hostname (void *cls,
  * @param addrlen length of the address
  */
 static void
-print_sockaddr (void *cls, const struct sockaddr *addr, socklen_t addrlen)
+print_sockaddr (void *cls,
+		const struct sockaddr *addr,
+		socklen_t addrlen)
 {
+  (void) cls;
   if (NULL == addr)
     return;
-  FPRINTF (stdout, "%s\n", GNUNET_a2s (addr, addrlen));
+  FPRINTF (stdout,
+	   "%s\n",
+	   GNUNET_a2s (addr,
+		       addrlen));
 }
 
 
@@ -77,7 +86,9 @@ print_sockaddr (void *cls, const struct sockaddr *addr, socklen_t addrlen)
  * @param cfg configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   const struct sockaddr *sa;
@@ -85,11 +96,18 @@ run (void *cls, char *const *args, const char *cfgfile,
   struct sockaddr_in v4;
   struct sockaddr_in6 v6;
 
-  if (args[0] == NULL)
+  (void) cls;
+  (void) cfgfile;
+  (void) cfg;
+  if (NULL == args[0])
     return;
   if (! reverse)
   {
-    GNUNET_RESOLVER_ip_get (args[0], AF_UNSPEC, GET_TIMEOUT, &print_sockaddr, NULL);
+    GNUNET_RESOLVER_ip_get (args[0],
+			    AF_UNSPEC,
+			    GET_TIMEOUT,
+			    &print_sockaddr,
+			    NULL);
     return;
   }
 
@@ -144,10 +162,11 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    { 'r', "reverse", NULL,
-      gettext_noop ("perform a reverse lookup"),
-      0, &GNUNET_GETOPT_set_one, &reverse },
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_flag ('r',
+                                  "reverse",
+                                  gettext_noop ("perform a reverse lookup"),
+                                  &reverse),
     GNUNET_GETOPT_OPTION_END
   };
   int ret;

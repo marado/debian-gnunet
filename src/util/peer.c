@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-     (C) 2006, 2008, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2006, 2008, 2009 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-      Boston, MA 02110-1301, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -26,7 +26,7 @@
 #include "platform.h"
 #include "gnunet_peer_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-peer", __VA_ARGS__)
 
 
 struct PeerEntry
@@ -133,6 +133,7 @@ GNUNET_PEER_intern (const struct GNUNET_PeerIdentity *pid)
   }
   if (0 == ret)
   {
+    memset (&table[0]->id, 0, sizeof (struct GNUNET_PeerIdentity));
     table[0]->pid = 0;
     table[0]->rc = 1;
     ret = 1;
@@ -200,7 +201,8 @@ GNUNET_PEER_change_rc (GNUNET_PEER_Id id, int delta)
     return;
   GNUNET_assert (id < size);
   GNUNET_assert (table[id]->rc > 0);
-  GNUNET_assert ((delta >= 0) || (table[id]->rc >= -delta));
+  GNUNET_assert ( (delta >= 0) ||
+		  (table[id]->rc >= (unsigned int) (-delta)) );
   table[id]->rc += delta;
   if (0 == table[id]->rc)
   {
@@ -243,6 +245,8 @@ GNUNET_PEER_resolve (GNUNET_PEER_Id id, struct GNUNET_PeerIdentity *pid)
 const struct GNUNET_PeerIdentity *
 GNUNET_PEER_resolve2 (GNUNET_PEER_Id id)
 {
+  GNUNET_assert (id < size);
+  GNUNET_assert (table[id]->rc > 0);
   return &table[id]->id;
 }
 

@@ -1,42 +1,47 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006, 2010, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2010, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_hello_lib.h
- * @brief helper library for handling HELLOs
  * @author Christian Grothoff
+ * @file
+ * Helper library for handling HELLOs
+ *
+ * @defgroup hello  Hello library
+ * Helper library for handling HELLOs
+ *
+ * @see [Documentation](https://gnunet.org/gnunets-hostlist-subsystem)
+ *
+ * @{
  */
 
 #ifndef GNUNET_HELLO_LIB_H
 #define GNUNET_HELLO_LIB_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
 
 #include "gnunet_util_lib.h"
-
 
 /**
  * Prefix that every HELLO URI must start with.
@@ -47,6 +52,11 @@ extern "C"
  * Prefix that every FRIEND HELLO URI must start with.
  */
 #define GNUNET_FRIEND_HELLO_URI_PREFIX "gnunet://friend-hello/"
+
+/**
+ * Separator used in HELLO URI
+ */
+#define GNUNET_HELLO_URI_SEP '+'
 
 
 /**
@@ -111,7 +121,6 @@ struct GNUNET_HELLO_Address
    * when a #GNUNET_HELLO_Message is created
    */
   enum GNUNET_HELLO_AddressInfo local_info;
-
 };
 
 
@@ -183,23 +192,49 @@ GNUNET_HELLO_address_check_option (const struct GNUNET_HELLO_Address *address,
  *
  * @param addr address to free
  */
-#define GNUNET_HELLO_address_free(addr) GNUNET_free(addr)
+#define GNUNET_HELLO_address_free(addr) GNUNET_free (addr)
 
+
+GNUNET_NETWORK_STRUCT_BEGIN
 
 /**
  * A HELLO message is used to exchange information about
- * transports with other peers.  This struct is guaranteed
- * to start with a `struct GNUNET_MessageHeader`, everything else
- * should be internal to the HELLO library.
+ * transports with other peers.  This struct is always
+ * followed by the actual network addresses which have
+ * the format:
+ *
+ * 1) transport-name (0-terminated)
+ * 2) address-length (uint16_t, network byte order; possibly
+ *    unaligned!)
+ * 3) address expiration (`struct GNUNET_TIME_AbsoluteNBO`); possibly
+ *    unaligned!)
+ * 4) address (address-length bytes; possibly unaligned!)
  */
-struct GNUNET_HELLO_Message;
+struct GNUNET_HELLO_Message
+{
+  /**
+   * Type will be #GNUNET_MESSAGE_TYPE_HELLO.
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * Use in F2F mode: Do not gossip this HELLO message
+   */
+  uint32_t friend_only GNUNET_PACKED;
+
+  /**
+   * The public key of the peer.
+   */
+  struct GNUNET_CRYPTO_EddsaPublicKey publicKey;
+};
+GNUNET_NETWORK_STRUCT_END
 
 
 /**
  * Return HELLO type
  *
  * @param h HELLO Message to test
- * @return #GNUNET_YES or #GNUNET_NO
+ * @return #GNUNET_YES for friend-only or #GNUNET_NO otherwise
  */
 int
 GNUNET_HELLO_is_friend_only (const struct GNUNET_HELLO_Message *h);
@@ -231,13 +266,12 @@ GNUNET_HELLO_add_address (const struct GNUNET_HELLO_Address *address,
  * @param cls closure
  * @param max maximum number of bytes that can be written to @a buf
  * @param buf where to write the address information
- * @return number of bytes written, 0 to signal the
+ * @return number of bytes written or 0, #GNUNET_SYSERR to signal the
  *         end of the iteration.
  */
-typedef size_t
-(*GNUNET_HELLO_GenerateAddressListCallback) (void *cls,
-                                             size_t max,
-                                             void *buf);
+typedef ssize_t (*GNUNET_HELLO_GenerateAddressListCallback) (void *cls,
+                                                             size_t max,
+                                                             void *buf);
 
 
 /**
@@ -248,14 +282,14 @@ typedef size_t
  * If friend only is set to #GNUNET_YES we create a FRIEND_HELLO which
  * will not be gossiped to other peers.
  *
- * @param publicKey public key to include in the HELLO
+ * @param public_key public key to include in the HELLO
  * @param addrgen callback to invoke to get addresses
  * @param addrgen_cls closure for @a addrgen
  * @param friend_only should the returned HELLO be only visible to friends?
  * @return the hello message
  */
 struct GNUNET_HELLO_Message *
-GNUNET_HELLO_create (const struct GNUNET_CRYPTO_EddsaPublicKey *publicKey,
+GNUNET_HELLO_create (const struct GNUNET_CRYPTO_EddsaPublicKey *public_key,
                      GNUNET_HELLO_GenerateAddressListCallback addrgen,
                      void *addrgen_cls,
                      int friend_only);
@@ -263,6 +297,7 @@ GNUNET_HELLO_create (const struct GNUNET_CRYPTO_EddsaPublicKey *publicKey,
 
 /**
  * Return the size of the given HELLO message.
+ *
  * @param hello to inspect
  * @return the size, 0 if HELLO is invalid
  */
@@ -316,10 +351,10 @@ GNUNET_HELLO_equals (const struct GNUNET_HELLO_Message *h1,
  *         #GNUNET_NO to delete it from the HELLO
  *         #GNUNET_SYSERR to stop iterating (but keep current address)
  */
-typedef int
-(*GNUNET_HELLO_AddressIterator) (void *cls,
-                                 const struct GNUNET_HELLO_Address *address,
-                                 struct GNUNET_TIME_Absolute expiration);
+typedef int (*GNUNET_HELLO_AddressIterator) (
+  void *cls,
+  const struct GNUNET_HELLO_Address *address,
+  struct GNUNET_TIME_Absolute expiration);
 
 
 /**
@@ -347,12 +382,15 @@ GNUNET_HELLO_get_last_expiration (const struct GNUNET_HELLO_Message *msg);
 struct GNUNET_HELLO_Message *
 GNUNET_HELLO_iterate_addresses (const struct GNUNET_HELLO_Message *msg,
                                 int return_modified,
-                                GNUNET_HELLO_AddressIterator it, void *it_cls);
+                                GNUNET_HELLO_AddressIterator it,
+                                void *it_cls);
 
 
 /**
- * Iterate over addresses in "new_hello" that
- * are NOT already present in "old_hello".
+ * Iterate over addresses in @a new_hello that are NOT already present
+ * in @a old_hello. Note that if the address is present in @a old_hello
+ * but the expiration time in @a new_hello is more recent, the
+ * iterator is also called.
  *
  * @param new_hello a HELLO message
  * @param old_hello a HELLO message
@@ -362,23 +400,12 @@ GNUNET_HELLO_iterate_addresses (const struct GNUNET_HELLO_Message *msg,
  * @param it_cls closure for @a it
  */
 void
-GNUNET_HELLO_iterate_new_addresses (const struct GNUNET_HELLO_Message *new_hello,
-                                    const struct GNUNET_HELLO_Message *old_hello,
-                                    struct GNUNET_TIME_Absolute expiration_limit,
-                                    GNUNET_HELLO_AddressIterator it,
-                                    void *it_cls);
-
-
-/**
- * Get the public key from a HELLO message.
- *
- * @param hello the hello message
- * @param publicKey where to copy the public key information, can be NULL
- * @return #GNUNET_SYSERR if the HELLO was malformed
- */
-int
-GNUNET_HELLO_get_key (const struct GNUNET_HELLO_Message *hello,
-                      struct GNUNET_CRYPTO_EddsaPublicKey *publicKey);
+GNUNET_HELLO_iterate_new_addresses (
+  const struct GNUNET_HELLO_Message *new_hello,
+  const struct GNUNET_HELLO_Message *old_hello,
+  struct GNUNET_TIME_Absolute expiration_limit,
+  GNUNET_HELLO_AddressIterator it,
+  void *it_cls);
 
 
 /**
@@ -405,8 +432,15 @@ struct GNUNET_MessageHeader *
 GNUNET_HELLO_get_header (struct GNUNET_HELLO_Message *hello);
 
 
-typedef struct GNUNET_TRANSPORT_PluginFunctions *
-(*GNUNET_HELLO_TransportPluginsFind) (const char *name);
+/**
+ * Helper function to load/access transport plugins.
+ * FIXME: pass closure!
+ *
+ * @param name name of the transport plugin to load
+ * @return NULL if a plugin with name @a name is not known/loadable
+ */
+typedef struct GNUNET_TRANSPORT_PluginFunctions *(
+  *GNUNET_HELLO_TransportPluginsFind) (const char *name);
 
 
 /**
@@ -436,14 +470,70 @@ GNUNET_HELLO_parse_uri (const char *uri,
                         struct GNUNET_HELLO_Message **hello,
                         GNUNET_HELLO_TransportPluginsFind plugins_find);
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+
+/* NG API */
+#include "gnunet_nt_lib.h"
+
+
+/**
+ * Build address record by signing raw information with private key.
+ *
+ * @param address text address to sign
+ * @param nt network type of @a address
+ * @param mono_time when was @a address valid
+ * @param private_key signing key to use
+ * @param result[out] where to write address record (allocated)
+ * @param result_size[out] set to size of @a result
+ */
+void
+GNUNET_HELLO_sign_address (
+  const char *address,
+  enum GNUNET_NetworkType nt,
+  struct GNUNET_TIME_Absolute mono_time,
+  const struct GNUNET_CRYPTO_EddsaPrivateKey *private_key,
+  void **result,
+  size_t *result_size);
+
+
+/**
+ * Check signature and extract address record.
+ *
+ * @param raw raw signed address
+ * @param raw_size size of @a raw
+ * @param pid public key to use for signature verification
+ * @param nt[out] set to network type
+ * @param mono_time[out] when was the address generated
+ * @return NULL on error, otherwise the address
+ */
+char *
+GNUNET_HELLO_extract_address (const void *raw,
+                              size_t raw_size,
+                              const struct GNUNET_PeerIdentity *pid,
+                              enum GNUNET_NetworkType *nt,
+                              struct GNUNET_TIME_Absolute *mono_time);
+
+
+/**
+ * Given an address as a string, extract the prefix that identifies
+ * the communicator offering transmissions to that address.
+ *
+ * @param address a peer's address
+ * @return NULL if the address is mal-formed, otherwise the prefix
+ */
+char *
+GNUNET_HELLO_address_to_prefix (const char *address);
+
+
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
 }
 #endif
 
-
 /* ifndef GNUNET_HELLO_LIB_H */
 #endif
+
+/** @} */ /* end of group */
+
 /* end of gnunet_hello_lib.h */

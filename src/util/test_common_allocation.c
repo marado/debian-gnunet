@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2005, 2006 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2005, 2006, 2017 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -25,11 +25,14 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
+
 static int
 check ()
 {
 #define MAX_TESTVAL 1024
   char *ptrs[MAX_TESTVAL];
+  unsigned int **a2;
+  char ***a3;
   int i;
   int j;
   int k;
@@ -93,19 +96,57 @@ check ()
   if (ptrs[0] != NULL)
     return 9;
 
+  /* GNUNET_new_array_2d tests */
+  a2 = GNUNET_new_array_2d (17, 22, unsigned int);
+  for (i = 0; i < 17; i++)
+  {
+    for (j = 0; j < 22; j++)
+    {
+      if (0 != a2[i][j])
+      {
+        GNUNET_free (a2);
+        return 10;
+      }
+      a2[i][j] = i * 100 + j;
+    }
+  }
+  GNUNET_free (a2);
 
+  /* GNUNET_new_array_3d tests */
+  a3 = GNUNET_new_array_3d (2, 3, 4, char);
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < 3; j++)
+    {
+      for (k = 0; k < 4; k++)
+      {
+        if (0 != a3[i][j][k])
+        {
+          GNUNET_free (a3);
+          return 11;
+        }
+        a3[i][j][k] = i * 100 + j * 10 + k;
+      }
+    }
+  }
+  GNUNET_free (a3);
   return 0;
 }
+
 
 int
 main (int argc, char *argv[])
 {
   int ret;
 
-  GNUNET_log_setup ("test-common-allocation", "WARNING", NULL);
+  GNUNET_log_setup ("test-common-allocation",
+                    "WARNING",
+                    NULL);
   ret = check ();
   if (ret != 0)
-    FPRINTF (stderr, "ERROR %d.\n", ret);
+    FPRINTF (stderr,
+             "ERROR %d.\n",
+             ret);
   return ret;
 }
 

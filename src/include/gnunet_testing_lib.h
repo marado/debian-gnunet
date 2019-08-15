@@ -1,33 +1,41 @@
 /*
       This file is part of GNUnet
-      (C) 2008, 2009, 2012 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008, 2009, 2012 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
- * @file include/gnunet_testing_lib.h
- * @brief convenience API for writing testcases for GNUnet;
- *        can start/stop one or more peers on a system;
- *        testing is responsible for managing private keys,
- *        ports and paths; it is a low-level library that
- *        does not support higher-level functions such as
- *        P2P connection, topology management or distributed
- *        testbed maintenance (those are in gnunet_testbed_service.h)
  * @author Christian Grothoff
+ *
+ * @file
+ * Convenience API for writing testcases for GNUnet
+ *
+ * @defgroup testing  Testing library
+ * Library for writing testcases for GNUnet.
+ *
+ * It can start/stop one or more peers on a system; testing is responsible for
+ * managing private keys, ports and paths; it is a low-level library that does
+ * not support higher-level functions such as P2P connection, topology
+ * management or distributed testbed maintenance (those are provided by the
+ * [Testbed service](@ref testbed))
+ *
+ * @see [Documentation](https://gnunet.org/writing_testcases)
+ *
+ * @{
  */
 
 #ifndef GNUNET_TESTING_LIB_H
@@ -149,9 +157,7 @@ struct GNUNET_TESTING_System *
 GNUNET_TESTING_system_create_with_portrange (const char *testdir,
 					     const char *trusted_ip,
 					     const char *hostname,
-                                             const struct
-                                             GNUNET_TESTING_SharedService *
-                                             shared_services,
+                                             const struct GNUNET_TESTING_SharedService *shared_services,
 					     uint16_t lowport,
 					     uint16_t highport);
 
@@ -177,12 +183,12 @@ GNUNET_TESTING_system_destroy (struct GNUNET_TESTING_System *system,
  * GNUnet source code.
  *
  * This is primarily a helper function used internally
- * by 'GNUNET_TESTING_peer_configure'.
+ * by #GNUNET_TESTING_peer_configure().
  *
  * @param system the testing system handle
  * @param key_number desired pre-created hostkey to obtain
  * @param id set to the peer's identity (hash of the public
- *        key; if NULL, GNUNET_SYSERR is returned immediately
+ *        key; if NULL, #GNUNET_SYSERR is returned immediately
  * @return NULL on error (not enough keys)
  */
 struct GNUNET_CRYPTO_EddsaPrivateKey *
@@ -219,14 +225,15 @@ GNUNET_TESTING_release_port (struct GNUNET_TESTING_System *system,
  * system. The default configuration will be available in PATHS section under
  * the option DEFAULTCONFIG after the call. SERVICE_HOME is also set in PATHS
  * section to the temporary directory specific to this configuration. If we run
- * out of "*port" numbers, return SYSERR.
+ * out of "*port" numbers, return #GNUNET_SYSERR.
  *
  * This is primarily a helper function used internally
- * by 'GNUNET_TESTING_peer_configure'.
+ * by #GNUNET_TESTING_peer_configure().
  *
  * @param system system to use to coordinate resource usage
  * @param cfg template configuration to update
- * @return GNUNET_OK on success, GNUNET_SYSERR on error - the configuration will
+ * @return #GNUNET_OK on success,
+ *         #GNUNET_SYSERR on error - the configuration will
  *           be incomplete and should not be used there upon
  */
 int
@@ -271,7 +278,8 @@ GNUNET_TESTING_peer_get_identity (struct GNUNET_TESTING_Peer *peer,
  * Start the peer.
  *
  * @param peer peer to start
- * @return GNUNET_OK on success, GNUNET_SYSERR on error (i.e. peer already running)
+ * @return #GNUNET_OK on success,
+ *         #GNUNET_SYSERR on error (i.e. peer already running)
  */
 int
 GNUNET_TESTING_peer_start (struct GNUNET_TESTING_Peer *peer);
@@ -283,7 +291,8 @@ GNUNET_TESTING_peer_start (struct GNUNET_TESTING_Peer *peer);
  * GNUNET_TESTING_peer_stop_async().
  *
  * @param peer peer to stop
- * @return GNUNET_OK on success, GNUNET_SYSERR on error (i.e. peer not running)
+ * @return #GNUNET_OK on success,
+ *         #GNUNET_SYSERR on error (i.e. peer not running)
  */
 int
 GNUNET_TESTING_peer_stop (struct GNUNET_TESTING_Peer *peer);
@@ -304,7 +313,7 @@ GNUNET_TESTING_peer_destroy (struct GNUNET_TESTING_Peer *peer);
  * Sends SIGTERM to the peer's main process
  *
  * @param peer the handle to the peer
- * @return GNUNET_OK if successful; GNUNET_SYSERR if the main process is NULL
+ * @return #GNUNET_OK if successful; #GNUNET_SYSERR if the main process is NULL
  *           or upon any error while sending SIGTERM
  */
 int
@@ -315,7 +324,7 @@ GNUNET_TESTING_peer_kill (struct GNUNET_TESTING_Peer *peer);
  * Waits for a peer to terminate. The peer's main process will also be destroyed.
  *
  * @param peer the handle to the peer
- * @return GNUNET_OK if successful; GNUNET_SYSERR if the main process is NULL
+ * @return #GNUNET_OK if successful; #GNUNET_SYSERR if the main process is NULL
  *           or upon any error while waiting
  */
 int
@@ -327,13 +336,13 @@ GNUNET_TESTING_peer_wait (struct GNUNET_TESTING_Peer *peer);
  *
  * @param cls the closure given to GNUNET_TESTING_peer_stop_async()
  * @param peer the respective peer whose status is being reported
- * @param success GNUNET_YES if the peer is stopped; GNUNET_SYSERR upon any
+ * @param success #GNUNET_YES if the peer is stopped; #GNUNET_SYSERR upon any
  *          error
  */
-typedef void (*GNUNET_TESTING_PeerStopCallback) (void *cls,
-                                                 struct GNUNET_TESTING_Peer *
-                                                 peer,
-                                                 int success);
+typedef void
+(*GNUNET_TESTING_PeerStopCallback) (void *cls,
+                                    struct GNUNET_TESTING_Peer *peer,
+                                    int success);
 
 
 /**
@@ -342,9 +351,9 @@ typedef void (*GNUNET_TESTING_PeerStopCallback) (void *cls,
  *
  * @param peer the peer to stop
  * @param cb the callback to signal peer shutdown
- * @param cb_cls closure for the above callback
- * @return GNUNET_OK upon successfully giving the request to the ARM API (this
- *           does not mean that the peer is successfully stopped); GNUNET_SYSERR
+ * @param cb_cls closure for the @a cb
+ * @return #GNUNET_OK upon successfully giving the request to the ARM API (this
+ *           does not mean that the peer is successfully stopped); #GNUNET_SYSERR
  *           upon any error.
  */
 int
@@ -368,15 +377,16 @@ GNUNET_TESTING_peer_stop_async_cancel (struct GNUNET_TESTING_Peer *peer);
 
 /**
  * Signature of the 'main' function for a (single-peer) testcase that
- * is run using 'GNUNET_TESTING_peer_run'.
+ * is run using #GNUNET_TESTING_peer_run().
  *
  * @param cls closure
  * @param cfg configuration of the peer that was started
  * @param peer identity of the peer that was created
  */
-typedef void (*GNUNET_TESTING_TestMain) (void *cls,
-                                         const struct GNUNET_CONFIGURATION_Handle *cfg,
-                                         struct GNUNET_TESTING_Peer *peer);
+typedef void
+(*GNUNET_TESTING_TestMain) (void *cls,
+                            const struct GNUNET_CONFIGURATION_Handle *cfg,
+                            struct GNUNET_TESTING_Peer *peer);
 
 
 /**
@@ -420,7 +430,7 @@ GNUNET_TESTING_peer_run (const char *testdir,
  * @param cfgfilename name of the configuration file to use;
  *         use NULL to only run with defaults
  * @param tm main function of the testcase
- * @param tm_cls closure for 'tm'
+ * @param tm_cls closure for @a tm
  * @return 0 on success, 1 on error
  */
 int
@@ -456,3 +466,5 @@ GNUNET_TESTING_get_testname_from_underscore (const char *argv0);
 #endif
 
 #endif
+
+/** @} */  /* end of group */

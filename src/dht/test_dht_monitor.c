@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file dht/test_dht_monitor.c
@@ -90,12 +90,12 @@ static unsigned int NUM_PEERS = 3;
 /**
  * Task called to disconnect peers.
  */
-static GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+static struct GNUNET_SCHEDULER_Task *timeout_task;
 
 /**
  * Task to do DHT_puts
  */
-static GNUNET_SCHEDULER_TaskIdentifier put_task;
+static struct GNUNET_SCHEDULER_Task * put_task;
 
 static struct GNUNET_DHT_MonitorHandle **monitors;
 
@@ -107,12 +107,10 @@ static unsigned int monitor_counter;
  * Terminates active get operations and shuts down
  * the testbed.
  *
- * @param cls the 'struct GNUNET_DHT_TestContext'
- * @param tc scheduler context
+ * @param cls the `struct GNUNET_DHT_TEST_Context`
  */
 static void
-shutdown_task (void *cls,
-	       const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
   struct GNUNET_DHT_TEST_Context *ctx = cls;
   unsigned int i;
@@ -135,6 +133,26 @@ shutdown_task (void *cls,
   GNUNET_free (monitors);
   GNUNET_SCHEDULER_cancel (put_task);
   GNUNET_DHT_TEST_cleanup (ctx);
+  if (NULL != timeout_task)
+  {
+    GNUNET_SCHEDULER_cancel (timeout_task);
+    timeout_task = NULL;
+  }
+}
+
+
+/**
+ * Task run on success or timeout to clean up.
+ * Terminates active get operations and shuts down
+ * the testbed.
+ *
+ * @param cls NULL
+ */
+static void
+timeout_task_cb (void *cls)
+{
+  timeout_task = NULL;
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -159,12 +177,12 @@ dht_get_handler (void *cls, struct GNUNET_TIME_Absolute exp,
 		 const struct GNUNET_PeerIdentity *get_path,
 		 unsigned int get_path_length,
 		 const struct GNUNET_PeerIdentity *put_path,
-		 unsigned int put_path_length, enum GNUNET_BLOCK_Type type,
+		 unsigned int put_path_length,
+                 enum GNUNET_BLOCK_Type type,
 		 size_t size, const void *data)
 {
   struct GetOperation *get_op = cls;
   struct GNUNET_HashCode want;
-  struct GNUNET_DHT_TestContext *ctx;
 
   if (sizeof (struct GNUNET_HashCode) != size)
   {
@@ -188,8 +206,7 @@ dht_get_handler (void *cls, struct GNUNET_TIME_Absolute exp,
     return;
   /* all DHT GET operations successful; terminate! */
   ok = 0;
-  ctx = GNUNET_SCHEDULER_cancel (timeout_task);
-  timeout_task = GNUNET_SCHEDULER_add_now (&shutdown_task, ctx);
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -197,20 +214,17 @@ dht_get_handler (void *cls, struct GNUNET_TIME_Absolute exp,
  * Task to put the id of each peer into the DHT.
  *
  * @param cls array with NUM_PEERS DHT handles
- * @param tc Task context
  */
 static void
-do_puts (void *cls,
-	 const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_puts (void *cls)
 {
   struct GNUNET_DHT_Handle **hs = cls;
   struct GNUNET_HashCode key;
   struct GNUNET_HashCode value;
-  unsigned int i;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Putting values into DHT\n");
-  for (i = 0; i < NUM_PEERS; i++)
+  for (unsigned int i = 0; i < NUM_PEERS; i++)
   {
     GNUNET_CRYPTO_hash (&i, sizeof (i), &key);
     GNUNET_CRYPTO_hash (&key, sizeof (key), &value);
@@ -220,7 +234,6 @@ do_puts (void *cls,
                     GNUNET_BLOCK_TYPE_TEST,
 		    sizeof (value), &value,
 		    GNUNET_TIME_UNIT_FOREVER_ABS,
-                    GNUNET_TIME_UNIT_FOREVER_REL,
 		    NULL, NULL);
   }
   put_task = GNUNET_SCHEDULER_add_delayed (PUT_FREQUENCY,
@@ -297,7 +310,8 @@ monitor_put_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "%u got a PUT message for key %s with %u bytes\n",
               i,
-	      GNUNET_h2s (key), size);
+	      GNUNET_h2s (key),
+              (unsigned int) size);
   monitor_counter++;
 }
 
@@ -335,7 +349,8 @@ monitor_res_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "%u got a REPLY message for key %s with %u bytes\n",
               i,
-	      GNUNET_h2s (key), size);
+	      GNUNET_h2s (key),
+              (unsigned int) size);
   monitor_counter++;
 }
 
@@ -363,7 +378,8 @@ run (void *cls,
 
   GNUNET_assert (NUM_PEERS == num_peers);
   my_peers = peers;
-  monitors = GNUNET_malloc (num_peers * sizeof (struct GNUNET_DHT_MonitorHandle *));
+  monitors = GNUNET_new_array (num_peers,
+                               struct GNUNET_DHT_MonitorHandle *);
   for (i = 0; i < num_peers; i++)
     monitors[i] = GNUNET_DHT_monitor_start (dhts[i],
 					    GNUNET_BLOCK_TYPE_ANY,
@@ -395,7 +411,10 @@ run (void *cls,
     }
   }
   timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-					       &shutdown_task, ctx);
+					       &timeout_task_cb,
+                                               NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
+                                 ctx);
 }
 
 

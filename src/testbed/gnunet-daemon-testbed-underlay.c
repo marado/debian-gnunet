@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 
@@ -29,6 +29,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 #include "gnunet_transport_service.h"
+#include "gnunet_transport_manipulation_service.h"
 #include "gnunet_ats_service.h"
 #include "gnunet_testing_lib.h"
 #include <sqlite3.h>
@@ -74,7 +75,7 @@ static struct sqlite3 *db;
  * The blacklist handle we obtain from transport when we register ourselves for
  * access control
  */
-struct GNUNET_TRANSPORT_Blacklist *bh;
+static struct GNUNET_TRANSPORT_Blacklist *bh;
 
 /**
  * The hostkeys file
@@ -94,17 +95,12 @@ static void *hostkeys_data;
 /**
  * Handle to the transport service.  This is used for setting link metrics
  */
-static struct GNUNET_TRANSPORT_Handle *transport;
+static struct GNUNET_TRANSPORT_ManipulationHandle *transport;
 
 /**
  * The number of hostkeys in the hostkeys array
  */
 static unsigned int num_hostkeys;
-
-/**
- * Task for shutdown
- */
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
 
 
 /**
@@ -169,16 +165,18 @@ check_access (void *cls, const struct GNUNET_PeerIdentity * pid)
 
 
 static int
-get_identity (unsigned int offset, struct GNUNET_PeerIdentity *id)
+get_identity (unsigned int offset,
+	      struct GNUNET_PeerIdentity *id)
 {
   struct GNUNET_CRYPTO_EddsaPrivateKey private_key;
 
   if (offset >= num_hostkeys)
     return GNUNET_SYSERR;
-  (void) memcpy (&private_key,
+  GNUNET_memcpy (&private_key,
                  hostkeys_data + (offset * GNUNET_TESTING_HOSTKEYFILESIZE),
                  GNUNET_TESTING_HOSTKEYFILESIZE);
-  GNUNET_CRYPTO_eddsa_key_get_public (&private_key, &id->public_key);
+  GNUNET_CRYPTO_eddsa_key_get_public (&private_key,
+				      &id->public_key);
   return GNUNET_OK;
 }
 
@@ -192,12 +190,12 @@ struct WhiteListRow
    * Next ptr
    */
   struct WhiteListRow *next;
-  
+
   /**
    * The offset where to find the hostkey for the peer
    */
   unsigned int id;
-  
+
   /**
    * Latency to be assigned to the link
    */
@@ -286,14 +284,13 @@ unload_keys ()
  * Shutdown task to cleanup our resources and exit.
  *
  * @param cls NULL
- * @param tc scheduler task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
   if (NULL != transport)
   {
-    GNUNET_TRANSPORT_disconnect (transport);
+    GNUNET_TRANSPORT_manipulation_disconnect (transport);
     transport = NULL;
   }
   cleanup_map ();
@@ -319,7 +316,7 @@ db_read_whitelist (struct sqlite3 *db, int pid, struct WhiteListRow **wl_rows)
   struct WhiteListRow *lr;
   int nrows;
   int ret;
-  
+
   if (SQLITE_OK != (ret = sqlite3_prepare_v2 (db, query_wl, -1, &stmt_wl, NULL)))
   {
     LOG_SQLITE (db, NULL, GNUNET_ERROR_TYPE_ERROR, "sqlite3_prepare_v2");
@@ -365,13 +362,15 @@ run (void *cls, char *const *args, const char *cfgfile,
   struct WhiteListRow *wl_head;
   struct WhiteListRow *wl_entry;
   struct GNUNET_PeerIdentity identity;
-  struct GNUNET_ATS_Information params[1];
+  struct GNUNET_ATS_Properties prop;
+  struct GNUNET_TIME_Relative delay;
   unsigned long long pid;
   unsigned int nrows;
   int ret;
 
-  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_number (c, "TESTBED",
-                                                            "PEERID", &pid))
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_get_value_number (c, "TESTBED",
+                                             "PEERID", &pid))
   {
     GNUNET_break (0);
     return;
@@ -388,7 +387,7 @@ run (void *cls, char *const *args, const char *cfgfile,
     if (NULL != db)
     {
       LOG_SQLITE (db, NULL, GNUNET_ERROR_TYPE_ERROR, "sqlite_open_v2");
-      sqlite3_close (db);
+      GNUNET_break (SQLITE_OK == sqlite3_close (db));
     }
     else
       LOG (GNUNET_ERROR_TYPE_ERROR, "Cannot open sqlite file %s\n", dbfile);
@@ -401,8 +400,8 @@ run (void *cls, char *const *args, const char *cfgfile,
   wl_head = NULL;
   if (GNUNET_OK != load_keys (c))
       goto close_db;
-  
-  transport = GNUNET_TRANSPORT_connect (c, NULL, NULL, NULL, NULL, NULL);
+
+  transport = GNUNET_TRANSPORT_manipulation_connect (c);
   if (NULL == transport)
   {
     GNUNET_break (0);
@@ -414,15 +413,15 @@ run (void *cls, char *const *args, const char *cfgfile,
   nrows = db_read_whitelist (db, pid, &wl_head);
   if ((GNUNET_SYSERR == nrows) || (0 == nrows))
   {
-    GNUNET_TRANSPORT_disconnect (transport);
+    GNUNET_TRANSPORT_manipulation_disconnect (transport);
     goto close_db;
   }
   map = GNUNET_CONTAINER_multipeermap_create (nrows, GNUNET_NO);
-  params[0].type = GNUNET_ATS_QUALITY_NET_DELAY;
   while (NULL != (wl_entry = wl_head))
   {
     wl_head = wl_entry->next;
-    params[0].value = wl_entry->latency;
+    delay.rel_value_us = wl_entry->latency;
+    memset (&prop, 0, sizeof (prop));
     GNUNET_assert (GNUNET_OK == get_identity (wl_entry->id, &identity));
     GNUNET_break (GNUNET_OK ==
                   GNUNET_CONTAINER_multipeermap_put (map, &identity, &identity,
@@ -430,20 +429,18 @@ run (void *cls, char *const *args, const char *cfgfile,
     DEBUG ("Setting %u ms latency to peer `%s'\n",
            wl_entry->latency,
            GNUNET_i2s (&identity));
-    GNUNET_TRANSPORT_set_traffic_metric (transport,
-                                         &identity,
-                                         GNUNET_YES,
-                                         GNUNET_YES, /* FIXME: Separate inbound, outboud metrics */
-                                         params, 1);
+    GNUNET_TRANSPORT_manipulation_set (transport,
+				       &identity,
+				       &prop,
+				       delay,
+				       delay);
     GNUNET_free (wl_entry);
   }
   bh = GNUNET_TRANSPORT_blacklist (c, &check_access, NULL);
-  shutdown_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                                &do_shutdown, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
 
  close_db:
   GNUNET_break (SQLITE_OK == sqlite3_close (db));
-  return;
 }
 
 

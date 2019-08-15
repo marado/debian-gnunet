@@ -1,0 +1,252 @@
+#!/bin/sh
+#
+# This shell script will generate an X509 certificate for
+# your gnunet-gns-proxy and install it (for both GNUnet
+# and your browser).
+#
+# TODO: Implement support for more browsers
+# TODO: Debug and switch to the new version
+# TODO  - The only remaining task is fixing the getopts
+# TODO: Error checks
+#
+# The current version partially reuses and recycles
+# code from build.sh by NetBSD (although not entirely
+# used because it needs debugging):
+#
+# Copyright (c) 2001-2011 The NetBSD Foundation, Inc.
+# All rights reserved.
+#
+# This code is derived from software contributed to
+# The NetBSD Foundation by Todd Vierling and Luke Mewburn.
+
+# Redistribution and use in source and binary forms, with or
+# without modification, are permitted provided that the following
+# conditions are met:
+# 1. Redistributions of source code must retain the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer.
+# 2. Redistributions in binary form must reproduce the above
+#    copyright notice, this list of conditions and the following
+#    disclaimer in the documentation and/or other materials
+#    provided with the distribution.
+
+# THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND
+# CONTRIBUTORS ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED.
+# IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS BE LIABLE FOR
+# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+# THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+# OF SUCH DAMAGE.
+
+progname=${0##*/}
+
+setdefaults()
+{
+    verbosity=0
+    runcmd=
+}
+
+statusmsg()
+{
+    ${runcmd} echo "    $@"
+}
+
+infomsg()
+{
+    if [ $verbosity = 1 ]; then
+        statusmsg "INFO: $@"
+    fi
+}
+
+warningmsg()
+{
+    statusmsg "WARNING: $@"
+}
+
+errormsg()
+{
+    statusmsg "ERROR: $@"
+}
+
+linemsg()
+{
+    statusmsg "========================================="
+}
+
+
+usage()
+{
+    if [ -n "$*" ]; then
+        echo ""
+        echo "${progname}: $*"
+    fi
+    cat <<_usage_
+
+Usage: ${progname} [-hv] [-c FILE] [...]
+
+Options:
+   -c FILE	Use the configuration file FILE.
+   -h		Print this help message.
+   -v		Print the version and exit.
+   -V           be verbose
+
+_usage_
+	exit 1
+}
+
+
+generate_ca()
+{
+    echo ""
+    infomsg "Generating CA"
+    TMPDIR=${TMPDIR:-/tmp}
+    if [ -e "$TMPDIR" ]; then
+        GNSCERT=`mktemp -t certXXXXXXXX.pem` || exit 1
+        GNSCAKY=`mktemp -t cakyXXXXXXXX.pem` || exit 1
+        GNSCANO=`mktemp -t canoXXXXXXXX.pem` || exit 1
+    else
+        # This warning is mostly pointless.
+        warning "You need to export the TMPDIR variable"
+    fi
+
+    # # ------------- gnutls
+    #
+    # if ! which certutil > /dev/null
+    # then
+    #     warningmsg "The 'certutil' command was not found."
+    #     warningmsg "Not importing into browsers."
+    #     warningmsg "For 'certutil' install nss."
+    # else
+    #     # Generate CA key
+    #     # pkcs#8 password-protects key
+    #     certtool --pkcs8 --generate-privkey --sec-param high --outfile ca-key.pem
+    #     # self-sign the CA to create public certificate
+    #     certtool --generate-self-signed --load-privkey ca-key.pem --template ca.cfg --outfile ca.pem
+
+    # ------------- openssl
+
+    OPENSSLCFG=@pkgdatadir@/openssl.cnf
+    if test -z "`openssl version`" > /dev/null
+    then
+        warningmsg "'openssl' command not found. Please install it."
+        infomsg    "Cleaning up."
+        rm -f $GNSCAKY $GNSCANO $GNSCERT
+        exit 1
+    fi
+    if [ -n "${GNUNET_CONFIG_FILE}" ]; then
+        GNUNET_CONFIG="-c ${GNUNET_CONFIG_FILE}"
+    else
+        GNUNET_CONFIG=""
+    fi
+    GNS_CA_CERT_PEM=`gnunet-config ${GNUNET_CONFIG} -s gns-proxy -o PROXY_CACERT -f ${options}`
+    mkdir -p `dirname $GNS_CA_CERT_PEM`
+
+    openssl req -config $OPENSSLCFG -new -x509 -days 3650 -extensions v3_ca -keyout $GNSCAKY -out $GNSCERT -subj "/C=ZZ/L=World/O=GNU/OU=GNUnet/CN=GNS Proxy CA/emailAddress=bounce@gnunet.org" -passout pass:"GNU Name System"
+
+    infomsg "Removing passphrase from key"
+    openssl rsa -passin pass:"GNU Name System" -in $GNSCAKY -out $GNSCANO
+
+    infomsg "Making private key available to gnunet-gns-proxy"
+    cat $GNSCERT $GNSCANO > $GNS_CA_CERT_PEM
+}
+
+importbrowsers()
+{
+    # Don't check with -H, -H defies any method to not
+    # print the output on screen! Let's hope that every
+    # certutil gets build with some kind of build flags
+    # which end up being printed here:
+    if test -z "`certutil --build-flags`" > /dev/null 2>&1
+    then
+        warningmsg "The 'certutil' command was not found."
+        warningmsg "Not importing into browsers."
+        warningmsg "For 'certutil' install nss."
+    else
+        infomsg "Importing CA into browsers"
+        # TODO: Error handling?
+        for f in ~/.mozilla/firefox/*.*/
+        do
+            if [ -d $f ]; then
+                infomsg "Importing CA into Firefox at $f"
+                # delete old certificate (if any)
+                certutil -D -n "GNS Proxy CA" -d "$f" >/dev/null 2>/dev/null
+                # add new certificate
+                certutil -A -n "GNS Proxy CA" -t CT,, -d "$f" < $GNSCERT
+            fi
+        done
+        # TODO: Error handling?
+        if [ -d ~/.pki/nssdb/ ]; then
+            infomsg "Importing CA into Chrome at ~/.pki/nssdb/"
+            # delete old certificate (if any)
+            certutil -D -n "GNS Proxy CA" -d ~/.pki/nssdb/ >/dev/null 2>/dev/null
+            # add new certificate
+            certutil -A -n "GNS Proxy CA" -t CT,, -d ~/.pki/nssdb/ < $GNSCERT
+        fi
+    fi
+}
+
+print_version()
+{
+    GNUNET_ARM_VERSION=`gnunet-arm -v`
+    echo $GNUNET_ARM_VERSION
+}
+
+clean_up()
+{
+    infomsg "Cleaning up."
+    rm -f $GNSCAKY $GNSCANO $GNSCERT
+    if [ -e $SETUP_TMPDIR ]; then
+        rm -rf $SETUP_TMPDIR
+    fi
+
+    linemsg
+    statusmsg "You can now start gnunet-gns-proxy."
+    statusmsg "Afterwards, configure your browser "
+    statusmsg "to use a SOCKS proxy on port 7777. "
+    linemsg
+}
+
+main()
+{
+    while getopts "vhVc:" opt; do
+        case $opt in
+            v)
+                print_version
+                exit 0
+                ;;
+            h)
+                usage
+                ;;
+            V)
+                verbosity=1
+                ;;
+            c)
+                options="$options -c $OPTARG"
+                infomsg "Using configuration file $OPTARG"
+                GNUNET_CONFIG_FILE=${OPTARG}
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG" >&2
+                usage
+                ;;
+            :)
+                echo "Option -$OPTARG requires an argument." >&2
+                usage
+                ;;
+        esac
+    done
+    setdefaults
+    generate_ca
+    importbrowsers
+    clean_up
+}
+
+main "$@"

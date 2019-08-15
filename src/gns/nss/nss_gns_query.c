@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 #include <string.h>
 #include <stdio.h>
@@ -24,7 +24,23 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <netinet/in.h>
+#include <errno.h>
+#include <unistd.h>
+#include <signal.h>
+
+
+static void
+kwait (pid_t chld)
+{
+  int ret;
+
+  kill (chld, SIGKILL);
+  waitpid (chld,
+           &ret,
+           0);
+}
 
 
 /**
@@ -34,7 +50,10 @@
  * @param af address family
  * @param name the name to resolve
  * @param u the userdata (result struct)
- * @return -1 on error else 0
+ * @return -1 on internal error,
+ *         -2 if request is not for GNS,
+ *         -3 on timeout,
+ *          else 0
  */
 int
 gns_resolve_name (int af,
@@ -42,29 +61,46 @@ gns_resolve_name (int af,
 		  struct userdata *u)
 {
   FILE *p;
-  char *cmd;
   char line[128];
+  int ret;
+  int out[2];
+  pid_t pid;
 
-  if (AF_INET6 == af)
-  {
-    if (-1 == asprintf (&cmd,
-			"%s -t AAAA -u %s\n",
-			"gnunet-gns -r", name))
-      return -1;
-  }
-  else
-  {
-    if (-1 == asprintf (&cmd,
-			"%s %s\n",
-			"gnunet-gns -r -u", name))
-      return -1;
-  }
-  if (NULL == (p = popen (cmd, "r")))
-  {
-    free (cmd);
+  if (0 != pipe (out))
     return -1;
+  pid = fork ();
+  if (-1 == pid)
+    return -1;
+  if (0 == pid)
+  {
+    char *argv[] = {
+      "gnunet-gns",
+      "-r",
+      "-t",
+      (AF_INET6 == af) ? "AAAA" : "A",
+      "-u",
+      (char *) name,
+      NULL
+    };
+
+    (void) close (STDOUT_FILENO);
+    if ( (0 != close (out[0])) ||
+         (STDOUT_FILENO != dup2 (out[1], STDOUT_FILENO)) )
+      _exit (1);
+    (void) execvp ("gnunet-gns",
+                   argv);
+    _exit (1);
   }
-  while (NULL != fgets (line, sizeof(line), p))
+  (void) close (out[1]);
+  p = fdopen (out[0], "r");
+  if (NULL == p)
+    {
+      kwait (pid);
+      return -1;
+    }
+  while (NULL != fgets (line,
+                        sizeof (line),
+                        p))
   {
     if (u->count >= MAX_ENTRIES)
       break;
@@ -73,36 +109,54 @@ gns_resolve_name (int af,
       line[strlen(line)-1] = '\0';
       if (AF_INET == af)
       {
-	if (inet_pton(af, line, &(u->data.ipv4[u->count])))
+	if (inet_pton(af,
+                      line,
+                      &u->data.ipv4[u->count]))
         {
 	  u->count++;
 	  u->data_len += sizeof(ipv4_address_t);
 	}
 	else
 	{
-	  pclose (p);
-	  free (cmd);
+	  (void) fclose (p);
+          kwait (pid);
+	  errno = EINVAL;
 	  return -1;
 	}
       }
       else if (AF_INET6 == af)
       {
-	if (inet_pton(af, line, &(u->data.ipv6[u->count])))
+	if (inet_pton(af,
+                      line,
+                      &u->data.ipv6[u->count]))
         {
 	  u->count++;
 	  u->data_len += sizeof(ipv6_address_t);
 	}
 	else
         {
-	  pclose (p);
-	  free (cmd);
+	  (void) fclose (p);
+          kwait (pid);
+	  errno = EINVAL;
 	  return -1;
 	}
       }
     }
   }
-  pclose (p);
-  free (cmd);
+  (void) fclose (p);
+  waitpid (pid,
+           &ret,
+           0);
+  if (! WIFEXITED (ret))
+    return -1;
+  if (4 == WEXITSTATUS (ret))
+    return -2; /* not for GNS */
+  if (3 == ret)
+    return -3; /* timeout -> not found */
+  if ( (2 == WEXITSTATUS (ret)) ||
+       (1 == WEXITSTATUS (ret)) )
+    return -2; /* launch failure -> service unavailable */
   return 0;
 }
+
 /* end of nss_gns_query.c */

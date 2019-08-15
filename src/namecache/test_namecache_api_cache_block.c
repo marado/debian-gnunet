@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file namecache/test_namecache_api.c
@@ -24,8 +24,9 @@
 #include "platform.h"
 #include "gnunet_namecache_service.h"
 #include "gnunet_testing_lib.h"
+#include "gnunet_dnsparser_lib.h"
 
-#define TEST_RECORD_TYPE 1234
+#define TEST_RECORD_TYPE GNUNET_DNSPARSER_TYPE_TXT
 
 #define TEST_RECORD_DATALEN 123
 
@@ -36,7 +37,7 @@
 
 static struct GNUNET_NAMECACHE_Handle *nsh;
 
-static GNUNET_SCHEDULER_TaskIdentifier endbadly_task;
+static struct GNUNET_SCHEDULER_Task * endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -68,10 +69,9 @@ cleanup ()
  * Re-establish the connection to the service.
  *
  * @param cls handle to use to re-connect.
- * @param tc scheduler context
  */
 static void
-endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+endbadly (void *cls)
 {
   if (NULL != nsqe)
   {
@@ -84,7 +84,7 @@ endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-end (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+end (void *cls)
 {
   cleanup ();
   res = 0;
@@ -110,8 +110,9 @@ rd_decrypt_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Block was decrypted successfully \n");
 
-	GNUNET_SCHEDULER_add_now (&end, NULL);
+  GNUNET_SCHEDULER_add_now (&end, NULL);
 }
+
 
 static void
 name_lookup_proc (void *cls,
@@ -122,17 +123,17 @@ name_lookup_proc (void *cls,
 
   GNUNET_assert (NULL != cls);
 
-  if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
+  if (endbadly_task != NULL)
   {
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_NO_TASK;
+    endbadly_task = NULL;
   }
 
   if (NULL == block)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
   	      _("Namecache returned no block\n"));
-    if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
+    if (NULL != endbadly_task)
       GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task =  GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
@@ -195,11 +196,15 @@ run (void *cls,
   rd.flags = 0;
   memset ((char *) rd.data, 'a', TEST_RECORD_DATALEN);
   block = GNUNET_GNSRECORD_block_create (privkey,
-      GNUNET_TIME_UNIT_FOREVER_ABS, name, &rd, 1 );
+                                         GNUNET_TIME_UNIT_FOREVER_ABS,
+                                         name, &rd, 1);
   if (NULL == block)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-              _("Namecache cannot cache no block\n"));
+                "Namecache cannot cache no block!\n");
+    GNUNET_SCHEDULER_shutdown ();
+    GNUNET_free (block);
+    return;
   }
 
   nsh = GNUNET_NAMECACHE_connect (cfg);
@@ -207,16 +212,21 @@ run (void *cls,
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
               _("Namecache cannot connect to namecache\n"));
+    GNUNET_SCHEDULER_shutdown ();
+    GNUNET_free (block);
+    return;
   }
   GNUNET_break (NULL != nsh);
 
-  nsqe = GNUNET_NAMECACHE_block_cache (nsh, block , &cache_cont, (void *) name);
+  nsqe = GNUNET_NAMECACHE_block_cache (nsh,
+                                       block,
+                                       &cache_cont, (void *) name);
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
   	      _("Namecache cannot cache no block\n"));
   }
-
+  GNUNET_free (block);
   GNUNET_free ((void *)rd.data);
 }
 

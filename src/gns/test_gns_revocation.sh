@@ -1,6 +1,7 @@
-#!/bin/bash
+#!/bin/sh
+# This file is in the public domain.
 trap "gnunet-arm -e -c test_gns_lookup.conf" SIGINT
-which timeout &> /dev/null && DO_TIMEOUT="timeout 5"
+which timeout > /dev/null 2>&1 && DO_TIMEOUT="timeout 5"
 
 LOCATION=$(which gnunet-config)
 if [ -z $LOCATION ]
@@ -14,22 +15,24 @@ then
 	exit 77
 fi
 
-rm -rf /tmp/test-gnunet-gns-peer-1/
-
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
+MY_EGO="myego"
+OTHER_EGO="delegatedego"
 TEST_IP="127.0.0.1"
+
 gnunet-arm -s -c test_gns_lookup.conf
-gnunet-identity -C delegatedego -c test_gns_lookup.conf
-DELEGATED_PKEY=$(gnunet-identity -d -c test_gns_lookup.conf | grep delegatedego | awk '{print $3}')
-gnunet-identity -C testego -c test_gns_lookup.conf
-gnunet-namestore -p -z testego -a -n b -t PKEY -V $DELEGATED_PKEY -e never -c test_gns_lookup.conf
-gnunet-namestore -p -z delegatedego -a -n www -t A -V $TEST_IP -e never -c test_gns_lookup.conf
-RES_IP=`$DO_TIMEOUT gnunet-gns --raw -z testego -u www.b.gnu -t A -c test_gns_lookup.conf`
-gnunet-revocation -R delegatedego -p  -c test_gns_lookup.conf
-RES_IP_REV=`$DO_TIMEOUT gnunet-gns --raw -z testego -u www.b.gnu -t A -c test_gns_lookup.conf`
-gnunet-namestore -z testego -d -n b -t PKEY -V $DELEGATED_PKEY  -e never -c test_gns_lookup.conf
-gnunet-namestore -z delegatedego -d -n www -t A -V $TEST_IP  -e never -c test_gns_lookup.conf
+gnunet-identity -C $OTHER_EGO -c test_gns_lookup.conf
+DELEGATED_PKEY=$(gnunet-identity -d -c test_gns_lookup.conf | grep $OTHER_EGO | awk '{print $3}')
+gnunet-identity -C $MY_EGO -c test_gns_lookup.conf
+gnunet-namestore -p -z $MY_EGO -a -n b -t PKEY -V $DELEGATED_PKEY -e never -c test_gns_lookup.conf
+gnunet-namestore -p -z $OTHER_EGO -a -n www -t A -V $TEST_IP -e never -c test_gns_lookup.conf
+RES_IP=`$DO_TIMEOUT gnunet-gns --raw -u www.b.$MY_EGO -t A -c test_gns_lookup.conf`
+gnunet-revocation -R $OTHER_EGO -p  -c test_gns_lookup.conf
+RES_IP_REV=`$DO_TIMEOUT gnunet-gns --raw -u www.b.$MY_EGO -t A -c test_gns_lookup.conf`
+gnunet-namestore -z $MY_EGO -d -n b -t PKEY -V $DELEGATED_PKEY  -e never -c test_gns_lookup.conf
+gnunet-namestore -z $OTHER_EGO -d -n www -t A -V $TEST_IP  -e never -c test_gns_lookup.conf
 gnunet-arm -e -c test_gns_lookup.conf
-rm -rf /tmp/test-gnunet-gns-peer-1/
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
 
 if [ "$RES_IP" != "$TEST_IP" ]
 then
@@ -37,7 +40,7 @@ then
   exit 1
 fi
 
-if [ "x$RES_IP_REV" == "x" ]
+if [ "x$RES_IP_REV" = "x" ]
 then
   exit 0
 else

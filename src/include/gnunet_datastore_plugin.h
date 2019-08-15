@@ -1,27 +1,32 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_datastore_plugin.h
- * @brief API for the database backend plugins.
  * @author Christian Grothoff
+ *
+ * @file
+ * API for the database backend plugins.
+ *
+ * @defgroup datastore-plugin  Data Store service plugin API
+ * API for the database backend plugins.
+ * @{
  */
 #ifndef PLUGIN_DATASTORE_H
 #define PLUGIN_DATASTORE_H
@@ -48,7 +53,9 @@
  * @param delta change in disk utilization,
  *        0 for "reset to empty"
  */
-typedef void (*DiskUtilizationChange) (void *cls, int delta);
+typedef void
+(*GNUNET_DATASTORE_DiskUtilizationChange) (void *cls,
+					   int delta);
 
 
 /**
@@ -66,7 +73,7 @@ struct GNUNET_DATASTORE_PluginEnvironment
   /**
    * Function to call on disk utilization change.
    */
-  DiskUtilizationChange duc;
+  GNUNET_DATASTORE_DiskUtilizationChange duc;
 
   /**
    * Closure.
@@ -86,26 +93,57 @@ struct GNUNET_DATASTORE_PluginEnvironment
  * @param type type of the content
  * @param priority priority of the content
  * @param anonymity anonymity-level for the content
+ * @param replication replication-level for the content
  * @param expiration expiration time for the content
  * @param uid unique identifier for the datum
  * @return #GNUNET_OK to keep the item
  *         #GNUNET_NO to delete the item
  */
-typedef int (*PluginDatumProcessor) (void *cls, const struct GNUNET_HashCode * key,
-                                     uint32_t size, const void *data,
-                                     enum GNUNET_BLOCK_Type type,
-                                     uint32_t priority, uint32_t anonymity,
-                                     struct GNUNET_TIME_Absolute expiration,
-                                     uint64_t uid);
+typedef int
+(*PluginDatumProcessor) (void *cls,
+                         const struct GNUNET_HashCode *key,
+                         uint32_t size,
+                         const void *data,
+                         enum GNUNET_BLOCK_Type type,
+                         uint32_t priority,
+                         uint32_t anonymity,
+                         uint32_t replication,
+                         struct GNUNET_TIME_Absolute expiration,
+                         uint64_t uid);
+
 
 /**
  * Get an estimate of how much space the database is
  * currently using.
  *
+ * NB: estimate is an output parameter because emscripten cannot handle
+ * returning 64-bit integers from dynamically loaded modules.
+ *
  * @param cls closure
+ * @param estimate location to store estimate
  * @return number of bytes used on disk
  */
-typedef unsigned long long (*PluginEstimateSize) (void *cls);
+typedef void
+(*PluginEstimateSize) (void *cls,
+		       unsigned long long *estimate);
+
+
+/**
+ * Put continuation.
+ *
+ * @param cls closure
+ * @param key key for the item stored
+ * @param size size of the item stored
+ * @param status #GNUNET_OK if inserted, #GNUNET_NO if updated,
+ *        or #GNUNET_SYSERROR if error
+ * @param msg error message on error
+ */
+typedef void
+(*PluginPutCont) (void *cls,
+		  const struct GNUNET_HashCode *key,
+		  uint32_t size,
+		  int status,
+		  const char *msg);
 
 
 /**
@@ -115,6 +153,7 @@ typedef unsigned long long (*PluginEstimateSize) (void *cls);
  *
  * @param cls closure
  * @param key key for the item
+ * @param absent true if the key was not found in the bloom filter
  * @param size number of bytes in @a data
  * @param data content stored
  * @param type type of the content
@@ -122,27 +161,35 @@ typedef unsigned long long (*PluginEstimateSize) (void *cls);
  * @param anonymity anonymity-level for the content
  * @param replication replication-level for the content
  * @param expiration expiration time for the content
- * @param msg set to an error message (on failure)
- * @return #GNUNET_OK on success,
- *         #GNUNET_SYSERR on failure
+ * @param cont continuation called with success or failure status
+ * @param cont_cls continuation closure for @a cont
  */
-typedef int (*PluginPut) (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
-                          const void *data, enum GNUNET_BLOCK_Type type,
-                          uint32_t priority, uint32_t anonymity,
-                          uint32_t replication,
-                          struct GNUNET_TIME_Absolute expiration, char **msg);
+typedef void
+(*PluginPut) (void *cls,
+              const struct GNUNET_HashCode *key,
+              bool absent,
+              uint32_t size,
+              const void *data,
+              enum GNUNET_BLOCK_Type type,
+              uint32_t priority,
+              uint32_t anonymity,
+              uint32_t replication,
+              struct GNUNET_TIME_Absolute expiration,
+              PluginPutCont cont,
+              void *cont_cls);
 
 
 /**
  * An processor over a set of keys stored in the datastore.
  *
  * @param cls closure
- * @param key key in the data store
+ * @param key key in the data store, if NULL iteration is finished
  * @param count how many values are stored under this key in the datastore
  */
-typedef void (*PluginKeyProcessor) (void *cls,
-				    const struct GNUNET_HashCode *key,
-				    unsigned int count);
+typedef void
+(*PluginKeyProcessor) (void *cls,
+		       const struct GNUNET_HashCode *key,
+		       unsigned int count);
 
 
 /**
@@ -152,35 +199,70 @@ typedef void (*PluginKeyProcessor) (void *cls,
  * @param proc function to call on each key
  * @param proc_cls closure for @a proc
  */
-typedef void (*PluginGetKeys) (void *cls,
-			       PluginKeyProcessor proc, void *proc_cls);
+typedef void
+(*PluginGetKeys) (void *cls,
+		  PluginKeyProcessor proc,
+                  void *proc_cls);
 
 
 /**
  * Get one of the results for a particular key in the datastore.
  *
  * @param cls closure
- * @param offset offset of the result (modulo num-results);
- *               specific ordering does not matter for the offset
- * @param key key to match, never NULL
- * @param vhash hash of the value, maybe NULL (to
- *        match all values that have the right key).
- *        Note that for DBlocks there is no difference
- *        betwen key and vhash, but for other blocks
- *        there may be!
+ * @param next_uid return the result with lowest uid >= next_uid
+ * @param random if true, return a random result instead of using next_uid
+ * @param key maybe NULL (to match all entries)
  * @param type entries of which type are relevant?
  *     Use 0 for any type.
- * @param min find the smallest key that is larger than the given min,
- *            NULL for no minimum (return smallest key)
  * @param proc function to call on the matching value;
- *        proc should be called with NULL if there is no result
+ *        will be called with NULL if nothing matches
  * @param proc_cls closure for @a proc
  */
-typedef void (*PluginGetKey) (void *cls, uint64_t offset,
-                              const struct GNUNET_HashCode * key,
-                              const struct GNUNET_HashCode * vhash,
-                              enum GNUNET_BLOCK_Type type,
-                              PluginDatumProcessor proc, void *proc_cls);
+typedef void
+(*PluginGetKey) (void *cls,
+                 uint64_t next_uid,
+                 bool random,
+                 const struct GNUNET_HashCode *key,
+                 enum GNUNET_BLOCK_Type type,
+                 PluginDatumProcessor proc,
+                 void *proc_cls);
+
+
+/**
+ * Remove continuation.
+ *
+ * @param cls closure
+ * @param key key for the content removed
+ * @param size number of bytes removed
+ * @param status #GNUNET_OK if removed, #GNUNET_NO if not found,
+ *        or #GNUNET_SYSERROR if error
+ * @param msg error message on error
+ */
+typedef void
+(*PluginRemoveCont) (void *cls,
+                     const struct GNUNET_HashCode *key,
+                     uint32_t size,
+                     int status,
+                     const char *msg);
+
+
+/**
+ * Remove a particular key in the datastore.
+ *
+ * @param cls closure
+ * @param key key for the content
+ * @param size number of bytes in data
+ * @param data content stored
+ * @param cont continuation called with success or failure status
+ * @param cont_cls continuation closure for @a cont
+ */
+typedef void
+(*PluginRemoveKey) (void *cls,
+                    const struct GNUNET_HashCode *key,
+                    uint32_t size,
+                    const void *data,
+                    PluginRemoveCont cont,
+                    void *cont_cls);
 
 
 /**
@@ -193,51 +275,29 @@ typedef void (*PluginGetKey) (void *cls, uint64_t offset,
  * @param proc function to call the value (once only).
  * @param proc_cls closure for @a proc
  */
-typedef void (*PluginGetRandom) (void *cls, PluginDatumProcessor proc,
-                                 void *proc_cls);
-
-
-
-
-/**
- * Update the priority for a particular key in the datastore.  If
- * the expiration time in value is different than the time found in
- * the datastore, the higher value should be kept.  For the
- * anonymity level, the lower value is to be used.  The specified
- * priority should be added to the existing priority, ignoring the
- * priority in value.
- *
- * @param cls closure
- * @param uid unique identifier of the datum
- * @param delta by how much should the priority
- *     change?  If priority + delta < 0 the
- *     priority should be set to 0 (never go
- *     negative).
- * @param expire new expiration time should be the
- *     MAX of any existing expiration time and
- *     this value
- * @param msg set to an error message (on error)
- * @return #GNUNET_OK on success
- */
-typedef int (*PluginUpdate) (void *cls, uint64_t uid, int delta,
-                             struct GNUNET_TIME_Absolute expire, char **msg);
+typedef void
+(*PluginGetRandom) (void *cls,
+		    PluginDatumProcessor proc,
+		    void *proc_cls);
 
 
 /**
- * Select a single item from the datastore at the specified offset
- * (among those applicable).
+ * Select a single item from the datastore (among those applicable).
  *
  * @param cls closure
- * @param offset offset of the result (modulo num-results);
- *               specific ordering does not matter for the offset
+ * @param next_uid return the result with lowest uid >= next_uid
  * @param type entries of which type should be considered?
  *        Must not be zero (ANY).
- * @param proc function to call on the matching value
+ * @param proc function to call on the matching value;
+ *        will be called with NULL if no value matches
  * @param proc_cls closure for @a proc
  */
-typedef void (*PluginGetType) (void *cls, uint64_t offset,
-                               enum GNUNET_BLOCK_Type type,
-                               PluginDatumProcessor proc, void *proc_cls);
+typedef void
+(*PluginGetType) (void *cls,
+                  uint64_t next_uid,
+                  enum GNUNET_BLOCK_Type type,
+                  PluginDatumProcessor proc,
+                  void *proc_cls);
 
 
 /**
@@ -245,8 +305,8 @@ typedef void (*PluginGetType) (void *cls, uint64_t offset,
  *
  * @param cls closure
  */
-typedef void (*PluginDrop) (void *cls);
-
+typedef void
+(*PluginDrop) (void *cls);
 
 
 /**
@@ -274,25 +334,12 @@ struct GNUNET_DATASTORE_PluginFunctions
   PluginPut put;
 
   /**
-   * Update the priority for a particular key in the datastore.  If
-   * the expiration time in value is different than the time found in
-   * the datastore, the higher value should be kept.  For the
-   * anonymity level, the lower value is to be used.  The specified
-   * priority should be added to the existing priority, ignoring the
-   * priority in value.
-   */
-  PluginUpdate update;
-
-  /**
    * Get a particular datum matching a given hash from the datastore.
    */
   PluginGetKey get_key;
 
   /**
    * Get datum (of the specified type) with anonymity level zero.
-   * This function is allowed to ignore the 'offset' argument
-   * and instead return a random result (with zero anonymity of
-   * the correct type) if implementing an offset is expensive.
    */
   PluginGetType get_zero_anonymity;
 
@@ -323,7 +370,12 @@ struct GNUNET_DATASTORE_PluginFunctions
    */
   PluginGetKeys get_keys;
 
+  /**
+   * Function to remove an item from the database.
+   */
+  PluginRemoveKey remove_key;
 };
 
-
 #endif
+
+/** @} */  /* end of group */

@@ -12,8 +12,20 @@
 /* This is an Apple Darwin system */
 /* #undef DARWIN */
 
+/* Not building the documentation */
+#define DOCUMENTATION 1
+
+/* Not building only the documentation */
+#define DOCUMENTATION_ONLY 0
+
+/* Benchmarks are enabled */
+/* #undef ENABLE_BENCHMARK */
+
 /* enable expensive heap statistics */
 #define ENABLE_HEAP_STATISTICS 0
+
+/* enable compilation of malicious code */
+#define ENABLE_MALICIOUS 0
 
 /* Define to 1 if translation of program messages to the user's native
    language is requested. */
@@ -23,7 +35,7 @@
 #define ENABLE_NSE_HISTOGRAM 0
 
 /* 1 if freed memory should be poisoned, 0 otherwise */
-#define ENABLE_POISONING 0
+#define ENABLE_POISONING 1
 
 /* Build with support for SuperMUC */
 #define ENABLE_SUPERMUC 0
@@ -49,7 +61,10 @@
 
 /* 1 if extra logging is enabled, 2 for very verbose extra logging, 0
    otherwise */
-#define GNUNET_EXTRA_LOGGING GNUNET_NO
+#define GNUNET_EXTRA_LOGGING GNUNET_YES
+
+/* Lacking ABE library */
+#define HAVE_ABE 0
 
 /* Define to 1 if you have the <argz.h> header file. */
 #define HAVE_ARGZ_H 1
@@ -60,11 +75,14 @@
 /* Define to 1 if you have the `atoll' function. */
 #define HAVE_ATOLL 1
 
-/* Define to 1 if you have the MacOS X function CFLocaleCopyCurrent in the
+/* Define to 1 if you have the <byteswap.h> header file. */
+#define HAVE_BYTESWAP_H 1
+
+/* Define to 1 if you have the Mac OS X function CFLocaleCopyCurrent in the
    CoreFoundation framework. */
 /* #undef HAVE_CFLOCALECOPYCURRENT */
 
-/* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
+/* Define to 1 if you have the Mac OS X function CFPreferencesCopyAppValue in
    the CoreFoundation framework. */
 /* #undef HAVE_CFPREFERENCESCOPYAPPVALUE */
 
@@ -78,9 +96,17 @@
    */
 #define HAVE_DCGETTEXT 1
 
+/* Define to 1 if you have the declaration of `CURLINFO_TLS_SESSION', and to 0
+   if you don't. */
+#define HAVE_DECL_CURLINFO_TLS_SESSION 1
+
 /* Define to 1 if you have the declaration of `gcry_mpi_set_opaque_copy', and
    to 0 if you don't. */
-#define HAVE_DECL_GCRY_MPI_SET_OPAQUE_COPY 0
+#define HAVE_DECL_GCRY_MPI_SET_OPAQUE_COPY 1
+
+/* Define to 1 if you have the declaration of `struct in6_ifreq', and to 0 if
+   you don't. */
+#define HAVE_DECL_STRUCT_IN6_IFREQ 0
 
 /* Define to 1 if you have the declaration of `_stati64', and to 0 if you
    don't. */
@@ -105,6 +131,9 @@
 /* Define to 1 if you have the <execinfo.h> header file. */
 #define HAVE_EXECINFO_H 1
 
+/* explicit_bzero supported */
+/* #undef HAVE_EXPLICIT_BZERO */
+
 /* Define to 1 if you have the <extractor.h> header file. */
 #define HAVE_EXTRACTOR_H 1
 
@@ -122,6 +151,9 @@
 
 /* Define this if getaddrinfo() is available */
 #define HAVE_GETADDRINFO 1
+
+/* getaddrinfo_a supported */
+#define HAVE_GETADDRINFO_A 1
 
 /* Define this if gethostbyaddr() is available */
 #define HAVE_GETHOSTBYADDR 1
@@ -180,8 +212,20 @@
 /* Define to 1 if you have the <gnutls/dane.h> header file. */
 #define HAVE_GNUTLS_DANE_H 1
 
-/* Define if you have the iconv() function. */
+/* Define if you have the iconv() function and it works. */
 #define HAVE_ICONV 1
+
+/* Define to 1 if you have the <idn2.h> header file. */
+#define HAVE_IDN2_H 1
+
+/* Define to 1 if you have the <idn2/idn2.h> header file. */
+/* #undef HAVE_IDN2_IDN2_H */
+
+/* Define to 1 if you have the <idna.h> header file. */
+#define HAVE_IDNA_H 1
+
+/* Define to 1 if you have the <idn/idna.h> header file. */
+/* #undef HAVE_IDN_IDNA_H */
 
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
@@ -195,6 +239,12 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+/* Lacking jansson library */
+#define HAVE_JANSSON 1
+
+/* Define to 1 if you have the <jansson.h> header file. */
+#define HAVE_JANSSON_H 1
+
 /* Define to 1 if you have the <kstat.h> header file. */
 /* #undef HAVE_KSTAT_H */
 
@@ -204,14 +254,35 @@
 /* Define to 1 if you have the <langinfo.h> header file. */
 #define HAVE_LANGINFO_H 1
 
-/* Have bluetooth library */
-/* #undef HAVE_LIBBLUETOOTH */
+/* external libatomic */
+#define HAVE_LIBATOMIC 1
+
+/* Lacking bluetooth library */
+#define HAVE_LIBBLUETOOTH 1
+
+/* Lacking libcurl */
+#define HAVE_LIBCURL 1
+
+/* Define to 1 if you have the `curl-gnutls' library (-lcurl-gnutls). */
+#define HAVE_LIBCURL_GNUTLS 1
+
+/* Have libextractor */
+#define HAVE_LIBEXTRACTOR 1
 
 /* Have GLPK */
 #define HAVE_LIBGLPK 1
 
-/* Have libgnurl */
-#define HAVE_LIBGNURL 1
+/* Lacking libgnurl */
+#define HAVE_LIBGNURL 0
+
+/* Define to 1 if you have the `gnurx' library (-lgnurx). */
+/* #undef HAVE_LIBGNURX */
+
+/* Define to 1 if you have 'libidn' (-lidn). */
+/* #undef HAVE_LIBIDN */
+
+/* Define to 1 if you have 'libidn2' (-lidn2). */
+#define HAVE_LIBIDN2 1
 
 /* Define to 1 if you have the `intl' library (-lintl). */
 /* #undef HAVE_LIBINTL */
@@ -228,6 +299,12 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
 
+/* Define to 1 if you have the `plibc' library (-lplibc). */
+/* #undef HAVE_LIBPLIBC */
+
+/* Define to 1 if you have the <libpq-fe.h> header file. */
+#define HAVE_LIBPQ_FE_H 1
+
 /* Define to 1 if you have the `resolv' library (-lresolv). */
 /* #undef HAVE_LIBRESOLV */
 
@@ -237,7 +314,7 @@
 /* Define to 1 if you have the `socket' library (-lsocket). */
 /* #undef HAVE_LIBSOCKET */
 
-/* Define if you have the unistring library. */
+/* Define if you have the libunistring library. */
 #define HAVE_LIBUNISTRING 1
 
 /* Define to 1 if you have the <limits.h> header file. */
@@ -261,6 +338,9 @@
 /* Define to 1 if you have the <malloc/malloc.h> header file. */
 /* #undef HAVE_MALLOC_MALLOC_H */
 
+/* Define to 1 if you have the <malloc/malloc_np.h> header file. */
+/* #undef HAVE_MALLOC_MALLOC_NP_H */
+
 /* Define to 1 if you have the `malloc_size' function. */
 /* #undef HAVE_MALLOC_SIZE */
 
@@ -272,6 +352,12 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
+
+/* memrchr supported */
+#define HAVE_MEMRCHR 1
+
+/* memset_s supported */
+/* #undef HAVE_MEMSET_S */
 
 /* We have libmicrohttpd */
 #define HAVE_MHD 1
@@ -313,13 +399,16 @@
 #define HAVE_OGG_OGG_H 1
 
 /* Have libopus library */
-#define HAVE_OPUS 1
+/* #undef HAVE_OPUS */
 
-/* Define to 1 if you have the <postgresql/libpq-fe.h> header file. */
-#define HAVE_POSTGRESQL_LIBPQ_FE_H 1
+/* Lacking pbc library */
+#define HAVE_PBC 0
+
+/* Define to 1 if PostgreSQL libraries are available */
+#define HAVE_POSTGRESQL 1
 
 /* Have libpulse(audio) library */
-#define HAVE_PULSE 1
+/* #undef HAVE_PULSE */
 
 /* Define to 1 if you have the `random' function. */
 #define HAVE_RANDOM 1
@@ -344,6 +433,9 @@
 
 /* Do we have sockaddr_in.sin_len? */
 /* #undef HAVE_SOCKADDR_IN_SIN_LEN */
+
+/* Do we have sockaddr_un.sun_len? */
+/* #undef HAVE_SOCKADDR_UN_SUN_LEN */
 
 /* Define this if socket() is available */
 /* #undef HAVE_SOCKET */
@@ -375,6 +467,9 @@
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #define HAVE_STDARG_H 1
+
+/* Define to 1 if you have the <stdatomic.h> header file. */
+#define HAVE_STDATOMIC_H 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #define HAVE_STDBOOL_H 1
@@ -477,6 +572,9 @@
 /* Define to 1 if you have the <terminos.h> header file. */
 /* #undef HAVE_TERMINOS_H */
 
+/* Define this if __thread is supported */
+#define HAVE_THREAD_LOCAL_GCC 1
+
 /* Define if struct tm has the tm_gmtoff member. */
 #define HAVE_TM_GMTOFF 1
 
@@ -484,10 +582,13 @@
 /* #undef HAVE_UCRED_H */
 
 /* We can access-64 bit values that are only 32-bit aligned */
-#define HAVE_UNALIGNED_64_ACCESS 0
+#define HAVE_UNALIGNED_64_ACCESS 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
+
+/* Define to 1 if you have the <unistr.h> header file. */
+#define HAVE_UNISTR_H 1
 
 /* Define to 1 if you have the `vfork' function. */
 #define HAVE_VFORK 1
@@ -498,11 +599,20 @@
 /* Define to 1 if you have the `vprintf' function. */
 #define HAVE_VPRINTF 1
 
+/* Define to 1 if you have the `wait4' function. */
+#define HAVE_WAIT4 1
+
 /* Define to 1 if `fork' works. */
 #define HAVE_WORKING_FORK 1
 
 /* Define to 1 if `vfork' works. */
 #define HAVE_WORKING_VFORK 1
+
+/* Lacking zbar library */
+#define HAVE_ZBAR 1
+
+/* Define to 1 if you have the <zbar.h> header file. */
+#define HAVE_ZBAR_H 1
 
 /* Have compression library */
 #define HAVE_ZLIB /**/
@@ -513,26 +623,101 @@
 /* Define as const if the declaration of iconv() needs const. */
 #define ICONV_CONST 
 
+/* Path to ifconfig */
+#define IFCONFIG "/sbin/ifconfig"
+
+/* Not including the man pages in the build and installation */
+#define INCLUDE_MANPAGES 1
+
+/* Path to ip6tables */
+#define IP6TABLES "/sbin/ip6tables"
+
+/* Path to iptables */
+#define IPTABLES "/sbin/iptables"
+
+/* Defined if libcurl supports AsynchDNS */
+#define LIBCURL_FEATURE_ASYNCHDNS 1
+
+/* Defined if libcurl supports IDN */
+#define LIBCURL_FEATURE_IDN 1
+
+/* Defined if libcurl supports IPv6 */
+#define LIBCURL_FEATURE_IPV6 1
+
+/* Defined if libcurl supports KRB4 */
+/* #undef LIBCURL_FEATURE_KRB4 */
+
+/* Defined if libcurl supports libz */
+#define LIBCURL_FEATURE_LIBZ 1
+
+/* Defined if libcurl supports NTLM */
+#define LIBCURL_FEATURE_NTLM 1
+
+/* Defined if libcurl supports SSL */
+#define LIBCURL_FEATURE_SSL 1
+
+/* Defined if libcurl supports SSPI */
+/* #undef LIBCURL_FEATURE_SSPI */
+
+/* Defined if libcurl supports DICT */
+#define LIBCURL_PROTOCOL_DICT 1
+
+/* Defined if libcurl supports FILE */
+#define LIBCURL_PROTOCOL_FILE 1
+
+/* Defined if libcurl supports FTP */
+#define LIBCURL_PROTOCOL_FTP 1
+
+/* Defined if libcurl supports FTPS */
+#define LIBCURL_PROTOCOL_FTPS 1
+
+/* Defined if libcurl supports HTTP */
+#define LIBCURL_PROTOCOL_HTTP 1
+
+/* Defined if libcurl supports HTTPS */
+#define LIBCURL_PROTOCOL_HTTPS 1
+
+/* Defined if libcurl supports IMAP */
+#define LIBCURL_PROTOCOL_IMAP 1
+
+/* Defined if libcurl supports LDAP */
+#define LIBCURL_PROTOCOL_LDAP 1
+
+/* Defined if libcurl supports POP3 */
+#define LIBCURL_PROTOCOL_POP3 1
+
+/* Defined if libcurl supports RTSP */
+#define LIBCURL_PROTOCOL_RTSP 1
+
+/* Defined if libcurl supports SMTP */
+#define LIBCURL_PROTOCOL_SMTP 1
+
+/* Defined if libcurl supports TELNET */
+#define LIBCURL_PROTOCOL_TELNET 1
+
+/* Defined if libcurl supports TFTP */
+#define LIBCURL_PROTOCOL_TFTP 1
+
 /* Defined if libgnurl supports AsynchDNS */
 /* #undef LIBGNURL_FEATURE_ASYNCHDNS */
 
 /* Defined if libgnurl supports IDN */
-#define LIBGNURL_FEATURE_IDN 1
+/* #undef LIBGNURL_FEATURE_IDN */
 
 /* Defined if libgnurl supports IPv6 */
-#define LIBGNURL_FEATURE_IPV6 1
+/* #undef LIBGNURL_FEATURE_IPV6 */
 
 /* Defined if libgnurl supports KRB4 */
 /* #undef LIBGNURL_FEATURE_KRB4 */
 
 /* Defined if libgnurl supports libz */
-#define LIBGNURL_FEATURE_LIBZ 1
+/* #undef LIBGNURL_FEATURE_LIBZ */
 
 /* Defined if libgnurl supports NTLM */
-#define LIBGNURL_FEATURE_NTLM 1
+/* #undef LIBGNURL_FEATURE_NTLM */
 
 /* Defined if libgnurl supports SSL */
-#define LIBGNURL_FEATURE_SSL 1
+/* #undef LIBGNURL_FEATURE_SSL */
 
 /* Defined if libgnurl supports SSPI */
 /* #undef LIBGNURL_FEATURE_SSPI */
@@ -550,10 +735,10 @@
 /* #undef LIBGNURL_PROTOCOL_FTPS */
 
 /* Defined if libgnurl supports HTTP */
-#define LIBGNURL_PROTOCOL_HTTP 1
+/* #undef LIBGNURL_PROTOCOL_HTTP */
 
 /* Defined if libgnurl supports HTTPS */
-#define LIBGNURL_PROTOCOL_HTTPS 1
+/* #undef LIBGNURL_PROTOCOL_HTTPS */
 
 /* Defined if libgnurl supports IMAP */
 /* #undef LIBGNURL_PROTOCOL_IMAP */
@@ -583,8 +768,7 @@
    slash. */
 #define LSTAT_FOLLOWS_SLASHED_SYMLINK 1
 
-/* Define to the sub-directory in which libtool stores uninstalled libraries.
-   */
+/* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
 /* This is a MinGW system */
@@ -612,7 +796,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.10.1"
+#define PACKAGE_STRING "gnunet 0.11.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -621,7 +805,10 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.10.1"
+#define PACKAGE_VERSION "0.11.4"
+
+/* Path to ip */
+#define PATH_TO_IP "/bin/ip"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -647,17 +834,29 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
+/* Path to sysctl */
+#define SYSCTL "/sbin/sysctl"
+
+/* Canonical compilation */
+#define TALER_WALLET_ONLY 0
+
+/* Not building section 7 mdoc output */
+#define TEXI2MDOC_GENERATION 0
+
 /* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
 #define TIME_WITH_SYS_TIME 1
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */
 /* #undef TM_IN_SYS_TIME */
 
+/* Path to upnpc binary */
+#define UPNPC "/usr/bin/upnpc"
+
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "svn-r32965:32971M"
+#define VCS_VERSION "git-47ea01191"
 
 /* Version number of package */
-#define VERSION "0.10.1"
+#define VERSION "0.11.4"
 
 /* This is a Windows system */
 /* #undef WINDOWS */
@@ -685,7 +884,7 @@
 /* This is a Windows system */
 /* #undef _WIN32 */
 
-/* Define curl_free() as free() if our version of gnurl lacks curl_free. */
+/* Define curl_free() as free() if our version of curl lacks curl_free. */
 /* #undef curl_free */
 
 /* Define to `int' if <sys/types.h> doesn't define. */

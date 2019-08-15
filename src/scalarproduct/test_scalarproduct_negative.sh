@@ -1,8 +1,8 @@
 #!/bin/bash
 # compute a simple scalar product
 # payload for this test:
-INPUTALICE="-k CCC -e -3,-3,1"
-INPUTBOB="-k CCC -e 1000,100,24"
+INPUTALICE="-k CCC -e 'AB,10;RO,-3;FL,-3;LOL,1;'"
+INPUTBOB="-k CCC -e 'BC,-20000;RO,1000;FL,100;LOL,24;'"
 
 # necessary to make the testing prefix deterministic, so we can access the config files
 PREFIX=/tmp/test-scalarproduct`date +%H%M%S`
@@ -10,6 +10,8 @@ PREFIX=/tmp/test-scalarproduct`date +%H%M%S`
 # where can we find the peers config files?
 CFGALICE="-c $PREFIX/0/config"
 CFGBOB="-c $PREFIX/1/config"
+
+which timeout &> /dev/null && DO_TIMEOUT="timeout 15"
 
 # launch two peers in line topology non-interactively
 #
@@ -23,12 +25,12 @@ PID=$!
 sleep 5
 
 # get bob's peer ID, necessary for alice
-PEERIDBOB=`gnunet-peerinfo -qs $CFGBOB`
+PEERIDBOB=`${DO_TIMEOUT} gnunet-peerinfo -qs $CFGBOB`
 
 #GNUNET_LOG=';;;;DEBUG'
-gnunet-scalarproduct $CFGBOB $INPUTBOB &
+${DO_TIMEOUT} gnunet-scalarproduct $CFGBOB $INPUTBOB &
 #RESULT=`GNUNET_LOG=';;;;DEBUG'
-RESULT=`gnunet-scalarproduct $CFGALICE $INPUTALICE -p $PEERIDBOB`
+RESULT=`${DO_TIMEOUT} gnunet-scalarproduct $CFGALICE $INPUTALICE -p $PEERIDBOB`
 
 # terminate the testbed
 kill $PID
@@ -39,6 +41,6 @@ then
     	echo "OK"
         exit 0
 else
-    	echo "Result $RESULT NOTOK"
+    	echo "Result $RESULT, expected $EXPECTED NOTOK"
         exit 1
 fi

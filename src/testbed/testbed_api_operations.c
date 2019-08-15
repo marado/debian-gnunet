@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -236,6 +236,11 @@ struct OperationQueue
    * #OPERATION_QUEUE_TYPE_ADAPTIVE
    */
   unsigned int overload;
+
+  /**
+   * Is this queue marked for expiry?
+   */
+  unsigned int expired;
 };
 
 
@@ -375,17 +380,27 @@ struct GNUNET_TESTBED_Operation
 /**
  * DLL head for the ready queue
  */
-struct ReadyQueueEntry *rq_head;
+static struct ReadyQueueEntry *rq_head;
 
 /**
  * DLL tail for the ready queue
  */
-struct ReadyQueueEntry *rq_tail;
+static struct ReadyQueueEntry *rq_tail;
+
+/**
+ * Array of operation queues which are to be destroyed
+ */
+static struct OperationQueue **expired_opqs;
+
+/**
+ * Number of expired operation queues in the above array
+ */
+static unsigned int n_expired_opqs;
 
 /**
  * The id of the task to process the ready queue
  */
-GNUNET_SCHEDULER_TaskIdentifier process_rq_task_id;
+struct GNUNET_SCHEDULER_Task *process_rq_task_id;
 
 
 /**
@@ -519,10 +534,10 @@ rq_remove (struct GNUNET_TESTBED_Operation *op)
   GNUNET_CONTAINER_DLL_remove (rq_head, rq_tail, op->rq_entry);
   GNUNET_free (op->rq_entry);
   op->rq_entry = NULL;
-  if ( (NULL == rq_head) && (GNUNET_SCHEDULER_NO_TASK != process_rq_task_id) )
+  if ( (NULL == rq_head) && (NULL != process_rq_task_id) )
   {
     GNUNET_SCHEDULER_cancel (process_rq_task_id);
-    process_rq_task_id = GNUNET_SCHEDULER_NO_TASK;
+    process_rq_task_id = NULL;
   }
 }
 
@@ -534,16 +549,15 @@ rq_remove (struct GNUNET_TESTBED_Operation *op)
  * the ready queue.
  *
  * @param cls NULL
- * @param tc scheduler task context.  Not used.
  */
 static void
-process_rq_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+process_rq_task (void *cls)
 {
   struct GNUNET_TESTBED_Operation *op;
   struct OperationQueue *queue;
   unsigned int cnt;
 
-  process_rq_task_id = GNUNET_SCHEDULER_NO_TASK;
+  process_rq_task_id = NULL;
   GNUNET_assert (NULL != rq_head);
   GNUNET_assert (NULL != (op = rq_head->op));
   rq_remove (op);
@@ -577,7 +591,7 @@ rq_add (struct GNUNET_TESTBED_Operation *op)
   rq_entry->op = op;
   GNUNET_CONTAINER_DLL_insert_tail (rq_head, rq_tail, rq_entry);
   op->rq_entry = rq_entry;
-  if (GNUNET_SCHEDULER_NO_TASK == process_rq_task_id)
+  if (NULL == process_rq_task_id)
     process_rq_task_id = GNUNET_SCHEDULER_add_now (&process_rq_task, NULL);
 }
 
@@ -850,7 +864,6 @@ adaptive_queue_set_max_active (struct OperationQueue *queue, unsigned int n)
   n = GNUNET_MIN (n ,fctx->max_active_bound);
   fctx->tslots_freeptr = GNUNET_malloc (n * sizeof (struct TimeSlot));
   fctx->nfailed = 0;
-  FPRINTF (stderr, "Parallelism: %u\n", n);
   for (cnt = 0; cnt < n; cnt++)
   {
     tslot = &fctx->tslots_freeptr[cnt];
@@ -1053,17 +1066,15 @@ GNUNET_TESTBED_operation_queue_create_ (enum OperationQueueType type,
 
 
 /**
- * Destroy an operation queue.  The queue MUST be empty
- * at this time.
+ * Cleanup the given operation queue.
  *
- * @param queue queue to destroy
+ * @param queue the operation queue to destroy
  */
-void
-GNUNET_TESTBED_operation_queue_destroy_ (struct OperationQueue *queue)
+static void
+queue_destroy (struct OperationQueue *queue)
 {
   struct FeedbackCtx *fctx;
 
-  GNUNET_break (GNUNET_YES == is_queue_empty (queue));
   if (OPERATION_QUEUE_TYPE_ADAPTIVE == queue->type)
   {
     cleanup_tslots (queue);
@@ -1072,6 +1083,27 @@ GNUNET_TESTBED_operation_queue_destroy_ (struct OperationQueue *queue)
     GNUNET_free (fctx);
   }
   GNUNET_free (queue);
+}
+
+
+/**
+ * Destroys an operation queue.  If the queue is still in use by operations it
+ * is marked as expired and its resources are released in the destructor
+ * GNUNET_TESTBED_operations_fini().
+ *
+ * @param queue queue to destroy
+ */
+void
+GNUNET_TESTBED_operation_queue_destroy_ (struct OperationQueue *queue)
+{
+  if (GNUNET_YES != is_queue_empty (queue))
+  {
+    GNUNET_assert (0 == queue->expired); /* Are you calling twice on same queue? */
+    queue->expired = 1;
+    GNUNET_array_append (expired_opqs, n_expired_opqs, queue);
+    return;
+  }
+  queue_destroy (queue);
 }
 
 
@@ -1225,7 +1257,7 @@ GNUNET_TESTBED_operation_inactivate_ (struct GNUNET_TESTBED_Operation *op)
   queues = GNUNET_malloc (ms);
   /* Cloning is needed as the operation be released by waiting operations and
      hence its nqueues memory ptr will be freed */
-  GNUNET_assert (NULL != (queues = memcpy (queues, op->queues, ms)));
+  GNUNET_memcpy (queues, op->queues, ms);
   for (i = 0; i < nqueues; i++)
     recheck_waiting (queues[i]);
   GNUNET_free (queues);
@@ -1318,4 +1350,29 @@ GNUNET_TESTBED_operation_mark_failed (struct GNUNET_TESTBED_Operation *op)
 }
 
 
+/**
+ * Cleanup expired operation queues.  While doing so, also check for any
+ * operations which are not completed and warn about them.
+ */
+void __attribute__ ((destructor))
+GNUNET_TESTBED_operations_fini ()
+{
+  struct OperationQueue *queue;
+  unsigned int i;
+  int warn = 0;
+
+  for (i=0; i < n_expired_opqs; i++)
+  {
+    queue = expired_opqs[i];
+    if (GNUNET_NO == is_queue_empty (queue))
+      warn = 1;
+    queue_destroy (queue);
+  }
+  GNUNET_free_non_null (expired_opqs);
+  n_expired_opqs = 0;
+  if (warn)
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "Be disciplined.  Some operations were not marked as done.\n");
+
+}
 /* end of testbed_api_operations.c */

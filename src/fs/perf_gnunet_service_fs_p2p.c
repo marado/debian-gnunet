@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -50,6 +50,8 @@ static int ok;
 static struct GNUNET_TIME_Absolute start_time;
 
 static const char *progname;
+
+static struct GNUNET_TIME_Absolute start_time;
 
 
 /**
@@ -105,8 +107,8 @@ static struct StatValues stats[] = {
  * @param subsystem name of subsystem that created the statistic
  * @param name the name of the datum
  * @param value the current value
- * @param is_persistent GNUNET_YES if the value is persistent, GNUNET_NO if not
- * @return GNUNET_OK to continue, GNUNET_SYSERR to abort iteration
+ * @param is_persistent #GNUNET_YES if the value is persistent, #GNUNET_NO if not
+ * @return #GNUNET_OK to continue, #GNUNET_SYSERR to abort iteration
  */
 static int
 print_stat (void *cls, const char *subsystem, const char *name, uint64_t value,
@@ -114,8 +116,12 @@ print_stat (void *cls, const char *subsystem, const char *name, uint64_t value,
 {
   struct StatMaster *sm = cls;
 
-  FPRINTF (stderr, "Peer %2u: %12s/%50s = %12llu\n", sm->daemon, subsystem,
-           name, (unsigned long long) value);
+  FPRINTF (stderr,
+           "Peer %2u: %12s/%50s = %12llu\n",
+           sm->daemon,
+           subsystem,
+           name,
+           (unsigned long long) value);
   return GNUNET_OK;
 }
 
@@ -207,7 +213,7 @@ stat_run (void *cls,
 #else
                            stats[sm->value].subsystem, stats[sm->value].name,
 #endif
-                           GNUNET_TIME_UNIT_FOREVER_REL, &get_done, &print_stat,
+                           &get_done, &print_stat,
                            sm);
     return;
   }
@@ -232,7 +238,7 @@ stat_run (void *cls,
 
 
 static void
-do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_report (void *cls)
 {
   char *fn = cls;
   struct GNUNET_TIME_Relative del;
@@ -244,7 +250,9 @@ do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_DISK_directory_remove (fn);
     GNUNET_free (fn);
   }
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_TIMEOUT))
+  if (0 ==
+      GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
+                                                                    TIMEOUT)).rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Timeout during download, shutting down with error\n");
@@ -259,10 +267,12 @@ do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   fancy =
     GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
 				    1000000LL / del.rel_value_us);
-  FPRINTF (stdout, "Download speed was %s/s\n", fancy);
+  FPRINTF (stdout,
+           "Download speed was %s/s\n",
+           fancy);
   GNUNET_free (fancy);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished download, shutting down\n",
-	      (unsigned long long) FILESIZE);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Finished download, shutting down\n");
   sm = GNUNET_new (struct StatMaster);
   sm->op =
     GNUNET_TESTBED_service_connect (NULL,
@@ -283,7 +293,7 @@ do_download (void *cls,
   int anonymity;
 
   if (NULL == uri)
-    {
+  {
     GNUNET_SCHEDULER_shutdown ();
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Timeout during upload attempt, shutting down with error\n");
@@ -297,7 +307,13 @@ do_download (void *cls,
     anonymity = 0;
   else
     anonymity = 1;
-  GNUNET_FS_TEST_download (daemons[0], TIMEOUT, anonymity, SEED, uri, VERBOSE,
+  start_time = GNUNET_TIME_absolute_get ();
+  GNUNET_FS_TEST_download (daemons[0],
+                           TIMEOUT,
+                           anonymity,
+                           SEED,
+                           uri,
+                           VERBOSE,
                            &do_report,
 			   (NULL == fn) ? NULL : GNUNET_strdup (fn));
 }

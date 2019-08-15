@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff
+     Copyright (C) 2012 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -69,12 +69,12 @@ struct Pattern
   /**
    * Task to run the operation.
    */
-  GNUNET_SCHEDULER_TaskIdentifier task;
+  struct GNUNET_SCHEDULER_Task * task;
 
   /**
    * Secondary task to run the operation.
    */
-  GNUNET_SCHEDULER_TaskIdentifier stask;
+  struct GNUNET_SCHEDULER_Task * stask;
 
   /**
    * X-value.
@@ -246,7 +246,7 @@ make_file (uint64_t length,
   for (i=0;i<length; i+=8)
   {
     xor = length ^ kval ^ (uint64_t) (i / 32 / 1024);
-    memcpy (&data[i], &xor, GNUNET_MIN (length - i, sizeof (uint64_t)));
+    GNUNET_memcpy (&data[i], &xor, GNUNET_MIN (length - i, sizeof (uint64_t)));
   }
   bo.expiration_time = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_DAYS);
   bo.anonymity_level = (uint32_t) anonymity_level;
@@ -267,16 +267,15 @@ make_file (uint64_t length,
  * Task run during shutdown.
  *
  * @param cls unused
- * @param tc unused
  */
 static void
-shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
   struct Pattern *p;
 
   while (NULL != (p = publish_head))
   {
-    if (GNUNET_SCHEDULER_NO_TASK != p->task)
+    if (NULL != p->task)
       GNUNET_SCHEDULER_cancel (p->task);
     if (NULL != p->ctx)
       GNUNET_FS_publish_stop (p->ctx);
@@ -285,9 +284,9 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   }
   while (NULL != (p = download_head))
   {
-    if (GNUNET_SCHEDULER_NO_TASK != p->task)
+    if (NULL != p->task)
       GNUNET_SCHEDULER_cancel (p->task);
-    if (GNUNET_SCHEDULER_NO_TASK != p->stask)
+    if (NULL != p->stask)
       GNUNET_SCHEDULER_cancel (p->stask);
     if (NULL != p->ctx)
       GNUNET_FS_download_stop (p->ctx, GNUNET_YES);
@@ -313,14 +312,13 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Task run when a publish operation should be stopped.
  *
  * @param cls the 'struct Pattern' of the publish operation to stop
- * @param tc unused
  */
 static void
-publish_stop_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+publish_stop_task (void *cls)
 {
   struct Pattern *p = cls;
 
-  p->task = GNUNET_SCHEDULER_NO_TASK;
+  p->task = NULL;
   GNUNET_FS_publish_stop (p->ctx);
 }
 
@@ -329,14 +327,13 @@ publish_stop_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Task run when a download operation should be stopped.
  *
  * @param cls the 'struct Pattern' of the download operation to stop
- * @param tc unused
  */
 static void
-download_stop_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+download_stop_task (void *cls)
 {
   struct Pattern *p = cls;
 
-  p->task = GNUNET_SCHEDULER_NO_TASK;
+  p->task = NULL;
   GNUNET_FS_download_stop (p->ctx, GNUNET_YES);
 }
 
@@ -345,14 +342,13 @@ download_stop_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Task run when a download operation should be stopped.
  *
  * @param cls the 'struct Pattern' of the download operation to stop
- * @param tc unused
  */
 static void
-search_stop_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+search_stop_task (void *cls)
 {
   struct Pattern *p = cls;
 
-  p->stask = GNUNET_SCHEDULER_NO_TASK;
+  p->stask = NULL;
   GNUNET_FS_search_stop (p->sctx);
 }
 
@@ -498,18 +494,14 @@ progress_cb (void *cls,
  * Start publish operation.
  *
  * @param cls the 'struct Pattern' specifying the operation to perform
- * @param tc scheduler context
  */
 static void
-start_publish (void *cls,
-		const struct GNUNET_SCHEDULER_TaskContext *tc)
+start_publish (void *cls)
 {
   struct Pattern *p = cls;
   struct GNUNET_FS_FileInformation *fi;
 
-  p->task = GNUNET_SCHEDULER_NO_TASK;
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-    return;
+  p->task = NULL;
   fi = make_file (p->x, p->y, p);
   p->start_time = GNUNET_TIME_absolute_get ();
   p->ctx = GNUNET_FS_publish_start (fs_handle,
@@ -523,18 +515,14 @@ start_publish (void *cls,
  * Start download operation.
  *
  * @param cls the 'struct Pattern' specifying the operation to perform
- * @param tc scheduler context
  */
 static void
-start_download (void *cls,
-		const struct GNUNET_SCHEDULER_TaskContext *tc)
+start_download (void *cls)
 {
   struct Pattern *p = cls;
   struct GNUNET_FS_Uri *keywords;
 
-  p->task = GNUNET_SCHEDULER_NO_TASK;
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-    return;
+  p->task = NULL;
   keywords = make_keywords (p->x);
   p->start_time = GNUNET_TIME_absolute_get ();
   p->sctx = GNUNET_FS_search_start (fs_handle, keywords,
@@ -562,8 +550,8 @@ run (void *cls, char *const *args GNUNET_UNUSED,
 
   cfg = cfg_;
   /* Scheduled the task to clean up when shutdown is called */
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
+				 NULL);
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_number (cfg,

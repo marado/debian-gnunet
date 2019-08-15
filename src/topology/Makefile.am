@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if USE_COVERAGE
@@ -35,6 +36,7 @@ gnunet_daemon_topology_LDADD = \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -46,7 +48,7 @@ check_PROGRAMS = \
 endif
 
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = $(check_PROGRAMS)
 endif
 
@@ -54,6 +56,7 @@ test_gnunet_daemon_topology_SOURCES = \
  test_gnunet_daemon_topology.c
 test_gnunet_daemon_topology_LDADD = \
  $(top_builddir)/src/testbed/libgnunettestbed.la \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 EXTRA_DIST = \

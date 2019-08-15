@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2003-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file fs/test_fs_uri.c
@@ -42,12 +42,12 @@ testKeyword ()
   }
   GNUNET_free (emsg);
   ret = GNUNET_FS_uri_parse ("gnunet://fs/ksk/foo+bar", &emsg);
-  if (ret == NULL)
+  if (NULL == ret)
   {
     GNUNET_free (emsg);
     GNUNET_assert (0);
   }
-  if (!GNUNET_FS_uri_test_ksk (ret))
+  if (! GNUNET_FS_uri_test_ksk (ret))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -81,46 +81,39 @@ testLocation ()
   struct GNUNET_FS_Uri *uri2;
   struct GNUNET_FS_Uri *baseURI;
   char *emsg;
-  struct GNUNET_CONFIGURATION_Handle *cfg;
+  struct GNUNET_CRYPTO_EddsaPrivateKey *pk;
 
   baseURI =
       GNUNET_FS_uri_parse
-      ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42",
+      ("gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.15999",
        &emsg);
   GNUNET_assert (baseURI != NULL);
   GNUNET_assert (emsg == NULL);
-  cfg = GNUNET_CONFIGURATION_create ();
-  if (GNUNET_OK != GNUNET_CONFIGURATION_load (cfg, "test_fs_uri_data.conf"))
-  {
-    FPRINTF (stderr, "%s",  "Failed to parse configuration file\n");
-    GNUNET_FS_uri_destroy (baseURI);
-    GNUNET_CONFIGURATION_destroy (cfg);
-    return 1;
-  }
-  uri = GNUNET_FS_uri_loc_create (baseURI, cfg, GNUNET_TIME_absolute_get ());
-  if (uri == NULL)
+  pk = GNUNET_CRYPTO_eddsa_key_create ();
+  uri = GNUNET_FS_uri_loc_create (baseURI,
+                                  pk,
+                                  GNUNET_TIME_absolute_get ());
+  GNUNET_free (pk);
+  if (NULL == uri)
   {
     GNUNET_break (0);
     GNUNET_FS_uri_destroy (baseURI);
-    GNUNET_CONFIGURATION_destroy (cfg);
     return 1;
   }
-  if (!GNUNET_FS_uri_test_loc (uri))
+  if (! GNUNET_FS_uri_test_loc (uri))
   {
     GNUNET_break (0);
     GNUNET_FS_uri_destroy (uri);
     GNUNET_FS_uri_destroy (baseURI);
-    GNUNET_CONFIGURATION_destroy (cfg);
     return 1;
   }
   uri2 = GNUNET_FS_uri_loc_get_uri (uri);
-  if (!GNUNET_FS_uri_test_equal (baseURI, uri2))
+  if (! GNUNET_FS_uri_test_equal (baseURI, uri2))
   {
     GNUNET_break (0);
     GNUNET_FS_uri_destroy (uri);
     GNUNET_FS_uri_destroy (uri2);
     GNUNET_FS_uri_destroy (baseURI);
-    GNUNET_CONFIGURATION_destroy (cfg);
     return 1;
   }
   GNUNET_FS_uri_destroy (uri2);
@@ -137,7 +130,6 @@ testLocation ()
     fprintf (stderr, "URI parsing failed: %s\n", emsg);
     GNUNET_break (0);
     GNUNET_FS_uri_destroy (uri);
-    GNUNET_CONFIGURATION_destroy (cfg);
     GNUNET_free (emsg);
     return 1;
   }
@@ -147,12 +139,10 @@ testLocation ()
     GNUNET_break (0);
     GNUNET_FS_uri_destroy (uri);
     GNUNET_FS_uri_destroy (uri2);
-    GNUNET_CONFIGURATION_destroy (cfg);
     return 1;
   }
   GNUNET_FS_uri_destroy (uri2);
   GNUNET_FS_uri_destroy (uri);
-  GNUNET_CONFIGURATION_destroy (cfg);
   return 0;
 }
 
@@ -181,7 +171,7 @@ testNamespace (int i)
   if (NULL !=
       (ret =
        GNUNET_FS_uri_parse
-       ("gnunet://fs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3V/test", &emsg)))
+       ("gnunet://fs/sks/XQHH4R288W26EBV369F6RCE0PJVJTX2Y74Q2FJPMPGA31HJX2JG/this", &emsg)))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -273,7 +263,7 @@ testFile (int i)
   GNUNET_free (emsg);
   ret =
       GNUNET_FS_uri_parse
-      ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42",
+      ("gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.42",
        &emsg);
   if (ret == NULL)
   {
@@ -299,7 +289,7 @@ testFile (int i)
   uri = GNUNET_FS_uri_to_string (ret);
   if (0 !=
       strcmp (uri,
-              "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42"))
+              "gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.42"))
   {
     GNUNET_free (uri);
     GNUNET_FS_uri_destroy (ret);

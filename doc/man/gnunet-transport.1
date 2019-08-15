@@ -1,62 +1,117 @@
-.TH gnunet\-transport "1" "26 Oct 2011" "GNUnet"
-.SH NAME
-gnunet\-transport \- measure and control the transport subsystem
-
-.SH SYNOPSIS
-.B gnunet\-transport
-[\fIOPTIONS\fR]
-.SH DESCRIPTION
-.PP
-
-gnunet\-transport is a tool to access various functions of GNUnet's transport subsystem from the command\-line.  Most of these are not expected to be useful for end-users.  gnunet\-transport can be used to evaluate the performance of the transports, force a peer to connect to another peer (if possible).  Other functions should be added in the near future.
-
-.TP
-\fB\-b\fR, \fB\-\-benchmark\fR
-measure how fast we are receiving data (from all connections).  On exit, the data rate will be reported.  Runs until aborted with CTRL-C.
-.TP
-\fB\-C \fIPEER\fR, \fB\-\-connect=PEER\fR
-peer to connect to (used in conjunction with \-p)
-.TP
-\fB\-c \fIFILENAME\fR, \fB\-\-config=FILENAME\fR
+.\" This file is part of GNUnet.
+.\" Copyright (C) 2001-2019 GNUnet e.V.
+.\"
+.\" Permission is granted to copy, distribute and/or modify this document
+.\" under the terms of the GNU Free Documentation License, Version 1.3 or
+.\" any later version published by the Free Software Foundation; with no
+.\" Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+.\" copy of the license is included in the file
+.\" ``FDL-1.3''.
+.\"
+.\" A copy of the license is also available from the Free Software
+.\" Foundation Web site at @url{http://www.gnu.org/licenses/fdl.html}.
+.\"
+.\" Alternately, this document is also available under the General
+.\" Public License, version 3 or later, as published by the Free Software
+.\" Foundation.  A copy of the license is included in the file
+.\" ``GPL3''.
+.\"
+.\" A copy of the license is also available from the Free Software
+.\" Foundation Web site at @url{http://www.gnu.org/licenses/gpl.html}.
+.\"
+.\" SPDX-License-Identifier: GPL3.0-or-later OR FDL1.3-or-later
+.\"
+.Dd October 17, 2015
+.Dt GNUNET-TRANSPORT 1
+.Os
+.Sh NAME
+.Nm gnunet-transport
+.Nd
+measure and control the transport subsystem
+.Sh SYNOPSIS
+.Nm
+.Op Fl b | \-benchmark
+.Op Fl c Ar FILENAME | Fl \-config= Ns Ar FILENAME
+.Op Fl D | \-disconnect
+.Op Fl e | \-events
+.Op Fl h | \-help
+.Op Fl i | \-information
+.Op Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
+.Op Fl l Ar LOGFILE | Fl \-logfile= Ns Ar LOGFILE
+.Op Fl m | \-monitor
+.Op Fl p Ar PEER | Fl \-peer= Ns Ar PEER
+.Op Fl P | \-plugins
+.Op Fl s | \-send
+.Op Fl v | \-version
+.Op Fl V | \-verbose
+.Sh DESCRIPTION
+.Nm
+is a tool to access various functions of GNUnet's transport subsystem from the command-line.
+Most of these are not expected to be useful for end-users.
+gnunet-transport can be used to evaluate the performance of the transports, force a peer to connect to another peer (if possible).
+Other functions should be added in the near future.
+.Bl -tag -width Ds
+.It Fl b | \-benchmark
+measure how fast we are receiving data (from all connections).
+On exit, the data rate will be reported.
+Runs until aborted with CTRL-C.
+.It Fl c Ar FILENAME | Fl \-config= Ns Ar FILENAME
 configuration file to use
-.TP
-\fB\-e \fB\-\-events\fR
+.It Fl D | \-disconnect
+force disconnection from a peer (used in conjunction with \-p).
+Note that you can use the gnunet-ats command-line tool to suggest connects.
+.It Fl e | \-events
 provide information about all connect and disconnect events (continuously)
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-print help page
-.TP
-\fB\-i\fR, \fB\-\-information\fR
+.It Fl h | \-help
+Print the help page.
+.It Fl i | \-information
 print information about our current connections (once)
-.TP
-\fB\-L \fILOGLEVEL\fR, \fB\-\-loglevel=LOGLEVEL\fR
-Change the loglevel.  Possible values for LOGLEVEL are ERROR, WARNING, INFO and DEBUG.
-.TP
-\fB\-l \fILOGFILE\fR, \fB\-\-logfile=LOGFILE\fR
-configure logging to write logs to LOGFILE
-.TP
-\fB\-m\fR, \fB\-\-monitor\fR
+.It Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
+Change the loglevel.
+Possible values for LOGLEVEL are ERROR, WARNING, INFO and DEBUG.
+.It Fl l Ar LOGFILE | Fl \-logfile= Ns Ar LOGFILE
+Configure logging to write logs to LOGFILE.
+.It Fl m | \-monitor
 print information about our current connections (continuously)
-.TP
-\fB\-p \fIPEER\fR, \fB\-\-peer=PEER\fR
-the peer identity
-.TP
-\fB\-s\fR, \fB\-\-send\fR
-transmit (dummy) traffic as quickly as possible to the peer specified with the \-p option.  The rate will still be limited by the quota(s) determined by the peers (ATS subsystem).  Will run until CTRL\-C is pressed or until the connection to the other peer is disrupted.
-.TP
-\fB\-t\fR, \fB\-\-test\fR
-test transport configuration.  With this flag, the tool will check if each of the configured transport plugins has a working address.  Plugins that do not have a listen port configured will be ignored.  The test is performed with the help of an external server (by default running on gnunet.org) which tries to contact the local machine.  The test can only work if the local GNUnet peer is not yet running.
-.TP
-\fB\-v\fR, \fB\-\-version\fR
+.It Fl p Ar PEER | Fl \-peer= Ns Ar PEER
+the peer identity to connect to or monitor
+.It Fl P | \-plugins
+monitor session state of transport plugins
+.It Fl s | \-send
+Transmit (dummy) traffic as quickly as possible to the peer specified with the
+.Fl p
+option.
+The rate will still be limited by the quota(s) determined by the peers (ATS subsystem).
+Will run until CTRL-C is pressed or until the connection to the other peer is disrupted.
+.It Fl v | \-version
 print the version number
-.TP
-\fB\-V\fR, \fB\-\-verbose\fR
+.It Fl V | \-verbose
 be verbose
-
-.SH NOTES
-
-
-.SH "REPORTING BUGS"
-Report bugs by using mantis <https://gnunet.org/bugs/> or by sending electronic mail to <gnunet\-developers@gnu.org>
-.SH "SEE ALSO"
-\fBgnunet\-arm\fP(1)
+.El
+.Sh SEE ALSO
+.Xr gnunet-arm 1 ,
+.Xr gnunet-ats 1
+.sp
+The full documentation for gnunet is maintained as a Texinfo manual.
+If the
+.Xr info 1
+and gnunet programs are properly installed at your site, the command
+.Pp
+.Dl info gnunet
+.Pp
+should give you access to the complete handbook,
+.Pp
+.Dl info gnunet-c-tutorial
+.Pp
+will give you access to a tutorial for developers.
+.sp
+Depending on your installation, this information is also available in
+.Xr gnunet 7 and
+.Xr gnunet-c-tutorial 7 .
+.\".Sh HISTORY
+.\".Sh AUTHORS
+.Sh BUGS
+Report bugs by using
+.Lk https://bugs.gnunet.org
+or by sending electronic mail to
+.Aq Mt gnunet-developers@gnu.org .

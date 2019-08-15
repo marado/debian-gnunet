@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file fs/gnunet-unindex.c
@@ -30,7 +30,7 @@
 
 static int ret;
 
-static int verbose;
+static unsigned int verbose;
 
 static const struct GNUNET_CONFIGURATION_Handle *cfg;
 
@@ -40,7 +40,7 @@ static struct GNUNET_FS_UnindexContext *uc;
 
 
 static void
-cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleanup_task (void *cls)
 {
   GNUNET_FS_stop (ctx);
   ctx = NULL;
@@ -48,7 +48,7 @@ cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
   struct GNUNET_FS_UnindexContext *u;
 
@@ -101,8 +101,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     GNUNET_SCHEDULER_shutdown ();
     break;
   case GNUNET_FS_STATUS_UNINDEX_STOPPED:
-    GNUNET_SCHEDULER_add_continuation (&cleanup_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&cleanup_task, NULL);
     break;
   default:
     FPRINTF (stderr, _("Unexpected status: %d\n"), info->status);
@@ -148,8 +147,8 @@ run (void *cls, char *const *args, const char *cfgfile,
     GNUNET_FS_stop (ctx);
     return;
   }
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
+				 NULL);
 }
 
 
@@ -163,10 +162,10 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'V', "verbose", NULL,
-     gettext_noop ("be verbose (print progress information)"),
-     0, &GNUNET_GETOPT_set_one, &verbose},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_verbose (&verbose),
+
     GNUNET_GETOPT_OPTION_END
   };
 

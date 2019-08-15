@@ -1,21 +1,21 @@
 /*
   This file is part of GNUnet.
-  (C) 2008--2013 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
+  Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -40,55 +40,88 @@ GST_barriers_init (struct GNUNET_CONFIGURATION_Handle *cfg);
  * Function to stop the barrier service
  */
 void
-GST_barriers_destroy ();
+GST_barriers_destroy (void);
 
 
 /**
- * Message handler for GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT messages.  This
+ * Check #GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT messages.
+ *
+ * @param cls identification of the client
+ * @param msg the actual message
+ * @return #GNUNET_OK if @a msg is well-formed
+ */
+int
+check_barrier_init (void *cls,
+                    const struct GNUNET_TESTBED_BarrierInit *msg);
+
+
+/**
+ * Message handler for #GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT messages.  This
  * message should always come from a parent controller or the testbed API if we
  * are the root controller.
  *
  * This handler is queued in the main service and will handle the messages sent
  * either from the testbed driver or from a high level controller
  *
- * @param cls NULL
- * @param client identification of the client
- * @param message the actual message
+ * @param cls identification of the client
+ * @param msg the actual message
  */
 void
-GST_handle_barrier_init (void *cls, struct GNUNET_SERVER_Client *client,
-                         const struct GNUNET_MessageHeader *message);
+handle_barrier_init (void *cls,
+                     const struct GNUNET_TESTBED_BarrierInit *msg);
 
 
 /**
- * Message handler for GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL messages.  This
+ * Check #GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL messages.
+ *
+ * @param cls identification of the client
+ * @param msg the actual message
+ * @return #GNUNET_OK if @a msg is well-formed
+ */
+int
+check_barrier_cancel (void *cls,
+                      const struct GNUNET_TESTBED_BarrierCancel *msg);
+
+
+/**
+ * Message handler for #GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL messages.  This
  * message should always come from a parent controller or the testbed API if we
  * are the root controller.
  *
  * This handler is queued in the main service and will handle the messages sent
  * either from the testbed driver or from a high level controller
  *
- * @param cls NULL
- * @param client identification of the client
- * @param message the actual message
+ * @param cls identification of the client
+ * @param msg the actual message
  */
 void
-GST_handle_barrier_cancel (void *cls, struct GNUNET_SERVER_Client *client,
-                           const struct GNUNET_MessageHeader *message);
+handle_barrier_cancel (void *cls,
+                       const struct GNUNET_TESTBED_BarrierCancel *msg);
 
 
 /**
- * Message handler for GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS messages.
+ * Check #GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS messages.
+ *
+ * @param cls identification of the client
+ * @param msg the actual message
+ * @return #GNUNET_OK if @a msg is well-formed
+ */
+int
+check_barrier_status (void *cls,
+                      const struct GNUNET_TESTBED_BarrierStatusMsg *msg);
+
+
+/**
+ * Message handler for #GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS messages.
  * This handler is queued in the main service and will handle the messages sent
  * either from the testbed driver or from a high level controller
  *
- * @param cls NULL
- * @param client identification of the client
- * @param message the actual message
+ * @param cls identification of the client
+ * @param msg the actual message
  */
 void
-GST_handle_barrier_status (void *cls, struct GNUNET_SERVER_Client *client,
-                           const struct GNUNET_MessageHeader *message);
+handle_barrier_status (void *cls,
+                       const struct GNUNET_TESTBED_BarrierStatusMsg *msg);
 
 #endif  /* GNUNET_SERVER_TESTBED_BARRIERS_H_ */
 

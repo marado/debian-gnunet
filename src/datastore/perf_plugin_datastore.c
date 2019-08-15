@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006, 2007, 2009, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006, 2007, 2009, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /*
  * @file perf_plugin_datastore.c
@@ -99,15 +99,73 @@ disk_utilization_change_cb (void *cls, int delta)
 
 
 static void
-putValue (struct GNUNET_DATASTORE_PluginFunctions *api, int i, int k)
+test (void *cls);
+
+
+/**
+ * Put continuation.
+ *
+ * @param cls closure
+ * @param key key for the item stored
+ * @param size size of the item stored
+ * @param status #GNUNET_OK or #GNUNET_SYSERROR
+ * @param msg error message on error
+ */
+static void
+put_continuation (void *cls,
+		  const struct GNUNET_HashCode *key,
+                  uint32_t size,
+		  int status,
+		  const char *msg)
+{
+  struct CpsRunContext *crc = cls;
+
+  if (GNUNET_OK != status)
+  {
+    FPRINTF (stderr, "ERROR: `%s'\n", msg);
+  }
+  else
+  {
+    stored_bytes += size;
+    stored_ops++;
+    stored_entries++;
+  }
+  GNUNET_SCHEDULER_add_now (&test, crc);
+}
+
+
+static void
+do_put (struct CpsRunContext *crc)
 {
   char value[65536];
   size_t size;
   static struct GNUNET_HashCode key;
-  static int ic;
-  char *msg;
+  static int i;
   unsigned int prio;
 
+  if (0 == i)
+    crc->start = GNUNET_TIME_absolute_get ();
+  if (PUT_10 == i)
+  {
+    i = 0;
+    crc->end = GNUNET_TIME_absolute_get ();
+    {
+      printf ("%s took %s for %llu items\n", "Storing an item",
+	      GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (crc->start,
+											   crc->end),
+						      GNUNET_YES),
+              PUT_10);
+      if (PUT_10 > 0)
+        GAUGER (category, "Storing an item",
+                (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL / PUT_10,
+                "ms/item");
+    }
+    crc->i++;
+    crc->start = GNUNET_TIME_absolute_get ();
+    crc->phase++;
+    GNUNET_SCHEDULER_add_now (&test, crc);
+    return;
+  }
   /* most content is 32k */
   size = 32 * 1024;
   if (GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 16) == 0)   /* but some of it is less! */
@@ -120,38 +178,40 @@ putValue (struct GNUNET_DATASTORE_PluginFunctions *api, int i, int k)
   memset (value, i, size);
   if (i > 255)
     memset (value, i - 255, size / 2);
-  value[0] = k;
-  memcpy (&value[4], &i, sizeof (i));
-  msg = NULL;
+  value[0] = crc->i;
+  GNUNET_memcpy (&value[4], &i, sizeof (i));
   prio = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 100);
-  if (GNUNET_OK != api->put (api->cls, &key, size, value, 1 + i % 4 /* type */ ,
-                             prio, i % 4 /* anonymity */ ,
-                             0 /* replication */ ,
-                             GNUNET_TIME_relative_to_absolute
-                             (GNUNET_TIME_relative_multiply
-                              (GNUNET_TIME_UNIT_MILLISECONDS,
-                               60 * 60 * 60 * 1000 +
-                               GNUNET_CRYPTO_random_u32
-                               (GNUNET_CRYPTO_QUALITY_WEAK, 1000))), &msg))
-  {
-    FPRINTF (stderr, "ERROR: `%s'\n", msg);
-    GNUNET_free_non_null (msg);
-    return;
-  }
-  ic++;
-  stored_bytes += size;
-  stored_ops++;
-  stored_entries++;
+  crc->api->put (crc->api->cls,
+                 &key,
+                 false /* absent */,
+                 size,
+                 value,
+                 1 + i % 4 /* type */ ,
+                 prio,
+                 i % 4 /* anonymity */ ,
+                 0 /* replication */ ,
+                 GNUNET_TIME_relative_to_absolute
+                 (GNUNET_TIME_relative_multiply
+                   (GNUNET_TIME_UNIT_MILLISECONDS,
+                    60 * 60 * 60 * 1000 +
+                    GNUNET_CRYPTO_random_u32
+                      (GNUNET_CRYPTO_QUALITY_WEAK, 1000))),
+                 put_continuation,
+                 crc);
+  i++;
 }
-
-static void
-test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc);
 
 
 static int
-iterate_zeros (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
-               const void *data, enum GNUNET_BLOCK_Type type, uint32_t priority,
-               uint32_t anonymity, struct GNUNET_TIME_Absolute expiration,
+iterate_zeros (void *cls,
+               const struct GNUNET_HashCode *key,
+               uint32_t size,
+               const void *data,
+               enum GNUNET_BLOCK_Type type,
+               uint32_t priority,
+               uint32_t anonymity,
+               uint32_t replication,
+               struct GNUNET_TIME_Absolute expiration,
                uint64_t uid)
 {
   struct CpsRunContext *crc = cls;
@@ -160,7 +220,7 @@ iterate_zeros (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
 
   GNUNET_assert (key != NULL);
   GNUNET_assert (size >= 8);
-  memcpy (&i, &cdata[4], sizeof (i));
+  GNUNET_memcpy (&i, &cdata[4], sizeof (i));
   hits[i / 8] |= (1 << (i % 8));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -200,17 +260,23 @@ iterate_zeros (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
 
 
 static int
-expiration_get (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
-                const void *data, enum GNUNET_BLOCK_Type type,
-                uint32_t priority, uint32_t anonymity,
-                struct GNUNET_TIME_Absolute expiration, uint64_t uid)
+expiration_get (void *cls,
+                const struct GNUNET_HashCode *key,
+                uint32_t size,
+                const void *data,
+                enum GNUNET_BLOCK_Type type,
+                uint32_t priority,
+                uint32_t anonymity,
+                uint32_t replication,
+                struct GNUNET_TIME_Absolute expiration,
+                uint64_t uid)
 {
   struct CpsRunContext *crc = cls;
   int i;
   const char *cdata = data;
 
   GNUNET_assert (size >= 8);
-  memcpy (&i, &cdata[4], sizeof (i));
+  GNUNET_memcpy (&i, &cdata[4], sizeof (i));
   hits[i / 8] |= (1 << (i % 8));
   crc->cnt++;
   if (PUT_10 <= crc->cnt)
@@ -247,10 +313,16 @@ expiration_get (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
 
 
 static int
-replication_get (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
-                 const void *data, enum GNUNET_BLOCK_Type type,
-                 uint32_t priority, uint32_t anonymity,
-                 struct GNUNET_TIME_Absolute expiration, uint64_t uid)
+replication_get (void *cls,
+                 const struct GNUNET_HashCode *key,
+                 uint32_t size,
+                 const void *data,
+                 enum GNUNET_BLOCK_Type type,
+                 uint32_t priority,
+                 uint32_t anonymity,
+                 uint32_t replication,
+                 struct GNUNET_TIME_Absolute expiration,
+                 uint64_t uid)
 {
   struct CpsRunContext *crc = cls;
   int i;
@@ -258,7 +330,7 @@ replication_get (void *cls, const struct GNUNET_HashCode * key, uint32_t size,
 
   GNUNET_assert (NULL != key);
   GNUNET_assert (size >= 8);
-  memcpy (&i, &cdata[4], sizeof (i));
+  GNUNET_memcpy (&i, &cdata[4], sizeof (i));
   hits[i / 8] |= (1 << (i % 8));
   crc->cnt++;
   if (PUT_10 <= crc->cnt)
@@ -329,7 +401,7 @@ unload_plugin (struct GNUNET_DATASTORE_PluginFunctions *api,
  * the transport and core.
  */
 static void
-cleaning_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleaning_task (void *cls)
 {
   struct CpsRunContext *crc = cls;
 
@@ -339,16 +411,10 @@ cleaning_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+test (void *cls)
 {
   struct CpsRunContext *crc = cls;
-  int j;
 
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-  {
-    GNUNET_break (0);
-    crc->phase = RP_ERROR;
-  }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "In phase %d, iteration %u\n", crc->phase, crc->cnt);
   switch (crc->phase)
@@ -361,25 +427,7 @@ test (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
                                         &cleaning_task, crc);
     break;
   case RP_PUT:
-    crc->start = GNUNET_TIME_absolute_get ();
-    for (j = 0; j < PUT_10; j++)
-      putValue (crc->api, j, crc->i);
-    crc->end = GNUNET_TIME_absolute_get ();
-    {
-      printf ("%s took %s for %llu items\n", "Storing an item",
-	      GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (crc->start,
-											   crc->end),
-						      GNUNET_YES),
-              PUT_10);
-      if (PUT_10 > 0)
-        GAUGER (category, "Storing an item",
-                (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL / PUT_10,
-                "ms/item");
-    }
-    crc->i++;
-    crc->start = GNUNET_TIME_absolute_get ();
-    crc->phase++;
-    GNUNET_SCHEDULER_add_now (&test, crc);
+    do_put (crc);
     break;
   case RP_REP_GET:
     crc->api->get_replication (crc->api->cls, &replication_get, crc);
@@ -471,8 +519,8 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *argv[])
 {
-  char dir_name[128];
-  char cfg_name[128];
+  char dir_name[PATH_MAX];
+  char cfg_name[PATH_MAX];
   char *const xargv[] = {
     "perf-plugin-datastore",
     "-c",

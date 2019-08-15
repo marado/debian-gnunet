@@ -1,8 +1,11 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 pkgcfgdir= $(pkgdatadir)/config.d/
 
 libexecdir= $(pkglibdir)/libexec/
+
+plugindir = $(libdir)/gnunet
 
 pkgcfg_DATA = \
   peerinfo.conf
@@ -17,6 +20,7 @@ if USE_COVERAGE
 endif
 
 lib_LTLIBRARIES = libgnunetpeerinfo.la
+
 
 libgnunetpeerinfo_la_SOURCES = \
   peerinfo_api.c peerinfo.h \
@@ -35,7 +39,7 @@ libexec_PROGRAMS = \
  gnunet-service-peerinfo
 
 gnunet_service_peerinfo_SOURCES = \
- gnunet-service-peerinfo.c
+  gnunet-service-peerinfo.c
 gnunet_service_peerinfo_LDADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -57,7 +61,7 @@ endif
 
 
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = $(check_PROGRAMS)
 endif
 
@@ -65,7 +69,7 @@ test_peerinfo_shipped_hellos_SOURCES = \
  test_peerinfo_shipped_hellos.c
 test_peerinfo_shipped_hellos_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+ libgnunetpeerinfo.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
@@ -73,7 +77,7 @@ test_peerinfo_api_SOURCES = \
  test_peerinfo_api.c
 test_peerinfo_api_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+ libgnunetpeerinfo.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
@@ -81,7 +85,7 @@ test_peerinfo_api_friend_only_SOURCES = \
  test_peerinfo_api_friend_only.c
 test_peerinfo_api_friend_only_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+ libgnunetpeerinfo.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
@@ -89,7 +93,7 @@ test_peerinfo_api_notify_friend_only_SOURCES = \
  test_peerinfo_api_notify_friend_only.c
 test_peerinfo_api_notify_friend_only_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+ libgnunetpeerinfo.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
@@ -97,7 +101,7 @@ perf_peerinfo_api_SOURCES = \
  perf_peerinfo_api.c
 perf_peerinfo_api_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+ libgnunetpeerinfo.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 

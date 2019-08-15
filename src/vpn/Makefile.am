@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include -I$(top_builddir)/src/include
 
 if MINGW
@@ -21,7 +22,7 @@ pkgcfg_DATA = \
 if LINUX
 VPNBIN = gnunet-helper-vpn
 install-exec-hook:
-	$(top_srcdir)/src/vpn/install-vpn-helper.sh $(libexecdir) $(SUDO_BINARY) || true
+	$(top_srcdir)/src/vpn/install-vpn-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
 else
 install-exec-hook:
 endif
@@ -56,9 +57,8 @@ gnunet_service_vpn_SOURCES = \
  gnunet-service-vpn.c
 gnunet_service_vpn_LDADD = \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/tun/libgnunettun.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/mesh/libgnunetmesh.la \
+  $(top_builddir)/src/cadet/libgnunetcadet.la \
   $(top_builddir)/src/regex/libgnunetregex.la \
   $(GN_LIBINTL)
 gnunet_service_vpn_CFLAGS = \
@@ -67,12 +67,9 @@ gnunet_service_vpn_CFLAGS = \
 gnunet_vpn_SOURCES = \
  gnunet-vpn.c
 gnunet_vpn_LDADD = \
-  $(top_builddir)/src/vpn/libgnunetvpn.la \
-  $(top_builddir)/src/tun/libgnunettun.la \
+  libgnunetvpn.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
-gnunet_vpn_DEPENDENCIES = \
-  libgnunetvpn.la
 
 libgnunetvpn_la_SOURCES = \
  vpn_api.c vpn.h
@@ -80,5 +77,3 @@ libgnunetvpn_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la $(XLIB)
 libgnunetvpn_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS)
-
-

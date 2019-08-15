@@ -1,27 +1,32 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2003, 2004, 2005, 2006 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_plugin_lib.h
- * @brief plugin loading and unloading
  * @author Christian Grothoff
+ *
+ * @file
+ * Plugin loading and unloading
+ *
+ * @defgroup plugin  Plugin library
+ * Plugin loading and unloading
+ * @{
  */
 
 #ifndef GNUNET_PLUGIN_LIB_H
@@ -47,7 +52,8 @@ extern "C"
  *         shutdown or if there was an error, otherwise
  *         the plugin's API on success
  */
-typedef void *(*GNUNET_PLUGIN_Callback) (void *arg);
+typedef void *
+(*GNUNET_PLUGIN_Callback) (void *arg);
 
 
 /**
@@ -76,11 +82,12 @@ GNUNET_PLUGIN_test (const char *library_name);
  * @return whatever the initialization function returned, NULL on error
  */
 void *
-GNUNET_PLUGIN_load (const char *library_name, void *arg);
+GNUNET_PLUGIN_load (const char *library_name,
+                    void *arg);
 
 
 /**
- * Signature of a function called by 'GNUNET_PLUGIN_load_all'.
+ * Signature of a function called by #GNUNET_PLUGIN_load_all().
  *
  * @param cls closure
  * @param library_name full name of the library (to be used with
@@ -89,9 +96,10 @@ GNUNET_PLUGIN_load (const char *library_name, void *arg);
  *        of the library (same as what #GNUNET_PLUGIN_load would
  *        have returned for the given library name)
  */
-typedef void (*GNUNET_PLUGIN_LoaderCallback) (void *cls,
-                                              const char *library_name,
-                                              void *lib_ret);
+typedef void
+(*GNUNET_PLUGIN_LoaderCallback) (void *cls,
+                                 const char *library_name,
+                                 void *lib_ret);
 
 
 /**
@@ -107,8 +115,10 @@ typedef void (*GNUNET_PLUGIN_LoaderCallback) (void *cls,
  * @param cb_cls closure for @a cb
  */
 void
-GNUNET_PLUGIN_load_all (const char *basename, void *arg,
-                        GNUNET_PLUGIN_LoaderCallback cb, void *cb_cls);
+GNUNET_PLUGIN_load_all (const char *basename,
+                        void *arg,
+                        GNUNET_PLUGIN_LoaderCallback cb,
+                        void *cb_cls);
 
 
 /**
@@ -121,7 +131,8 @@ GNUNET_PLUGIN_load_all (const char *basename, void *arg,
  *         or a "char *" representing the error message
  */
 void *
-GNUNET_PLUGIN_unload (const char *library_name, void *arg);
+GNUNET_PLUGIN_unload (const char *library_name,
+                      void *arg);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
@@ -131,7 +142,9 @@ GNUNET_PLUGIN_unload (const char *library_name, void *arg);
 }
 #endif
 
-
 /* ifndef GNUNET_PLUGIN_LIB_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_plugin_lib.h */

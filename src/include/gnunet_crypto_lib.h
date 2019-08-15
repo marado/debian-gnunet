@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2001-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -27,9 +27,17 @@
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
+ * @author Jeffrey Burdges <burdges@gnunet.org>
  *
- * @defgroup crypto Cryptographic operations
- * @defgroup hash Hashing and operations on hashes
+ * @defgroup crypto  Crypto library: cryptographic operations
+ * Provides cryptographic primitives.
+ *
+ * @see [Documentation](https://gnunet.org/crypto-api)
+ *
+ * @defgroup hash  Crypto library: hash operations
+ * Provides hashing and operations on hashes.
+ *
+ * @see [Documentation](https://gnunet.org/crypto-api)
  */
 
 #ifndef GNUNET_CRYPTO_LIB_H
@@ -43,10 +51,6 @@ extern "C"
 #endif
 #endif
 
-/**
- * @brief A 512-bit hashcode
- */
-struct GNUNET_HashCode;
 
 /**
  * The identity of the host (wraps the signing key of the peer).
@@ -54,17 +58,7 @@ struct GNUNET_HashCode;
 struct GNUNET_PeerIdentity;
 
 #include "gnunet_common.h"
-#include "gnunet_scheduler_lib.h"
 #include <gcrypt.h>
-
-
-/**
- * @brief A 512-bit hashcode
- */
-struct GNUNET_HashCode
-{
-  uint32_t bits[512 / 8 / sizeof (uint32_t)];   /* = 16 */
-};
 
 
 /**
@@ -195,14 +189,15 @@ struct GNUNET_CRYPTO_EcdsaSignature
 
 
 /**
- * Public ECC key (always for Curve25519) encoded in a format suitable
- * for network transmission and EdDSA signatures.
+ * Public ECC key (always for curve Ed25519) encoded in a format
+ * suitable for network transmission and EdDSA signatures.
  */
 struct GNUNET_CRYPTO_EddsaPublicKey
 {
   /**
-   * Q consists of an x- and a y-value, each mod p (256 bits), given
-   * here in affine coordinates and Ed25519 standard compact format.
+   * Point Q consists of a y-value mod p (256 bits); the x-value is
+   * always positive. The point is stored in Ed25519 standard
+   * compact format.
    */
   unsigned char q_y[256 / 8];
 
@@ -350,7 +345,7 @@ struct GNUNET_CRYPTO_PaillierPublicKey
 
 
 /**
- * Paillier public key.
+ * Paillier private key.
  */
 struct GNUNET_CRYPTO_PaillierPrivateKey
 {
@@ -371,10 +366,11 @@ struct GNUNET_CRYPTO_PaillierPrivateKey
 struct GNUNET_CRYPTO_PaillierCiphertext
 {
   /**
-   * guaranteed minimum number of homomorphic operations with this ciphertext
+   * Guaranteed minimum number of homomorphic operations with this ciphertext,
+   * in network byte order (NBO).
    */
   int32_t remaining_ops GNUNET_PACKED;
-  
+
   /**
    * The bits of the ciphertext.
    */
@@ -396,6 +392,19 @@ GNUNET_CRYPTO_seed_weak_random (int32_t seed);
 
 
 /**
+ * @ingroup hash
+ * Calculate the checksum of a buffer in one step.
+ *
+ * @param buf buffer to calculate CRC over
+ * @param len number of bytes in @a buf
+ * @return crc8 value
+ */
+uint8_t
+GNUNET_CRYPTO_crc8_n (const void *buf,
+                      size_t len);
+
+
+/**
  * Perform an incremental step in a CRC16 (for TCP/IP) calculation.
  *
  * @param sum current sum, initially 0
@@ -404,7 +413,9 @@ GNUNET_CRYPTO_seed_weak_random (int32_t seed);
  * @return updated crc sum (must be subjected to #GNUNET_CRYPTO_crc16_finish to get actual crc16)
  */
 uint32_t
-GNUNET_CRYPTO_crc16_step (uint32_t sum, const void *buf, size_t len);
+GNUNET_CRYPTO_crc16_step (uint32_t sum,
+                          const void *buf,
+                          size_t len);
 
 
 /**
@@ -426,7 +437,10 @@ GNUNET_CRYPTO_crc16_finish (uint32_t sum);
  * @return crc16 value
  */
 uint16_t
-GNUNET_CRYPTO_crc16_n (const void *buf, size_t len);
+GNUNET_CRYPTO_crc16_n (const void *buf,
+                       size_t len);
+
+
 
 
 /**
@@ -439,7 +453,20 @@ GNUNET_CRYPTO_crc16_n (const void *buf, size_t len);
  * @return the resulting CRC32 checksum
  */
 int32_t
-GNUNET_CRYPTO_crc32_n (const void *buf, size_t len);
+GNUNET_CRYPTO_crc32_n (const void *buf,
+                       size_t len);
+
+/**
+ * @ingroup crypto
+ * Zero out @a buffer, securely against compiler optimizations.
+ * Used to delete key material.
+ *
+ * @param buffer the buffer to zap
+ * @param length buffer length
+ */
+void
+GNUNET_CRYPTO_zero_keys (void *buffer,
+                         size_t length);
 
 
 /**
@@ -451,7 +478,9 @@ GNUNET_CRYPTO_crc32_n (const void *buf, size_t len);
  * @param length buffer length
  */
 void
-GNUNET_CRYPTO_random_block (enum GNUNET_CRYPTO_Quality mode, void *buffer, size_t length);
+GNUNET_CRYPTO_random_block (enum GNUNET_CRYPTO_Quality mode,
+                            void *buffer,
+                            size_t length);
 
 /**
  * @ingroup crypto
@@ -462,7 +491,8 @@ GNUNET_CRYPTO_random_block (enum GNUNET_CRYPTO_Quality mode, void *buffer, size_
  * @return a random value in the interval [0,@a i) (exclusive).
  */
 uint32_t
-GNUNET_CRYPTO_random_u32 (enum GNUNET_CRYPTO_Quality mode, uint32_t i);
+GNUNET_CRYPTO_random_u32 (enum GNUNET_CRYPTO_Quality mode,
+                          uint32_t i);
 
 
 /**
@@ -474,7 +504,8 @@ GNUNET_CRYPTO_random_u32 (enum GNUNET_CRYPTO_Quality mode, uint32_t i);
  * @return random 64-bit number
  */
 uint64_t
-GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode, uint64_t max);
+GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode,
+                          uint64_t max);
 
 
 /**
@@ -487,7 +518,8 @@ GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode, uint64_t max);
  * @return the permutation array (allocated from heap)
  */
 unsigned int *
-GNUNET_CRYPTO_random_permute (enum GNUNET_CRYPTO_Quality mode, unsigned int n);
+GNUNET_CRYPTO_random_permute (enum GNUNET_CRYPTO_Quality mode,
+                              unsigned int n);
 
 
 /**
@@ -512,7 +544,8 @@ GNUNET_CRYPTO_symmetric_create_session_key (struct GNUNET_CRYPTO_SymmetricSessio
  * @return the size of the encrypted block, -1 for errors
  */
 ssize_t
-GNUNET_CRYPTO_symmetric_encrypt (const void *block, size_t size,
+GNUNET_CRYPTO_symmetric_encrypt (const void *block,
+                                 size_t size,
                                  const struct GNUNET_CRYPTO_SymmetricSessionKey *sessionkey,
                                  const struct GNUNET_CRYPTO_SymmetricInitializationVector *iv,
                                  void *result);
@@ -530,7 +563,8 @@ GNUNET_CRYPTO_symmetric_encrypt (const void *block, size_t size,
  * @return -1 on failure, size of decrypted block on success
  */
 ssize_t
-GNUNET_CRYPTO_symmetric_decrypt (const void *block, size_t size,
+GNUNET_CRYPTO_symmetric_decrypt (const void *block,
+                                 size_t size,
                                  const struct GNUNET_CRYPTO_SymmetricSessionKey *sessionkey,
                                  const struct GNUNET_CRYPTO_SymmetricInitializationVector *iv,
                                  void *result);
@@ -576,7 +610,7 @@ GNUNET_CRYPTO_symmetric_derive_iv_v (struct GNUNET_CRYPTO_SymmetricInitializatio
  *  safely cast to char*, a '\\0' termination is set).
  */
 void
-GNUNET_CRYPTO_hash_to_enc (const struct GNUNET_HashCode * block,
+GNUNET_CRYPTO_hash_to_enc (const struct GNUNET_HashCode *block,
                            struct GNUNET_CRYPTO_HashAsciiEncoded *result);
 
 
@@ -590,7 +624,8 @@ GNUNET_CRYPTO_hash_to_enc (const struct GNUNET_HashCode * block,
  * @return #GNUNET_OK on success, #GNUNET_SYSERR if result has the wrong encoding
  */
 int
-GNUNET_CRYPTO_hash_from_string2 (const char *enc, size_t enclen,
+GNUNET_CRYPTO_hash_from_string2 (const char *enc,
+                                 size_t enclen,
                                  struct GNUNET_HashCode *result);
 
 
@@ -632,7 +667,74 @@ GNUNET_CRYPTO_hash_distance_u32 (const struct GNUNET_HashCode *a,
  * @param ret pointer to where to write the hashcode
  */
 void
-GNUNET_CRYPTO_hash (const void *block, size_t size, struct GNUNET_HashCode * ret);
+GNUNET_CRYPTO_hash (const void *block,
+                    size_t size,
+                    struct GNUNET_HashCode *ret);
+
+
+/**
+ * Context for cummulative hashing.
+ */
+struct GNUNET_HashContext;
+
+
+/**
+ * Start incremental hashing operation.
+ *
+ * @return context for incremental hash computation
+ */
+struct GNUNET_HashContext *
+GNUNET_CRYPTO_hash_context_start (void);
+
+
+/**
+ * Add data to be hashed.
+ *
+ * @param hc cummulative hash context
+ * @param buf data to add
+ * @param size number of bytes in @a buf
+ */
+void
+GNUNET_CRYPTO_hash_context_read (struct GNUNET_HashContext *hc,
+                                 const void *buf,
+                                 size_t size);
+
+
+/**
+ * Finish the hash computation.
+ *
+ * @param hc hash context to use, is freed in the process
+ * @param r_hash where to write the latest / final hash code
+ */
+void
+GNUNET_CRYPTO_hash_context_finish (struct GNUNET_HashContext *hc,
+                                   struct GNUNET_HashCode *r_hash);
+
+
+/**
+ * Abort hashing, do not bother calculating final result.
+ *
+ * @param hc hash context to destroy
+ */
+void
+GNUNET_CRYPTO_hash_context_abort (struct GNUNET_HashContext *hc);
+
+
+/**
+ * Calculate HMAC of a message (RFC 2104)
+ * TODO: Shouldn' this be the standard hmac function and
+ * the above be renamed?
+ *
+ * @param key secret key
+ * @param key_len secret key length
+ * @param plaintext input plaintext
+ * @param plaintext_len length of @a plaintext
+ * @param hmac where to store the hmac
+ */
+void
+GNUNET_CRYPTO_hmac_raw (const void *key, size_t key_len,
+                        const void *plaintext, size_t plaintext_len,
+                        struct GNUNET_HashCode *hmac);
 
 
 /**
@@ -646,8 +748,9 @@ GNUNET_CRYPTO_hash (const void *block, size_t size, struct GNUNET_HashCode * ret
  */
 void
 GNUNET_CRYPTO_hmac (const struct GNUNET_CRYPTO_AuthKey *key,
-                    const void *plaintext, size_t plaintext_len,
-                    struct GNUNET_HashCode * hmac);
+                    const void *plaintext,
+                    size_t plaintext_len,
+                    struct GNUNET_HashCode *hmac);
 
 
 /**
@@ -657,8 +760,9 @@ GNUNET_CRYPTO_hmac (const struct GNUNET_CRYPTO_AuthKey *key,
  * @param cls closure
  * @param res resulting hash, NULL on error
  */
-typedef void (*GNUNET_CRYPTO_HashCompletedCallback) (void *cls,
-                                                     const struct GNUNET_HashCode *res);
+typedef void
+(*GNUNET_CRYPTO_HashCompletedCallback) (void *cls,
+                                        const struct GNUNET_HashCode *res);
 
 
 /**
@@ -680,7 +784,8 @@ struct GNUNET_CRYPTO_FileHashContext;
  */
 struct GNUNET_CRYPTO_FileHashContext *
 GNUNET_CRYPTO_hash_file (enum GNUNET_SCHEDULER_Priority priority,
-                         const char *filename, size_t blocksize,
+                         const char *filename,
+                         size_t blocksize,
                          GNUNET_CRYPTO_HashCompletedCallback callback,
                          void *callback_cls);
 
@@ -743,8 +848,9 @@ GNUNET_CRYPTO_hash_sum (const struct GNUNET_HashCode *a,
  * @param result set to @a a ^ @a b
  */
 void
-GNUNET_CRYPTO_hash_xor (const struct GNUNET_HashCode * a, const struct GNUNET_HashCode * b,
-                        struct GNUNET_HashCode * result);
+GNUNET_CRYPTO_hash_xor (const struct GNUNET_HashCode *a,
+                        const struct GNUNET_HashCode *b,
+                        struct GNUNET_HashCode *result);
 
 
 /**
@@ -849,7 +955,8 @@ GNUNET_CRYPTO_hmac_derive_key_v (struct GNUNET_CRYPTO_AuthKey *key,
 void
 GNUNET_CRYPTO_hmac_derive_key (struct GNUNET_CRYPTO_AuthKey *key,
                                const struct GNUNET_CRYPTO_SymmetricSessionKey *rkey,
-                               const void *salt, size_t salt_len, ...);
+                               const void *salt, size_t salt_len,
+                               ...);
 
 
 /**
@@ -867,9 +974,15 @@ GNUNET_CRYPTO_hmac_derive_key (struct GNUNET_CRYPTO_AuthKey *key,
  * @return #GNUNET_YES on success
  */
 int
-GNUNET_CRYPTO_hkdf (void *result, size_t out_len, int xtr_algo, int prf_algo,
-                    const void *xts, size_t xts_len, const void *skm,
-                    size_t skm_len, ...);
+GNUNET_CRYPTO_hkdf (void *result,
+                    size_t out_len,
+                    int xtr_algo,
+                    int prf_algo,
+                    const void *xts,
+                    size_t xts_len,
+                    const void *skm,
+                    size_t skm_len,
+                    ...);
 
 
 /**
@@ -887,9 +1000,15 @@ GNUNET_CRYPTO_hkdf (void *result, size_t out_len, int xtr_algo, int prf_algo,
  * @return #GNUNET_YES on success
  */
 int
-GNUNET_CRYPTO_hkdf_v (void *result, size_t out_len, int xtr_algo, int prf_algo,
-                      const void *xts, size_t xts_len, const void *skm,
-                      size_t skm_len, va_list argp);
+GNUNET_CRYPTO_hkdf_v (void *result,
+                      size_t out_len,
+                      int xtr_algo,
+                      int prf_algo,
+                      const void *xts,
+                      size_t xts_len,
+                      const void *skm,
+                      size_t skm_len,
+                      va_list argp);
 
 
 /**
@@ -904,9 +1023,33 @@ GNUNET_CRYPTO_hkdf_v (void *result, size_t out_len, int xtr_algo, int prf_algo,
  * @return #GNUNET_YES on success
  */
 int
-GNUNET_CRYPTO_kdf_v (void *result, size_t out_len, const void *xts,
-                     size_t xts_len, const void *skm, size_t skm_len,
+GNUNET_CRYPTO_kdf_v (void *result,
+                     size_t out_len,
+                     const void *xts,
+                     size_t xts_len,
+                     const void *skm,
+                     size_t skm_len,
                      va_list argp);
+
+
+/**
+ * Deterministically generate a pseudo-random number uniformly from the
+ * integers modulo a libgcrypt mpi.
+ *
+ * @param[out] r MPI value set to the FDH
+ * @param n MPI to work modulo
+ * @param xts salt
+ * @param xts_len length of @a xts
+ * @param skm source key material
+ * @param skm_len length of @a skm
+ * @param ctx context string
+ */
+void
+GNUNET_CRYPTO_kdf_mod_mpi (gcry_mpi_t *r,
+                           gcry_mpi_t n,
+                           const void *xts,  size_t xts_len,
+                           const void *skm,  size_t skm_len,
+                           const char *ctx);
 
 
 /**
@@ -922,8 +1065,13 @@ GNUNET_CRYPTO_kdf_v (void *result, size_t out_len, const void *xts,
  * @return #GNUNET_YES on success
  */
 int
-GNUNET_CRYPTO_kdf (void *result, size_t out_len, const void *xts,
-                   size_t xts_len, const void *skm, size_t skm_len, ...);
+GNUNET_CRYPTO_kdf (void *result,
+                   size_t out_len,
+                   const void *xts,
+                   size_t xts_len,
+                   const void *skm,
+                   size_t skm_len,
+                   ...);
 
 
 /**
@@ -949,6 +1097,7 @@ GNUNET_CRYPTO_eddsa_key_get_public (const struct GNUNET_CRYPTO_EddsaPrivateKey *
                                     struct GNUNET_CRYPTO_EddsaPublicKey *pub);
 
 
+
 /**
  * @ingroup crypto
  * Extract the public key for the given private key.
@@ -969,6 +1118,16 @@ GNUNET_CRYPTO_ecdhe_key_get_public (const struct GNUNET_CRYPTO_EcdhePrivateKey *
  */
 char *
 GNUNET_CRYPTO_ecdsa_public_key_to_string (const struct GNUNET_CRYPTO_EcdsaPublicKey *pub);
+
+
+/**
+ * Convert a private key to a string.
+ *
+ * @param priv key to convert
+ * @return string representing @a pub
+ */
+char *
+GNUNET_CRYPTO_eddsa_private_key_to_string (const struct GNUNET_CRYPTO_EddsaPrivateKey *priv);
 
 
 /**
@@ -993,6 +1152,20 @@ int
 GNUNET_CRYPTO_ecdsa_public_key_from_string (const char *enc,
                                             size_t enclen,
                                             struct GNUNET_CRYPTO_EcdsaPublicKey *pub);
+
+
+/**
+ * Convert a string representing a private key to a private key.
+ *
+ * @param enc encoded public key
+ * @param enclen number of bytes in @a enc (without 0-terminator)
+ * @param priv where to store the private key
+ * @return #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_eddsa_private_key_from_string (const char *enc,
+                                             size_t enclen,
+                                             struct GNUNET_CRYPTO_EddsaPrivateKey *pub);
 
 
 /**
@@ -1046,6 +1219,10 @@ GNUNET_CRYPTO_ecdsa_key_create_from_file (const char *filename);
 struct GNUNET_CRYPTO_EddsaPrivateKey *
 GNUNET_CRYPTO_eddsa_key_create_from_file (const char *filename);
 
+
+/**
+ * Forward declaration to simplify #include-structure.
+ */
 struct GNUNET_CONFIGURATION_Handle;
 
 
@@ -1084,6 +1261,17 @@ GNUNET_CRYPTO_eddsa_key_create (void);
 
 /**
  * @ingroup crypto
+ * Create a new private key.  Clear with #GNUNET_CRYPTO_ecdhe_key_clear().
+ *
+ * @param[out] pk set to fresh private key;
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure
+ */
+int
+GNUNET_CRYPTO_ecdhe_key_create2 (struct GNUNET_CRYPTO_EcdhePrivateKey *pk);
+
+
+/**
+ * @ingroup crypto
  * Create a new private key. Caller must free return value.
  *
  * @return fresh private key; free using #GNUNET_free
@@ -1110,6 +1298,7 @@ GNUNET_CRYPTO_eddsa_key_clear (struct GNUNET_CRYPTO_EddsaPrivateKey *pk);
  */
 void
 GNUNET_CRYPTO_ecdsa_key_clear (struct GNUNET_CRYPTO_EcdsaPrivateKey *pk);
+
 
 /**
  * @ingroup crypto
@@ -1157,18 +1346,193 @@ int
 GNUNET_CRYPTO_get_peer_identity (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                  struct GNUNET_PeerIdentity *dst);
 
+
 /**
- * Compare two Peer Identities.
+ * Internal structure used to cache pre-calculated values for DLOG calculation.
+ */
+struct GNUNET_CRYPTO_EccDlogContext;
+
+
+/**
+ * Point on a curve (always for Curve25519) encoded in a format suitable
+ * for network transmission (ECDH), see http://cr.yp.to/ecdh.html.
+ */
+struct GNUNET_CRYPTO_EccPoint
+{
+  /**
+   * Q consists of an x- and a y-value, each mod p (256 bits), given
+   * here in affine coordinates and Ed25519 standard compact format.
+   */
+  unsigned char q_y[256 / 8];
+};
+
+
+/**
+ * Do pre-calculation for ECC discrete logarithm for small factors.
  *
- * @param first first peer identity
- * @param second second peer identity
- * @return bigger than 0 if first > second,
- *         0 if they are the same
- *         smaller than 0 if second > first
+ * @param max maximum value the factor can be
+ * @param mem memory to use (should be smaller than @a max), must not be zero.
+ * @return NULL on error
+ */
+struct GNUNET_CRYPTO_EccDlogContext *
+GNUNET_CRYPTO_ecc_dlog_prepare (unsigned int max,
+                                unsigned int mem);
+
+
+/**
+ * Calculate ECC discrete logarithm for small factors.
+ * Opposite of #GNUNET_CRYPTO_ecc_dexp().
+ *
+ * @param dlc precalculated values, determine range of factors
+ * @param input point on the curve to factor
+ * @return INT_MAX if dlog failed, otherwise the factor
  */
 int
-GNUNET_CRYPTO_cmp_peer_identity (const struct GNUNET_PeerIdentity *first,
-                                 const struct GNUNET_PeerIdentity *second);
+GNUNET_CRYPTO_ecc_dlog (struct GNUNET_CRYPTO_EccDlogContext *edc,
+			gcry_mpi_point_t input);
+
+
+/**
+ * Multiply the generator g of the elliptic curve by @a val
+ * to obtain the point on the curve representing @a val.
+ * Afterwards, point addition will correspond to integer
+ * addition.  #GNUNET_CRYPTO_ecc_dlog() can be used to
+ * convert a point back to an integer (as long as the
+ * integer is smaller than the MAX of the @a edc context).
+ *
+ * @param edc calculation context for ECC operations
+ * @param val value to encode into a point
+ * @return representation of the value as an ECC point,
+ *         must be freed using #GNUNET_CRYPTO_ecc_free()
+ */
+gcry_mpi_point_t
+GNUNET_CRYPTO_ecc_dexp (struct GNUNET_CRYPTO_EccDlogContext *edc,
+			int val);
+
+
+/**
+ * Multiply the generator g of the elliptic curve by @a val
+ * to obtain the point on the curve representing @a val.
+ *
+ * @param edc calculation context for ECC operations
+ * @param val (positive) value to encode into a point
+ * @return representation of the value as an ECC point,
+ *         must be freed using #GNUNET_CRYPTO_ecc_free()
+ */
+gcry_mpi_point_t
+GNUNET_CRYPTO_ecc_dexp_mpi (struct GNUNET_CRYPTO_EccDlogContext *edc,
+			    gcry_mpi_t val);
+
+
+/**
+ * Multiply the point @a p on the elliptic curve by @a val.
+ *
+ * @param edc calculation context for ECC operations
+ * @param p point to multiply
+ * @param val (positive) value to encode into a point
+ * @return representation of the value as an ECC point,
+ *         must be freed using #GNUNET_CRYPTO_ecc_free()
+ */
+gcry_mpi_point_t
+GNUNET_CRYPTO_ecc_pmul_mpi (struct GNUNET_CRYPTO_EccDlogContext *edc,
+                            gcry_mpi_point_t p,
+			    gcry_mpi_t val);
+
+
+/**
+ * Convert point value to binary representation.
+ *
+ * @param edc calculation context for ECC operations
+ * @param point computational point representation
+ * @param[out] bin binary point representation
+ */
+void
+GNUNET_CRYPTO_ecc_point_to_bin (struct GNUNET_CRYPTO_EccDlogContext *edc,
+                                gcry_mpi_point_t point,
+                                struct GNUNET_CRYPTO_EccPoint *bin);
+
+
+/**
+ * Convert binary representation of a point to computational representation.
+ *
+ * @param edc calculation context for ECC operations
+ * @param bin binary point representation
+ * @return computational representation
+ */
+gcry_mpi_point_t
+GNUNET_CRYPTO_ecc_bin_to_point (struct GNUNET_CRYPTO_EccDlogContext *edc,
+                                const struct GNUNET_CRYPTO_EccPoint *bin);
+
+
+/**
+ * Add two points on the elliptic curve.
+ *
+ * @param edc calculation context for ECC operations
+ * @param a some value
+ * @param b some value
+ * @return @a a + @a b, must be freed using #GNUNET_CRYPTO_ecc_free()
+ */
+gcry_mpi_point_t
+GNUNET_CRYPTO_ecc_add (struct GNUNET_CRYPTO_EccDlogContext *edc,
+		       gcry_mpi_point_t a,
+		       gcry_mpi_point_t b);
+
+
+/**
+ * Obtain a random point on the curve and its
+ * additive inverse. Both returned values
+ * must be freed using #GNUNET_CRYPTO_ecc_free().
+ *
+ * @param edc calculation context for ECC operations
+ * @param[out] r set to a random point on the curve
+ * @param[out] r_inv set to the additive inverse of @a r
+ */
+void
+GNUNET_CRYPTO_ecc_rnd (struct GNUNET_CRYPTO_EccDlogContext *edc,
+		       gcry_mpi_point_t *r,
+		       gcry_mpi_point_t *r_inv);
+
+
+/**
+ * Obtain a random scalar for point multiplication on the curve and
+ * its multiplicative inverse.
+ *
+ * @param edc calculation context for ECC operations
+ * @param[out] r set to a random scalar on the curve
+ * @param[out] r_inv set to the multiplicative inverse of @a r
+ */
+void
+GNUNET_CRYPTO_ecc_rnd_mpi (struct GNUNET_CRYPTO_EccDlogContext *edc,
+                           gcry_mpi_t *r,
+                           gcry_mpi_t *r_inv);
+
+
+/**
+ * Generate a random value mod n.
+ *
+ * @param edc ECC context
+ * @return random value mod n.
+ */
+gcry_mpi_t
+GNUNET_CRYPTO_ecc_random_mod_n (struct GNUNET_CRYPTO_EccDlogContext *edc);
+
+
+/**
+ * Free a point value returned by the API.
+ *
+ * @param p point to free
+ */
+void
+GNUNET_CRYPTO_ecc_free (gcry_mpi_point_t p);
+
+
+/**
+ * Release precalculated values.
+ *
+ * @param dlc dlog context
+ */
+void
+GNUNET_CRYPTO_ecc_dlog_release (struct GNUNET_CRYPTO_EccDlogContext *dlc);
 
 
 /**
@@ -1184,6 +1548,68 @@ int
 GNUNET_CRYPTO_ecc_ecdh (const struct GNUNET_CRYPTO_EcdhePrivateKey *priv,
                         const struct GNUNET_CRYPTO_EcdhePublicKey *pub,
                         struct GNUNET_HashCode *key_material);
+
+
+/**
+ * @ingroup crypto
+ * Derive key material from a ECDH public key and a private EdDSA key.
+ * Dual to #GNUNET_CRRYPTO_ecdh_eddsa.
+ *
+ * @param priv private key from EdDSA to use for the ECDH (x)
+ * @param pub public key to use for the ECDH (yG)
+ * @param key_material where to write the key material H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_eddsa_ecdh (const struct GNUNET_CRYPTO_EddsaPrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EcdhePublicKey *pub,
+                          struct GNUNET_HashCode *key_material);
+
+/**
+ * @ingroup crypto
+ * Derive key material from a ECDH public key and a private ECDSA key.
+ * Dual to #GNUNET_CRRYPTO_ecdh_ecdsa.
+ *
+ * @param priv private key from ECDSA to use for the ECDH (x)
+ * @param pub public key to use for the ECDH (yG)
+ * @param key_material where to write the key material H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_ecdsa_ecdh (const struct GNUNET_CRYPTO_EcdsaPrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EcdhePublicKey *pub,
+                          struct GNUNET_HashCode *key_material);
+
+
+/**
+ * @ingroup crypto
+ * Derive key material from a EdDSA public key and a private ECDH key.
+ * Dual to #GNUNET_CRRYPTO_eddsa_ecdh.
+ *
+ * @param priv private key to use for the ECDH (y)
+ * @param pub public key from EdDSA to use for the ECDH (X=h(x)G)
+ * @param key_material where to write the key material H(yX)=H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_ecdh_eddsa (const struct GNUNET_CRYPTO_EcdhePrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EddsaPublicKey *pub,
+                          struct GNUNET_HashCode *key_material);
+
+/**
+ * @ingroup crypto
+ * Derive key material from a EcDSA public key and a private ECDH key.
+ * Dual to #GNUNET_CRRYPTO_ecdsa_ecdh.
+ *
+ * @param priv private key to use for the ECDH (y)
+ * @param pub public key from ECDSA to use for the ECDH (X=h(x)G)
+ * @param key_material where to write the key material H(yX)=H(h(x)yG)
+ * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
+ */
+int
+GNUNET_CRYPTO_ecdh_ecdsa (const struct GNUNET_CRYPTO_EcdhePrivateKey *priv,
+                          const struct GNUNET_CRYPTO_EcdsaPublicKey *pub,
+                          struct GNUNET_HashCode *key_material);
 
 
 /**
@@ -1334,7 +1760,7 @@ GNUNET_CRYPTO_paillier_create (struct GNUNET_CRYPTO_PaillierPublicKey *public_ke
  * @param m Plaintext to encrypt.
  * @param desired_ops How many homomorphic ops the caller intends to use
  * @param[out] ciphertext Encrytion of @a plaintext with @a public_key.
- * @return guaranteed number of supported homomorphic operations >= 1, 
+ * @return guaranteed number of supported homomorphic operations >= 1,
  *         or desired_ops, in case that is lower,
  *         or -1 if less than one homomorphic operation is possible
  */
@@ -1381,13 +1807,332 @@ GNUNET_CRYPTO_paillier_hom_add (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
 
 
 /**
- * Get the number of remaining supported homomorphic operations. 
+ * Get the number of remaining supported homomorphic operations.
  *
  * @param c Paillier cipher text.
  * @return the number of remaining homomorphic operations
  */
 int
 GNUNET_CRYPTO_paillier_hom_get_remaining (const struct GNUNET_CRYPTO_PaillierCiphertext *c);
+
+
+/* ********* Chaum-style RSA-based blind signatures ******************* */
+
+
+
+
+/**
+ * The private information of an RSA key pair.
+ */
+struct GNUNET_CRYPTO_RsaPrivateKey;
+
+/**
+ * The public information of an RSA key pair.
+ */
+struct GNUNET_CRYPTO_RsaPublicKey;
+
+/**
+ * Constant-size pre-secret for blinding key generation.
+ */
+struct GNUNET_CRYPTO_RsaBlindingKeySecret
+{
+  /**
+   * Bits used to generate the blinding key.  256 bits
+   * of entropy is enough.
+   */
+  uint32_t pre_secret[8] GNUNET_PACKED;
+};
+
+/**
+ * @brief an RSA signature
+ */
+struct GNUNET_CRYPTO_RsaSignature;
+
+
+/**
+ * Create a new private key. Caller must free return value.
+ *
+ * @param len length of the key in bits (i.e. 2048)
+ * @return fresh private key
+ */
+struct GNUNET_CRYPTO_RsaPrivateKey *
+GNUNET_CRYPTO_rsa_private_key_create (unsigned int len);
+
+
+/**
+ * Free memory occupied by the private key.
+ *
+ * @param key pointer to the memory to free
+ */
+void
+GNUNET_CRYPTO_rsa_private_key_free (struct GNUNET_CRYPTO_RsaPrivateKey *key);
+
+
+/**
+ * Encode the private key in a format suitable for
+ * storing it into a file.
+ *
+ * @param key the private key
+ * @param[out] buffer set to a buffer with the encoded key
+ * @return size of memory allocatedin @a buffer
+ */
+size_t
+GNUNET_CRYPTO_rsa_private_key_encode (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
+                                      char **buffer);
+
+
+/**
+ * Decode the private key from the data-format back
+ * to the "normal", internal format.
+ *
+ * @param buf the buffer where the private key data is stored
+ * @param len the length of the data in @a buf
+ * @return NULL on error
+ */
+struct GNUNET_CRYPTO_RsaPrivateKey *
+GNUNET_CRYPTO_rsa_private_key_decode (const char *buf,
+                                      size_t len);
+
+
+/**
+ * Duplicate the given private key
+ *
+ * @param key the private key to duplicate
+ * @return the duplicate key; NULL upon error
+ */
+struct GNUNET_CRYPTO_RsaPrivateKey *
+GNUNET_CRYPTO_rsa_private_key_dup (const struct GNUNET_CRYPTO_RsaPrivateKey *key);
+
+
+/**
+ * Extract the public key of the given private key.
+ *
+ * @param priv the private key
+ * @retur NULL on error, otherwise the public key
+ */
+struct GNUNET_CRYPTO_RsaPublicKey *
+GNUNET_CRYPTO_rsa_private_key_get_public (const struct GNUNET_CRYPTO_RsaPrivateKey *priv);
+
+
+/**
+ * Compute hash over the public key.
+ *
+ * @param key public key to hash
+ * @param hc where to store the hash code
+ */
+void
+GNUNET_CRYPTO_rsa_public_key_hash (const struct GNUNET_CRYPTO_RsaPublicKey *key,
+                                   struct GNUNET_HashCode *hc);
+
+
+/**
+ * Obtain the length of the RSA key in bits.
+ *
+ * @param key the public key to introspect
+ * @return length of the key in bits
+ */
+unsigned int
+GNUNET_CRYPTO_rsa_public_key_len (const struct GNUNET_CRYPTO_RsaPublicKey *key);
+
+
+/**
+ * Free memory occupied by the public key.
+ *
+ * @param key pointer to the memory to free
+ */
+void
+GNUNET_CRYPTO_rsa_public_key_free (struct GNUNET_CRYPTO_RsaPublicKey *key);
+
+
+/**
+ * Encode the public key in a format suitable for
+ * storing it into a file.
+ *
+ * @param key the private key
+ * @param[out] buffer set to a buffer with the encoded key
+ * @return size of memory allocated in @a buffer
+ */
+size_t
+GNUNET_CRYPTO_rsa_public_key_encode (const struct GNUNET_CRYPTO_RsaPublicKey *key,
+				     char **buffer);
+
+
+/**
+ * Decode the public key from the data-format back
+ * to the "normal", internal format.
+ *
+ * @param buf the buffer where the public key data is stored
+ * @param len the length of the data in @a buf
+ * @return NULL on error
+ */
+struct GNUNET_CRYPTO_RsaPublicKey *
+GNUNET_CRYPTO_rsa_public_key_decode (const char *buf,
+                                     size_t len);
+
+
+/**
+ * Duplicate the given public key
+ *
+ * @param key the public key to duplicate
+ * @return the duplicate key; NULL upon error
+ */
+struct GNUNET_CRYPTO_RsaPublicKey *
+GNUNET_CRYPTO_rsa_public_key_dup (const struct GNUNET_CRYPTO_RsaPublicKey *key);
+
+
+/**
+ * Compare the values of two signatures.
+ *
+ * @param s1 one signature
+ * @param s2 the other signature
+ * @return 0 if the two are equal
+ */
+int
+GNUNET_CRYPTO_rsa_signature_cmp (struct GNUNET_CRYPTO_RsaSignature *s1,
+                                 struct GNUNET_CRYPTO_RsaSignature *s2);
+
+/**
+ * Compare the values of two private keys.
+ *
+ * @param p1 one private key
+ * @param p2 the other private key
+ * @return 0 if the two are equal
+ */
+int
+GNUNET_CRYPTO_rsa_private_key_cmp (struct GNUNET_CRYPTO_RsaPrivateKey *p1,
+                                   struct GNUNET_CRYPTO_RsaPrivateKey *p2);
+
+
+/**
+ * Compare the values of two public keys.
+ *
+ * @param p1 one public key
+ * @param p2 the other public key
+ * @return 0 if the two are equal
+ */
+int
+GNUNET_CRYPTO_rsa_public_key_cmp (struct GNUNET_CRYPTO_RsaPublicKey *p1,
+                                  struct GNUNET_CRYPTO_RsaPublicKey *p2);
+
+
+/**
+ * Blinds the given message with the given blinding key
+ *
+ * @param hash hash of the message to sign
+ * @param bkey the blinding key
+ * @param pkey the public key of the signer
+ * @param[out] buf set to a buffer with the blinded message to be signed
+ * @param[out] buf_size number of bytes stored in @a buf
+ * @return #GNUNET_YES if successful, #GNUNET_NO if RSA key is malicious
+ */
+int
+GNUNET_CRYPTO_rsa_blind (const struct GNUNET_HashCode *hash,
+                         const struct GNUNET_CRYPTO_RsaBlindingKeySecret *bks,
+                         struct GNUNET_CRYPTO_RsaPublicKey *pkey,
+                         char **buf,
+                         size_t *buf_size);
+
+
+/**
+ * Sign a blinded value, which must be a full domain hash of a message.
+ *
+ * @param key private key to use for the signing
+ * @param msg the (blinded) message to sign
+ * @param msg_len number of bytes in @a msg to sign
+ * @return NULL on error, signature on success
+ */
+struct GNUNET_CRYPTO_RsaSignature *
+GNUNET_CRYPTO_rsa_sign_blinded (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
+                                const void *msg,
+                                size_t msg_len);
+
+
+/**
+ * Create and sign a full domain hash of a message.
+ *
+ * @param key private key to use for the signing
+ * @param hash the hash of the message to sign
+ * @return NULL on error, including a malicious RSA key, signature on success
+ */
+struct GNUNET_CRYPTO_RsaSignature *
+GNUNET_CRYPTO_rsa_sign_fdh (const struct GNUNET_CRYPTO_RsaPrivateKey *key,
+			    const struct GNUNET_HashCode *hash);
+
+
+/**
+ * Free memory occupied by signature.
+ *
+ * @param sig memory to free
+ */
+void
+GNUNET_CRYPTO_rsa_signature_free (struct GNUNET_CRYPTO_RsaSignature *sig);
+
+
+/**
+ * Encode the given signature in a format suitable for storing it into a file.
+ *
+ * @param sig the signature
+ * @param[out] buffer set to a buffer with the encoded key
+ * @return size of memory allocated in @a buffer
+ */
+size_t
+GNUNET_CRYPTO_rsa_signature_encode (const struct GNUNET_CRYPTO_RsaSignature *sig,
+                                    char **buffer);
+
+
+/**
+ * Decode the signature from the data-format back to the "normal", internal
+ * format.
+ *
+ * @param buf the buffer where the public key data is stored
+ * @param len the length of the data in @a buf
+ * @return NULL on error
+ */
+struct GNUNET_CRYPTO_RsaSignature *
+GNUNET_CRYPTO_rsa_signature_decode (const char *buf,
+                                    size_t len);
+
+
+/**
+ * Duplicate the given rsa signature
+ *
+ * @param sig the signature to duplicate
+ * @return the duplicate key; NULL upon error
+ */
+struct GNUNET_CRYPTO_RsaSignature *
+GNUNET_CRYPTO_rsa_signature_dup (const struct GNUNET_CRYPTO_RsaSignature *sig);
+
+
+/**
+ * Unblind a blind-signed signature.  The signature should have been generated
+ * with #GNUNET_CRYPTO_rsa_sign() using a hash that was blinded with
+ * #GNUNET_CRYPTO_rsa_blind().
+ *
+ * @param sig the signature made on the blinded signature purpose
+ * @param bks the blinding key secret used to blind the signature purpose
+ * @param pkey the public key of the signer
+ * @return unblinded signature on success, NULL if RSA key is bad or malicious.
+ */
+struct GNUNET_CRYPTO_RsaSignature *
+GNUNET_CRYPTO_rsa_unblind (const struct GNUNET_CRYPTO_RsaSignature *sig,
+			   const struct GNUNET_CRYPTO_RsaBlindingKeySecret *bks,
+			   struct GNUNET_CRYPTO_RsaPublicKey *pkey);
+
+
+/**
+ * Verify whether the given hash corresponds to the given signature and the
+ * signature is valid with respect to the given public key.
+ *
+ * @param hash the message to verify to match the @a sig
+ * @param sig signature that is being validated
+ * @param public_key public key of the signer
+ * @returns #GNUNET_YES if ok, #GNUNET_NO if RSA key is malicious, #GNUNET_SYSERR if signature
+ */
+int
+GNUNET_CRYPTO_rsa_verify (const struct GNUNET_HashCode *hash,
+			  const struct GNUNET_CRYPTO_RsaSignature *sig,
+			  const struct GNUNET_CRYPTO_RsaPublicKey *public_key);
+
 
 #if 0                           /* keep Emacsens' auto-indent happy */
 {

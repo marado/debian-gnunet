@@ -1,21 +1,21 @@
 /*
-     This file is part of GNUnet.  (C) 2001-2014 Christian Grothoff
+     This file is part of GNUnet.  Copyright (C) 2001-2014 Christian Grothoff
      (and other contributing authors)
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 
 */
 
@@ -25,12 +25,12 @@
  * @author Christian Grothoff
  */
 #include "platform.h"
-#include "gnunet_util_lib.h"
+#include "gnunet_crypto_lib.h"
 #include <gcrypt.h>
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-random", __VA_ARGS__)
 
-#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util", syscall)
+#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util-crypto-random", syscall)
 
 
 /* TODO: ndurner, move this to plibc? */
@@ -98,6 +98,34 @@ GNUNET_CRYPTO_seed_weak_random (int32_t seed)
 
 /**
  * @ingroup crypto
+ * Zero out @a buffer, securely against compiler optimizations.
+ * Used to delete key material.
+ *
+ * @param buffer the buffer to zap
+ * @param length buffer length
+ */
+void
+GNUNET_CRYPTO_zero_keys (void *buffer,
+                         size_t length)
+{
+#if HAVE_MEMSET_S
+  memset_s (buffer,
+            length,
+            0,
+            length);
+#elif HAVE_EXPLICIT_BZERO
+  explicit_bzero (buffer,
+                  length);
+#else
+  volatile unsigned char *p = buffer;
+  while (length--)
+    *p++ = 0;
+#endif
+}
+
+
+/**
+ * @ingroup crypto
  * Fill block with a random values.
  *
  * @param mode desired quality of the random number
@@ -105,7 +133,9 @@ GNUNET_CRYPTO_seed_weak_random (int32_t seed)
  * @param length buffer length
  */
 void
-GNUNET_CRYPTO_random_block (enum GNUNET_CRYPTO_Quality mode, void *buffer, size_t length)
+GNUNET_CRYPTO_random_block (enum GNUNET_CRYPTO_Quality mode,
+                            void *buffer,
+                            size_t length)
 {
 #ifdef gcry_fast_random_poll
   static unsigned int invokeCount;
@@ -146,7 +176,7 @@ GNUNET_CRYPTO_random_block (enum GNUNET_CRYPTO_Quality mode, void *buffer, size_
  */
 uint32_t
 GNUNET_CRYPTO_random_u32 (enum GNUNET_CRYPTO_Quality mode,
-			  uint32_t i)
+                          uint32_t i)
 {
 #ifdef gcry_fast_random_poll
   static unsigned int invokeCount;
@@ -202,7 +232,7 @@ GNUNET_CRYPTO_random_u32 (enum GNUNET_CRYPTO_Quality mode,
  */
 unsigned int *
 GNUNET_CRYPTO_random_permute (enum GNUNET_CRYPTO_Quality mode,
-			      unsigned int n)
+                              unsigned int n)
 {
   unsigned int *ret;
   unsigned int i;
@@ -232,7 +262,8 @@ GNUNET_CRYPTO_random_permute (enum GNUNET_CRYPTO_Quality mode,
  * @return random 64-bit number
  */
 uint64_t
-GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode, uint64_t max)
+GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode,
+                          uint64_t max)
 {
   uint64_t ret;
   uint64_t ul;
@@ -271,6 +302,28 @@ GNUNET_CRYPTO_random_u64 (enum GNUNET_CRYPTO_Quality mode, uint64_t max)
 
 
 /**
+ * Allocation wrapper for libgcrypt, used to avoid bad locking
+ * strategy of libgcrypt implementation.
+ */
+static void *
+w_malloc (size_t n)
+{
+  return calloc (n, 1);
+}
+
+
+/**
+ * Allocation wrapper for libgcrypt, used to avoid bad locking
+ * strategy of libgcrypt implementation.
+ */
+static int
+w_check (const void *p)
+{
+  return 0; /* not secure memory */
+}
+
+
+/**
  * Initialize libgcrypt.
  */
 void __attribute__ ((constructor))
@@ -283,8 +336,15 @@ GNUNET_CRYPTO_random_init ()
     FPRINTF (stderr,
              _("libgcrypt has not the expected version (version %s is required).\n"),
              NEED_LIBGCRYPT_VERSION);
-    GNUNET_abort ();
+    GNUNET_assert (0);
   }
+  /* set custom allocators */
+  gcry_set_allocation_handler (&w_malloc,
+                               &w_malloc,
+                               &w_check,
+                               &realloc,
+                               &free);
+  /* Disable use of secure memory */
   if ((rc = gcry_control (GCRYCTL_DISABLE_SECMEM, 0)))
     FPRINTF (stderr,
              "Failed to set libgcrypt option %s: %s\n",

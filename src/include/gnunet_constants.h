@@ -1,27 +1,32 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_constants.h
- * @brief "global" constants for performance tuning
  * @author Christian Grothoff
+ *
+ * @file
+ * Global constants for performance tuning
+ *
+ * @defgroup constants  Constant definitions
+ * Global constants for performance tuning
+ * @{
  */
 
 #ifndef GNUNET_CONSTANTS_H
@@ -35,10 +40,7 @@ extern "C"
 #endif
 #endif
 
-/**
- * Last resort choice for configuration file name.
- */
-#define GNUNET_DEFAULT_USER_CONFIG_FILE "~/.config/gnunet.conf"
+
 
 /**
  * Bandwidth (in/out) to assume initially (before either peer has
@@ -70,6 +72,11 @@ extern "C"
  * How long do we delay messages to get larger packet sizes (CORKing)?
  */
 #define GNUNET_CONSTANTS_MAX_CORK_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
+
+/**
+ * After what amount of latency for a message do we print a warning?
+ */
+#define GNUNET_CONSTANTS_LATENCY_WARN GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 3)
 
 /**
  * Until which load do we consider the peer overly idle
@@ -121,6 +128,22 @@ extern "C"
 #define GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE (63 * 1024)
 
 /**
+ * Size of the CADET message overhead:
+ * = sizeof (struct GNUNET_CADET_TunnelEncryptedMessage)
+ * + sizeof (struct GNUNET_CADET_ChannelAppDataMessage)
+ * + sizeof (struct GNUNET_CADET_ConnectionEncryptedAckMessage))
+ *
+ * Checked for correcteness in gnunet-service-cadet_tunnel.c: GCT_init().
+ */
+#define GNUNET_CONSTANTS_CADET_P2P_OVERHEAD 164
+
+/**
+ * Maximum message size that can be sent on CADET.
+ */
+#define GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE \
+(GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE - GNUNET_CONSTANTS_CADET_P2P_OVERHEAD)
+
+/**
  * Largest block that can be stored in the DHT.
  */
 #define GNUNET_CONSTANTS_MAX_BLOCK_SIZE (62 * 1024)
@@ -143,3 +166,5 @@ extern "C"
 #endif
 
 #endif
+
+/** @} */  /* end of group */

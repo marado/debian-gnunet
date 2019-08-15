@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
@@ -9,8 +10,32 @@ if USE_COVERAGE
   XLIB = -lgcov
 endif
 
+if HAVE_MHD
+if HAVE_JSON
+REST_PLUGIN = libgnunet_plugin_rest_peerinfo.la
+endif
+endif
+
+plugindir = $(libdir)/gnunet
+
+plugin_LTLIBRARIES = $(REST_PLUGIN)
+
 bin_PROGRAMS = \
  gnunet-peerinfo
+
+libgnunet_plugin_rest_peerinfo_la_SOURCES = \
+  plugin_rest_peerinfo.c
+libgnunet_plugin_rest_peerinfo_la_LIBADD = \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+  $(top_builddir)/src/transport/libgnunettransport.la \
+  $(top_builddir)/src/rest/libgnunetrest.la \
+  $(top_builddir)/src/json/libgnunetjson.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -ljansson -lmicrohttpd
+libgnunet_plugin_rest_peerinfo_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
+
 
 gnunet_peerinfo_SOURCES = \
  gnunet-peerinfo.c \
@@ -18,7 +43,6 @@ gnunet_peerinfo_SOURCES = \
 
 gnunet_peerinfo_LDADD = \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-  $(top_builddir)/src/nat/libgnunetnat.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -30,7 +54,7 @@ check_SCRIPTS = \
 endif
 
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = $(check_SCRIPTS)
 endif
 

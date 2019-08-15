@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -37,16 +37,24 @@ struct GSC_TypeMap;
 
 /**
  * Add a set of types to our type map.
+ *
+ * @param types array of message types supported by this peer
+ * @param tlen number of entries in @a types
  */
 void
-GSC_TYPEMAP_add (const uint16_t * types, unsigned int tlen);
+GSC_TYPEMAP_add (const uint16_t *types,
+                 unsigned int tlen);
 
 
 /**
- * Remove a set of types from our type map.
+ * Remove a set of message types from our type map.
+ *
+ * @param types array of message types no longer supported by this peer
+ * @param tlen number of entries in @a types
  */
 void
-GSC_TYPEMAP_remove (const uint16_t * types, unsigned int tlen);
+GSC_TYPEMAP_remove (const uint16_t *types,
+                    unsigned int tlen);
 
 
 /**
@@ -59,7 +67,30 @@ GSC_TYPEMAP_compute_type_map_message (void);
 
 
 /**
- * Extract a type map from a TYPE_MAP message.
+ * Check if the given hash matches our current type map.
+ *
+ * @param hc hash code to check if it matches our type map
+ * @return #GNUNET_YES if the hash matches, #GNUNET_NO if not
+ */
+int
+GSC_TYPEMAP_check_hash (const struct GNUNET_HashCode *hc);
+
+
+/**
+ * Hash the contents of a type map.
+ *
+ * @param tm map to hash
+ * @param hc where to store the hash code
+ */
+void
+GSC_TYPEMAP_hash (const struct GSC_TypeMap *tm,
+                  struct GNUNET_HashCode *hc);
+
+
+/**
+ * Extract a type map from a
+ * #GNUNET_MESSAGE_TYPE_CORE_COMRESSED_TYPE_MAP or
+ * #GNUNET_MESSAGE_TYPE_CORE_BINARY_TYPE_MAP message.
  *
  * @param msg a type map message
  * @return NULL on error
@@ -74,11 +105,12 @@ GSC_TYPEMAP_get_from_message (const struct GNUNET_MessageHeader *msg);
  *
  * @param tmap map to test
  * @param types array of types
- * @param tcnt number of entries in types
- * @return GNUNET_YES if a type is in the map, GNUNET_NO if not
+ * @param tcnt number of entries in @a types
+ * @return #GNUNET_YES if a type is in the map, #GNUNET_NO if not
  */
 int
-GSC_TYPEMAP_test_match (const struct GSC_TypeMap *tmap, const uint16_t * types,
+GSC_TYPEMAP_test_match (const struct GSC_TypeMap *tmap,
+                        const uint16_t *types,
                         unsigned int tcnt);
 
 
@@ -87,12 +119,14 @@ GSC_TYPEMAP_test_match (const struct GSC_TypeMap *tmap, const uint16_t * types,
  *
  * @param tmap map to extend (not changed)
  * @param types array of types to add
- * @param tcnt number of entries in types
+ * @param tcnt number of entries in @a types
  * @return updated type map (fresh copy)
  */
 struct GSC_TypeMap *
-GSC_TYPEMAP_extend (const struct GSC_TypeMap *tmap, const uint16_t * types,
+GSC_TYPEMAP_extend (const struct GSC_TypeMap *tmap,
+                    const uint16_t *types,
                     unsigned int tcnt);
+
 
 /**
  * Create an empty type map.

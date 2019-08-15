@@ -1,35 +1,42 @@
 /*
      This file is part of GNUnet
-     (C) 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_gnsrecord_lib.h
- * @brief API that can be used to manipulate GNS record data
  * @author Christian Grothoff
+ *
+ * @file
+ * API that can be used to manipulate GNS record data
+ *
+ * @defgroup gnsrecord  GNS Record library
+ * Manipulate GNS record data
+ *
+ * @see [Documentation](https://gnunet.org/gns-plugins)
+ *
+ * @{
  */
 #ifndef GNUNET_GNSRECORD_LIB_H
 #define GNUNET_GNSRECORD_LIB_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -71,21 +78,73 @@ extern "C"
 #define GNUNET_GNSRECORD_TYPE_GNS2DNS 65540
 
 /**
+ * Record type for a boxed record (see TLSA/SRV handling in GNS).
+ */
+#define GNUNET_GNSRECORD_TYPE_BOX 65541
+
+/**
  * Record type for a social place.
  */
-#define GNUNET_GNSRECORD_TYPE_PLACE 65541
+#define GNUNET_GNSRECORD_TYPE_PLACE 65542
 
 /**
  * Record type for a phone (of CONVERSATION).
  */
-#define GNUNET_GNSRECORD_TYPE_PHONE 65542
+#define GNUNET_GNSRECORD_TYPE_PHONE 65543
 
+/**
+ * Record type for identity attributes (of RECLAIM).
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR 65544
+
+/**
+ * Record type for local ticket references
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_TICKET 65545
+
+/**
+ * 65546 reserved
+ */
+
+/**
+ * Record type for credential
+ */
+#define GNUNET_GNSRECORD_TYPE_CREDENTIAL 65547
+
+/**
+ * Record type for policies
+ */
+#define GNUNET_GNSRECORD_TYPE_POLICY 65548
+
+/**
+ * Record type for reverse lookups
+ */
+#define GNUNET_GNSRECORD_TYPE_ATTRIBUTE 65549
+
+/**
+ * Record type for reclaim records
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR_REF 65550
+
+/**
+ * Record type for RECLAIM master
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_MASTER 65551
+
+/**
+ * Record type for reclaim OIDC clients
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT 65552
+
+/**
+ * Record type for reclaim OIDC redirect URIs
+ */
+#define GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT 65553
 
 /**
  * Flags that can be set for a record.
  */
-enum GNUNET_GNSRECORD_Flags
-{
+enum GNUNET_GNSRECORD_Flags {
 
   /**
    * No special options.
@@ -99,10 +158,10 @@ enum GNUNET_GNSRECORD_Flags
   GNUNET_GNSRECORD_RF_PRIVATE = 2,
 
   /**
-   * This record was added automatically by the system
-   * and is pending user confimation.
+   * This flag is currently unused; former RF_PENDING flag
+   *
+   * GNUNET_GNSRECORD_RF_UNUSED = 4,
    */
-  GNUNET_GNSRECORD_RF_PENDING = 4,
 
   /**
    * This expiration time of the record is a relative
@@ -116,17 +175,17 @@ enum GNUNET_GNSRECORD_Flags
    */
   GNUNET_GNSRECORD_RF_SHADOW_RECORD = 16
 
-  /**
-   * When comparing flags for record equality for removal,
-   * which flags should must match (in addition to the type,
-   * name, expiration value and data of the record)?  All flags
-   * that are not listed here will be ignored for this purpose.
-   * (for example, we don't expect that users will remember to
-   * pass the '--private' option when removing a record from
-   * the namestore, hence we don't require this particular option
-   * to match upon removal).  See also
-   * #GNUNET_GNSRECORD_records_cmp.
-   */
+/**
+ * When comparing flags for record equality for removal,
+ * which flags should must match (in addition to the type,
+ * name, expiration value and data of the record)?  All flags
+ * that are not listed here will be ignored for this purpose.
+ * (for example, we don't expect that users will remember to
+ * pass the '--private' option when removing a record from
+ * the namestore, hence we don't require this particular option
+ * to match upon removal).  See also
+ * #GNUNET_GNSRECORD_records_cmp.
+ */
 #define GNUNET_GNSRECORD_RF_RCMP_FLAGS (GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION)
 };
 
@@ -134,8 +193,7 @@ enum GNUNET_GNSRECORD_Flags
 /**
  * A GNS record.
  */
-struct GNUNET_GNSRECORD_Data
-{
+struct GNUNET_GNSRECORD_Data {
 
   /**
    * Binary value stored in the DNS record.  Note: "data" must never
@@ -146,13 +204,13 @@ struct GNUNET_GNSRECORD_Data
 
   /**
    * Expiration time for the DNS record.  Can be relative
-   * or absolute, depending on 'flags'.  Measured in the same
+   * or absolute, depending on @e flags.  Measured in the same
    * unit as GNUnet time (microseconds).
    */
   uint64_t expiration_time;
 
   /**
-   * Number of bytes in 'data'.
+   * Number of bytes in @e data.
    */
   size_t data_size;
 
@@ -168,15 +226,35 @@ struct GNUNET_GNSRECORD_Data
 };
 
 
-
 GNUNET_NETWORK_STRUCT_BEGIN
+
+/**
+ * Data stored in a PLACE record.
+ */
+struct GNUNET_GNSRECORD_PlaceData {
+  /**
+   * Public key of the place.
+   */
+  struct GNUNET_CRYPTO_EddsaPublicKey place_pub_key;
+
+  /**
+   * Peer identity of the origin.
+   */
+  struct GNUNET_PeerIdentity origin;
+
+  /**
+   * Number of relays that follow.
+   */
+  uint32_t relay_count GNUNET_PACKED;
+
+  /* Followed by struct GNUNET_PeerIdentity relays[relay_count] */
+};
 
 
 /**
  * Information we have in an encrypted block with record data (i.e. in the DHT).
  */
-struct GNUNET_GNSRECORD_Block
-{
+struct GNUNET_GNSRECORD_Block {
 
   /**
    * Signature of the block.
@@ -202,6 +280,59 @@ struct GNUNET_GNSRECORD_Block
   /* followed by encrypted data */
 };
 
+
+/**
+ * Record type used to box up SRV and TLSA records.  For example, a
+ * TLSA record for "_https._tcp.foo.gnu" will be stored under
+ * "foo.gnu" as a BOX record with service 443 (https) and protocol 6
+ * (tcp) and record_type "TLSA".  When a BOX record is received, GNS
+ * unboxes it if the name contained "_SERVICE._PROTO", otherwise GNS
+ * leaves it untouched.  This is done to ensure that TLSA (and SRV)
+ * records do not require a separate network request, thus making TLSA
+ * records inseparable from the "main" A/AAAA/VPN/etc. records.
+ */
+struct GNUNET_GNSRECORD_BoxRecord {
+
+  /**
+   * Protocol of the boxed record (6 = TCP, 17 = UDP, etc.).
+   * Yes, in IP protocols are usually limited to 8 bits. In NBO.
+   */
+  uint16_t protocol GNUNET_PACKED;
+
+  /**
+   * Service of the boxed record (aka port number), in NBO.
+   */
+  uint16_t service GNUNET_PACKED;
+
+  /**
+   * GNS record type of the boxed record. In NBO.
+   */
+  uint32_t record_type GNUNET_PACKED;
+
+  /* followed by the 'original' record */
+};
+
+/**
+ * Record type used internally to keep track of reverse mappings into a
+ * namespace.
+ * The record contains data related to PKEY delegations from other namespaces to
+ * the namespace the record belongs to.
+ * It is exclusively found under the label ``+''.
+ */
+struct GNUNET_GNSRECORD_ReverseRecord {
+  /**
+   * The public key of the namespace the is delegating to our namespace
+   */
+  struct GNUNET_CRYPTO_EcdsaPublicKey pkey;
+
+  /**
+   * The expiration time of the delegation
+   */
+  struct GNUNET_TIME_Absolute expiration;
+
+  /* followed by the name the delegator uses to refer to our namespace */
+};
+
 GNUNET_NETWORK_STRUCT_END
 
 
@@ -212,10 +343,8 @@ GNUNET_NETWORK_STRUCT_END
  * @param rd_count number of entries in @a rd array
  * @param rd array of records with data to store
  */
-typedef void (*GNUNET_GNSRECORD_RecordCallback) (void *cls,
-						 unsigned int rd_count,
-						 const struct GNUNET_GNSRECORD_Data *rd);
-
+typedef void (*GNUNET_GNSRECORD_RecordCallback) (
+    void *cls, unsigned int rd_count, const struct GNUNET_GNSRECORD_Data *rd);
 
 
 /* ***************** API related to GNSRECORD plugins ************** */
@@ -230,9 +359,8 @@ typedef void (*GNUNET_GNSRECORD_RecordCallback) (void *cls,
  * @return NULL on error, otherwise human-readable representation of the value
  */
 char *
-GNUNET_GNSRECORD_value_to_string (uint32_t type,
-				  const void *data,
-				  size_t data_size);
+GNUNET_GNSRECORD_value_to_string (uint32_t type, const void *data,
+                                  size_t data_size);
 
 
 /**
@@ -246,10 +374,8 @@ GNUNET_GNSRECORD_value_to_string (uint32_t type,
  * @return #GNUNET_OK on success
  */
 int
-GNUNET_GNSRECORD_string_to_value (uint32_t type,
-				  const char *s,
-				  void **data,
-				  size_t *data_size);
+GNUNET_GNSRECORD_string_to_value (uint32_t type, const char *s, void **data,
+                                  size_t *data_size);
 
 
 /**
@@ -280,11 +406,11 @@ GNUNET_GNSRECORD_number_to_typename (uint32_t type);
  *
  * @param rd_count number of records in the @a rd array
  * @param rd array of #GNUNET_GNSRECORD_Data with @a rd_count elements
- * @return the required size to serialize
+ * @return the required size to serialize, -1 on error
  */
-size_t
+ssize_t
 GNUNET_GNSRECORD_records_get_size (unsigned int rd_count,
-				   const struct GNUNET_GNSRECORD_Data *rd);
+                                   const struct GNUNET_GNSRECORD_Data *rd);
 
 
 /**
@@ -298,9 +424,8 @@ GNUNET_GNSRECORD_records_get_size (unsigned int rd_count,
  */
 ssize_t
 GNUNET_GNSRECORD_records_serialize (unsigned int rd_count,
-				    const struct GNUNET_GNSRECORD_Data *rd,
-				    size_t dest_size,
-				    char *dest);
+                                    const struct GNUNET_GNSRECORD_Data *rd,
+                                    size_t dest_size, char *dest);
 
 
 /**
@@ -313,14 +438,12 @@ GNUNET_GNSRECORD_records_serialize (unsigned int rd_count,
  * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
-GNUNET_GNSRECORD_records_deserialize (size_t len,
-				      const char *src,
-				      unsigned int rd_count,
-				      struct GNUNET_GNSRECORD_Data *dest);
+GNUNET_GNSRECORD_records_deserialize (size_t len, const char *src,
+                                      unsigned int rd_count,
+                                      struct GNUNET_GNSRECORD_Data *dest);
 
 
 /* ******* general APIs relating to blocks, records and labels ******** */
-
 
 
 /**
@@ -349,7 +472,8 @@ GNUNET_GNSRECORD_string_to_lowercase (const char *src);
  * NOT reentrant!
  *
  * @param z public key of a zone
- * @return string form; will be overwritten by next call to #GNUNET_GNSRECORD_z2s.
+ * @return string form; will be overwritten by next call to
+ * #GNUNET_GNSRECORD_z2s.
  */
 const char *
 GNUNET_GNSRECORD_z2s (const struct GNUNET_CRYPTO_EcdsaPublicKey *z);
@@ -370,17 +494,17 @@ GNUNET_GNSRECORD_pkey_to_zkey (const struct GNUNET_CRYPTO_EcdsaPublicKey *pkey);
 
 
 /**
- * Convert an absolute domain name in the ".zkey" pTLD to the
+ * Convert an absolute domain name to the
  * respective public key.
  *
- * @param zkey string "X.zkey" where X is the public
+ * @param zkey string "X" where X is the public
  *         key in an encoding suitable for DNS labels.
  * @param pkey set to a public key on the eliptic curve
  * @return #GNUNET_SYSERR if @a zkey has the wrong syntax
  */
 int
 GNUNET_GNSRECORD_zkey_to_pkey (const char *zkey,
-			       struct GNUNET_CRYPTO_EcdsaPublicKey *pkey);
+                               struct GNUNET_CRYPTO_EcdsaPublicKey *pkey);
 
 
 /**
@@ -391,9 +515,9 @@ GNUNET_GNSRECORD_zkey_to_pkey (const char *zkey,
  * @param query hash to use for the query
  */
 void
-GNUNET_GNSRECORD_query_from_private_key (const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
-					 const char *label,
-					 struct GNUNET_HashCode *query);
+GNUNET_GNSRECORD_query_from_private_key (
+    const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone, const char *label,
+    struct GNUNET_HashCode *query);
 
 
 /**
@@ -404,9 +528,9 @@ GNUNET_GNSRECORD_query_from_private_key (const struct GNUNET_CRYPTO_EcdsaPrivate
  * @param query hash to use for the query
  */
 void
-GNUNET_GNSRECORD_query_from_public_key (const struct GNUNET_CRYPTO_EcdsaPublicKey *pub,
-					const char *label,
-					struct GNUNET_HashCode *query);
+GNUNET_GNSRECORD_query_from_public_key (
+    const struct GNUNET_CRYPTO_EcdsaPublicKey *pub, const char *label,
+    struct GNUNET_HashCode *query);
 
 
 /**
@@ -420,10 +544,29 @@ GNUNET_GNSRECORD_query_from_public_key (const struct GNUNET_CRYPTO_EcdsaPublicKe
  */
 struct GNUNET_GNSRECORD_Block *
 GNUNET_GNSRECORD_block_create (const struct GNUNET_CRYPTO_EcdsaPrivateKey *key,
-			       struct GNUNET_TIME_Absolute expire,
-			       const char *label,
-			       const struct GNUNET_GNSRECORD_Data *rd,
-			       unsigned int rd_count);
+                               struct GNUNET_TIME_Absolute expire,
+                               const char *label,
+                               const struct GNUNET_GNSRECORD_Data *rd,
+                               unsigned int rd_count);
+
+
+/**
+ * Sign name and records, cache derived public key (also keeps the
+ * private key in static memory, so do not use this function if
+ * keeping the private key in the process'es RAM is a major issue).
+ *
+ * @param key the private key
+ * @param expire block expiration
+ * @param label the name for the records
+ * @param rd record data
+ * @param rd_count number of records in @a rd
+ */
+struct GNUNET_GNSRECORD_Block *
+GNUNET_GNSRECORD_block_create2 (const struct GNUNET_CRYPTO_EcdsaPrivateKey *key,
+                                struct GNUNET_TIME_Absolute expire,
+                                const char *label,
+                                const struct GNUNET_GNSRECORD_Data *rd,
+                                unsigned int rd_count);
 
 
 /**
@@ -449,11 +592,10 @@ GNUNET_GNSRECORD_block_verify (const struct GNUNET_GNSRECORD_Block *block);
  *        not well-formed
  */
 int
-GNUNET_GNSRECORD_block_decrypt (const struct GNUNET_GNSRECORD_Block *block,
-				const struct GNUNET_CRYPTO_EcdsaPublicKey *zone_key,
-				const char *label,
-				GNUNET_GNSRECORD_RecordCallback proc,
-				void *proc_cls);
+GNUNET_GNSRECORD_block_decrypt (
+    const struct GNUNET_GNSRECORD_Block *block,
+    const struct GNUNET_CRYPTO_EcdsaPublicKey *zone_key, const char *label,
+    GNUNET_GNSRECORD_RecordCallback proc, void *proc_cls);
 
 
 /**
@@ -478,12 +620,11 @@ GNUNET_GNSRECORD_records_cmp (const struct GNUNET_GNSRECORD_Data *a,
  * @return absolute expiration time
  */
 struct GNUNET_TIME_Absolute
-GNUNET_GNSRECORD_record_get_expiration_time (unsigned int rd_count,
-					     const struct GNUNET_GNSRECORD_Data *rd);
+GNUNET_GNSRECORD_record_get_expiration_time (
+    unsigned int rd_count, const struct GNUNET_GNSRECORD_Data *rd);
 
 
-
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -491,3 +632,5 @@ GNUNET_GNSRECORD_record_get_expiration_time (unsigned int rd_count,
 #endif
 
 #endif
+
+/** @} */ /* end of group */

@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006, 2007, 2009, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006, 2007, 2009, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /*
  * @file datastore/test_datastore_api_management.c
@@ -26,6 +26,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_protocols.h"
 #include "gnunet_datastore_service.h"
+#include "gnunet_datastore_plugin.h"
 #include "gnunet_testing_lib.h"
 
 
@@ -57,7 +58,6 @@ struct CpsRunContext
   const struct GNUNET_CONFIGURATION_Handle *cfg;
   void *data;
   enum RunPhase phase;
-  uint64_t offset;
 };
 
 
@@ -119,7 +119,7 @@ get_expiration (int i)
 
 
 static void
-run_continuation (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc);
+run_continuation (void *cls);
 
 
 static void
@@ -132,15 +132,20 @@ check_success (void *cls, int success, struct GNUNET_TIME_Absolute min_expiratio
   GNUNET_assert (GNUNET_OK == success);
   GNUNET_free_non_null (crc->data);
   crc->data = NULL;
-  GNUNET_SCHEDULER_add_continuation (&run_continuation, crc,
-                                     GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+  GNUNET_SCHEDULER_add_now (&run_continuation, crc);
 }
 
 
 static void
-check_value (void *cls, const struct GNUNET_HashCode * key, size_t size,
-             const void *data, enum GNUNET_BLOCK_Type type, uint32_t priority,
-             uint32_t anonymity, struct GNUNET_TIME_Absolute expiration,
+check_value (void *cls,
+             const struct GNUNET_HashCode *key,
+             size_t size,
+             const void *data,
+             enum GNUNET_BLOCK_Type type,
+             uint32_t priority,
+             uint32_t anonymity,
+             uint32_t replication,
+             struct GNUNET_TIME_Absolute expiration,
              uint64_t uid)
 {
   struct CpsRunContext *crc = cls;
@@ -149,8 +154,7 @@ check_value (void *cls, const struct GNUNET_HashCode * key, size_t size,
   if (NULL == key)
   {
     crc->phase = RP_GET_FAIL;
-    GNUNET_SCHEDULER_add_continuation (&run_continuation, crc,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&run_continuation, crc);
     return;
   }
   i = crc->i;
@@ -160,19 +164,23 @@ check_value (void *cls, const struct GNUNET_HashCode * key, size_t size,
   GNUNET_assert (priority == get_priority (i));
   GNUNET_assert (anonymity == get_anonymity (i));
   GNUNET_assert (expiration.abs_value_us == get_expiration (i).abs_value_us);
-  crc->offset++;
   crc->i--;
   if (crc->i == 0)
     crc->phase = RP_DONE;
-  GNUNET_SCHEDULER_add_continuation (&run_continuation, crc,
-                                     GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+  GNUNET_SCHEDULER_add_now (&run_continuation, crc);
 }
 
 
 static void
-check_nothing (void *cls, const struct GNUNET_HashCode * key, size_t size,
-               const void *data, enum GNUNET_BLOCK_Type type, uint32_t priority,
-               uint32_t anonymity, struct GNUNET_TIME_Absolute expiration,
+check_nothing (void *cls,
+               const struct GNUNET_HashCode *key,
+               size_t size,
+               const void *data,
+               enum GNUNET_BLOCK_Type type,
+               uint32_t priority,
+               uint32_t anonymity,
+               uint32_t replication,
+               struct GNUNET_TIME_Absolute expiration,
                uint64_t uid)
 {
   struct CpsRunContext *crc = cls;
@@ -180,13 +188,12 @@ check_nothing (void *cls, const struct GNUNET_HashCode * key, size_t size,
   GNUNET_assert (key == NULL);
   if (0 == --crc->i)
     crc->phase = RP_DONE;
-  GNUNET_SCHEDULER_add_continuation (&run_continuation, crc,
-                                     GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+  GNUNET_SCHEDULER_add_now (&run_continuation, crc);
 }
 
 
 static void
-run_continuation (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+run_continuation (void *cls)
 {
   struct CpsRunContext *crc = cls;
 
@@ -197,10 +204,18 @@ run_continuation (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Executing `%s' number %u\n", "PUT",
                 crc->i);
     GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
-    GNUNET_DATASTORE_put (datastore, 0, &crc->key, get_size (crc->i),
-                          get_data (crc->i), get_type (crc->i),
-                          get_priority (crc->i), get_anonymity (crc->i), 0,
-                          get_expiration (crc->i), 1, 1, TIMEOUT,
+    GNUNET_DATASTORE_put (datastore,
+                          0,
+                          &crc->key,
+                          get_size (crc->i),
+                          get_data (crc->i),
+                          get_type (crc->i),
+                          get_priority (crc->i),
+                          get_anonymity (crc->i),
+                          0,
+                          get_expiration (crc->i),
+                          1,
+                          1,
                           &check_success, crc);
     crc->i++;
     if (crc->i == ITERATIONS)
@@ -216,16 +231,28 @@ run_continuation (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Executing `%s' number %u\n", "GET",
                 crc->i);
     GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
-    GNUNET_DATASTORE_get_key (datastore, crc->offset++, &crc->key,
-                              get_type (crc->i), 1, 1, TIMEOUT, &check_value,
+    GNUNET_DATASTORE_get_key (datastore,
+                              0,
+                              false,
+                              &crc->key,
+                              get_type (crc->i),
+                              1,
+                              1,
+                              &check_value,
                               crc);
     break;
   case RP_GET_FAIL:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Executing `%s' number %u\n", "GET(f)",
                 crc->i);
     GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
-    GNUNET_DATASTORE_get_key (datastore, crc->offset++, &crc->key,
-                              get_type (crc->i), 1, 1, TIMEOUT, &check_nothing,
+    GNUNET_DATASTORE_get_key (datastore,
+                              0,
+                              false,
+                              &crc->key,
+                              get_type (crc->i),
+                              1,
+                              1,
+                              &check_nothing,
                               crc);
     break;
   case RP_DONE:
@@ -252,8 +279,7 @@ run_tests (void *cls, int success, struct GNUNET_TIME_Absolute min_expiration, c
     GNUNET_free (crc);
     return;
   }
-  GNUNET_SCHEDULER_add_continuation (&run_continuation, crc,
-                                     GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+  GNUNET_SCHEDULER_add_now (&run_continuation, crc);
 }
 
 
@@ -271,11 +297,18 @@ run (void *cls,
   now = GNUNET_TIME_absolute_get ();
   datastore = GNUNET_DATASTORE_connect (cfg);
   if (NULL ==
-      GNUNET_DATASTORE_put (datastore, 0, &zkey, 4, "TEST",
-                            GNUNET_BLOCK_TYPE_TEST, 0, 0, 0,
-                            GNUNET_TIME_relative_to_absolute
-                            (GNUNET_TIME_UNIT_SECONDS), 0, 1,
-                            GNUNET_TIME_UNIT_MINUTES, &run_tests, crc))
+      GNUNET_DATASTORE_put (datastore,
+                            0,
+                            &zkey,
+                            4,
+                            "TEST",
+                            GNUNET_BLOCK_TYPE_TEST,
+                            0, 0, 0,
+                            GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_SECONDS),
+                            0,
+                            1,
+                            &run_tests,
+                            crc))
   {
     FPRINTF (stderr, "%s",  "Test 'put' operation failed.\n");
     GNUNET_free (crc);
@@ -284,14 +317,78 @@ run (void *cls,
 }
 
 
+/**
+ * Function called when disk utilization changes, does nothing.
+ *
+ * @param cls closure
+ * @param delta change in utilization
+ */
+static void
+ignore_payload_cb (void *cls,
+                   int delta)
+{
+  /* do nothing */
+}
+
+
+/**
+ * check if plugin is actually working
+ */
+static int
+test_plugin (const char *cfg_name)
+{
+  char libname[PATH_MAX];
+  struct GNUNET_CONFIGURATION_Handle *cfg;
+  struct GNUNET_DATASTORE_PluginFunctions *api;
+  struct GNUNET_DATASTORE_PluginEnvironment env;
+
+  cfg = GNUNET_CONFIGURATION_create ();
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_load (cfg,
+				 cfg_name))
+  {
+    GNUNET_CONFIGURATION_destroy (cfg);
+    fprintf (stderr,
+	     "Failed to load configuration %s\n",
+	     cfg_name);
+    return 1;
+  }
+  memset (&env, 0, sizeof (env));
+  env.cfg = cfg;
+  env.duc = &ignore_payload_cb;
+  GNUNET_snprintf (libname,
+		   sizeof (libname),
+                   "libgnunet_plugin_datastore_%s",
+                   plugin_name);
+  api = GNUNET_PLUGIN_load (libname, &env);
+  if (NULL == api)
+  {
+    GNUNET_CONFIGURATION_destroy (cfg);
+    fprintf (stderr,
+	     "Failed to load plugin `%s'\n",
+	     libname);
+    return 77;
+  }
+  GNUNET_PLUGIN_unload (libname, api);
+  GNUNET_CONFIGURATION_destroy (cfg);
+  return 0;
+}
+
+
 int
 main (int argc, char *argv[])
 {
-  char cfg_name[128];
+  char cfg_name[PATH_MAX];
+  int ret;
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_snprintf (cfg_name, sizeof (cfg_name),
-                   "test_datastore_api_data_%s.conf", plugin_name);
+  GNUNET_snprintf (cfg_name,
+		   sizeof (cfg_name),
+                   "test_datastore_api_data_%s.conf",
+		   plugin_name);
+  ret = test_plugin (cfg_name);
+  if (0 != ret)
+    return ret;
   if (0 !=
       GNUNET_TESTING_peer_run ("test-gnunet-datastore-management",
 			       cfg_name,

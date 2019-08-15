@@ -1,23 +1,22 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2012 Christian Grothoff
+     Copyright (C) 2010, 2012, 2017 Christian Grothoff
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
-
 /**
  * @file pt/gnunet-daemon-pt.c
  * @brief tool to manipulate DNS and VPN services to perform protocol translation (IPvX over GNUnet)
@@ -27,7 +26,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_dns_service.h"
 #include "gnunet_dnsparser_lib.h"
-#include "gnunet_mesh_service.h"
+#include "gnunet_cadet_service.h"
 #include "gnunet_tun_lib.h"
 #include "gnunet_dht_service.h"
 #include "gnunet_vpn_service.h"
@@ -37,7 +36,7 @@
 
 
 /**
- * After how long do we time out if we could not get an IP from VPN or MESH?
+ * After how long do we time out if we could not get an IP from VPN or CADET?
  */
 #define TIMEOUT GNUNET_TIME_UNIT_MINUTES
 
@@ -126,24 +125,24 @@ struct ReplyContext
  * as a DNS exit.  We try to keep a few channels open and a few
  * peers in reserve.
  */
-struct MeshExit
+struct CadetExit
 {
 
   /**
    * Kept in a DLL.
    */
-  struct MeshExit *next;
+  struct CadetExit *next;
 
   /**
    * Kept in a DLL.
    */
-  struct MeshExit *prev;
+  struct CadetExit *prev;
 
   /**
-   * Channel we use for DNS requests over MESH, NULL if we did
+   * Channel we use for DNS requests over CADET, NULL if we did
    * not initialze a channel to this peer yet.
    */
-  struct GNUNET_MESH_Channel *mesh_channel;
+  struct GNUNET_CADET_Channel *cadet_channel;
 
   /**
    * At what time did the peer's advertisement expire?
@@ -161,21 +160,6 @@ struct MeshExit
   struct RequestContext *receive_queue_tail;
 
   /**
-   * Head of DLL of requests to be transmitted to a mesh_channel.
-   */
-  struct RequestContext *transmit_queue_head;
-
-  /**
-   * Tail of DLL of requests to be transmitted to a mesh_channel.
-   */
-  struct RequestContext *transmit_queue_tail;
-
-  /**
-   * Active transmission request for this channel (or NULL).
-   */
-  struct GNUNET_MESH_TransmitHandle *mesh_th;
-
-  /**
    * Identity of the peer that is providing the exit for us.
    */
   struct GNUNET_PeerIdentity peer;
@@ -190,12 +174,17 @@ struct MeshExit
    */
   unsigned int num_answered;
 
+  /**
+   * Size of the window, 0 if we are busy.
+   */
+  /* unsigned */ int idle;
+
 };
 
 
 
 /**
- * State we keep for a request that is going out via MESH.
+ * State we keep for a request that is going out via CADET.
  */
 struct RequestContext
 {
@@ -212,7 +201,7 @@ struct RequestContext
   /**
    * Exit that was chosen for this request.
    */
-  struct MeshExit *exit;
+  struct CadetExit *exit;
 
   /**
    * Handle for interaction with DNS service.
@@ -220,15 +209,14 @@ struct RequestContext
   struct GNUNET_DNS_RequestHandle *rh;
 
   /**
-   * Message we're sending out via MESH, allocated at the
-   * end of this struct.
+   * Envelope with the request we are transmitting.
    */
-  const struct GNUNET_MessageHeader *mesh_message;
+  struct GNUNET_MQ_Envelope *env;
 
   /**
    * Task used to abort this operation with timeout.
    */
-  GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+  struct GNUNET_SCHEDULER_Task *timeout_task;
 
   /**
    * Length of the request message that follows this struct.
@@ -240,26 +228,20 @@ struct RequestContext
    */
   uint16_t dns_id;
 
-  /**
-   * #GNUNET_NO if this request is still in the transmit_queue,
-   * #GNUNET_YES if we are in the receive_queue.
-   */
-  int16_t was_transmitted;
-
 };
 
 
 /**
- * Head of DLL of mesh exits.  Mesh exits with an open channel are
+ * Head of DLL of cadet exits.  Cadet exits with an open channel are
  * always at the beginning (so we do not have to traverse the entire
  * list to find them).
  */
-static struct MeshExit *exit_head;
+static struct CadetExit *exit_head;
 
 /**
- * Tail of DLL of mesh exits.
+ * Tail of DLL of cadet exits.
  */
-static struct MeshExit *exit_tail;
+static struct CadetExit *exit_tail;
 
 /**
  * The handle to the configuration used throughout the process
@@ -272,9 +254,9 @@ static const struct GNUNET_CONFIGURATION_Handle *cfg;
 static struct GNUNET_VPN_Handle *vpn_handle;
 
 /**
- * The handle to the MESH service
+ * The handle to the CADET service
  */
-static struct GNUNET_MESH_Handle *mesh_handle;
+static struct GNUNET_CADET_Handle *cadet_handle;
 
 /**
  * Statistics.
@@ -317,59 +299,18 @@ static int ipv6_pt;
 static int dns_channel;
 
 /**
- * Number of DNS exit peers we currently have in the mesh channel.
- * Used to see if using the mesh channel makes any sense right now,
+ * Number of DNS exit peers we currently have in the cadet channel.
+ * Used to see if using the cadet channel makes any sense right now,
  * as well as to decide if we should open new channels.
  */
 static unsigned int dns_exit_available;
 
 
 /**
- * We are short on mesh exits, try to open another one.
+ * We are short on cadet exits, try to open another one.
  */
 static void
-try_open_exit ()
-{
-  struct MeshExit *pos;
-  uint32_t candidate_count;
-  uint32_t candidate_selected;
-
-  candidate_count = 0;
-  for (pos = exit_head; NULL != pos; pos = pos->next)
-    if (NULL == pos->mesh_channel)
-      candidate_count++;
-  candidate_selected = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-						 candidate_count);
-  candidate_count = 0;
-  for (pos = exit_head; NULL != pos; pos = pos->next)
-    if (NULL == pos->mesh_channel)
-    {
-      candidate_count++;
-      if (candidate_selected < candidate_count)
-      {
-	/* move to the head of the DLL */
-	pos->mesh_channel = GNUNET_MESH_channel_create (mesh_handle,
-						      pos,
-						      &pos->peer,
-						      GNUNET_APPLICATION_TYPE_INTERNET_RESOLVER,
-						      GNUNET_MESH_OPTION_DEFAULT);
-	if (NULL == pos->mesh_channel)
-	{
-	  GNUNET_break (0);
-	  continue;
-	}
-	GNUNET_CONTAINER_DLL_remove (exit_head,
-				     exit_tail,
-				     pos);
-	GNUNET_CONTAINER_DLL_insert (exit_head,
-				     exit_tail,
-				     pos);
-	dns_exit_available++;
-	return;
-      }
-    }
-  GNUNET_assert (NULL == exit_head);
-}
+try_open_exit (void);
 
 
 /**
@@ -382,7 +323,7 @@ try_open_exit ()
  * @return weight of the channel
  */
 static uint32_t
-get_channel_weight (struct MeshExit *exit)
+get_channel_weight (struct CadetExit *exit)
 {
   uint32_t dropped;
   uint32_t drop_percent;
@@ -406,7 +347,7 @@ get_channel_weight (struct MeshExit *exit)
 
 
 /**
- * Choose a mesh exit for a DNS request.  We try to use a channel
+ * Choose a cadet exit for a DNS request.  We try to use a channel
  * that is reliable and currently available.  All existing
  * channels are given a base weight of 1, plus a score relating
  * to the total number of queries answered in relation to the
@@ -416,10 +357,10 @@ get_channel_weight (struct MeshExit *exit)
  * @return NULL if no exit is known, otherwise the
  *         exit that we should use to queue a message with
  */
-static struct MeshExit *
+static struct CadetExit *
 choose_exit ()
 {
-  struct MeshExit *pos;
+  struct CadetExit *pos;
   uint64_t total_transmitted;
   uint64_t selected_offset;
   uint32_t channel_weight;
@@ -427,12 +368,12 @@ choose_exit ()
   total_transmitted = 0;
   for (pos = exit_head; NULL != pos; pos = pos->next)
   {
-    if (NULL == pos->mesh_channel)
+    if (NULL == pos->cadet_channel)
       break;
     channel_weight = get_channel_weight (pos);
     total_transmitted += channel_weight;
     /* double weight for idle channels */
-    if (NULL == pos->mesh_th)
+    if (0 != pos->idle)
       total_transmitted += channel_weight;
   }
   if (0 == total_transmitted)
@@ -445,12 +386,12 @@ choose_exit ()
   total_transmitted = 0;
   for (pos = exit_head; NULL != pos; pos = pos->next)
   {
-    if (NULL == pos->mesh_channel)
+    if (NULL == pos->cadet_channel)
       break;
     channel_weight = get_channel_weight (pos);
     total_transmitted += channel_weight;
     /* double weight for idle channels */
-    if (NULL == pos->mesh_th)
+    if (0 != pos->idle)
       total_transmitted += channel_weight;
     if (total_transmitted > selected_offset)
       return pos;
@@ -488,7 +429,8 @@ finish_request (struct ReplyContext *rc)
 			      gettext_noop ("# DNS requests mapped to VPN"),
 			      1, GNUNET_NO);
     GNUNET_DNS_request_answer (rc->rh,
-			       buf_len, buf);
+			       buf_len,
+                               buf);
     GNUNET_free (buf);
   }
   GNUNET_DNSPARSER_free_packet (rc->dns);
@@ -539,16 +481,21 @@ vpn_allocation_callback (void *cls,
   }
   GNUNET_STATISTICS_update (stats,
 			    gettext_noop ("# DNS records modified"),
-			    1, GNUNET_NO);
+			    1,
+                            GNUNET_NO);
   switch (rc->rec->type)
   {
   case GNUNET_DNSPARSER_TYPE_A:
     GNUNET_assert (AF_INET == af);
-    memcpy (rc->rec->data.raw.data, address, sizeof (struct in_addr));
+    GNUNET_memcpy (rc->rec->data.raw.data,
+                   address,
+                   sizeof (struct in_addr));
     break;
   case GNUNET_DNSPARSER_TYPE_AAAA:
     GNUNET_assert (AF_INET6 == af);
-    memcpy (rc->rec->data.raw.data, address, sizeof (struct in6_addr));
+    GNUNET_memcpy (rc->rec->data.raw.data,
+                   address,
+                   sizeof (struct in6_addr));
     break;
   default:
     GNUNET_assert (0);
@@ -590,7 +537,8 @@ modify_address (struct ReplyContext *rc,
   }
   rc->rec = rec;
   rc->rr = GNUNET_VPN_redirect_to_ip (vpn_handle,
-				      af, af,
+				      af,
+                                      af,
 				      rec->data.raw.data,
 				      GNUNET_TIME_relative_to_absolute (TIMEOUT),
 				      &vpn_allocation_callback,
@@ -642,7 +590,8 @@ submit_request (struct ReplyContext *rc)
 	if (ipv4_pt)
 	{
 	  rc->offset = i + 1;
-	  modify_address (rc, &ra[i]);
+	  modify_address (rc,
+                          &ra[i]);
 	  return;
 	}
 	break;
@@ -650,7 +599,8 @@ submit_request (struct ReplyContext *rc)
 	if (ipv6_pt)
 	{
 	  rc->offset = i + 1;
-	  modify_address (rc, &ra[i]);
+	  modify_address (rc,
+                          &ra[i]);
 	  return;
 	}
 	break;
@@ -696,7 +646,7 @@ work_test (const struct GNUNET_DNSPARSER_Record *ra,
  * This function is called AFTER we got an IP address for a
  * DNS request.  Now, the PT daemon has the chance to substitute
  * the IP address with one from the VPN range to channel requests
- * destined for this IP address via VPN and MESH.
+ * destined for this IP address via VPN and CADET.
  *
  * @param cls closure
  * @param rh request handle to user for reply
@@ -716,7 +666,8 @@ dns_post_request_handler (void *cls,
   GNUNET_STATISTICS_update (stats,
 			    gettext_noop ("# DNS replies intercepted"),
 			    1, GNUNET_NO);
-  dns = GNUNET_DNSPARSER_parse (request, request_length);
+  dns = GNUNET_DNSPARSER_parse (request,
+                                request_length);
   if (NULL == dns)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -725,9 +676,12 @@ dns_post_request_handler (void *cls,
     return;
   }
   work = GNUNET_NO;
-  work |= work_test (dns->answers, dns->num_answers);
-  work |= work_test (dns->authority_records, dns->num_authority_records);
-  work |= work_test (dns->additional_records, dns->num_additional_records);
+  work |= work_test (dns->answers,
+                     dns->num_answers);
+  work |= work_test (dns->authority_records,
+                     dns->num_authority_records);
+  work |= work_test (dns->additional_records,
+                     dns->num_additional_records);
   if (! work)
   {
     GNUNET_DNS_request_forward (rh);
@@ -744,98 +698,29 @@ dns_post_request_handler (void *cls,
 
 
 /**
- * Transmit a DNS request via MESH and move the request
- * handle to the receive queue.
- *
- * @param cls the `struct MeshExit`
- * @param size number of bytes available in buf
- * @param buf where to copy the message
- * @return number of bytes written to buf
- */
-static size_t
-transmit_dns_request_to_mesh (void *cls,
-			      size_t size,
-			      void *buf)
-{
-  struct MeshExit *exit = cls;
-  struct RequestContext *rc;
-  size_t mlen;
-
-  exit->mesh_th = NULL;
-  if (NULL == (rc = exit->transmit_queue_head))
-    return 0;
-  mlen = rc->mlen;
-  if (mlen > size)
-  {
-    exit->mesh_th = GNUNET_MESH_notify_transmit_ready (exit->mesh_channel,
-						       GNUNET_NO,
-						       TIMEOUT,
-						       mlen,
-						       &transmit_dns_request_to_mesh,
-						       exit);
-    return 0;
-  }
-  GNUNET_assert (GNUNET_NO == rc->was_transmitted);
-  memcpy (buf, rc->mesh_message, mlen);
-  GNUNET_CONTAINER_DLL_remove (exit->transmit_queue_head,
-			       exit->transmit_queue_tail,
-			       rc);
-  rc->was_transmitted = GNUNET_YES;
-  GNUNET_CONTAINER_DLL_insert (exit->receive_queue_head,
-			       exit->receive_queue_tail,
-			       rc);
-  rc = exit->transmit_queue_head;
-  if (NULL != rc)
-    exit->mesh_th = GNUNET_MESH_notify_transmit_ready (exit->mesh_channel,
-						       GNUNET_NO,
-						       TIMEOUT,
-						       rc->mlen,
-						       &transmit_dns_request_to_mesh,
-						       exit);
-  return mlen;
-}
-
-
-/**
- * Task run if the time to answer a DNS request via MESH is over.
+ * Task run if the time to answer a DNS request via CADET is over.
  *
  * @param cls the `struct RequestContext` to abort
- * @param tc scheduler context
  */
 static void
-timeout_request (void *cls,
-		 const struct GNUNET_SCHEDULER_TaskContext *tc)
+timeout_request (void *cls)
 {
   struct RequestContext *rc = cls;
-  struct MeshExit *exit = rc->exit;
+  struct CadetExit *exit = rc->exit;
 
-  if (rc->was_transmitted)
-  {
-    exit->num_transmitted++;
-    GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
-				 exit->receive_queue_tail,
-				 rc);
-  }
-  else
-  {
-    GNUNET_CONTAINER_DLL_remove (exit->transmit_queue_head,
-				 exit->transmit_queue_tail,
-				 rc);
-  }
   GNUNET_STATISTICS_update (stats,
 			    gettext_noop ("# DNS requests dropped (timeout)"),
-			    1, GNUNET_NO);
+			    1,
+                            GNUNET_NO);
   GNUNET_DNS_request_drop (rc->rh);
   GNUNET_free (rc);
   if ( (0 == get_channel_weight (exit)) &&
-       (NULL == exit->receive_queue_head) &&
-       (NULL == exit->transmit_queue_head) )
+       (NULL == exit->receive_queue_head) )
   {
     /* this straw broke the camel's back: this channel now has
        such a low score that it will not be used; close it! */
-    GNUNET_assert (NULL == exit->mesh_th);
-    GNUNET_MESH_channel_destroy (exit->mesh_channel);
-    exit->mesh_channel = NULL;
+    GNUNET_CADET_channel_destroy (exit->cadet_channel);
+    exit->cadet_channel = NULL;
     GNUNET_CONTAINER_DLL_remove (exit_head,
 				 exit_tail,
 				 exit);
@@ -844,7 +729,7 @@ timeout_request (void *cls,
 				      exit);
     /* go back to semi-innocent: mark as not great, but
        avoid a prohibitively negative score (see
-       #get_channel_weight, which checks for a certain
+       #get_channel_weight(), which checks for a certain
        minimum number of transmissions before making
        up an opinion) */
     exit->num_transmitted = 5;
@@ -859,7 +744,7 @@ timeout_request (void *cls,
 /**
  * This function is called *before* the DNS request has been
  * given to a "local" DNS resolver.  Channeling for DNS requests
- * was enabled, so we now need to send the request via some MESH
+ * was enabled, so we now need to send the request via some CADET
  * channel to a DNS EXIT for resolution.
  *
  * @param cls closure
@@ -874,10 +759,10 @@ dns_pre_request_handler (void *cls,
 			 const char *request)
 {
   struct RequestContext *rc;
-  size_t mlen;
-  struct GNUNET_MessageHeader hdr;
+  struct GNUNET_MQ_Envelope *env;
+  struct GNUNET_MessageHeader *hdr;
   struct GNUNET_TUN_DnsHeader dns;
-  struct MeshExit *exit;
+  struct CadetExit *exit;
 
   GNUNET_STATISTICS_update (stats,
 			    gettext_noop ("# DNS requests intercepted"),
@@ -885,7 +770,7 @@ dns_pre_request_handler (void *cls,
   if (0 == dns_exit_available)
   {
     GNUNET_STATISTICS_update (stats,
-			      gettext_noop ("# DNS requests dropped (DNS mesh channel down)"),
+			      gettext_noop ("# DNS requests dropped (DNS cadet channel down)"),
 			      1, GNUNET_NO);
     GNUNET_DNS_request_drop (rh);
     return;
@@ -898,103 +783,125 @@ dns_pre_request_handler (void *cls,
     GNUNET_DNS_request_drop (rh);
     return;
   }
-  memcpy (&dns, request, sizeof (dns));
-  mlen = sizeof (struct GNUNET_MessageHeader) + request_length;
   exit = choose_exit ();
   GNUNET_assert (NULL != exit);
-  GNUNET_assert (NULL != exit->mesh_channel);
-  rc = GNUNET_malloc (sizeof (struct RequestContext) + mlen);
+  GNUNET_assert (NULL != exit->cadet_channel);
+
+  env = GNUNET_MQ_msg_extra (hdr,
+                             request_length,
+                             GNUNET_MESSAGE_TYPE_VPN_DNS_TO_INTERNET);
+  GNUNET_memcpy (&hdr[1],
+                 request,
+                 request_length);
+  rc = GNUNET_new (struct RequestContext);
   rc->exit = exit;
   rc->rh = rh;
-  rc->mesh_message = (const struct GNUNET_MessageHeader*) &rc[1];
   rc->timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
 						   &timeout_request,
 						   rc);
+  GNUNET_memcpy (&dns,
+                 request,
+                 sizeof (dns));
   rc->dns_id = dns.id;
-  rc->mlen = mlen;
-  hdr.type = htons (GNUNET_MESSAGE_TYPE_VPN_DNS_TO_INTERNET);
-  hdr.size = htons (mlen);
-  memcpy (&rc[1], &hdr, sizeof (struct GNUNET_MessageHeader));
-  memcpy (&(((char*)&rc[1])[sizeof (struct GNUNET_MessageHeader)]),
-	  request,
-	  request_length);
-  GNUNET_CONTAINER_DLL_insert_tail (exit->transmit_queue_head,
-				    exit->transmit_queue_tail,
-				    rc);
-  if (NULL == exit->mesh_th)
-    exit->mesh_th = GNUNET_MESH_notify_transmit_ready (exit->mesh_channel,
-						       GNUNET_NO,
-						       TIMEOUT,
-						       mlen,
-						       &transmit_dns_request_to_mesh,
-						       exit);
+  rc->env = env;
+  GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
+                               exit->receive_queue_tail,
+                               rc);
+  if (0 < exit->idle)
+    exit->idle--;
+  exit->num_transmitted++;
+  GNUNET_MQ_send (GNUNET_CADET_get_mq (exit->cadet_channel),
+                  GNUNET_MQ_env_copy (env));
 }
 
 
+GNUNET_NETWORK_STRUCT_BEGIN
+
 /**
- * Process a request via mesh to perform a DNS query.
+ * Message with a DNS response.
+ */
+struct DnsResponseMessage
+{
+  /**
+   * GNUnet header, of type #GNUNET_MESSAGE_TYPE_VPN_DNS_FROM_INTERNET
+   */
+  struct GNUNET_MessageHeader header;
+
+  /**
+   * DNS header.
+   */
+  struct GNUNET_TUN_DnsHeader dns;
+
+  /* Followed by more DNS payload */
+};
+
+GNUNET_NETWORK_STRUCT_END
+
+/**
+ * Process a request via cadet to perform a DNS query.
  *
- * @param cls NULL
- * @param channel connection to the other end
- * @param channel_ctx pointer to our `struct MeshExit`
- * @param message the actual message
+ * @param cls the `struct CadetExit` which got the message
+ * @param msg the actual message
  * @return #GNUNET_OK to keep the connection open,
  *         #GNUNET_SYSERR to close it (signal serious error)
  */
 static int
-receive_dns_response (void *cls,
-		      struct GNUNET_MESH_Channel *channel,
-		      void **channel_ctx,
-		      const struct GNUNET_MessageHeader *message)
+check_dns_response (void *cls,
+                     const struct DnsResponseMessage *msg)
 {
-  struct MeshExit *exit = *channel_ctx;
-  struct GNUNET_TUN_DnsHeader dns;
+  return GNUNET_OK; /* all OK */
+}
+
+
+/**
+ * Process a request via cadet to perform a DNS query.
+ *
+ * @param cls the `struct CadetExit` which got the message
+ * @param msg the actual message
+ */
+static void
+handle_dns_response (void *cls,
+                     const struct DnsResponseMessage *msg)
+{
+  struct CadetExit *exit = cls;
   size_t mlen;
   struct RequestContext *rc;
 
-  mlen = ntohs (message->size);
-  mlen -= sizeof (struct GNUNET_MessageHeader);
-  if (mlen < sizeof (struct GNUNET_TUN_DnsHeader))
-  {
-    GNUNET_break_op (0);
-    return GNUNET_SYSERR;
-  }
-  memcpy (&dns, &message[1], sizeof (dns));
+  mlen = ntohs (msg->header.size) - sizeof (*msg);
   for (rc = exit->receive_queue_head; NULL != rc; rc = rc->next)
   {
-    GNUNET_assert (GNUNET_YES == rc->was_transmitted);
-    if (dns.id == rc->dns_id)
+    if (msg->dns.id == rc->dns_id)
     {
       GNUNET_STATISTICS_update (stats,
 				gettext_noop ("# DNS replies received"),
-				1, GNUNET_NO);
+				1,
+                                GNUNET_NO);
       GNUNET_DNS_request_answer (rc->rh,
-				 mlen,
-				 (const void*) &message[1]);
+				 mlen + sizeof (struct GNUNET_TUN_DnsHeader),
+				 (const void*) &msg->dns);
       GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
 				   exit->receive_queue_tail,
 				   rc);
       GNUNET_SCHEDULER_cancel (rc->timeout_task);
+      GNUNET_MQ_discard (rc->env);
       GNUNET_free (rc);
       exit->num_answered++;
-      exit->num_transmitted++;
-      return GNUNET_OK;
+      return;
     }
   }
   GNUNET_STATISTICS_update (stats,
 			    gettext_noop ("# DNS replies dropped (too late?)"),
 			    1, GNUNET_NO);
-  return GNUNET_OK;
 }
 
 
 /**
- * Abort all pending DNS requests with the given mesh exit.
+ * Abort all pending DNS requests with the given cadet exit.
  *
- * @param exit mesh exit to abort requests for
+ * @param exit cadet exit to abort requests for
  */
 static void
-abort_all_requests (struct MeshExit *exit)
+abort_all_requests (struct CadetExit *exit)
 {
   struct RequestContext *rc;
 
@@ -1005,15 +912,7 @@ abort_all_requests (struct MeshExit *exit)
 				 rc);
     GNUNET_DNS_request_drop (rc->rh);
     GNUNET_SCHEDULER_cancel (rc->timeout_task);
-    GNUNET_free (rc);
-  }
-  while (NULL != (rc = exit->transmit_queue_head))
-  {
-    GNUNET_CONTAINER_DLL_remove (exit->transmit_queue_head,
-				 exit->transmit_queue_tail,
-				 rc);
-    GNUNET_DNS_request_drop (rc->rh);
-    GNUNET_SCHEDULER_cancel (rc->timeout_task);
+    GNUNET_MQ_discard (rc->env);
     GNUNET_free (rc);
   }
 }
@@ -1023,13 +922,11 @@ abort_all_requests (struct MeshExit *exit)
  * Function scheduled as very last function, cleans up after us
  *
  * @param cls closure, NULL
- * @param tskctx scheduler context, unused
  */
 static void
-cleanup (void *cls,
-         const struct GNUNET_SCHEDULER_TaskContext *tskctx)
+cleanup (void *cls)
 {
-  struct MeshExit *exit;
+  struct CadetExit *exit;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Protocol translation daemon is shutting down now\n");
@@ -1043,23 +940,18 @@ cleanup (void *cls,
     GNUNET_CONTAINER_DLL_remove (exit_head,
 				 exit_tail,
 				 exit);
-    if (NULL != exit->mesh_th)
+    if (NULL != exit->cadet_channel)
     {
-      GNUNET_MESH_notify_transmit_ready_cancel (exit->mesh_th);
-      exit->mesh_th = NULL;
-    }
-    if (NULL != exit->mesh_channel)
-    {
-      GNUNET_MESH_channel_destroy (exit->mesh_channel);
-      exit->mesh_channel = NULL;
+      GNUNET_CADET_channel_destroy (exit->cadet_channel);
+      exit->cadet_channel = NULL;
     }
     abort_all_requests (exit);
     GNUNET_free (exit);
   }
-  if (NULL != mesh_handle)
+  if (NULL != cadet_handle)
   {
-    GNUNET_MESH_disconnect (mesh_handle);
-    mesh_handle = NULL;
+    GNUNET_CADET_disconnect (cadet_handle);
+    cadet_handle = NULL;
   }
   if (NULL != dns_post_handle)
   {
@@ -1093,77 +985,135 @@ cleanup (void *cls,
  * Function called whenever a channel is destroyed.  Should clean up
  * the associated state and attempt to build a new one.
  *
- * It must NOT call #GNUNET_MESH_channel_destroy on the channel.
+ * It must NOT call #GNUNET_CADET_channel_destroy on the channel.
  *
- * @param cls closure (the `struct MeshExit` set from #GNUNET_MESH_connect)
+ * @param cls closure (the `struct CadetExit` set from #GNUNET_CADET_connect)
  * @param channel connection to the other end (henceforth invalid)
  * @param channel_ctx place where local state associated
  *                   with the channel is stored
  */
 static void
-mesh_channel_end_cb (void *cls,
-		    const struct GNUNET_MESH_Channel *channel,
-		    void *channel_ctx)
+cadet_channel_end_cb (void *cls,
+                      const struct GNUNET_CADET_Channel *channel)
 {
-  struct MeshExit *exit = channel_ctx;
-  struct MeshExit *alt;
+  struct CadetExit *exit = cls;
+  struct CadetExit *alt;
   struct RequestContext *rc;
 
-  if (NULL != exit->mesh_th)
-  {
-    GNUNET_MESH_notify_transmit_ready_cancel (exit->mesh_th);
-    exit->mesh_th = NULL;
-  }
-  exit->mesh_channel = NULL;
+  exit->cadet_channel = NULL;
   dns_exit_available--;
   /* open alternative channels */
+  /* our channel is now closed, move our requests to an alternative
+     channel */
+  alt = choose_exit ();
+  while (NULL != (rc = exit->receive_queue_head))
+  {
+    GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
+                                 exit->receive_queue_tail,
+                                 rc);
+    rc->exit = alt;
+    GNUNET_CONTAINER_DLL_insert (alt->receive_queue_head,
+                                 alt->receive_queue_tail,
+                                 rc);
+    GNUNET_MQ_send (GNUNET_CADET_get_mq (alt->cadet_channel),
+                    GNUNET_MQ_env_copy (rc->env));
+  }
   try_open_exit ();
-  if (NULL == exit->mesh_channel)
+}
+
+
+/**
+ * Function called whenever a channel has excess capacity.
+ *
+ * @param cls the `struct CadetExit`
+ * @param channel connection to the other end
+ * @param window_size how much capacity do we have
+ */
+static void
+channel_idle_notify_cb (void *cls,
+                        const struct GNUNET_CADET_Channel *channel,
+                        int window_size)
+{
+  struct CadetExit *pos = cls;
+
+  pos->idle = window_size;
+}
+
+
+/**
+ * We are short on cadet exits, try to open another one.
+ */
+static void
+try_open_exit ()
+{
+  struct CadetExit *pos;
+  uint32_t candidate_count;
+  uint32_t candidate_selected;
+  struct GNUNET_HashCode port;
+
+  GNUNET_CRYPTO_hash (GNUNET_APPLICATION_PORT_INTERNET_RESOLVER,
+                      strlen (GNUNET_APPLICATION_PORT_INTERNET_RESOLVER),
+                      &port);
+  candidate_count = 0;
+  for (pos = exit_head; NULL != pos; pos = pos->next)
+    if (NULL == pos->cadet_channel)
+      candidate_count++;
+  if (0 == candidate_count)
   {
-    /* our channel is now closed, move our requests to an alternative
-       channel */
-    alt = choose_exit ();
-    while (NULL != (rc = exit->transmit_queue_head))
-    {
-      GNUNET_CONTAINER_DLL_remove (exit->transmit_queue_head,
-				   exit->transmit_queue_tail,
-				   rc);
-      rc->exit = alt;
-      GNUNET_CONTAINER_DLL_insert (alt->transmit_queue_head,
-				   alt->transmit_queue_tail,
-				   rc);
-    }
-    while (NULL != (rc = exit->receive_queue_head))
-    {
-      GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
-				   exit->receive_queue_tail,
-				   rc);
-      rc->was_transmitted = GNUNET_NO;
-      rc->exit = alt;
-      GNUNET_CONTAINER_DLL_insert (alt->transmit_queue_head,
-				   alt->transmit_queue_tail,
-				   rc);
-    }
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "No DNS exits available yet.\n");
+    return;
   }
-  else
-  {
-    /* the same peer was chosen, just make sure the queue processing is restarted */
-    alt = exit;
-  }
-  if ( (NULL == alt->mesh_th) &&
-       (NULL != (rc = alt->transmit_queue_head)) )
-    alt->mesh_th = GNUNET_MESH_notify_transmit_ready (alt->mesh_channel,
-						      GNUNET_NO,
-						      TIMEOUT,
-						      rc->mlen,
-						      &transmit_dns_request_to_mesh,
-						      alt);
+  candidate_selected = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+						 candidate_count);
+  candidate_count = 0;
+  for (pos = exit_head; NULL != pos; pos = pos->next)
+    if (NULL == pos->cadet_channel)
+    {
+      candidate_count++;
+      if (candidate_selected < candidate_count)
+      {
+        struct GNUNET_MQ_MessageHandler cadet_handlers[] = {
+          GNUNET_MQ_hd_var_size (dns_response,
+                                 GNUNET_MESSAGE_TYPE_VPN_DNS_FROM_INTERNET,
+                                 struct DnsResponseMessage,
+                                 pos),
+          GNUNET_MQ_handler_end ()
+        };
+
+
+        /* move to the head of the DLL */
+	pos->cadet_channel
+          = GNUNET_CADET_channel_create (cadet_handle,
+                                         pos,
+                                         &pos->peer,
+                                         &port,
+                                         GNUNET_CADET_OPTION_DEFAULT,
+                                         &channel_idle_notify_cb,
+                                         &cadet_channel_end_cb,
+                                         cadet_handlers);
+	if (NULL == pos->cadet_channel)
+	{
+	  GNUNET_break (0);
+	  continue;
+	}
+	GNUNET_CONTAINER_DLL_remove (exit_head,
+				     exit_tail,
+				     pos);
+	GNUNET_CONTAINER_DLL_insert (exit_head,
+				     exit_tail,
+				     pos);
+	dns_exit_available++;
+	return;
+      }
+    }
+  GNUNET_assert (NULL == exit_head);
 }
 
 
 /**
  * Function called whenever we find an advertisement for a
- * DNS exit in the DHT.  If we don't have a mesh channel,
+ * DNS exit in the DHT.  If we don't have a cadet channel,
  * we should build one; otherwise, we should save the
  * advertisement for later use.
  *
@@ -1192,7 +1142,7 @@ handle_dht_result (void *cls,
 		   size_t size, const void *data)
 {
   const struct GNUNET_DNS_Advertisement *ad;
-  struct MeshExit *exit;
+  struct CadetExit *exit;
 
   if (sizeof (struct GNUNET_DNS_Advertisement) != size)
   {
@@ -1201,13 +1151,12 @@ handle_dht_result (void *cls,
   }
   ad = data;
   for (exit = exit_head; NULL != exit; exit = exit->next)
-    if (0 == memcmp (&ad->peer,
-		     &exit->peer,
-		     sizeof (struct GNUNET_PeerIdentity)))
+    if (0 == GNUNET_memcmp (&ad->peer,
+		     &exit->peer))
       break;
   if (NULL == exit)
   {
-    exit = GNUNET_new (struct MeshExit);
+    exit = GNUNET_new (struct CadetExit);
     exit->peer = ad->peer;
     /* channel is closed, so insert at the end */
     GNUNET_CONTAINER_DLL_insert_tail (exit_head,
@@ -1237,10 +1186,17 @@ run (void *cls, char *const *args GNUNET_UNUSED,
   struct GNUNET_HashCode dns_key;
 
   cfg = cfg_;
-  stats = GNUNET_STATISTICS_create ("pt", cfg);
-  ipv4_pt = GNUNET_CONFIGURATION_get_value_yesno (cfg, "pt", "TUNNEL_IPV4");
-  ipv6_pt = GNUNET_CONFIGURATION_get_value_yesno (cfg, "pt", "TUNNEL_IPV6");
-  dns_channel = GNUNET_CONFIGURATION_get_value_yesno (cfg, "pt", "TUNNEL_DNS");
+  stats = GNUNET_STATISTICS_create ("pt",
+                                    cfg);
+  ipv4_pt = GNUNET_CONFIGURATION_get_value_yesno (cfg,
+                                                  "pt",
+                                                  "TUNNEL_IPV4");
+  ipv6_pt = GNUNET_CONFIGURATION_get_value_yesno (cfg,
+                                                  "pt",
+                                                  "TUNNEL_IPV6");
+  dns_channel = GNUNET_CONFIGURATION_get_value_yesno (cfg,
+                                                      "pt",
+                                                      "TUNNEL_DNS");
   if (! (ipv4_pt || ipv6_pt || dns_channel))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -1248,13 +1204,14 @@ run (void *cls, char *const *args GNUNET_UNUSED,
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &cleanup, cls);
+  GNUNET_SCHEDULER_add_shutdown (&cleanup, cls);
   if (ipv4_pt || ipv6_pt)
   {
     dns_post_handle
       = GNUNET_DNS_connect (cfg,
 			    GNUNET_DNS_FLAG_POST_RESOLUTION,
-			    &dns_post_request_handler, NULL);
+			    &dns_post_request_handler,
+                            NULL);
     if (NULL == dns_post_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -1275,15 +1232,11 @@ run (void *cls, char *const *args GNUNET_UNUSED,
   }
   if (dns_channel)
   {
-    static struct GNUNET_MESH_MessageHandler mesh_handlers[] = {
-      {&receive_dns_response, GNUNET_MESSAGE_TYPE_VPN_DNS_FROM_INTERNET, 0},
-      {NULL, 0, 0}
-    };
-
     dns_pre_handle
       = GNUNET_DNS_connect (cfg,
 			    GNUNET_DNS_FLAG_PRE_RESOLUTION,
-			    &dns_pre_request_handler, NULL);
+			    &dns_pre_request_handler,
+                            NULL);
     if (NULL == dns_pre_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -1292,14 +1245,12 @@ run (void *cls, char *const *args GNUNET_UNUSED,
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
-    mesh_handle = GNUNET_MESH_connect (cfg, NULL, NULL,
-				       &mesh_channel_end_cb,
-				       mesh_handlers, NULL);
-    if (NULL == mesh_handle)
+    cadet_handle = GNUNET_CADET_connect (cfg);
+    if (NULL == cadet_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
 		  _("Failed to connect to %s service.  Exiting.\n"),
-		  "MESH");
+		  "CADET");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -1312,14 +1263,17 @@ run (void *cls, char *const *args GNUNET_UNUSED,
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
-    GNUNET_CRYPTO_hash ("dns", strlen ("dns"), &dns_key);
+    GNUNET_CRYPTO_hash ("dns",
+                        strlen ("dns"),
+                        &dns_key);
     dht_get = GNUNET_DHT_get_start (dht,
 				    GNUNET_BLOCK_TYPE_DNS,
 				    &dns_key,
 				    1,
 				    GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
 				    NULL, 0,
-				    &handle_dht_result, NULL);
+				    &handle_dht_result,
+                                    NULL);
   }
 }
 
@@ -1332,20 +1286,29 @@ run (void *cls, char *const *args GNUNET_UNUSED,
  * @return 0 ok, 1 on error
  */
 int
-main (int argc, char *const *argv)
+main (int argc,
+      char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
   int ret;
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc,
+                                                 argv,
+                                                 &argc,
+                                                 &argv))
     return 2;
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv, "gnunet-daemon-pt",
-			     gettext_noop
-			     ("Daemon to run to perform IP protocol translation to GNUnet"),
-			     options, &run, NULL)) ? 0 : 1;
+	 GNUNET_PROGRAM_run (argc,
+                             argv,
+                             "gnunet-daemon-pt",
+			     gettext_noop ("Daemon to run to perform IP protocol translation to GNUnet"),
+			     options,
+                             &run,
+                             NULL))
+    ? 0
+    : 1;
   GNUNET_free ((void*) argv);
   return ret;
 }

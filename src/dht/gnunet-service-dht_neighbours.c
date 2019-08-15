@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2017 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -24,7 +24,6 @@
  * @author Christian Grothoff
  * @author Nathan Evans
  */
-
 #include "platform.h"
 #include "gnunet_util_lib.h"
 #include "gnunet_block_lib.h"
@@ -40,16 +39,19 @@
 #include "gnunet_dht_service.h"
 #include "gnunet_statistics_service.h"
 #include "gnunet-service-dht.h"
-#include "gnunet-service-dht_clients.h"
 #include "gnunet-service-dht_datacache.h"
 #include "gnunet-service-dht_hello.h"
 #include "gnunet-service-dht_neighbours.h"
 #include "gnunet-service-dht_nse.h"
 #include "gnunet-service-dht_routing.h"
-#include <fenv.h>
 #include "dht.h"
 
 #define LOG_TRAFFIC(kind,...) GNUNET_log_from (kind, "dht-traffic",__VA_ARGS__)
+
+/**
+ * Enable slow sanity checks to debug issues.
+ */
+#define SANITY_CHECKS 1
 
 /**
  * How many buckets will we allow total.
@@ -75,11 +77,6 @@
  * Maximum allowed number of pending messages per peer.
  */
 #define MAXIMUM_PENDING_PER_PEER 64
-
-/**
- * How often to update our preference levels for peers in our routing tables.
- */
-#define DHT_DEFAULT_PREFERENCE_INTERVAL GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_MINUTES, 2)
 
 /**
  * How long at least to wait before sending another find peer request.
@@ -262,40 +259,6 @@ struct PeerGetMessage
 };
 GNUNET_NETWORK_STRUCT_END
 
-/**
- * Linked list of messages to send to a particular other peer.
- */
-struct P2PPendingMessage
-{
-  /**
-   * Pointer to next item in the list
-   */
-  struct P2PPendingMessage *next;
-
-  /**
-   * Pointer to previous item in the list
-   */
-  struct P2PPendingMessage *prev;
-
-  /**
-   * Message importance level.  FIXME: used? useful?
-   */
-  unsigned int importance;
-
-  /**
-   * When does this message time out?
-   */
-  struct GNUNET_TIME_Absolute timeout;
-
-  /**
-   * Actual message to be sent, allocated at the end of the struct:
-   * // msg = (cast) &pm[1];
-   * // memcpy (&pm[1], data, len);
-   */
-  const struct GNUNET_MessageHeader *msg;
-
-};
-
 
 /**
  * Entry for a peer in a bucket.
@@ -313,46 +276,24 @@ struct PeerInfo
   struct PeerInfo *prev;
 
   /**
-   * Count of outstanding messages for peer.
+   * Handle for sending messages to this peer.
    */
-  unsigned int pending_count;
-
-  /**
-   * Head of pending messages to be sent to this peer.
-   */
-  struct P2PPendingMessage *head;
-
-  /**
-   * Tail of pending messages to be sent to this peer.
-   */
-  struct P2PPendingMessage *tail;
-
-  /**
-   * Core handle for sending messages to this peer.
-   */
-  struct GNUNET_CORE_TransmitHandle *th;
-
-  /**
-   * Task for scheduling preference updates
-   */
-  GNUNET_SCHEDULER_TaskIdentifier preference_task;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * What is the identity of the peer?
    */
-  struct GNUNET_PeerIdentity id;
-
-#if 0
-  /**
-   * What is the average latency for replies received?
-   */
-  struct GNUNET_TIME_Relative latency;
+  const struct GNUNET_PeerIdentity *id;
 
   /**
-   * Transport level distance to peer.
+   * Hash of @e id.
    */
-  unsigned int distance;
-#endif
+  struct GNUNET_HashCode phash;
+
+  /**
+   * Which bucket is this peer in?
+   */
+  int peer_bucket;
 
 };
 
@@ -376,6 +317,29 @@ struct PeerBucket
    * Number of peers in the bucket.
    */
   unsigned int peers_size;
+};
+
+
+/**
+ * Information about a peer that we would like to connect to.
+ */
+struct ConnectInfo
+{
+
+  /**
+   * Handle to active HELLO offer operation, or NULL.
+   */
+  struct GNUNET_TRANSPORT_OfferHelloHandle *oh;
+
+  /**
+   * Handle to active connectivity suggestion operation, or NULL.
+   */
+  struct GNUNET_ATS_ConnectivitySuggestHandle *sh;
+
+  /**
+   * How much would we like to connect to this peer?
+   */
+  uint32_t strength;
 };
 
 
@@ -406,14 +370,21 @@ static unsigned int newly_found_peers;
 static int disable_try_connect;
 
 /**
- * The buckets.  Array of size MAX_BUCKET_SIZE.  Offset 0 means 0 bits matching.
+ * The buckets.  Array of size #MAX_BUCKETS.  Offset 0 means 0 bits matching.
  */
 static struct PeerBucket k_buckets[MAX_BUCKETS];
 
 /**
- * Hash map of all known peers, for easy removal from k_buckets on disconnect.
+ * Hash map of all CORE-connected peers, for easy removal from
+ * #k_buckets on disconnect.  Values are of type `struct PeerInfo`.
  */
-static struct GNUNET_CONTAINER_MultiPeerMap *all_known_peers;
+static struct GNUNET_CONTAINER_MultiPeerMap *all_connected_peers;
+
+/**
+ * Hash map of all peers we would like to be connected to.
+ * Values are of type `struct ConnectInfo`.
+ */
+static struct GNUNET_CONTAINER_MultiPeerMap *all_desired_peers;
 
 /**
  * Maximum size for each bucket.
@@ -423,7 +394,7 @@ static unsigned int bucket_size = DEFAULT_BUCKET_SIZE;
 /**
  * Task that sends FIND PEER requests.
  */
-static GNUNET_SCHEDULER_TaskIdentifier find_peer_task;
+static struct GNUNET_SCHEDULER_Task *find_peer_task;
 
 /**
  * Identity of this peer.
@@ -433,7 +404,7 @@ static struct GNUNET_PeerIdentity my_identity;
 /**
  * Hash of the identity of this peer.
  */
-static struct GNUNET_HashCode my_identity_hash;
+struct GNUNET_HashCode my_identity_hash;
 
 /**
  * Handle to CORE.
@@ -441,17 +412,16 @@ static struct GNUNET_HashCode my_identity_hash;
 static struct GNUNET_CORE_Handle *core_api;
 
 /**
- * Handle to ATS.
+ * Handle to ATS connectivity.
  */
-static struct GNUNET_ATS_PerformanceHandle *atsAPI;
-
+static struct GNUNET_ATS_ConnectivityHandle *ats_ch;
 
 
 /**
  * Find the optimal bucket for this key.
  *
  * @param hc the hashcode to compare our identity to
- * @return the proper bucket index, or GNUNET_SYSERR
+ * @return the proper bucket index, or #GNUNET_SYSERR
  *         on error (same hashcode)
  */
 static int
@@ -471,83 +441,175 @@ find_bucket (const struct GNUNET_HashCode *hc)
 
 
 /**
- * Let GNUnet core know that we like the given peer.
+ * Function called when #GNUNET_TRANSPORT_offer_hello() is done.
+ * Clean up the "oh" field in the @a cls
+ *
+ * @param cls a `struct ConnectInfo`
+ */
+static void
+offer_hello_done (void *cls)
+{
+  struct ConnectInfo *ci = cls;
+
+  ci->oh = NULL;
+}
+
+
+/**
+ * Function called for all entries in #all_desired_peers to clean up.
+ *
+ * @param cls NULL
+ * @param peer peer the entry is for
+ * @param value the value to remove
+ * @return #GNUNET_YES
+ */
+static int
+free_connect_info (void *cls,
+                   const struct GNUNET_PeerIdentity *peer,
+                   void *value)
+{
+  struct ConnectInfo *ci = value;
+
+ (void) cls;
+  GNUNET_assert (GNUNET_YES ==
+                 GNUNET_CONTAINER_multipeermap_remove (all_desired_peers,
+                                                       peer,
+                                                       ci));
+  if (NULL != ci->sh)
+  {
+    GNUNET_ATS_connectivity_suggest_cancel (ci->sh);
+    ci->sh = NULL;
+  }
+  if (NULL != ci->oh)
+  {
+    GNUNET_TRANSPORT_offer_hello_cancel (ci->oh);
+    ci->oh = NULL;
+  }
+  GNUNET_free (ci);
+  return GNUNET_YES;
+}
+
+
+/**
+ * Consider if we want to connect to a given peer, and if so
+ * let ATS know.  If applicable, the HELLO is offered to the
+ * TRANSPORT service.
+ *
+ * @param pid peer to consider connectivity requirements for
+ * @param h a HELLO message, or NULL
+ */
+static void
+try_connect (const struct GNUNET_PeerIdentity *pid,
+             const struct GNUNET_MessageHeader *h)
+{
+  int bucket;
+  struct GNUNET_HashCode pid_hash;
+  struct ConnectInfo *ci;
+  uint32_t strength;
+
+  GNUNET_CRYPTO_hash (pid,
+                      sizeof (struct GNUNET_PeerIdentity),
+                      &pid_hash);
+  bucket = find_bucket (&pid_hash);
+  if (bucket < 0)
+    return; /* self? */
+  ci = GNUNET_CONTAINER_multipeermap_get (all_desired_peers,
+                                          pid);
+
+  if (k_buckets[bucket].peers_size < bucket_size)
+    strength = (bucket_size - k_buckets[bucket].peers_size) * bucket;
+  else
+    strength = bucket; /* minimum value of connectivity */
+  if (GNUNET_YES ==
+      GNUNET_CONTAINER_multipeermap_contains (all_connected_peers,
+                                              pid))
+    strength *= 2; /* double for connected peers */
+  else if (k_buckets[bucket].peers_size > bucket_size)
+    strength = 0; /* bucket full, we really do not care about more */
+
+  if ( (0 == strength) &&
+       (NULL != ci) )
+  {
+    /* release request */
+    GNUNET_assert (GNUNET_YES ==
+                   free_connect_info (NULL,
+                                      pid,
+                                      ci));
+    return;
+  }
+  if (NULL == ci)
+  {
+    ci = GNUNET_new (struct ConnectInfo);
+    GNUNET_assert (GNUNET_OK ==
+                   GNUNET_CONTAINER_multipeermap_put (all_desired_peers,
+                                                      pid,
+                                                      ci,
+                                                      GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
+  }
+  if ( (NULL != ci->oh) &&
+       (NULL != h) )
+    GNUNET_TRANSPORT_offer_hello_cancel (ci->oh);
+  if (NULL != h)
+    ci->oh = GNUNET_TRANSPORT_offer_hello (GDS_cfg,
+                                           h,
+                                           &offer_hello_done,
+                                           ci);
+  if ( (NULL != ci->sh) &&
+       (ci->strength != strength) )
+    GNUNET_ATS_connectivity_suggest_cancel (ci->sh);
+  if (ci->strength != strength)
+    ci->sh = GNUNET_ATS_connectivity_suggest (ats_ch,
+                                              pid,
+                                              strength);
+  ci->strength = strength;
+}
+
+
+/**
+ * Function called for each peer in #all_desired_peers during
+ * #update_connect_preferences() if we have reason to adjust
+ * the strength of our desire to keep connections to certain
+ * peers.  Calls #try_connect() to update the calculations for
+ * the given @a pid.
+ *
+ * @param cls NULL
+ * @param pid peer to update
+ * @param value unused
+ * @return #GNUNET_YES (continue to iterate)
+ */
+static int
+update_desire_strength (void *cls,
+                        const struct GNUNET_PeerIdentity *pid,
+                        void *value)
+{
+  (void) cls;
+  (void) value;
+  try_connect (pid,
+	       NULL);
+  return GNUNET_YES;
+}
+
+
+/**
+ * Update our preferences for connectivity as given to ATS.
  *
  * @param cls the `struct PeerInfo` of the peer
  * @param tc scheduler context.
  */
 static void
-update_core_preference (void *cls,
-                        const struct GNUNET_SCHEDULER_TaskContext *tc)
+update_connect_preferences ()
 {
-  struct PeerInfo *peer = cls;
-  uint64_t preference;
-  unsigned int matching;
-  int bucket;
-  struct GNUNET_HashCode phash;
-
-  peer->preference_task = GNUNET_SCHEDULER_NO_TASK;
-  if ((tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN) != 0)
-    return;
-  GNUNET_CRYPTO_hash (&peer->id,
-		      sizeof (struct GNUNET_PeerIdentity),
-		      &phash);
-  matching =
-      GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash,
-                                        &phash);
-  if (matching >= 64)
-    matching = 63;
-  bucket = find_bucket (&phash);
-  if (bucket == GNUNET_SYSERR)
-    preference = 0;
-  else
-  {
-    GNUNET_assert (k_buckets[bucket].peers_size != 0);
-    preference = (1LL << matching) / k_buckets[bucket].peers_size;
-  }
-  if (preference == 0)
-  {
-    peer->preference_task =
-        GNUNET_SCHEDULER_add_delayed (DHT_DEFAULT_PREFERENCE_INTERVAL,
-                                      &update_core_preference, peer);
-    return;
-  }
-  GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop ("# Preference updates given to core"),
-                            1, GNUNET_NO);
-  GNUNET_ATS_performance_change_preference (atsAPI, &peer->id,
-                                GNUNET_ATS_PREFERENCE_BANDWIDTH,
-                                (double) preference, GNUNET_ATS_PREFERENCE_END);
-  peer->preference_task =
-      GNUNET_SCHEDULER_add_delayed (DHT_DEFAULT_PREFERENCE_INTERVAL,
-                                    &update_core_preference, peer);
-
-
+  GNUNET_CONTAINER_multipeermap_iterate (all_desired_peers,
+                                         &update_desire_strength,
+                                         NULL);
 }
-
-
-/**
- * Closure for 'add_known_to_bloom'.
- */
-struct BloomConstructorContext
-{
-  /**
-   * Bloom filter under construction.
-   */
-  struct GNUNET_CONTAINER_BloomFilter *bloom;
-
-  /**
-   * Mutator to use.
-   */
-  uint32_t bf_mutator;
-};
 
 
 /**
  * Add each of the peers we already know to the bloom filter of
  * the request so that we don't get duplicate HELLOs.
  *
- * @param cls the 'struct BloomConstructorContext'.
+ * @param cls the `struct GNUNET_BLOCK_Group`
  * @param key peer identity to add to the bloom filter
  * @param value value the peer information (unused)
  * @return #GNUNET_YES (we should continue to iterate)
@@ -557,16 +619,20 @@ add_known_to_bloom (void *cls,
 		    const struct GNUNET_PeerIdentity *key,
 		    void *value)
 {
-  struct BloomConstructorContext *ctx = cls;
+  struct GNUNET_BLOCK_Group *bg = cls;
   struct GNUNET_HashCode key_hash;
-  struct GNUNET_HashCode mh;
 
-  GNUNET_CRYPTO_hash (key, sizeof (struct GNUNET_PeerIdentity), &key_hash);
-  GNUNET_BLOCK_mingle_hash (&key_hash, ctx->bf_mutator, &mh);
+ (void) cls;
+ (void) value;
+  GNUNET_CRYPTO_hash (key,
+                      sizeof (struct GNUNET_PeerIdentity),
+                      &key_hash);
+  GNUNET_BLOCK_group_set_seen (bg,
+                               &key_hash,
+                               1);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Adding known peer (%s) to bloomfilter for FIND PEER with mutation %u\n",
-              GNUNET_i2s (key), ctx->bf_mutator);
-  GNUNET_CONTAINER_bloomfilter_add (ctx->bloom, &mh);
+              "Adding known peer (%s) to bloomfilter for FIND PEER\n",
+              GNUNET_i2s (key));
   return GNUNET_YES;
 }
 
@@ -577,49 +643,58 @@ add_known_to_bloom (void *cls,
  * and attempt to connect to them.
  *
  * @param cls closure for this task
- * @param tc the context under which the task is running
  */
 static void
-send_find_peer_message (void *cls,
-                        const struct GNUNET_SCHEDULER_TaskContext *tc)
+send_find_peer_message (void *cls)
 {
   struct GNUNET_TIME_Relative next_send_time;
-  struct BloomConstructorContext bcc;
+  struct GNUNET_BLOCK_Group *bg;
   struct GNUNET_CONTAINER_BloomFilter *peer_bf;
 
-  find_peer_task = GNUNET_SCHEDULER_NO_TASK;
-  if ((tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN) != 0)
-    return;
+ (void) cls;
+ find_peer_task = NULL;
   if (newly_found_peers > bucket_size)
   {
     /* If we are finding many peers already, no need to send out our request right now! */
     find_peer_task =
         GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
-                                      &send_find_peer_message, NULL);
+                                      &send_find_peer_message,
+                                      NULL);
     newly_found_peers = 0;
     return;
   }
-  bcc.bf_mutator =
-      GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, UINT32_MAX);
-  bcc.bloom =
-      GNUNET_CONTAINER_bloomfilter_init (NULL, DHT_BLOOM_SIZE,
-                                         GNUNET_CONSTANTS_BLOOMFILTER_K);
-  GNUNET_CONTAINER_multipeermap_iterate (all_known_peers, &add_known_to_bloom,
-                                         &bcc);
+  bg = GNUNET_BLOCK_group_create (GDS_block_context,
+                                  GNUNET_BLOCK_TYPE_DHT_HELLO,
+                                  GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                                                            UINT32_MAX),
+                                  NULL,
+                                  0,
+                                  "filter-size",
+                                  DHT_BLOOM_SIZE,
+                                  NULL);
+  GNUNET_CONTAINER_multipeermap_iterate (all_connected_peers,
+                                         &add_known_to_bloom,
+                                         bg);
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop ("# FIND PEER messages initiated"), 1,
+                            gettext_noop ("# FIND PEER messages initiated"),
+                            1,
                             GNUNET_NO);
-  peer_bf =
-      GNUNET_CONTAINER_bloomfilter_init (NULL, DHT_BLOOM_SIZE,
+  peer_bf
+    = GNUNET_CONTAINER_bloomfilter_init (NULL,
+                                         DHT_BLOOM_SIZE,
                                          GNUNET_CONSTANTS_BLOOMFILTER_K);
   // FIXME: pass priority!?
   GDS_NEIGHBOURS_handle_get (GNUNET_BLOCK_TYPE_DHT_HELLO,
-                             GNUNET_DHT_RO_FIND_PEER,
-                             FIND_PEER_REPLICATION_LEVEL, 0,
-                             &my_identity_hash, NULL, 0, bcc.bloom,
-                             bcc.bf_mutator, peer_bf);
+                             GNUNET_DHT_RO_FIND_PEER | GNUNET_DHT_RO_RECORD_ROUTE,
+                             FIND_PEER_REPLICATION_LEVEL,
+                             0,
+                             &my_identity_hash,
+                             NULL,
+                             0,
+                             bg,
+                             peer_bf);
   GNUNET_CONTAINER_bloomfilter_free (peer_bf);
-  GNUNET_CONTAINER_bloomfilter_free (bcc.bloom);
+  GNUNET_BLOCK_group_destroy (bg);
   /* schedule next round */
   next_send_time.rel_value_us =
       DHT_MINIMUM_FIND_PEER_INTERVAL.rel_value_us +
@@ -627,8 +702,10 @@ send_find_peer_message (void *cls,
                                 DHT_MAXIMUM_FIND_PEER_INTERVAL.rel_value_us /
                                 (newly_found_peers + 1));
   newly_found_peers = 0;
+  GNUNET_assert (NULL == find_peer_task);
   find_peer_task =
-      GNUNET_SCHEDULER_add_delayed (next_send_time, &send_find_peer_message,
+      GNUNET_SCHEDULER_add_delayed (next_send_time,
+                                    &send_find_peer_message,
                                     NULL);
 }
 
@@ -638,60 +715,66 @@ send_find_peer_message (void *cls,
  *
  * @param cls closure
  * @param peer peer identity this notification is about
+ * @param mq message queue for sending messages to @a peer
+ * @return our `struct PeerInfo` for @a peer
  */
-static void
-handle_core_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
+static void *
+handle_core_connect (void *cls,
+                     const struct GNUNET_PeerIdentity *peer,
+		     struct GNUNET_MQ_Handle *mq)
 {
-  struct PeerInfo *ret;
-  struct GNUNET_HashCode phash;
-  int peer_bucket;
- 
-  /* Check for connect to self message */
-  if (0 == memcmp (&my_identity, peer, sizeof (struct GNUNET_PeerIdentity)))
-    return;
+  struct PeerInfo *pi;
+
+ (void) cls;
+ /* Check for connect to self message */
+  if (0 == GNUNET_memcmp (&my_identity,
+		   peer))
+    return NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Connected to %s\n",
               GNUNET_i2s (peer));
-  if (GNUNET_YES ==
-      GNUNET_CONTAINER_multipeermap_contains (all_known_peers,
-                                              peer))
-  {
-    GNUNET_break (0);
-    return;
-  }
-  GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# peers connected"), 1,
+  GNUNET_assert (GNUNET_NO ==
+		 GNUNET_CONTAINER_multipeermap_get (all_connected_peers,
+						    peer));
+  GNUNET_STATISTICS_update (GDS_stats,
+                            gettext_noop ("# peers connected"),
+                            1,
                             GNUNET_NO);
+  pi = GNUNET_new (struct PeerInfo);
+  pi->id = peer;
+  pi->mq = mq;
   GNUNET_CRYPTO_hash (peer,
 		      sizeof (struct GNUNET_PeerIdentity),
-		      &phash);
-  peer_bucket = find_bucket (&phash);
-  GNUNET_assert ((peer_bucket >= 0) && (peer_bucket < MAX_BUCKETS));
-  ret = GNUNET_new (struct PeerInfo);
-#if 0
-  ret->latency = latency;
-  ret->distance = distance;
-#endif
-  ret->id = *peer;
-  GNUNET_CONTAINER_DLL_insert_tail (k_buckets[peer_bucket].head,
-                                    k_buckets[peer_bucket].tail, ret);
-  k_buckets[peer_bucket].peers_size++;
-  closest_bucket = GNUNET_MAX (closest_bucket, peer_bucket);
-  if ((peer_bucket > 0) && (k_buckets[peer_bucket].peers_size <= bucket_size))
+		      &pi->phash);
+  pi->peer_bucket = find_bucket (&pi->phash);
+  GNUNET_assert ( (pi->peer_bucket >= 0) &&
+                  ((unsigned int) pi->peer_bucket < MAX_BUCKETS) );
+  GNUNET_CONTAINER_DLL_insert_tail (k_buckets[pi->peer_bucket].head,
+                                    k_buckets[pi->peer_bucket].tail,
+                                    pi);
+  k_buckets[pi->peer_bucket].peers_size++;
+  closest_bucket = GNUNET_MAX (closest_bucket,
+                               (unsigned int) pi->peer_bucket);
+  GNUNET_assert (GNUNET_OK ==
+                 GNUNET_CONTAINER_multipeermap_put (all_connected_peers,
+                                                    pi->id,
+                                                    pi,
+                                                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
+  if ( (pi->peer_bucket > 0) &&
+       (k_buckets[pi->peer_bucket].peers_size <= bucket_size))
   {
-    ret->preference_task =
-        GNUNET_SCHEDULER_add_now (&update_core_preference, ret);
+    update_connect_preferences ();
     newly_found_peers++;
   }
-  GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multipeermap_put (all_known_peers,
-                                                    peer, ret,
-                                                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
-  if (1 == GNUNET_CONTAINER_multipeermap_size (all_known_peers) &&
-      (GNUNET_YES != disable_try_connect))
+  if ( (1 == GNUNET_CONTAINER_multipeermap_size (all_connected_peers)) &&
+       (GNUNET_YES != disable_try_connect))
   {
     /* got a first connection, good time to start with FIND PEER requests... */
-    find_peer_task = GNUNET_SCHEDULER_add_now (&send_find_peer_message, NULL);
+    GNUNET_assert (NULL == find_peer_task);
+    find_peer_task = GNUNET_SCHEDULER_add_now (&send_find_peer_message,
+                                               NULL);
   }
+  return pi;
 }
 
 
@@ -700,170 +783,48 @@ handle_core_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
  *
  * @param cls closure
  * @param peer peer identity this notification is about
+ * @param internal_cls our `struct PeerInfo` for @a peer
  */
 static void
 handle_core_disconnect (void *cls,
-			const struct GNUNET_PeerIdentity *peer)
+			const struct GNUNET_PeerIdentity *peer,
+			void *internal_cls)
 {
-  struct PeerInfo *to_remove;
-  int current_bucket;
-  struct P2PPendingMessage *pos;
-  unsigned int discarded;
-  struct GNUNET_HashCode phash;
+  struct PeerInfo *to_remove = internal_cls;
 
+  (void) cls;
   /* Check for disconnect from self message */
-  if (0 == memcmp (&my_identity, peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (NULL == to_remove)
     return;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Disconnected %s\n",
               GNUNET_i2s (peer));
-  to_remove =
-      GNUNET_CONTAINER_multipeermap_get (all_known_peers, peer);
-  if (NULL == to_remove)
-  {
-    GNUNET_break (0);
-    return;
-  }
-  GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# peers connected"), -1,
+  GNUNET_STATISTICS_update (GDS_stats,
+                            gettext_noop ("# peers connected"),
+                            -1,
                             GNUNET_NO);
   GNUNET_assert (GNUNET_YES ==
-                 GNUNET_CONTAINER_multipeermap_remove (all_known_peers,
+                 GNUNET_CONTAINER_multipeermap_remove (all_connected_peers,
                                                        peer,
                                                        to_remove));
-  if (GNUNET_SCHEDULER_NO_TASK != to_remove->preference_task)
+  if ( (0 == GNUNET_CONTAINER_multipeermap_size (all_connected_peers)) &&
+       (GNUNET_YES != disable_try_connect) )
   {
-    GNUNET_SCHEDULER_cancel (to_remove->preference_task);
-    to_remove->preference_task = GNUNET_SCHEDULER_NO_TASK;
+    GNUNET_SCHEDULER_cancel (find_peer_task);
+    find_peer_task = NULL;
   }
-  GNUNET_CRYPTO_hash (peer,
-		      sizeof (struct GNUNET_PeerIdentity),
-		      &phash);
-  current_bucket = find_bucket (&phash);
-  GNUNET_assert (current_bucket >= 0);
-  GNUNET_CONTAINER_DLL_remove (k_buckets[current_bucket].head,
-                               k_buckets[current_bucket].tail, to_remove);
-  GNUNET_assert (k_buckets[current_bucket].peers_size > 0);
-  k_buckets[current_bucket].peers_size--;
-  while ((closest_bucket > 0) && (k_buckets[closest_bucket].peers_size == 0))
+  GNUNET_assert (to_remove->peer_bucket >= 0);
+  GNUNET_CONTAINER_DLL_remove (k_buckets[to_remove->peer_bucket].head,
+                               k_buckets[to_remove->peer_bucket].tail,
+                               to_remove);
+  GNUNET_assert (k_buckets[to_remove->peer_bucket].peers_size > 0);
+  k_buckets[to_remove->peer_bucket].peers_size--;
+  while ( (closest_bucket > 0) &&
+          (0 == k_buckets[to_remove->peer_bucket].peers_size) )
     closest_bucket--;
-
-  if (to_remove->th != NULL)
-  {
-    GNUNET_CORE_notify_transmit_ready_cancel (to_remove->th);
-    to_remove->th = NULL;
-  }
-  discarded = 0;
-  while (NULL != (pos = to_remove->head))
-  {
-    GNUNET_CONTAINER_DLL_remove (to_remove->head, to_remove->tail, pos);
-    discarded++;
-    GNUNET_free (pos);
-  }
-  GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop
-                            ("# Queued messages discarded (peer disconnected)"),
-                            discarded, GNUNET_NO);
+  if (k_buckets[to_remove->peer_bucket].peers_size < bucket_size)
+    update_connect_preferences ();
   GNUNET_free (to_remove);
-}
-
-
-/**
- * Called when core is ready to send a message we asked for
- * out to the destination.
- *
- * @param cls the 'struct PeerInfo' of the target peer
- * @param size number of bytes available in buf
- * @param buf where the callee should write the message
- * @return number of bytes written to buf
- */
-static size_t
-core_transmit_notify (void *cls, size_t size, void *buf)
-{
-  struct PeerInfo *peer = cls;
-  char *cbuf = buf;
-  struct P2PPendingMessage *pending;
-  size_t off;
-  size_t msize;
-  
-  peer->th = NULL;
-  while ((NULL != (pending = peer->head)) &&
-         (0 == GNUNET_TIME_absolute_get_remaining (pending->timeout).rel_value_us))
-  {
-    peer->pending_count--;
-    GNUNET_CONTAINER_DLL_remove (peer->head, peer->tail, pending);
-    GNUNET_free (pending);
-  }
-  if (NULL == pending)
-  {
-    /* no messages pending */
-    return 0;
-  }
-  if (NULL == buf)
-  {
-    peer->th =
-        GNUNET_CORE_notify_transmit_ready (core_api, GNUNET_NO,
-                                           GNUNET_CORE_PRIO_BEST_EFFORT,
-                                           GNUNET_TIME_absolute_get_remaining
-                                           (pending->timeout), &peer->id,
-                                           ntohs (pending->msg->size),
-                                           &core_transmit_notify, peer);
-    GNUNET_break (NULL != peer->th);
-    return 0;
-  }
-  off = 0;
-  while ((NULL != (pending = peer->head)) &&
-         (size - off >= (msize = ntohs (pending->msg->size))))
-  {
-    GNUNET_STATISTICS_update (GDS_stats,
-                              gettext_noop
-                              ("# Bytes transmitted to other peers"), msize,
-                              GNUNET_NO);
-    memcpy (&cbuf[off], pending->msg, msize);
-    off += msize;
-    peer->pending_count--;
-    GNUNET_CONTAINER_DLL_remove (peer->head, peer->tail, pending);
-    GNUNET_free (pending);
-  }
-  if (peer->head != NULL)
-  {
-    peer->th =
-        GNUNET_CORE_notify_transmit_ready (core_api, GNUNET_NO,
-                                           GNUNET_CORE_PRIO_BEST_EFFORT,
-                                           GNUNET_TIME_absolute_get_remaining
-                                           (pending->timeout), &peer->id, msize,
-                                           &core_transmit_notify, peer);
-    GNUNET_break (NULL != peer->th);
-  }
-  return off;
-}
-
-
-/**
- * Transmit all messages in the peer's message queue.
- *
- * @param peer message queue to process
- */
-static void
-process_peer_queue (struct PeerInfo *peer)
-{
-  struct P2PPendingMessage *pending;
-
-  if (NULL == (pending = peer->head))
-    return;
-  if (NULL != peer->th)
-    return;
-  GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop
-                            ("# Bytes of bandwidth requested from core"),
-                            ntohs (pending->msg->size), GNUNET_NO);
-  peer->th =
-      GNUNET_CORE_notify_transmit_ready (core_api, GNUNET_NO,
-                                         GNUNET_CORE_PRIO_BEST_EFFORT,
-                                         GNUNET_TIME_absolute_get_remaining
-                                         (pending->timeout), &peer->id,
-                                         ntohs (pending->msg->size),
-                                         &core_transmit_notify, peer);
-  GNUNET_break (NULL != peer->th);
 }
 
 
@@ -876,7 +837,8 @@ process_peer_queue (struct PeerInfo *peer)
  * @return Some number of peers to forward the message to
  */
 static unsigned int
-get_forward_count (uint32_t hop_count, uint32_t target_replication)
+get_forward_count (uint32_t hop_count,
+		   uint32_t target_replication)
 {
   uint32_t random_value;
   uint32_t forward_count;
@@ -949,7 +911,8 @@ get_distance (const struct GNUNET_HashCode *target,
 
   /* first, calculate the most significant 9 bits of our
    * result, aka the number of LSBs */
-  bucket = GNUNET_CRYPTO_hash_matching_bits (target, have);
+  bucket = GNUNET_CRYPTO_hash_matching_bits (target,
+                                             have);
   /* bucket is now a value between 0 and 512 */
   if (bucket == 512)
     return 0;                   /* perfect match */
@@ -986,37 +949,35 @@ get_distance (const struct GNUNET_HashCode *target,
  * @return #GNUNET_YES if node location is closest,
  *         #GNUNET_NO otherwise.
  */
-static int
-am_closest_peer (const struct GNUNET_HashCode *key,
-                 const struct GNUNET_CONTAINER_BloomFilter *bloom)
+int
+GDS_am_closest_peer (const struct GNUNET_HashCode *key,
+                     const struct GNUNET_CONTAINER_BloomFilter *bloom)
 {
   int bits;
   int other_bits;
   int bucket_num;
-  int count;
   struct PeerInfo *pos;
-  struct GNUNET_HashCode phash;
 
-  if (0 == memcmp (&my_identity_hash, key, sizeof (struct GNUNET_HashCode)))
+  if (0 == GNUNET_memcmp (&my_identity_hash,
+		   key))
     return GNUNET_YES;
   bucket_num = find_bucket (key);
   GNUNET_assert (bucket_num >= 0);
-  bits = GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash, key);
+  bits = GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash,
+                                           key);
   pos = k_buckets[bucket_num].head;
-  count = 0;
-  while ((pos != NULL) && (count < bucket_size))
+  while (NULL != pos) 
   {
-    GNUNET_CRYPTO_hash (&pos->id,
-			sizeof (struct GNUNET_PeerIdentity),
-			&phash);
-    if ((bloom != NULL) &&
-        (GNUNET_YES ==
-         GNUNET_CONTAINER_bloomfilter_test (bloom, &phash)))
+    if ( (NULL != bloom) &&
+	 (GNUNET_YES ==
+	  GNUNET_CONTAINER_bloomfilter_test (bloom,
+					     &pos->phash)) )
     {
       pos = pos->next;
       continue;                 /* Skip already checked entries */
     }
-    other_bits = GNUNET_CRYPTO_hash_matching_bits (&phash, key);
+    other_bits = GNUNET_CRYPTO_hash_matching_bits (&pos->phash,
+                                                   key);
     if (other_bits > bits)
       return GNUNET_NO;
     if (other_bits == bits)     /* We match the same number of bits */
@@ -1046,8 +1007,9 @@ am_closest_peer (const struct GNUNET_HashCode *key,
  * @return Peer to route to, or NULL on error
  */
 static struct PeerInfo *
-select_peer (const struct GNUNET_HashCode * key,
-             const struct GNUNET_CONTAINER_BloomFilter *bloom, uint32_t hops)
+select_peer (const struct GNUNET_HashCode *key,
+             const struct GNUNET_CONTAINER_BloomFilter *bloom,
+             uint32_t hops)
 {
   unsigned int bc;
   unsigned int count;
@@ -1056,7 +1018,6 @@ select_peer (const struct GNUNET_HashCode * key,
   unsigned int dist;
   unsigned int smallest_distance;
   struct PeerInfo *chosen;
-  struct GNUNET_HashCode phash;
 
   if (hops >= GDS_NSE_get ())
   {
@@ -1069,14 +1030,13 @@ select_peer (const struct GNUNET_HashCode * key,
       count = 0;
       while ((pos != NULL) && (count < bucket_size))
       {
-	GNUNET_CRYPTO_hash (&pos->id,
-			    sizeof (struct GNUNET_PeerIdentity),
-			    &phash);
-        if ((bloom == NULL) ||
-            (GNUNET_NO ==
-             GNUNET_CONTAINER_bloomfilter_test (bloom, &phash)))
+        if ( (NULL == bloom) ||
+             (GNUNET_NO ==
+              GNUNET_CONTAINER_bloomfilter_test (bloom,
+                                                 &pos->phash)))
         {
-          dist = get_distance (key, &phash);
+          dist = get_distance (key,
+                               &pos->phash);
           if (dist < smallest_distance)
           {
             chosen = pos;
@@ -1087,12 +1047,14 @@ select_peer (const struct GNUNET_HashCode * key,
         {
           GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                       "Excluded peer `%s' due to BF match in greedy routing for %s\n",
-                      GNUNET_i2s (&pos->id), GNUNET_h2s (key));
+                      GNUNET_i2s (pos->id),
+		      GNUNET_h2s (key));
           GNUNET_STATISTICS_update (GDS_stats,
-                                    gettext_noop
-                                    ("# Peers excluded from routing due to Bloomfilter"),
-                                    1, GNUNET_NO);
-          dist = get_distance (key, &phash);
+                                    gettext_noop ("# Peers excluded from routing due to Bloomfilter"),
+                                    1,
+                                    GNUNET_NO);
+          dist = get_distance (key,
+                               &pos->phash);
           if (dist < smallest_distance)
           {
             chosen = NULL;
@@ -1105,8 +1067,14 @@ select_peer (const struct GNUNET_HashCode * key,
     }
     if (NULL == chosen)
       GNUNET_STATISTICS_update (GDS_stats,
-                                gettext_noop ("# Peer selection failed"), 1,
+                                gettext_noop ("# Peer selection failed"),
+                                1,
                                 GNUNET_NO);
+    else
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "Selected peer `%s' in greedy routing for %s\n",
+                  GNUNET_i2s (chosen->id),
+                  GNUNET_h2s (key));
     return chosen;
   }
 
@@ -1116,14 +1084,12 @@ select_peer (const struct GNUNET_HashCode * key,
   for (bc = 0; bc <= closest_bucket; bc++)
   {
     pos = k_buckets[bc].head;
-    while ((pos != NULL) && (count < bucket_size))
+    while ( (NULL != pos) && (count < bucket_size) )
     {
-      GNUNET_CRYPTO_hash (&pos->id,
-			  sizeof (struct GNUNET_PeerIdentity),
-			  &phash);
-      if ((bloom != NULL) &&
-          (GNUNET_YES ==
-           GNUNET_CONTAINER_bloomfilter_test (bloom, &phash)))
+      if ( (NULL != bloom) &&
+           (GNUNET_YES ==
+            GNUNET_CONTAINER_bloomfilter_test (bloom,
+                                               &pos->phash)) )
       {
         GNUNET_STATISTICS_update (GDS_stats,
                                   gettext_noop
@@ -1131,7 +1097,8 @@ select_peer (const struct GNUNET_HashCode * key,
                                   1, GNUNET_NO);
         GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                     "Excluded peer `%s' due to BF match in random routing for %s\n",
-                    GNUNET_i2s (&pos->id), GNUNET_h2s (key));
+                    GNUNET_i2s (pos->id),
+		    GNUNET_h2s (key));
         pos = pos->next;
         continue;               /* Ignore bloomfiltered peers */
       }
@@ -1147,23 +1114,28 @@ select_peer (const struct GNUNET_HashCode * key,
     return NULL;
   }
   /* Now actually choose a peer */
-  selected = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, count);
+  selected = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                                       count);
   count = 0;
   for (bc = 0; bc <= closest_bucket; bc++)
   {
     for (pos = k_buckets[bc].head; ((pos != NULL) && (count < bucket_size)); pos = pos->next)
     {
-      GNUNET_CRYPTO_hash (&pos->id,
-			  sizeof (struct GNUNET_PeerIdentity),
-			  &phash);
       if ((bloom != NULL) &&
           (GNUNET_YES ==
-           GNUNET_CONTAINER_bloomfilter_test (bloom, &phash)))
+           GNUNET_CONTAINER_bloomfilter_test (bloom,
+                                              &pos->phash)))
       {
         continue;               /* Ignore bloomfiltered peers */
       }
       if (0 == selected--)
+      {
+        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                    "Selected peer `%s' in random routing for %s\n",
+                    GNUNET_i2s (pos->id),
+                    GNUNET_h2s (key));
         return pos;
+      }
     }
   }
   GNUNET_break (0);
@@ -1187,41 +1159,46 @@ select_peer (const struct GNUNET_HashCode * key,
 static unsigned int
 get_target_peers (const struct GNUNET_HashCode *key,
                   struct GNUNET_CONTAINER_BloomFilter *bloom,
-                  uint32_t hop_count, uint32_t target_replication,
+                  uint32_t hop_count,
+		  uint32_t target_replication,
                   struct PeerInfo ***targets)
 {
   unsigned int ret;
   unsigned int off;
   struct PeerInfo **rtargets;
   struct PeerInfo *nxt;
-  struct GNUNET_HashCode nhash;
 
   GNUNET_assert (NULL != bloom);
-  ret = get_forward_count (hop_count, target_replication);
+  ret = get_forward_count (hop_count,
+			   target_replication);
   if (0 == ret)
   {
     *targets = NULL;
     return 0;
   }
-  rtargets = GNUNET_malloc (sizeof (struct PeerInfo *) * ret);
+  rtargets = GNUNET_new_array (ret,
+			       struct PeerInfo *);
   for (off = 0; off < ret; off++)
   {
-    nxt = select_peer (key, bloom, hop_count);
+    nxt = select_peer (key,
+                       bloom,
+                       hop_count);
     if (NULL == nxt)
       break;
     rtargets[off] = nxt;
-    GNUNET_CRYPTO_hash (&nxt->id,
-			sizeof (struct GNUNET_PeerIdentity),
-			&nhash);
     GNUNET_break (GNUNET_NO ==
                   GNUNET_CONTAINER_bloomfilter_test (bloom,
-                                                     &nhash));
-    GNUNET_CONTAINER_bloomfilter_add (bloom, &nhash);
+                                                     &nxt->phash));
+    GNUNET_CONTAINER_bloomfilter_add (bloom,
+                                      &nxt->phash);
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Selected %u/%u peers at hop %u for %s (target was %u)\n", off,
-              GNUNET_CONTAINER_multipeermap_size (all_known_peers),
-              (unsigned int) hop_count, GNUNET_h2s (key), ret);
+              "Selected %u/%u peers at hop %u for %s (target was %u)\n",
+              off,
+              GNUNET_CONTAINER_multipeermap_size (all_connected_peers),
+              (unsigned int) hop_count,
+              GNUNET_h2s (key),
+              ret);
   if (0 == off)
   {
     GNUNET_free (rtargets);
@@ -1256,8 +1233,9 @@ get_target_peers (const struct GNUNET_HashCode *key,
  * @param put_path peers this request has traversed so far (if tracked)
  * @param data payload to store
  * @param data_size number of bytes in @a data
+ * @return #GNUNET_OK if the request was forwarded, #GNUNET_NO if not
  */
-void
+int
 GDS_NEIGHBOURS_handle_put (enum GNUNET_BLOCK_Type type,
                            enum GNUNET_DHT_RouteOption options,
                            uint32_t desired_replication_level,
@@ -1267,99 +1245,111 @@ GDS_NEIGHBOURS_handle_put (enum GNUNET_BLOCK_Type type,
                            const struct GNUNET_HashCode *key,
                            unsigned int put_path_length,
                            struct GNUNET_PeerIdentity *put_path,
-                           const void *data, size_t data_size)
+                           const void *data,
+			   size_t data_size)
 {
   unsigned int target_count;
   unsigned int i;
   struct PeerInfo **targets;
   struct PeerInfo *target;
-  struct P2PPendingMessage *pending;
   size_t msize;
+  struct GNUNET_MQ_Envelope *env;
   struct PeerPutMessage *ppm;
   struct GNUNET_PeerIdentity *pp;
-  struct GNUNET_HashCode thash;
+  unsigned int skip_count;
 
   GNUNET_assert (NULL != bf);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Adding myself (%s) to PUT bloomfilter for %s\n",
-              GNUNET_i2s (&my_identity), GNUNET_h2s (key));
-  GNUNET_CONTAINER_bloomfilter_add (bf, &my_identity_hash);
-  GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# PUT requests routed"),
-                            1, GNUNET_NO);
-  target_count =
-      get_target_peers (key, bf, hop_count, desired_replication_level,
+              GNUNET_i2s (&my_identity),
+              GNUNET_h2s (key));
+  GNUNET_CONTAINER_bloomfilter_add (bf,
+                                    &my_identity_hash);
+  GNUNET_STATISTICS_update (GDS_stats,
+			    gettext_noop ("# PUT requests routed"),
+                            1,
+			    GNUNET_NO);
+  target_count
+    = get_target_peers (key,
+			bf,
+			hop_count,
+			desired_replication_level,
                         &targets);
   if (0 == target_count)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Routing PUT for %s terminates after %u hops at %s\n",
-                GNUNET_h2s (key), (unsigned int) hop_count,
+                GNUNET_h2s (key),
+		(unsigned int) hop_count,
                 GNUNET_i2s (&my_identity));
-    return;
+    return GNUNET_NO;
   }
-  msize =
-      put_path_length * sizeof (struct GNUNET_PeerIdentity) + data_size +
-      sizeof (struct PeerPutMessage);
-  if (msize >= GNUNET_SERVER_MAX_MESSAGE_SIZE)
+  msize = put_path_length * sizeof (struct GNUNET_PeerIdentity) + data_size;
+  if (msize + sizeof (struct PeerPutMessage)
+      >= GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE)
   {
     put_path_length = 0;
-    msize = data_size + sizeof (struct PeerPutMessage);
+    msize = data_size;
   }
-  if (msize >= GNUNET_SERVER_MAX_MESSAGE_SIZE)
+  if (msize + sizeof (struct PeerPutMessage)
+      >= GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE)
   {
     GNUNET_break (0);
     GNUNET_free (targets);
-    return;
+    return GNUNET_NO;
   }
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop
-                            ("# PUT messages queued for transmission"),
-                            target_count, GNUNET_NO);
+                            gettext_noop ("# PUT messages queued for transmission"),
+                            target_count,
+			    GNUNET_NO);
+  skip_count = 0;
   for (i = 0; i < target_count; i++)
   {
     target = targets[i];
-    if (target->pending_count >= MAXIMUM_PENDING_PER_PEER)
+    if (GNUNET_MQ_get_length (target->mq) >= MAXIMUM_PENDING_PER_PEER)
     {
-      GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# P2P messages dropped due to full queue"),
-				1, GNUNET_NO);
-      continue; /* skip */
+      /* skip */
+      GNUNET_STATISTICS_update (GDS_stats,
+                                gettext_noop ("# P2P messages dropped due to full queue"),
+				1,
+				GNUNET_NO);
+      skip_count++;
+      continue;
     }
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "Routing PUT for %s after %u hops to %s\n", GNUNET_h2s (key),
-                (unsigned int) hop_count, GNUNET_i2s (&target->id));
-    pending = GNUNET_malloc (sizeof (struct P2PPendingMessage) + msize);
-    pending->importance = 0;    /* FIXME */
-    pending->timeout = expiration_time;
-    ppm = (struct PeerPutMessage *) &pending[1];
-    pending->msg = &ppm->header;
-    ppm->header.size = htons (msize);
-    ppm->header.type = htons (GNUNET_MESSAGE_TYPE_DHT_P2P_PUT);
+                "Routing PUT for %s after %u hops to %s\n",
+                GNUNET_h2s (key),
+                (unsigned int) hop_count,
+                GNUNET_i2s (target->id));
+    env = GNUNET_MQ_msg_extra (ppm,
+			       msize,
+			       GNUNET_MESSAGE_TYPE_DHT_P2P_PUT);
     ppm->options = htonl (options);
     ppm->type = htonl (type);
     ppm->hop_count = htonl (hop_count + 1);
     ppm->desired_replication_level = htonl (desired_replication_level);
     ppm->put_path_length = htonl (put_path_length);
     ppm->expiration_time = GNUNET_TIME_absolute_hton (expiration_time);
-    GNUNET_CRYPTO_hash (&target->id,
-			sizeof (struct GNUNET_PeerIdentity),
-			&thash);
     GNUNET_break (GNUNET_YES ==
                   GNUNET_CONTAINER_bloomfilter_test (bf,
-                                                     &thash));
+                                                     &target->phash));
     GNUNET_assert (GNUNET_OK ==
                    GNUNET_CONTAINER_bloomfilter_get_raw_data (bf,
                                                               ppm->bloomfilter,
                                                               DHT_BLOOM_SIZE));
     ppm->key = *key;
     pp = (struct GNUNET_PeerIdentity *) &ppm[1];
-    memcpy (pp, put_path,
-            sizeof (struct GNUNET_PeerIdentity) * put_path_length);
-    memcpy (&pp[put_path_length], data, data_size);
-    GNUNET_CONTAINER_DLL_insert_tail (target->head, target->tail, pending);
-    target->pending_count++;
-    process_peer_queue (target);
+    GNUNET_memcpy (pp,
+		   put_path,
+		   sizeof (struct GNUNET_PeerIdentity) * put_path_length);
+    GNUNET_memcpy (&pp[put_path_length],
+		   data,
+		   data_size);
+    GNUNET_MQ_send (target->mq,
+		    env);
   }
   GNUNET_free (targets);
+  return (skip_count < target_count) ? GNUNET_OK : GNUNET_NO;
 }
 
 
@@ -1376,111 +1366,130 @@ GDS_NEIGHBOURS_handle_put (enum GNUNET_BLOCK_Type type,
  * @param key key for the content
  * @param xquery extended query
  * @param xquery_size number of bytes in @a xquery
- * @param reply_bf bloomfilter to filter duplicates
- * @param reply_bf_mutator mutator for @a reply_bf
+ * @param bg group to use for filtering replies
  * @param peer_bf filter for peers not to select (again)
+ * @return #GNUNET_OK if the request was forwarded, #GNUNET_NO if not
  */
-void
+int
 GDS_NEIGHBOURS_handle_get (enum GNUNET_BLOCK_Type type,
                            enum GNUNET_DHT_RouteOption options,
                            uint32_t desired_replication_level,
-                           uint32_t hop_count, const struct GNUNET_HashCode * key,
-                           const void *xquery, size_t xquery_size,
-                           const struct GNUNET_CONTAINER_BloomFilter *reply_bf,
-                           uint32_t reply_bf_mutator,
+                           uint32_t hop_count,
+                           const struct GNUNET_HashCode *key,
+                           const void *xquery,
+                           size_t xquery_size,
+                           struct GNUNET_BLOCK_Group *bg,
                            struct GNUNET_CONTAINER_BloomFilter *peer_bf)
 {
   unsigned int target_count;
-  unsigned int i;
   struct PeerInfo **targets;
   struct PeerInfo *target;
-  struct P2PPendingMessage *pending;
+  struct GNUNET_MQ_Envelope *env;
   size_t msize;
   struct PeerGetMessage *pgm;
   char *xq;
   size_t reply_bf_size;
-  struct GNUNET_HashCode thash;
+  void *reply_bf;
+  unsigned int skip_count;
+  uint32_t bf_nonce;
 
   GNUNET_assert (NULL != peer_bf);
-  GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# GET requests routed"),
-                            1, GNUNET_NO);
-  target_count =
-      get_target_peers (key, peer_bf, hop_count, desired_replication_level,
-                        &targets);
+  GNUNET_STATISTICS_update (GDS_stats,
+			    gettext_noop ("# GET requests routed"),
+                            1,
+			    GNUNET_NO);
+  target_count = get_target_peers (key,
+				   peer_bf,
+				   hop_count,
+				   desired_replication_level,
+				   &targets);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Adding myself (%s) to GET bloomfilter for %s\n",
-              GNUNET_i2s (&my_identity), GNUNET_h2s (key));
-  GNUNET_CONTAINER_bloomfilter_add (peer_bf, &my_identity_hash);
+              GNUNET_i2s (&my_identity),
+              GNUNET_h2s (key));
+  GNUNET_CONTAINER_bloomfilter_add (peer_bf,
+                                    &my_identity_hash);
   if (0 == target_count)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Routing GET for %s terminates after %u hops at %s\n",
-                GNUNET_h2s (key), (unsigned int) hop_count,
+                GNUNET_h2s (key),
+		(unsigned int) hop_count,
                 GNUNET_i2s (&my_identity));
-    return;
+    return GNUNET_NO;
   }
-  reply_bf_size = GNUNET_CONTAINER_bloomfilter_get_size (reply_bf);
-  msize = xquery_size + sizeof (struct PeerGetMessage) + reply_bf_size;
-  if (msize >= GNUNET_SERVER_MAX_MESSAGE_SIZE)
+  if (GNUNET_OK !=
+      GNUNET_BLOCK_group_serialize (bg,
+                                    &bf_nonce,
+                                    &reply_bf,
+                                    &reply_bf_size))
+  {
+    reply_bf = NULL;
+    reply_bf_size = 0;
+    bf_nonce = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                                         UINT32_MAX);
+  }
+  msize = xquery_size + reply_bf_size;
+  if (msize + sizeof (struct PeerGetMessage) >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
+    GNUNET_free_non_null (reply_bf);
     GNUNET_free (targets);
-    return;
+    return GNUNET_NO;
   }
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop
-                            ("# GET messages queued for transmission"),
-                            target_count, GNUNET_NO);
+                            gettext_noop ("# GET messages queued for transmission"),
+                            target_count,
+			    GNUNET_NO);
   /* forward request */
-  for (i = 0; i < target_count; i++)
+  skip_count = 0;
+  for (unsigned int i = 0; i < target_count; i++)
   {
     target = targets[i];
-    if (target->pending_count >= MAXIMUM_PENDING_PER_PEER)
+    if (GNUNET_MQ_get_length (target->mq) >= MAXIMUM_PENDING_PER_PEER)
     {
-      GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# P2P messages dropped due to full queue"),
+      /* skip */
+      GNUNET_STATISTICS_update (GDS_stats,
+                                gettext_noop ("# P2P messages dropped due to full queue"),
 				1, GNUNET_NO);
-      continue; /* skip */
+      skip_count++;
+      continue;
     }
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                "Routing GET for %s after %u hops to %s\n", GNUNET_h2s (key),
-                (unsigned int) hop_count, GNUNET_i2s (&target->id));
-    pending = GNUNET_malloc (sizeof (struct P2PPendingMessage) + msize);
-    pending->importance = 0;    /* FIXME */
-    pending->timeout = GNUNET_TIME_relative_to_absolute (GET_TIMEOUT);
-    pgm = (struct PeerGetMessage *) &pending[1];
-    pending->msg = &pgm->header;
-    pgm->header.size = htons (msize);
-    pgm->header.type = htons (GNUNET_MESSAGE_TYPE_DHT_P2P_GET);
+                "Routing GET for %s after %u hops to %s\n",
+                GNUNET_h2s (key),
+                (unsigned int) hop_count,
+                GNUNET_i2s (target->id));
+    env = GNUNET_MQ_msg_extra (pgm,
+			       msize,
+			       GNUNET_MESSAGE_TYPE_DHT_P2P_GET);
     pgm->options = htonl (options);
     pgm->type = htonl (type);
     pgm->hop_count = htonl (hop_count + 1);
     pgm->desired_replication_level = htonl (desired_replication_level);
     pgm->xquery_size = htonl (xquery_size);
-    pgm->bf_mutator = reply_bf_mutator;
-    GNUNET_CRYPTO_hash (&target->id,
-			sizeof (struct GNUNET_PeerIdentity),
-			&thash);
+    pgm->bf_mutator = bf_nonce;
     GNUNET_break (GNUNET_YES ==
                   GNUNET_CONTAINER_bloomfilter_test (peer_bf,
-                                                     &thash));
+                                                     &target->phash));
     GNUNET_assert (GNUNET_OK ==
                    GNUNET_CONTAINER_bloomfilter_get_raw_data (peer_bf,
                                                               pgm->bloomfilter,
                                                               DHT_BLOOM_SIZE));
     pgm->key = *key;
     xq = (char *) &pgm[1];
-    memcpy (xq, xquery, xquery_size);
-    if (NULL != reply_bf)
-      GNUNET_assert (GNUNET_OK ==
-                     GNUNET_CONTAINER_bloomfilter_get_raw_data (reply_bf,
-                                                                &xq
-                                                                [xquery_size],
-                                                                reply_bf_size));
-    GNUNET_CONTAINER_DLL_insert_tail (target->head, target->tail, pending);
-    target->pending_count++;
-    process_peer_queue (target);
+    GNUNET_memcpy (xq,
+		   xquery,
+		   xquery_size);
+    GNUNET_memcpy (&xq[xquery_size],
+                   reply_bf,
+                   reply_bf_size);
+    GNUNET_MQ_send (target->mq,
+		    env);
   }
   GNUNET_free (targets);
+  GNUNET_free_non_null (reply_bf);
+  return (skip_count < target_count) ? GNUNET_OK : GNUNET_NO;
 }
 
 
@@ -1504,72 +1513,83 @@ void
 GDS_NEIGHBOURS_handle_reply (const struct GNUNET_PeerIdentity *target,
                              enum GNUNET_BLOCK_Type type,
                              struct GNUNET_TIME_Absolute expiration_time,
-                             const struct GNUNET_HashCode * key,
+                             const struct GNUNET_HashCode *key,
                              unsigned int put_path_length,
                              const struct GNUNET_PeerIdentity *put_path,
                              unsigned int get_path_length,
                              const struct GNUNET_PeerIdentity *get_path,
-                             const void *data, size_t data_size)
+                             const void *data,
+                             size_t data_size)
 {
   struct PeerInfo *pi;
-  struct P2PPendingMessage *pending;
+  struct GNUNET_MQ_Envelope *env;
   size_t msize;
   struct PeerResultMessage *prm;
   struct GNUNET_PeerIdentity *paths;
 
-  msize =
-      data_size + sizeof (struct PeerResultMessage) + (get_path_length +
-                                                       put_path_length) *
+  msize = data_size + (get_path_length + put_path_length) *
       sizeof (struct GNUNET_PeerIdentity);
-  if ((msize >= GNUNET_SERVER_MAX_MESSAGE_SIZE) ||
+  if ((msize + sizeof (struct PeerResultMessage) >= GNUNET_MAX_MESSAGE_SIZE) ||
       (get_path_length >
-       GNUNET_SERVER_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
+       GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
       (put_path_length >
-       GNUNET_SERVER_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
-      (data_size > GNUNET_SERVER_MAX_MESSAGE_SIZE))
+       GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
+      (data_size > GNUNET_MAX_MESSAGE_SIZE))
   {
     GNUNET_break (0);
     return;
   }
-  pi = GNUNET_CONTAINER_multipeermap_get (all_known_peers, target);
+  pi = GNUNET_CONTAINER_multipeermap_get (all_connected_peers,
+                                          target);
   if (NULL == pi)
   {
     /* peer disconnected in the meantime, drop reply */
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "No matching peer for reply for key %s\n",
+                GNUNET_h2s (key));
     return;
   }
-  if (pi->pending_count >= MAXIMUM_PENDING_PER_PEER)
+  if (GNUNET_MQ_get_length (pi->mq) >= MAXIMUM_PENDING_PER_PEER)
   {
     /* skip */
-    GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# P2P messages dropped due to full queue"),
-			      1, GNUNET_NO);
+    GNUNET_STATISTICS_update (GDS_stats,
+                              gettext_noop ("# P2P messages dropped due to full queue"),
+			      1,
+                              GNUNET_NO);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Peer queue full, ignoring reply for key %s\n",
+                GNUNET_h2s (key));
     return;
   }
 
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Forwarding reply for key %s to peer %s\n",
+              GNUNET_h2s (key),
+              GNUNET_i2s (target));
   GNUNET_STATISTICS_update (GDS_stats,
                             gettext_noop
                             ("# RESULT messages queued for transmission"), 1,
                             GNUNET_NO);
-  pending = GNUNET_malloc (sizeof (struct P2PPendingMessage) + msize);
-  pending->importance = 0;      /* FIXME */
-  pending->timeout = expiration_time;
-  prm = (struct PeerResultMessage *) &pending[1];
-  pending->msg = &prm->header;
-  prm->header.size = htons (msize);
-  prm->header.type = htons (GNUNET_MESSAGE_TYPE_DHT_P2P_RESULT);
+  env = GNUNET_MQ_msg_extra (prm,
+			     msize,
+			     GNUNET_MESSAGE_TYPE_DHT_P2P_RESULT);
   prm->type = htonl (type);
   prm->put_path_length = htonl (put_path_length);
   prm->get_path_length = htonl (get_path_length);
   prm->expiration_time = GNUNET_TIME_absolute_hton (expiration_time);
   prm->key = *key;
   paths = (struct GNUNET_PeerIdentity *) &prm[1];
-  memcpy (paths, put_path,
-          put_path_length * sizeof (struct GNUNET_PeerIdentity));
-  memcpy (&paths[put_path_length], get_path,
-          get_path_length * sizeof (struct GNUNET_PeerIdentity));
-  memcpy (&paths[put_path_length + get_path_length], data, data_size);
-  GNUNET_CONTAINER_DLL_insert (pi->head, pi->tail, pending);
-  pi->pending_count++;
-  process_peer_queue (pi);
+  GNUNET_memcpy (paths,
+		 put_path,
+		 put_path_length * sizeof (struct GNUNET_PeerIdentity));
+  GNUNET_memcpy (&paths[put_path_length],
+		 get_path,
+		 get_path_length * sizeof (struct GNUNET_PeerIdentity));
+  GNUNET_memcpy (&paths[put_path_length + get_path_length],
+		 data,
+		 data_size);
+  GNUNET_MQ_send (pi->mq,
+		  env);
 }
 
 
@@ -1583,28 +1603,59 @@ static void
 core_init (void *cls,
            const struct GNUNET_PeerIdentity *identity)
 {
+  (void) cls;
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+	      "CORE called, I am %s\n",
+              GNUNET_i2s (identity));
   my_identity = *identity;
   GNUNET_CRYPTO_hash (identity,
 		      sizeof (struct GNUNET_PeerIdentity),
 		      &my_identity_hash);
+  GNUNET_SERVICE_resume (GDS_service);
+}
+
+
+/**
+ * Check validity of a p2p put request.
+ *
+ * @param cls closure with the `struct PeerInfo` of the sender
+ * @param message message
+ * @return #GNUNET_OK if the message is valid
+ */
+static int
+check_dht_p2p_put (void *cls,
+		   const struct PeerPutMessage *put)
+{
+  uint32_t putlen;
+  uint16_t msize;
+
+  (void) cls;
+  msize = ntohs (put->header.size);
+  putlen = ntohl (put->put_path_length);
+  if ((msize <
+       sizeof (struct PeerPutMessage) +
+       putlen * sizeof (struct GNUNET_PeerIdentity)) ||
+      (putlen >
+       GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)))
+  {
+    GNUNET_break_op (0);
+    return GNUNET_SYSERR;
+  }
+  return GNUNET_OK;
 }
 
 
 /**
  * Core handler for p2p put requests.
  *
- * @param cls closure
- * @param peer sender of the request
+ * @param cls closure with the `struct PeerInfo` of the sender
  * @param message message
- * @param peer peer identity this notification is about
- * @return #GNUNET_OK to keep the connection open,
- *         #GNUNET_SYSERR to close it (signal serious error)
  */
-static int
-handle_dht_p2p_put (void *cls, const struct GNUNET_PeerIdentity *peer,
-                    const struct GNUNET_MessageHeader *message)
+static void
+handle_dht_p2p_put (void *cls,
+                    const struct PeerPutMessage *put)
 {
-  const struct PeerPutMessage *put;
+  struct PeerInfo *peer = cls;
   const struct GNUNET_PeerIdentity *put_path;
   const void *payload;
   uint32_t putlen;
@@ -1613,74 +1664,86 @@ handle_dht_p2p_put (void *cls, const struct GNUNET_PeerIdentity *peer,
   enum GNUNET_DHT_RouteOption options;
   struct GNUNET_CONTAINER_BloomFilter *bf;
   struct GNUNET_HashCode test_key;
-  struct GNUNET_HashCode phash;
+  int forwarded;
+  struct GNUNET_TIME_Absolute exp_time;
 
-  msize = ntohs (message->size);
-  if (msize < sizeof (struct PeerPutMessage))
+  exp_time = GNUNET_TIME_absolute_ntoh (put->expiration_time);
+  if (0 == GNUNET_TIME_absolute_get_remaining (exp_time).rel_value_us)
   {
-    GNUNET_break_op (0);
-    return GNUNET_YES;
+    GNUNET_STATISTICS_update (GDS_stats,
+			      gettext_noop ("# Expired PUTs discarded"),
+			      1,
+			      GNUNET_NO);
+    return;
   }
-  put = (const struct PeerPutMessage *) message;
+  msize = ntohs (put->header.size);
   putlen = ntohl (put->put_path_length);
-  if ((msize <
-       sizeof (struct PeerPutMessage) +
-       putlen * sizeof (struct GNUNET_PeerIdentity)) ||
-      (putlen >
-       GNUNET_SERVER_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)))
-  {
-    GNUNET_break_op (0);
-    return GNUNET_YES;
-  }
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop ("# P2P PUT requests received"), 1,
+                            gettext_noop ("# P2P PUT requests received"),
+                            1,
                             GNUNET_NO);
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop ("# P2P PUT bytes received"), msize,
+                            gettext_noop ("# P2P PUT bytes received"),
+                            msize,
                             GNUNET_NO);
   put_path = (const struct GNUNET_PeerIdentity *) &put[1];
   payload = &put_path[putlen];
   options = ntohl (put->options);
-  payload_size =
-      msize - (sizeof (struct PeerPutMessage) +
-               putlen * sizeof (struct GNUNET_PeerIdentity));
-  
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "PUT for `%s' from %s\n",
-              GNUNET_h2s (&put->key), GNUNET_i2s (peer));
-  GNUNET_CRYPTO_hash (peer, sizeof (struct GNUNET_PeerIdentity), &phash);
+  payload_size = msize - (sizeof (struct PeerPutMessage) +
+			  putlen * sizeof (struct GNUNET_PeerIdentity));
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "PUT for `%s' from %s\n",
+              GNUNET_h2s (&put->key),
+	      GNUNET_i2s (peer->id));
   if (GNUNET_YES == log_route_details_stderr)
   {
     char *tmp;
+    char *pp;
 
+    pp = GNUNET_STRINGS_pp2s (put_path,
+                              putlen);
     tmp = GNUNET_strdup (GNUNET_i2s (&my_identity));
     LOG_TRAFFIC (GNUNET_ERROR_TYPE_DEBUG,
-                 "R5N PUT %s: %s->%s (%u, %u=>%u)\n",
-                 GNUNET_h2s (&put->key), GNUNET_i2s (peer), tmp,
+                 "R5N PUT %s: %s->%s (%u, %u=>%u, PP: %s)\n",
+                 GNUNET_h2s (&put->key),
+                 GNUNET_i2s (peer->id),
+                 tmp,
                  ntohl(put->hop_count),
-                 GNUNET_CRYPTO_hash_matching_bits (&phash, &put->key),
-                 GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash, &put->key)
-                );
+                 GNUNET_CRYPTO_hash_matching_bits (&peer->phash,
+                                                   &put->key),
+                 GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash,
+                                                   &put->key),
+                 pp);
+    GNUNET_free (pp);
     GNUNET_free (tmp);
   }
   switch (GNUNET_BLOCK_get_key
-          (GDS_block_context, ntohl (put->type), payload, payload_size,
+          (GDS_block_context,
+	   ntohl (put->type),
+	   payload,
+	   payload_size,
            &test_key))
   {
   case GNUNET_YES:
-    if (0 != memcmp (&test_key, &put->key, sizeof (struct GNUNET_HashCode)))
+    if (0 != memcmp (&test_key,
+		     &put->key,
+		     sizeof (struct GNUNET_HashCode)))
     {
       char *put_s = GNUNET_strdup (GNUNET_h2s_full (&put->key));
+
       GNUNET_break_op (0);
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                   "PUT with key `%s' for block with key %s\n",
-                  put_s, GNUNET_h2s_full (&test_key));
+                  put_s,
+		  GNUNET_h2s_full (&test_key));
       GNUNET_free (put_s);
-      return GNUNET_YES;
+      return;
     }
     break;
   case GNUNET_NO:
     GNUNET_break_op (0);
-    return GNUNET_YES;
+    return;
   case GNUNET_SYSERR:
     /* cannot verify, good luck */
     break;
@@ -1689,10 +1752,12 @@ handle_dht_p2p_put (void *cls, const struct GNUNET_PeerIdentity *peer,
   {
     switch (GNUNET_BLOCK_evaluate (GDS_block_context,
                                    ntohl (put->type),
+                                   NULL, /* query group */
+                                   GNUNET_BLOCK_EO_NONE,
                                    NULL,    /* query */
-                                   NULL, 0, /* bloom filer */
                                    NULL, 0, /* xquery */
-                                   payload, payload_size))
+                                   payload,
+                                   payload_size))
     {
     case GNUNET_BLOCK_EVALUATION_OK_MORE:
     case GNUNET_BLOCK_EVALUATION_OK_LAST:
@@ -1706,56 +1771,92 @@ handle_dht_p2p_put (void *cls, const struct GNUNET_PeerIdentity *peer,
     case GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED:
     default:
       GNUNET_break_op (0);
-      return GNUNET_OK;
+      return;
     }
   }
 
-  bf = GNUNET_CONTAINER_bloomfilter_init (put->bloomfilter, DHT_BLOOM_SIZE,
+  bf = GNUNET_CONTAINER_bloomfilter_init (put->bloomfilter,
+                                          DHT_BLOOM_SIZE,
                                           GNUNET_CONSTANTS_BLOOMFILTER_K);
   GNUNET_break_op (GNUNET_YES ==
-                   GNUNET_CONTAINER_bloomfilter_test (bf, &phash));
+                   GNUNET_CONTAINER_bloomfilter_test (bf,
+						      &peer->phash));
   {
     struct GNUNET_PeerIdentity pp[putlen + 1];
 
     /* extend 'put path' by sender */
     if (0 != (options & GNUNET_DHT_RO_RECORD_ROUTE))
     {
-      memcpy (pp, put_path, putlen * sizeof (struct GNUNET_PeerIdentity));
-      pp[putlen] = *peer;
+#if SANITY_CHECKS
+      for (unsigned int i=0;i<=putlen;i++)
+      {
+	for (unsigned int j=0;j<i;j++)
+	{
+	  GNUNET_break (0 != memcmp (&pp[i],
+				     &pp[j],
+				     sizeof (struct GNUNET_PeerIdentity)));
+	}
+	GNUNET_break (0 != memcmp (&pp[i],
+				   peer->id,
+				   sizeof (struct GNUNET_PeerIdentity)));
+      }
+#endif
+      GNUNET_memcpy (pp,
+		     put_path,
+		     putlen * sizeof (struct GNUNET_PeerIdentity));
+      pp[putlen] = *peer->id;
       putlen++;
     }
     else
       putlen = 0;
 
     /* give to local clients */
-    GDS_CLIENTS_handle_reply (GNUNET_TIME_absolute_ntoh (put->expiration_time),
-                              &put->key, 0, NULL, putlen, pp, ntohl (put->type),
-                              payload_size, payload);
+    GDS_CLIENTS_handle_reply (exp_time,
+                              &put->key,
+			      0,
+			      NULL,
+			      putlen,
+			      pp,
+			      ntohl (put->type),
+                              payload_size,
+			      payload);
     /* store locally */
     if ((0 != (options & GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE)) ||
-        (am_closest_peer (&put->key, bf)))
-      GDS_DATACACHE_handle_put (GNUNET_TIME_absolute_ntoh
-                                (put->expiration_time), &put->key, putlen, pp,
-                                ntohl (put->type), payload_size, payload);
+        (GDS_am_closest_peer (&put->key, bf)))
+      GDS_DATACACHE_handle_put (exp_time,
+                                &put->key,
+                                putlen,
+                                pp,
+                                ntohl (put->type),
+                                payload_size,
+                                payload);
     /* route to other peers */
-    GDS_NEIGHBOURS_handle_put (ntohl (put->type), options,
-                               ntohl (put->desired_replication_level),
-                               GNUNET_TIME_absolute_ntoh (put->expiration_time),
-                               ntohl (put->hop_count), bf, &put->key, putlen,
-                               pp, payload, payload_size);
+    forwarded = GDS_NEIGHBOURS_handle_put (ntohl (put->type),
+					   options,
+                                           ntohl (put->desired_replication_level),
+                                           exp_time,
+                                           ntohl (put->hop_count),
+					   bf,
+                                           &put->key,
+                                           putlen,
+                                           pp,
+                                           payload,
+                                           payload_size);
     /* notify monitoring clients */
-    GDS_CLIENTS_process_put (options,
+    GDS_CLIENTS_process_put (options
+                             | ( (GNUNET_OK == forwarded)
+                                 ? GNUNET_DHT_RO_LAST_HOP
+                                 : 0 ),
                              ntohl (put->type),
                              ntohl (put->hop_count),
                              ntohl (put->desired_replication_level),
                              putlen, pp,
-                             GNUNET_TIME_absolute_ntoh (put->expiration_time),
+                             exp_time,
                              &put->key,
                              payload,
                              payload_size);
   }
   GNUNET_CONTAINER_bloomfilter_free (bf);
-  return GNUNET_YES;
 }
 
 
@@ -1765,65 +1866,77 @@ handle_dht_p2p_put (void *cls, const struct GNUNET_PeerIdentity *peer,
  *
  * @param sender sender of the FIND PEER request
  * @param key peers close to this key are desired
- * @param bf peers matching this bf are excluded
- * @param bf_mutator mutator for bf
+ * @param bg group for filtering peers
  */
 static void
 handle_find_peer (const struct GNUNET_PeerIdentity *sender,
-                  const struct GNUNET_HashCode * key,
-                  struct GNUNET_CONTAINER_BloomFilter *bf, uint32_t bf_mutator)
+                  const struct GNUNET_HashCode *key,
+                  struct GNUNET_BLOCK_Group *bg)
 {
   int bucket_idx;
   struct PeerBucket *bucket;
   struct PeerInfo *peer;
   unsigned int choice;
-  struct GNUNET_HashCode phash;
-  struct GNUNET_HashCode mhash;
   const struct GNUNET_HELLO_Message *hello;
+  size_t hello_size;
 
   /* first, check about our own HELLO */
   if (NULL != GDS_my_hello)
   {
-    GNUNET_BLOCK_mingle_hash (&my_identity_hash, bf_mutator, &mhash);
-    if ((NULL == bf) ||
-        (GNUNET_YES != GNUNET_CONTAINER_bloomfilter_test (bf, &mhash)))
+    hello_size = GNUNET_HELLO_size ((const struct GNUNET_HELLO_Message *) GDS_my_hello);
+    GNUNET_break (hello_size >= sizeof (struct GNUNET_MessageHeader));
+    if (GNUNET_BLOCK_EVALUATION_OK_MORE ==
+        GNUNET_BLOCK_evaluate (GDS_block_context,
+                               GNUNET_BLOCK_TYPE_DHT_HELLO,
+                               bg,
+                               GNUNET_BLOCK_EO_LOCAL_SKIP_CRYPTO,
+                               &my_identity_hash,
+                               NULL, 0,
+                               GDS_my_hello,
+                               hello_size))
     {
-      GDS_NEIGHBOURS_handle_reply (sender, GNUNET_BLOCK_TYPE_DHT_HELLO,
-                                   GNUNET_TIME_relative_to_absolute
-                                   (hello_expiration),
-                                   key, 0, NULL, 0, NULL, GDS_my_hello,
-                                   GNUNET_HELLO_size ((const struct
-                                                       GNUNET_HELLO_Message *)
-                                                      GDS_my_hello));
+      GDS_NEIGHBOURS_handle_reply (sender,
+				   GNUNET_BLOCK_TYPE_DHT_HELLO,
+                                   GNUNET_TIME_relative_to_absolute (hello_expiration),
+                                   key,
+				   0,
+				   NULL,
+				   0,
+				   NULL,
+				   GDS_my_hello,
+                                   hello_size);
     }
     else
     {
       GNUNET_STATISTICS_update (GDS_stats,
-                                gettext_noop
-                                ("# FIND PEER requests ignored due to Bloomfilter"),
-                                1, GNUNET_NO);
+                                gettext_noop ("# FIND PEER requests ignored due to Bloomfilter"),
+                                1,
+				GNUNET_NO);
     }
   }
   else
   {
     GNUNET_STATISTICS_update (GDS_stats,
-                              gettext_noop
-                              ("# FIND PEER requests ignored due to lack of HELLO"),
-                              1, GNUNET_NO);
+                              gettext_noop ("# FIND PEER requests ignored due to lack of HELLO"),
+                              1,
+			      GNUNET_NO);
   }
 
   /* then, also consider sending a random HELLO from the closest bucket */
-  if (0 == memcmp (&my_identity_hash, key, sizeof (struct GNUNET_HashCode)))
+  if (0 == memcmp (&my_identity_hash,
+		   key,
+		   sizeof (struct GNUNET_HashCode)))
     bucket_idx = closest_bucket;
   else
-    bucket_idx = GNUNET_MIN (closest_bucket, find_bucket (key));
-  if (bucket_idx == GNUNET_SYSERR)
+    bucket_idx = GNUNET_MIN ((int) closest_bucket,
+			     find_bucket (key));
+  if (bucket_idx < 0)
     return;
   bucket = &k_buckets[bucket_idx];
   if (bucket->peers_size == 0)
     return;
-  choice =
-      GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, bucket->peers_size);
+  choice = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+				     bucket->peers_size);
   peer = bucket->head;
   while (choice > 0)
   {
@@ -1835,78 +1948,144 @@ handle_find_peer (const struct GNUNET_PeerIdentity *sender,
   do
   {
     peer = peer->next;
-    if (choice-- == 0)
+    if (0 == choice--)
       return;                   /* no non-masked peer available */
-    if (peer == NULL)
+    if (NULL == peer)
       peer = bucket->head;
-    GNUNET_CRYPTO_hash (&peer->id, sizeof (struct GNUNET_PeerIdentity), &phash);
-    GNUNET_BLOCK_mingle_hash (&phash, bf_mutator, &mhash);
-    hello = GDS_HELLO_get (&peer->id);
-  }
-  while ((hello == NULL) ||
-         (GNUNET_YES == GNUNET_CONTAINER_bloomfilter_test (bf, &mhash)));
-  GDS_NEIGHBOURS_handle_reply (sender, GNUNET_BLOCK_TYPE_DHT_HELLO,
+    hello = GDS_HELLO_get (peer->id);
+  } while ( (NULL == hello) ||
+            (GNUNET_BLOCK_EVALUATION_OK_MORE !=
+             GNUNET_BLOCK_evaluate (GDS_block_context,
+                                    GNUNET_BLOCK_TYPE_DHT_HELLO,
+                                    bg,
+                                    GNUNET_BLOCK_EO_LOCAL_SKIP_CRYPTO,
+                                    &peer->phash,
+                                    NULL, 0,
+                                    hello,
+                                    (hello_size = GNUNET_HELLO_size (hello)))) );
+  GDS_NEIGHBOURS_handle_reply (sender,
+			       GNUNET_BLOCK_TYPE_DHT_HELLO,
                                GNUNET_TIME_relative_to_absolute
-                               (GNUNET_CONSTANTS_HELLO_ADDRESS_EXPIRATION), key,
-                               0, NULL, 0, NULL, hello,
-                               GNUNET_HELLO_size (hello));
+                               (GNUNET_CONSTANTS_HELLO_ADDRESS_EXPIRATION),
+			       key,
+                               0,
+			       NULL,
+			       0,
+			       NULL,
+			       hello,
+                               hello_size);
+}
+
+
+/**
+ * Handle a result from local datacache for a GET operation.
+ *
+ * @param cls the `struct PeerInfo` for which this is a reply
+ * @param type type of the block
+ * @param expiration_time when does the content expire
+ * @param key key for the content
+ * @param put_path_length number of entries in @a put_path
+ * @param put_path peers the original PUT traversed (if tracked)
+ * @param get_path_length number of entries in @a get_path
+ * @param get_path peers this reply has traversed so far (if tracked)
+ * @param data payload of the reply
+ * @param data_size number of bytes in @a data
+ */
+static void
+handle_local_result (void *cls,
+                     enum GNUNET_BLOCK_Type type,
+                     struct GNUNET_TIME_Absolute expiration_time,
+                     const struct GNUNET_HashCode *key,
+                     unsigned int put_path_length,
+                     const struct GNUNET_PeerIdentity *put_path,
+                     unsigned int get_path_length,
+                     const struct GNUNET_PeerIdentity *get_path,
+                     const void *data,
+                     size_t data_size)
+{
+  struct PeerInfo *peer = cls;
+  char *pp;
+
+  pp = GNUNET_STRINGS_pp2s (put_path,
+                            put_path_length);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Found local result for %s (PP: %s)\n",
+              GNUNET_h2s (key),
+              pp);
+  GNUNET_free (pp);
+  GDS_NEIGHBOURS_handle_reply (peer->id,
+                               type,
+                               expiration_time,
+                               key,
+                               put_path_length, put_path,
+                               get_path_length, get_path,
+                               data, data_size);
+}
+
+
+/**
+ * Check validity of p2p get request.
+ *
+ * @param cls closure with the `struct PeerInfo` of the sender
+ * @param get the message
+ * @return #GNUNET_OK if the message is well-formed
+ */
+static int
+check_dht_p2p_get (void *cls,
+		   const struct PeerGetMessage *get)
+{
+  uint32_t xquery_size;
+  uint16_t msize;
+
+  (void) cls;
+  msize = ntohs (get->header.size);
+  xquery_size = ntohl (get->xquery_size);
+  if (msize < sizeof (struct PeerGetMessage) + xquery_size)
+  {
+    GNUNET_break_op (0);
+    return GNUNET_SYSERR;
+  }
+  return GNUNET_OK;
 }
 
 
 /**
  * Core handler for p2p get requests.
  *
- * @param cls closure
- * @param peer sender of the request
- * @param message message
- * @return #GNUNET_OK to keep the connection open,
- *         #GNUNET_SYSERR to close it (signal serious error)
+ * @param cls closure with the `struct PeerInfo` of the sender
+ * @param get the message
  */
-static int
-handle_dht_p2p_get (void *cls, const struct GNUNET_PeerIdentity *peer,
-                    const struct GNUNET_MessageHeader *message)
+static void
+handle_dht_p2p_get (void *cls,
+                    const struct PeerGetMessage *get)
 {
-  struct PeerGetMessage *get;
+  struct PeerInfo *peer = cls;
   uint32_t xquery_size;
   size_t reply_bf_size;
   uint16_t msize;
   enum GNUNET_BLOCK_Type type;
   enum GNUNET_DHT_RouteOption options;
   enum GNUNET_BLOCK_EvaluationResult eval;
-  struct GNUNET_CONTAINER_BloomFilter *reply_bf;
+  struct GNUNET_BLOCK_Group *bg;
   struct GNUNET_CONTAINER_BloomFilter *peer_bf;
   const char *xquery;
-  struct GNUNET_HashCode phash;
+  int forwarded;
 
-  GNUNET_break (0 !=
-                memcmp (peer, &my_identity,
-                        sizeof (struct GNUNET_PeerIdentity)));
   /* parse and validate message */
-  msize = ntohs (message->size);
-  if (msize < sizeof (struct PeerGetMessage))
-  {
-    GNUNET_break_op (0);
-    return GNUNET_YES;
-  }
-  get = (struct PeerGetMessage *) message;
+  msize = ntohs (get->header.size);
   xquery_size = ntohl (get->xquery_size);
-  if (msize < sizeof (struct PeerGetMessage) + xquery_size)
-  {
-    GNUNET_break_op (0);
-    return GNUNET_YES;
-  }
   reply_bf_size = msize - (sizeof (struct PeerGetMessage) + xquery_size);
   type = ntohl (get->type);
   options = ntohl (get->options);
   xquery = (const char *) &get[1];
-  reply_bf = NULL;
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop ("# P2P GET requests received"), 1,
+                            gettext_noop ("# P2P GET requests received"),
+			    1,
                             GNUNET_NO);
   GNUNET_STATISTICS_update (GDS_stats,
-                            gettext_noop ("# P2P GET bytes received"), msize,
+                            gettext_noop ("# P2P GET bytes received"),
+			    msize,
                             GNUNET_NO);
-  GNUNET_CRYPTO_hash (peer, sizeof (struct GNUNET_PeerIdentity), &phash);
   if (GNUNET_YES == log_route_details_stderr)
   {
     char *tmp;
@@ -1914,86 +2093,230 @@ handle_dht_p2p_get (void *cls, const struct GNUNET_PeerIdentity *peer,
     tmp = GNUNET_strdup (GNUNET_i2s (&my_identity));
     LOG_TRAFFIC (GNUNET_ERROR_TYPE_DEBUG,
                  "R5N GET %s: %s->%s (%u, %u=>%u) xq: %.*s\n",
-                 GNUNET_h2s (&get->key), GNUNET_i2s (peer), tmp,
+                 GNUNET_h2s (&get->key),
+		 GNUNET_i2s (peer->id),
+		 tmp,
                  ntohl(get->hop_count),
-                 GNUNET_CRYPTO_hash_matching_bits (&phash, &get->key),
-                 GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash, &get->key),
-                 ntohl(get->xquery_size), xquery
-                );
+                 GNUNET_CRYPTO_hash_matching_bits (&peer->phash,
+						   &get->key),
+                 GNUNET_CRYPTO_hash_matching_bits (&my_identity_hash,
+						   &get->key),
+                 ntohl(get->xquery_size),
+		 xquery);
     GNUNET_free (tmp);
   }
-
-  if (reply_bf_size > 0)
-    reply_bf =
-        GNUNET_CONTAINER_bloomfilter_init (&xquery[xquery_size], reply_bf_size,
-                                           GNUNET_CONSTANTS_BLOOMFILTER_K);
-  eval =
-      GNUNET_BLOCK_evaluate (GDS_block_context, type, &get->key, &reply_bf,
-                             get->bf_mutator, xquery, xquery_size, NULL, 0);
+  eval
+    = GNUNET_BLOCK_evaluate (GDS_block_context,
+                             type,
+                             NULL,
+                             GNUNET_BLOCK_EO_NONE,
+                             &get->key,
+                             xquery,
+                             xquery_size,
+                             NULL,
+                             0);
   if (eval != GNUNET_BLOCK_EVALUATION_REQUEST_VALID)
   {
     /* request invalid or block type not supported */
     GNUNET_break_op (eval == GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED);
-    if (NULL != reply_bf)
-      GNUNET_CONTAINER_bloomfilter_free (reply_bf);
-    return GNUNET_YES;
+    return;
   }
-  peer_bf =
-      GNUNET_CONTAINER_bloomfilter_init (get->bloomfilter, DHT_BLOOM_SIZE,
-                                         GNUNET_CONSTANTS_BLOOMFILTER_K);
+  peer_bf = GNUNET_CONTAINER_bloomfilter_init (get->bloomfilter,
+					       DHT_BLOOM_SIZE,
+					       GNUNET_CONSTANTS_BLOOMFILTER_K);
   GNUNET_break_op (GNUNET_YES ==
                    GNUNET_CONTAINER_bloomfilter_test (peer_bf,
-                                                      &phash));
-  /* remember request for routing replies */
-  GDS_ROUTING_add (peer, type, options, &get->key, xquery, xquery_size,
-                   reply_bf, get->bf_mutator);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "GET for %s at %s after %u hops\n",
-              GNUNET_h2s (&get->key), GNUNET_i2s (&my_identity),
+                                                      &peer->phash));
+  bg = GNUNET_BLOCK_group_create (GDS_block_context,
+                                  type,
+                                  get->bf_mutator,
+                                  &xquery[xquery_size],
+                                  reply_bf_size,
+                                  "filter-size",
+                                  reply_bf_size,
+                                  NULL);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "GET for %s at %s after %u hops\n",
+              GNUNET_h2s (&get->key),
+              GNUNET_i2s (&my_identity),
               (unsigned int) ntohl (get->hop_count));
   /* local lookup (this may update the reply_bf) */
   if ((0 != (options & GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE)) ||
-      (am_closest_peer (&get->key, peer_bf)))
+      (GDS_am_closest_peer (&get->key,
+			peer_bf)))
   {
     if ((0 != (options & GNUNET_DHT_RO_FIND_PEER)))
     {
       GNUNET_STATISTICS_update (GDS_stats,
-                                gettext_noop
-                                ("# P2P FIND PEER requests processed"), 1,
+                                gettext_noop ("# P2P FIND PEER requests processed"),
+				1,
                                 GNUNET_NO);
-      handle_find_peer (peer, &get->key, reply_bf, get->bf_mutator);
+      handle_find_peer (peer->id,
+			&get->key,
+			bg);
     }
     else
     {
-      eval =
-          GDS_DATACACHE_handle_get (&get->key, type, xquery, xquery_size,
-                                    &reply_bf, get->bf_mutator);
+      eval = GDS_DATACACHE_handle_get (&get->key,
+				       type,
+				       xquery,
+				       xquery_size,
+                                       bg,
+                                       &handle_local_result,
+                                       peer);
     }
   }
   else
   {
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop ("# P2P GET requests ONLY routed"),
-                              1, GNUNET_NO);
+                              1,
+			      GNUNET_NO);
   }
 
-  GDS_CLIENTS_process_get (options,
-                           type,
-                           ntohl(get->hop_count),
-                           ntohl(get->desired_replication_level),
-                           0, NULL,
-                           &get->key);
+  /* remember request for routing replies */
+  GDS_ROUTING_add (peer->id,
+                        type,
+                        bg, /* bg now owned by routing, but valid at least until end of this function! */
+                        options,
+                        &get->key,
+                        xquery,
+                        xquery_size);
 
   /* P2P forwarding */
+  forwarded = GNUNET_NO;
   if (eval != GNUNET_BLOCK_EVALUATION_OK_LAST)
-    GDS_NEIGHBOURS_handle_get (type, options,
-                               ntohl (get->desired_replication_level),
-                               ntohl (get->hop_count), &get->key, xquery,
-                               xquery_size, reply_bf, get->bf_mutator, peer_bf);
-  /* clean up */
-  if (NULL != reply_bf)
-    GNUNET_CONTAINER_bloomfilter_free (reply_bf);
+    forwarded = GDS_NEIGHBOURS_handle_get (type,
+					   options,
+                                           ntohl (get->desired_replication_level),
+                                           ntohl (get->hop_count),
+                                           &get->key,
+                                           xquery,
+                                           xquery_size,
+                                           bg,
+					   peer_bf);
+  GDS_CLIENTS_process_get (options
+                           | (GNUNET_OK == forwarded)
+                           ? GNUNET_DHT_RO_LAST_HOP : 0,
+                           type,
+                           ntohl (get->hop_count),
+                           ntohl (get->desired_replication_level),
+                           0,
+			   NULL,
+                           &get->key);
+
+  /* clean up; note that 'bg' is owned by routing now! */
   GNUNET_CONTAINER_bloomfilter_free (peer_bf);
-  return GNUNET_YES;
+}
+
+
+/**
+ * Check validity of p2p result message.
+ *
+ * @param cls closure
+ * @param message message
+ * @return #GNUNET_YES if the message is well-formed
+ */
+static int
+check_dht_p2p_result (void *cls,
+		      const struct PeerResultMessage *prm)
+{
+  uint32_t get_path_length;
+  uint32_t put_path_length;
+  uint16_t msize;
+
+  (void) cls;
+  msize = ntohs (prm->header.size);
+  put_path_length = ntohl (prm->put_path_length);
+  get_path_length = ntohl (prm->get_path_length);
+  if ((msize <
+       sizeof (struct PeerResultMessage) + (get_path_length +
+                                            put_path_length) *
+       sizeof (struct GNUNET_PeerIdentity)) ||
+      (get_path_length >
+       GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
+      (put_path_length >
+       GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)))
+  {
+    GNUNET_break_op (0);
+    return GNUNET_SYSERR;
+  }
+  return GNUNET_OK;
+}
+
+
+/**
+ * Process a reply, after the @a get_path has been updated.
+ *
+ * @param expiration_time when does the reply expire
+ * @param key key matching the query
+ * @param get_path_length number of entries in @a get_path
+ * @param get_path path the reply has taken
+ * @param put_path_length number of entries in @a put_path
+ * @param put_path path the PUT has taken
+ * @param type type of the block
+ * @param data_size number of bytes in @a data
+ * @param data payload of the reply
+ */
+static void
+process_reply_with_path (struct GNUNET_TIME_Absolute expiration_time,
+                         const struct GNUNET_HashCode *key,
+                         unsigned int get_path_length,
+                         const struct GNUNET_PeerIdentity *get_path,
+                         unsigned int put_path_length,
+                         const struct GNUNET_PeerIdentity *put_path,
+                         enum GNUNET_BLOCK_Type type,
+                         size_t data_size,
+                         const void *data)
+{
+  /* forward to local clients */
+  GDS_CLIENTS_handle_reply (expiration_time,
+                            key,
+                            get_path_length,
+                            get_path,
+                            put_path_length,
+                            put_path,
+                            type,
+                            data_size,
+                            data);
+  GDS_CLIENTS_process_get_resp (type,
+                                get_path,
+                                get_path_length,
+                                put_path,
+                                put_path_length,
+                                expiration_time,
+                                key,
+                                data,
+                                data_size);
+  if (GNUNET_YES == cache_results)
+  {
+    struct GNUNET_PeerIdentity xput_path[get_path_length + 1 + put_path_length];
+
+    GNUNET_memcpy (xput_path,
+                   put_path,
+                   put_path_length * sizeof (struct GNUNET_PeerIdentity));
+    GNUNET_memcpy (&xput_path[put_path_length],
+                   get_path,
+                   get_path_length * sizeof (struct GNUNET_PeerIdentity));
+
+    GDS_DATACACHE_handle_put (expiration_time,
+                              key,
+                              get_path_length + put_path_length,
+                              xput_path,
+                              type,
+                              data_size,
+                              data);
+  }
+  /* forward to other peers */
+  GDS_ROUTING_process (type,
+                       expiration_time,
+                       key,
+                       put_path_length,
+                       put_path,
+                       get_path_length,
+                       get_path,
+                       data,
+                       data_size);
 }
 
 
@@ -2002,14 +2325,12 @@ handle_dht_p2p_get (void *cls, const struct GNUNET_PeerIdentity *peer,
  *
  * @param cls closure
  * @param message message
- * @param peer peer identity this notification is about
- * @return #GNUNET_YES (do not cut p2p connection)
  */
-static int
-handle_dht_p2p_result (void *cls, const struct GNUNET_PeerIdentity *peer,
-                       const struct GNUNET_MessageHeader *message)
+static void
+handle_dht_p2p_result (void *cls,
+                       const struct PeerResultMessage *prm)
 {
-  const struct PeerResultMessage *prm;
+  struct PeerInfo *peer = cls;
   const struct GNUNET_PeerIdentity *put_path;
   const struct GNUNET_PeerIdentity *get_path;
   const void *data;
@@ -2018,174 +2339,187 @@ handle_dht_p2p_result (void *cls, const struct GNUNET_PeerIdentity *peer,
   uint16_t msize;
   size_t data_size;
   enum GNUNET_BLOCK_Type type;
+  struct GNUNET_TIME_Absolute exp_time;
 
   /* parse and validate message */
-  msize = ntohs (message->size);
-  if (msize < sizeof (struct PeerResultMessage))
+  exp_time = GNUNET_TIME_absolute_ntoh (prm->expiration_time);
+  if (0 == GNUNET_TIME_absolute_get_remaining (exp_time).rel_value_us)
   {
-    GNUNET_break_op (0);
-    return GNUNET_YES;
+    GNUNET_STATISTICS_update (GDS_stats,
+			      gettext_noop ("# Expired results discarded"),
+			      1,
+			      GNUNET_NO);
+    return;
   }
-  prm = (struct PeerResultMessage *) message;
+  msize = ntohs (prm->header.size);
   put_path_length = ntohl (prm->put_path_length);
   get_path_length = ntohl (prm->get_path_length);
-  if ((msize <
-       sizeof (struct PeerResultMessage) + (get_path_length +
-                                            put_path_length) *
-       sizeof (struct GNUNET_PeerIdentity)) ||
-      (get_path_length >
-       GNUNET_SERVER_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
-      (put_path_length >
-       GNUNET_SERVER_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)))
-  {
-    GNUNET_break_op (0);
-    return GNUNET_YES;
-  }
   put_path = (const struct GNUNET_PeerIdentity *) &prm[1];
   get_path = &put_path[put_path_length];
   type = ntohl (prm->type);
   data = (const void *) &get_path[get_path_length];
-  data_size =
-      msize - (sizeof (struct PeerResultMessage) +
-               (get_path_length +
-                put_path_length) * sizeof (struct GNUNET_PeerIdentity));
-  GNUNET_STATISTICS_update (GDS_stats, gettext_noop ("# P2P RESULTS received"),
-                            1, GNUNET_NO);
+  data_size = msize - (sizeof (struct PeerResultMessage) +
+		       (get_path_length +
+			put_path_length) * sizeof (struct GNUNET_PeerIdentity));
+  GNUNET_STATISTICS_update (GDS_stats,
+			    gettext_noop ("# P2P RESULTS received"),
+                            1,
+			    GNUNET_NO);
   GNUNET_STATISTICS_update (GDS_stats,
                             gettext_noop ("# P2P RESULT bytes received"),
-                            msize, GNUNET_NO);
+                            msize,
+			    GNUNET_NO);
   if (GNUNET_YES == log_route_details_stderr)
   {
     char *tmp;
+    char *pp;
+    char *gp;
 
+    gp = GNUNET_STRINGS_pp2s (get_path,
+                              get_path_length);
+    pp = GNUNET_STRINGS_pp2s (put_path,
+                              put_path_length);
     tmp = GNUNET_strdup (GNUNET_i2s (&my_identity));
-    LOG_TRAFFIC (GNUNET_ERROR_TYPE_DEBUG, "R5N RESULT %s: %s->%s (%u)\n",
-                 GNUNET_h2s (&prm->key), GNUNET_i2s (peer), tmp,
-                 get_path_length + 1);
+    LOG_TRAFFIC (GNUNET_ERROR_TYPE_DEBUG,
+                 "R5N RESULT %s: %s->%s (GP: %s, PP: %s)\n",
+                 GNUNET_h2s (&prm->key),
+                 GNUNET_i2s (peer->id),
+                 tmp,
+                 gp,
+                 pp);
+    GNUNET_free (gp);
+    GNUNET_free (pp);
     GNUNET_free (tmp);
   }
   /* if we got a HELLO, consider it for our own routing table */
-  if (type == GNUNET_BLOCK_TYPE_DHT_HELLO)
+  if (GNUNET_BLOCK_TYPE_DHT_HELLO == type)
   {
     const struct GNUNET_MessageHeader *h;
     struct GNUNET_PeerIdentity pid;
-    int bucket;
 
     /* Should be a HELLO, validate and consider using it! */
-    if (data_size < sizeof (struct GNUNET_MessageHeader))
+    if (data_size < sizeof (struct GNUNET_HELLO_Message))
     {
       GNUNET_break_op (0);
-      return GNUNET_YES;
+      return;
     }
     h = data;
     if (data_size != ntohs (h->size))
     {
       GNUNET_break_op (0);
-      return GNUNET_YES;
+      return;
     }
     if (GNUNET_OK !=
-        GNUNET_HELLO_get_id ((const struct GNUNET_HELLO_Message *) h, &pid))
+        GNUNET_HELLO_get_id ((const struct GNUNET_HELLO_Message *) h,
+                             &pid))
     {
       GNUNET_break_op (0);
-      return GNUNET_YES;
+      return;
     }
-    if ((GNUNET_YES != disable_try_connect) &&
-        0 != memcmp (&my_identity, &pid, sizeof (struct GNUNET_PeerIdentity)))
-    {
-      struct GNUNET_HashCode pid_hash;
-
-      GNUNET_CRYPTO_hash (&pid, sizeof (struct GNUNET_PeerIdentity), &pid_hash);
-      bucket = find_bucket (&pid_hash);
-      if ((bucket >= 0) &&
-          (k_buckets[bucket].peers_size < bucket_size) &&
-          (NULL != GDS_transport_handle))
-      {
-        GNUNET_TRANSPORT_offer_hello (GDS_transport_handle, h, NULL, NULL);
-        GNUNET_TRANSPORT_try_connect (GDS_transport_handle, &pid, NULL, NULL); /*FIXME TRY_CONNECT change */
-      }
-    }
+    if ( (GNUNET_YES != disable_try_connect) &&
+         (0 != memcmp (&my_identity,
+                       &pid,
+                       sizeof (struct GNUNET_PeerIdentity))) )
+      try_connect (&pid,
+                   h);
   }
 
-  /* append 'peer' to 'get_path' */
+  /* First, check if 'peer' is already on the path, and if
+     so, truncate it instead of expanding. */
+  for (unsigned int i=0;i<=get_path_length;i++)
+    if (0 == memcmp (&get_path[i],
+                     peer->id,
+                     sizeof (struct GNUNET_PeerIdentity)))
+    {
+      process_reply_with_path (exp_time,
+                               &prm->key,
+                               i,
+                               get_path,
+                               put_path_length,
+                               put_path,
+                               type,
+                               data_size,
+                               data);
+      return;
+    }
+
+  /* Need to append 'peer' to 'get_path' (normal case) */
   {
     struct GNUNET_PeerIdentity xget_path[get_path_length + 1];
 
-    memcpy (xget_path, get_path,
-            get_path_length * sizeof (struct GNUNET_PeerIdentity));
-    xget_path[get_path_length] = *peer;
-    get_path_length++;
+    GNUNET_memcpy (xget_path,
+		   get_path,
+		   get_path_length * sizeof (struct GNUNET_PeerIdentity));
+    xget_path[get_path_length] = *peer->id;
 
-    /* forward to local clients */
-    GDS_CLIENTS_handle_reply (GNUNET_TIME_absolute_ntoh (prm->expiration_time),
-                              &prm->key, get_path_length, xget_path,
-                              put_path_length, put_path, type, data_size, data);
-    GDS_CLIENTS_process_get_resp (type,
-                                  xget_path, get_path_length,
-                                  put_path, put_path_length,
-                                  GNUNET_TIME_absolute_ntoh (
-                                    prm->expiration_time),
-                                  &prm->key,
-                                  data,
-                                  data_size);
-    if (GNUNET_YES == cache_results)
-    {
-      struct GNUNET_PeerIdentity xput_path[get_path_length + 1 + put_path_length];
-
-      memcpy (xput_path, put_path, put_path_length * sizeof (struct GNUNET_PeerIdentity));
-      memcpy (&xput_path[put_path_length],
-	      xget_path,
-	      get_path_length * sizeof (struct GNUNET_PeerIdentity));
-
-      GDS_DATACACHE_handle_put (GNUNET_TIME_absolute_ntoh (prm->expiration_time),
-				&prm->key,
-				get_path_length + put_path_length, xput_path,
-				type, data_size, data);
-    }
-    /* forward to other peers */
-    GDS_ROUTING_process (type, GNUNET_TIME_absolute_ntoh (prm->expiration_time),
-                         &prm->key, put_path_length, put_path, get_path_length,
-                         xget_path, data, data_size);
+    process_reply_with_path (exp_time,
+                             &prm->key,
+                             get_path_length + 1,
+                             xget_path,
+                             put_path_length,
+                             put_path,
+                             type,
+                             data_size,
+                             data);
   }
-
-  return GNUNET_YES;
 }
 
 
 /**
  * Initialize neighbours subsystem.
  *
- * @return GNUNET_OK on success, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
 GDS_NEIGHBOURS_init ()
 {
-  static struct GNUNET_CORE_MessageHandler core_handlers[] = {
-    {&handle_dht_p2p_get, GNUNET_MESSAGE_TYPE_DHT_P2P_GET, 0},
-    {&handle_dht_p2p_put, GNUNET_MESSAGE_TYPE_DHT_P2P_PUT, 0},
-    {&handle_dht_p2p_result, GNUNET_MESSAGE_TYPE_DHT_P2P_RESULT, 0},
-    {NULL, 0, 0}
+  struct GNUNET_MQ_MessageHandler core_handlers[] = {
+    GNUNET_MQ_hd_var_size (dht_p2p_get,
+                           GNUNET_MESSAGE_TYPE_DHT_P2P_GET,
+                           struct PeerGetMessage,
+                           NULL),
+    GNUNET_MQ_hd_var_size (dht_p2p_put,
+                           GNUNET_MESSAGE_TYPE_DHT_P2P_PUT,
+                           struct PeerPutMessage,
+                           NULL),
+    GNUNET_MQ_hd_var_size (dht_p2p_result,
+                           GNUNET_MESSAGE_TYPE_DHT_P2P_RESULT,
+                           struct PeerResultMessage,
+                           NULL),
+    GNUNET_MQ_handler_end ()
   };
   unsigned long long temp_config_num;
 
   disable_try_connect
-    = GNUNET_CONFIGURATION_get_value_yesno (GDS_cfg, "DHT", "DISABLE_TRY_CONNECT");
+    = GNUNET_CONFIGURATION_get_value_yesno (GDS_cfg,
+					    "DHT",
+					    "DISABLE_TRY_CONNECT");
   if (GNUNET_OK ==
-      GNUNET_CONFIGURATION_get_value_number (GDS_cfg, "DHT", "bucket_size",
+      GNUNET_CONFIGURATION_get_value_number (GDS_cfg,
+					     "DHT",
+					     "bucket_size",
                                              &temp_config_num))
     bucket_size = (unsigned int) temp_config_num;
   cache_results
-    = GNUNET_CONFIGURATION_get_value_yesno (GDS_cfg, "DHT", "CACHE_RESULTS");
+    = GNUNET_CONFIGURATION_get_value_yesno (GDS_cfg,
+					    "DHT",
+					    "CACHE_RESULTS");
 
   log_route_details_stderr =
     (NULL != getenv("GNUNET_DHT_ROUTE_DEBUG")) ? GNUNET_YES : GNUNET_NO;
-  atsAPI = GNUNET_ATS_performance_init (GDS_cfg, NULL, NULL);
-  core_api =
-      GNUNET_CORE_connect (GDS_cfg, NULL, &core_init, &handle_core_connect,
-                           &handle_core_disconnect, NULL, GNUNET_NO, NULL,
-                           GNUNET_NO, core_handlers);
-  if (core_api == NULL)
+  ats_ch = GNUNET_ATS_connectivity_init (GDS_cfg);
+  core_api = GNUNET_CORE_connect (GDS_cfg,
+				  NULL,
+				  &core_init,
+				  &handle_core_connect,
+				  &handle_core_disconnect,
+				  core_handlers);
+  if (NULL == core_api)
     return GNUNET_SYSERR;
-  all_known_peers = GNUNET_CONTAINER_multipeermap_create (256, GNUNET_NO);
+  all_connected_peers = GNUNET_CONTAINER_multipeermap_create (256,
+                                                              GNUNET_YES);
+  all_desired_peers = GNUNET_CONTAINER_multipeermap_create (256,
+                                                            GNUNET_NO);
   return GNUNET_OK;
 }
 
@@ -2200,17 +2534,20 @@ GDS_NEIGHBOURS_done ()
     return;
   GNUNET_CORE_disconnect (core_api);
   core_api = NULL;
-  GNUNET_ATS_performance_done (atsAPI);
-  atsAPI = NULL;
-  GNUNET_assert (0 == GNUNET_CONTAINER_multipeermap_size (all_known_peers));
-  GNUNET_CONTAINER_multipeermap_destroy (all_known_peers);
-  all_known_peers = NULL;
-  if (GNUNET_SCHEDULER_NO_TASK != find_peer_task)
-  {
-    GNUNET_SCHEDULER_cancel (find_peer_task);
-    find_peer_task = GNUNET_SCHEDULER_NO_TASK;
-  }
+  GNUNET_assert (0 ==
+		 GNUNET_CONTAINER_multipeermap_size (all_connected_peers));
+  GNUNET_CONTAINER_multipeermap_destroy (all_connected_peers);
+  all_connected_peers = NULL;
+  GNUNET_CONTAINER_multipeermap_iterate (all_desired_peers,
+                                         &free_connect_info,
+                                         NULL);
+  GNUNET_CONTAINER_multipeermap_destroy (all_desired_peers);
+  all_desired_peers = NULL;
+  GNUNET_ATS_connectivity_done (ats_ch);
+  ats_ch = NULL;
+  GNUNET_assert (NULL == find_peer_task);
 }
+
 
 /**
  * Get the ID of the local node.

@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -24,12 +24,39 @@
  * @author Christian Grothoff
  */
 
-#ifndef NEW_TESTING_API_HOSTS_H
-#define NEW_TESTING_API_HOSTS_H
+#ifndef TESTBED_API_HOSTS_H
+#define TESTBED_API_HOSTS_H
 
 //#include "gnunet_testbed_service.h"
 //#include "testbed_helper.h"
 #include "testbed.h"
+
+
+/**
+ * handle for host registration
+ */
+struct GNUNET_TESTBED_HostRegistrationHandle
+{
+  /**
+   * The host being registered
+   */
+  struct GNUNET_TESTBED_Host *host;
+
+  /**
+   * The controller at which this host is being registered
+   */
+  struct GNUNET_TESTBED_Controller *c;
+
+  /**
+   * The Registartion completion callback
+   */
+  GNUNET_TESTBED_HostRegistrationCompletion cc;
+
+  /**
+   * The closure for above callback
+   */
+  void *cc_cls;
+};
 
 
 /**
@@ -161,22 +188,6 @@ GNUNET_TESTBED_is_host_registered_ (const struct GNUNET_TESTBED_Host *host,
 void
 GNUNET_TESTBED_host_queue_oc_ (struct GNUNET_TESTBED_Host *h,
                                struct GNUNET_TESTBED_Operation *op);
-
-
-/**
- * Handler for GNUNET_MESSAGE_TYPE_TESTBED_ADDHOSTCONFIRM message from
- * controller (testbed service)
- *
- * @param c the controller handler
- * @param msg message received
- * @return GNUNET_YES if we can continue receiving from service; GNUNET_NO if
- *           not
- */
-int
-GNUNET_TESTBED_host_handle_addhostconfirm_ (struct GNUNET_TESTBED_Controller *c,
-                                            const struct
-                                            GNUNET_TESTBED_HostConfirmedMessage
-                                            *msg);
 
 
 /**

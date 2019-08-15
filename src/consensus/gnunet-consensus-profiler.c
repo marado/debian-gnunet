@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-      (C) 2012 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2012 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -55,7 +55,21 @@ static struct GNUNET_HashCode session_id;
 
 static unsigned int peers_done = 0;
 
+static int dist_static;
+
 static unsigned *results_for_peer;
+
+/**
+ * The profiler will write statistics
+ * for all peers to the file with this name.
+ */
+static char *statistics_filename;
+
+/**
+ * The profiler will write statistics
+ * for all peers to this file.
+ */
+static FILE *statistics_file;
 
 static int verbose;
 
@@ -86,7 +100,50 @@ controller_cb (void *cls,
 
 
 static void
-destroy (void *cls, const struct GNUNET_SCHEDULER_TaskContext *ctx)
+statistics_done_cb (void *cls,
+                    struct
+                    GNUNET_TESTBED_Operation
+                    *op,
+                    const char *emsg)
+{
+  GNUNET_assert (NULL == emsg);
+  GNUNET_TESTBED_operation_done (op);
+  if (NULL != statistics_file)
+    fclose (statistics_file);
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "got statistics, shutting down\n");
+  GNUNET_SCHEDULER_shutdown ();
+}
+
+
+/**
+ * Callback function to process statistic values from all peers.
+ *
+ * @param cls closure
+ * @param peer the peer the statistic belong to
+ * @param subsystem name of subsystem that created the statistic
+ * @param name the name of the datum
+ * @param value the current value
+ * @param is_persistent #GNUNET_YES if the value is persistent, #GNUNET_NO if not
+ * @return #GNUNET_OK to continue, #GNUNET_SYSERR to abort iteration
+ */
+static int
+statistics_cb (void *cls,
+               const struct GNUNET_TESTBED_Peer *peer,
+               const char *subsystem,
+               const char *name,
+               uint64_t value,
+               int is_persistent)
+{
+  if (NULL != statistics_file)
+  {
+    fprintf (statistics_file, "P%u\t%s\t%s\t%lu\n", GNUNET_TESTBED_get_index (peer), subsystem, name, (unsigned long) value);
+  }
+  return GNUNET_OK;
+}
+
+
+static void
+destroy (void *cls)
 {
   struct GNUNET_CONSENSUS_Handle *consensus = cls;
 
@@ -104,7 +161,12 @@ destroy (void *cls, const struct GNUNET_SCHEDULER_TaskContext *ctx)
               i,
               results_for_peer[i],
               num_values);
-    GNUNET_SCHEDULER_shutdown ();
+    if (NULL != statistics_filename)
+      statistics_file = fopen (statistics_filename, "w");
+    GNUNET_TESTBED_get_statistics (num_peers, peers, NULL, NULL,
+                                   statistics_cb,
+                                   statistics_done_cb,
+                                   NULL);
   }
 }
 
@@ -123,7 +185,7 @@ conclude_cb (void *cls)
 
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "consensus %d done\n",
-              chp - consensus_handles);
+              (int) (chp - consensus_handles));
   GNUNET_SCHEDULER_add_now (destroy, *chp);
 }
 
@@ -157,26 +219,45 @@ do_consensus ()
 {
   int unique_indices[replication];
   unsigned int i;
+  unsigned int j;
+  struct GNUNET_HashCode val;
+  struct GNUNET_SET_Element element;
 
-  for (i = 0; i < num_values; i++)
+  if (dist_static)
   {
-    unsigned int j;
-    struct GNUNET_HashCode val;
-    struct GNUNET_SET_Element element;
-
-    generate_indices (unique_indices);
-    GNUNET_CRYPTO_hash_create_random (GNUNET_CRYPTO_QUALITY_WEAK, &val);
-
-    element.data = &val;
-    element.size = sizeof (val);
-    for (j = 0; j < replication; j++)
+    for (i = 0; i < num_values; i++)
     {
-      int cid;
 
-      cid = unique_indices[j];
-      GNUNET_CONSENSUS_insert (consensus_handles[cid],
-                               &element,
-                               NULL, NULL);
+      GNUNET_CRYPTO_hash_create_random (GNUNET_CRYPTO_QUALITY_WEAK, &val);
+
+      element.data = &val;
+      element.size = sizeof (val);
+      for (j = 0; j < replication; j++)
+      {
+        GNUNET_CONSENSUS_insert (consensus_handles[j],
+                                 &element,
+                                 NULL, NULL);
+      }
+    }
+  }
+  else
+  {
+    for (i = 0; i < num_values; i++)
+    {
+      generate_indices (unique_indices);
+      GNUNET_CRYPTO_hash_create_random (GNUNET_CRYPTO_QUALITY_WEAK, &val);
+
+      element.data = &val;
+      element.size = sizeof (val);
+      for (j = 0; j < replication; j++)
+      {
+        int cid;
+
+        cid = unique_indices[j];
+        GNUNET_CONSENSUS_insert (consensus_handles[cid],
+                                 &element,
+                                 NULL, NULL);
+      }
     }
   }
 
@@ -290,6 +371,8 @@ static void
 disconnect_adapter(void *cls, void *op_result)
 {
   /* FIXME: what to do here? */
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+              "disconnect adapter called\n");
 }
 
 
@@ -432,25 +515,55 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char **argv)
 {
-   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-      { 'n', "num-peers", NULL,
-        gettext_noop ("number of peers in consensus"),
-        GNUNET_YES, &GNUNET_GETOPT_set_uint, &num_peers },
-      { 'k', "value-replication", NULL,
-        gettext_noop ("how many peers receive one value?"),
-        GNUNET_YES, &GNUNET_GETOPT_set_uint, &replication },
-      { 'x', "num-values", NULL,
-        gettext_noop ("number of values"),
-        GNUNET_YES, &GNUNET_GETOPT_set_uint, &num_values },
-      { 't', "timeout", NULL,
-        gettext_noop ("consensus timeout"),
-        GNUNET_YES, &GNUNET_GETOPT_set_relative_time, &conclude_timeout },
-      { 'd', "delay", NULL,
-        gettext_noop ("delay until consensus starts"),
-        GNUNET_YES, &GNUNET_GETOPT_set_relative_time, &consensus_delay },
-      { 'V', "verbose", NULL,
-        gettext_noop ("be more verbose (print received values)"),
-        GNUNET_NO, &GNUNET_GETOPT_set_one, &verbose },
+   struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+      GNUNET_GETOPT_option_uint ('n',
+                                     "num-peers",
+                                     NULL,
+                                     gettext_noop ("number of peers in consensus"),
+                                     &num_peers),
+
+      GNUNET_GETOPT_option_uint ('k',
+                                     "value-replication",
+                                     NULL,
+                                     gettext_noop ("how many peers (random selection without replacement) receive one value?"),
+                                     &replication),
+
+      GNUNET_GETOPT_option_uint ('x',
+                                     "num-values",
+                                     NULL,
+                                     gettext_noop ("number of values"),
+                                     &num_values),
+
+      GNUNET_GETOPT_option_relative_time ('t',
+                                              "timeout",
+                                              NULL,
+                                              gettext_noop ("consensus timeout"),
+                                              &conclude_timeout),
+
+
+      GNUNET_GETOPT_option_relative_time ('d',
+                                              "delay",
+                                              NULL,
+                                              gettext_noop ("delay until consensus starts"),
+                                              &consensus_delay),
+
+      GNUNET_GETOPT_option_filename ('s',
+                                     "statistics",
+                                     "FILENAME",
+                                     gettext_noop ("write statistics to file"),
+                                     &statistics_filename),
+
+      GNUNET_GETOPT_option_flag ('S',
+                                    "dist-static",
+                                    gettext_noop ("distribute elements to a static subset of good peers"),
+                                    &dist_static),
+
+      GNUNET_GETOPT_option_flag ('V',
+                                    "verbose",
+                                    gettext_noop ("be more verbose (print received values)"),
+                                    &verbose),
+
       GNUNET_GETOPT_OPTION_END
   };
   conclude_timeout = GNUNET_TIME_UNIT_SECONDS;
@@ -459,4 +572,3 @@ main (int argc, char **argv)
 		      options, &run, NULL, GNUNET_YES);
   return 0;
 }
-

@@ -1,6 +1,6 @@
 [namecache]
-AUTOSTART = @AUTOSTART@
-USER_SERVICE = NO
+START_ON_DEMAND = @START_ON_DEMAND@
+RUN_PER_USER = NO
 UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-service-namecache.sock
 UNIX_MATCH_UID = NO
 UNIX_MATCH_GID = YES
@@ -11,11 +11,19 @@ ACCEPT_FROM = 127.0.0.1;
 ACCEPT_FROM6 = ::1;
 DATABASE = sqlite
 
+# Disables use of caching by GNS. Useful for systems that
+# publish very large zones and are CPU bound, if they do not
+# also do a large number of lookups.
+DISABLE = NO
+
 [namecache-sqlite]
 FILENAME = $GNUNET_DATA_HOME/namecache/sqlite.db
 
+[namecache-flat]
+FILENAME = $GNUNET_DATA_HOME/namecache/flat.db
+
 [namecache-postgres]
-CONFIG = connect_timeout=10; dbname=gnunet
+CONFIG = postgres:///gnunet
 TEMPORARY_TABLE = NO
 
 

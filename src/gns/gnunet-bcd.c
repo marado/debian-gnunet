@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -51,7 +51,7 @@ static const struct GNUNET_CONFIGURATION_Handle *cfg;
 /**
  * Our primary task for the HTTPD.
  */
-static GNUNET_SCHEDULER_TaskIdentifier http_task;
+static struct GNUNET_SCHEDULER_Task * http_task;
 
 /**
  * Our main website.
@@ -76,7 +76,7 @@ static char *resfile;
 /**
  * Port number.
  */
-static unsigned int port = 8888;
+static uint16_t port = 8888;
 
 
 struct Entry
@@ -90,10 +90,14 @@ struct Entry
  * Main request handler.
  */
 static int
-access_handler_callback (void *cls, struct MHD_Connection *connection,
-                         const char *url, const char *method,
-                         const char *version, const char *upload_data,
-                         size_t * upload_data_size, void **con_cls)
+access_handler_callback (void *cls,
+			 struct MHD_Connection *connection,
+                         const char *url,
+			 const char *method,
+                         const char *version,
+			 const char *upload_data,
+                         size_t * upload_data_size,
+			 void **con_cls)
 {
   static int dummy;
   static const struct Entry map[] = {
@@ -278,7 +282,7 @@ access_handler_callback (void *cls, struct MHD_Connection *connection,
  * Function that queries MHD's select sets and
  * starts the task waiting for them.
  */
-static GNUNET_SCHEDULER_TaskIdentifier
+static struct GNUNET_SCHEDULER_Task *
 prepare_daemon (struct MHD_Daemon *daemon_handle);
 
 
@@ -287,13 +291,11 @@ prepare_daemon (struct MHD_Daemon *daemon_handle);
  * and schedule the next run.
  */
 static void
-run_daemon (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+run_daemon (void *cls)
 {
   struct MHD_Daemon *daemon_handle = cls;
 
-  http_task = GNUNET_SCHEDULER_NO_TASK;
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-    return;
+  http_task = NULL;
   GNUNET_assert (MHD_YES == MHD_run (daemon_handle));
   http_task = prepare_daemon (daemon_handle);
 }
@@ -303,10 +305,10 @@ run_daemon (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Function that queries MHD's select sets and
  * starts the task waiting for them.
  */
-static GNUNET_SCHEDULER_TaskIdentifier
+static struct GNUNET_SCHEDULER_Task *
 prepare_daemon (struct MHD_Daemon *daemon_handle)
 {
-  GNUNET_SCHEDULER_TaskIdentifier ret;
+  struct GNUNET_SCHEDULER_Task * ret;
   fd_set rs;
   fd_set ws;
   fd_set es;
@@ -349,18 +351,18 @@ prepare_daemon (struct MHD_Daemon *daemon_handle)
 static int
 server_start ()
 {
-  if ((0 == port) || (port > UINT16_MAX))
+  if (0 == port) 
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Invalid port number %llu.  Exiting.\n"),
+                _("Invalid port number %u.  Exiting.\n"),
                 port);
     return GNUNET_SYSERR;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("Businesscard HTTP server starts on %llu\n"),
+              _("Businesscard HTTP server starts on %u\n"),
               port);
   daemon_handle = MHD_start_daemon (MHD_USE_DUAL_STACK | MHD_USE_DEBUG,
-                                    (uint16_t) port,
+                                    port,
                                     NULL /* accept_policy_callback */, NULL,
                                     &access_handler_callback, NULL,
                                     MHD_OPTION_CONNECTION_LIMIT, (unsigned int) 512,
@@ -372,7 +374,7 @@ server_start ()
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _("Could not start businesscard HTTP server on port %u\n"),
-                (unsigned short) port);
+                (unsigned int) port);
     return GNUNET_SYSERR;
   }
   http_task = prepare_daemon (daemon_handle);
@@ -384,15 +386,14 @@ server_start ()
  * Stop HTTP server.
  */
 static void
-server_stop (void *cls,
-             const struct GNUNET_SCHEDULER_TaskContext *tc)
+server_stop (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "HTTP server shutdown\n");
-  if (GNUNET_SCHEDULER_NO_TASK != http_task)
+  if (NULL != http_task)
   {
     GNUNET_SCHEDULER_cancel (http_task);
-    http_task = GNUNET_SCHEDULER_NO_TASK;
+    http_task = NULL;
   }
   if (NULL != daemon_handle)
   {
@@ -470,7 +471,7 @@ run (void *cls,
                               "open",
                               fn);
     GNUNET_free (fn);
-    CLOSE (fd);
+    GNUNET_break (0 == CLOSE (fd));
     return;
   }
   GNUNET_free (fn);
@@ -498,9 +499,9 @@ run (void *cls,
   if (GNUNET_OK !=
       server_start ())
     return;
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                &server_stop,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&server_stop,
+				 NULL);
+  GNUNET_break (0 == CLOSE(fd));
 }
 
 
@@ -514,15 +515,19 @@ run (void *cls,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'p', "port", "PORT",
-      gettext_noop ("Run HTTP serve on port PORT (default is 8888)"), 1,
-      &GNUNET_GETOPT_set_uint, &port},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_uint16 ('p',
+				 "port",
+				 "PORT",
+				 gettext_noop ("Run HTTP serve on port PORT (default is 8888)"),
+				 &port),
     GNUNET_GETOPT_OPTION_END
   };
   int ret;
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
   GNUNET_log_setup ("gnunet-bcd", "WARNING", NULL);
   ret =

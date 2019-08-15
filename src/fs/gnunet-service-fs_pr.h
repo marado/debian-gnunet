@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2010, 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -40,34 +40,34 @@ enum GSF_PendingRequestOptions
    */
   GSF_PRO_DEFAULTS = 0,
 
-    /**
-     * Request must only be processed locally.
-     */
+  /**
+   * Request must only be processed locally.
+   */
   GSF_PRO_LOCAL_ONLY = 1,
 
-    /**
-     * Request must only be forwarded (no routing)
-     */
+  /**
+   * Request must only be forwarded (no routing)
+   */
   GSF_PRO_FORWARD_ONLY = 2,
 
-    /**
-     * Request persists indefinitely (no expiration).
-     */
+  /**
+   * Request persists indefinitely (no expiration).
+   */
   GSF_PRO_REQUEST_NEVER_EXPIRES = 4,
 
-    /**
-     * Request is allowed to refresh bloomfilter and change mingle value.
-     */
+  /**
+   * Request is allowed to refresh bloomfilter and change mingle value.
+   */
   GSF_PRO_BLOOMFILTER_FULL_REFRESH = 8,
 
-    /**
-     * Request priority is allowed to be exceeded.
-     */
+  /**
+   * Request priority is allowed to be exceeded.
+   */
   GSF_PRO_PRIORITY_UNLIMITED = 16,
 
-    /**
-     * Option mask for typical local requests.
-     */
+  /**
+   * Option mask for typical local requests.
+   */
   GSF_PRO_LOCAL_REQUEST =
       (GSF_PRO_BLOOMFILTER_FULL_REFRESH | GSF_PRO_PRIORITY_UNLIMITED | GSF_PRO_REQUEST_NEVER_EXPIRES)
 };
@@ -179,25 +179,22 @@ struct GSF_PendingRequestData
  * @param eval evaluation of the result
  * @param pr handle to the original pending request
  * @param reply_anonymity_level anonymity level for the reply, UINT32_MAX for "unknown"
- * @param expiration when does 'data' expire?
+ * @param expiration when does @a data expire?
  * @param last_transmission the last time we've tried to get this block (FOREVER if unknown)
  * @param type type of the block
  * @param data response data, NULL on request expiration
- * @param data_len number of bytes in data
+ * @param data_len number of bytes in @a data
  */
-typedef void (*GSF_PendingRequestReplyHandler) (void *cls,
-                                                enum
-                                                GNUNET_BLOCK_EvaluationResult
-                                                eval,
-                                                struct GSF_PendingRequest * pr,
-                                                uint32_t reply_anonymity_level,
-                                                struct GNUNET_TIME_Absolute
-                                                expiration,
-                                                struct GNUNET_TIME_Absolute
-                                                last_transmission,
-                                                enum GNUNET_BLOCK_Type type,
-                                                const void *data,
-                                                size_t data_len);
+typedef void
+(*GSF_PendingRequestReplyHandler) (void *cls,
+                                   enum GNUNET_BLOCK_EvaluationResult eval,
+                                   struct GSF_PendingRequest *pr,
+                                   uint32_t reply_anonymity_level,
+                                   struct GNUNET_TIME_Absolute expiration,
+                                   struct GNUNET_TIME_Absolute last_transmission,
+                                   enum GNUNET_BLOCK_Type type,
+                                   const void *data,
+                                   size_t data_len);
 
 
 /**
@@ -225,16 +222,20 @@ typedef void (*GSF_PendingRequestReplyHandler) (void *cls,
 struct GSF_PendingRequest *
 GSF_pending_request_create_ (enum GSF_PendingRequestOptions options,
                              enum GNUNET_BLOCK_Type type,
-                             const struct GNUNET_HashCode * query,
+                             const struct GNUNET_HashCode *query,
                              const struct GNUNET_PeerIdentity *target,
-                             const char *bf_data, size_t bf_size,
-                             uint32_t mingle, uint32_t anonymity_level,
-                             uint32_t priority, int32_t ttl,
+                             const char *bf_data,
+                             size_t bf_size,
+                             uint32_t mingle,
+                             uint32_t anonymity_level,
+                             uint32_t priority,
+                             int32_t ttl,
                              GNUNET_PEER_Id sender_pid,
                              GNUNET_PEER_Id origin_pid,
-                             const struct GNUNET_HashCode * replies_seen,
+                             const struct GNUNET_HashCode *replies_seen,
                              unsigned int replies_seen_count,
-                             GSF_PendingRequestReplyHandler rh, void *rh_cls);
+                             GSF_PendingRequestReplyHandler rh,
+                             void *rh_cls);
 
 
 /**
@@ -243,11 +244,11 @@ GSF_pending_request_create_ (enum GSF_PendingRequestOptions options,
  *
  * @param pr request to update
  * @param replies_seen hash codes of replies that we've seen
- * @param replies_seen_count size of the replies_seen array
+ * @param replies_seen_count size of the @a replies_seen array
  */
 void
 GSF_pending_request_update_ (struct GSF_PendingRequest *pr,
-                             const struct GNUNET_HashCode * replies_seen,
+                             const struct GNUNET_HashCode *replies_seen,
                              unsigned int replies_seen_count);
 
 
@@ -262,13 +263,23 @@ GSF_pending_request_get_data_ (struct GSF_PendingRequest *pr);
 
 
 /**
+ * Check if the given request is still active.
+ *
+ * @param pr pending request
+ * @return #GNUNET_YES if the request is still active
+ */
+int
+GSF_pending_request_test_active_ (struct GSF_PendingRequest *pr);
+
+
+/**
  * Test if two pending requests are compatible (would generate
  * the same query modulo filters and should thus be processed
  * jointly).
  *
  * @param pra a pending request
  * @param prb another pending request
- * @return GNUNET_OK if the requests are compatible
+ * @return #GNUNET_OK if the requests are compatible
  */
 int
 GSF_pending_request_is_compatible_ (struct GSF_PendingRequest *pra,
@@ -277,16 +288,13 @@ GSF_pending_request_is_compatible_ (struct GSF_PendingRequest *pra,
 
 /**
  * Generate the message corresponding to the given pending request for
- * transmission to other peers (or at least determine its size).
+ * transmission to other peers.
  *
  * @param pr request to generate the message for
- * @param buf_size number of bytes available in buf
- * @param buf where to copy the message (can be NULL)
- * @return number of bytes needed (if buf_size too small) or used
+ * @return envelope with the request message
  */
-size_t
-GSF_pending_request_get_message_ (struct GSF_PendingRequest *pr,
-                                  size_t buf_size, void *buf);
+struct GNUNET_MQ_Envelope *
+GSF_pending_request_get_message_ (struct GSF_PendingRequest *pr);
 
 
 /**
@@ -296,7 +304,8 @@ GSF_pending_request_get_message_ (struct GSF_PendingRequest *pr,
  * @param full_cleanup fully purge the request
  */
 void
-GSF_pending_request_cancel_ (struct GSF_PendingRequest *pr, int full_cleanup);
+GSF_pending_request_cancel_ (struct GSF_PendingRequest *pr,
+                             int full_cleanup);
 
 
 /**
@@ -306,11 +315,12 @@ GSF_pending_request_cancel_ (struct GSF_PendingRequest *pr, int full_cleanup);
  * @param cls closure
  * @param key query for the request
  * @param pr handle to the pending request
- * @return GNUNET_YES to continue to iterate
+ * @return #GNUNET_YES to continue to iterate
  */
-typedef int (*GSF_PendingRequestIterator) (void *cls,
-                                           const struct GNUNET_HashCode * key,
-                                           struct GSF_PendingRequest * pr);
+typedef int
+(*GSF_PendingRequestIterator) (void *cls,
+                               const struct GNUNET_HashCode *key,
+                               struct GSF_PendingRequest *pr);
 
 
 /**
@@ -320,7 +330,8 @@ typedef int (*GSF_PendingRequestIterator) (void *cls,
  * @param cls closure for it
  */
 void
-GSF_iterate_pending_requests_ (GSF_PendingRequestIterator it, void *cls);
+GSF_iterate_pending_requests_ (GSF_PendingRequestIterator it,
+                               void *cls);
 
 
 /**
@@ -329,16 +340,12 @@ GSF_iterate_pending_requests_ (GSF_PendingRequestIterator it, void *cls);
  * this content and possibly passes it on (to local clients or other
  * peers).  Does NOT perform migration (content caching at this peer).
  *
- * @param cp the other peer involved (sender or receiver, NULL
- *        for loopback messages where we are both sender and receiver)
- * @param message the actual message
- * @return GNUNET_OK if the message was well-formed,
- *         GNUNET_SYSERR if the message was malformed (close connection,
- *         do not cache under any circumstances)
+ * @param cls the other peer involved (sender)
+ * @param put the actual message
  */
-int
-GSF_handle_p2p_content_ (struct GSF_ConnectedPeer *cp,
-                         const struct GNUNET_MessageHeader *message);
+void
+handle_p2p_put (void *cls,
+		const struct PutMessage *put);
 
 
 /**
@@ -351,12 +358,12 @@ GSF_dht_lookup_ (struct GSF_PendingRequest *pr);
 
 
 /**
- * Consider downloading via mesh (if possible)
+ * Consider downloading via cadet (if possible)
  *
  * @param pr the pending request to process
  */
 void
-GSF_mesh_lookup_ (struct GSF_PendingRequest *pr);
+GSF_cadet_lookup_ (struct GSF_PendingRequest *pr);
 
 
 /**
@@ -367,10 +374,10 @@ GSF_mesh_lookup_ (struct GSF_PendingRequest *pr);
  * @param pr the pending request we were processing
  * @param result final datastore lookup result
  */
-typedef void (*GSF_LocalLookupContinuation) (void *cls,
-                                             struct GSF_PendingRequest * pr,
-                                             enum GNUNET_BLOCK_EvaluationResult
-                                             result);
+typedef void
+(*GSF_LocalLookupContinuation) (void *cls,
+                                struct GSF_PendingRequest *pr,
+                                enum GNUNET_BLOCK_EvaluationResult result);
 
 
 /**
@@ -378,11 +385,12 @@ typedef void (*GSF_LocalLookupContinuation) (void *cls,
  *
  * @param pr the pending request to process
  * @param cont function to call at the end
- * @param cont_cls closure for cont
+ * @param cont_cls closure for @a cont
  */
 void
 GSF_local_lookup_ (struct GSF_PendingRequest *pr,
-                   GSF_LocalLookupContinuation cont, void *cont_cls);
+                   GSF_LocalLookupContinuation cont,
+                   void *cont_cls);
 
 
 /**
@@ -390,7 +398,7 @@ GSF_local_lookup_ (struct GSF_PendingRequest *pr,
  *
  * @param pr request
  * @param target
- * @return GNUNET_YES if this request could be forwarded to the given peer
+ * @return #GNUNET_YES if this request could be forwarded to the given peer
  */
 int
 GSF_pending_request_test_target_ (struct GSF_PendingRequest *pr,

@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -50,7 +50,7 @@ static struct GNUNET_IDENTITY_Operation *op;
 /**
  * Handle for task for timeout termination.
  */
-static GNUNET_SCHEDULER_TaskIdentifier endbadly_task;
+static struct GNUNET_SCHEDULER_Task * endbadly_task;
 
 
 /**
@@ -77,10 +77,9 @@ cleanup ()
  * Termiante the testcase (failure).
  *
  * @param cls NULL
- * @param tc scheduler context
  */
 static void
-endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+endbadly (void *cls)
 {
   cleanup ();
   res = 1;
@@ -91,10 +90,9 @@ endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Termiante the testcase (success).
  *
  * @param cls NULL
- * @param tc scheduler context
  */
 static void
-end_normally (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+end_normally (void *cls)
 {
   cleanup ();
   res = 0;
@@ -107,10 +105,10 @@ end_normally (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 static void
 end ()
 {
-  if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
+  if (endbadly_task != NULL)
   {
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_NO_TASK;
+    endbadly_task = NULL;
   }
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MILLISECONDS,
 				&end_normally, NULL);
@@ -227,13 +225,16 @@ notification_cb (void *cls,
  * Called with events about created ego.
  *
  * @param cls NULL
+ * @param pk private key of the ego, or NULL on error
  * @param emsg error message
  */
 static void
 create_cb (void *cls,
+	   const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk,
 	   const char *emsg)
 {
   GNUNET_assert (NULL == emsg);
+  GNUNET_assert (NULL != pk);
   op = NULL;
 }
 

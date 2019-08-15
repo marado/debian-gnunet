@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -40,7 +40,7 @@ conclude_done (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "conclude over\n");
   if (2 != elements_received)
-    GNUNET_abort ();
+    GNUNET_assert (0);
   GNUNET_SCHEDULER_shutdown ();
 }
 
@@ -67,11 +67,9 @@ insert_done (void *cls, int success)
  * Signature of the main function of a task.
  *
  * @param cls closure
- * @param tc context information (why was this task triggered now)
  */
 static void
-on_shutdown (void *cls,
-          const struct GNUNET_SCHEDULER_TaskContext *tc)
+on_shutdown (void *cls)
 {
   if (NULL != consensus)
   {
@@ -94,10 +92,7 @@ run (void *cls,
   GNUNET_log_setup ("test_consensus_api",
                     "INFO",
                     NULL);
-
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "testing consensus api\n");
-
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &on_shutdown, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&on_shutdown, NULL);
 
   GNUNET_CRYPTO_hash (str, strlen (str), &session_id);
   consensus = GNUNET_CONSENSUS_create (cfg, 0, NULL, &session_id,
@@ -114,11 +109,7 @@ run (void *cls,
 int
 main (int argc, char **argv)
 {
-  int ret;
-
-  ret = GNUNET_TESTING_peer_run ("test_consensus_api",
-                                 "test_consensus.conf",
-                                 &run, NULL);
-  return ret;
+  return GNUNET_TESTING_peer_run ("test_consensus_api",
+				  "test_consensus.conf",
+				  &run, NULL);
 }
-

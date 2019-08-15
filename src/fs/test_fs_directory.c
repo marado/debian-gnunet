@@ -1,31 +1,31 @@
 /*
      This file is part of GNUnet.
-     (C) 2005, 2006, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2005, 2006, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
-
 /**
  * @file fs/test_fs_directory.c
  * @brief Test for fs_directory.c
  * @author Christian Grothoff
  */
-
 #include "platform.h"
+#if HAVE_EXTRACTOR_H
 #include <extractor.h>
+#endif
 #include "gnunet_util_lib.h"
 #include "gnunet_fs_service.h"
 #include "fs_api.h"
@@ -99,7 +99,11 @@ testDirectory (unsigned int i)
     {
       GNUNET_snprintf (txt, sizeof (txt), "%u -- %u\n", p, q);
       GNUNET_CONTAINER_meta_data_insert (mds[p], "<test>",
+#if HAVE_EXTRACTOR_H && HAVE_LIBEXTRACTOR
                                          q % EXTRACTOR_metatype_get_max (),
+#else
+                                         q % 128,
+#endif
                                          EXTRACTOR_METAFORMAT_UTF8,
                                          "text/plain", txt, strlen (txt) + 1);
     }

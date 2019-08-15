@@ -21,12 +21,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
 USA.
 
 
 This code was heavily modified for GNUnet.
-Copyright (C) 2006 Christian Grothoff
+Copyright (C) 2006, 2017 Christian Grothoff
 */
 
 /**
@@ -47,9 +47,9 @@ Copyright (C) 2006 Christian Grothoff
 #endif
 #endif
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util", __VA_ARGS__)
+#define LOG(kind,...) GNUNET_log_from (kind, "util-getopt", __VA_ARGS__)
 
-#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util", syscall)
+#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util-getopt", syscall)
 
 #if defined (WIN32) && !defined (__CYGWIN32__)
 /* It's not Unix, really.  See?  Capital letters.  */
@@ -845,9 +845,13 @@ GN_getopt_internal (int argc, char *const *argv, const char *optstring,
   }
 }
 
+
 static int
-GNgetopt_long (int argc, char *const *argv, const char *options,
-               const struct GNoption *long_options, int *opt_index)
+GNgetopt_long (int argc,
+               char *const *argv,
+               const char *options,
+               const struct GNoption *long_options,
+               int *opt_index)
 {
   return GN_getopt_internal (argc, argv, options, long_options, opt_index, 0);
 }
@@ -862,21 +866,22 @@ GNgetopt_long (int argc, char *const *argv, const char *options,
  * @param argc number of arguments
  * @param argv actual arguments
  * @return index into argv with first non-option
- *   argument, or -1 on error
+ *   argument, or #GNUNET_SYSERR on error
  */
 int
 GNUNET_GETOPT_run (const char *binaryOptions,
                    const struct GNUNET_GETOPT_CommandLineOption *allOptions,
-                   unsigned int argc, char *const *argv)
+                   unsigned int argc,
+                   char *const *argv)
 {
   struct GNoption *long_options;
   struct GNUNET_GETOPT_CommandLineProcessorContext clpc;
   int count;
-  int i;
   char *shorts;
   int spos;
   int cont;
   int c;
+  uint8_t *seen;
 
   GNUNET_assert (argc > 0);
   GNoptind = 0;
@@ -885,13 +890,15 @@ GNUNET_GETOPT_run (const char *binaryOptions,
   clpc.allOptions = allOptions;
   clpc.argv = argv;
   clpc.argc = argc;
-  count = 0;
-  while (allOptions[count].name != NULL)
-    count++;
-  long_options = GNUNET_malloc (sizeof (struct GNoption) * (count + 1));
+  for (count = 0; NULL != allOptions[count].name; count++) ;
+
+  long_options = GNUNET_new_array (count + 1,
+                                   struct GNoption);
+  seen = GNUNET_new_array (count,
+                           uint8_t);
   shorts = GNUNET_malloc (count * 2 + 1);
   spos = 0;
-  for (i = 0; i < count; i++)
+  for (unsigned i = 0; i < count; i++)
   {
     long_options[i].name = allOptions[i].name;
     long_options[i].has_arg = allOptions[i].require_argument;
@@ -907,13 +914,17 @@ GNUNET_GETOPT_run (const char *binaryOptions,
   long_options[count].val = '\0';
   shorts[spos] = '\0';
   cont = GNUNET_OK;
+
   /* main getopt loop */
-  while (cont == GNUNET_OK)
+  while (GNUNET_OK == cont)
   {
     int option_index = 0;
+    unsigned int i;
 
-    c = GNgetopt_long (argc, argv, shorts, long_options, &option_index);
-
+    c = GNgetopt_long (argc, argv,
+                       shorts,
+                       long_options,
+                       &option_index);
     if (c == GNUNET_SYSERR)
       break;                    /* No more flags to process */
 
@@ -922,25 +933,46 @@ GNUNET_GETOPT_run (const char *binaryOptions,
       clpc.currentArgument = GNoptind - 1;
       if ((char) c == allOptions[i].shortName)
       {
-        cont =
-            allOptions[i].processor (&clpc, allOptions[i].scls,
-                                     allOptions[i].name, GNoptarg);
+        cont = allOptions[i].processor (&clpc,
+                                        allOptions[i].scls,
+                                        allOptions[i].name,
+                                        GNoptarg);
+        seen[i] = 1;
         break;
       }
     }
     if (i == count)
     {
-      FPRINTF (stderr, _("Use %s to get a list of options.\n"), "--help");
+      FPRINTF (stderr,
+               _("Use %s to get a list of options.\n"),
+               "--help");
       cont = GNUNET_SYSERR;
     }
   }
-
   GNUNET_free (shorts);
   GNUNET_free (long_options);
-  if (cont != GNUNET_OK)
+
+  if (GNUNET_YES == cont)
   {
-    return cont;
+    for (count = 0; NULL != allOptions[count].name; count++)
+      if ( (0 == seen[count]) &&
+           (allOptions[count].option_mandatory) )
+      {
+        FPRINTF (stderr,
+                 _("Missing mandatory option `%s'.\n"),
+                 allOptions[count].name);
+        cont = GNUNET_SYSERR;
+      }
   }
+  GNUNET_free (seen);
+
+  /* call cleaners, if available */
+  for (unsigned int i = 0; NULL != allOptions[i].name; i++)
+    if (NULL != allOptions[i].cleaner)
+      allOptions[i].cleaner (allOptions[i].scls);
+
+  if (GNUNET_OK != cont)
+    return cont;
   return GNoptind;
 }
 

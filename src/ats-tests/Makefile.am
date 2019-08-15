@@ -1,3 +1,4 @@
+#t This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 pkgcfgdir= $(pkgdatadir)/config.d/
@@ -12,24 +13,29 @@ if USE_COVERAGE
   AM_CFLAGS = -fprofile-arcs -ftest-coverage
 endif
 
+if HAVE_EXPERIMENTAL
 if HAVE_LIBGLPK
- PERF_MLP =  perf_ats_mlp_transport_none \
- perf_ats_mlp_core_none \
+ PERF_MLP = \
+ perf_ats_mlp_transport_none \
  perf_ats_mlp_transport_bandwidth \
- perf_ats_mlp_core_bandwidth \
  perf_ats_mlp_transport_latency \
+ perf_ats_mlp_core_none \
+ perf_ats_mlp_core_bandwidth \
  perf_ats_mlp_core_latency
+endif
 endif
 
 if HAVE_TESTING
 TESTING_TESTS = \
  perf_ats_proportional_transport_none \
- perf_ats_proportional_core_none \
  perf_ats_proportional_transport_bandwidth \
- perf_ats_proportional_core_bandwidth \
  perf_ats_proportional_transport_latency \
+ perf_ats_proportional_core_none \
+ perf_ats_proportional_core_bandwidth \
  perf_ats_proportional_core_latency \
  $(PERF_MLP)
+
+# RIL-tests commented out as RIL is currently badly broken.
 # perf_ats_ril_transport_none  perf_ats_ril_core_none perf_ats_ril_transport_bandwidth perf_ats_ril_core_bandwidth perf_ats_ril_transport_latency perf_ats_ril_core_latency
 endif
 
@@ -40,7 +46,7 @@ check_PROGRAMS = \
  $(TESTING_TESTS)
 
 if ENABLE_TEST_RUN
-AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;
+AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = $(check_PROGRAMS)
 endif
 
@@ -53,7 +59,10 @@ libgnunetatstesting_la_SOURCES = \
   ats-testing-experiment.c ats-testing-preferences.c
 libgnunetatstesting_la_LIBADD = \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
+  $(top_builddir)/src/core/libgnunetcore.la \
+	$(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/ats/libgnunetats.la \
+  $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunetatstesting_la_DEPENDENCIES = \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
@@ -136,7 +145,7 @@ perf_ats_proportional_transport_bandwidth_LDADD = \
 perf_ats_proportional_transport_bandwidth_DEPENDENCIES = \
  libgnunetatstesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
- 
+
 perf_ats_proportional_core_latency_SOURCES = \
   perf_ats.c
 perf_ats_proportional_core_latency_LDADD = \
@@ -256,7 +265,7 @@ perf_ats_mlp_transport_latencyDEPENDENCIES = \
 
 
 EXTRA_DIST = \
-	gnunet_ats_sim_default.conf \
+  gnunet_ats_sim_default.conf \
   perf_ats_proportional_none.conf \
   perf_ats_proportional_bandwidth.conf \
   perf_ats_proportional_latency.conf \

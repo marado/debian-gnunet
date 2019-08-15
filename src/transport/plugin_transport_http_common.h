@@ -1,29 +1,28 @@
 /*
      This file is part of GNUnet
-     (C) 2002-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2002-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
-
 /**
  * @file transport/plugin_transport_http_common.c
  * @brief functionality shared by http client and server transport service plugin
  * @author Matthias Wachs
+ * @author Christian Grothoff
  */
-
 #include "platform.h"
 #include "gnunet_common.h"
 #include "gnunet_transport_plugin.h"
@@ -59,10 +58,27 @@
 #define HTTP_DEFAULT_PORT 80
 #define HTTPS_DEFAULT_PORT 443
 
-enum HTTP_ADDRESS_OPTIONS
+/**
+ * Bits in the `options` field of HTTP addresses.
+ */
+enum HttpAddressOptions
 {
+  /**
+   * No bits set.
+   */
   HTTP_OPTIONS_NONE = 0,
-  HTTP_OPTIONS_VERIFY_CERTIFICATE = 1
+
+  /**
+   * Verify X509 server certificate, it should be valid.
+   * (if this bit is not set, it is probably just self-
+   * signed and not expected to be verified).
+   */
+  HTTP_OPTIONS_VERIFY_CERTIFICATE = 1,
+
+  /**
+   * Enable TCP Stealth-style port knocking.
+   */
+  HTTP_OPTIONS_TCP_STEALTH = 2
 };
 
 
@@ -75,21 +91,37 @@ struct HttpAddress
 {
   /**
    * Address options
+   * see `enum HttpAddressOptions`
    */
-  uint32_t options;
+  uint32_t options GNUNET_PACKED;
 
   /**
    * Length of URL located after struct
    */
-  uint32_t urlen;
+  uint32_t urlen GNUNET_PACKED;
 };
 
 GNUNET_NETWORK_STRUCT_END
 
-struct SplittedHTTPAddress;
+/**
+ * Representation of HTTP URL split into its components.
+ */
+struct SplittedHTTPAddress
+{
+  char *protocol;
+  char *host;
+  char *path;
+  int port;
+};
 
+
+/**
+ * Split an HTTP address into protocol, hostname, port
+ * and path components.
+ */
 struct SplittedHTTPAddress *
-http_split_address (const char * addr);
+http_split_address (const char *addr);
+
 
 /**
  * Convert the transports address to a nice, human-readable
@@ -106,12 +138,14 @@ http_split_address (const char * addr);
  * @param asc_cls closure for @a asc
  */
 void
-http_common_plugin_address_pretty_printer (void *cls, const char *type,
-                                           const void *addr, size_t addrlen,
+http_common_plugin_address_pretty_printer (void *cls,
+                                           const char *type,
+                                           const void *addr,
+                                           size_t addrlen,
                                            int numeric,
                                            struct GNUNET_TIME_Relative timeout,
-                                           GNUNET_TRANSPORT_AddressStringCallback
-                                           asc, void *asc_cls);
+                                           GNUNET_TRANSPORT_AddressStringCallback asc,
+                                           void *asc_cls);
 
 
 /**
@@ -120,15 +154,13 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
  * address and that the next call to this function is allowed
  * to override the address again.
  *
- * @param cls closure
- * @param plugin the plugin
+ * @param plugin name of the plugin
  * @param addr binary address
- * @param addrlen length of the address
+ * @param addrlen length of @a addr
  * @return string representing the same address
  */
 const char *
-http_common_plugin_address_to_string (void *cls,
-                                      const char *plugin,
+http_common_plugin_address_to_string (const char *plugin,
                                       const void *addr,
                                       size_t addrlen);
 
@@ -204,9 +236,9 @@ http_common_address_get_size (const struct HttpAddress * addr);
  * Compare addr1 to addr2
  *
  * @param addr1 address1
- * @param addrlen1 address 1 length
+ * @param addrlen1 length of @a address1
  * @param addr2 address2
- * @param addrlen2 address 2 length
+ * @param addrlen2 length of @a address2
  * @return #GNUNET_YES if equal, #GNUNET_NO else
  */
 size_t
@@ -214,5 +246,18 @@ http_common_cmp_addresses (const void *addr1,
                            size_t addrlen1,
                            const void *addr2,
                            size_t addrlen2);
+
+
+/**
+ * Function obtain the network type for an address.
+ *
+ * @param env the environment
+ * @param address the address
+ * @return the network type
+ */
+enum GNUNET_NetworkType
+http_common_get_network_for_address (struct GNUNET_TRANSPORT_PluginEnvironment *env,
+                                     const struct GNUNET_HELLO_Address *address);
+
 
 /* end of plugin_transport_http_common.h */

@@ -1,21 +1,21 @@
 /*
   This file is part of GNUnet
-  (C) 2013 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2013 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
+  Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -64,13 +64,13 @@ struct Microphone
  * Function to process the audio from the record helper
  *
  * @param cls clsoure with our `struct Microphone`
- * @param client NULL
  * @param msg the message from the helper
- * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success,
+ *    #GNUNET_NO to stop further processing (no error)
+ *    #GNUNET_SYSERR to stop further processing with error
  */
 static int
 process_record_messages (void *cls,
-			 void *client,
 			 const struct GNUNET_MessageHeader *msg)
 {
   struct Microphone *mic = cls;

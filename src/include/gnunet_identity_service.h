@@ -1,27 +1,31 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_identity_service.h
- * @brief Identity service; implements identity management for GNUnet
  * @author Christian Grothoff
+ *
+ * @file
+ * Identity service; implements identity management for GNUnet
+ *
+ * @defgroup identity  Identity service
+ * Identity management.
  *
  * Egos in GNUnet are ECDSA keys.  You assume an ego by using (signing
  * with) a particular private key.  As GNUnet users are expected to
@@ -31,16 +35,16 @@
  * (public keys).  For giving names to other users and manage their
  * public keys securely, we use GNS.
  *
- * @defgroup identity identity management service
+ * @see [Documentation](https://gnunet.org/identity-subsystem)
+ *
  * @{
  */
 #ifndef GNUNET_IDENTITY_SERVICE_H
 #define GNUNET_IDENTITY_SERVICE_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -96,12 +100,11 @@ GNUNET_IDENTITY_ego_get_anonymous (void);
  */
 void
 GNUNET_IDENTITY_ego_get_public_key (const struct GNUNET_IDENTITY_Ego *ego,
-				    struct GNUNET_CRYPTO_EcdsaPublicKey *pk);
+                                    struct GNUNET_CRYPTO_EcdsaPublicKey *pk);
 
 
 /**
- * Method called to inform about the egos of
- * this peer.
+ * Method called to inform about the egos of this peer.
  *
  * When used with #GNUNET_IDENTITY_connect, this function is
  * initially called for all egos and then again whenever a
@@ -134,10 +137,10 @@ GNUNET_IDENTITY_ego_get_public_key (const struct GNUNET_IDENTITY_Ego *ego,
  *                   NULL if the user just deleted the ego and it
  *                   must thus no longer be used
  */
-typedef void (*GNUNET_IDENTITY_Callback)(void *cls,
-					 struct GNUNET_IDENTITY_Ego *ego,
-					 void **ctx,
-					 const char *name);
+typedef void (*GNUNET_IDENTITY_Callback) (void *cls,
+                                          struct GNUNET_IDENTITY_Ego *ego,
+                                          void **ctx,
+                                          const char *name);
 
 
 /**
@@ -150,13 +153,12 @@ typedef void (*GNUNET_IDENTITY_Callback)(void *cls,
  */
 struct GNUNET_IDENTITY_Handle *
 GNUNET_IDENTITY_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			 GNUNET_IDENTITY_Callback cb,
-			 void *cb_cls);
+                         GNUNET_IDENTITY_Callback cb,
+                         void *cb_cls);
 
 
 /**
- * Obtain the ego that is currently preferred/default
- * for a service.
+ * Obtain the ego that is currently preferred/default for a service.
  *
  * @param id identity service to query
  * @param service_name for which service is an identity wanted
@@ -166,9 +168,9 @@ GNUNET_IDENTITY_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_get (struct GNUNET_IDENTITY_Handle *id,
-		     const char *service_name,
-		     GNUNET_IDENTITY_Callback cb,
-		     void *cb_cls);
+                     const char *service_name,
+                     GNUNET_IDENTITY_Callback cb,
+                     void *cb_cls);
 
 
 /**
@@ -178,8 +180,7 @@ GNUNET_IDENTITY_get (struct GNUNET_IDENTITY_Handle *id,
  * @param cls closure
  * @param emsg NULL on success, otherwise an error message
  */
-typedef void (*GNUNET_IDENTITY_Continuation)(void *cls,
-					     const char *emsg);
+typedef void (*GNUNET_IDENTITY_Continuation) (void *cls, const char *emsg);
 
 
 /**
@@ -194,10 +195,10 @@ typedef void (*GNUNET_IDENTITY_Continuation)(void *cls,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_set (struct GNUNET_IDENTITY_Handle *id,
-		     const char *service_name,
-		     struct GNUNET_IDENTITY_Ego *ego,
-		     GNUNET_IDENTITY_Continuation cont,
-		     void *cont_cls);
+                     const char *service_name,
+                     struct GNUNET_IDENTITY_Ego *ego,
+                     GNUNET_IDENTITY_Continuation cont,
+                     void *cont_cls);
 
 
 /**
@@ -207,6 +208,20 @@ GNUNET_IDENTITY_set (struct GNUNET_IDENTITY_Handle *id,
  */
 void
 GNUNET_IDENTITY_disconnect (struct GNUNET_IDENTITY_Handle *h);
+
+
+/**
+ * Function called once the requested operation has
+ * been completed.
+ *
+ * @param cls closure
+ * @param pk private key, NULL on error
+ * @param emsg error message, NULL on success
+ */
+typedef void (*GNUNET_IDENTITY_CreateContinuation) (
+  void *cls,
+  const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk,
+  const char *emsg);
 
 
 /**
@@ -220,9 +235,9 @@ GNUNET_IDENTITY_disconnect (struct GNUNET_IDENTITY_Handle *h);
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_create (struct GNUNET_IDENTITY_Handle *id,
-			const char *name,
-			GNUNET_IDENTITY_Continuation cont,
-			void *cont_cls);
+                        const char *name,
+                        GNUNET_IDENTITY_CreateContinuation cont,
+                        void *cont_cls);
 
 
 /**
@@ -237,10 +252,10 @@ GNUNET_IDENTITY_create (struct GNUNET_IDENTITY_Handle *id,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_rename (struct GNUNET_IDENTITY_Handle *id,
-			const char *old_name,
-			const char *new_name,
-			GNUNET_IDENTITY_Continuation cb,
-			void *cb_cls);
+                        const char *old_name,
+                        const char *new_name,
+                        GNUNET_IDENTITY_Continuation cb,
+                        void *cb_cls);
 
 
 /**
@@ -254,9 +269,9 @@ GNUNET_IDENTITY_rename (struct GNUNET_IDENTITY_Handle *id,
  */
 struct GNUNET_IDENTITY_Operation *
 GNUNET_IDENTITY_delete (struct GNUNET_IDENTITY_Handle *id,
-			const char *name,
-			GNUNET_IDENTITY_Continuation cb,
-			void *cb_cls);
+                        const char *name,
+                        GNUNET_IDENTITY_Continuation cb,
+                        void *cb_cls);
 
 
 /**
@@ -279,8 +294,9 @@ GNUNET_IDENTITY_cancel (struct GNUNET_IDENTITY_Operation *op);
  * @param cls closure
  * @param ego NULL on error / ego not found
  */
-typedef void (*GNUNET_IDENTITY_EgoCallback)(void *cls,
-					    const struct GNUNET_IDENTITY_Ego *ego);
+typedef void (*GNUNET_IDENTITY_EgoCallback) (
+  void *cls,
+  const struct GNUNET_IDENTITY_Ego *ego);
 
 /**
  * Handle for ego lookup.
@@ -299,9 +315,9 @@ struct GNUNET_IDENTITY_EgoLookup;
  */
 struct GNUNET_IDENTITY_EgoLookup *
 GNUNET_IDENTITY_ego_lookup (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			    const char *name,
-			    GNUNET_IDENTITY_EgoCallback cb,
-			    void *cb_cls);
+                            const char *name,
+                            GNUNET_IDENTITY_EgoCallback cb,
+                            void *cb_cls);
 
 
 /**
@@ -313,15 +329,16 @@ void
 GNUNET_IDENTITY_ego_lookup_cancel (struct GNUNET_IDENTITY_EgoLookup *el);
 
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
 }
 #endif
 
-/** @} */ /* end of group identity */
-
 /* ifndef GNUNET_IDENTITY_SERVICE_H */
 #endif
+
+/** @} */ /* end of group identity */
+
 /* end of gnunet_identity_service.h */

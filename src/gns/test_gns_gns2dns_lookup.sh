@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 trap "gnunet-arm -e -c test_gns_lookup.conf" SIGINT
 
 LOCATION=$(which gnunet-config)
@@ -13,9 +13,9 @@ then
 	exit 77
 fi
 
-rm -r rm -rf /tmp/test-gnunet-gns-peer-1/
-# IP address of 'uk.gnunet.org'
-TEST_IP_ALT2="81.187.252.184"
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
+# IP address of 'docs.gnunet.org'
+TEST_IP_ALT2="131.159.74.67"
 # IP address of 'www.gnunet.org'
 TEST_IP="131.159.74.67"
 # IPv6 address of 'gnunet.org'
@@ -25,12 +25,8 @@ TEST_IP_GNS2DNS="8.8.8.8"
 
 # main label used during resolution
 TEST_RECORD_NAME="homepage"
-# various names we will use for resolution
-TEST_DOMAIN="www.${TEST_RECORD_NAME}.gnu"
-TEST_DOMAIN_ALT="${TEST_RECORD_NAME}.gnu"
-TEST_DOMAIN_ALT2="uk.${TEST_RECORD_NAME}.gnu"
 
-if ! nslookup gnunet.org $TEST_IP_GNS2DNS &> /dev/null
+if ! nslookup gnunet.org $TEST_IP_GNS2DNS > /dev/null 2>&1
 then
   echo "Cannot reach DNS, skipping test"
   exit 77
@@ -42,34 +38,52 @@ TEST_RESOLVER_LABEL="resolver"
 # using the TEST_RESOLVER_LABEL DNS server for resolution
 TEST_RECORD_GNS2DNS="gnunet.org@${TEST_RESOLVER_LABEL}.+"
 
+MY_EGO="myego"
+# various names we will use for resolution
+TEST_DOMAIN="www.${TEST_RECORD_NAME}.$MY_EGO"
+TEST_DOMAIN_ALT="${TEST_RECORD_NAME}.$MY_EGO"
+TEST_DOMAIN_ALT2="docs.${TEST_RECORD_NAME}.$MY_EGO"
+
+which timeout > /dev/null 2>&1 && DO_TIMEOUT="timeout 15"
+
+
 gnunet-arm -s -c test_gns_lookup.conf
-gnunet-identity -C testego -c test_gns_lookup.conf
+
+OUT=`$DO_TIMEOUT gnunet-resolver -c test_gns_lookup.conf gnunet.org`
+echo $OUT | grep $TEST_IP - > /dev/null || { gnunet-arm -e -c test_gns_lookup.conf ; echo "IPv4 for gnunet.org not found ($OUT), skipping test"; exit 77; }
+echo $OUT | grep $TEST_IP6 - > /dev/null || { gnunet-arm -e -c test_gns_lookup.conf ; echo "IPv6 for gnunet.org not found ($OUT), skipping test"; exit 77; }
+
+
+
+gnunet-identity -C $MY_EGO -c test_gns_lookup.conf
 
 # set IP address for DNS resolver for resolving in gnunet.org domain
-gnunet-namestore -p -z testego -a -n $TEST_RESOLVER_LABEL -t A -V $TEST_IP_GNS2DNS -e never -c test_gns_lookup.conf
-# map 'homepage.gnu' to 'gnunet.org' in DNS
-gnunet-namestore -p -z testego -a -n $TEST_RECORD_NAME -t GNS2DNS -V $TEST_RECORD_GNS2DNS -e never -c test_gns_lookup.conf
+gnunet-namestore -p -z $MY_EGO -a -n $TEST_RESOLVER_LABEL -t A -V $TEST_IP_GNS2DNS -e never -c test_gns_lookup.conf
+# map '$TEST_RECORD_NAME.$MY_EGO' to 'gnunet.org' in DNS
+gnunet-namestore -p -z $MY_EGO -a -n $TEST_RECORD_NAME -t GNS2DNS -V $TEST_RECORD_GNS2DNS -e never -c test_gns_lookup.conf
 
-which timeout &> /dev/null && DO_TIMEOUT="timeout 5"
+
+echo "EGOs:"
+gnunet-identity -d
 
 # lookup 'www.gnunet.org', IPv4
-RES_IP=`$DO_TIMEOUT gnunet-gns --raw -z testego -u $TEST_DOMAIN -t A -c test_gns_lookup.conf`
+RES_IP=`$DO_TIMEOUT gnunet-gns --raw -u $TEST_DOMAIN -t A -c test_gns_lookup.conf`
 # lookup 'www.gnunet.org', IPv6
-RES_IP6=`$DO_TIMEOUT gnunet-gns --raw -z testego -u $TEST_DOMAIN -t AAAA -c test_gns_lookup.conf`
+RES_IP6=`$DO_TIMEOUT gnunet-gns --raw -u $TEST_DOMAIN -t AAAA -c test_gns_lookup.conf`
 # lookup 'gnunet.org', IPv4
-RES_IP_ALT=`$DO_TIMEOUT gnunet-gns --raw -z testego -u $TEST_DOMAIN_ALT -t A -c test_gns_lookup.conf`
-# lookup 'uk.gnunet.org', IPv4
-RES_IP_ALT2=`$DO_TIMEOUT gnunet-gns --raw -z testego -u $TEST_DOMAIN_ALT2 -t A -c test_gns_lookup.conf`
+RES_IP_ALT=`$DO_TIMEOUT gnunet-gns --raw -u $TEST_DOMAIN_ALT -t A -c test_gns_lookup.conf`
+# lookup 'docs.gnunet.org', IPv4
+RES_IP_ALT2=`$DO_TIMEOUT gnunet-gns --raw -u $TEST_DOMAIN_ALT2 -t A -c test_gns_lookup.conf`
 
 # clean up
-gnunet-namestore -z testego -d -n $TEST_RESOLVER_LABEL -t A -V $TEST_IP_GNS2DNS -e never -c test_gns_lookup.conf
-gnunet-namestore -z testego -d -n $TEST_RECORD_NAME -t GNS2DNS -V $TEST_RECORD_GNS2DNS -e never -c test_gns_lookup.conf
-gnunet-identity -D testego -c test_gns_lookup.conf
+gnunet-namestore -z $MY_EGO -d -n $TEST_RESOLVER_LABEL -t A -V $TEST_IP_GNS2DNS -e never -c test_gns_lookup.conf
+gnunet-namestore -z $MY_EGO -d -n $TEST_RECORD_NAME -t GNS2DNS -V $TEST_RECORD_GNS2DNS -e never -c test_gns_lookup.conf
+gnunet-identity -D $MY_EGO -c test_gns_lookup.conf
 gnunet-arm -e -c test_gns_lookup.conf
-rm -rf /tmp/test-gnunet-gns-peer-1/
+rm -rf `gnunet-config -c test_gns_lookup.conf -f -s paths -o GNUNET_TEST_HOME`
 
 ret=0
-if [ "$RES_IP" == "$TEST_IP" ]
+if echo "$RES_IP" | grep "$TEST_IP" > /dev/null
 then
   echo "PASS: Resolved $TEST_DOMAIN to $RES_IP."
 else
@@ -77,7 +91,7 @@ else
   ret=1
 fi
 
-if [ "$RES_IP6" == "$TEST_IP6" ]
+if [ "$RES_IP6" = "$TEST_IP6" ]
 then
   echo "PASS: Resolved $TEST_DOMAIN to $RES_IP6."
 else
@@ -85,7 +99,7 @@ else
   ret=1
 fi
 
-if [ "$RES_IP_ALT" == "$TEST_IP" ]
+if echo "$RES_IP_ALT" | grep "$TEST_IP" > /dev/null
 then
   echo "PASS: Resolved $TEST_DOMAIN_ALT to $RES_IP_ALT."
 else
@@ -93,7 +107,7 @@ else
   ret=1
 fi
 
-if [ "$RES_IP_ALT2" == "$TEST_IP_ALT2" ]
+if echo "$RES_IP_ALT2" | grep "$TEST_IP_ALT2" > /dev/null
 then
   echo "PASS: Resolved $TEST_DOMAIN_ALT2 to $RES_IP_ALT2."
 else

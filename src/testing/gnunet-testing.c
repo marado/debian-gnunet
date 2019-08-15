@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001, 2002, 2004, 2005, 2006, 2007, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -76,7 +76,7 @@ static char *tmpfilename;
 /**
  * Task identifier of the task that waits for stdin.
  */
-static GNUNET_SCHEDULER_TaskIdentifier tid;
+static struct GNUNET_SCHEDULER_Task *tid;
 
 /**
  * Peer started for '-r'.
@@ -197,20 +197,19 @@ create_hostkeys (const unsigned int no)
  * Removes the temporary file.
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-cleanup (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleanup (void *cls)
 {
   if (NULL != tmpfilename)
   {
     if (0 != UNLINK (tmpfilename))
       GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "unlink", tmpfilename);
   }
-  if (GNUNET_SCHEDULER_NO_TASK != tid)
+  if (NULL != tid)
   {
     GNUNET_SCHEDULER_cancel (tid);
-    tid = GNUNET_SCHEDULER_NO_TASK;
+    tid = NULL;
   }
   if (NULL != fh)
   {
@@ -224,17 +223,13 @@ cleanup (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Called whenever we can read stdin non-blocking
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-stdin_cb (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+stdin_cb (void *cls)
 {
   int c;
 
-  tid = GNUNET_SCHEDULER_NO_TASK;
-  if (0 != (GNUNET_SCHEDULER_REASON_SHUTDOWN & tc->reason))
-    return;
-  GNUNET_assert (0 != (GNUNET_SCHEDULER_REASON_READ_READY & tc->reason));
+  tid = NULL;
   c = getchar ();
   switch (c)
   {
@@ -258,7 +253,8 @@ stdin_cb (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     fprintf (stderr, _("Unknown command, use 'q' to quit or 'r' to restart peer\n"));
     break;
   }
-  tid = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL, fh,
+  tid = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
+					fh,
                                         &stdin_cb, NULL);
 }
 
@@ -291,9 +287,10 @@ testing_main (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg,
   }
   printf("ok\n%s\n", tmpfilename);
   fflush(stdout);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &cleanup, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&cleanup, NULL);
   fh = GNUNET_DISK_get_handle_from_native (stdin);
-  tid = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL, fh,
+  tid = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
+					fh,
                                         &stdin_cb, NULL);
 }
 
@@ -351,17 +348,35 @@ run_no_scheduler (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'C', "cfg", NULL, gettext_noop ("create unique configuration files"),
-     GNUNET_NO, &GNUNET_GETOPT_set_one, &create_cfg},
-    {'k', "key", "FILENAME", gettext_noop ("extract hostkey file from pre-computed hostkey list"),
-     GNUNET_YES, &GNUNET_GETOPT_set_string, &create_hostkey},
-    {'n', "number", "NUMBER", gettext_noop ("number of unique configuration files to create, or number of the hostkey to extract"),
-     GNUNET_YES, &GNUNET_GETOPT_set_uint, &create_no},
-    {'t', "template", "FILENAME", gettext_noop ("configuration template"),
-     GNUNET_YES, &GNUNET_GETOPT_set_string, &create_cfg_template},
-    {'r', "run", "SERVICE", gettext_noop ("run the given service, wait on stdin for 'r' (restart) or 'q' (quit)"),
-     GNUNET_YES, &GNUNET_GETOPT_set_string, &run_service_name},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_flag ('C',
+                                  "cfg",
+                                  gettext_noop ("create unique configuration files"),
+                                  &create_cfg),
+    GNUNET_GETOPT_option_string ('k',
+                                 "key",
+                                 "FILENAME",
+                                 gettext_noop ("extract hostkey file from pre-computed hostkey list"),
+                                 &create_hostkey),
+
+    GNUNET_GETOPT_option_uint ('n',
+                                   "number",
+                                   "NUMBER",
+                                   gettext_noop ("number of unique configuration files to create, or number of the hostkey to extract"),
+                                   &create_no),
+
+
+    GNUNET_GETOPT_option_string ('t',
+                                 "template",
+                                 "FILENAME",
+                                 gettext_noop ("configuration template"),
+                                 &create_cfg_template),
+
+    GNUNET_GETOPT_option_string ('r',
+                                 "run",
+                                 "SERVICE",
+                                 gettext_noop ("run the given service, wait on stdin for 'r' (restart) or 'q' (quit)"),
+                                 &run_service_name),
     GNUNET_GETOPT_OPTION_END
   };
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))

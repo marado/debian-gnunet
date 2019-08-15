@@ -1,5 +1,5 @@
 [datastore]
-AUTOSTART = @AUTOSTART@
+START_ON_DEMAND = @START_ON_DEMAND@
 UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-service-datastore.sock
 UNIX_MATCH_UID = NO
 UNIX_MATCH_GID = YES
@@ -17,7 +17,7 @@ DATABASE = sqlite
 FILENAME = $GNUNET_DATA_HOME/datastore/sqlite.db
 
 [datastore-postgres]
-CONFIG = connect_timeout=10; dbname=gnunet
+CONFIG = postgres:///gnunet
 
 [datastore-mysql]
 DATABASE = gnunet

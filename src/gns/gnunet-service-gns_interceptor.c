@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file gns/gnunet-service-gns_interceptor.c
@@ -27,6 +27,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_dns_service.h"
 #include "gnunet_dnsparser_lib.h"
+#include "gnunet-service-gns.h"
 #include "gnunet-service-gns_resolver.h"
 #include "gnunet-service-gns_interceptor.h"
 #include "gns.h"
@@ -73,11 +74,6 @@ struct InterceptLookupHandle
 static struct GNUNET_DNS_Handle *dns_handle;
 
 /**
- * Key of the zone we start lookups in.
- */
-static struct GNUNET_CRYPTO_EcdsaPublicKey zone;
-
-/**
  * Head of the DLL.
  */
 static struct InterceptLookupHandle *ilh_head;
@@ -109,7 +105,7 @@ reply_to_dns (void *cls, uint32_t rd_count,
   unsigned int num_answers;
   unsigned int skip_answers;
   unsigned int skip_additional;
-  size_t off;
+  size_t off = 0;
 
   /* Put records in the DNS packet */
   num_answers = 0;
@@ -261,6 +257,8 @@ reply_to_dns (void *cls, uint32_t rd_count,
     {
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
 		  _("Error converting GNS response to DNS response!\n"));
+      if (GNUNET_NO == ret)
+        GNUNET_free (buf);
     }
     else
     {
@@ -296,6 +294,7 @@ handle_dns_request (void *cls,
 {
   struct GNUNET_DNSPARSER_Packet *p;
   struct InterceptLookupHandle *ilh;
+  struct GNUNET_CRYPTO_EcdsaPublicKey zone;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Hijacked a DNS request. Processing.\n");
@@ -319,19 +318,20 @@ handle_dns_request (void *cls,
   }
 
   /* Check for GNS TLDs. */
-  if ( (GNUNET_YES == is_gnu_tld (p->queries[0].name)) ||
-       (GNUNET_YES == is_zkey_tld (p->queries[0].name)) ||
-       (0 == strcmp (p->queries[0].name, GNUNET_GNS_TLD)) )
+  if (GNUNET_YES ==
+      GNS_find_tld (GNS_get_tld (p->queries[0].name),
+                    &zone))
   {
     /* Start resolution in GNS */
     ilh = GNUNET_new (struct InterceptLookupHandle);
-    GNUNET_CONTAINER_DLL_insert (ilh_head, ilh_tail, ilh);
+    GNUNET_CONTAINER_DLL_insert (ilh_head,
+                                 ilh_tail,
+                                 ilh);
     ilh->packet = p;
     ilh->request_handle = rh;
     ilh->lookup = GNS_resolver_lookup (&zone,
 				       p->queries[0].type,
 				       p->queries[0].name,
-				       NULL /* FIXME: enable shorten for DNS intercepts? */,
 				       GNUNET_NO,
 				       &reply_to_dns, ilh);
     return;
@@ -348,17 +348,14 @@ handle_dns_request (void *cls,
 /**
  * Initialized the interceptor
  *
- * @param gnu_zone the zone to work in
  * @param c the configuration
  * @return #GNUNET_OK on success
  */
 int
-GNS_interceptor_init (const struct GNUNET_CRYPTO_EcdsaPublicKey *gnu_zone,
-		      const struct GNUNET_CONFIGURATION_Handle *c)
+GNS_interceptor_init (const struct GNUNET_CONFIGURATION_Handle *c)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 	      "DNS hijacking enabled. Connecting to DNS service.\n");
-  zone = *gnu_zone;
   dns_handle = GNUNET_DNS_connect (c,
 				   GNUNET_DNS_FLAG_PRE_RESOLUTION,
 				   &handle_dns_request,
@@ -383,7 +380,9 @@ GNS_interceptor_done ()
 
   while (NULL != (ilh = ilh_head))
   {
-    GNUNET_CONTAINER_DLL_remove (ilh_head, ilh_tail, ilh);
+    GNUNET_CONTAINER_DLL_remove (ilh_head,
+                                 ilh_tail,
+                                 ilh);
     GNS_resolver_lookup_cancel (ilh->lookup);
     GNUNET_DNS_request_drop (ilh->request_handle);
     GNUNET_DNSPARSER_free_packet (ilh->packet);

@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file dht/gnunet-dht-monitor.c
@@ -71,15 +71,19 @@ static unsigned int result_count;
  */
 static int ret;
 
+/**
+ * Task scheduled to handle timeout.
+ */
+static struct GNUNET_SCHEDULER_Task *tt;
+
 
 /**
  * Stop monitoring request and start shutdown
  *
  * @param cls closure (unused)
- * @param tc Task Context
  */
 static void
-cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleanup_task (void *cls)
 {
   if (verbose)
     FPRINTF (stderr, "%s",  "Cleaning up!\n");
@@ -93,7 +97,26 @@ cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_DHT_disconnect (dht_handle);
     dht_handle = NULL;
   }
+  if (NULL != tt)
+  {
+    GNUNET_SCHEDULER_cancel (tt);
+    tt = NULL;
+  }
 }
+
+
+/**
+ * We hit a timeout. Stop monitoring request and start shutdown
+ *
+ * @param cls closure (unused)
+ */
+static void
+timeout_task (void *cls)
+{
+  tt = NULL;
+  GNUNET_SCHEDULER_shutdown ();
+}
+
 
 
 /**
@@ -108,7 +131,7 @@ cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param desired_replication_level Desired replication level.
  * @param key Key of the requested data.
  */
-void
+static void
 get_callback (void *cls,
               enum GNUNET_DHT_RouteOption options,
               enum GNUNET_BLOCK_Type type,
@@ -118,7 +141,8 @@ get_callback (void *cls,
               const struct GNUNET_PeerIdentity *path,
               const struct GNUNET_HashCode * key)
 {
-  FPRINTF (stdout, "GET #%u: type %d, key `%s'\n",
+  FPRINTF (stdout,
+           "GET #%u: type %d, key `%s'\n",
            result_count,
            (int) type,
            GNUNET_h2s_full(key));
@@ -140,7 +164,7 @@ get_callback (void *cls,
  * @param data Pointer to the result data.
  * @param size Number of bytes in data.
  */
-void
+static void
 get_resp_callback (void *cls,
                    enum GNUNET_BLOCK_Type type,
                    const struct GNUNET_PeerIdentity *get_path,
@@ -153,8 +177,11 @@ get_resp_callback (void *cls,
                    size_t size)
 {
   FPRINTF (stdout,
-	   "RESPONSE #%u: type %d, key `%s', data `%.*s'\n",
+           (GNUNET_BLOCK_TYPE_TEST == type)
+	   ? "RESPONSE #%u (%s): type %d, key `%s', data `%.*s'\n"
+           : "RESPONSE #%u (%s): type %d, key `%s'\n",
            result_count,
+           GNUNET_STRINGS_absolute_time_to_string (exp),
            (int) type,
            GNUNET_h2s_full (key),
            (unsigned int) size,
@@ -178,7 +205,7 @@ get_resp_callback (void *cls,
  * @param data Pointer to the data carried.
  * @param size Number of bytes in data.
  */
-void
+static void
 put_callback (void *cls,
               enum GNUNET_DHT_RouteOption options,
               enum GNUNET_BLOCK_Type type,
@@ -192,8 +219,11 @@ put_callback (void *cls,
               size_t size)
 {
   FPRINTF (stdout,
-	   "PUT %u: type %d, key `%s', data `%.*s'\n",
+           (GNUNET_BLOCK_TYPE_TEST == type)
+	   ? "PUT %u (%s): type %d, key `%s', data `%.*s'\n"
+           : "PUT %u (%s): type %d, key `%s'\n",
            result_count,
+           GNUNET_STRINGS_absolute_time_to_string (exp),
            (int) type,
            GNUNET_h2s_full(key),
            (unsigned int) size,
@@ -211,7 +241,9 @@ put_callback (void *cls,
  * @param c configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   struct GNUNET_HashCode *key;
@@ -243,7 +275,11 @@ run (void *cls, char *const *args, const char *cfgfile,
     FPRINTF (stderr,
 	     "Monitoring for %s\n",
 	     GNUNET_STRINGS_relative_time_to_string (timeout_request, GNUNET_NO));
-  GNUNET_SCHEDULER_add_delayed (timeout_request, &cleanup_task, NULL);
+  tt = GNUNET_SCHEDULER_add_delayed (timeout_request,
+				     &timeout_task,
+				     NULL);
+  GNUNET_SCHEDULER_add_shutdown (&cleanup_task,
+				NULL);
   monitor_handle = GNUNET_DHT_monitor_start (dht_handle,
                                              block_type,
                                              key,
@@ -252,27 +288,6 @@ run (void *cls, char *const *args, const char *cfgfile,
                                              &put_callback,
                                              NULL);
 }
-
-
-/**
- * gnunet-dht-monitor command line options
- */
-static struct GNUNET_GETOPT_CommandLineOption options[] = {
-  {'k', "key", "KEY",
-   gettext_noop ("the query key"),
-   1, &GNUNET_GETOPT_set_string, &query_key},
-  {'t', "type", "TYPE",
-   gettext_noop ("the type of data to look for"),
-   1, &GNUNET_GETOPT_set_uint, &block_type},
-  {'T', "timeout", "TIMEOUT",
-   gettext_noop ("how long should the monitor command run"),
-   1, &GNUNET_GETOPT_set_relative_time, &timeout_request},
-  {'V', "verbose", NULL,
-   gettext_noop ("be verbose (print progress information)"),
-   0, &GNUNET_GETOPT_set_one, &verbose},
-  GNUNET_GETOPT_OPTION_END
-};
-
 
 /**
  * Entry point for gnunet-dht-monitor
@@ -284,6 +299,35 @@ static struct GNUNET_GETOPT_CommandLineOption options[] = {
 int
 main (int argc, char *const *argv)
 {
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_string ('k',
+                                 "key",
+                                 "KEY",
+                                 gettext_noop ("the query key"),
+                                 &query_key),
+
+    GNUNET_GETOPT_option_uint ('t',
+                                   "type",
+                                   "TYPE",
+                                   gettext_noop ("the type of data to look for"),
+                                   &block_type),
+
+    GNUNET_GETOPT_option_relative_time ('T',
+                                            "timeout",
+                                            "TIMEOUT",
+                                            gettext_noop ("how long should the monitor command run"),
+                                            &timeout_request),
+
+    GNUNET_GETOPT_option_flag ('V',
+                                  "verbose",
+                                  gettext_noop ("be verbose (print progress information)"),
+                                  &verbose),
+
+    GNUNET_GETOPT_OPTION_END
+  };
+
+
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
 

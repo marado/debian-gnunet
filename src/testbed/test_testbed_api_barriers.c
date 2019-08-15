@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -50,7 +50,7 @@ struct GNUNET_TESTBED_Barrier *barrier;
 /**
  * Identifier for the shutdown task
  */
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task;
+static struct GNUNET_SCHEDULER_Task *timeout_task;
 
 /**
  * Result of this test case
@@ -59,21 +59,30 @@ static int result;
 
 
 /**
+ * Handle SIGINT and SIGTERM
+ */
+static void
+shutdown_handler(void *cls)
+{
+  if (NULL != timeout_task)
+  {
+    GNUNET_SCHEDULER_cancel(timeout_task);
+    timeout_task = NULL;
+  }
+}
+
+
+/**
  * Shutdown this test case when it takes too long
  *
  * @param cls NULL
- * @param tc scheduler task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_timeout (void *cls)
 {
-  shutdown_task = GNUNET_SCHEDULER_NO_TASK;
-  if (NULL != barrier)
-  {
-    GNUNET_TESTBED_barrier_cancel (barrier);
-    barrier = NULL;
-  }
-
+  timeout_task = NULL;
+  if (barrier != NULL)
+      GNUNET_TESTBED_barrier_cancel (barrier);
   GNUNET_SCHEDULER_shutdown ();
 }
 
@@ -86,9 +95,9 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param cls the closure given to GNUNET_TESTBED_barrier_init()
  * @param name the name of the barrier
  * @param barrier the barrier handle
- * @param status status of the barrier; GNUNET_OK if the barrier is crossed;
- *   GNUNET_SYSERR upon error
- * @param emsg if the status were to be GNUNET_SYSERR, this parameter has the
+ * @param status status of the barrier; #GNUNET_OK if the barrier is crossed;
+ *   #GNUNET_SYSERR upon error
+ * @param emsg if the status were to be #GNUNET_SYSERR, this parameter has the
  *   error messsage
  */
 static void
@@ -105,25 +114,27 @@ barrier_cb (void *cls,
   switch (status)
   {
   case GNUNET_TESTBED_BARRIERSTATUS_INITIALISED:
-    LOG (GNUNET_ERROR_TYPE_INFO, "Barrier initialised\n");
+    LOG (GNUNET_ERROR_TYPE_INFO,
+         "Barrier initialised\n");
     old_status = status;
     return;
   case GNUNET_TESTBED_BARRIERSTATUS_ERROR:
-    LOG (GNUNET_ERROR_TYPE_ERROR, "Barrier initialisation failed: %s",
+    LOG (GNUNET_ERROR_TYPE_ERROR,
+         "Barrier initialisation failed: %s",
          (NULL == emsg) ? "unknown reason" : emsg);
-    barrier = NULL;
-    GNUNET_SCHEDULER_shutdown ();
-    return;
+    break;
   case GNUNET_TESTBED_BARRIERSTATUS_CROSSED:
-    LOG (GNUNET_ERROR_TYPE_INFO, "Barrier crossed\n");
+    LOG (GNUNET_ERROR_TYPE_INFO,
+         "Barrier crossed\n");
     if (old_status == GNUNET_TESTBED_BARRIERSTATUS_INITIALISED)
       result = GNUNET_OK;
-    barrier = NULL;
-    GNUNET_SCHEDULER_shutdown ();
-    return;
+    break;
   default:
     GNUNET_assert (0);
+    return;
   }
+  barrier = NULL;
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -152,19 +163,32 @@ test_master (void *cls,
   GNUNET_assert (NULL == cls);
   if (NULL == peers_)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failing test due to timeout\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failing test due to timeout\n");
     return;
   }
   GNUNET_assert (NUM_PEERS == num_peers);
   c = GNUNET_TESTBED_run_get_controller_handle (h);
-  barrier = GNUNET_TESTBED_barrier_init (c, TEST_BARRIER_NAME, 100,
-                                         &barrier_cb, NULL);
-  shutdown_task =
+  barrier = GNUNET_TESTBED_barrier_init (c,
+                                         TEST_BARRIER_NAME,
+                                         100,
+                                         &barrier_cb,
+                                         NULL);
+  timeout_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_SECONDS,
                                      10 * (NUM_PEERS + 1)),
-                                    &do_shutdown, NULL);
+                                    &do_timeout, NULL);
+  GNUNET_SCHEDULER_add_shutdown(&shutdown_handler, NULL);
 }
+
+
+#ifndef PATH_MAX
+/**
+ * Assumed maximum path length (for the log file name).
+ */
+#define PATH_MAX 4096
+#endif
 
 
 /**

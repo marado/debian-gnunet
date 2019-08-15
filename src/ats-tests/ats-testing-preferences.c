@@ -1,21 +1,21 @@
 /*
  This file is part of GNUnet.
- (C) 2010-2013 Christian Grothoff (and other contributing authors)
+ Copyright (C) 2010-2013 GNUnet e.V.
 
- GNUnet is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published
- by the Free Software Foundation; either version 3, or (at your
- option) any later version.
+ GNUnet is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Affero General Public License as published
+ by the Free Software Foundation, either version 3 of the License,
+ or (at your option) any later version.
 
  GNUnet is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
+ Affero General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GNUnet; see the file COPYING.  If not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file ats-tests/ats-testing-preferences.c
@@ -91,12 +91,11 @@ get_preference (struct PreferenceGenerator *pg)
 
 
 static void
-set_pref_task (void *cls,
-                    const struct GNUNET_SCHEDULER_TaskContext *tc)
+set_pref_task (void *cls)
 {
   struct BenchmarkPartner *p = cls;
   double pref_value;
-  p->pg->set_task = GNUNET_SCHEDULER_NO_TASK;
+  p->pg->set_task = NULL;
 
   pref_value = get_preference (p->pg);
 
@@ -106,7 +105,10 @@ set_pref_task (void *cls,
       GNUNET_ATS_print_preference_type (p->pg->kind), pref_value);
 
   GNUNET_ATS_performance_change_preference(p->me->ats_perf_handle,
-      &p->dest->id, p->pg->kind, pref_value, GNUNET_ATS_PREFERENCE_END);
+                                           &p->dest->id,
+                                           p->pg->kind,
+                                           pref_value,
+                                           GNUNET_ATS_PREFERENCE_END);
 
   switch (p->pg->kind) {
     case GNUNET_ATS_PREFERENCE_BANDWIDTH:
@@ -141,13 +143,13 @@ set_pref_task (void *cls,
  */
 struct PreferenceGenerator *
 GNUNET_ATS_TEST_generate_preferences_start (struct BenchmarkPeer *src,
-    struct BenchmarkPartner *dest,
-    enum GeneratorType type,
-    long int base_value,
-    long int value_rate,
-    struct GNUNET_TIME_Relative period,
-    struct GNUNET_TIME_Relative frequency,
-    enum GNUNET_ATS_PreferenceKind kind)
+                                            struct BenchmarkPartner *dest,
+                                            enum GeneratorType type,
+                                            unsigned int base_value,
+                                            unsigned int value_rate,
+                                            struct GNUNET_TIME_Relative period,
+                                            struct GNUNET_TIME_Relative frequency,
+                                            enum GNUNET_ATS_PreferenceKind kind)
 {
   struct PreferenceGenerator *pg;
 
@@ -172,31 +174,31 @@ GNUNET_ATS_TEST_generate_preferences_start (struct BenchmarkPeer *src,
   switch (type) {
     case GNUNET_ATS_TEST_TG_CONSTANT:
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-          "Setting up constant preference generator master[%u] `%s' and slave [%u] `%s' max %u Bips\n",
-          dest->me->no, GNUNET_i2s (&dest->me->id),
-          dest->dest->no, GNUNET_i2s (&dest->dest->id),
-          base_value);
+                  "Setting up constant preference generator master[%u] `%s' and slave [%u] `%s' max %u Bips\n",
+                  dest->me->no, GNUNET_i2s (&dest->me->id),
+                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                  base_value);
       break;
     case GNUNET_ATS_TEST_TG_LINEAR:
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-          "Setting up linear preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bips\n",
-          dest->me->no, GNUNET_i2s (&dest->me->id),
-          dest->dest->no, GNUNET_i2s (&dest->dest->id),
-          base_value, value_rate);
+                  "Setting up linear preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bips\n",
+                  dest->me->no, GNUNET_i2s (&dest->me->id),
+                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                  base_value, value_rate);
       break;
     case GNUNET_ATS_TEST_TG_SINUS:
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-          "Setting up sinus preference generator master[%u] `%s' and slave [%u] `%s' baserate %u Bips, amplitude %u Bps\n",
-          dest->me->no, GNUNET_i2s (&dest->me->id),
-          dest->dest->no, GNUNET_i2s (&dest->dest->id),
-          base_value, value_rate);
+                  "Setting up sinus preference generator master[%u] `%s' and slave [%u] `%s' baserate %u Bips, amplitude %u Bps\n",
+                  dest->me->no, GNUNET_i2s (&dest->me->id),
+                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                  base_value, value_rate);
       break;
     case GNUNET_ATS_TEST_TG_RANDOM:
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-          "Setting up random preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bps\n",
-          dest->me->no, GNUNET_i2s (&dest->me->id),
-          dest->dest->no, GNUNET_i2s (&dest->dest->id),
-          base_value, value_rate);
+                  "Setting up random preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bps\n",
+                  dest->me->no, GNUNET_i2s (&dest->me->id),
+                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                  base_value, value_rate);
       break;
     default:
       break;
@@ -214,10 +216,10 @@ GNUNET_ATS_TEST_generate_preferences_stop (struct PreferenceGenerator *pg)
   GNUNET_CONTAINER_DLL_remove (pg_head, pg_tail, pg);
   pg->dest->pg = NULL;
 
-  if (GNUNET_SCHEDULER_NO_TASK != pg->set_task)
+  if (NULL != pg->set_task)
   {
     GNUNET_SCHEDULER_cancel (pg->set_task);
-    pg->set_task = GNUNET_SCHEDULER_NO_TASK;
+    pg->set_task = NULL;
   }
 
   GNUNET_free (pg);
@@ -241,4 +243,3 @@ GNUNET_ATS_TEST_generate_preferences_stop_all ()
 }
 
 /* end of file ats-testing-preferences.c */
-

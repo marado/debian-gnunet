@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -82,10 +82,12 @@ struct ScanTreeNode
 };
 
 
+#if HAVE_LIBEXTRACTOR
 /**
  * List of libextractor plugins to use for extracting.
  */
 static struct EXTRACTOR_PluginList *plugins;
+#endif
 
 /**
  * File descriptor we use for IPC with the parent.
@@ -93,6 +95,7 @@ static struct EXTRACTOR_PluginList *plugins;
 static int output_stream;
 
 
+#if HAVE_LIBEXTRACTOR
 /**
  * Add meta data that libextractor finds to our meta data
  * container.
@@ -111,9 +114,13 @@ static int output_stream;
  * @return always 0 to continue extracting
  */
 static int
-add_to_md (void *cls, const char *plugin_name, enum EXTRACTOR_MetaType type,
-           enum EXTRACTOR_MetaFormat format, const char *data_mime_type,
-           const char *data, size_t data_len)
+add_to_md (void *cls,
+           const char *plugin_name,
+           enum EXTRACTOR_MetaType type,
+           enum EXTRACTOR_MetaFormat format,
+           const char *data_mime_type,
+           const char *data,
+           size_t data_len)
 {
   struct GNUNET_CONTAINER_MetaData *md = cls;
 
@@ -122,7 +129,7 @@ add_to_md (void *cls, const char *plugin_name, enum EXTRACTOR_MetaType type,
        ('\0' != data[data_len - 1]) )
   {
     char zdata[data_len + 1];
-    memcpy (zdata, data, data_len);
+    GNUNET_memcpy (zdata, data, data_len);
     zdata[data_len] = '\0';
     (void) GNUNET_CONTAINER_meta_data_insert (md, plugin_name, type, format,
 					      data_mime_type, zdata, data_len + 1);
@@ -134,6 +141,7 @@ add_to_md (void *cls, const char *plugin_name, enum EXTRACTOR_MetaType type,
   }
   return 0;
 }
+#endif
 
 
 /**
@@ -151,7 +159,7 @@ free_tree (struct ScanTreeNode *tree)
   if (NULL != tree->parent)
     GNUNET_CONTAINER_DLL_remove (tree->parent->children_head,
 				 tree->parent->children_tail,
-				 tree);				
+				 tree);
   GNUNET_free (tree->filename);
   GNUNET_free (tree);
 }
@@ -383,7 +391,13 @@ extract_files (struct ScanTreeNode *item)
 
   /* this is the expensive operation, *afterwards* we'll check for aborts */
   meta = GNUNET_CONTAINER_meta_data_create ();
-  EXTRACTOR_extract (plugins, item->filename, NULL, 0, &add_to_md, meta);
+#if HAVE_LIBEXTRACTOR
+  EXTRACTOR_extract (plugins,
+                     item->filename,
+                     NULL, 0,
+                     &add_to_md,
+                     meta);
+#endif
   slen = strlen (item->filename) + 1;
   size = GNUNET_CONTAINER_meta_data_get_serialized_size (meta);
   if (-1 == size)
@@ -405,7 +419,7 @@ extract_files (struct ScanTreeNode *item)
     char buf[size + slen];
     char *dst = &buf[slen];
 
-    memcpy (buf, item->filename, slen);
+    GNUNET_memcpy (buf, item->filename, slen);
     size = GNUNET_CONTAINER_meta_data_serialize (meta,
 						 &dst, size,
 						 GNUNET_CONTAINER_META_DATA_SERIALIZE_PART);
@@ -466,7 +480,7 @@ make_dev_zero (int fd,
   GNUNET_assert (-1 != z);
   if (z == fd)
     return;
-  dup2 (z, fd);
+  GNUNET_break (fd == dup2 (z, fd));
   GNUNET_assert (0 == close (z));
 }
 
@@ -525,10 +539,12 @@ main (int argc,
   if ( (NULL == ex) ||
        (0 != strcmp (ex, "-")) )
   {
+#if HAVE_LIBEXTRACTOR
     plugins = EXTRACTOR_plugin_add_defaults (EXTRACTOR_OPTION_DEFAULT_POLICY);
     if (NULL != ex)
       plugins = EXTRACTOR_plugin_add_config (plugins, ex,
 					     EXTRACTOR_OPTION_DEFAULT_POLICY);
+#endif
   }
 
   /* scan tree to find out how much work there is to be done */
@@ -536,7 +552,9 @@ main (int argc,
 				    &root))
   {
     (void) write_message (GNUNET_MESSAGE_TYPE_FS_PUBLISH_HELPER_ERROR, NULL, 0);
+#if HAVE_LIBEXTRACTOR
     EXTRACTOR_plugin_remove_all (plugins);
+#endif
 #if WINDOWS
     GNUNET_free ((void*) argv);
 #endif
@@ -547,7 +565,9 @@ main (int argc,
   if (GNUNET_OK !=
       write_message (GNUNET_MESSAGE_TYPE_FS_PUBLISH_HELPER_COUNTING_DONE, NULL, 0))
   {
+#if HAVE_LIBEXTRACTOR
     EXTRACTOR_plugin_remove_all (plugins);
+#endif
 #if WINDOWS
     GNUNET_free ((void*) argv);
 #endif
@@ -560,7 +580,9 @@ main (int argc,
     {
       (void) write_message (GNUNET_MESSAGE_TYPE_FS_PUBLISH_HELPER_ERROR, NULL, 0);
       free_tree (root);
+#if HAVE_LIBEXTRACTOR
       EXTRACTOR_plugin_remove_all (plugins);
+#endif
 #if WINDOWS
       GNUNET_free ((void*) argv);
 #endif
@@ -570,7 +592,9 @@ main (int argc,
   }
   /* enable "clean" shutdown by telling parent that we are done */
   (void) write_message (GNUNET_MESSAGE_TYPE_FS_PUBLISH_HELPER_FINISHED, NULL, 0);
+#if HAVE_LIBEXTRACTOR
   EXTRACTOR_plugin_remove_all (plugins);
+#endif
 #if WINDOWS
   GNUNET_free ((void*) argv);
 #endif
@@ -578,4 +602,3 @@ main (int argc,
 }
 
 /* end of gnunet-helper-fs-publish.c */
-

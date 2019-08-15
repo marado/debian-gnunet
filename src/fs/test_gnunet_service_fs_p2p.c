@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -54,31 +54,35 @@ static struct GNUNET_TIME_Absolute start_time;
 
 
 static void
-do_stop (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_stop (void *cls)
 {
   char *fn = cls;
   struct GNUNET_TIME_Relative del;
   char *fancy;
 
   GNUNET_SCHEDULER_shutdown ();
-  if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_TIMEOUT))
-  {
-    del = GNUNET_TIME_absolute_get_duration (start_time);
-    if (del.rel_value_us == 0)
-      del.rel_value_us = 1;
-    fancy =
-      GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-				      1000000LL / del.rel_value_us);
-    FPRINTF (stdout, "Download speed was %s/s\n", fancy);
-    GNUNET_free (fancy);
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished download, shutting down\n",
-                (unsigned long long) FILESIZE);
-  }
-  else
+  if (0 ==
+      GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
+                                                                    TIMEOUT)).rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Timeout during download, shutting down with error\n");
     ok = 1;
+  }
+  else
+  {
+    del = GNUNET_TIME_absolute_get_duration (start_time);
+    if (0 == del.rel_value_us)
+      del.rel_value_us = 1;
+    fancy =
+      GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
+				      1000000LL / del.rel_value_us);
+    FPRINTF (stdout,
+             "Download speed was %s/s\n",
+             fancy);
+    GNUNET_free (fancy);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Finished download, shutting down\n");
   }
   if (NULL != fn)
   {
@@ -122,7 +126,7 @@ do_publish (void *cls,
 {
   unsigned int i;
 
-  if (NULL != strstr (progname, "mesh"))
+  if (NULL != strstr (progname, "cadet"))
     anonymity_level = 0;
   else
     anonymity_level = 1;
@@ -144,8 +148,8 @@ main (int argc, char *argv[])
   const char *config;
 
   progname = argv[0];
-  if (NULL != strstr (progname, "mesh"))
-    config = "test_gnunet_service_fs_p2p_mesh.conf";
+  if (NULL != strstr (progname, "cadet"))
+    config = "test_gnunet_service_fs_p2p_cadet.conf";
   else
     config = "fs_test_lib_data.conf";
   (void) GNUNET_TESTBED_test_run ("test-gnunet-service-fs-p2p",

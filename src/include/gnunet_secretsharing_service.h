@@ -1,27 +1,32 @@
 /*
       This file is part of GNUnet
-      (C) 2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
- * @file include/gnunet_secretsharing_service.h
- * @brief verifiable additive secret sharing and cooperative decryption
  * @author Florian Dold
+ *
+ * @file
+ * Verifiable additive secret sharing and cooperative decryption
+ *
+ * @defgroup secretsharing  Secret Sharing service
+ * Verifiable additive secret sharing and cooperative decryption.
+ * @{
  */
 
 #ifndef GNUNET_SECRETSHARING_SERVICE_H
@@ -35,7 +40,6 @@ extern "C"
 #endif
 #endif
 
-#include "platform.h"
 #include "gnunet_common.h"
 #include "gnunet_time_lib.h"
 #include "gnunet_configuration_lib.h"
@@ -164,11 +168,12 @@ struct GNUNET_SECRETSHARING_Plaintext
  * @param ready_peers peers that successfuly participated in establishing
  *                    the shared secret
  */
-typedef void (*GNUNET_SECRETSHARING_SecretReadyCallback) (void *cls,
-                                                          struct GNUNET_SECRETSHARING_Share *my_share,
-                                                          struct GNUNET_SECRETSHARING_PublicKey *public_key,
-                                                          unsigned int num_ready_peers,
-                                                          struct GNUNET_PeerIdentity *ready_peers);
+typedef void
+(*GNUNET_SECRETSHARING_SecretReadyCallback) (void *cls,
+                                             struct GNUNET_SECRETSHARING_Share *my_share,
+                                             struct GNUNET_SECRETSHARING_PublicKey *public_key,
+                                             unsigned int num_ready_peers,
+                                             const struct GNUNET_PeerIdentity *ready_peers);
 
 
 /**
@@ -178,8 +183,9 @@ typedef void (*GNUNET_SECRETSHARING_SecretReadyCallback) (void *cls,
  * @param data decrypted value
  * @param data_size number of bytes in @a data
  */
-typedef void (*GNUNET_SECRETSHARING_DecryptCallback) (void *cls,
-                                                      const struct GNUNET_SECRETSHARING_Plaintext *plaintext);
+typedef void
+(*GNUNET_SECRETSHARING_DecryptCallback) (void *cls,
+                                         const struct GNUNET_SECRETSHARING_Plaintext *plaintext);
 
 
 /**
@@ -187,7 +193,7 @@ typedef void (*GNUNET_SECRETSHARING_DecryptCallback) (void *cls,
  * with the other peers.
  *
  * @param cfg configuration to use
- * @param num_peers number of peers in 'peers'
+ * @param num_peers number of peers in @a peers
  * @param peers array of peers that we will share secrets with, can optionally contain the local peer
  * @param session_id unique session id
  * @param start When should all peers be available for sharing the secret?
@@ -196,7 +202,7 @@ typedef void (*GNUNET_SECRETSHARING_DecryptCallback) (void *cls,
  *                 by underlying consensus sessions
  * @param threshold minimum number of peers that must cooperate to decrypt a value
  * @param cb called when the secret has been established
- * @param cls closure for cb
+ * @param cls closure for @a cb
  */
 struct GNUNET_SECRETSHARING_Session *
 GNUNET_SECRETSHARING_create_session (const struct GNUNET_CONFIGURATION_Handle *cfg,
@@ -214,10 +220,10 @@ GNUNET_SECRETSHARING_create_session (const struct GNUNET_CONFIGURATION_Handle *c
  * Destroy a secret sharing session.
  * The secret ready callback will not be called.
  *
- * @param session session to destroy
+ * @param s session to destroy
  */
 void
-GNUNET_SECRETSHARING_session_destroy (struct GNUNET_SECRETSHARING_Session *session);
+GNUNET_SECRETSHARING_session_destroy (struct GNUNET_SECRETSHARING_Session *s);
 
 
 /**
@@ -244,7 +250,7 @@ GNUNET_SECRETSHARING_encrypt (const struct GNUNET_SECRETSHARING_PublicKey *publi
  * published the same value, it will be decrypted.
  *
  * When the operation is canceled, the decrypt_cb is not called anymore, but the calling
- * peer may already have irrevocably contributed his share for the decryption of the value.
+ * peer may already have irrevocably contributed its share for the decryption of the value.
  *
  * @param cfg configuration to use
  * @param share our secret share to use for decryption
@@ -269,12 +275,12 @@ GNUNET_SECRETSHARING_decrypt (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * Cancel a decryption.
  *
  * The decrypt_cb is not called anymore, but the calling
- * peer may already have irrevocably contributed his share for the decryption of the value.
+ * peer may already have irrevocably contributed its share for the decryption of the value.
  *
- * @param decryption_handle decryption to cancel
+ * @param dh to cancel
  */
 void
-GNUNET_SECRETSHARING_decrypt_cancel (struct GNUNET_SECRETSHARING_DecryptionHandle *decryption_handle);
+GNUNET_SECRETSHARING_decrypt_cancel (struct GNUNET_SECRETSHARING_DecryptionHandle *dh);
 
 
 /**
@@ -319,8 +325,6 @@ GNUNET_SECRETSHARING_plaintext_generate_i (struct GNUNET_SECRETSHARING_Plaintext
                                            int64_t exponent);
 
 
-
-
 #if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
@@ -329,3 +333,5 @@ GNUNET_SECRETSHARING_plaintext_generate_i (struct GNUNET_SECRETSHARING_Plaintext
 #endif
 
 #endif
+
+/** @} */  /* end of group */

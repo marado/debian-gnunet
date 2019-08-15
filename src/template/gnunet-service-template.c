@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -31,12 +31,44 @@
  * Task run during shutdown.
  *
  * @param cls unused
- * @param tc unused
  */
 static void
-cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+cleanup_task (void *cls)
 {
   /* FIXME: do clean up here */
+}
+
+
+/**
+ * Callback called when a client connects to the service.
+ *
+ * @param cls closure for the service
+ * @param c the new client that connected to the service
+ * @param mq the message queue used to send messages to the client
+ * @return @a c
+ */
+static void *
+client_connect_cb (void *cls,
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
+{
+  return c;
+}
+
+
+/**
+ * Callback called when a client disconnected from the service
+ *
+ * @param cls closure for the service
+ * @param c the client that disconnected
+ * @param internal_cls should be equal to @a c
+ */
+static void
+client_disconnect_cb (void *cls,
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
+{
+  GNUNET_assert (c == internal_cls);
 }
 
 
@@ -44,37 +76,29 @@ cleanup_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Process template requests.
  *
  * @param cls closure
- * @param server the initialized server
  * @param cfg configuration to use
+ * @param service the initialized service
  */
 static void
-run (void *cls, struct GNUNET_SERVER_Handle *server,
-     const struct GNUNET_CONFIGURATION_Handle *cfg)
+run (void *cls,
+     const struct GNUNET_CONFIGURATION_Handle *cfg,
+     struct GNUNET_SERVICE_Handle *service)
 {
-  static const struct GNUNET_SERVER_MessageHandler handlers[] = {
-    /* FIXME: add handlers here! */
-    {NULL, NULL, 0, 0}
-  };
   /* FIXME: do setup here */
-  GNUNET_SERVER_add_handlers (server, handlers);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &cleanup_task,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&cleanup_task, NULL);
 }
 
 
 /**
- * The main function for the template service.
- *
- * @param argc number of arguments from the command line
- * @param argv command line arguments
- * @return 0 ok, 1 on error
+ * Define "main" method using service macro.
  */
-int
-main (int argc, char *const *argv)
-{
-  return (GNUNET_OK ==
-          GNUNET_SERVICE_run (argc, argv, "template",
-                              GNUNET_SERVICE_OPTION_NONE, &run, NULL)) ? 0 : 1;
-}
+GNUNET_SERVICE_MAIN ("template",
+                     GNUNET_SERVICE_OPTION_NONE,
+                     &run,
+                     &client_connect_cb,
+                     &client_disconnect_cb,
+                     NULL,
+                     GNUNET_MQ_handler_end ());
+
 
 /* end of gnunet-service-template.c */

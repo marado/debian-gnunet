@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2016 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file hostlist/test_gnunet_daemon_hostlist.c
@@ -26,6 +26,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_arm_service.h"
 #include "gnunet_transport_service.h"
+#include "gnunet_transport_hello_service.h"
 
 
 /**
@@ -35,14 +36,14 @@
 
 static int ok;
 
-static GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+static struct GNUNET_SCHEDULER_Task *timeout_task;
 
 struct PeerContext
 {
   struct GNUNET_CONFIGURATION_Handle *cfg;
-  struct GNUNET_TRANSPORT_Handle *th;
+  struct GNUNET_TRANSPORT_CoreHandle *th;
   struct GNUNET_MessageHeader *hello;
-  struct GNUNET_TRANSPORT_GetHelloHandle *ghh;
+  struct GNUNET_TRANSPORT_HelloGetHandle *ghh;
   struct GNUNET_OS_Process *arm_proc;
 };
 
@@ -52,41 +53,42 @@ static struct PeerContext p2;
 
 
 static void
-clean_up (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+clean_up (void *cls)
 {
-  if (p1.th != NULL)
+  if (NULL != p1.th)
   {
-    if (p1.ghh != NULL)
+    if (NULL != p1.ghh)
     {
-      GNUNET_TRANSPORT_get_hello_cancel (p1.ghh);
+      GNUNET_TRANSPORT_hello_get_cancel (p1.ghh);
       p1.ghh = NULL;
     }
-    GNUNET_TRANSPORT_disconnect (p1.th);
+    GNUNET_TRANSPORT_core_disconnect (p1.th);
     p1.th = NULL;
   }
-  if (p2.th != NULL)
+  if (NULL != p2.th)
   {
-    if (p2.ghh != NULL)
+    if (NULL != p2.ghh)
     {
-      GNUNET_TRANSPORT_get_hello_cancel (p2.ghh);
+      GNUNET_TRANSPORT_hello_get_cancel (p2.ghh);
       p2.ghh = NULL;
     }
-    GNUNET_TRANSPORT_disconnect (p2.th);
+    GNUNET_TRANSPORT_core_disconnect (p2.th);
     p2.th = NULL;
   }
   GNUNET_SCHEDULER_shutdown ();
 }
 
+
 /**
  * Timeout, give up.
  */
 static void
-timeout_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+timeout_error (void *cls)
 {
-  timeout_task = GNUNET_SCHEDULER_NO_TASK;
+  timeout_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
               "Timeout trying to connect peers, test failed.\n");
-  clean_up (NULL, tc);
+  clean_up (NULL);
 }
 
 
@@ -96,22 +98,22 @@ timeout_error (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *
  * @param cls closure
  * @param peer the peer that connected
- * @param latency current latency of the connection
- * @param distance in overlay hops, as given by transport plugin
+ * @param mq message queue to send messages to the peer
  */
-static void
-notify_connect (void *cls, const struct GNUNET_PeerIdentity *peer)
+static void *
+notify_connect (void *cls,
+                const struct GNUNET_PeerIdentity *peer,
+                struct GNUNET_MQ_Handle *mq)
 {
-  if (peer == NULL)
-    return;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peers connected, shutting down.\n");
   ok = 0;
-  if (timeout_task != GNUNET_SCHEDULER_NO_TASK)
+  if (NULL != timeout_task)
   {
     GNUNET_SCHEDULER_cancel (timeout_task);
-    timeout_task = GNUNET_SCHEDULER_NO_TASK;
+    timeout_task = NULL;
   }
   GNUNET_SCHEDULER_add_now (&clean_up, NULL);
+  return NULL;
 }
 
 
@@ -120,7 +122,7 @@ process_hello (void *cls, const struct GNUNET_MessageHeader *message)
 {
   struct PeerContext *p = cls;
 
-  GNUNET_TRANSPORT_get_hello_cancel (p->ghh);
+  GNUNET_TRANSPORT_hello_get_cancel (p->ghh);
   p->ghh = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received HELLO, starting hostlist service.\n");
@@ -134,32 +136,45 @@ setup_peer (struct PeerContext *p, const char *cfgname)
 
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-arm");
   p->cfg = GNUNET_CONFIGURATION_create ();
-  p->arm_proc =
-    GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-                             NULL, NULL, NULL,
-                             binary,
-                             "gnunet-service-arm",
-                             "-c", cfgname, NULL);
+  p->arm_proc = GNUNET_OS_start_process (GNUNET_YES,
+                                         GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                                         NULL,
+                                         NULL,
+                                         NULL,
+                                         binary,
+                                         "gnunet-service-arm",
+                                         "-c",
+                                         cfgname,
+                                         NULL);
   GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_load (p->cfg, cfgname));
-  p->th =
-      GNUNET_TRANSPORT_connect (p->cfg, NULL, p, NULL, &notify_connect, NULL);
-  GNUNET_assert (p->th != NULL);
-  p->ghh = GNUNET_TRANSPORT_get_hello (p->th, &process_hello, p);
+  p->th = GNUNET_TRANSPORT_core_connect (p->cfg,
+                                         NULL,
+                                         NULL,
+                                         p,
+                                         &notify_connect,
+                                         NULL,
+                                         NULL);
+  GNUNET_assert (NULL != p->th);
+  p->ghh = GNUNET_TRANSPORT_hello_get (p->cfg,
+                                       GNUNET_TRANSPORT_AC_ANY,
+                                       &process_hello,
+                                       p);
   GNUNET_free (binary);
 }
 
 
 static void
-waitpid_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+waitpid_task (void *cls)
 {
   struct PeerContext *p = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Killing ARM process.\n");
   if (0 != GNUNET_OS_process_kill (p->arm_proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
-  if (GNUNET_OS_process_wait (p->arm_proc) != GNUNET_OK)
+  if (GNUNET_OK != GNUNET_OS_process_wait (p->arm_proc))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "waitpid");
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "ARM process %u stopped\n",
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "ARM process %u stopped\n",
               GNUNET_OS_process_get_pid (p->arm_proc));
   GNUNET_OS_process_destroy (p->arm_proc);
   p->arm_proc = NULL;
@@ -179,7 +194,7 @@ stop_arm (struct PeerContext *p)
  * Try again to connect to transport service.
  */
 static void
-shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
   stop_arm (&p1);
   stop_arm (&p2);
@@ -187,14 +202,15 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   GNUNET_assert (ok == 1);
   ok++;
   timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT, &timeout_error, NULL);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &shutdown_task,
-                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
   setup_peer (&p1, "test_gnunet_daemon_hostlist_peer1.conf");
   setup_peer (&p2, "test_gnunet_daemon_hostlist_peer2.conf");
 }
@@ -203,16 +219,18 @@ run (void *cls, char *const *args, const char *cfgfile,
 static int
 check ()
 {
-  char *const argv[] = { "test-gnunet-daemon-hostlist",
-    "-c", "test_gnunet_daemon_hostlist_data.conf",
-    NULL
-  };
-  struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END
-  };
+  char *const argv[] = {"test-gnunet-daemon-hostlist",
+                        "-c",
+                        "test_gnunet_daemon_hostlist_data.conf",
+                        NULL};
+  struct GNUNET_GETOPT_CommandLineOption options[] = {GNUNET_GETOPT_OPTION_END};
   ok = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv,
-                      "test-gnunet-daemon-hostlist", "nohelp", options, &run,
+  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+                      argv,
+                      "test-gnunet-daemon-hostlist",
+                      "nohelp",
+                      options,
+                      &run,
                       &ok);
   return ok;
 }
@@ -221,19 +239,22 @@ check ()
 int
 main (int argc, char *argv[])
 {
-
   int ret;
 
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-1");
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-2");
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist");
-  GNUNET_log_setup ("test-gnunet-daemon-hostlist",
-                    "WARNING",
-                    NULL);
+  GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_peer1.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_peer2.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_data.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_log_setup ("test-gnunet-daemon-hostlist", "WARNING", NULL);
   ret = check ();
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-1");
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist-peer-2");
-  GNUNET_DISK_directory_remove ("/tmp/test-gnunet-hostlist");
+  GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_peer1.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_peer2.conf",
+                             "GNUNET_TEST_HOME");
+  GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_data.conf",
+                             "GNUNET_TEST_HOME");
   return ret;
 }
 

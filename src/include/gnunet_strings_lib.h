@@ -1,33 +1,36 @@
 /*
      This file is part of GNUnet.
-     (C) 2001-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_strings_lib.h
- * @brief strings and string handling functions (including malloc
- *        and string tokenizing)
- *
  * @author Christian Grothoff
  * @author Krista Bennett
  * @author Gerd Knorr <kraxel@bytesex.org>
  * @author Ioana Patrascu
  * @author Tzvetan Horozov
+ *
+ * @file
+ * Strings and string handling functions
+ *
+ * @defgroup strings  Strings library
+ * Strings and string handling functions, including malloc and string tokenizing.
+ * @{
  */
 
 #ifndef GNUNET_STRINGS_LIB_H
@@ -219,7 +222,7 @@ GNUNET_STRINGS_buffer_fill (char *buffer,
  * in the buffer and assign the count (varargs) of type "const char**"
  * to the locations of the respective strings in the buffer.
  *
- * @param buffer the buffer to parse
+ * @param buffer the buffer to parse FIXME: not 'const', is it?
  * @param size size of the @a buffer
  * @param count number of strings to locate
  * @param ... pointers to where to store the strings
@@ -278,10 +281,7 @@ GNUNET_STRINGS_get_short_name (const char *filename);
 
 
 /**
- * Convert binary data to ASCII encoding.  The ASCII encoding is rather
- * GNUnet specific.  It was chosen such that it only uses characters
- * in [0-9A-V], can be produced without complex arithmetics and uses a
- * small number of characters.  The GNUnet encoding uses 103 characters.
+ * Convert binary data to ASCII encoding using CrockfordBase32.
  * Does not append 0-terminator, but returns a pointer to the place where
  * it should be placed, if needed.
  *
@@ -300,11 +300,26 @@ GNUNET_STRINGS_data_to_string (const void *data,
 
 
 /**
- * Convert ASCII encoding back to data
- * out_size must match exactly the size of the data before it was encoded.
+ * Return the base32crockford encoding of the given buffer.
+ *
+ * The returned string will be freshly allocated, and must be free'd
+ * with #GNUNET_free().
+ *
+ * @param buf buffer with data
+ * @param size size of the buffer @a buf
+ * @return freshly allocated, null-terminated string
+ */
+char *
+GNUNET_STRINGS_data_to_string_alloc (const void *buf,
+                                     size_t size);
+
+
+/**
+ * Convert CrockfordBase32 encoding back to data.
+ * @a out_size must match exactly the size of the data before it was encoded.
  *
  * @param enc the encoding
- * @param enclen number of characters in 'enc' (without 0-terminator, which can be missing)
+ * @param enclen number of characters in @a enc (without 0-terminator, which can be missing)
  * @param out location where to store the decoded data
  * @param out_size size of the output buffer @a out
  * @return #GNUNET_OK on success, #GNUNET_SYSERR if result has the wrong encoding
@@ -326,7 +341,9 @@ GNUNET_STRINGS_string_to_data (const char *enc,
  * @return the size of the output
  */
 size_t
-GNUNET_STRINGS_base64_encode (const char *data, size_t len, char **output);
+GNUNET_STRINGS_base64_encode (const void *in,
+                              size_t len,
+                              char **output);
 
 
 /**
@@ -334,25 +351,39 @@ GNUNET_STRINGS_base64_encode (const char *data, size_t len, char **output);
  *
  * @param data the data to encode
  * @param len the length of the input
- * @param output where to write the output (*output should be NULL,
+ * @param[out] output where to write the output (*output should be NULL,
  *   is allocated)
  * @return the size of the output
  */
 size_t
-GNUNET_STRINGS_base64_decode (const char *data, size_t len, char **output);
+GNUNET_STRINGS_base64_decode (const char *data,
+			      size_t len,
+			      void **output);
+
+
+/**
+ * Convert a peer path to a human-readable string.
+ *
+ * @param pids array of PIDs to convert to a string
+ * @param num_pids length of the @a pids array
+ * @return string representing the array of @a pids
+ */
+char *
+GNUNET_STRINGS_pp2s (const struct GNUNET_PeerIdentity *pids,
+                     unsigned int num_pids);
 
 
 /**
  * Parse a path that might be an URI.
  *
  * @param path path to parse. Must be NULL-terminated.
- * @param scheme_part a pointer to 'char *' where a pointer to a string that
+ * @param[out] scheme_part pointer to a string that
  *        represents the URI scheme will be stored. Can be NULL. The string is
  *        allocated by the function, and should be freed by GNUNET_free() when
  *        it is no longer needed.
  * @param path_part a pointer to 'const char *' where a pointer to the path
  *        part of the URI will be stored. Can be NULL. Points to the same block
- *        of memory as 'path', and thus must not be freed. Might point to '\0',
+ *        of memory as @a path, and thus must not be freed. Might point to '\0',
  *        if path part is zero-length.
  * @return #GNUNET_YES if it's an URI, #GNUNET_NO otherwise. If 'path' is not
  *         an URI, '* scheme_part' and '*path_part' will remain unchanged
@@ -457,6 +488,21 @@ int
 GNUNET_STRINGS_to_address_ipv4 (const char *zt_addr,
 				uint16_t addrlen,
 				struct sockaddr_in *r_buf);
+
+
+/**
+ * Parse an address given as a string into a
+ * `struct sockaddr`.
+ *
+ * @param addr the address
+ * @param[out] af set to the parsed address family (i.e. AF_INET)
+ * @param[out] sa set to the parsed address
+ * @return 0 on error, otherwise number of bytes in @a sa
+ */
+size_t
+GNUNET_STRINGS_parse_socket_addr (const char *addr,
+				  uint8_t *af,
+				  struct sockaddr **sa);
 
 
 /**
@@ -603,7 +649,9 @@ GNUNET_STRINGS_parse_ipv6_policy (const char *routeListX);
 }
 #endif
 
-
 /* ifndef GNUNET_UTIL_STRING_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_util_string.h */

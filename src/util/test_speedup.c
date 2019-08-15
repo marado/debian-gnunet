@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2011-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file util/test_speedup.c
@@ -47,13 +47,15 @@ static unsigned int cycles;
  * @param tc scheduler context, unused
  */
 static void
-run (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+run (void *cls)
 {
   cycles++;
   fprintf (stderr, "..%u", cycles);
   if (cycles <= 5)
   {
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS, &run, NULL);
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
+				  &run,
+				  NULL);
     return;
   }
   end = GNUNET_TIME_absolute_get();
@@ -66,21 +68,22 @@ run (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  *
  */
 static void
-check (void *cls, char *const *args,
+check (void *cls,
+       char *const *args,
        const char *cfgfile,
-       const struct GNUNET_CONFIGURATION_Handle *
-       cfg)
+       const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   fprintf (stderr, "0");
-  fflush(stdout);
-  GNUNET_SCHEDULER_add_now(&run, NULL);
+  fflush (stdout);
+  GNUNET_SCHEDULER_add_now (&run, NULL);
 }
 
 
 int
 main (int argc, char *argv[])
 {
-  static char *const argvn[] = { "test-speedup",
+  static char *const argvn[] = {
+    "test-speedup",
     "-c",  "test_speedup_data.conf",
     NULL
   };

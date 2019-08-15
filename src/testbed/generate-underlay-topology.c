@@ -1,27 +1,27 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2014 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2014 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
  * @file testbed/generate-underlay-topology.c
  * @brief Program to generate a database file containing given underlay topology
- * @author Sree Harsha Totakura <sreeharsha@totakura.in> 
+ * @author Sree Harsha Totakura <sreeharsha@totakura.in>
  */
 
 #include "platform.h"
@@ -70,7 +70,7 @@ enum GNUNET_TESTBED_TopologyOption topology;
 /**
  * The number of peers to include in the topology
  */
-static int num_peers;
+static unsigned int num_peers;
 
 /**
  * program result
@@ -165,10 +165,10 @@ setup_db (const char *dbfile)
       " ?1,"
       " ?2,"
       " ?3,"
-      " ?4," 
+      " ?4,"
       " ?5);";
   int ret;
-  
+
   ret = GNUNET_SYSERR;
   if (SQLITE_OK != sqlite3_open (dbfile, &db))
   {
@@ -218,9 +218,11 @@ run (void *cls, char *const *args, const char *cfgfile,
   unsigned int argc;
 
   argc = 0;
+  arg_uint1 = 0; /* make compilers happy */
+  arg_uint2 = 0; /* make compilers happy */
   if (NULL == args)
   {
-    LOG_ERROR (_("Need atleast 2 arguments\n"));
+    LOG_ERROR (_("Need at least 2 arguments\n"));
     return;
   }
   if (NULL == (dbfile = args[argc++]))
@@ -240,6 +242,7 @@ run (void *cls, char *const *args, const char *cfgfile,
     LOG_ERROR (_("Invalid topology: %s\n"), topology_string);
     return;
   }
+  arg_str1 = NULL;
   /* parse for first TOPOOPT.  This can either be arg_uint1 or arg_str1 */
   switch (topology)
   {
@@ -295,6 +298,7 @@ run (void *cls, char *const *args, const char *cfgfile,
   {
   case GNUNET_TESTBED_TOPOLOGY_LINE:
   case GNUNET_TESTBED_TOPOLOGY_RING:
+  case GNUNET_TESTBED_TOPOLOGY_STAR:
   case GNUNET_TESTBED_TOPOLOGY_CLIQUE:
   case GNUNET_TESTBED_TOPOLOGY_2D_TORUS:
     GNUNET_TESTBED_underlay_construct_ (num_peers, link_processor, NULL,
@@ -331,13 +335,17 @@ int
 main (int argc, char *const argv[])
 {
   struct GNUNET_GETOPT_CommandLineOption option[] = {
-    {'p', "num-peers", "COUNT",
-     gettext_noop ("create COUNT number of peers"),
-     GNUNET_YES, &GNUNET_GETOPT_set_uint, &num_peers},
+
+    GNUNET_GETOPT_option_uint ('p',
+                                   "num-peers",
+                                   "COUNT",
+                                   gettext_noop ("create COUNT number of peers"),
+                                   &num_peers),
     GNUNET_GETOPT_OPTION_END
   };
+
   int ret;
-  
+
   exit_result = GNUNET_SYSERR;
   ret =
       GNUNET_PROGRAM_run (argc, argv, "gnunet-underlay-topology",
@@ -363,7 +371,7 @@ main (int argc, char *const argv[])
   if (NULL != stmt_insert)
     sqlite3_finalize (stmt_insert);
   if (NULL != db)
-    sqlite3_close (db);
+    GNUNET_break (SQLITE_OK == sqlite3_close (db));
   if ((GNUNET_OK != ret) || (GNUNET_OK != exit_result))
     return 1;
   return 0;

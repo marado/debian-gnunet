@@ -1,26 +1,31 @@
 /*
      This file is part of GNUnet.
-     (C) 2001-2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001-2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
- * @file include/gnunet_disk_lib.h
- * @brief disk IO apis
  * @author Christian Grothoff
+ *
+ * @file
+ * Disk IO APIs
+ *
+ * @defgroup disk  Disk library
+ * Disk IO APIs
+ * @{
  */
 #ifndef GNUNET_DISK_LIB_H
 #define GNUNET_DISK_LIB_H
@@ -35,6 +40,11 @@ struct GNUNET_DISK_PipeHandle;
  */
 enum GNUNET_FILE_Type
 {
+  /**
+   * Handle represents an event.
+   */
+  GNUNET_DISK_HANLDE_TYPE_EVENT,
+
   /**
    * Handle represents a file.
    */
@@ -321,7 +331,8 @@ GNUNET_DISK_file_seek (const struct GNUNET_DISK_FileHandle *h, off_t offset,
  * @return #GNUNET_SYSERR on error, #GNUNET_OK on success
  */
 int
-GNUNET_DISK_file_size (const char *filename, uint64_t *size,
+GNUNET_DISK_file_size (const char *filename,
+                       uint64_t *size,
                        int include_symbolic_links,
                        int single_file_mode);
 
@@ -339,7 +350,7 @@ GNUNET_DISK_file_size (const char *filename, uint64_t *size,
  * @param filename name of the file
  * @param dev set to the device ID
  * @param ino set to the inode ID
- * @return GNUNET_OK on success
+ * @return #GNUNET_OK on success
  */
 int
 GNUNET_DISK_file_get_identifiers (const char *filename,
@@ -506,11 +517,12 @@ GNUNET_DISK_pipe_handle (const struct GNUNET_DISK_PipeHandle *p,
  */
 struct GNUNET_DISK_FileHandle *
 GNUNET_DISK_get_handle_from_w32_handle (HANDLE osfh);
-#else
+#endif
 
 /**
  * Update POSIX permissions mask of a file on disk.  If both argumets
  * are #GNUNET_NO, the file is made world-read-write-executable (777).
+ * Does nothing on W32.
  *
  * @param fn name of the file to update
  * @param require_uid_match #GNUNET_YES means 700
@@ -520,8 +532,6 @@ void
 GNUNET_DISK_fix_permissions (const char *fn,
                              int require_uid_match,
                              int require_gid_match);
-
-#endif
 
 
 /**
@@ -641,7 +651,8 @@ GNUNET_DISK_fn_write (const char *fn,
  * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 int
-GNUNET_DISK_file_copy (const char *src, const char *dst);
+GNUNET_DISK_file_copy (const char *src,
+                       const char *dst);
 
 
 /**
@@ -656,64 +667,6 @@ int
 GNUNET_DISK_directory_scan (const char *dir_name,
                             GNUNET_FileNameCallback callback,
                             void *callback_cls);
-
-
-/**
- * Opaque handle used for iterating over a directory.
- */
-struct GNUNET_DISK_DirectoryIterator;
-
-
-/**
- * Function called to iterate over a directory.
- *
- * @param cls closure
- * @param di argument to pass to #GNUNET_DISK_directory_iterator_next to
- *           get called on the next entry (or finish cleanly);
- *           NULL on error (will be the last call in that case)
- * @param filename complete filename (absolute path)
- * @param dirname directory name (absolute path)
- */
-typedef void (*GNUNET_DISK_DirectoryIteratorCallback) (void *cls,
-                                                       struct GNUNET_DISK_DirectoryIterator *di,
-                                                       const char *filename,
-                                                       const char *dirname);
-
-
-/**
- * This function must be called during the DiskIteratorCallback
- * (exactly once) to schedule the task to process the next
- * filename in the directory (if there is one).
- *
- * @param iter opaque handle for the iterator
- * @param can set to #GNUNET_YES to terminate the iteration early
- * @return #GNUNET_YES if iteration will continue,
- *         #GNUNET_NO if this was the last entry (and iteration is complete),
- *         #GNUNET_SYSERR if @a can was #GNUNET_YES
- */
-int
-GNUNET_DISK_directory_iterator_next (struct GNUNET_DISK_DirectoryIterator *iter,
-                                     int can);
-
-
-/**
- * Scan a directory for files using the scheduler to run a task for
- * each entry.  The name of the directory must be expanded first (!).
- * If a scheduler does not need to be used, GNUNET_DISK_directory_scan
- * may provide a simpler API.
- *
- * @param prio priority to use
- * @param dir_name the name of the directory
- * @param callback the method to call for each file
- * @param callback_cls closure for @a callback
- * @return #GNUNET_YES if directory is not empty and @a callback
- *         will be called later, #GNUNET_NO otherwise, #GNUNET_SYSERR on error.
- */
-int
-GNUNET_DISK_directory_iterator_start (enum GNUNET_SCHEDULER_Priority prio,
-                                      const char *dir_name,
-                                      GNUNET_DISK_DirectoryIteratorCallback
-                                      callback, void *callback_cls);
 
 
 /**
@@ -753,6 +706,18 @@ GNUNET_DISK_directory_test (const char *fil, int is_readable);
  */
 int
 GNUNET_DISK_directory_remove (const char *filename);
+
+
+/**
+ * Remove the directory given under @a option in
+ * section [PATHS] in configuration under @a cfg_filename
+ *
+ * @param cfg_filename configuration file to parse
+ * @param option option with the dir name to purge
+ */
+void
+GNUNET_DISK_purge_cfg_dir (const char *cfg_filename,
+                           const char *option);
 
 
 /**
@@ -809,13 +774,15 @@ GNUNET_DISK_filename_canonicalize (char *fn);
  * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure
  */
 int
-GNUNET_DISK_file_change_owner (const char *filename, const char *user);
+GNUNET_DISK_file_change_owner (const char *filename,
+			       const char *user);
 
 
 /**
  * Opaque handle for a memory-mapping operation.
  */
 struct GNUNET_DISK_MapHandle;
+
 
 /**
  * Map a file into memory
@@ -828,7 +795,9 @@ struct GNUNET_DISK_MapHandle;
 void *
 GNUNET_DISK_file_map (const struct GNUNET_DISK_FileHandle *h,
                       struct GNUNET_DISK_MapHandle **m,
-                      enum GNUNET_DISK_MapType access, size_t len);
+                      enum GNUNET_DISK_MapType access,
+		      size_t len);
+
 
 /**
  * Unmap a file
@@ -839,8 +808,10 @@ GNUNET_DISK_file_map (const struct GNUNET_DISK_FileHandle *h,
 int
 GNUNET_DISK_file_unmap (struct GNUNET_DISK_MapHandle *h);
 
+
 /**
  * Write file changes to disk
+ *
  * @param h handle to an open file
  * @return #GNUNET_OK on success, #GNUNET_SYSERR otherwise
  */
@@ -855,7 +826,9 @@ GNUNET_DISK_file_sync (const struct GNUNET_DISK_FileHandle *h);
 }
 #endif
 
-
 /* ifndef GNUNET_DISK_LIB_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_disk_lib.h */

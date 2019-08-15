@@ -1,3 +1,48 @@
+gnunet (0.11.0-1) experimental; urgency=medium
+
+  * New upstream version 0.11.0.
+  * debian/patches:
+    + remove testbed_path.patch, typos.diff, included upstream.
+    + refresh fix-bashism.patch.
+  * debian/control: update build-dependencies according to README.
+  * debian/rules: remove obsolete options passed to configure.
+  * debian/upstream/signing-key.asc: reexport upstream signing key with minimal
+    options.
+  * Standards-version: 4.3.0, no changes needed.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sun, 03 Mar 2019 12:22:32 +0100
+
+gnunet (0.11.0~pre666-1) experimental; urgency=medium
+
+  [ Bertrand Marc ]
+  * New upstream version 0.11.0pre666.
+  * Build-depend on dh-python2 to ensure gnunet-qr has the correct header
+    (Closes: #906075).
+  * Move the package to salsa and update Vcs-browser and Vcs-git accordingly.
+  * Add Christian Grothoff's new key to debian/upstream/signing-key.asc.
+  * Update build-dependencies according to README:
+    + update minimum versions.
+    + build-depends on libpq-dev, libjansson-dev, libbluetooth-dev, texinfo.
+  * debian/patches:
+    + remove build_against_libcurl, included upstream.
+    + remove conversation_libexecdir, included upstream.
+    + remove gnunet_PATHMAX.patch, included upstream.
+    + remove kfreebsd_malloc_np.patch, included upstream.
+    + remove noinst_set.diff, included upstream.
+    + refresh fix-bashism.patch.
+    + refresh and add new fixes in typos.diff.
+  * The file testbed_test.c is not available anymore, so add a patch to remove
+    it from the documentation.
+  * debian/rules: gnunet-gns-import.sh does not exist anymore.
+  * libnss_gns* was moved from /lib/$triplet to /usr/lib/$triplet/gnunet/nss/.
+  * Drop lintian override about python, not used anymore.
+
+  [ Ondřej Nový ]
+  * d/copyright: Use https protocol in Format field.
+  * d/changelog: Remove trailing whitespaces.
+
+ -- Bertrand Marc <bmarc@debian.org>  Sat, 03 Nov 2018 17:24:53 +0100
+
 gnunet (0.10.1-5.1) unstable; urgency=high
 
   * Non-maintainer upload.

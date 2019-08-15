@@ -1,28 +1,31 @@
 /*
      This file is part of GNUnet.
-     (C) 2001-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_resolver_service.h
- * @brief functions related to doing DNS lookups
  * @author Christian Grothoff
- * @defgroup resolver asynchronous standard DNS lookups
+ *
+ * @file
+ * Functions related to doing DNS lookups
+ *
+ * @defgroup resolver  Resolver service
+ * Asynchronous standard DNS lookups
  * @{
  */
 
@@ -49,9 +52,10 @@ extern "C"
  * @param addr one of the addresses of the host, NULL for the last address
  * @param addrlen length of @a addr
  */
-typedef void (*GNUNET_RESOLVER_AddressCallback) (void *cls,
-                                                 const struct sockaddr *addr,
-                                                 socklen_t addrlen);
+typedef void
+(*GNUNET_RESOLVER_AddressCallback) (void *cls,
+                                    const struct sockaddr *addr,
+                                    socklen_t addrlen);
 
 
 /**
@@ -87,7 +91,8 @@ GNUNET_RESOLVER_disconnect (void);
  * @return handle that can be used to cancel the request, NULL on error
  */
 struct GNUNET_RESOLVER_RequestHandle *
-GNUNET_RESOLVER_ip_get (const char *hostname, int af,
+GNUNET_RESOLVER_ip_get (const char *hostname,
+                        int af,
                         struct GNUNET_TIME_Relative timeout,
                         GNUNET_RESOLVER_AddressCallback callback,
                         void *callback_cls);
@@ -116,8 +121,9 @@ GNUNET_RESOLVER_hostname_resolve (int af,
  * @param hostname one of the names for the host, NULL
  *        on the last call to the callback
  */
-typedef void (*GNUNET_RESOLVER_HostnameCallback) (void *cls,
-                                                  const char *hostname);
+typedef void
+(*GNUNET_RESOLVER_HostnameCallback) (void *cls,
+                                     const char *hostname);
 
 /**
  * Get local fully qualified domain name
@@ -140,7 +146,8 @@ GNUNET_RESOLVER_local_fqdn_get (void);
  * @return handle that can be used to cancel the request, NULL on error
  */
 struct GNUNET_RESOLVER_RequestHandle *
-GNUNET_RESOLVER_hostname_get (const struct sockaddr *sa, socklen_t salen,
+GNUNET_RESOLVER_hostname_get (const struct sockaddr *sa,
+                              socklen_t salen,
                               int do_resolve,
                               struct GNUNET_TIME_Relative timeout,
                               GNUNET_RESOLVER_HostnameCallback callback,
@@ -166,8 +173,9 @@ GNUNET_RESOLVER_request_cancel (struct GNUNET_RESOLVER_RequestHandle *rh);
 }
 #endif
 
-/** @} */ /* end of group resolver */
-
 /* ifndef GNUNET_RESOLVER_SERVICE_H */
 #endif
+
+/** @} */  /* end of group resolver */
+
 /* end of gnunet_resolver_service.h */

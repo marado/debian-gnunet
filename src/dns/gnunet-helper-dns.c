@@ -1,21 +1,21 @@
 /*
    This file is part of GNUnet.
-   (C) 2010, 2011, 2012 Christian Grothoff
+   Copyright (C) 2010, 2011, 2012 Christian Grothoff
 
-   GNUnet is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published
-   by the Free Software Foundation; either version 3, or (at your
-   option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
    GNUnet is distributed in the hope that it will be useful, but
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Affero General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GNUnet; see the file COPYING.  If not, write to the
-   Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -79,11 +79,11 @@
 #include "gnunet_protocols.h"
 
 /**
- * Maximum size of a GNUnet message (GNUNET_SERVER_MAX_MESSAGE_SIZE)
+ * Maximum size of a GNUnet message (GNUNET_MAX_MESSAGE_SIZE)
  */
 #define MAX_SIZE 65536
 
-#ifndef _LINUX_IN6_H
+#if !HAVE_DECL_STRUCT_IN6_IFREQ
 /**
  * This is in linux/include/net/ipv6.h, but not always exported...
  */
@@ -99,6 +99,11 @@ struct in6_ifreq
  * Name and full path of IPTABLES binary.
  */
 static const char *sbin_iptables;
+
+/**
+ * Name and full path of IPTABLES binary.
+ */
+static const char *sbin_ip6tables;
 
 /**
  * Name and full path of sysctl binary
@@ -240,7 +245,7 @@ fork_and_exec (const char *file,
 
 
 /**
- * Creates a tun-interface called dev;
+ * Creates a tun-interface called @a dev;
  *
  * @param dev is asumed to point to a char[IFNAMSIZ]
  *        if *dev == '\\0', uses the name supplied by the kernel;
@@ -291,7 +296,7 @@ init_tun (char *dev)
 
 
 /**
- * @brief Sets the IPv6-Address given in address on the interface dev
+ * @brief Sets the IPv6-Address given in @a address on the interface @a dev
  *
  * @param dev the interface to configure
  * @param address the IPv6-Address
@@ -388,7 +393,7 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
 
 
 /**
- * @brief Sets the IPv4-Address given in address on the interface dev
+ * @brief Sets the IPv4-Address given in @a address on the interface @a dev
  *
  * @param dev the interface to configure
  * @param address the IPv4-Address
@@ -709,6 +714,7 @@ PROCESS_BUFFER:
  *             3: IPv6 netmask length in bits ("64")
  *             4: IPv4 address for the tunnel ("1.2.3.4")
  *             5: IPv4 netmask ("255.255.0.0")
+ *             6: skip sysctl, routing and iptables setup ("0")
  * @return 0 on success, otherwise code indicating type of error:
  *         1 wrong number of arguments
  *         2 invalid arguments (i.e. port number / prefix length wrong)
@@ -733,8 +739,9 @@ main (int argc, char *const*argv)
   char mygid[32];
   int fd_tun;
   uid_t uid;
+  int nortsetup = 0;
 
-  if (6 != argc)
+  if (7 != argc)
   {
     fprintf (stderr, "Fatal: must supply 6 arguments!\n");
     return 1;
@@ -755,40 +762,78 @@ main (int argc, char *const*argv)
     return 254;
   }
 #endif
+  if (0 == strncmp (argv[6], "1", 2))
+    nortsetup = 1;
 
-  /* verify that the binaries were care about are executable */
-  if (0 == access ("/sbin/iptables", X_OK))
-    sbin_iptables = "/sbin/iptables";
-  else if (0 == access ("/usr/sbin/iptables", X_OK))
-    sbin_iptables = "/usr/sbin/iptables";
-  else
+  if (0 == nortsetup)
   {
-    fprintf (stderr,
-	     "Fatal: executable iptables not found in approved directories: %s\n",
-	     strerror (errno));
-    return 3;
-  }
-  if (0 == access ("/sbin/ip", X_OK))
-    sbin_ip = "/sbin/ip";
-  else if (0 == access ("/usr/sbin/ip", X_OK))
-    sbin_ip = "/usr/sbin/ip";
-  else
-  {
-    fprintf (stderr,
-	     "Fatal: executable ip not found in approved directories: %s\n",
-	     strerror (errno));
-    return 4;
-  }
-  if (0 == access ("/sbin/sysctl", X_OK))
-    sbin_sysctl = "/sbin/sysctl";
-  else if (0 == access ("/usr/sbin/sysctl", X_OK))
-    sbin_sysctl = "/usr/sbin/sysctl";
-  else
-  {
-    fprintf (stderr,
-             "Fatal: executable sysctl not found in approved directories: %s\n",
-             strerror (errno));
-    return 5;
+    /* verify that the binaries we care about are executable */
+#ifdef IPTABLES
+    if (0 == access (IPTABLES, X_OK))
+      sbin_iptables = IPTABLES;
+    else
+#endif
+    if (0 == access ("/sbin/iptables", X_OK))
+      sbin_iptables = "/sbin/iptables";
+    else if (0 == access ("/usr/sbin/iptables", X_OK))
+      sbin_iptables = "/usr/sbin/iptables";
+    else
+    {
+      fprintf (stderr,
+	       "Fatal: executable iptables not found in approved directories: %s\n",
+	       strerror (errno));
+      return 3;
+    }
+#ifdef IP6TABLES
+    if (0 == access (IP6TABLES, X_OK))
+      sbin_ip6tables = IP6TABLES;
+    else
+#endif
+    if (0 == access ("/sbin/ip6tables", X_OK))
+      sbin_ip6tables = "/sbin/ip6tables";
+    else if (0 == access ("/usr/sbin/ip6tables", X_OK))
+      sbin_ip6tables = "/usr/sbin/ip6tables";
+    else
+    {
+      fprintf (stderr,
+	       "Fatal: executable ip6tables not found in approved directories: %s\n",
+	       strerror (errno));
+      return 3;
+    }
+#ifdef PATH_TO_IP
+    if (0 == access (PATH_TO_IP, X_OK))
+      sbin_ip = PATH_TO_IP;
+    else
+#endif
+    if (0 == access ("/sbin/ip", X_OK))
+      sbin_ip = "/sbin/ip";
+    else if (0 == access ("/usr/sbin/ip", X_OK))
+      sbin_ip = "/usr/sbin/ip";
+    else if (0 == access ("/bin/ip", X_OK)) /* gentoo has it there */
+      sbin_ip = "/bin/ip";
+    else
+    {
+      fprintf (stderr,
+	       "Fatal: executable ip not found in approved directories: %s\n",
+	       strerror (errno));
+      return 4;
+    }
+#ifdef SYSCTL
+    if (0 == access (SYSCTL, X_OK))
+      sbin_sysctl = SYSCTL;
+    else
+#endif
+    if (0 == access ("/sbin/sysctl", X_OK))
+      sbin_sysctl = "/sbin/sysctl";
+    else if (0 == access ("/usr/sbin/sysctl", X_OK))
+      sbin_sysctl = "/usr/sbin/sysctl";
+    else
+    {
+      fprintf (stderr,
+               "Fatal: executable sysctl not found in approved directories: %s\n",
+               strerror (errno));
+      return 5;
+    }
   }
 
   /* setup 'mygid' string */
@@ -858,6 +903,7 @@ main (int argc, char *const*argv)
   dev[IFNAMSIZ - 1] = '\0';
 
   /* Disable rp filtering */
+  if (0 == nortsetup)
   {
     char *const sysctl_args[] = {"sysctl", "-w",
       "net.ipv4.conf.all.rp_filter=0", NULL};
@@ -921,46 +967,90 @@ main (int argc, char *const*argv)
   /* Forward everything from our EGID (which should only be held
      by the 'gnunet-service-dns') and with destination
      to port 53 on UDP, without hijacking */
-  r = 8; /* failed to fully setup routing table */
+  if (0 == nortsetup)
   {
-    char *const mangle_args[] =
-      {
-	"iptables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
-	"udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
-	"ACCEPT", NULL
-      };
-    if (0 != fork_and_exec (sbin_iptables, mangle_args))
-      goto cleanup_rest;
-  }
-  /* Mark all of the other DNS traffic using our mark DNS_MARK */
-  {
-    char *const mark_args[] =
-      {
-	"iptables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
-	"udp", "--dport", DNS_PORT, "-j", "MARK", "--set-mark", DNS_MARK,
-	NULL
-      };
-    if (0 != fork_and_exec (sbin_iptables, mark_args))
-      goto cleanup_mangle_1;
-  }
-  /* Forward all marked DNS traffic to our DNS_TABLE */
-  {
-    char *const forward_args[] =
-      {
-	"ip", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
-      };
-    if (0 != fork_and_exec (sbin_ip, forward_args))
-      goto cleanup_mark_2;
-  }
-  /* Finally, add rule in our forwarding table to pass to our virtual interface */
-  {
-    char *const route_args[] =
-      {
-	"ip", "route", "add", "default", "dev", dev,
-	"table", DNS_TABLE, NULL
-      };
-    if (0 != fork_and_exec (sbin_ip, route_args))
-      goto cleanup_forward_3;
+    r = 8; /* failed to fully setup routing table */
+    {
+      char *const mangle_args[] =
+        {
+	 "iptables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
+	 "udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
+	 "ACCEPT", NULL
+        };
+      if (0 != fork_and_exec (sbin_iptables, mangle_args))
+        goto cleanup_rest;
+    }
+    {
+      char *const mangle_args[] =
+        {
+	 "ip6tables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
+	 "udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
+	 "ACCEPT", NULL
+        };
+      if (0 != fork_and_exec (sbin_ip6tables, mangle_args))
+        goto cleanup_mangle_1b;
+    }
+    /* Mark all of the other DNS traffic using our mark DNS_MARK,
+       unless it is on a link-local IPv6 address, which we cannot support. */
+    {
+      char *const mark_args[] =
+        {
+	 "iptables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
+	 "udp", "--dport", DNS_PORT,
+         "-j", "MARK", "--set-mark", DNS_MARK,
+	 NULL
+        };
+      if (0 != fork_and_exec (sbin_iptables, mark_args))
+        goto cleanup_mangle_1;
+    }
+    {
+      char *const mark_args[] =
+        {
+	 "ip6tables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
+	 "udp", "--dport", DNS_PORT,
+         "!", "-s", "fe80::/10", /* this line excludes link-local traffic */
+         "-j", "MARK", "--set-mark", DNS_MARK,
+	 NULL
+        };
+      if (0 != fork_and_exec (sbin_ip6tables, mark_args))
+        goto cleanup_mark_2b;
+    }
+    /* Forward all marked DNS traffic to our DNS_TABLE */
+    {
+      char *const forward_args[] =
+        {
+	 "ip", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+        };
+      if (0 != fork_and_exec (sbin_ip, forward_args))
+        goto cleanup_mark_2;
+    }
+    {
+      char *const forward_args[] =
+        {
+          "ip", "-6", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+        };
+      if (0 != fork_and_exec (sbin_ip, forward_args))
+        goto cleanup_forward_3b;
+    }
+    /* Finally, add rule in our forwarding table to pass to our virtual interface */
+    {
+      char *const route_args[] =
+        {
+	 "ip", "route", "add", "default", "dev", dev,
+	 "table", DNS_TABLE, NULL
+        };
+      if (0 != fork_and_exec (sbin_ip, route_args))
+        goto cleanup_forward_3;
+    }
+    {
+      char *const route_args[] =
+        {
+          "ip", "-6", "route", "add", "default", "dev", dev,
+          "table", DNS_TABLE, NULL
+        };
+      if (0 != fork_and_exec (sbin_ip, route_args))
+        goto cleanup_route_4b;
+    }
   }
 
   /* drop privs *except* for the saved UID; this is not perfect, but better
@@ -985,7 +1075,7 @@ main (int argc, char *const*argv)
   r = 0; /* did fully setup routing table (if nothing else happens, we were successful!) */
 
   /* now forward until we hit a problem */
-   run (fd_tun);
+  run (fd_tun);
 
   /* now need to regain privs so we can remove the firewall rules we added! */
 #ifdef HAVE_SETRESUID
@@ -1007,8 +1097,20 @@ main (int argc, char *const*argv)
   /* update routing tables again -- this is why we could not fully drop privs */
   /* now undo updating of routing tables; normal exit or clean-up-on-error case */
  cleanup_route_4:
+  if (0 == nortsetup)
   {
-    char *const route_clean_args[] = 			
+    char *const route_clean_args[] =
+      {
+	"ip", "-6", "route", "del", "default", "dev", dev,
+	"table", DNS_TABLE, NULL
+      };
+    if (0 != fork_and_exec (sbin_ip, route_clean_args))
+      r += 1;
+  }
+ cleanup_route_4b:
+  if (0 == nortsetup)
+  {
+    char *const route_clean_args[] =
       {
 	"ip", "route", "del", "default", "dev", dev,
 	"table", DNS_TABLE, NULL
@@ -1017,15 +1119,40 @@ main (int argc, char *const*argv)
       r += 1;
   }
  cleanup_forward_3:
+  if (0 == nortsetup)
+  {
+    char *const forward_clean_args[] =
+      {
+	"ip", "-6", "rule", "del", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+      };
+    if (0 != fork_and_exec (sbin_ip, forward_clean_args))
+      r += 2;
+  }
+ cleanup_forward_3b:
+  if (0 == nortsetup)
   {
     char *const forward_clean_args[] =
       {
 	"ip", "rule", "del", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
       };
     if (0 != fork_and_exec (sbin_ip, forward_clean_args))
-      r += 2;	
+      r += 2;
   }
  cleanup_mark_2:
+  if (0 == nortsetup)
+  {
+    char *const mark_clean_args[] =
+      {
+	"ip6tables", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
+	"--dport", DNS_PORT,
+        "!", "-s", "fe80::/10", /* this line excludes link-local traffic */
+        "-j", "MARK", "--set-mark", DNS_MARK, NULL
+      };
+    if (0 != fork_and_exec (sbin_ip6tables, mark_clean_args))
+      r += 4;
+  }
+ cleanup_mark_2b:
+  if (0 == nortsetup)
   {
     char *const mark_clean_args[] =
       {
@@ -1034,8 +1161,21 @@ main (int argc, char *const*argv)
       };
     if (0 != fork_and_exec (sbin_iptables, mark_clean_args))
       r += 4;
-  }	
+  }
  cleanup_mangle_1:
+  if (0 == nortsetup)
+  {
+    char *const mangle_clean_args[] =
+      {
+	"ip6tables", "-m", "owner", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
+	 "--gid-owner", mygid, "--dport", DNS_PORT, "-j", "ACCEPT",
+	NULL
+      };
+    if (0 != fork_and_exec (sbin_ip6tables, mangle_clean_args))
+      r += 8;
+  }
+ cleanup_mangle_1b:
+  if (0 == nortsetup)
   {
     char *const mangle_clean_args[] =
       {

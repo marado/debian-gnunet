@@ -1,21 +1,21 @@
 /*
       This file is part of GNUnet
-      (C) 2008--2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2008--2013 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
@@ -105,33 +105,28 @@ enum OperationType
 };
 
 
-/**
- * The message queue for sending messages to the controller service
- */
-struct MessageQueue;
-
 
 /**
  * Enumeration of states of OperationContext
  */
 enum OperationContextState
 {
-    /**
-     * The initial state where the associated operation has just been created
-     * and is waiting in the operation queues to be started
-     */
+  /**
+   * The initial state where the associated operation has just been created
+   * and is waiting in the operation queues to be started
+   */
   OPC_STATE_INIT = 0,
 
-    /**
-     * The operation has been started. It may occupy some resources which are to
-     * be freed if cancelled.
-     */
+  /**
+   * The operation has been started. It may occupy some resources which are to
+   * be freed if cancelled.
+   */
   OPC_STATE_STARTED,
 
-    /**
-     * The operation has finished. The end results of this operation may occupy
-     * some resources which are to be freed by operation_done
-     */
+  /**
+   * The operation has finished. The end results of this operation may occupy
+   * some resources which are to be freed by operation_done
+   */
   OPC_STATE_FINISHED
 };
 
@@ -183,7 +178,8 @@ struct OperationContext
  *
  * @param cls closure
  */
-typedef void (*TESTBED_opcq_empty_cb) (void *cls);
+typedef void
+(*TESTBED_opcq_empty_cb) (void *cls);
 
 
 /**
@@ -218,24 +214,9 @@ struct GNUNET_TESTBED_Controller
   struct GNUNET_CONFIGURATION_Handle *cfg;
 
   /**
-   * The client connection handle to the controller service
+   * The message queue to the controller service
    */
-  struct GNUNET_CLIENT_Connection *client;
-
-  /**
-   * The head of the message queue
-   */
-  struct MessageQueue *mq_head;
-
-  /**
-   * The tail of the message queue
-   */
-  struct MessageQueue *mq_tail;
-
-  /**
-   * The client transmit handle
-   */
-  struct GNUNET_CLIENT_TransmitHandle *th;
+  struct GNUNET_MQ_Handle *mq;
 
   /**
    * The host registration handle; NULL if no current registration requests are
@@ -274,14 +255,15 @@ struct GNUNET_TESTBED_Controller
   struct OperationQueue *opq_parallel_topology_config_operations;
 
   /**
+   * handle for hashtable of barrier handles, values are
+   * of type `struct GNUNET_TESTBED_Barrier`.
+   */
+  struct GNUNET_CONTAINER_MultiHashMap *barrier_map;
+
+  /**
    * The controller event mask
    */
   uint64_t event_mask;
-
-  /**
-   * Did we start the receive loop yet?
-   */
-  int in_receive;
 
   /**
    * The operation id counter. use current value and increment
@@ -292,10 +274,49 @@ struct GNUNET_TESTBED_Controller
 
 
 /**
+ * Handle for barrier
+ */
+struct GNUNET_TESTBED_Barrier
+{
+  /**
+   * hashcode identifying this barrier in the hashmap
+   */
+  struct GNUNET_HashCode key;
+
+  /**
+   * The controller handle given while initiliasing this barrier
+   */
+  struct GNUNET_TESTBED_Controller *c;
+
+  /**
+   * The name of the barrier
+   */
+  char *name;
+
+  /**
+   * The continuation callback to call when we have a status update on this
+   */
+  GNUNET_TESTBED_barrier_status_cb cb;
+
+  /**
+   * the closure for the above callback
+   */
+  void *cls;
+
+  /**
+   * Should the barrier crossed status message be echoed back to the controller?
+   */
+  int echo;
+};
+
+
+
+/**
  * Queues a message in send queue for sending to the service
  *
  * @param controller the handle to the controller
  * @param msg the message to queue
+ * @deprecated
  */
 void
 GNUNET_TESTBED_queue_message_ (struct GNUNET_TESTBED_Controller *controller,
@@ -337,7 +358,8 @@ GNUNET_TESTBED_remove_opc_ (const struct GNUNET_TESTBED_Controller *c,
  * @return the size of the xconfig
  */
 size_t
-GNUNET_TESTBED_compress_config_ (const char *config, size_t size,
+GNUNET_TESTBED_compress_config_ (const char *config,
+                                 size_t size,
                                  char **xconfig);
 
 
@@ -352,7 +374,8 @@ GNUNET_TESTBED_compress_config_ (const char *config, size_t size,
  */
 char *
 GNUNET_TESTBED_compress_cfg_ (const struct GNUNET_CONFIGURATION_Handle *cfg,
-                              size_t *size, size_t *xsize);
+                              size_t *size,
+                              size_t *xsize);
 
 
 /**
@@ -369,9 +392,9 @@ GNUNET_TESTBED_compress_cfg_ (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * @return the initialization message
  */
 struct GNUNET_TESTBED_HelperInit *
-GNUNET_TESTBED_create_helper_init_msg_ (const char *cname, const char *hostname,
-                                        const struct GNUNET_CONFIGURATION_Handle
-                                        *cfg);
+GNUNET_TESTBED_create_helper_init_msg_ (const char *cname,
+                                        const char *hostname,
+                                        const struct GNUNET_CONFIGURATION_Handle *cfg);
 
 
 /**
@@ -389,10 +412,10 @@ GNUNET_TESTBED_create_helper_init_msg_ (const char *cname, const char *hostname,
  *           operation
  */
 struct OperationContext *
-GNUNET_TESTBED_forward_operation_msg_ (struct GNUNET_TESTBED_Controller
-                                       *controller, uint64_t operation_id,
+GNUNET_TESTBED_forward_operation_msg_ (struct GNUNET_TESTBED_Controller *controller,
+                                       uint64_t operation_id,
                                        const struct GNUNET_MessageHeader *msg,
-                                       GNUNET_CLIENT_MessageHandler cc,
+                                       GNUNET_MQ_MessageCallback cc,
                                        void *cc_cls);
 
 /**
@@ -408,8 +431,8 @@ GNUNET_TESTBED_forward_operation_msg_cancel_ (struct OperationContext *opc);
 /**
  * Generates configuration by uncompressing configuration in given message. The
  * given message should be of the following types:
- * GNUNET_MESSAGE_TYPE_TESTBED_PEERCONFIG,
- * GNUNET_MESSAGE_TYPE_TESTBED_SLAVECONFIG
+ * #GNUNET_MESSAGE_TYPE_TESTBED_PEERCONFIG,
+ * #GNUNET_MESSAGE_TYPE_TESTBED_SLAVECONFIG
  *
  * @param msg the message containing compressed configuration
  * @return handle to the parsed configuration
@@ -426,9 +449,7 @@ GNUNET_TESTBED_extract_config_ (const struct GNUNET_MessageHeader *msg);
  * @return the error message
  */
 const char *
-GNUNET_TESTBED_parse_error_string_ (const struct
-                                    GNUNET_TESTBED_OperationFailureEventMessage
-                                    *msg);
+GNUNET_TESTBED_parse_error_string_ (const struct GNUNET_TESTBED_OperationFailureEventMessage *msg);
 
 
 /**
@@ -460,21 +481,40 @@ GNUNET_TESTBED_get_slave_config_ (void *op_cls,
                                   uint32_t slave_host_id);
 
 
-/**
- * Handler for GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS messages.  This
- * function is defined in @file testbed_api_barriers.c
- *
- * @param c the controller handle to determine the connection this message
- *   belongs to
- * @param msg the barrier status message
- * @return GNUNET_OK to keep the connection active; GNUNET_SYSERR to tear it
- *   down signalling an error
- */
-int
-GNUNET_TESTBED_handle_barrier_status_ (struct GNUNET_TESTBED_Controller *c,
-                                       const struct GNUNET_TESTBED_BarrierStatusMsg
-                                       *msg);
 
+/**
+ * Initialise a barrier and call the given callback when the required percentage
+ * of peers (quorum) reach the barrier OR upon error.
+ *
+ * @param controller the handle to the controller
+ * @param name identification name of the barrier
+ * @param quorum the percentage of peers that is required to reach the barrier.
+ *   Peers signal reaching a barrier by calling
+ *   GNUNET_TESTBED_barrier_reached().
+ * @param cb the callback to call when the barrier is reached or upon error.
+ *   Cannot be NULL.
+ * @param cls closure for the above callback
+ * @param echo #GNUNET_YES to echo the barrier crossed status message back to the
+ *   controller
+ * @return barrier handle; NULL upon error
+ */
+struct GNUNET_TESTBED_Barrier *
+GNUNET_TESTBED_barrier_init_ (struct GNUNET_TESTBED_Controller *controller,
+                              const char *name,
+                              unsigned int quorum,
+                              GNUNET_TESTBED_barrier_status_cb cb,
+                              void *cls,
+                              int echo);
+
+
+/**
+ * Remove a barrier and it was the last one in the barrier hash map, destroy the
+ * hash map
+ *
+ * @param barrier the barrier to remove
+ */
+void
+GNUNET_TESTBED_barrier_remove_ (struct GNUNET_TESTBED_Barrier *barrier);
 
 
 

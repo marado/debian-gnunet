@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 pcfiles = \
        gnunetarm.pc \
        gnunetats.pc \
@@ -9,28 +10,22 @@ pcfiles = \
        gnunetdatastore.pc \
        gnunetdht.pc \
        gnunetdns.pc \
-       gnunetdnsparser.pc \
-       gnunetdnsstub.pc \
-       gnunetdv.pc \
        gnunetenv.pc \
        gnunetfragmentation.pc \
        gnunetfs.pc \
        gnunetgns.pc \
        gnunethello.pc \
        gnunetidentity.pc \
-       gnunetmesh.pc \
+       gnunetcadet.pc \
        gnunetmicrophone.pc \
-       gnunetmulticast.pc \
        gnunetmysql.pc \
        gnunetnamestore.pc \
        gnunetnat.pc \
        gnunetnse.pc \
        gnunetpeerinfo.pc \
-       gnunetpostgres.pc \
-       gnunetpsyc.pc \
-       gnunetpsycstore.pc \
        gnunetregex.pc \
        gnunetrevocation.pc \
+       gnunetrps.pc \
        gnunetscalarproduct.pc \
        gnunetset.pc \
        gnunetspeaker.pc \
@@ -38,9 +33,8 @@ pcfiles = \
        gnunettestbed.pc \
        gnunettesting.pc \
        gnunettransport.pc \
-       gnunettun.pc \
        gnunetutil.pc \
-       gnunetvpn.pc 
+       gnunetvpn.pc
 
 all-local: $(pcfiles)
 
@@ -65,28 +59,23 @@ EXTRA_DIST = \
        gnunetdatastore.pc.in \
        gnunetdht.pc.in \
        gnunetdns.pc.in \
-       gnunetdnsparser.pc.in \
-       gnunetdnsstub.pc.in \
-       gnunetdv.pc.in \
        gnunetenv.pc.in \
        gnunetfragmentation.pc.in \
        gnunetfs.pc.in \
        gnunetgns.pc.in \
        gnunethello.pc.in \
        gnunetidentity.pc.in \
-       gnunetmesh.pc.in \
+       gnunetcadet.pc.in \
        gnunetmicrophone.pc.in \
-       gnunetmulticast.pc.in \
        gnunetmysql.pc.in \
        gnunetnamestore.pc.in \
        gnunetnat.pc.in \
        gnunetnse.pc.in \
        gnunetpeerinfo.pc.in \
        gnunetpostgres.pc.in \
-       gnunetpsyc.pc.in \
-       gnunetpsycstore.pc.in \
        gnunetregex.pc.in \
        gnunetrevocation.pc.in \
+       gnunetrps.pc.in \
        gnunetscalarproduct.pc.in \
        gnunetset.pc.in \
        gnunetspeaker.pc.in \
@@ -94,11 +83,8 @@ EXTRA_DIST = \
        gnunettestbed.pc.in \
        gnunettesting.pc.in \
        gnunettransport.pc.in \
-       gnunettun.pc.in \
        gnunetutil.pc.in \
-       gnunetvpn.pc.in 
+       gnunetvpn.pc.in
 
 CLEANFILES = $(pcfiles)
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
-
-

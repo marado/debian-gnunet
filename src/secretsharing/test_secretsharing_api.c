@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2014 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -33,23 +33,25 @@ static int success;
 static struct GNUNET_SECRETSHARING_Session *keygen;
 
 
-static void secret_ready_cb (void *cls,
-                             struct GNUNET_SECRETSHARING_Share *my_share,
-                             struct GNUNET_SECRETSHARING_PublicKey *public_key,
-                             unsigned int num_ready_peers,
-                             struct GNUNET_PeerIdentity *ready_peers)
+static void
+secret_ready_cb (void *cls,
+                 struct GNUNET_SECRETSHARING_Share *my_share,
+                 struct GNUNET_SECRETSHARING_PublicKey *public_key,
+                 unsigned int num_ready_peers,
+                 const struct GNUNET_PeerIdentity *ready_peers)
 {
   keygen = NULL;
   if (num_ready_peers == 1)
     success = 1;
   // FIXME: check that our share is valid, which we can do as there's only
   // one peer.
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "secret ready, shutting down\n");
   GNUNET_SCHEDULER_shutdown ();
 }
 
+
 static void
-handle_shutdown (void *cls,
-                 const struct GNUNET_SCHEDULER_TaskContext * tc)
+handle_shutdown (void *cls)
 {
   if (NULL != keygen)
   {
@@ -58,17 +60,17 @@ handle_shutdown (void *cls,
   }
 }
 
+
 static void
 run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
-  struct GNUNET_HashCode session_id; 
+  struct GNUNET_HashCode session_id;
   struct GNUNET_TIME_Absolute start;
   struct GNUNET_TIME_Absolute deadline;
 
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                handle_shutdown, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&handle_shutdown, NULL);
 
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "testing secretsharing api\n");
 
@@ -100,4 +102,3 @@ main (int argc, char **argv)
     return ret;
   return (GNUNET_YES == success) ? 0 : 1;
 }
-

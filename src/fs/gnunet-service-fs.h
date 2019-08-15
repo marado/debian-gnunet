@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -223,6 +223,10 @@ extern struct GNUNET_TIME_Relative GSF_avg_latency;
  */
 extern struct GNUNET_ATS_PerformanceHandle *GSF_ats;
 
+/**
+ * Identity of this peer.
+ */
+extern struct GNUNET_PeerIdentity GSF_my_id;
 
 /**
  * Typical priorities we're seeing from other peers right now.  Since
@@ -265,13 +269,29 @@ extern unsigned int GSF_datastore_queue_size;
 
 
 /**
+ * Function to be called after we're done processing
+ * replies from the local lookup.  If the result status
+ * code indicates that there may be more replies, plan
+ * forwarding the request.
+ *
+ * @param cls closure (NULL)
+ * @param pr the pending request we were processing
+ * @param result final datastore lookup result
+ */
+void
+GSF_consider_forwarding (void *cls,
+			 struct GSF_PendingRequest *pr,
+			 enum GNUNET_BLOCK_EvaluationResult result);
+
+
+/**
  * Test if the DATABASE (GET) load on this peer is too high
  * to even consider processing the query at
  * all.
  *
- * @return GNUNET_YES if the load is too high to do anything (load high)
- *         GNUNET_NO to process normally (load normal)
- *         GNUNET_SYSERR to process for free (load low)
+ * @return #GNUNET_YES if the load is too high to do anything (load high)
+ *         #GNUNET_NO to process normally (load normal)
+ *         #GNUNET_SYSERR to process for free (load low)
  */
 int
 GSF_test_get_load_too_high_ (uint32_t priority);
@@ -285,7 +305,6 @@ GSF_test_get_load_too_high_ (uint32_t priority);
  */
 void
 GSF_update_datastore_delay_ (struct GNUNET_TIME_Absolute start);
-
 
 
 #endif

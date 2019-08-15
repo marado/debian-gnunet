@@ -1,34 +1,38 @@
 /*
       This file is part of GNUnet
-      (C) 2010-2013 Christian Grothoff (and other contributing authors)
+      Copyright (C) 2010-2014 GNUnet e.V.
 
-      GNUnet is free software; you can redistribute it and/or modify
-      it under the terms of the GNU General Public License as published
-      by the Free Software Foundation; either version 3, or (at your
-      option) any later version.
+      GNUnet is free software: you can redistribute it and/or modify it
+      under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, either version 3 of the License,
+      or (at your option) any later version.
 
       GNUnet is distributed in the hope that it will be useful, but
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-      General Public License for more details.
+      Affero General Public License for more details.
+     
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-      You should have received a copy of the GNU General Public License
-      along with GNUnet; see the file COPYING.  If not, write to the
-      Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-      Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 
 /**
- * @file include/gnunet_dnsparser_lib.h
- * @brief API for helper library to parse DNS packets.
  * @author Philipp Toelke
  * @author Christian Grothoff
+ *
+ * @file
+ * API for helper library to parse DNS packets.
+ *
+ * @defgroup dns-parser  DNS parser library
+ * Helper library to parse DNS packets.
+ * @{
  */
 #ifndef GNUNET_DNSPARSER_LIB_H
 #define GNUNET_DNSPARSER_LIB_H
 
 #include "gnunet_util_lib.h"
-#include "gnunet_tun_lib.h"
 
 /**
  * Maximum length of a label in DNS.
@@ -44,6 +48,7 @@
 /**
  * A few common DNS types.
  */
+#define GNUNET_DNSPARSER_TYPE_ANY 0
 #define GNUNET_DNSPARSER_TYPE_A 1
 #define GNUNET_DNSPARSER_TYPE_NS 2
 #define GNUNET_DNSPARSER_TYPE_CNAME 5
@@ -51,11 +56,37 @@
 #define GNUNET_DNSPARSER_TYPE_PTR 12
 #define GNUNET_DNSPARSER_TYPE_MX 15
 #define GNUNET_DNSPARSER_TYPE_TXT 16
+#define GNUNET_DNSPARSER_TYPE_RP 17
+#define GNUNET_DNSPARSER_TYPE_AFSDB 18
+#define GNUNET_DNSPARSER_TYPE_SIG 24
+#define GNUNET_DNSPARSER_TYPE_KEY 25
 #define GNUNET_DNSPARSER_TYPE_AAAA 28
+#define GNUNET_DNSPARSER_TYPE_LOC 29
 #define GNUNET_DNSPARSER_TYPE_SRV 33
+#define GNUNET_DNSPARSER_TYPE_NAPTR 35
+#define GNUNET_DNSPARSER_TYPE_KX 36
 #define GNUNET_DNSPARSER_TYPE_CERT 37
+#define GNUNET_DNSPARSER_TYPE_DNAME 39
+#define GNUNET_DNSPARSER_TYPE_APL 42
+#define GNUNET_DNSPARSER_TYPE_DS 43
+#define GNUNET_DNSPARSER_TYPE_SSHFP 44
+#define GNUNET_DNSPARSER_TYPE_IPSECKEY 45
+#define GNUNET_DNSPARSER_TYPE_RRSIG 46
+#define GNUNET_DNSPARSER_TYPE_NSEC 47
+#define GNUNET_DNSPARSER_TYPE_DNSKEY 48
+#define GNUNET_DNSPARSER_TYPE_DHCID 49
+#define GNUNET_DNSPARSER_TYPE_NSEC3 50
+#define GNUNET_DNSPARSER_TYPE_NSEC3PARAM 51
 #define GNUNET_DNSPARSER_TYPE_TLSA 52
-
+#define GNUNET_DNSPARSER_TYPE_HIP 55
+#define GNUNET_DNSPARSER_TYPE_CDS 59
+#define GNUNET_DNSPARSER_TYPE_CDNSKEY 60
+#define GNUNET_DNSPARSER_TYPE_OPENPGPKEY 61
+#define GNUNET_DNSPARSER_TYPE_TKEY 249
+#define GNUNET_DNSPARSER_TYPE_TSIG 250
+#define GNUNET_DNSPARSER_TYPE_ALL 255
+#define GNUNET_DNSPARSER_TYPE_URI 256
+#define GNUNET_DNSPARSER_TYPE_TA 32768
 
 /**
  * A DNS query.
@@ -66,7 +97,7 @@ struct GNUNET_DNSPARSER_Query
   /**
    * Name of the record that the query is for (0-terminated).
    * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use 'GNUNET_DNSPARSER_check_label' to test if an
+   * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
    * individual label is well-formed.  If a given name is not well-formed,
    * creating the DNS packet will fail.
    */
@@ -99,7 +130,7 @@ struct GNUNET_DNSPARSER_MxRecord
   /**
    * Name of the mail server.
    * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use 'GNUNET_DNSPARSER_check_label' to test if an
+   * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
    * individual label is well-formed.  If a given name is not well-formed,
    * creating the DNS packet will fail.
    */
@@ -109,48 +140,15 @@ struct GNUNET_DNSPARSER_MxRecord
 
 
 /**
- * Information from SRV records (RFC 2782).  The 'service', 'proto'
- * and 'domain_name' fields together give the DNS-name which for SRV
- * records is of the form "_$SERVICE._$PROTO.$DOMAIN_NAME".  The DNS
- * parser provides the full name in 'struct DNSPARSER_Record' and the
- * individual components in the respective fields of this struct.
- * When serializing, you CAN set the 'name' field of 'struct
- * GNUNET_DNSPARSER_Record' to NULL, in which case the DNSPARSER code
- * will populate 'name' from the 'service', 'proto' and 'domain_name'
- * fields in this struct.
+ * Information from SRV records (RFC 2782).
  */
 struct GNUNET_DNSPARSER_SrvRecord
 {
 
   /**
-   * Service name without the underscore (!).  Note that RFC 6335 clarifies the
-   * set of legal characters for service names.
-   * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use 'GNUNET_DNSPARSER_check_label' to test if an
-   * individual label is well-formed.  If a given name is not well-formed,
-   * creating the DNS packet will fail.
-   */
-  char *service;
-
-  /**
-   * Transport protocol (typcially "tcp" or "udp", but others might be allowed).
-   * Without the underscore (!).
-   */
-  char *proto;
-
-  /**
-   * Domain name for which the record is valid
-   * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use 'GNUNET_DNSPARSER_check_label' to test if an
-   * individual label is well-formed.  If a given name is not well-formed,
-   * creating the DNS packet will fail.
-   */
-  char *domain_name;
-
-  /**
    * Hostname offering the service.
    * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use 'GNUNET_DNSPARSER_check_label' to test if an
+   * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
    * individual label is well-formed.  If a given name is not well-formed,
    * creating the DNS packet will fail.
    */
@@ -353,7 +351,7 @@ struct GNUNET_DNSPARSER_SoaRecord
    * The domainname of the name server that was the
    * original or primary source of data for this zone.
    * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use #GNUNET_DNSPARSER_check_label to test if an
+   * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
    * individual label is well-formed.  If a given name is not well-formed,
    * creating the DNS packet will fail.
    */
@@ -363,7 +361,7 @@ struct GNUNET_DNSPARSER_SoaRecord
    * A domainname which specifies the mailbox of the
    * person responsible for this zone.
    * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use 'GNUNET_DNSPARSER_check_label' to test if an
+   * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
    * individual label is well-formed.  If a given name is not well-formed,
    * creating the DNS packet will fail.
    */
@@ -427,7 +425,7 @@ struct GNUNET_DNSPARSER_Record
   /**
    * Name of the record that the query is for (0-terminated).
    * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use #GNUNET_DNSPARSER_check_label to test if an
+   * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
    * individual label is well-formed.  If a given name is not well-formed,
    * creating the DNS packet will fail.
    */
@@ -441,10 +439,10 @@ struct GNUNET_DNSPARSER_Record
 
     /**
      * For NS, CNAME and PTR records, this is the uncompressed 0-terminated hostname.
-   * In UTF-8 format.  The library will convert from and to DNS-IDNA
-   * as necessary.  Use #GNUNET_DNSPARSER_check_label to test if an
-   * individual label is well-formed.  If a given name is not well-formed,
-   * creating the DNS packet will fail.
+     * In UTF-8 format.  The library will convert from and to DNS-IDNA
+     * as necessary.  Use #GNUNET_DNSPARSER_check_label() to test if an
+     * individual label is well-formed.  If a given name is not well-formed,
+     * creating the DNS packet will fail.
      */
     char *hostname;
 
@@ -834,7 +832,6 @@ GNUNET_DNSPARSER_parse_mx (const char *udp_payload,
 /**
  * Parse a DNS SRV record.
  *
- * @param r_name name of the SRV record
  * @param udp_payload reference to UDP packet
  * @param udp_payload_length length of @a udp_payload
  * @param off pointer to the offset of the query to parse in the SRV record (to be
@@ -842,10 +839,61 @@ GNUNET_DNSPARSER_parse_mx (const char *udp_payload,
  * @return the parsed SRV record, NULL on error
  */
 struct GNUNET_DNSPARSER_SrvRecord *
-GNUNET_DNSPARSER_parse_srv (const char *r_name,
-			    const char *udp_payload,
+GNUNET_DNSPARSER_parse_srv (const char *udp_payload,
 			    size_t udp_payload_length,
 			    size_t *off);
+
+/* ***************** low-level duplication API ******************** */
+
+/**
+ * Duplicate (deep-copy) the given DNS record
+ *
+ * @param r the record
+ * @return the newly allocated record
+ */
+struct GNUNET_DNSPARSER_Record *
+GNUNET_DNSPARSER_duplicate_record (const struct GNUNET_DNSPARSER_Record *r);
+
+
+/**
+ * Duplicate (deep-copy) the given DNS record
+ *
+ * @param r the record
+ * @return the newly allocated record
+ */
+struct GNUNET_DNSPARSER_SoaRecord *
+GNUNET_DNSPARSER_duplicate_soa_record (const struct GNUNET_DNSPARSER_SoaRecord *r);
+
+
+/**
+ * Duplicate (deep-copy) the given DNS record
+ *
+ * @param r the record
+ * @return the newly allocated record
+ */
+struct GNUNET_DNSPARSER_CertRecord *
+GNUNET_DNSPARSER_duplicate_cert_record (const struct GNUNET_DNSPARSER_CertRecord *r);
+
+
+/**
+ * Duplicate (deep-copy) the given DNS record
+ *
+ * @param r the record
+ * @return the newly allocated record
+ */
+struct GNUNET_DNSPARSER_MxRecord *
+GNUNET_DNSPARSER_duplicate_mx_record (const struct GNUNET_DNSPARSER_MxRecord *r);
+
+
+/**
+ * Duplicate (deep-copy) the given DNS record
+ *
+ * @param r the record
+ * @return the newly allocated record
+ */
+struct GNUNET_DNSPARSER_SrvRecord *
+GNUNET_DNSPARSER_duplicate_srv_record (const struct GNUNET_DNSPARSER_SrvRecord *r);
+
 
 /* ***************** low-level deallocation API ******************** */
 
@@ -894,4 +942,31 @@ void
 GNUNET_DNSPARSER_free_cert (struct GNUNET_DNSPARSER_CertRecord *cert);
 
 
+/**
+ * Convert a block of binary data to HEX.
+ *
+ * @param data binary data to convert
+ * @param data_size number of bytes in @a data
+ * @return HEX string (lower case)
+ */
+char *
+GNUNET_DNSPARSER_bin_to_hex (const void *data,
+                             size_t data_size);
+
+
+/**
+ * Convert a HEX string to block of binary data.
+ *
+ * @param hex HEX string to convert (may contain mixed case)
+ * @param data where to write result, must be
+ *             at least `strlen(hex)/2` bytes long
+ * @return number of bytes written to data
+ */
+size_t
+GNUNET_DNSPARSER_hex_to_bin (const char *hex,
+                             void *data);
+
+
 #endif
+
+/** @} */  /* end of group */

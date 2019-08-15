@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2013, 2016 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -50,7 +50,7 @@ static struct GNUNET_IDENTITY_Operation *op;
 /**
  * Handle for task for timeout termination.
  */
-static GNUNET_SCHEDULER_TaskIdentifier endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 
 /**
@@ -77,10 +77,9 @@ cleanup ()
  * Termiante the testcase (failure).
  *
  * @param cls NULL
- * @param tc scheduler context
  */
 static void
-endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+endbadly (void *cls)
 {
   cleanup ();
   res = 1;
@@ -91,10 +90,9 @@ endbadly (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * Termiante the testcase (success).
  *
  * @param cls NULL
- * @param tc scheduler context
  */
 static void
-end_normally (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+end_normally (void *cls)
 {
   cleanup ();
   res = 0;
@@ -107,13 +105,12 @@ end_normally (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 static void
 end ()
 {
-  if (endbadly_task != GNUNET_SCHEDULER_NO_TASK)
+  if (NULL != endbadly_task)
   {
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_NO_TASK;
+    endbadly_task = NULL;
   }
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MILLISECONDS,
-				&end_normally, NULL);
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -145,18 +142,35 @@ notification_cb (void *cls,
     break;
   case 1: /* create */
     GNUNET_assert (NULL != ego);
-    GNUNET_assert (0 == strcmp (identifier, "test-id"));
+    GNUNET_assert (0 == strcmp (identifier,
+                                "test-id"));
     my_ego = ego;
     *ctx = &round;
     break;
   case 2: /* rename */
     GNUNET_assert (my_ego == ego);
-    GNUNET_assert (0 == strcmp (identifier, "test"));
+    GNUNET_assert (0 == strcmp (identifier,
+                                "test"));
     GNUNET_assert (*ctx == &round);
     break;
-  case 3: /* delete */
+  case 3: /* reconnect-down */
     GNUNET_assert (my_ego == ego);
     GNUNET_assert (NULL == identifier);
+    GNUNET_assert (*ctx == &round);
+    *ctx = NULL;
+    break;
+  case 4: /* reconnect-up */
+    GNUNET_assert (0 == strcmp (identifier,
+                                "test"));
+    my_ego = ego;
+    *ctx = &round;
+    break;
+  case 5: /* end of iteration after reconnect */
+    GNUNET_assert (NULL == ego);
+    GNUNET_assert (NULL == identifier);
+    break;
+  case 6: /* delete */
+    GNUNET_assert (my_ego == ego);
     GNUNET_assert (*ctx == &round);
     *ctx = NULL;
     break;
@@ -184,6 +198,21 @@ delete_cont (void *cls,
 
 
 /**
+ * Continue by deleting the "test" identity.
+ *
+ * @param cls NULL
+ */
+static void
+finally_delete (void *cls)
+{
+  op = GNUNET_IDENTITY_delete (h,
+			       "test",
+			       &delete_cont,
+			       NULL);
+}
+
+
+/**
  * Continuation called from expected-to-fail rename operation.
  *
  * @param cls NULL
@@ -194,11 +223,10 @@ fail_rename_cont (void *cls,
 		  const char *emsg)
 {
   GNUNET_assert (NULL != emsg);
-  op = GNUNET_IDENTITY_delete (h,
-			       "test",
-			       &delete_cont,
-			       NULL);
-   end (); /* yepee */
+  op = NULL;
+  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
+                                &finally_delete,
+                                NULL);
 }
 
 
@@ -225,12 +253,15 @@ success_rename_cont (void *cls,
  * Called with events about created ego.
  *
  * @param cls NULL
+ * @param pk private key of the ego, or NULL on error
  * @param emsg error message
  */
 static void
 create_cb (void *cls,
+	   const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk,
 	   const char *emsg)
 {
+  GNUNET_assert (NULL != pk);
   GNUNET_assert (NULL == emsg);
   op = GNUNET_IDENTITY_rename (h,
 			       "test-id",
@@ -253,8 +284,13 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly, NULL);
-  h = GNUNET_IDENTITY_connect (cfg, &notification_cb, NULL);
+						&endbadly,
+                                                NULL);
+  GNUNET_SCHEDULER_add_shutdown (&end_normally,
+                                 NULL);
+  h = GNUNET_IDENTITY_connect (cfg,
+                               &notification_cb,
+                               NULL);
   GNUNET_assert (NULL != h);
   op = GNUNET_IDENTITY_create (h,
 			       "test-id",

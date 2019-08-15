@@ -1,5 +1,5 @@
 [set]
-AUTOSTART = @AUTOSTART@
+START_ON_DEMAND = @START_ON_DEMAND@
 @UNIXONLY@PORT = 2106
 HOSTNAME = localhost
 BINARY = gnunet-service-set
@@ -8,3 +8,5 @@ ACCEPT_FROM6 = ::1;
 UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-service-set.sock
 UNIX_MATCH_UID = YES
 UNIX_MATCH_GID = YES
+
+#PREFIX = valgrind

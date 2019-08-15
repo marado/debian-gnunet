@@ -1,32 +1,35 @@
 /*
      This file is part of GNUnet
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
- * @file hello/test_hello.c
+ * @file hello/test_friend_hello.c
  * @brief test for hello.c
  * @author Christian Grothoff
  */
 #include "platform.h"
 #include "gnunet_hello_lib.h"
 
-static size_t
-my_addr_gen (void *cls, size_t max, void *buf)
+
+static ssize_t
+my_addr_gen (void *cls,
+             size_t max,
+             void *buf)
 {
   unsigned int *i = cls;
   size_t ret;
@@ -35,7 +38,7 @@ my_addr_gen (void *cls, size_t max, void *buf)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "DEBUG: my_addr_gen called with i = %d\n", *i);
   if (0 == *i)
-    return 0;
+    return GNUNET_SYSERR; /* Stop iteration */
   memset (&address.peer, 0, sizeof (struct GNUNET_PeerIdentity));
   address.address = "address_information";
   address.transport_name = "test";
@@ -49,7 +52,8 @@ my_addr_gen (void *cls, size_t max, void *buf)
 
 
 static int
-check_addr (void *cls, const struct GNUNET_HELLO_Address *address,
+check_addr (void *cls,
+            const struct GNUNET_HELLO_Address *address,
             struct GNUNET_TIME_Absolute expiration)
 {
   unsigned int *i = cls;
@@ -69,7 +73,8 @@ check_addr (void *cls, const struct GNUNET_HELLO_Address *address,
 
 
 static int
-remove_some (void *cls, const struct GNUNET_HELLO_Address *address,
+remove_some (void *cls,
+             const struct GNUNET_HELLO_Address *address,
              struct GNUNET_TIME_Absolute expiration)
 {
   unsigned int *i = cls;
@@ -94,7 +99,6 @@ main (int argc, char *argv[])
   struct GNUNET_HELLO_Message *msg2;
   struct GNUNET_HELLO_Message *msg3;
   struct GNUNET_CRYPTO_EddsaPublicKey publicKey;
-  struct GNUNET_CRYPTO_EddsaPublicKey pk;
   struct GNUNET_TIME_Absolute startup_time;
   unsigned int i;
 
@@ -127,11 +131,6 @@ main (int argc, char *argv[])
                  GNUNET_HELLO_iterate_addresses (msg2, GNUNET_NO, &check_addr,
                                                  &i));
   GNUNET_assert (i == 0);
-
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing get_key from HELLO...\n");
-  GNUNET_assert (GNUNET_OK == GNUNET_HELLO_get_key (msg2, &pk));
-  GNUNET_assert (0 == memcmp (&publicKey, &pk, sizeof (pk)));
   GNUNET_free (msg1);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,

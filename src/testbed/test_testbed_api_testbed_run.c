@@ -1,21 +1,21 @@
 /*
   This file is part of GNUnet
-  (C) 2008--2013 Christian Grothoff (and other contributing authors)
+  Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published
-  by the Free Software Foundation; either version 3, or (at your
-  option) any later version.
+  GNUnet is free software: you can redistribute it and/or modify it
+  under the terms of the GNU Affero General Public License as published
+  by the Free Software Foundation, either version 3 of the License,
+  or (at your option) any later version.
 
   GNUnet is distributed in the hope that it will be useful, but
   WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  General Public License for more details.
+  Affero General Public License for more details.
+ 
+  You should have received a copy of the GNU Affero General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  You should have received a copy of the GNU General Public License
-  along with GNUnet; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-  Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -46,7 +46,7 @@ static struct GNUNET_TESTBED_Operation *op;
 /**
  * Abort task identifier
  */
-static GNUNET_SCHEDULER_TaskIdentifier abort_task;
+static struct GNUNET_SCHEDULER_Task * abort_task;
 
 /**
  * Current peer id
@@ -68,12 +68,11 @@ static int wait_forever;
  * Shutdown nicely
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != abort_task)
+  if (NULL != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
   GNUNET_SCHEDULER_shutdown (); /* Stop scheduler to shutdown testbed run */
 }
@@ -83,14 +82,14 @@ do_shutdown (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * abort task to run on test timed out
  *
  * @param cls NULL
- * @param tc the task context
  */
 static void
-do_abort (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_abort (void *cls)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Test timedout -- Aborting\n");
-  abort_task = GNUNET_SCHEDULER_NO_TASK;
-  (void) GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
+  abort_task = NULL;
+  GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+	      "Test timed out -- Aborting\n");
+  GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
 }
 
 
@@ -117,12 +116,11 @@ test_master (void *cls,
   result = GNUNET_OK;
   if (GNUNET_YES == wait_forever)
   {
-    if (GNUNET_SCHEDULER_NO_TASK == abort_task)
+    if (NULL == abort_task)
       return;                   /* abort already scheduled */
     GNUNET_SCHEDULER_cancel (abort_task);
-    abort_task = GNUNET_SCHEDULER_NO_TASK;
-    (void) GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                         &do_shutdown, NULL);
+    abort_task = NULL;
+    GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
     return;
   }
   GNUNET_assert (NULL != peers[0]);
@@ -170,7 +168,9 @@ controller_event_cb (void *cls,
  * @param cfg the configuration file handle
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *config)
 {
   uint64_t event_mask;
@@ -178,11 +178,13 @@ run (void *cls, char *const *args, const char *cfgfile,
   event_mask = 0;
   event_mask |= (1LL << GNUNET_TESTBED_ET_PEER_START);
   event_mask |= (1LL << GNUNET_TESTBED_ET_PEER_STOP);
-  GNUNET_TESTBED_run (NULL, config, NUM_PEERS, event_mask, &controller_event_cb,
-                      NULL, &test_master, NULL);
+  GNUNET_TESTBED_run (NULL, config, NUM_PEERS, event_mask,
+		      &controller_event_cb, NULL,
+		      &test_master, NULL);
   abort_task =
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
-                                    (GNUNET_TIME_UNIT_SECONDS, 300), &do_abort,
+                                    (GNUNET_TIME_UNIT_SECONDS, 300),
+				    &do_abort,
                                     NULL);
 }
 

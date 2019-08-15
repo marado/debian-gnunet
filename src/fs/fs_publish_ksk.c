@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010, 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2010, 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -74,7 +74,7 @@ struct GNUNET_FS_PublishKskContext
   /**
    * Current task.
    */
-  GNUNET_SCHEDULER_TaskIdentifier ksk_task;
+  struct GNUNET_SCHEDULER_Task * ksk_task;
 
   /**
    * Function to call once we're done.
@@ -105,23 +105,21 @@ struct GNUNET_FS_PublishKskContext
 
 
 /**
- * Continuation of "GNUNET_FS_publish_ksk" that performs
+ * Continuation of #GNUNET_FS_publish_ksk() that performs
  * the actual publishing operation (iterating over all
  * of the keywords).
  *
- * @param cls closure of type "struct PublishKskContext*"
- * @param tc unused
+ * @param cls closure of type `struct PublishKskContext *`
  */
 static void
-publish_ksk_cont (void *cls,
-		  const struct GNUNET_SCHEDULER_TaskContext *tc);
+publish_ksk_cont (void *cls);
 
 
 /**
  * Function called by the datastore API with
  * the result from the PUT request.
  *
- * @param cls closure of type "struct GNUNET_FS_PublishKskContext*"
+ * @param cls closure of type `struct GNUNET_FS_PublishKskContext *`
  * @param msg error message (or NULL)
  */
 static void
@@ -144,24 +142,25 @@ kb_put_cont (void *cls,
 
 
 /**
- * Continuation of "GNUNET_FS_publish_ksk" that performs the actual
+ * Continuation of #GNUNET_FS_publish_ksk() that performs the actual
  * publishing operation (iterating over all of the keywords).
  *
- * @param cls closure of type "struct GNUNET_FS_PublishKskContext*"
- * @param tc unused
+ * @param cls closure of type `struct GNUNET_FS_PublishKskContext *`
  */
 static void
-publish_ksk_cont (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+publish_ksk_cont (void *cls)
 {
   struct GNUNET_FS_PublishKskContext *pkc = cls;
   const char *keyword;
 
-  pkc->ksk_task = GNUNET_SCHEDULER_NO_TASK;
+  pkc->ksk_task = NULL;
   if ( (pkc->i == pkc->ksk_uri->data.ksk.keywordCount) ||
        (NULL == pkc->dsh) )
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "KSK PUT operation complete\n");
-    pkc->cont (pkc->cont_cls, pkc->ksk_uri, NULL);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "KSK PUT operation complete\n");
+    pkc->cont (pkc->cont_cls, pkc->ksk_uri,
+               NULL);
     GNUNET_FS_publish_ksk_cancel (pkc);
     return;
   }
@@ -216,7 +215,9 @@ GNUNET_FS_publish_ksk (struct GNUNET_FS_Handle *h,
     pkc->dsh = GNUNET_DATASTORE_connect (h->cfg);
     if (NULL == pkc->dsh)
     {
-      cont (cont_cls, NULL, _("Could not connect to datastore."));
+      cont (cont_cls,
+            NULL,
+            _("Could not connect to datastore."));
       GNUNET_free (pkc);
       return NULL;
     }
@@ -236,10 +237,10 @@ GNUNET_FS_publish_ksk (struct GNUNET_FS_Handle *h,
 void
 GNUNET_FS_publish_ksk_cancel (struct GNUNET_FS_PublishKskContext *pkc)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != pkc->ksk_task)
+  if (NULL != pkc->ksk_task)
   {
     GNUNET_SCHEDULER_cancel (pkc->ksk_task);
-    pkc->ksk_task = GNUNET_SCHEDULER_NO_TASK;
+    pkc->ksk_task = NULL;
   }
   if (NULL != pkc->uc)
   {

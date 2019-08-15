@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2003, 2004, 2006, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2003, 2004, 2006, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -28,6 +28,7 @@
 #include "gnunet_util_lib.h"
 
 #define ABORT(m) { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); if (m != NULL) GNUNET_CONTAINER_meta_data_destroy(m); return 1; }
+
 
 static int
 testMeta (int i)
@@ -104,10 +105,15 @@ testMeta (int i)
     ABORT (m);
   for (j = 0; j < i; j++)
   {
-    GNUNET_snprintf (val, sizeof (val), "%s.%d",
-                     "A teststring that should compress well.", j);
+    GNUNET_snprintf (val,
+                     sizeof (val),
+                     "%s.%d",
+                     "A teststring that should compress well.",
+                     j);
     if (GNUNET_OK !=
-        GNUNET_CONTAINER_meta_data_delete (m, EXTRACTOR_METATYPE_UNKNOWN, val,
+        GNUNET_CONTAINER_meta_data_delete (m,
+                                           EXTRACTOR_METATYPE_UNKNOWN,
+                                           val,
                                            strlen (val) + 1))
     {
       ABORT (m);
@@ -119,7 +125,8 @@ testMeta (int i)
   return 0;
 }
 
-int
+
+static int
 testMetaMore (int i)
 {
   struct GNUNET_CONTAINER_MetaData *meta;
@@ -133,7 +140,7 @@ testMetaMore (int i)
   {
     GNUNET_snprintf (txt, 128, "%u -- %u\n", i, q);
     GNUNET_CONTAINER_meta_data_insert (meta, "<test>",
-                                       q % EXTRACTOR_metatype_get_max (),
+                                       q % 42 /* EXTRACTOR_metatype_get_max () */,
                                        EXTRACTOR_METAFORMAT_UTF8, "text/plain",
                                        txt, strlen (txt) + 1);
   }
@@ -150,6 +157,7 @@ testMetaMore (int i)
   GNUNET_free (data);
   return 0;
 }
+
 
 static int
 testMetaLink ()
@@ -186,7 +194,8 @@ testMetaLink ()
   return 0;
 }
 
-int
+
+static int
 check ()
 {
   struct GNUNET_CONTAINER_MetaData *meta;
@@ -342,5 +351,6 @@ main (int argc, char *argv[])
     return 1;
   return 0;
 }
+
 
 /* end of test_container_meta_data.c */

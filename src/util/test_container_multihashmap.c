@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2008 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2008 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -27,7 +27,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); if (m != NULL) GNUNET_CONTAINER_multihashmap_destroy(m); return 1; }
+#define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); if (m != NULL) GNUNET_CONTAINER_multihashmap_destroy(m); if (NULL != iter) GNUNET_CONTAINER_multihashmap_iterator_destroy (iter); return 1; }
 #define CHECK(c) { if (! (c)) ABORT(); }
 
 static int
@@ -36,7 +36,7 @@ testMap (int i)
   struct GNUNET_CONTAINER_MultiHashMap *m;
   struct GNUNET_HashCode k1;
   struct GNUNET_HashCode k2;
-  struct GNUNET_CONTAINER_MultiHashMapIterator *iter;
+  struct GNUNET_CONTAINER_MultiHashMapIterator *iter = NULL;
   struct GNUNET_HashCode key_ret;
   const char *ret;
   int j;
@@ -97,7 +97,7 @@ testMap (int i)
   for (j = 0; j < GNUNET_CONTAINER_multihashmap_size (m); j++)
     CHECK (GNUNET_YES == GNUNET_CONTAINER_multihashmap_iterator_next (iter, NULL, NULL));
   CHECK (GNUNET_NO == GNUNET_CONTAINER_multihashmap_iterator_next (iter, NULL, NULL));
-  GNUNET_free (iter);
+  GNUNET_CONTAINER_multihashmap_iterator_destroy (iter);
 
   GNUNET_CONTAINER_multihashmap_destroy (m);
   return 0;

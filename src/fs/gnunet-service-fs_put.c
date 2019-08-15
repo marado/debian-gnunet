@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -63,7 +63,7 @@ struct PutOperator
   /**
    * ID of task that collects blocks for DHT PUTs.
    */
-  GNUNET_SCHEDULER_TaskIdentifier dht_task;
+  struct GNUNET_SCHEDULER_Task * dht_task;
 
   /**
    * How many entires with zero anonymity of our type do we currently
@@ -72,9 +72,14 @@ struct PutOperator
   uint64_t zero_anonymity_count_estimate;
 
   /**
-   * Current offset when iterating the database.
+   * Count of results received from the database.
    */
-  uint64_t current_offset;
+  uint64_t result_count;
+
+  /**
+   * Next UID to request when iterating the database.
+   */
+  uint64_t next_uid;
 };
 
 
@@ -95,8 +100,7 @@ static struct PutOperator operators[] = {
  * @param tc scheduler context (unused)
  */
 static void
-gather_dht_put_blocks (void *cls,
-                       const struct GNUNET_SCHEDULER_TaskContext *tc);
+gather_dht_put_blocks (void *cls);
 
 
 /**
@@ -131,14 +135,9 @@ schedule_next_put (struct PutOperator *po)
  * Continuation called after DHT PUT operation has finished.
  *
  * @param cls type of blocks to gather
- * @param success GNUNET_OK if the PUT was transmitted,
- *                GNUNET_NO on timeout,
- *                GNUNET_SYSERR on disconnect from service
- *                after the PUT message was transmitted
- *                (so we don't know if it was received or not)
  */
 static void
-delay_dht_put_blocks (void *cls, int success)
+delay_dht_put_blocks (void *cls)
 {
   struct PutOperator *po = cls;
 
@@ -151,14 +150,13 @@ delay_dht_put_blocks (void *cls, int success)
  * Task that is run periodically to obtain blocks for DHT PUTs.
  *
  * @param cls type of blocks to gather
- * @param tc scheduler context
  */
 static void
-delay_dht_put_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+delay_dht_put_task (void *cls)
 {
   struct PutOperator *po = cls;
 
-  po->dht_task = GNUNET_SCHEDULER_NO_TASK;
+  po->dht_task = NULL;
   schedule_next_put (po);
 }
 
@@ -173,38 +171,51 @@ delay_dht_put_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
  * @param type type of the content
  * @param priority priority of the content
  * @param anonymity anonymity-level for the content
+ * @param replication replication-level for the content
  * @param expiration expiration time for the content
  * @param uid unique identifier for the datum;
  *        maybe 0 if no unique identifier is available
  */
 static void
 process_dht_put_content (void *cls,
-			 const struct GNUNET_HashCode * key,
-			 size_t size,
+                         const struct GNUNET_HashCode * key,
+                         size_t size,
                          const void *data,
-			 enum GNUNET_BLOCK_Type type,
-                         uint32_t priority, uint32_t anonymity,
-                         struct GNUNET_TIME_Absolute expiration, uint64_t uid)
+                         enum GNUNET_BLOCK_Type type,
+                         uint32_t priority,
+                         uint32_t anonymity,
+                         uint32_t replication,
+                         struct GNUNET_TIME_Absolute expiration,
+                         uint64_t uid)
 {
   struct PutOperator *po = cls;
 
   po->dht_qe = NULL;
   if (key == NULL)
   {
-    po->zero_anonymity_count_estimate = po->current_offset - 1;
-    po->current_offset = 0;
+    po->zero_anonymity_count_estimate = po->result_count;
+    po->result_count = 0;
+    po->next_uid = 0;
     po->dht_task = GNUNET_SCHEDULER_add_now (&delay_dht_put_task, po);
     return;
   }
+  po->result_count++;
+  po->next_uid = uid + 1;
   po->zero_anonymity_count_estimate =
-      GNUNET_MAX (po->current_offset, po->zero_anonymity_count_estimate);
+    GNUNET_MAX (po->result_count, po->zero_anonymity_count_estimate);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Retrieved block `%s' of type %u for DHT PUT\n", GNUNET_h2s (key),
               type);
-  po->dht_put = GNUNET_DHT_put (GSF_dht, key, DEFAULT_PUT_REPLICATION,
-				GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE, type, size, data,
-				expiration, GNUNET_TIME_UNIT_FOREVER_REL,
-				&delay_dht_put_blocks, po);
+  po->dht_put = GNUNET_DHT_put (GSF_dht,
+                                key,
+                                DEFAULT_PUT_REPLICATION,
+                                GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                                type,
+                                size,
+                                data,
+                                expiration,
+                                &delay_dht_put_blocks,
+                                po);
 }
 
 
@@ -212,22 +223,21 @@ process_dht_put_content (void *cls,
  * Task that is run periodically to obtain blocks for DHT PUTs.
  *
  * @param cls type of blocks to gather
- * @param tc scheduler context (unused)
  */
 static void
-gather_dht_put_blocks (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+gather_dht_put_blocks (void *cls)
 {
   struct PutOperator *po = cls;
 
-  po->dht_task = GNUNET_SCHEDULER_NO_TASK;
-  if (0 != (tc->reason & GNUNET_SCHEDULER_REASON_SHUTDOWN))
-    return;
+  po->dht_task = NULL;
   po->dht_qe =
-      GNUNET_DATASTORE_get_zero_anonymity (GSF_dsh, po->current_offset++, 0,
+      GNUNET_DATASTORE_get_zero_anonymity (GSF_dsh,
+                                           po->next_uid,
+                                           0,
                                            UINT_MAX,
-                                           GNUNET_TIME_UNIT_FOREVER_REL,
                                            po->dht_put_type,
-                                           &process_dht_put_content, po);
+                                           &process_dht_put_content,
+                                           po);
   if (NULL == po->dht_qe)
     po->dht_task = GNUNET_SCHEDULER_add_now (&delay_dht_put_task, po);
 }
@@ -263,10 +273,10 @@ GSF_put_done_ ()
   i = 0;
   while ((po = &operators[i])->dht_put_type != GNUNET_BLOCK_TYPE_ANY)
   {
-    if (GNUNET_SCHEDULER_NO_TASK != po->dht_task)
+    if (NULL != po->dht_task)
     {
       GNUNET_SCHEDULER_cancel (po->dht_task);
-      po->dht_task = GNUNET_SCHEDULER_NO_TASK;
+      po->dht_task = NULL;
     }
     if (NULL != po->dht_put)
     {

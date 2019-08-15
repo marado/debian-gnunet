@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2008-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2008-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -47,11 +47,15 @@ my_log (void *ctx, enum GNUNET_ErrorType kind, const char *component,
   fflush (stdout);
 }
 
+
+#if !defined(GNUNET_CULL_LOGGING)
 static int
 expensive_func ()
 {
   return GNUNET_NETWORK_socket_select (NULL, NULL, NULL, OUTPUT_DELAY);
 }
+#endif
+
 
 #define pr(kind,lvl) {\
   struct GNUNET_TIME_Absolute t1, t2;\

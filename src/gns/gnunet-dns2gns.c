@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2012-2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2012-2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file gnunet-dns2gns.c
@@ -26,7 +26,6 @@
 #include <gnunet_util_lib.h>
 #include <gnunet_dnsparser_lib.h>
 #include <gnunet_gns_service.h>
-#include <gnunet_identity_service.h>
 #include <gnunet_dnsstub_lib.h>
 #include "gns.h"
 
@@ -34,16 +33,6 @@
  * Timeout for DNS requests.
  */
 #define TIMEOUT GNUNET_TIME_UNIT_MINUTES
-
-/**
- * Default suffix
- */
-#define DNS_SUFFIX ".zkey.eu"
-
-/**
- * FCFS suffix
- */
-#define FCFS_SUFFIX "fcfs.zkey.eu"
 
 /**
  * Data kept per request.
@@ -69,7 +58,7 @@ struct Request
   /**
    * Our GNS request handle.
    */
-  struct GNUNET_GNS_LookupRequest *lookup;
+  struct GNUNET_GNS_LookupWithTldRequest *lookup;
 
   /**
    * Our DNS request handle
@@ -80,14 +69,39 @@ struct Request
    * Task run on timeout or shutdown to clean up without
    * response.
    */
-  GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+  struct GNUNET_SCHEDULER_Task *timeout_task;
 
   /**
-   * Number of bytes in 'addr'.
+   * Original UDP request message.
+   */
+  char *udp_msg;
+
+  /**
+   * Number of bytes in @e addr.
    */
   size_t addr_len;
 
+  /**
+   * Number of bytes in @e udp_msg.
+   */
+  size_t udp_msg_size;
+
+  /**
+   * ID of the original request.
+   */
+  uint16_t original_request_id;
 };
+
+/**
+ * The address to bind to
+ */
+static in_addr_t address;
+
+/**
+ * The IPv6 address to bind to
+ */
+static struct in6_addr address6;
+
 
 
 /**
@@ -113,22 +127,12 @@ static struct GNUNET_NETWORK_Handle *listen_socket6;
 /**
  * Task for IPv4 socket.
  */
-static GNUNET_SCHEDULER_TaskIdentifier t4;
+static struct GNUNET_SCHEDULER_Task *t4;
 
 /**
  * Task for IPv6 socket.
  */
-static GNUNET_SCHEDULER_TaskIdentifier t6;
-
-/**
- * DNS suffix, suffix of this gateway in DNS; defaults to '.zkey.eu'
- */
-static char *dns_suffix;
-
-/**
- * FCFS suffix, suffix of FCFS-authority in DNS; defaults to 'fcfs.zkey.eu'.
- */
-static char *fcfs_suffix;
+static struct GNUNET_SCHEDULER_Task *t6;
 
 /**
  * IP of DNS server
@@ -141,45 +145,30 @@ static char *dns_ip;
 static unsigned int listen_port = 53;
 
 /**
- * Which GNS zone do we translate incoming DNS requests to?
- */
-static struct GNUNET_CRYPTO_EcdsaPublicKey my_zone;
-
-/**
- * '-z' option with the main zone to use.
- */
-static char *gns_zone_str;
-
-/**
  * Configuration to use.
  */
 static const struct GNUNET_CONFIGURATION_Handle *cfg;
-
-/**
- * Connection to identity service.
- */
-static struct GNUNET_IDENTITY_Handle *identity;
-
-/**
- * Request for our ego.
- */
-static struct GNUNET_IDENTITY_Operation *id_op;
 
 
 /**
  * Task run on shutdown.  Cleans up everything.
  *
  * @param cls unused
- * @param tc scheduler context
  */
 static void
-do_shutdown (void *cls,
-	     const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_shutdown (void *cls)
 {
-  if (GNUNET_SCHEDULER_NO_TASK != t4)
+  (void) cls;
+  if (NULL != t4)
+  {
     GNUNET_SCHEDULER_cancel (t4);
-  if (GNUNET_SCHEDULER_NO_TASK != t6)
+    t4 = NULL;
+  }
+  if (NULL != t6)
+  {
     GNUNET_SCHEDULER_cancel (t6);
+    t6 = NULL;
+  }
   if (NULL != listen_socket4)
   {
     GNUNET_NETWORK_socket_close (listen_socket4);
@@ -190,20 +179,16 @@ do_shutdown (void *cls,
     GNUNET_NETWORK_socket_close (listen_socket6);
     listen_socket6 = NULL;
   }
-  if (NULL != id_op)
+  if (NULL != gns)
   {
-    GNUNET_IDENTITY_cancel (id_op);
-    id_op = NULL;
+    GNUNET_GNS_disconnect (gns);
+    gns = NULL;
   }
-  if (NULL != identity)
+  if (NULL != dns_stub)
   {
-    GNUNET_IDENTITY_disconnect (identity);
-    identity = NULL;
+    GNUNET_DNSSTUB_stop (dns_stub);
+    dns_stub = NULL;
   }
-  GNUNET_GNS_disconnect (gns);
-  gns = NULL;
-  GNUNET_DNSSTUB_stop (dns_stub);
-  dns_stub = NULL;
 }
 
 
@@ -217,6 +202,7 @@ send_response (struct Request *request)
 {
   char *buf;
   size_t size;
+  ssize_t sret;
 
   if (GNUNET_SYSERR ==
       GNUNET_DNSPARSER_pack (request->packet,
@@ -229,16 +215,20 @@ send_response (struct Request *request)
     }
   else
     {
-      if (size !=
-	  GNUNET_NETWORK_socket_sendto (request->lsock,
-					buf, size,
-					request->addr,
-					request->addr_len))
-	GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "sendto");
+      sret = GNUNET_NETWORK_socket_sendto (request->lsock,
+					   buf,
+					   size,
+					   request->addr,
+					   request->addr_len);
+      if ( (sret < 0) ||
+	   (size != (size_t) sret) )
+	GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			     "sendto");
       GNUNET_free (buf);
     }
   GNUNET_SCHEDULER_cancel (request->timeout_task);
   GNUNET_DNSPARSER_free_packet (request->packet);
+  GNUNET_free (request->udp_msg);
   GNUNET_free (request);
 }
 
@@ -246,21 +236,20 @@ send_response (struct Request *request)
 /**
  * Task run on timeout.  Cleans up request.
  *
- * @param cls 'struct Request' of the request to clean up
- * @param tc scheduler context
+ * @param cls `struct Request *` of the request to clean up
  */
 static void
-do_timeout (void *cls,
-	    const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_timeout (void *cls)
 {
   struct Request *request = cls;
 
   if (NULL != request->packet)
     GNUNET_DNSPARSER_free_packet (request->packet);
   if (NULL != request->lookup)
-    GNUNET_GNS_lookup_cancel (request->lookup);
+    GNUNET_GNS_lookup_with_tld_cancel (request->lookup);
   if (NULL != request->dns_lookup)
     GNUNET_DNSSTUB_resolve_cancel (request->dns_lookup);
+  GNUNET_free (request->udp_msg);
   GNUNET_free (request);
 }
 
@@ -269,19 +258,31 @@ do_timeout (void *cls,
  * Iterator called on obtained result for a DNS lookup
  *
  * @param cls closure
- * @param rs the request socket
  * @param dns the DNS udp payload
  * @param r size of the DNS payload
  */
 static void
 dns_result_processor (void *cls,
-		      struct GNUNET_DNSSTUB_RequestSocket *rs,
 		      const struct GNUNET_TUN_DnsHeader *dns,
 		      size_t r)
 {
   struct Request *request = cls;
 
-  request->packet = GNUNET_DNSPARSER_parse ((char*)dns, r);
+  if (NULL == dns)
+  {
+    /* DNSSTUB gave up, so we trigger timeout early */
+    GNUNET_SCHEDULER_cancel (request->timeout_task);
+    do_timeout (request);
+    return;
+  }
+  if (request->original_request_id != dns->id)
+  {
+    /* for a another query, ignore */
+    return;
+  }
+  request->packet = GNUNET_DNSPARSER_parse ((char*)dns,
+					    r);
+  GNUNET_DNSSTUB_resolve_cancel (request->dns_lookup);
   send_response (request);
 }
 
@@ -290,20 +291,38 @@ dns_result_processor (void *cls,
  * Iterator called on obtained result for a GNS lookup.
  *
  * @param cls closure
+ * @param was_gns #GNUNET_NO if the TLD is not configured for GNS
  * @param rd_count number of records in @a rd
  * @param rd the records in reply
  */
 static void
 result_processor (void *cls,
+		  int was_gns,
 		  uint32_t rd_count,
 		  const struct GNUNET_GNSRECORD_Data *rd)
 {
   struct Request *request = cls;
   struct GNUNET_DNSPARSER_Packet *packet;
-  uint32_t i;
   struct GNUNET_DNSPARSER_Record rec;
 
   request->lookup = NULL;
+  if (GNUNET_NO == was_gns)
+  {
+    /* TLD not configured for GNS, fall back to DNS */
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+		"Using DNS resolver IP `%s' to resolve `%s'\n",
+		dns_ip,
+		request->packet->queries[0].name);
+    request->original_request_id = request->packet->id;
+    GNUNET_DNSPARSER_free_packet (request->packet);
+    request->packet = NULL;
+    request->dns_lookup = GNUNET_DNSSTUB_resolve (dns_stub,
+                                                  request->udp_msg,
+                                                  request->udp_msg_size,
+                                                  &dns_result_processor,
+                                                  request);
+    return;
+  }
   packet = request->packet;
   packet->flags.query_or_response = 1;
   packet->flags.return_code = GNUNET_TUN_DNS_RETURN_CODE_NO_ERROR;
@@ -314,7 +333,7 @@ result_processor (void *cls,
   packet->flags.message_truncated = 0;
   packet->flags.authoritative_answer = 0;
   //packet->flags.opcode = GNUNET_TUN_DNS_OPCODE_STATUS; // ???
-  for (i=0;i<rd_count;i++)
+  for (uint32_t i=0;i<rd_count;i++)
     {
       // FIXME: do we need to hanlde #GNUNET_GNSRECORD_RF_SHADOW_RECORD
       // here? Or should we do this in libgnunetgns?
@@ -327,7 +346,7 @@ result_processor (void *cls,
 	  rec.dns_traffic_class = GNUNET_TUN_DNS_CLASS_INTERNET;
 	  rec.type = GNUNET_DNSPARSER_TYPE_A;
 	  rec.data.raw.data = GNUNET_new (struct in_addr);
-	  memcpy (rec.data.raw.data,
+	  GNUNET_memcpy (rec.data.raw.data,
 		  rd[i].data,
 		  rd[i].data_size);
 	  rec.data.raw.data_len = sizeof (struct in_addr);
@@ -341,7 +360,7 @@ result_processor (void *cls,
 	  rec.data.raw.data = GNUNET_new (struct in6_addr);
 	  rec.dns_traffic_class = GNUNET_TUN_DNS_CLASS_INTERNET;
 	  rec.type = GNUNET_DNSPARSER_TYPE_AAAA;
-	  memcpy (rec.data.raw.data,
+	  GNUNET_memcpy (rec.data.raw.data,
 		  rd[i].data,
 		  rd[i].data_size);
 	  rec.data.raw.data_len = sizeof (struct in6_addr);
@@ -351,10 +370,10 @@ result_processor (void *cls,
 	  break;
 	case GNUNET_DNSPARSER_TYPE_CNAME:
 	  rec.name = GNUNET_strdup (packet->queries[0].name);
-	  rec.data.hostname = strdup (rd[i].data);
+	  rec.data.hostname = GNUNET_strdup (rd[i].data);
 	  rec.dns_traffic_class = GNUNET_TUN_DNS_CLASS_INTERNET;
 	  rec.type = GNUNET_DNSPARSER_TYPE_CNAME;
-	  memcpy (rec.data.hostname,
+	  GNUNET_memcpy (rec.data.hostname,
 		  rd[i].data,
 		  rd[i].data_size);
 	  GNUNET_array_append (packet->answers,
@@ -388,19 +407,16 @@ handle_request (struct GNUNET_NETWORK_Handle *lsock,
 {
   struct Request *request;
   struct GNUNET_DNSPARSER_Packet *packet;
-  char *name;
-  size_t name_len;
-  int type;
-  int use_gns;
 
-  packet = GNUNET_DNSPARSER_parse (udp_msg, udp_msg_size);
+  packet = GNUNET_DNSPARSER_parse (udp_msg,
+				   udp_msg_size);
   if (NULL == packet)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-		  _("Cannot parse DNS request from %s\n"),
-		  GNUNET_a2s (addr, addr_len));
-      return;
-    }
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+		_("Cannot parse DNS request from %s\n"),
+		GNUNET_a2s (addr, addr_len));
+    return;
+  }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
 	      "Received request for `%s' with flags %u, #answers %d, #auth %d, #additional %d\n",
 	      packet->queries[0].name,
@@ -411,88 +427,45 @@ handle_request (struct GNUNET_NETWORK_Handle *lsock,
   if ( (0 != packet->flags.query_or_response) ||
        (0 != packet->num_answers) ||
        (0 != packet->num_authority_records))
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-		  _("Received malformed DNS request from %s\n"),
-		  GNUNET_a2s (addr, addr_len));
-      GNUNET_DNSPARSER_free_packet (packet);
-      return;
-    }
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+		_("Received malformed DNS request from %s\n"),
+		GNUNET_a2s (addr, addr_len));
+    GNUNET_DNSPARSER_free_packet (packet);
+    return;
+  }
   if ( (1 != packet->num_queries) )
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-		  _("Received unsupported DNS request from %s\n"),
-		  GNUNET_a2s (addr, addr_len));
-      GNUNET_DNSPARSER_free_packet (packet);
-      return;
-    }
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+		_("Received unsupported DNS request from %s\n"),
+		GNUNET_a2s (addr,
+			    addr_len));
+    GNUNET_DNSPARSER_free_packet (packet);
+    return;
+  }
   request = GNUNET_malloc (sizeof (struct Request) + addr_len);
   request->lsock = lsock;
   request->packet = packet;
   request->addr = &request[1];
   request->addr_len = addr_len;
-  memcpy (&request[1], addr, addr_len);
+  GNUNET_memcpy (&request[1],
+		 addr,
+		 addr_len);
+  request->udp_msg_size = udp_msg_size;
+  request->udp_msg = GNUNET_memdup (udp_msg,
+				    udp_msg_size);
   request->timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
 							&do_timeout,
 							request);
-  name = GNUNET_strdup (packet->queries[0].name);
-  name_len = strlen (name);
-  use_gns = GNUNET_NO;
-
-
-  if ( (name_len > strlen (fcfs_suffix)) &&
-       (0 == strcasecmp (fcfs_suffix,
-			 &name[name_len - strlen (fcfs_suffix)])) )
-  {
-    /* replace ".fcfs.zkey.eu" with ".gnu" */
-    strcpy (&name[name_len - strlen (fcfs_suffix)],
-	    ".gnu");
-    use_gns = GNUNET_YES;
-  } else if ( (name_len > strlen (dns_suffix)) &&
-       (0 == strcasecmp (dns_suffix,
-			 &name[name_len - strlen (dns_suffix)])) )
-  {
-    /* replace ".zkey.eu" with ".zkey" */
-    strcpy (&name[name_len - strlen (dns_suffix)],
-	    ".zkey");
-    use_gns = GNUNET_YES;
-  } else if ( (name_len > strlen (".gnu")) &&
-       (0 == strcasecmp (".gnu",
-			 &name[name_len - strlen (".gnu")])) )
-  {
-    /* name is in GNS */
-    use_gns = GNUNET_YES;
-  }
-  if (GNUNET_YES == use_gns)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Calling GNS on `%s'\n",
-		name);
-    type = packet->queries[0].type;
-    request->lookup = GNUNET_GNS_lookup (gns,
-					 name,
-					 &my_zone,
-					 type,
-					 GNUNET_NO,
-					 NULL /* no shorten */,
-					 &result_processor,
-					 request);
-  }
-  else
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Using DNS resolver IP `%s' to resolve `%s'\n",
-		dns_ip,
-		name);
-    GNUNET_DNSPARSER_free_packet (request->packet);
-    request->packet = NULL;
-    request->dns_lookup = GNUNET_DNSSTUB_resolve2 (dns_stub,
-						   udp_msg,
-						   udp_msg_size,
-						   &dns_result_processor,
-						   request);
-  }
-  GNUNET_free (name);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+	      "Calling GNS on `%s'\n",
+	      packet->queries[0].name);
+  request->lookup = GNUNET_GNS_lookup_with_tld (gns,
+						packet->queries[0].name,
+						packet->queries[0].type,
+						GNUNET_NO,
+						&result_processor,
+						request);
 }
 
 
@@ -500,21 +473,21 @@ handle_request (struct GNUNET_NETWORK_Handle *lsock,
  * Task to read IPv4 DNS packets.
  *
  * @param cls the 'listen_socket4'
- * @param tc scheduler context
  */
 static void
-read_dns4 (void *cls,
-	   const struct GNUNET_SCHEDULER_TaskContext *tc)
+read_dns4 (void *cls)
 {
   struct sockaddr_in v4;
   socklen_t addrlen;
   ssize_t size;
+  const struct GNUNET_SCHEDULER_TaskContext *tc;
 
   GNUNET_assert (listen_socket4 == cls);
   t4 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
 				      listen_socket4,
 				      &read_dns4,
 				      listen_socket4);
+  tc = GNUNET_SCHEDULER_get_task_context ();
   if (0 == (GNUNET_SCHEDULER_REASON_READ_READY & tc->reason))
     return; /* shutdown? */
   size = GNUNET_NETWORK_socket_recvfrom_amount (listen_socket4);
@@ -524,17 +497,27 @@ read_dns4 (void *cls,
       return; /* read error!? */
     }
   {
-    char buf[size];
+    char buf[size + 1];
+    ssize_t sret;
 
     addrlen = sizeof (v4);
-    GNUNET_break (size ==
-		  GNUNET_NETWORK_socket_recvfrom (listen_socket4,
-						  buf,
-						  size,
-						  (struct sockaddr *) &v4,
-						  &addrlen));
-    handle_request (listen_socket4, &v4, addrlen,
-		    buf, size);
+    sret = GNUNET_NETWORK_socket_recvfrom (listen_socket4,
+					   buf,
+					   size + 1,
+					   (struct sockaddr *) &v4,
+					   &addrlen);
+    if (0 > sret)
+    {
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			   "recvfrom");
+      return;
+    }
+    GNUNET_break (size == sret);
+    handle_request (listen_socket4,
+		    &v4,
+		    addrlen,
+		    buf,
+		    size);
   }
 }
 
@@ -543,21 +526,21 @@ read_dns4 (void *cls,
  * Task to read IPv6 DNS packets.
  *
  * @param cls the 'listen_socket6'
- * @param tc scheduler context
  */
 static void
-read_dns6 (void *cls,
-	   const struct GNUNET_SCHEDULER_TaskContext *tc)
+read_dns6 (void *cls)
 {
   struct sockaddr_in6 v6;
   socklen_t addrlen;
   ssize_t size;
+  const struct GNUNET_SCHEDULER_TaskContext *tc;
 
   GNUNET_assert (listen_socket6 == cls);
   t6 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
 				      listen_socket6,
 				      &read_dns6,
 				      listen_socket6);
+  tc = GNUNET_SCHEDULER_get_task_context ();
   if (0 == (GNUNET_SCHEDULER_REASON_READ_READY & tc->reason))
     return; /* shutdown? */
   size = GNUNET_NETWORK_socket_recvfrom_amount (listen_socket6);
@@ -568,142 +551,27 @@ read_dns6 (void *cls,
     }
   {
     char buf[size];
+    ssize_t sret;
 
     addrlen = sizeof (v6);
-    GNUNET_break (size ==
-		  GNUNET_NETWORK_socket_recvfrom (listen_socket6,
-						  buf,
-						  size,
-						  (struct sockaddr *) &v6,
-						  &addrlen));
-    handle_request (listen_socket6, &v6, addrlen,
-		    buf, size);
-  }
-}
-
-
-/**
- * Start DNS daemon.
- */
-static void
-run_dnsd ()
-{
-  if (NULL == dns_suffix)
-    dns_suffix = DNS_SUFFIX;
-  if (NULL == fcfs_suffix)
-    fcfs_suffix = FCFS_SUFFIX;
-  if (NULL == (gns = GNUNET_GNS_connect (cfg)))
-    return;
-  if (NULL == (dns_stub = GNUNET_DNSSTUB_start (dns_ip)))
-  {
-    GNUNET_GNS_disconnect (gns);
-    gns = NULL;
-    return;
-  }
-  listen_socket4 = GNUNET_NETWORK_socket_create (PF_INET,
-						 SOCK_DGRAM,
-						 IPPROTO_UDP);
-  if (NULL != listen_socket4)
+    sret = GNUNET_NETWORK_socket_recvfrom (listen_socket6,
+					   buf,
+					   size,
+					   (struct sockaddr *) &v6,
+					   &addrlen);
+    if (0 > sret)
     {
-      struct sockaddr_in v4;
-
-      memset (&v4, 0, sizeof (v4));
-      v4.sin_family = AF_INET;
-#if HAVE_SOCKADDR_IN_SIN_LEN
-      v4.sin_len = sizeof (v4);
-#endif
-      v4.sin_port = htons (listen_port);
-      if (GNUNET_OK !=
-	  GNUNET_NETWORK_socket_bind (listen_socket4,
-				      (struct sockaddr *) &v4,
-				      sizeof (v4)))
-	{
-	  GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "bind");
-	  GNUNET_NETWORK_socket_close (listen_socket4);
-	  listen_socket4 = NULL;
-	}
-    }
-  listen_socket6 = GNUNET_NETWORK_socket_create (PF_INET6,
-						SOCK_DGRAM,
-						IPPROTO_UDP);
-  if (NULL != listen_socket6)
-    {
-      struct sockaddr_in6 v6;
-
-      memset (&v6, 0, sizeof (v6));
-      v6.sin6_family = AF_INET6;
-#if HAVE_SOCKADDR_IN_SIN_LEN
-      v6.sin6_len = sizeof (v6);
-#endif
-      v6.sin6_port = htons (listen_port);
-      if (GNUNET_OK !=
-	  GNUNET_NETWORK_socket_bind (listen_socket6,
-				      (struct sockaddr *) &v6,
-				      sizeof (v6)))
-	{
-	  GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "bind");
-	  GNUNET_NETWORK_socket_close (listen_socket6);
-	  listen_socket6 = NULL;
-	}
-    }
-  if ( (NULL == listen_socket4) &&
-       (NULL == listen_socket6) )
-    {
-      GNUNET_GNS_disconnect (gns);
-      gns = NULL;
-      GNUNET_DNSSTUB_stop (dns_stub);
-      dns_stub = NULL;
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
+			   "recvfrom");
       return;
     }
-  if (NULL != listen_socket4)
-    t4 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
-					listen_socket4,
-					&read_dns4,
-					listen_socket4);
-  if (NULL != listen_socket6)
-    t6 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
-					listen_socket6,
-					&read_dns6,
-					listen_socket6);
-
-}
-
-
-/**
- * Method called to inform about the egos of this peer.
- *
- * When used with #GNUNET_IDENTITY_create or #GNUNET_IDENTITY_get,
- * this function is only called ONCE, and 'NULL' being passed in
- * @a ego does indicate an error (i.e. name is taken or no default
- * value is known).  If @a ego is non-NULL and if '*ctx'
- * is set in those callbacks, the value WILL be passed to a subsequent
- * call to the identity callback of #GNUNET_IDENTITY_connect (if
- * that one was not NULL).
- *
- * @param cls closure, NULL
- * @param ego ego handle
- * @param ctx context for application to store data for this ego
- *                 (during the lifetime of this process, initially NULL)
- * @param name name assigned by the user for this ego,
- *                   NULL if the user just deleted the ego and it
- *                   must thus no longer be used
- */
-static void
-identity_cb (void *cls,
-	     struct GNUNET_IDENTITY_Ego *ego,
-	     void **ctx,
-	     const char *name)
-{
-  id_op = NULL;
-  if (NULL == ego)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("No ego configured for `dns2gns` subsystem\n"));
-    return;
+    GNUNET_break (size == sret);
+    handle_request (listen_socket6,
+		    &v6,
+		    addrlen,
+		    buf,
+		    size);
   }
-  GNUNET_IDENTITY_ego_get_public_key (ego,
-				      &my_zone);
-  run_dnsd ();
 }
 
 
@@ -716,41 +584,149 @@ identity_cb (void *cls,
  * @param c configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
+  char *addr_str;
+  (void) cls;
+  (void) args;
+  (void) cfgfile;
   cfg = c;
-
   if (NULL == dns_ip)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _("No DNS server specified!\n"));
     return;
   }
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-				&do_shutdown, NULL);
-  if (NULL == gns_zone_str)
-    {
-      identity = GNUNET_IDENTITY_connect (cfg,
-					  NULL, NULL);
-      id_op = GNUNET_IDENTITY_get (identity,
-				   "dns2gns",
-				   &identity_cb,
-				   NULL);
-      return;
-    }
-  if ( (NULL == gns_zone_str) ||
-       (GNUNET_OK !=
-	GNUNET_CRYPTO_ecdsa_public_key_from_string (gns_zone_str,
-						  strlen (gns_zone_str),
-						  &my_zone)) )
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+				 NULL);
+  if (NULL == (gns = GNUNET_GNS_connect (cfg)))
+    return;
+  GNUNET_assert (NULL != (dns_stub = GNUNET_DNSSTUB_start (128)));
+  if (GNUNET_OK !=
+      GNUNET_DNSSTUB_add_dns_ip (dns_stub,
+                                 dns_ip))
   {
+    GNUNET_DNSSTUB_stop (dns_stub);
+    GNUNET_GNS_disconnect (gns);
+    gns = NULL;
+    return;
+  }
+
+  /* Get address to bind to */
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (c, "dns2gns",
+                                                          "BIND_TO",
+                                                          &addr_str))
+  {
+    //No address specified
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("No valid GNS zone specified!\n"));
+                "Don't know what to bind to...\n");
+    GNUNET_free (addr_str);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  run_dnsd ();
+  if (1 != inet_pton (AF_INET, addr_str, &address))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Unable to parse address %s\n",
+                addr_str);
+    GNUNET_free (addr_str);
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  GNUNET_free (addr_str);
+  /* Get address to bind to */
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (c, "dns2gns",
+                                                          "BIND_TO6",
+                                                          &addr_str))
+  {
+    //No address specified
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Don't know what to bind6 to...\n");
+    GNUNET_free (addr_str);
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  if (1 != inet_pton (AF_INET6, addr_str, &address6))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Unable to parse IPv6 address %s\n",
+                addr_str);
+    GNUNET_free (addr_str);
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  GNUNET_free (addr_str);
+
+  listen_socket4 = GNUNET_NETWORK_socket_create (PF_INET,
+						 SOCK_DGRAM,
+						 IPPROTO_UDP);
+  if (NULL != listen_socket4)
+  {
+    struct sockaddr_in v4;
+
+    memset (&v4, 0, sizeof (v4));
+    v4.sin_family = AF_INET;
+    v4.sin_addr.s_addr = address;
+#if HAVE_SOCKADDR_IN_SIN_LEN
+    v4.sin_len = sizeof (v4);
+#endif
+    v4.sin_port = htons (listen_port);
+    if (GNUNET_OK !=
+	GNUNET_NETWORK_socket_bind (listen_socket4,
+				    (struct sockaddr *) &v4,
+				    sizeof (v4)))
+    {
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "bind");
+      GNUNET_NETWORK_socket_close (listen_socket4);
+      listen_socket4 = NULL;
+    }
+  }
+  listen_socket6 = GNUNET_NETWORK_socket_create (PF_INET6,
+						SOCK_DGRAM,
+						IPPROTO_UDP);
+  if (NULL != listen_socket6)
+  {
+    struct sockaddr_in6 v6;
+
+    memset (&v6, 0, sizeof (v6));
+    v6.sin6_family = AF_INET6;
+    v6.sin6_addr = address6;
+#if HAVE_SOCKADDR_IN_SIN_LEN
+    v6.sin6_len = sizeof (v6);
+#endif
+    v6.sin6_port = htons (listen_port);
+    if (GNUNET_OK !=
+	GNUNET_NETWORK_socket_bind (listen_socket6,
+				    (struct sockaddr *) &v6,
+				    sizeof (v6)))
+    {
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "bind");
+      GNUNET_NETWORK_socket_close (listen_socket6);
+      listen_socket6 = NULL;
+    }
+  }
+  if ( (NULL == listen_socket4) &&
+       (NULL == listen_socket6) )
+  {
+    GNUNET_GNS_disconnect (gns);
+    gns = NULL;
+    GNUNET_DNSSTUB_stop (dns_stub);
+    dns_stub = NULL;
+    return;
+  }
+  if (NULL != listen_socket4)
+    t4 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
+					listen_socket4,
+					&read_dns4,
+					listen_socket4);
+  if (NULL != listen_socket6)
+    t6 = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
+					listen_socket6,
+					&read_dns6,
+					listen_socket6);
 }
 
 
@@ -765,33 +741,32 @@ int
 main (int argc,
       char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'d', "dns", "IP",
-      gettext_noop ("IP of recursive DNS resolver to use (required)"), 1,
-      &GNUNET_GETOPT_set_string, &dns_ip},
-    {'f', "fcfs", "NAME",
-      gettext_noop ("Authoritative FCFS suffix to use (optional); default: fcfs.zkey.eu"), 1,
-      &GNUNET_GETOPT_set_string, &fcfs_suffix},
-    {'s', "suffix", "SUFFIX",
-      gettext_noop ("Authoritative DNS suffix to use (optional); default: zkey.eu"), 1,
-      &GNUNET_GETOPT_set_string, &dns_suffix},
-    {'p', "port", "UDPPORT",
-      gettext_noop ("UDP port to listen on for inbound DNS requests; default: 53"), 1,
-      &GNUNET_GETOPT_set_uint, &listen_port},
-    {'z', "zone", "PUBLICKEY",
-      gettext_noop ("Public key of the GNS zone to use (overrides default)"), 1,
-      &GNUNET_GETOPT_set_string, &gns_zone_str},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_string ('d',
+                                 "dns",
+                                 "IP",
+                                 gettext_noop ("IP of recursive DNS resolver to use (required)"),
+                                 &dns_ip),
+    GNUNET_GETOPT_option_uint ('p',
+			       "port",
+			       "UDPPORT",
+			       gettext_noop ("UDP port to listen on for inbound DNS requests; default: 2853"),
+			       &listen_port),
     GNUNET_GETOPT_OPTION_END
   };
   int ret;
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv,
-						 &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv,
+                                    &argc, &argv))
     return 2;
-  GNUNET_log_setup ("gnunet-dns2gns", "WARNING", NULL);
+  GNUNET_log_setup ("gnunet-dns2gns",
+                    "WARNING",
+                    NULL);
   ret =
       (GNUNET_OK ==
-       GNUNET_PROGRAM_run (argc, argv, "gnunet-dns2gns",
+       GNUNET_PROGRAM_run (argc, argv,
+                           "gnunet-dns2gns",
                            _("GNUnet DNS-to-GNS proxy (a DNS server)"),
 			   options,
                            &run, NULL)) ? 0 : 1;

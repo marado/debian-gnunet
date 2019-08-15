@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2009, 2010, 2012, 2013 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2010, 2012, 2013 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -108,16 +108,22 @@ struct GNUNET_FS_PublishUblockContext
    * Handle for active datastore operation.
    */
   struct GNUNET_DATASTORE_QueueEntry *qre;
+
+  /**
+   * Task to run continuation asynchronously.
+   */
+  struct GNUNET_SCHEDULER_Task * task;
+
 };
 
 
 /**
- * Continuation of "GNUNET_FS_publish_ublock_".
+ * Continuation of #GNUNET_FS_publish_ublock_().
  *
  * @param cls closure of type "struct GNUNET_FS_PublishUblockContext*"
- * @param success GNUNET_SYSERR on failure (including timeout/queue drop)
- *                GNUNET_NO if content was already there
- *                GNUNET_YES (or other positive value) on success
+ * @param success #GNUNET_SYSERR on failure (including timeout/queue drop)
+ *                #GNUNET_NO if content was already there
+ *                #GNUNET_YES (or other positive value) on success
  * @param min_expiration minimum expiration time required for 0-priority content to be stored
  *                by the datacache at this time, zero for unknown, forever if we have no
  *                space for 0-priority content
@@ -133,6 +139,22 @@ ublock_put_cont (void *cls,
 
   uc->qre = NULL;
   uc->cont (uc->cont_cls, msg);
+  GNUNET_free (uc);
+}
+
+
+/**
+ * Run the continuation.
+ *
+ * @param cls the `struct GNUNET_FS_PublishUblockContext *`
+ */
+static void
+run_cont (void *cls)
+{
+  struct GNUNET_FS_PublishUblockContext *uc = cls;
+
+  uc->task = NULL;
+  uc->cont (uc->cont_cls, NULL);
   GNUNET_free (uc);
 }
 
@@ -202,9 +224,9 @@ GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
   ub_plain = GNUNET_malloc (size);
   kbe = (char *) &ub_plain[1];
   if (NULL != ulabel)
-    memcpy (kbe, ulabel, ulen);
+    GNUNET_memcpy (kbe, ulabel, ulen);
   kbe += ulen;
-  memcpy (kbe, uris, slen);
+  GNUNET_memcpy (kbe, uris, slen);
   kbe += slen;
   GNUNET_free (uris);
   sptr = kbe;
@@ -258,14 +280,28 @@ GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
   uc = GNUNET_new (struct GNUNET_FS_PublishUblockContext);
   uc->cont = cont;
   uc->cont_cls = cont_cls;
-  uc->qre =
-    GNUNET_DATASTORE_put (dsh, 0, &query,
-			  ulen + slen + mdsize + sizeof (struct UBlock),
-			  ub_enc, GNUNET_BLOCK_TYPE_FS_UBLOCK,
-			  bo->content_priority, bo->anonymity_level,
-			  bo->replication_level, bo->expiration_time,
-			  -2, 1, GNUNET_CONSTANTS_SERVICE_TIMEOUT,
-			  &ublock_put_cont, uc);
+  if (NULL != dsh)
+  {
+    uc->qre =
+      GNUNET_DATASTORE_put (dsh,
+                            0,
+                            &query,
+                            ulen + slen + mdsize + sizeof (struct UBlock),
+                            ub_enc,
+                            GNUNET_BLOCK_TYPE_FS_UBLOCK,
+                            bo->content_priority,
+                            bo->anonymity_level,
+                            bo->replication_level,
+                            bo->expiration_time,
+                            -2, 1,
+                            &ublock_put_cont, uc);
+  }
+  else
+  {
+    uc->task = GNUNET_SCHEDULER_add_now (&run_cont,
+                                         uc);
+  }
+  GNUNET_free (ub_enc);
   return uc;
 }
 
@@ -278,6 +314,11 @@ GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
 void
 GNUNET_FS_publish_ublock_cancel_ (struct GNUNET_FS_PublishUblockContext *uc)
 {
-  GNUNET_DATASTORE_cancel (uc->qre);
+  if (NULL != uc->qre)
+    GNUNET_DATASTORE_cancel (uc->qre);
+  if (NULL != uc->task)
+    GNUNET_SCHEDULER_cancel (uc->task);
   GNUNET_free (uc);
 }
+
+/* end of fs_publish_ublock.c */

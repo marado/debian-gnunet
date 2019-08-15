@@ -1,21 +1,21 @@
 /*
  This file is part of GNUnet.
- (C) 2010-2013 Christian Grothoff (and other contributing authors)
+ Copyright (C) 2010-2013 GNUnet e.V.
 
- GNUnet is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published
- by the Free Software Foundation; either version 3, or (at your
- option) any later version.
+ GNUnet is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Affero General Public License as published
+ by the Free Software Foundation, either version 3 of the License,
+ or (at your option) any later version.
 
  GNUnet is distributed in the hope that it will be useful, but
  WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- General Public License for more details.
+ Affero General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with GNUnet; see the file COPYING.  If not, write to the
- Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- Boston, MA 02111-1307, USA.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+     SPDX-License-Identifier: AGPL3.0-or-later
  */
 /**
  * @file ats-tests/gnunet-ats-sim.c
@@ -57,10 +57,12 @@ static int opt_plot;
  */
 static int opt_verbose;
 
-GNUNET_SCHEDULER_TaskIdentifier timeout_task;
+static struct GNUNET_SCHEDULER_Task *timeout_task;
 
-struct Experiment *e;
-struct LoggingHandle *l;
+static struct Experiment *e;
+
+static struct LoggingHandle *l;
+
 
 static void
 evaluate (struct GNUNET_TIME_Relative duration_total)
@@ -79,15 +81,19 @@ evaluate (struct GNUNET_TIME_Relative duration_total)
 
 
   duration = (duration_total.rel_value_us / (1000 * 1000));
+  if (0 == duration)
+    duration = 1;
   for (c_m = 0; c_m < e->num_masters; c_m++)
   {
     mp = &masters_p[c_m];
     fprintf (stderr,
-        _("Master [%u]: sent: %u KiB in %u sec. = %u KiB/s, received: %u KiB in %u sec. = %u KiB/s\n"),
-        mp->no, mp->total_bytes_sent / 1024, duration,
-        (mp->total_bytes_sent / 1024) / duration,
-        mp->total_bytes_received / 1024, duration,
-        (mp->total_bytes_received / 1024) / duration);
+             _("Master [%u]: sent: %u KiB in %u sec. = %u KiB/s, received: %u KiB in %u sec. = %u KiB/s\n"),
+             mp->no, mp->total_bytes_sent / 1024,
+             duration,
+             (mp->total_bytes_sent / 1024) / duration,
+             mp->total_bytes_received / 1024,
+             duration,
+             (mp->total_bytes_received / 1024) / duration);
 
     for (c_s = 0; c_s < e->num_slaves; c_s++)
     {
@@ -125,11 +131,16 @@ evaluate (struct GNUNET_TIME_Relative duration_total)
   }
 }
 
+
 static void
-do_shutdown ()
+do_shutdown (void *cls)
 {
   fprintf (stderr, "Shutdown\n");
-  /* timeout */
+  if (NULL != timeout_task)
+  {
+    GNUNET_SCHEDULER_cancel (timeout_task);
+    timeout_task = NULL;
+  }
   if (NULL != l)
   {
     GNUNET_ATS_TEST_logging_stop (l);
@@ -153,41 +164,42 @@ do_shutdown ()
 
 
 static void
-transport_recv_cb (void *cls,
-                   const struct GNUNET_PeerIdentity * peer,
-                   const struct GNUNET_MessageHeader * message)
+do_timeout (void *cls)
 {
-
+  timeout_task = NULL;
+  GNUNET_SCHEDULER_shutdown ();
 }
 
-static void
-log_request__cb (void *cls, const struct GNUNET_HELLO_Address *address,
-    int address_active, struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-    struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
-    const struct GNUNET_ATS_Information *ats, uint32_t ats_count)
-{
 
+static void
+log_request__cb (void *cls,
+		 const struct GNUNET_HELLO_Address *address,
+		 int address_active,
+		 struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
+		 struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
+		 const struct GNUNET_ATS_Properties *ats)
+{
   if (NULL != l)
   {
     //GNUNET_break (0);
     //GNUNET_ATS_TEST_logging_now (l);
   }
-
 }
 
+
 static void
-experiment_done_cb (struct Experiment *e, struct GNUNET_TIME_Relative duration,int success)
+experiment_done_cb (struct Experiment *e,
+                    struct GNUNET_TIME_Relative duration,
+		    int success)
 {
   if (GNUNET_OK == success)
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Experiment done successful in %s\n",
-        GNUNET_STRINGS_relative_time_to_string (duration, GNUNET_YES));
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Experiment done successful in %s\n",
+                GNUNET_STRINGS_relative_time_to_string (duration,
+                                                        GNUNET_YES));
   else
     GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Experiment failed \n");
-  if (GNUNET_SCHEDULER_NO_TASK != timeout_task)
-  {
-    GNUNET_SCHEDULER_cancel (timeout_task);
-    timeout_task = GNUNET_SCHEDULER_NO_TASK;
-  }
+
   /* Stop logging */
   GNUNET_ATS_TEST_logging_stop (l);
 
@@ -200,33 +212,26 @@ experiment_done_cb (struct Experiment *e, struct GNUNET_TIME_Relative duration,i
   evaluate (duration);
   if (opt_log)
     GNUNET_ATS_TEST_logging_write_to_file(l, opt_exp_file, opt_plot);
-
-  if (NULL != l)
-  {
-    GNUNET_ATS_TEST_logging_stop (l);
-    GNUNET_ATS_TEST_logging_clean_up (l);
-    l = NULL;
-  }
-
-  /* Clean up experiment */
-  GNUNET_ATS_TEST_experimentation_stop (e);
-  e = NULL;
-
-  /* Shutdown topology */
-  GNUNET_ATS_TEST_shutdown_topology ();
+  GNUNET_SCHEDULER_shutdown ();
 }
+
 
 static void
 episode_done_cb (struct Episode *ep)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Episode %u done\n", ep->id);
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+	      "Episode %u done\n",
+	      ep->id);
 }
 
-static void topology_setup_done (void *cls,
-    struct BenchmarkPeer *masters,
-    struct BenchmarkPeer *slaves)
+
+static void
+topology_setup_done (void *cls,
+		     struct BenchmarkPeer *masters,
+		     struct BenchmarkPeer *slaves)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Topology setup complete!\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+	      "Topology setup complete!\n");
 
   masters_p = masters;
   slaves_p = slaves;
@@ -236,7 +241,9 @@ static void topology_setup_done (void *cls,
       masters_p,
       e->num_masters, e->num_slaves,
       opt_verbose);
-  GNUNET_ATS_TEST_experimentation_run (e, &episode_done_cb, &experiment_done_cb);
+  GNUNET_ATS_TEST_experimentation_run (e,
+				       &episode_done_cb,
+				       &experiment_done_cb);
 /*
   GNUNET_ATS_TEST_generate_preferences_start(&masters[0],&masters[0].partners[0],
       GNUNET_ATS_TEST_TG_CONSTANT, 1, 1, GNUNET_TIME_UNIT_SECONDS,
@@ -309,9 +316,14 @@ static void topology_setup_done (void *cls,
   }
 #endif
 
-  timeout_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_add (GNUNET_TIME_UNIT_MINUTES,
-      e->max_duration), &do_shutdown, NULL);
+  timeout_task
+    = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_add (GNUNET_TIME_UNIT_MINUTES,
+                                                              e->max_duration),
+                                    &do_timeout,
+                                    NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
 }
+
 
 static void
 parse_args (int argc, char *argv[])
@@ -325,6 +337,7 @@ parse_args (int argc, char *argv[])
   {
     if ((c < (argc - 1)) && (0 == strcmp (argv[c], "-e")))
     {
+      GNUNET_free_non_null (opt_exp_file);
       opt_exp_file = GNUNET_strdup ( argv[c + 1]);
     }
     if (0 == strcmp (argv[c], "-l"))
@@ -341,6 +354,7 @@ parse_args (int argc, char *argv[])
     }
   }
 }
+
 
 int
 main (int argc, char *argv[])
@@ -374,7 +388,6 @@ main (int argc, char *argv[])
       GNUNET_NO,
       &topology_setup_done,
       NULL,
-      &transport_recv_cb,
       &log_request__cb);
   GNUNET_free (opt_exp_file);
   return 0;

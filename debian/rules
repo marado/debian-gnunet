@@ -8,7 +8,7 @@ DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 	dh ${@} --with autoreconf
 
 override_dh_auto_configure-arch:
-	dh_auto_configure -- --disable-rpath --enable-ipv6 --with-microhttpd=yes --with-nssdir=/lib/$(DEB_HOST_MULTIARCH) $(shell dpkg-buildflags --export=configure)
+	dh_auto_configure -- --disable-rpath --with-microhttpd=yes $(shell dpkg-buildflags --export=configure)
 
 override_dh_auto_configure-indep:
 
@@ -27,13 +27,11 @@ override_dh_auto_install-arch:
 	# Remove gnunet-download-manager.scm extension to match the manpage name
 	mv debian/tmp/usr/bin/gnunet-download-manager.scm \
 		debian/tmp/usr/bin/gnunet-download-manager
-	mv debian/tmp/usr/bin/gnunet-gns-import.sh \
-		debian/tmp/usr/bin/gnunet-gns-import
 	
 	# Removing useless files
 	rm -f debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/*.la \
 		debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/*.la \
-		debian/tmp/lib/$(DEB_HOST_MULTIARCH)/*.la \
+		debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/nss/*.la \
 		debian/tmp/usr/share/doc/gnunet/COPYING \
 		debian/tmp/usr/bin/gnunet-service-template \
 		debian/tmp/usr/bin/gnunet-template \
@@ -44,9 +42,9 @@ override_dh_auto_install-indep:
 override_dh_install-arch: debian/gnunet.init
 	dh_install -a --fail-missing
 	dh_link -pgnunet-dev \
-		lib/$(DEB_HOST_MULTIARCH)/libnss_gns.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns.so \
-		lib/$(DEB_HOST_MULTIARCH)/libnss_gns4.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns4.so \
-		lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so
+		usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/nss/libnss_gns.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns.so \
+		usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/nss/libnss_gns4.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns4.so \
+		usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/nss/libnss_gns6.so.2 usr/lib/$(DEB_HOST_MULTIARCH)/libnss_gns6.so
 
 override_dh_strip:
 	dh_strip --dbgsym-migration='gnunet-dbg (<< 0.10.1-5~)'

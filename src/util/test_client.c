@@ -1,190 +1,195 @@
 /*
      This file is part of GNUnet.
-     (C) 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2016 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file util/test_client.c
  * @brief tests for client.c
+ * @author Christian Grothoff
  */
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
+static int global_ret;
 
-#define PORT 14325
-
-#define MYNAME "test_client"
-
-static struct GNUNET_CLIENT_Connection *client;
-
-static struct GNUNET_SERVER_Handle *server;
-
-static struct GNUNET_CONFIGURATION_Handle *cfg;
+static struct GNUNET_MQ_Handle *client_mq;
 
 #define MY_TYPE 130
-
-struct CopyContext
-{
-  struct GNUNET_SERVER_Client *client;
-  struct GNUNET_MessageHeader *cpy;
-};
-
-static size_t
-copy_msg (void *cls, size_t size, void *buf)
-{
-  struct CopyContext *ctx = cls;
-  struct GNUNET_MessageHeader *cpy = ctx->cpy;
-
-  GNUNET_assert (sizeof (struct GNUNET_MessageHeader) == ntohs (cpy->size));
-  GNUNET_assert (size >= ntohs (cpy->size));
-  memcpy (buf, cpy, ntohs (cpy->size));
-  GNUNET_SERVER_receive_done (ctx->client, GNUNET_OK);
-  GNUNET_free (cpy);
-  GNUNET_free (ctx);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Message bounced back to client\n");
-  return sizeof (struct GNUNET_MessageHeader);
-}
 
 
 /**
  * Callback that just bounces the message back to the sender.
  */
 static void
-echo_cb (void *cls, struct GNUNET_SERVER_Client *client,
-         const struct GNUNET_MessageHeader *message)
+handle_echo (void *cls,
+	     const struct GNUNET_MessageHeader *message)
 {
-  struct CopyContext *cc;
-  struct GNUNET_MessageHeader *cpy;
+  struct GNUNET_SERVICE_Client *c = cls;
+  struct GNUNET_MQ_Handle *mq = GNUNET_SERVICE_client_get_mq (c);
+  struct GNUNET_MQ_Envelope *env;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Receiving message from client, bouncing back\n");
-  GNUNET_assert (sizeof (struct GNUNET_MessageHeader) == ntohs (message->size));
-  cc = GNUNET_new (struct CopyContext);
-  cc->client = client;
-  cpy = GNUNET_malloc (ntohs (message->size));
-  memcpy (cpy, message, ntohs (message->size));
-  cc->cpy = cpy;
-  GNUNET_assert (NULL !=
-                 GNUNET_SERVER_notify_transmit_ready (client,
-                                                      ntohs (message->size),
-                                                      GNUNET_TIME_UNIT_SECONDS,
-                                                      &copy_msg, cc));
-}
-
-
-static struct GNUNET_SERVER_MessageHandler handlers[] = {
-  {&echo_cb, NULL, MY_TYPE, sizeof (struct GNUNET_MessageHeader)},
-  {NULL, NULL, 0, 0}
-};
-
-
-static void
-recv_bounce (void *cls, const struct GNUNET_MessageHeader *got)
-{
-  int *ok = cls;
-  struct GNUNET_MessageHeader msg;
-
-  GNUNET_assert (got != NULL);  /* timeout */
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Receiving bounce, checking content\n");
-  msg.type = htons (MY_TYPE);
-  msg.size = htons (sizeof (struct GNUNET_MessageHeader));
-  GNUNET_assert (0 == memcmp (got, &msg, sizeof (struct GNUNET_MessageHeader)));
-  GNUNET_CLIENT_disconnect (client);
-  client = NULL;
-  GNUNET_SERVER_destroy (server);
-  server = NULL;
-  *ok = 0;
-}
-
-
-static size_t
-make_msg (void *cls, size_t size, void *buf)
-{
-  struct GNUNET_MessageHeader *msg = buf;
-
-  GNUNET_assert (size >= sizeof (struct GNUNET_MessageHeader));
-  msg->type = htons (MY_TYPE);
-  msg->size = htons (sizeof (struct GNUNET_MessageHeader));
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Creating message for transmission\n");
-  return sizeof (struct GNUNET_MessageHeader);
+  env = GNUNET_MQ_msg_copy (message);
+  GNUNET_MQ_send (mq,
+		  env);
+  GNUNET_SERVICE_client_continue (c);
 }
 
 
 static void
-task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+handle_bounce (void *cls,
+               const struct GNUNET_MessageHeader *got)
 {
-  struct sockaddr_in sa;
-  struct sockaddr *sap[2];
-  socklen_t slens[2];
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Receiving bounce, checking content\n");
+  GNUNET_assert (NULL != got);
+  global_ret = 2;
+  GNUNET_MQ_destroy (client_mq);
+  client_mq = NULL;
+}
+
+
+/**
+ * Generic error handler, called with the appropriate error code and
+ * the same closure specified at the creation of the message queue.
+ * Not every message queue implementation supports an error handler.
+ *
+ * @param cls closure with the `struct GNUNET_STATISTICS_Handle *`
+ * @param error error code
+ */
+static void
+mq_error_handler (void *cls,
+                  enum GNUNET_MQ_Error error)
+{
+  GNUNET_assert (0); /* should never happen */
+}
+
+
+static void
+task (void *cls,
+      const struct GNUNET_CONFIGURATION_Handle *cfg,
+      struct GNUNET_SERVICE_Handle *sh)
+{
+  struct GNUNET_MQ_MessageHandler chandlers[] = {
+    GNUNET_MQ_hd_fixed_size (bounce,
+                             MY_TYPE,
+                             struct GNUNET_MessageHeader,
+                             cls),
+    GNUNET_MQ_handler_end ()
+  };
+  struct GNUNET_MQ_Envelope *env;
+  struct GNUNET_MessageHeader *msg;
 
   /* test that ill-configured client fails instantly */
-  GNUNET_assert (NULL == GNUNET_CLIENT_connect ("invalid-service", cfg));
+  GNUNET_assert (NULL ==
+		 GNUNET_CLIENT_connect (cfg,
+					"invalid-service",
+					NULL,
+					&mq_error_handler,
+					NULL));
+  client_mq = GNUNET_CLIENT_connect (cfg,
+				     "test_client",
+				     chandlers,
+				     &mq_error_handler,
+				     NULL);
+  GNUNET_assert (NULL != client_mq);
+  env = GNUNET_MQ_msg (msg,
+                       MY_TYPE);
+  GNUNET_MQ_send (client_mq,
+                  env);
+}
 
-  /* test IPC between client and server */
-  sap[0] = (struct sockaddr *) &sa;
-  slens[0] = sizeof (sa);
-  sap[1] = NULL;
-  slens[1] = 0;
-  memset (&sa, 0, sizeof (sa));
-#if HAVE_SOCKADDR_IN_SIN_LEN
-  sa.sin_len = sizeof (sa);
-#endif
-  sa.sin_family = AF_INET;
-  sa.sin_port = htons (PORT);
-  server =
-      GNUNET_SERVER_create (NULL, NULL, sap, slens,
-                            GNUNET_TIME_relative_multiply
-                            (GNUNET_TIME_UNIT_MILLISECONDS, 10000), GNUNET_NO);
-  GNUNET_assert (server != NULL);
-  handlers[0].callback_cls = cls;
-  handlers[1].callback_cls = cls;
-  GNUNET_SERVER_add_handlers (server, handlers);
-  client = GNUNET_CLIENT_connect (MYNAME, cfg);
-  GNUNET_assert (client != NULL);
-  GNUNET_assert (NULL !=
-                 GNUNET_CLIENT_notify_transmit_ready (client,
-                                                      sizeof (struct
-                                                              GNUNET_MessageHeader),
-                                                      GNUNET_TIME_UNIT_SECONDS,
-                                                      GNUNET_NO, &make_msg,
-                                                      NULL));
-  GNUNET_CLIENT_receive (client, &recv_bounce, cls,
-                         GNUNET_TIME_relative_multiply
-                         (GNUNET_TIME_UNIT_MILLISECONDS, 10000));
+
+/**
+ * Function called when the client connects to the service.
+ *
+ * @param cls the name of the service
+ * @param c connecting client
+ * @param mq message queue to talk to the client
+ * @return @a c
+ */
+static void *
+connect_cb (void *cls,
+	    struct GNUNET_SERVICE_Client *c,
+	    struct GNUNET_MQ_Handle *mq)
+{
+  return c;
+}
+
+
+/**
+ * Function called when the client disconnects.
+ *
+ * @param cls our service name
+ * @param c disconnecting client
+ * @param internal_cls must match @a c
+ */ 
+static void
+disconnect_cb (void *cls,
+	       struct GNUNET_SERVICE_Client *c,
+	       void *internal_cls)
+{
+  if (2 == global_ret)
+  {
+    GNUNET_SCHEDULER_shutdown ();
+    global_ret = 0;
+  }
 }
 
 
 int
-main (int argc, char *argv[])
+main (int argc,
+      char *argv[])
 {
-  int ok;
+  struct GNUNET_MQ_MessageHandler shandlers[] = {
+    GNUNET_MQ_hd_fixed_size (echo,
+                             MY_TYPE,
+                             struct GNUNET_MessageHeader,
+                             NULL),
+    GNUNET_MQ_handler_end ()
+  };
+  char * test_argv[] = {
+    (char *) "test_client",
+    "-c",
+    "test_client_data.conf",
+    NULL
+  };
 
   GNUNET_log_setup ("test_client",
                     "WARNING",
                     NULL);
-  cfg = GNUNET_CONFIGURATION_create ();
-  GNUNET_CONFIGURATION_set_value_number (cfg, MYNAME, "PORT", PORT);
-  GNUNET_CONFIGURATION_set_value_string (cfg, MYNAME, "HOSTNAME", "localhost");
-  GNUNET_CONFIGURATION_set_value_string (cfg, "resolver", "HOSTNAME",
-                                         "localhost");
-  ok = 1;
-  GNUNET_SCHEDULER_run (&task, &ok);
-  GNUNET_CONFIGURATION_destroy (cfg);
-  return ok;
+  if (0 != strstr (argv[0],
+		   "unix"))
+    test_argv[2] = "test_client_unix.conf";
+  global_ret = 1;
+  if (0 !=
+      GNUNET_SERVICE_run_ (3,
+			   test_argv,
+			   "test_client",
+			   GNUNET_SERVICE_OPTION_NONE,
+			   &task,
+			   &connect_cb,
+			   &disconnect_cb,
+			   NULL,
+			   shandlers))
+    global_ret = 3;
+  return global_ret;
 }
 
 /* end of test_client.c */

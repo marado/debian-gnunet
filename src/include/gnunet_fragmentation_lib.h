@@ -1,28 +1,33 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2011 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009, 2011, 2015 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
- * @file include/gnunet_fragmentation_lib.h
- * @brief library to help fragment messages
  * @author Christian Grothoff
  *
- * TODO: consider additional flow-control for sending from
+ * @file
+ * Library to help fragment messages
+ *
+ * @defgroup fragmentation  Fragmentation library
+ * Library to help fragment messages
+ * @{
+ *
+ * @todo Consider additional flow-control for sending from
  *       fragmentation based on continuations.
  */
 
@@ -51,24 +56,24 @@ struct GNUNET_FRAGMENT_Context;
 /**
  * Function that is called with messages created by the fragmentation
  * module.  In the case of the 'proc' callback of the
- * GNUNET_FRAGMENT_context_create function, this function must
- * eventually call 'GNUNET_FRAGMENT_context_transmission_done'.
+ * #GNUNET_FRAGMENT_context_create() function, this function must
+ * eventually call #GNUNET_FRAGMENT_context_transmission_done().
  *
  * @param cls closure
  * @param msg the message that was created
  */
-typedef void (*GNUNET_FRAGMENT_MessageProcessor) (void *cls,
-                                                  const struct
-                                                  GNUNET_MessageHeader * msg);
+typedef void
+(*GNUNET_FRAGMENT_MessageProcessor) (void *cls,
+                                     const struct GNUNET_MessageHeader *msg);
 
 
 /**
  * Create a fragmentation context for the given message.
- * Fragments the message into fragments of size "mtu" or
- * less.  Calls 'proc' on each un-acknowledged fragment,
- * using both the expected 'delay' between messages and
- * acknowledgements and the given 'tracker' to guide the
- * frequency of calls to 'proc'.
+ * Fragments the message into fragments of size @a mtu or
+ * less.  Calls @a proc on each un-acknowledged fragment,
+ * using both the expected @a msg_delay between messages and
+ * acknowledgements and the given @a tracker to guide the
+ * frequency of calls to @a proc.
  *
  * @param stats statistics context
  * @param mtu the maximum message size for each fragment
@@ -110,10 +115,10 @@ GNUNET_FRAGMENT_context_transmission_done (struct GNUNET_FRAGMENT_Context *fc);
  *
  * @param fc fragmentation context
  * @param msg acknowledgement message we received
- * @return GNUNET_OK if this ack completes the work of the 'fc'
+ * @return #GNUNET_OK if this ack completes the work of the 'fc'
  *                   (all fragments have been received);
- *         GNUNET_NO if more messages are pending
- *         GNUNET_SYSERR if this ack is not valid for this fc
+ *         #GNUNET_NO if more messages are pending
+ *         #GNUNET_SYSERR if this ack is not valid for this fc
  */
 int
 GNUNET_FRAGMENT_process_ack (struct GNUNET_FRAGMENT_Context *fc,
@@ -137,6 +142,16 @@ GNUNET_FRAGMENT_context_destroy (struct GNUNET_FRAGMENT_Context *fc,
 
 
 /**
+ * Convert an ACK message to a printable format suitable for logging.
+ *
+ * @param ack message to print
+ * @return ack in human-readable format
+ */
+const char *
+GNUNET_FRAGMENT_print_ack (const struct GNUNET_MessageHeader *ack);
+
+
+/**
  * Defragmentation context (one per connection).
  */
 struct GNUNET_DEFRAGMENT_Context;
@@ -152,9 +167,10 @@ struct GNUNET_DEFRAGMENT_Context;
  * @param id unique message ID (modulo collisions)
  * @param msg the message that was created
  */
-typedef void (*GNUNET_DEFRAGMENT_AckProcessor) (void *cls, uint32_t id,
-                                                const struct
-                                                GNUNET_MessageHeader * msg);
+typedef void
+(*GNUNET_DEFRAGMENT_AckProcessor) (void *cls,
+                                   uint32_t id,
+                                   const struct GNUNET_MessageHeader *msg);
 
 
 /**
@@ -164,7 +180,7 @@ typedef void (*GNUNET_DEFRAGMENT_AckProcessor) (void *cls, uint32_t id,
  * @param mtu the maximum message size for each fragment
  * @param num_msgs how many fragmented messages
  *                 to we defragment at most at the same time?
- * @param cls closure for proc and ackp
+ * @param cls closure for @a proc and @a ackp
  * @param proc function to call with defragmented messages
  * @param ackp function to call with acknowledgements (to send
  *             back to the other side)
@@ -172,7 +188,8 @@ typedef void (*GNUNET_DEFRAGMENT_AckProcessor) (void *cls, uint32_t id,
  */
 struct GNUNET_DEFRAGMENT_Context *
 GNUNET_DEFRAGMENT_context_create (struct GNUNET_STATISTICS_Handle *stats,
-                                  uint16_t mtu, unsigned int num_msgs,
+                                  uint16_t mtu,
+                                  unsigned int num_msgs,
                                   void *cls,
                                   GNUNET_FRAGMENT_MessageProcessor proc,
                                   GNUNET_DEFRAGMENT_AckProcessor ackp);
@@ -192,11 +209,14 @@ GNUNET_DEFRAGMENT_context_destroy (struct GNUNET_DEFRAGMENT_Context *dc);
  *
  * @param dc the context
  * @param msg the message that was received
- * @return GNUNET_OK on success, GNUNET_NO if this was a duplicate, GNUNET_SYSERR on error
+ * @return #GNUNET_OK on success,
+ *         #GNUNET_NO if this was a duplicate,
+ *         #GNUNET_SYSERR on error
  */
 int
 GNUNET_DEFRAGMENT_process_fragment (struct GNUNET_DEFRAGMENT_Context *dc,
                                     const struct GNUNET_MessageHeader *msg);
+
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */
@@ -206,5 +226,6 @@ GNUNET_DEFRAGMENT_process_fragment (struct GNUNET_DEFRAGMENT_Context *dc,
 }
 #endif
 
-/* end of gnunet_fragmentation_lib.h */
 #endif
+
+/** @} */  /* end of group */

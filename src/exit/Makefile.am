@@ -1,3 +1,4 @@
+# This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 if MINGW
@@ -21,7 +22,7 @@ dist_pkgcfg_DATA = \
 if LINUX
 EXITBIN = gnunet-helper-exit
 install-exec-hook:
-	$(top_srcdir)/src/exit/install-exit-helper.sh $(libexecdir) $(SUDO_BINARY) || true
+	$(top_srcdir)/src/exit/install-exit-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
 else
 install-exec-hook:
 endif
@@ -29,11 +30,11 @@ endif
 
 libexec_PROGRAMS = \
   gnunet-daemon-exit \
-  $(EXITBIN) 
+  $(EXITBIN)
 
 if MINGW
   gnunet_helper_exit_LDFLAGS = \
-    -no-undefined -Wl,--export-all-symbols 
+    -no-undefined -Wl,--export-all-symbols
 
   gnunet_helper_exit_LDADD = \
     -lsetupapi -lnewdev -lshell32 -liconv -lstdc++ \
@@ -46,13 +47,11 @@ else
    gnunet-helper-exit.c
 endif
 gnunet_daemon_exit_SOURCES = \
- gnunet-daemon-exit.c exit.h 
+ gnunet-daemon-exit.c exit.h
 gnunet_daemon_exit_LDADD = \
-  $(top_builddir)/src/dns/libgnunetdnsstub.la \
   $(top_builddir)/src/dht/libgnunetdht.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/tun/libgnunettun.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/mesh/libgnunetmesh.la \
+  $(top_builddir)/src/cadet/libgnunetcadet.la \
   $(top_builddir)/src/regex/libgnunetregex.la \
   $(GN_LIBINTL)

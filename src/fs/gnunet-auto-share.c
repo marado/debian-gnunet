@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2001--2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2001--2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file fs/gnunet-auto-share.c
@@ -29,9 +29,9 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define MIN_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_HOURS, 4)
+#define MAX_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_HOURS, 4)
 
-#define MAX_FREQUENCY GNUNET_TIME_UNIT_MINUTES
+#define MIN_DELAY GNUNET_TIME_UNIT_MINUTES
 
 
 /**
@@ -72,7 +72,7 @@ static int ret;
 /**
  * Are we running 'verbosely'?
  */
-static int verbose;
+static unsigned int verbose;
 
 /**
  * Configuration to use.
@@ -95,14 +95,9 @@ static int disable_extractor;
 static int do_disable_creation_time;
 
 /**
- * Handle for the 'shutdown' task.
- */
-static GNUNET_SCHEDULER_TaskIdentifier kill_task;
-
-/**
  * Handle for the main task that does scanning and working.
  */
-static GNUNET_SCHEDULER_TaskIdentifier run_task;
+static struct GNUNET_SCHEDULER_Task *run_task;
 
 /**
  * Anonymity level option to use for publishing.
@@ -135,13 +130,13 @@ static struct WorkItem *work_head;
 static struct WorkItem *work_tail;
 
 /**
- * Map from the hash of the filename (!) to a 'struct WorkItem'
+ * Map from the hash of the filename (!) to a `struct WorkItem`
  * that was finished.
  */
 static struct GNUNET_CONTAINER_MultiHashMap *work_finished;
 
 /**
- * Set to GNUNET_YES if we are shutting down.
+ * Set to #GNUNET_YES if we are shutting down.
  */
 static int do_shutdown;
 
@@ -180,7 +175,7 @@ get_state_file ()
 
 
 /**
- * Load the set of 'work_finished' items from disk.
+ * Load the set of #work_finished items from disk.
  */
 static void
 load_state ()
@@ -219,10 +214,11 @@ load_state ()
     GNUNET_CRYPTO_hash (wi->filename,
 			strlen (wi->filename),
 			&id);
-    GNUNET_CONTAINER_multihashmap_put (work_finished,
-				       &id,
-				       wi,
-				       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+    GNUNET_break (GNUNET_OK ==
+                  GNUNET_CONTAINER_multihashmap_put (work_finished,
+                                                     &id,
+                                                     wi,
+                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   }
   if (GNUNET_OK ==
       GNUNET_BIO_read_close (rh, &emsg))
@@ -240,12 +236,12 @@ load_state ()
 
 
 /**
- * Write work item from the work_finished map to the given write handle.
+ * Write work item from the #work_finished map to the given write handle.
  *
- * @param cls the 'struct GNUNET_BIO_WriteHandle*'
+ * @param cls the `struct GNUNET_BIO_WriteHandle *`
  * @param key key of the item in the map (unused)
- * @param value the 'struct WorkItem' to write
- * @return GNUNET_OK to continue to iterate (if write worked)
+ * @param value the `struct WorkItem` to write
+ * @return #GNUNET_OK to continue to iterate (if write worked)
  */
 static int
 write_item (void *cls,
@@ -271,7 +267,7 @@ write_item (void *cls,
 
 
 /**
- * Save the set of 'work_finished' items on disk.
+ * Save the set of #work_finished items on disk.
  */
 static void
 save_state ()
@@ -316,22 +312,21 @@ save_state ()
  * Task run on shutdown.  Serializes our current state to disk.
  *
  * @param cls closure, unused
- * @param tc scheduler context, unused
  */
 static void
-do_stop_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_stop_task (void *cls)
 {
-  kill_task = GNUNET_SCHEDULER_NO_TASK;
   do_shutdown = GNUNET_YES;
   if (NULL != publish_proc)
   {
-    GNUNET_OS_process_kill (publish_proc, SIGKILL);
+    GNUNET_OS_process_kill (publish_proc,
+			    SIGKILL);
     return;
   }
-  if (GNUNET_SCHEDULER_NO_TASK != run_task)
+  if (NULL != run_task)
   {
     GNUNET_SCHEDULER_cancel (run_task);
-    run_task = GNUNET_SCHEDULER_NO_TASK;
+    run_task = NULL;
   }
 }
 
@@ -347,11 +342,10 @@ schedule_next_task (void);
  * Task triggered whenever we receive a SIGCHLD (child
  * process died).
  *
- * @param cls the 'struct WorkItem' we were working on
- * @param tc context
+ * @param cls the `struct WorkItem` we were working on
  */
 static void
-maint_child_death (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+maint_child_death (void *cls)
 {
   struct WorkItem *wi = cls;
   struct GNUNET_HashCode key;
@@ -360,18 +354,24 @@ maint_child_death (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   int ret;
   char c;
   const struct GNUNET_DISK_FileHandle *pr;
+  const struct GNUNET_SCHEDULER_TaskContext *tc;
 
-
-  run_task = GNUNET_SCHEDULER_NO_TASK;
-  pr = GNUNET_DISK_pipe_handle (sigpipe, GNUNET_DISK_PIPE_END_READ);
+  run_task = NULL;
+  pr = GNUNET_DISK_pipe_handle (sigpipe,
+				GNUNET_DISK_PIPE_END_READ);
+  tc = GNUNET_SCHEDULER_get_task_context ();
   if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_READ_READY))
   {
-    /* shutdown scheduled us, ignore! */
+    /* shutdown scheduled us, someone else will kill child,
+       we should just try again */
     run_task =
       GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
-				      pr, &maint_child_death, wi);
+				      pr,
+				      &maint_child_death, wi);
     return;
   }
+  /* consume the signal */
+  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof (c)));
 
   ret = GNUNET_OS_process_status (publish_proc,
 				  &type,
@@ -379,14 +379,20 @@ maint_child_death (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   GNUNET_assert (GNUNET_SYSERR != ret);
   if (GNUNET_NO == ret)
   {
+    /* process still running? Then where did the SIGCHLD come from?
+       Well, let's declare it spurious (kernel bug?) and keep rolling.
+    */
     GNUNET_break (0);
-    GNUNET_OS_process_kill (publish_proc, SIGKILL);
-    type = GNUNET_OS_PROCESS_SIGNALED;
+    run_task =
+      GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
+				      pr,
+				      &maint_child_death, wi);
+    return;
   }
+  GNUNET_assert (GNUNET_OK == ret);
+
   GNUNET_OS_process_destroy (publish_proc);
   publish_proc = NULL;
-  /* consume the signal */
-  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof (c)));
 
   if (GNUNET_YES == do_shutdown)
   {
@@ -403,10 +409,11 @@ maint_child_death (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_CRYPTO_hash (wi->filename,
 			strlen (wi->filename),
 			&key);
-    GNUNET_CONTAINER_multihashmap_put (work_finished,
-				       &key,
-				       wi,
-				       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+    GNUNET_break (GNUNET_OK ==
+                  GNUNET_CONTAINER_multihashmap_put (work_finished,
+                                                     &key,
+                                                     wi,
+                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   }
   else
   {
@@ -431,7 +438,8 @@ sighandler_child_death ()
 
   GNUNET_break (1 ==
 		GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle
-					(sigpipe, GNUNET_DISK_PIPE_END_WRITE),
+					(sigpipe,
+					 GNUNET_DISK_PIPE_END_WRITE),
 					&c, sizeof (c)));
   errno = old_errno;		/* restore errno */
 }
@@ -441,11 +449,9 @@ sighandler_child_death ()
  * Function called to process work items.
  *
  * @param cls closure, NULL
- * @param tc scheduler context (unused)
  */
 static void
-work (void *cls,
-      const struct GNUNET_SCHEDULER_TaskContext *tc)
+work (void *cls)
 {
   static char *argv[14];
   static char anon_level[20];
@@ -455,7 +461,7 @@ work (void *cls,
   const struct GNUNET_DISK_FileHandle *pr;
   int argc;
 
-  run_task = GNUNET_SCHEDULER_NO_TASK;
+  run_task = NULL;
   wi = work_head;
   GNUNET_CONTAINER_DLL_remove (work_head,
 			       work_tail,
@@ -487,6 +493,7 @@ work (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
 	      _("Publishing `%s'\n"),
 	      wi->filename);
+  GNUNET_assert (NULL == publish_proc);
   publish_proc = GNUNET_OS_start_process_vap (GNUNET_YES,
                                               0, NULL, NULL, NULL,
 					      "gnunet-publish",
@@ -504,10 +511,12 @@ work (void *cls,
 					     NULL);
     return;
   }
-  pr = GNUNET_DISK_pipe_handle (sigpipe, GNUNET_DISK_PIPE_END_READ);
+  pr = GNUNET_DISK_pipe_handle (sigpipe,
+				GNUNET_DISK_PIPE_END_READ);
   run_task =
     GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
-				    pr, &maint_child_death, wi);
+				    pr,
+				    &maint_child_death, wi);
 }
 
 
@@ -517,7 +526,7 @@ work (void *cls,
  *
  * @param cls where to store the unique ID we are computing
  * @param filename file to scan
- * @return GNUNET_OK (always)
+ * @return #GNUNET_OK (always)
  */
 static int
 determine_id (void *cls,
@@ -530,10 +539,14 @@ determine_id (void *cls,
 
   if (0 != STAT (filename, &sbuf))
   {
-    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "stat", filename);
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
+			      "stat",
+			      filename);
     return GNUNET_OK;
   }
-  GNUNET_CRYPTO_hash (filename, strlen (filename), &fx[0]);
+  GNUNET_CRYPTO_hash (filename,
+		      strlen (filename),
+		      &fx[0]);
   if (!S_ISDIR (sbuf.st_mode))
   {
     uint64_t fattr[2];
@@ -541,21 +554,29 @@ determine_id (void *cls,
     fattr[0] = GNUNET_htonll (sbuf.st_size);
     fattr[0] = GNUNET_htonll (sbuf.st_mtime);
 
-    GNUNET_CRYPTO_hash (fattr, sizeof (fattr), &fx[1]);
+    GNUNET_CRYPTO_hash (fattr,
+			sizeof (fattr),
+			&fx[1]);
   }
   else
   {
-    memset (&fx[1], 1, sizeof (struct GNUNET_HashCode));
+    memset (&fx[1],
+	    1,
+	    sizeof (struct GNUNET_HashCode));
     GNUNET_DISK_directory_scan (filename,
 				&determine_id,
 				&fx[1]);
   }
   /* use hash here to make hierarchical structure distinct from
      all files on the same level */
-  GNUNET_CRYPTO_hash (fx, sizeof (fx), &ft);
+  GNUNET_CRYPTO_hash (fx,
+		      sizeof (fx),
+		      &ft);
   /* use XOR here so that order of the files in the directory
      does not matter! */
-  GNUNET_CRYPTO_hash_xor (&ft, id, id);
+  GNUNET_CRYPTO_hash_xor (&ft,
+			  id,
+			  id);
   return GNUNET_OK;
 }
 
@@ -567,7 +588,7 @@ determine_id (void *cls,
  *
  * @param cls closure, NULL
  * @param filename complete filename (absolute path)
- * @return GNUNET_OK to continue to iterate, GNUNET_SYSERR during shutdown
+ * @return #GNUNET_OK to continue to iterate, #GNUNET_SYSERR during shutdown
  */
 static int
 add_file (void *cls,
@@ -622,12 +643,11 @@ add_file (void *cls,
  * Periodically run task to update our view of the directory to share.
  *
  * @param cls NULL
- * @param tc scheduler context, unused
  */
 static void
-scan (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+scan (void *cls)
 {
-  run_task = GNUNET_SCHEDULER_NO_TASK;
+  run_task = NULL;
   start_time = GNUNET_TIME_absolute_get ();
   (void) GNUNET_DISK_directory_scan (dir_name,
 				     &add_file,
@@ -646,23 +666,25 @@ schedule_next_task ()
 
   if (GNUNET_YES == do_shutdown)
     return;
+  GNUNET_assert (NULL == run_task);
   if (NULL == work_head)
   {
     /* delay by at most 4h, at least 1s, and otherwise in between depending
        on how long it took to scan */
     delay = GNUNET_TIME_absolute_get_duration (start_time);
-    delay = GNUNET_TIME_relative_min (MIN_FREQUENCY,
-				      GNUNET_TIME_relative_multiply (delay,
-								     100));
+    delay = GNUNET_TIME_relative_saturating_multiply (delay, 100);
+    delay = GNUNET_TIME_relative_min (delay,
+                                      MAX_DELAY);
     delay = GNUNET_TIME_relative_max (delay,
-				      MAX_FREQUENCY);
+                                      MIN_DELAY);
     run_task = GNUNET_SCHEDULER_add_delayed (delay,
 					     &scan,
 					     NULL);
   }
   else
   {
-    run_task = GNUNET_SCHEDULER_add_now (&work, NULL);
+    run_task = GNUNET_SCHEDULER_add_now (&work,
+					 NULL);
   }
 }
 
@@ -676,12 +698,17 @@ schedule_next_task ()
  * @param c configuration
  */
 static void
-run (void *cls, char *const *args, const char *cfgfile,
+run (void *cls,
+     char *const *args,
+     const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   /* check arguments */
-  if ((args[0] == NULL) || (args[1] != NULL) ||
-      (GNUNET_YES != GNUNET_DISK_directory_test (args[0], GNUNET_YES)))
+  if ( (NULL == args[0]) ||
+       (NULL != args[1]) ||
+       (GNUNET_YES !=
+	GNUNET_DISK_directory_test (args[0],
+				    GNUNET_YES)) )
   {
     printf (_("You must specify one and only one directory name for automatic publication.\n"));
     ret = -1;
@@ -690,14 +717,14 @@ run (void *cls, char *const *args, const char *cfgfile,
   cfg_filename = GNUNET_strdup (cfgfile);
   cfg = c;
   dir_name = args[0];
-  work_finished = GNUNET_CONTAINER_multihashmap_create (1024, GNUNET_NO);
+  work_finished = GNUNET_CONTAINER_multihashmap_create (1024,
+							GNUNET_NO);
   load_state ();
   run_task = GNUNET_SCHEDULER_add_with_priority (GNUNET_SCHEDULER_PRIORITY_IDLE,
-						 &scan, NULL);
-
-  kill_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL, &do_stop_task,
-                                    NULL);
+						 &scan,
+						 NULL);
+  GNUNET_SCHEDULER_add_shutdown (&do_stop_task,
+				 NULL);
 }
 
 
@@ -706,8 +733,8 @@ run (void *cls, char *const *args, const char *cfgfile,
  *
  * @param cls NULL (unused)
  * @param key key of the item in the map (unused)
- * @param value the 'struct WorkItem' to free
- * @return GNUNET_OK to continue to iterate
+ * @param value the `struct WorkItem` to free
+ * @return #GNUNET_OK to continue to iterate
  */
 static int
 free_item (void *cls,
@@ -732,40 +759,56 @@ free_item (void *cls,
 int
 main (int argc, char *const *argv)
 {
-  static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'a', "anonymity", "LEVEL",
-     gettext_noop ("set the desired LEVEL of sender-anonymity"),
-     1, &GNUNET_GETOPT_set_uint, &anonymity_level},
-    {'d', "disable-creation-time", NULL,
-     gettext_noop
-     ("disable adding the creation time to the metadata of the uploaded file"),
-     0, &GNUNET_GETOPT_set_one, &do_disable_creation_time},
-    {'D', "disable-extractor", NULL,
-     gettext_noop ("do not use libextractor to add keywords or metadata"),
-     0, &GNUNET_GETOPT_set_one, &disable_extractor},
-    {'p', "priority", "PRIORITY",
-     gettext_noop ("specify the priority of the content"),
-     1, &GNUNET_GETOPT_set_uint, &content_priority},
-    {'r', "replication", "LEVEL",
-     gettext_noop ("set the desired replication LEVEL"),
-     1, &GNUNET_GETOPT_set_uint, &replication_level},
-    {'V', "verbose", NULL,
-     gettext_noop ("be verbose (print progress information)"),
-     0, &GNUNET_GETOPT_set_one, &verbose},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+
+    GNUNET_GETOPT_option_uint ('a',
+                                   "anonymity",
+                                   "LEVEL",
+                                   gettext_noop ("set the desired LEVEL of sender-anonymity"),
+                                   &anonymity_level),
+
+    GNUNET_GETOPT_option_flag ('d',
+                                  "disable-creation-time",
+                                  gettext_noop ("disable adding the creation time to the metadata of the uploaded file"),
+                                  &do_disable_creation_time),
+
+    GNUNET_GETOPT_option_flag ('D',
+                                  "disable-extractor",
+                                  gettext_noop ("do not use libextractor to add keywords or metadata"),
+                                  &disable_extractor),
+
+    GNUNET_GETOPT_option_uint ('p',
+                                   "priority",
+                                   "PRIORITY",
+                                   gettext_noop ("specify the priority of the content"),
+                                   &content_priority),
+
+    GNUNET_GETOPT_option_uint ('r',
+                                   "replication",
+                                   "LEVEL",
+                                   gettext_noop ("set the desired replication LEVEL"),
+                                   &replication_level),
+
+    GNUNET_GETOPT_option_verbose (&verbose),
+
     GNUNET_GETOPT_OPTION_END
   };
   struct WorkItem *wi;
   int ok;
   struct GNUNET_SIGNAL_Context *shc_chld;
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
-  sigpipe = GNUNET_DISK_pipe (GNUNET_NO, GNUNET_NO, GNUNET_NO, GNUNET_NO);
-  GNUNET_assert (sigpipe != NULL);
+  sigpipe = GNUNET_DISK_pipe (GNUNET_NO, GNUNET_NO,
+			      GNUNET_NO, GNUNET_NO);
+  GNUNET_assert (NULL != sigpipe);
   shc_chld =
-    GNUNET_SIGNAL_handler_install (GNUNET_SIGCHLD, &sighandler_child_death);
+    GNUNET_SIGNAL_handler_install (GNUNET_SIGCHLD,
+				   &sighandler_child_death);
   ok = (GNUNET_OK ==
-	GNUNET_PROGRAM_run (argc, argv, "gnunet-auto-share [OPTIONS] FILENAME",
+	GNUNET_PROGRAM_run (argc, argv,
+			    "gnunet-auto-share [OPTIONS] FILENAME",
 			    gettext_noop
 			    ("Automatically publish files from a directory on GNUnet"),
 			    options, &run, NULL)) ? ret : 1;
@@ -778,7 +821,9 @@ main (int argc, char *const *argv)
   }
   while (NULL != (wi = work_head))
   {
-    GNUNET_CONTAINER_DLL_remove (work_head, work_tail, wi);
+    GNUNET_CONTAINER_DLL_remove (work_head,
+				 work_tail,
+				 wi);
     GNUNET_free (wi->filename);
     GNUNET_free (wi);
   }
@@ -786,7 +831,7 @@ main (int argc, char *const *argv)
   shc_chld = NULL;
   GNUNET_DISK_pipe_close (sigpipe);
   sigpipe = NULL;
-  GNUNET_free (cfg_filename);
+  GNUNET_free_non_null (cfg_filename);
   cfg_filename = NULL;
   GNUNET_free ((void*) argv);
   return ok;

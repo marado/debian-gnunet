@@ -1,5 +1,6 @@
 [fs]
-AUTOSTART = @AUTOSTART@
+START_ON_DEMAND = @START_ON_DEMAND@
+IMMEDIATE_START = YES
 INDEXDB = $GNUNET_DATA_HOME/fs/idxinfo.lst
 RESPECT = $GNUNET_DATA_HOME/fs/credit/
 STATE_DIR = $GNUNET_DATA_HOME/fs/persistence/
@@ -9,6 +10,8 @@ HOSTNAME = localhost
 BINARY = gnunet-service-fs
 ACCEPT_FROM = 127.0.0.1;
 ACCEPT_FROM6 = ::1;
+
+# PREFIX = valgrind
 
 # Do we introduce artificial delays? (may improve anonymity)
 DELAY = YES
@@ -35,7 +38,7 @@ MAX_PENDING_REQUESTS = 65536
 
 # How many requests do we have at most waiting in the queue towards
 # the datastore? (important for memory consumption)
-DATASTORE_QUEUE_SIZE = 1024
+DATASTORE_QUEUE_SIZE = 32
 
 # Maximum frequency we're allowed to poll the datastore
 # for content for migration (can be used to reduce
@@ -53,13 +56,14 @@ DISABLE_ANON_TRANSFER = NO
 # at the same time.  Excessive values mostly have the problem that
 # the service might use more memory, so we need to bound this at
 # some reasonable level.  And if we have a very, very large
-# number, we probably won't have enough bandwidth to suppor them
+# number, we probably won't have enough bandwidth to support them
 # well anyway, so better have a moderate cap.
-MAX_MESH_CLIENTS = 128
+MAX_CADET_CLIENTS = 128
 
 
 [gnunet-auto-share]
 BINARY = gnunet-auto-share
+IMMEDIATE_START = NO
 
 # Note: MUST specify path to auto-share directory and CAN specify other options
 # to gnunet-auto-share here!

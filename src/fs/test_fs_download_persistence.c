@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2005, 2006, 2008, 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2005, 2006, 2008, 2009, 2010 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -54,7 +54,7 @@ static struct GNUNET_FS_DownloadContext *download;
 
 static struct GNUNET_FS_PublishContext *publish;
 
-static GNUNET_SCHEDULER_TaskIdentifier timeout_kill;
+static struct GNUNET_SCHEDULER_Task * timeout_kill;
 
 static char *fn;
 
@@ -62,7 +62,7 @@ static int err;
 
 
 static void
-timeout_kill_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+timeout_kill_task (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Timeout downloading file\n");
   if (download != NULL)
@@ -75,13 +75,13 @@ timeout_kill_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     GNUNET_FS_publish_stop (publish);
     publish = NULL;
   }
-  timeout_kill = GNUNET_SCHEDULER_NO_TASK;
+  timeout_kill = NULL;
   err = 1;
 }
 
 
 static void
-abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_publish_task (void *cls)
 {
   if (publish != NULL)
   {
@@ -92,7 +92,7 @@ abort_publish_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
 
 
 static void
-abort_download_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+abort_download_task (void *cls)
 {
   uint64_t size;
 
@@ -107,7 +107,7 @@ abort_download_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   GNUNET_free (fn);
   fn = NULL;
   GNUNET_SCHEDULER_cancel (timeout_kill);
-  timeout_kill = GNUNET_SCHEDULER_NO_TASK;
+  timeout_kill = NULL;
 }
 
 
@@ -116,7 +116,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event);
 
 
 static void
-restart_fs_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+restart_fs_task (void *cls)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Restarting FS.\n");
   GNUNET_FS_stop (fs);
@@ -179,7 +179,6 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
                               GNUNET_FS_DOWNLOAD_OPTION_NONE, "download", NULL);
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_COMPLETED:
-    consider_restart (event->status);
     printf ("Download complete,  %llu kbps.\n",
             (unsigned long long) (FILESIZE * 1000000LL /
                                   (1 +
@@ -202,8 +201,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     FPRINTF (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     GNUNET_break (0);
-    GNUNET_SCHEDULER_add_continuation (&abort_publish_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_ERROR:
     FPRINTF (stderr, "Error downloading file: %s\n",
@@ -265,8 +263,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     break;
   case GNUNET_FS_STATUS_DOWNLOAD_STOPPED:
     GNUNET_assert (download == event->value.download.dc);
-    GNUNET_SCHEDULER_add_continuation (&abort_publish_task, NULL,
-                                       GNUNET_SCHEDULER_REASON_PREREQ_DONE);
+    GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     download = NULL;
     break;
   default:

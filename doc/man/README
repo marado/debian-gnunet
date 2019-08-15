@@ -1,0 +1,17 @@
+Please note that new edits in files which already are in mdoc format
+should only be done in mdoc format.
+
+TODO:
+
+* incomplete pages:
+  - gnunet-timeout
+  - gnunet-gns: Make use of .Ex macro for DIAGNOSTICS section
+
+* (maybe) add subsections in DESCRIPTION for
+  standard options and tool-specific options?
+
+* missing pages:
+  - gnunet-social
+
+* looks wrong in some (sub)sections:
+  - gnunet-nat

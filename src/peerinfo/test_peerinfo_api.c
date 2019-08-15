@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2004, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2004, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -60,15 +60,15 @@ check_it (void *cls, const struct GNUNET_HELLO_Address *address,
 }
 
 
-static size_t
+static ssize_t
 address_generator (void *cls, size_t max, void *buf)
 {
   size_t *agc = cls;
-  size_t ret;
+  ssize_t ret;
   struct GNUNET_HELLO_Address address;
 
   if (0 == *agc)
-    return 0;
+    return GNUNET_SYSERR; /* Done */
   memset (&address.peer, 0, sizeof (struct GNUNET_PeerIdentity));
   address.address = "Address";
   address.transport_name = "peerinfotest";
@@ -119,8 +119,7 @@ process (void *cls, const struct GNUNET_PeerIdentity *peer,
       retries++;
       add_peer ();
       ic = GNUNET_PEERINFO_iterate (h, GNUNET_NO, NULL,
-                                    GNUNET_TIME_relative_multiply
-                                    (GNUNET_TIME_UNIT_SECONDS, 15), &process,
+                                    &process,
                                     cls);
       return;
     }
@@ -135,7 +134,8 @@ process (void *cls, const struct GNUNET_PeerIdentity *peer,
   {
     GNUNET_assert (3 == global_ret);
     agc = 3;
-    GNUNET_HELLO_iterate_addresses (hello, GNUNET_NO, &check_it, &agc);
+    GNUNET_HELLO_iterate_addresses (hello, GNUNET_NO,
+                                    &check_it, &agc);
     GNUNET_assert (agc == 0);
     global_ret = 2;
   }
@@ -151,8 +151,7 @@ run (void *cls,
   GNUNET_assert (NULL != h);
   add_peer ();
   ic = GNUNET_PEERINFO_iterate (h, GNUNET_NO, &pid,
-                                GNUNET_TIME_relative_multiply
-                                (GNUNET_TIME_UNIT_SECONDS, 15), &process, cls);
+                                &process, cls);
 }
 
 

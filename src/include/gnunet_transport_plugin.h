@@ -1,32 +1,37 @@
 /*
      This file is part of GNUnet
-     (C) 2009, 2010 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2009-2014 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_transport_plugin.h
- * @brief API for the transport services.  This header
- *        specifies the struct that is given to the plugin's entry
- *        method and the other struct that must be returned.
- *        Note that the destructors of transport plugins will
- *        be given the value returned by the constructor
- *        and is expected to return a NULL pointer.
  * @author Christian Grothoff
+ *
+ * @file
+ * Transport service plugin API
+ *
+ * @defgroup transport-plugin  Transport Service plugin API
+ *
+ * Specifies the struct that is given to the plugin's entry method and the other
+ * struct that must be returned.  Note that the destructors of transport plugins
+ * will be given the value returned by the constructor and is expected to return
+ * a NULL pointer.
+ *
+ * @{
  */
 #ifndef PLUGIN_TRANSPORT_H
 #define PLUGIN_TRANSPORT_H
@@ -48,19 +53,11 @@
  * connection may not have an address that can be used for meaningful
  * distinction between sessions to the same peer.
  *
- * Each 'struct Session' MUST start with the 'struct GNUNET_PeerIdentity'
+ * Each 'struct GNUNET_ATS_Session' MUST start with the 'struct GNUNET_PeerIdentity'
  * of the peer the session is for (which will be used for some error
  * checking by the ATS code).
  */
-struct Session;
-
-/**
- * Every 'struct Session' must begin with this header.
- */
-struct SessionHeader
-{
-  /* empty, for now */
-};
+struct GNUNET_ATS_Session;
 
 
 /**
@@ -79,7 +76,8 @@ struct SessionHeader
 typedef void
 (*GNUNET_TRANSPORT_SessionEnd) (void *cls,
                                 const struct GNUNET_HELLO_Address *address,
-                                struct Session *session);
+                                struct GNUNET_ATS_Session *session);
+
 
 /**
  * Plugin tells transport service about a new inbound session
@@ -87,15 +85,14 @@ typedef void
  * @param cls unused
  * @param address the address
  * @param session the new session
- * @param ats ats information
- * @param ats_count number of @a ats information
+ * @param net network information
  */
 typedef void
 (*GNUNET_TRANSPORT_SessionStart) (void *cls,
-                                  struct GNUNET_HELLO_Address *address,
-                                  struct Session *session,
-                                  const struct GNUNET_ATS_Information *ats,
-                                  uint32_t ats_count);
+                                  const struct GNUNET_HELLO_Address *address,
+                                  struct GNUNET_ATS_Session *session,
+                                  enum GNUNET_NetworkType net);
+
 
 /**
  * Function called by the transport for each received message.
@@ -121,43 +118,39 @@ typedef void
  */
 typedef struct GNUNET_TIME_Relative
 (*GNUNET_TRANSPORT_PluginReceiveCallback) (void *cls,
-    const struct GNUNET_HELLO_Address *address,
-    struct Session *session,
-    const struct GNUNET_MessageHeader *message);
+                                           const struct GNUNET_HELLO_Address *address,
+                                           struct GNUNET_ATS_Session *session,
+                                           const struct GNUNET_MessageHeader *message);
 
 
 /**
- * Function that will be called to figure if an address is an loopback,
- * LAN, WAN etc. address
+ * Function that can be called by plugins to figure if an address is
+ * an loopback, LAN or WAN address.   Ultimately invokes
+ * #GNUNET_ATS_address_get_type().
  *
  * @param cls closure
  * @param addr binary address
  * @param addrlen length of the @a addr
- * @return ATS Information containing the network type
+ * @return type of the network the address belongs to
  */
-typedef struct GNUNET_ATS_Information
+typedef enum GNUNET_NetworkType
 (*GNUNET_TRANSPORT_AddressToType) (void *cls,
                                    const struct sockaddr *addr,
                                    size_t addrlen);
 
 
 /**
- * Function called when quality properties of an address change.
+ * Function called when distance of an address changes.
  *
  * @param cls closure
  * @param peer peer
- * @param address address
- * @param address_len length of the @a address
- * @param session session
- * @param ats ATS information
- * @param ats_count number entries in the @a ats array
+ * @param distance new distance
  */
 typedef void
-(*GNUNET_TRANSPORT_UpdateAddressMetrics) (void *cls,
-					  const struct GNUNET_HELLO_Address *address,
-					  struct Session *session,
-					  const struct GNUNET_ATS_Information *ats,
-					  uint32_t ats_count);
+(*GNUNET_TRANSPORT_UpdateAddressDistance) (void *cls,
+                                           const struct GNUNET_HELLO_Address *address,
+                                           uint32_t distance);
+
 
 /**
  * Function that will be called for each address the transport
@@ -169,8 +162,9 @@ typedef void
  * @param address the address to add or remove
  */
 typedef void
-(*GNUNET_TRANSPORT_AddressNotification) (void *cls, int add_remove,
-    const struct GNUNET_HELLO_Address *address);
+(*GNUNET_TRANSPORT_AddressNotification) (void *cls,
+                                         int add_remove,
+                                         const struct GNUNET_HELLO_Address *address);
 
 
 /**
@@ -194,18 +188,11 @@ typedef struct GNUNET_TIME_Relative
                                    const struct GNUNET_PeerIdentity *peer,
                                    size_t amount_recved);
 
-typedef void
-(*GNUNET_TRANSPORT_RegisterQuotaNotification) (void *cls,
-                                           const struct GNUNET_PeerIdentity *peer,
-                                           const char *plugin,
-                                           struct Session *session);
-
-typedef void
-(*GNUNET_TRANSPORT_UnregisterQuotaNotification) (void *cls,
-    const struct GNUNET_PeerIdentity *peer, const char *plugin, struct Session *session);
 
 /**
  * Function that returns a HELLO message.
+ *
+ * @return HELLO message (FIXME with what?)
  */
 typedef const struct GNUNET_MessageHeader *
 (*GNUNET_TRANSPORT_GetHelloCallback) (void);
@@ -243,8 +230,8 @@ struct GNUNET_TRANSPORT_PluginEnvironment
    * whenever a message is received.  If this field is "NULL",
    * the plugin should load in 'stub' mode and NOT fully
    * initialize and instead only return an API with the
-   * 'address_pretty_printer', 'address_to_string' and
-   * 'string_to_address' functions.
+   * @e address_pretty_printer, @e address_to_string and
+   * @e string_to_address functions.
    */
   GNUNET_TRANSPORT_PluginReceiveCallback receive;
 
@@ -279,14 +266,10 @@ struct GNUNET_TRANSPORT_PluginEnvironment
   GNUNET_TRANSPORT_AddressToType get_address_type;
 
   /**
-   * Function that will be called to figure if an address is an loopback,
-   * LAN, WAN etc. address
+   * Function that will be called by DV to update distance for
+   * an address.
    */
-  GNUNET_TRANSPORT_UpdateAddressMetrics update_address_metrics;
-
-  GNUNET_TRANSPORT_RegisterQuotaNotification register_quota_notification;
-
-  GNUNET_TRANSPORT_UnregisterQuotaNotification unregister_quota_notification;
+  GNUNET_TRANSPORT_UpdateAddressDistance update_address_distance;
 
   /**
    * What is the maximum number of connections that this transport
@@ -356,7 +339,7 @@ typedef void
  */
 typedef ssize_t
 (*GNUNET_TRANSPORT_TransmitFunction) (void *cls,
-                                      struct Session *session,
+                                      struct GNUNET_ATS_Session *session,
                                       const char *msgbuf,
                                       size_t msgbuf_size,
                                       unsigned int priority,
@@ -379,11 +362,12 @@ typedef ssize_t
  */
 typedef int
 (*GNUNET_TRANSPORT_DisconnectSessionFunction) (void *cls,
-                                               struct Session *session);
+                                               struct GNUNET_ATS_Session *session);
+
 
 /**
  * Function that is called to get the keepalive factor.
- * GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT is divided by this number to
+ * #GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT is divided by this number to
  * calculate the interval between keepalive packets.
  *
  * @param cls closure with the `struct Plugin`
@@ -412,15 +396,22 @@ typedef void
 
 /**
  * Function called by the pretty printer for the resolved address for
- * each human-readable address obtained.
+ * each human-readable address obtained.  The callback can be called
+ * several times. The last invocation must be with a @a address of
+ * NULL and a @a res of #GNUNET_OK.  Thus, to indicate conversion
+ * errors, the callback might be called first with @a address NULL and
+ * @a res being #GNUNET_SYSERR.  In that case, there must still be a
+ * subsequent call later with @a address NULL and @a res #GNUNET_OK.
  *
  * @param cls closure
- * @param address one of the names for the host, NULL
- *        on the last call to the callback
+ * @param address one of the names for the host, NULL on last callback
+ * @param res #GNUNET_OK if conversion was successful, #GNUNET_SYSERR on failure,
+ *      #GNUNET_OK on last callback
  */
 typedef void
 (*GNUNET_TRANSPORT_AddressStringCallback) (void *cls,
-                                           const char *address);
+                                           const char *address,
+                                           int res);
 
 
 /**
@@ -477,7 +468,7 @@ typedef int
  * @param address the hello address
  * @return the session if the address is valid, NULL otherwise
  */
-typedef struct Session *
+typedef struct GNUNET_ATS_Session *
 (*GNUNET_TRANSPORT_CreateSession) (void *cls,
                                    const struct GNUNET_HELLO_Address *address);
 
@@ -494,15 +485,25 @@ typedef struct Session *
 typedef void
 (*GNUNET_TRANSPORT_UpdateSessionTimeout) (void *cls,
                                           const struct GNUNET_PeerIdentity *peer,
-                                          struct Session *session);
+                                          struct GNUNET_ATS_Session *session);
 
 
-
+/**
+ * Function that will be called whenever the transport service wants to
+ * notify the plugin that the inbound quota changed and that the plugin
+ * should update it's delay for the next receive value
+ *
+ * @param cls closure
+ * @param peer which peer was the session for
+ * @param session which session is being updated
+ * @param delay new delay to use for receiving
+ */
 typedef void
 (*GNUNET_TRANSPORT_UpdateInboundDelay) (void *cls,
-                                          const struct GNUNET_PeerIdentity *peer,
-                                          struct Session *session,
-                                          struct GNUNET_TIME_Relative delay);
+                                        const struct GNUNET_PeerIdentity *peer,
+                                        struct GNUNET_ATS_Session *session,
+                                        struct GNUNET_TIME_Relative delay);
+
 
 /**
  * Function called for a quick conversion of the binary address to
@@ -544,13 +545,61 @@ typedef int
 /**
  * Function to obtain the network type for a session
  *
- * @param cls closure ('struct Plugin*')
+ * @param cls closure (`struct Plugin *`)
  * @param session the session
  * @return the network type
  */
-typedef enum GNUNET_ATS_Network_Type
+typedef enum GNUNET_NetworkType
 (*GNUNET_TRANSPORT_GetNetworkType) (void *cls,
-                                    struct Session *session);
+                                    struct GNUNET_ATS_Session *session);
+
+
+/**
+ * Function to obtain the network type for an address.
+ *
+ * @param cls closure (`struct Plugin *`)
+ * @param address the address
+ * @return the network type
+ */
+typedef enum GNUNET_NetworkType
+(*GNUNET_TRANSPORT_GetNetworkTypeForAddress) (void *cls,
+                                              const struct GNUNET_HELLO_Address *address);
+
+
+/**
+ * Function called by the plugin with information about the
+ * current sessions managed by the plugin (for monitoring).
+ *
+ * @param cls closure
+ * @param session session handle this information is about,
+ *        NULL to indicate that we are "in sync" (initial
+ *        iteration complete)
+ * @param info information about the state of the session,
+ *        NULL if @a session is also NULL and we are
+ *        merely signalling that the initial iteration is over
+ */
+typedef void
+(*GNUNET_TRANSPORT_SessionInfoCallback) (void *cls,
+                                         struct GNUNET_ATS_Session *session,
+                                         const struct GNUNET_TRANSPORT_SessionInfo *info);
+
+
+/**
+ * Begin monitoring sessions of a plugin.  There can only
+ * be one active monitor per plugin (i.e. if there are
+ * multiple monitors, the transport service needs to
+ * multiplex the generated events over all of them).
+ *
+ * @param cls closure of the plugin
+ * @param sic callback to invoke, NULL to disable monitor;
+ *            plugin will being by iterating over all active
+ *            sessions immediately and then enter monitor mode
+ * @param sic_cls closure for @a sic
+ */
+typedef void
+(*GNUNET_TRANSPORT_SessionMonitorSetup) (void *cls,
+                                         GNUNET_TRANSPORT_SessionInfoCallback sic,
+                                         void *sic_cls);
 
 
 /**
@@ -595,26 +644,22 @@ struct GNUNET_TRANSPORT_PluginFunctions
    */
   GNUNET_TRANSPORT_UpdateSessionTimeout update_session_timeout;
 
-  GNUNET_TRANSPORT_UpdateInboundDelay update_inbound_delay;
-
   /**
    * Function that will be called whenever the transport service wants to
    * notify the plugin that the inbound quota changed and that the plugin
    * should update it's delay for the next receive value
    */
-  //GNUNET_TRANSPORT_UpdateNextReceiveTimeout update_next_receive_timeout;
+  GNUNET_TRANSPORT_UpdateInboundDelay update_inbound_delay;
 
   /**
    * Function that is used to query keepalive factor.
-   * GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT is divided by this number to
+   * #GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT is divided by this number to
    * calculate the interval between keepalive packets.
    */
   GNUNET_TRANSPORT_QueryKeepaliveFactorFunction query_keepalive_factor;
 
   /**
-   * Function to pretty-print addresses.  NOTE: this function is not
-   * yet used by transport-service, but will be used in the future
-   * once the transport-API has been completed.
+   * Function to pretty-print addresses.
    */
   GNUNET_TRANSPORT_AddressPrettyPrinter address_pretty_printer;
 
@@ -643,7 +688,7 @@ struct GNUNET_TRANSPORT_PluginFunctions
 
   /**
    * Function that will be called tell the plugin to create a session
-   * object
+   * object.
    */
   GNUNET_TRANSPORT_CreateSession get_session;
 
@@ -651,9 +696,22 @@ struct GNUNET_TRANSPORT_PluginFunctions
    * Function to obtain the network type for a session
    */
   GNUNET_TRANSPORT_GetNetworkType get_network;
+
+  /**
+   * Function to obtain the network type for an address
+   */
+  GNUNET_TRANSPORT_GetNetworkTypeForAddress get_network_for_address;
+
+  /**
+   * Function to monitor the sessions managed by the plugin.
+   */
+  GNUNET_TRANSPORT_SessionMonitorSetup setup_monitor;
 };
 
 
 /*#ifndef PLUGIN_TRANSPORT_H*/
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_transport_plugin.h */

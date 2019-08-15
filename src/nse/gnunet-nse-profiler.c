@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2011, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 /**
  * @file nse/gnunet-nse-profiler.c
@@ -129,7 +129,7 @@ static int ok;
 /**
  * Be verbose (configuration option)
  */
-static int verbose;
+static unsigned int verbose;
 
 /**
  * Name of the file with the hosts to run the test over (configuration option)
@@ -175,11 +175,6 @@ static struct GNUNET_TESTBED_Peer **daemons;
  * Global configuration file
  */
 static struct GNUNET_CONFIGURATION_Handle *testing_cfg;
-
-/**
- * The shutdown task
- */
-static GNUNET_SCHEDULER_TaskIdentifier shutdown_task_id;
 
 /**
  * Maximum number of connections to NSE services.
@@ -228,9 +223,9 @@ static struct OpListEntry *oplist_head;
 static struct OpListEntry *oplist_tail;
 
 /**
- * Are we shutting down
+ * Task running each round of the experiment.
  */
-static int shutting_down;
+static struct GNUNET_SCHEDULER_Task *round_task;
 
 
 /**
@@ -265,17 +260,17 @@ close_monitor_connections ()
  * Task run on shutdown; cleans up everything.
  *
  * @param cls unused
- * @param tc unused
  */
 static void
-shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+shutdown_task (void *cls)
 {
-  shutdown_task_id = GNUNET_SCHEDULER_NO_TASK;
-  if (GNUNET_YES == shutting_down)
-    return;
-  shutting_down = GNUNET_YES;
   LOG_DEBUG ("Ending test.\n");
   close_monitor_connections ();
+  if (NULL != round_task)
+  {
+    GNUNET_SCHEDULER_cancel (round_task);
+    round_task = NULL;
+  }
   if (NULL != data_file)
   {
     GNUNET_DISK_file_close (data_file);
@@ -287,20 +282,10 @@ shutdown_task (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
     output_file = NULL;
   }
   if (NULL != testing_cfg)
+  {
     GNUNET_CONFIGURATION_destroy (testing_cfg);
-  testing_cfg = NULL;
-}
-
-
-/**
- * Schedules shutdown task to be run now
- */
-static void
-shutdown_now ()
-{
-  if (GNUNET_SCHEDULER_NO_TASK != shutdown_task_id)
-    GNUNET_SCHEDULER_cancel (shutdown_task_id);
-  shutdown_task_id = GNUNET_SCHEDULER_add_now (&shutdown_task, NULL);
+    testing_cfg = NULL;
+  }
 }
 
 
@@ -389,13 +374,14 @@ nse_disconnect_adapter (void *cls,
  */
 static int
 stat_iterator (void *cls,
-	       const char *subsystem,
-	       const char *name,
-	       uint64_t value, int is_persistent)
+               const char *subsystem,
+               const char *name,
+               uint64_t value,
+               int is_persistent)
 {
   char *output_buffer;
   struct GNUNET_TIME_Absolute now;
-  size_t size;
+  int size;
   unsigned int flag;
 
   GNUNET_assert (NULL != data_file);
@@ -405,8 +391,14 @@ stat_iterator (void *cls,
     flag = 1;
   size = GNUNET_asprintf (&output_buffer, "%llu %llu %u\n",
                           now.abs_value_us / 1000LL / 1000LL,
-			  value, flag);
-  if (size != GNUNET_DISK_file_write (data_file, output_buffer, size))
+                          value, flag);
+  if (0 > size)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Error formatting output buffer.\n");
+    GNUNET_free (output_buffer);
+    return GNUNET_SYSERR;
+  }
+  if (size != GNUNET_DISK_file_write (data_file, output_buffer, (size_t) size))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Unable to write to file!\n");
     GNUNET_free (output_buffer);
@@ -542,11 +534,9 @@ connect_nse_service ()
  * Task that starts/stops peers to move to the next round.
  *
  * @param cls NULL, unused
- * @param tc scheduler context (unused)
  */
 static void
-next_round (void *cls,
-	    const struct GNUNET_SCHEDULER_TaskContext *tc);
+next_round (void *cls);
 
 
 /**
@@ -555,17 +545,15 @@ next_round (void *cls,
  * the next round.
  *
  * @param cls unused, NULL
- * @param tc unused
  */
 static void
-finish_round (void *cls,
-	      const struct GNUNET_SCHEDULER_TaskContext *tc)
+finish_round (void *cls)
 {
-  if (0 != (GNUNET_SCHEDULER_REASON_SHUTDOWN & tc->reason))
-    return;
-  LOG (GNUNET_ERROR_TYPE_INFO, "Have %u connections\n", total_connections);
+  LOG (GNUNET_ERROR_TYPE_INFO,
+       "Have %u connections\n",
+       total_connections);
   close_monitor_connections ();
-  GNUNET_SCHEDULER_add_now (&next_round, NULL);
+  round_task = GNUNET_SCHEDULER_add_now (&next_round, NULL);
 }
 
 
@@ -577,7 +565,8 @@ finish_round (void *cls,
 static void
 run_round ()
 {
-  LOG_DEBUG ("Running round %u\n", current_round);
+  LOG_DEBUG ("Running round %u\n",
+	     current_round);
   connect_nse_service ();
   GNUNET_SCHEDULER_add_delayed (wait_time,
 				&finish_round,
@@ -594,7 +583,9 @@ make_oplist_entry ()
   struct OpListEntry *entry;
 
   entry = GNUNET_new (struct OpListEntry);
-  GNUNET_CONTAINER_DLL_insert_tail (oplist_head, oplist_tail, entry);
+  GNUNET_CONTAINER_DLL_insert_tail (oplist_head,
+				    oplist_tail,
+				    entry);
   return entry;
 }
 
@@ -607,7 +598,8 @@ make_oplist_entry ()
  * @param emsg NULL on success; otherwise an error description
  */
 static void
-manage_service_cb (void *cls, struct GNUNET_TESTBED_Operation *op,
+manage_service_cb (void *cls,
+		   struct GNUNET_TESTBED_Operation *op,
                    const char *emsg)
 {
   struct OpListEntry *entry = cls;
@@ -621,7 +613,9 @@ manage_service_cb (void *cls, struct GNUNET_TESTBED_Operation *op,
   }
   GNUNET_assert (0 != entry->delta);
   peers_running += entry->delta;
-  GNUNET_CONTAINER_DLL_remove (oplist_head, oplist_tail, entry);
+  GNUNET_CONTAINER_DLL_remove (oplist_head,
+			       oplist_tail,
+			       entry);
   GNUNET_free (entry);
   if (num_peers_in_round[current_round] == peers_running)
     run_round ();
@@ -670,29 +664,26 @@ adjust_running_peers ()
  * peers; then get statistics from *all* peers.
  *
  * @param cls NULL, unused
- * @param tc unused
  */
 static void
-next_round (void *cls,
-	    const struct GNUNET_SCHEDULER_TaskContext *tc)
+next_round (void *cls)
 {
-  if (0 != (GNUNET_SCHEDULER_REASON_SHUTDOWN & tc->reason))
-    return;
+  round_task = NULL;
   LOG_DEBUG ("Disconnecting nse service of peers\n");
   current_round++;
   if (current_round == num_rounds)
-    {
-      /* this was the last round, terminate */
-      ok = 0;
-      GNUNET_SCHEDULER_shutdown ();
-      return;
-    }
+  {
+    /* this was the last round, terminate */
+    ok = 0;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
   if (num_peers_in_round[current_round] == peers_running)
-    {
-      /* no need to churn, just run next round */
-      run_round ();
-      return;
-    }
+  {
+    /* no need to churn, just run next round */
+    run_round ();
+    return;
+  }
   adjust_running_peers ();
 }
 
@@ -745,7 +736,7 @@ test_master (void *cls,
 {
   if (NULL == peers)
   {
-    shutdown_now ();
+    GNUNET_SCHEDULER_shutdown ();
     return;
   }
   daemons = peers;
@@ -839,9 +830,7 @@ run (void *cls, char *const *args, const char *cfgfile,
                       NULL,     /* master_controller_cb cls */
                       &test_master,
                       NULL);    /* test_master cls */
-  shutdown_task_id =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_FOREVER_REL,
-                                    &shutdown_task, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
 }
 
 
@@ -853,28 +842,47 @@ run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char *const *argv)
 {
-  static struct GNUNET_GETOPT_CommandLineOption options[] = {
-    {'C', "connections", "COUNT",
-     gettext_noop ("limit to the number of connections to NSE services, 0 for none"),
-     1, &GNUNET_GETOPT_set_uint, &connection_limit},
-    {'d', "details", "FILENAME",
-     gettext_noop ("name of the file for writing connection information and statistics"),
-     1, &GNUNET_GETOPT_set_string, &data_filename},
-    {'H', "hosts", "FILENAME",
-     gettext_noop ("name of the file with the login information for the testbed"),
-     1, &GNUNET_GETOPT_set_string, &hosts_file},
-    {'o', "output", "FILENAME",
-     gettext_noop ("name of the file for writing the main results"),
-     1, &GNUNET_GETOPT_set_string, &output_filename},
-    {'p', "peers", "NETWORKSIZESPEC",
-     gettext_noop ("Number of peers to run in each round, separated by commas"),
-     1, &GNUNET_GETOPT_set_string, &num_peer_spec},
-    {'V', "verbose", NULL,
-     gettext_noop ("be verbose (print progress information)"),
-     0, &GNUNET_GETOPT_increment_value, &verbose},
-    {'w', "wait", "DELAY",
-     gettext_noop ("delay between rounds"),
-     1, &GNUNET_GETOPT_set_relative_time, &wait_time},
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_uint ('C',
+                                   "connections",
+                                   "COUNT",
+                                   gettext_noop ("limit to the number of connections to NSE services, 0 for none"),
+                                   &connection_limit),
+    GNUNET_GETOPT_option_string ('d',
+                                 "details",
+                                 "FILENAME",
+                                 gettext_noop ("name of the file for writing connection information and statistics"),
+                                 &data_filename),
+
+    GNUNET_GETOPT_option_string ('H',
+                                 "hosts",
+                                 "FILENAME",
+                                 gettext_noop ("name of the file with the login information for the testbed"),
+                                 &hosts_file),
+
+    GNUNET_GETOPT_option_string ('o',
+                                 "output",
+                                 "FILENAME",
+                                 gettext_noop ("name of the file for writing the main results"),
+                                 &output_filename),
+
+
+    GNUNET_GETOPT_option_string ('p',
+                                 "peers",
+                                 "NETWORKSIZESPEC",
+                                 gettext_noop ("Number of peers to run in each round, separated by commas"),
+                                 &num_peer_spec),
+
+    GNUNET_GETOPT_option_increment_uint ('V',
+                                          "verbose",
+                                          gettext_noop ("be verbose (print progress information)"),
+                                          &verbose),
+
+    GNUNET_GETOPT_option_relative_time ('w',
+                                            "wait",
+                                            "DELAY",
+                                            gettext_noop ("delay between rounds"),
+                                            &wait_time),
     GNUNET_GETOPT_OPTION_END
   };
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))

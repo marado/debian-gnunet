@@ -1,5 +1,4 @@
 etc/gnunet.conf
-lib/
 usr/bin/
 usr/lib/*/gnunet/
 usr/lib/*/*.so.*

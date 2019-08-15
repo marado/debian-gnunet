@@ -1,27 +1,32 @@
 /*
      This file is part of GNUnet.
-     (C) 2006, 2009 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2006, 2009 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
- * @file include/gnunet_peer_lib.h
- * @brief helper library for interning of peer identifiers
  * @author Christian Grothoff
+ *
+ * @file
+ * Helper library for interning of peer identifiers
+ *
+ * @defgroup peer  Peer library
+ * Helper library for interning of peer identifiers
+ * @{
  */
 
 #ifndef GNUNET_PEER_LIB_H
@@ -38,11 +43,10 @@ extern "C"
 #endif
 
 /**
- * A GNUNET_PEER_Id is simply a shorter
- * version of a "struct GNUNET_PeerIdentifier"
- * that can be used inside of a GNUnet peer
- * to save memory when the same identifier
- * needs to be used over and over again.
+ * A GNUNET_PEER_Id is simply a shorter version of a "struct
+ * GNUNET_PeerIdentifier" that can be used inside of a GNUnet peer to
+ * save memory when the same identifier needs to be used over and over
+ * again.
  */
 typedef unsigned int GNUNET_PEER_Id;
 
@@ -82,10 +86,11 @@ GNUNET_PEER_change_rc (GNUNET_PEER_Id id, int delta);
  * Decrement multiple RCs of peer identities by one.
  *
  * @param ids array of PIDs to decrement the RCs of
- * @param count size of the ids array
+ * @param count size of the @a ids array
  */
 void
-GNUNET_PEER_decrement_rcs (const GNUNET_PEER_Id *ids, unsigned int count);
+GNUNET_PEER_decrement_rcs (const GNUNET_PEER_Id *ids,
+                           unsigned int count);
 
 
 /**
@@ -95,14 +100,15 @@ GNUNET_PEER_decrement_rcs (const GNUNET_PEER_Id *ids, unsigned int count);
  * @param pid where to write the normal peer identity
  */
 void
-GNUNET_PEER_resolve (GNUNET_PEER_Id id, struct GNUNET_PeerIdentity *pid);
+GNUNET_PEER_resolve (GNUNET_PEER_Id id,
+                     struct GNUNET_PeerIdentity *pid);
 
 
 /**
  * Convert an interned PID to a normal peer identity.
  *
  * @param id interned PID to convert
- * @return pointer to peer identity, valid as long 'id' is valid
+ * @return pointer to peer identity, valid as long @a id is valid
  */
 const struct GNUNET_PeerIdentity *
 GNUNET_PEER_resolve2 (GNUNET_PEER_Id id);
@@ -115,7 +121,9 @@ GNUNET_PEER_resolve2 (GNUNET_PEER_Id id);
 }
 #endif
 
-
 /* ifndef GNUNET_PEER_LIB_H */
 #endif
+
+/** @} */  /* end of group */
+
 /* end of gnunet_peer_lib.h */

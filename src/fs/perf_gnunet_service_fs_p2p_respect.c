@@ -1,21 +1,21 @@
 /*
      This file is part of GNUnet.
-     (C) 2010, 2011, 2012 Christian Grothoff (and other contributing authors)
+     Copyright (C) 2010, 2011, 2012 GNUnet e.V.
 
-     GNUnet is free software; you can redistribute it and/or modify
-     it under the terms of the GNU General Public License as published
-     by the Free Software Foundation; either version 3, or (at your
-     option) any later version.
+     GNUnet is free software: you can redistribute it and/or modify it
+     under the terms of the GNU Affero General Public License as published
+     by the Free Software Foundation, either version 3 of the License,
+     or (at your option) any later version.
 
      GNUnet is distributed in the hope that it will be useful, but
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-     General Public License for more details.
+     Affero General Public License for more details.
+    
+     You should have received a copy of the GNU Affero General Public License
+     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     You should have received a copy of the GNU General Public License
-     along with GNUnet; see the file COPYING.  If not, write to the
-     Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-     Boston, MA 02111-1307, USA.
+     SPDX-License-Identifier: AGPL3.0-or-later
 */
 
 /**
@@ -254,7 +254,7 @@ stat_run (void *cls,
 #else
                            stats[sm->value].subsystem, stats[sm->value].name,
 #endif
-                           GNUNET_TIME_UNIT_FOREVER_REL, &get_done, &print_stat,
+                           &get_done, &print_stat,
                            sm);
     return;
   }
@@ -279,7 +279,7 @@ stat_run (void *cls,
 
 
 static void
-do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
+do_report (void *cls)
 {
   static int download_counter;
   const char *type = cls;
@@ -287,7 +287,9 @@ do_report (void *cls, const struct GNUNET_SCHEDULER_TaskContext *tc)
   char *fancy;
   struct StatMaster *sm;
 
-  if (0 == (tc->reason & GNUNET_SCHEDULER_REASON_PREREQ_DONE))
+  if (0 ==
+      GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
+                                                                    TIMEOUT)).rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Timeout during download for type `%s', shutting down with error\n",
@@ -362,7 +364,7 @@ do_downloads (void *cls, const struct GNUNET_FS_Uri *u2,
 
 
 static void
-do_publish2 (void *cls,	
+do_publish2 (void *cls,
 	     const struct GNUNET_FS_Uri *u1,
 	     const char *fn)
 {
