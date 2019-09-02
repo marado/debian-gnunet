@@ -24,10 +24,6 @@ override_dh_auto_install-arch:
 	mkdir -p debian/tmp/etc
 	cp debian/etc/gnunet.conf debian/tmp/etc/
 
-	# Remove gnunet-download-manager.scm extension to match the manpage name
-	mv debian/tmp/usr/bin/gnunet-download-manager.scm \
-		debian/tmp/usr/bin/gnunet-download-manager
-	
 	# Removing useless files
 	rm -f debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/*.la \
 		debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/gnunet/*.la \
