@@ -35,8 +35,8 @@ This tutorials explains how to install GNUnet on a GNU/Linux system and
 gives an introduction on how GNUnet can be used to develop a
 Peer-to-Peer application.  Detailed installation instructions for
 various operating systems and a detailed list of all dependencies can be
-found on our website at <https://old.gnunet.org/installation> and in our
-Reference Documentation (GNUnet Handbook).
+found on our website at <https://docs.gnunet.org/#Installation> and in
+our Reference Documentation (GNUnet Handbook).
 
    Please read this tutorial carefully since every single step is
 important, and do not hesitate to contact the GNUnet team if you have
@@ -115,13 +115,13 @@ File: gnunet-tutorial.info,  Node: Obtaining a stable version,  Next: Installing
 ==============================
 
 Download the tarball from
-‘https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.0.tar.gz’.
+‘https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.6.tar.gz’.
 
    Make sure to download the associated ‘.sig’ file and to verify the
 authenticity of the tarball against it, like this:
 
-     $ wget https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.0.tar.gz.sig
-     $ gpg --verify-files gnunet-0.11.0.tar.gz.sig
+     $ wget https://ftp.gnu.org/gnu/gnunet/gnunet-0.11.6.tar.gz.sig
+     $ gpg --verify-files gnunet-0.11.6.tar.gz.sig
 
 If this command fails because you do not have the required public key,
 then you need to run the following command to import it:
@@ -143,8 +143,8 @@ resulting directory will be renamed to ‘gnunet’, which we will be using
 in the remainder of this document to refer to the root of the source
 directory.
 
-     $ tar xvzf gnunet-0.11.0.tar.gz
-     $ mv gnunet-0.11.0 gnunet
+     $ tar xvzf gnunet-0.11.6.tar.gz
+     $ mv gnunet-0.11.6 gnunet
 
 However, please note that stable versions can be very outdated.  As a
 developer you are strongly encouraged to use the version from the git
@@ -1859,7 +1859,7 @@ re-integrate the restarted service with the peer.
 configured using the ‘$GNUNET_FORCE_LOG’ environmental variable.  The
 ‘DEBUG’ level is only available if ‘--enable-logging=verbose’ was used
 when running ‘configure’.  More details about logging can be found under
-<https://old.gnunet.org/logging>.
+<https://docs.gnunet.org/#Logging>.
 
    You should also probably enable the creation of core files, by
 setting ‘ulimit’, and echo’ing ‘1’ into
@@ -2357,58 +2357,58 @@ their use in free software.
 
 Tag Table:
 Node: Top1142
-Node: Installing GNUnet3015
-Node: Obtaining a stable version3927
-Node: Installing Build Tool Chain and Dependencies5618
-Node: Obtaining the latest version from Git6684
-Node: Compiling and Installing GNUnet7694
-Node: Installation8725
-Node: Common Issues - Check your GNUnet installation9858
-Node: Introduction to GNUnet Architecture11111
-Node: First Steps with GNUnet12219
-Node: Configure your peer12566
-Node: Start a peer14035
-Node: Monitor a peer15214
-Node: Starting Two Peers by Hand16551
-Node: Setup a second peer17148
-Node: Start the second peer and connect the peers18995
-Node: How to connect manually20634
-Node: Starting Peers Using the Testbed Service21579
-Node: Developing Applications29158
-Node: gnunet-ext29632
-Node: Adapting the Template31091
-Node: Writing a Client Application31715
-Node: Handling command-line options33261
-Node: Writing a Client Library35286
-Node: Connecting to the Service36699
-Node: Sending messages37847
-Node: Receiving Replies from the Service39458
-Node: Writing a user interface41512
-Node: Writing a Service42072
-Node: Code Placement42477
-Node: Starting a Service43035
-Node: Interacting directly with other Peers using the CORE Service45378
-Node: New P2P connections46658
-Node: Receiving P2P Messages47575
-Node: Sending P2P Messages48445
-Node: End of P2P connections49440
-Node: Storing peer-specific data using the PEERSTORE service50328
-Node: Storing records51551
-Node: Retrieving records53342
-Node: Monitoring records54651
-Node: Disconnecting from PEERSTORE55844
-Node: Using the DHT56518
-Node: Storing data in the DHT57331
-Node: Obtaining data from the DHT59348
-Node: Implementing a block plugin61575
-Node: Validating requests and replies62410
-Node: Deriving a key from a reply64126
-Node: Initialization of the plugin65062
-Node: Shutdown of the plugin66143
-Node: Integration of the plugin with the build system66729
-Node: Monitoring the DHT67872
-Node: Debugging with gnunet-arm70643
-Node: GNU Free Documentation License72286
+Node: Installing GNUnet3017
+Node: Obtaining a stable version3929
+Node: Installing Build Tool Chain and Dependencies5620
+Node: Obtaining the latest version from Git6686
+Node: Compiling and Installing GNUnet7696
+Node: Installation8727
+Node: Common Issues - Check your GNUnet installation9860
+Node: Introduction to GNUnet Architecture11113
+Node: First Steps with GNUnet12221
+Node: Configure your peer12568
+Node: Start a peer14037
+Node: Monitor a peer15216
+Node: Starting Two Peers by Hand16553
+Node: Setup a second peer17150
+Node: Start the second peer and connect the peers18997
+Node: How to connect manually20636
+Node: Starting Peers Using the Testbed Service21581
+Node: Developing Applications29160
+Node: gnunet-ext29634
+Node: Adapting the Template31093
+Node: Writing a Client Application31717
+Node: Handling command-line options33263
+Node: Writing a Client Library35288
+Node: Connecting to the Service36701
+Node: Sending messages37849
+Node: Receiving Replies from the Service39460
+Node: Writing a user interface41514
+Node: Writing a Service42074
+Node: Code Placement42479
+Node: Starting a Service43037
+Node: Interacting directly with other Peers using the CORE Service45380
+Node: New P2P connections46660
+Node: Receiving P2P Messages47577
+Node: Sending P2P Messages48447
+Node: End of P2P connections49442
+Node: Storing peer-specific data using the PEERSTORE service50330
+Node: Storing records51553
+Node: Retrieving records53344
+Node: Monitoring records54653
+Node: Disconnecting from PEERSTORE55846
+Node: Using the DHT56520
+Node: Storing data in the DHT57333
+Node: Obtaining data from the DHT59350
+Node: Implementing a block plugin61577
+Node: Validating requests and replies62412
+Node: Deriving a key from a reply64128
+Node: Initialization of the plugin65064
+Node: Shutdown of the plugin66145
+Node: Integration of the plugin with the build system66731
+Node: Monitoring the DHT67874
+Node: Debugging with gnunet-arm70645
+Node: GNU Free Documentation License72290
 
 End Tag Table
 

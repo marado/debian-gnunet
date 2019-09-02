@@ -291,16 +291,15 @@ create_set_default_message (struct Ego *ego,
  * adds the client to the notification context for future
  * updates.
  *
- * @param cls unused
- * @param client who sent the message
+ * @param cls a `struct GNUNET_SERVICE_Client *`
  * @param message the message received
  */
 static void
 handle_start_message (void *cls,
                       const struct GNUNET_MessageHeader *message)
 {
-  struct UpdateMessage *ume;
   struct GNUNET_SERVICE_Client *client = cls;
+  struct UpdateMessage *ume;
   struct GNUNET_MQ_Envelope *env;
   struct Ego *ego;
 
@@ -323,6 +322,127 @@ handle_start_message (void *cls,
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq(client), env);
   GNUNET_SERVICE_client_continue (client);
 }
+
+
+/**
+ * Handler for LOOKUP message from client, sends information
+ * about ONE identity to the client immediately.
+ *
+ * @param cls unused
+ * @param message the message received
+ * @return #GNUNET_SYSERR if message was ill-formed
+ */
+static int
+check_lookup_message (void *cls,
+                       const struct LookupMessage *message)
+{
+  GNUNET_MQ_check_zero_termination (message);
+  return GNUNET_OK;
+}
+
+
+/**
+ * Handler for LOOKUP message from client, sends information
+ * about ONE identity to the client immediately.
+ *
+ * @param cls a `struct GNUNET_SERVICE_Client *`
+ * @param message the message received
+ */
+static void
+handle_lookup_message (void *cls,
+                       const struct LookupMessage *message)
+{
+  struct GNUNET_SERVICE_Client *client = cls;
+  const char *name;
+  struct GNUNET_MQ_Envelope *env;
+  struct Ego *ego;
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Received LOOKUP message from client\n");
+  name = (const char *) &message[1];
+  for (ego = ego_head; NULL != ego; ego = ego->next)
+  {
+    if (0 != strcasecmp (name,
+                         ego->identifier))
+      continue;
+    env = create_update_message (ego);
+    GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client), env);
+    GNUNET_SERVICE_client_continue (client);
+    return;
+  }
+  send_result_code (client,
+                    0,
+                    "ego not found");
+  GNUNET_SERVICE_client_continue (client);
+}
+
+
+/**
+ * Handler for LOOKUP message from client, sends information
+ * about ONE identity to the client immediately.
+ *
+ * @param cls unused
+ * @param message the message received
+ * @return #GNUNET_SYSERR if message was ill-formed
+ */
+static int
+check_lookup_by_suffix_message (void *cls,
+				const struct LookupMessage *message)
+{
+  GNUNET_MQ_check_zero_termination (message);
+  return GNUNET_OK;
+}
+
+
+/**
+ * Handler for LOOKUP_BY_SUFFIX message from client, sends information
+ * about ONE identity to the client immediately.
+ *
+ * @param cls a `struct GNUNET_SERVICE_Client *`
+ * @param message the message received
+ */
+static void
+handle_lookup_by_suffix_message (void *cls,
+				 const struct LookupMessage *message)
+{
+  struct GNUNET_SERVICE_Client *client = cls;
+  const char *name;
+  struct GNUNET_MQ_Envelope *env;
+  struct Ego *lprefix;
+
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "Received LOOKUP_BY_SUFFIX message from client\n");
+  name = (const char *) &message[1];
+  lprefix = NULL;
+  for (struct Ego *ego = ego_head; NULL != ego; ego = ego->next)
+  {
+
+    if ((strlen (ego->identifier) <= strlen (name)) &&
+        (0 == strcmp (ego->identifier,
+		      &name[strlen (name) - strlen (ego->identifier)])) &&
+        ((strlen (name) == strlen (ego->identifier)) ||
+         ('.' == name[strlen (name) -
+		      strlen (ego->identifier) - 1])) &&
+        ((NULL == lprefix) ||
+         (strlen (ego->identifier) > strlen (lprefix->identifier))))
+    {
+      /* found better match, update! */
+      lprefix = ego;
+    }
+  }
+  if (NULL != lprefix)
+  {
+    env = create_update_message (lprefix);
+    GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client), env);
+    GNUNET_SERVICE_client_continue (client);
+    return;
+  }
+  send_result_code (client,
+                    0,
+                    "ego not found");
+  GNUNET_SERVICE_client_continue (client);
+}
+
 
 /**
  * Checks a #GNUNET_MESSAGE_TYPE_IDENTITY_GET_DEFAULT message
@@ -429,7 +549,7 @@ static int
 key_cmp (const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk1,
          const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk2)
 {
-  return memcmp (pk1, pk2, sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey));
+  return GNUNET_memcmp (pk1, pk2);
 }
 
 /**
@@ -1061,6 +1181,14 @@ GNUNET_SERVICE_MAIN
                           GNUNET_MESSAGE_TYPE_IDENTITY_START,
                           struct GNUNET_MessageHeader,
                           NULL),
+ GNUNET_MQ_hd_var_size (lookup_message,
+                        GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP,
+                        struct LookupMessage,
+                        NULL),
+ GNUNET_MQ_hd_var_size (lookup_by_suffix_message,
+                        GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX,
+                        struct LookupMessage,
+                        NULL),
  GNUNET_MQ_hd_var_size (get_default_message,
                         GNUNET_MESSAGE_TYPE_IDENTITY_GET_DEFAULT,
                         struct GetDefaultMessage,

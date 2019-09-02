@@ -456,18 +456,29 @@ ensure_folder_exist (void)
 
 
 char *
-store_prefix_file_name (const struct GNUNET_PeerIdentity *peer,
+store_prefix_file_name (const unsigned int index,
                         const char *prefix)
 {
   int len_file_name;
   int out_size;
   char *file_name;
-  const char *pid_long;
+  char index_str[64];
 
   if (GNUNET_SYSERR == ensure_folder_exist()) return NULL;
-  pid_long = GNUNET_i2s_full (peer);
+  out_size = GNUNET_snprintf (index_str,
+                              64,
+                              "%u",
+                              index);
+  if (64 < out_size ||
+      0 > out_size)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+               "Failed to write string to buffer (size: %i, out_size: %i)\n",
+               64,
+               out_size);
+  }
   len_file_name = (strlen (prefix) +
-                   strlen (pid_long) +
+                   strlen (index_str) +
                    11)
                      * sizeof (char);
   file_name = GNUNET_malloc (len_file_name);
@@ -475,7 +486,7 @@ store_prefix_file_name (const struct GNUNET_PeerIdentity *peer,
                               len_file_name,
                               "/tmp/rps/%s-%s",
                               prefix,
-                              pid_long);
+                              index_str);
   if (len_file_name < out_size ||
       0 > out_size)
   {
@@ -486,5 +497,43 @@ store_prefix_file_name (const struct GNUNET_PeerIdentity *peer,
   }
   return file_name;
 }
+
+
+/**
+ * @brief Factorial
+ *
+ * @param x Number of which to compute the factorial
+ *
+ * @return Factorial of @a x
+ */
+uint32_t fac (uint32_t x)
+{
+  if (1 >= x)
+  {
+    return x;
+  }
+  return x * fac (x - 1);
+}
+
+/**
+ * @brief Binomial coefficient (n choose k)
+ *
+ * @param n
+ * @param k
+ *
+ * @return Binomial coefficient of @a n and @a k
+ */
+uint32_t binom (uint32_t n, uint32_t k)
+{
+  //GNUNET_assert (n >= k);
+  if (k > n) return 0;
+  /* if (0 > n) return 0;  - always false */
+  /* if (0 > k) return 0;  - always false */
+  if (0 == k) return 1;
+  return fac (n)
+    /
+    fac(k) * fac(n - k);
+}
+
 
 /* end of gnunet-service-rps.c */

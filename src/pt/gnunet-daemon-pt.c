@@ -1088,7 +1088,6 @@ try_open_exit ()
                                          pos,
                                          &pos->peer,
                                          &port,
-                                         GNUNET_CADET_OPTION_DEFAULT,
                                          &channel_idle_notify_cb,
                                          &cadet_channel_end_cb,
                                          cadet_handlers);
@@ -1151,9 +1150,8 @@ handle_dht_result (void *cls,
   }
   ad = data;
   for (exit = exit_head; NULL != exit; exit = exit->next)
-    if (0 == memcmp (&ad->peer,
-		     &exit->peer,
-		     sizeof (struct GNUNET_PeerIdentity)))
+    if (0 == GNUNET_memcmp (&ad->peer,
+		     &exit->peer))
       break;
   if (NULL == exit)
   {

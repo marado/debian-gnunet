@@ -36,9 +36,8 @@
 #define GNUNET_CADET_SERVICE_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -89,50 +88,10 @@ struct GNUNET_CADET_ChannelTunnelNumber
    * Given two peers, both may initiate channels over the same tunnel.
    * The @e cn must be greater or equal to 0x80000000 (high-bit set)
    * for tunnels initiated with the peer that has the larger peer
-   * identity as compared using #GNUNET_CRYPTO_cmp_peer_identity().
+   * identity as compared using #GNUNET_memcmp().
    */
   uint32_t cn GNUNET_PACKED;
 };
-
-
-/**
- * Channel options.  Second line indicates filed in the
- * CadetChannelInfo union carrying the answer.
- */
-enum GNUNET_CADET_ChannelOption
-{
-  /**
-   * Default options: unreliable, default buffering, not out of order.
-   */
-  GNUNET_CADET_OPTION_DEFAULT    = 0x0,
-
-  /**
-   * Disable buffering on intermediate nodes (for minimum latency).
-   * Yes/No.
-   */
-  GNUNET_CADET_OPTION_NOBUFFER   = 0x1,
-
-  /**
-   * Enable channel reliability, lost messages will be retransmitted.
-   * Yes/No.
-   */
-  GNUNET_CADET_OPTION_RELIABLE   = 0x2,
-
-  /**
-   * Enable out of order delivery of messages.
-   * Set bit for out-of-order delivery.
-   */
-  GNUNET_CADET_OPTION_OUT_OF_ORDER = 0x4,
-
-  /**
-   * Who is the peer at the other end of the channel.
-   * Only for use in @c GNUNET_CADET_channel_get_info
-   * struct GNUNET_PeerIdentity *peer
-   */
-  GNUNET_CADET_OPTION_PEER       = 0x8
-
-};
-
 
 /**
  * Method called whenever a peer connects to a port in MQ-based CADET.
@@ -146,10 +105,10 @@ enum GNUNET_CADET_ChannelOption
  *         - Each the #GNUNET_MQ_MessageCallback handlers for each message
  *           received on the @a channel.
  */
-typedef void *
-(*GNUNET_CADET_ConnectEventHandler) (void *cls,
-                                     struct GNUNET_CADET_Channel *channel,
-                                     const struct GNUNET_PeerIdentity *source);
+typedef void *(*GNUNET_CADET_ConnectEventHandler) (
+  void *cls,
+  struct GNUNET_CADET_Channel *channel,
+  const struct GNUNET_PeerIdentity *source);
 
 
 /**
@@ -163,9 +122,9 @@ typedef void *
  * @param cls Channel closure.
  * @param channel Connection to the other end (henceforth invalid).
  */
-typedef void
-(*GNUNET_CADET_DisconnectEventHandler) (void *cls,
-                                        const struct GNUNET_CADET_Channel *channel);
+typedef void (*GNUNET_CADET_DisconnectEventHandler) (
+  void *cls,
+  const struct GNUNET_CADET_Channel *channel);
 
 
 /**
@@ -182,10 +141,10 @@ typedef void
  * @param window_size New window size. If the is more messages than buffer size
  *                    this value will be negative. -- FIXME: make unsigned, we never call negative?
  */
-typedef void
-(*GNUNET_CADET_WindowSizeEventHandler) (void *cls,
-                                        const struct GNUNET_CADET_Channel *channel,
-                                        int window_size);
+typedef void (*GNUNET_CADET_WindowSizeEventHandler) (
+  void *cls,
+  const struct GNUNET_CADET_Channel *channel,
+  int window_size);
 
 
 /**
@@ -257,7 +216,6 @@ GNUNET_CADET_close_port (struct GNUNET_CADET_Port *p);
  *                    - Each message type callback in @a handlers
  * @param destination Peer identity the channel should go to.
  * @param port Identification of the destination port.
- * @param options CadetOption flag field, with all desired option bits set to 1.
  * @param window_changes Function called when the transmit window size changes.
  *                       Can be NULL if this data is of no interest.
  * TODO                  Not yet implemented.
@@ -270,7 +228,6 @@ GNUNET_CADET_channel_create (struct GNUNET_CADET_Handle *h,
                              void *channel_cls,
                              const struct GNUNET_PeerIdentity *destination,
                              const struct GNUNET_HashCode *port,
-                             enum GNUNET_CADET_ChannelOption options,
                              GNUNET_CADET_WindowSizeEventHandler window_changes,
                              GNUNET_CADET_DisconnectEventHandler disconnects,
                              const struct GNUNET_MQ_MessageHandler *handlers);
@@ -322,7 +279,16 @@ GNUNET_CADET_receive_done (struct GNUNET_CADET_Channel *channel);
 const struct GNUNET_HashCode *
 GC_u2h (uint32_t port);
 
+enum GNUNET_CADET_ChannelInfoOption
+{
+  /**
+   * Who is the peer at the other end of the channel.
+   * Only for use in @c GNUNET_CADET_channel_get_info
+   * struct GNUNET_PeerIdentity *peer
+   */
+  GNUNET_CADET_OPTION_PEER = 0x0
 
+};
 
 /**
  * Union to retrieve info about a channel.
@@ -346,13 +312,12 @@ union GNUNET_CADET_ChannelInfo
  * Get information about a channel.
  *
  * @param channel Channel handle.
- * @param option Query type GNUNET_CADET_OPTION_*
  * @param ... dependant on option, currently not used
  * @return Union with an answer to the query.
  */
 const union GNUNET_CADET_ChannelInfo *
 GNUNET_CADET_channel_get_info (struct GNUNET_CADET_Channel *channel,
-			       enum GNUNET_CADET_ChannelOption option,
+			       enum GNUNET_CADET_ChannelInfoOption option,
                                ...);
 
 
@@ -393,9 +358,9 @@ struct GNUNET_CADET_ChannelInternals
  * @param cls Closure.
  * @param info internal details, NULL for end of list
  */
-typedef void
-(*GNUNET_CADET_ChannelCB) (void *cls,
-                           const struct GNUNET_CADET_ChannelInternals *info);
+typedef void (*GNUNET_CADET_ChannelCB) (
+  void *cls,
+  const struct GNUNET_CADET_ChannelInternals *info);
 
 
 /**
@@ -465,9 +430,9 @@ struct GNUNET_CADET_PeerListEntry
  * @param cls Closure.
  * @param ple information about a peer, or NULL on "EOF".
  */
-typedef void
-(*GNUNET_CADET_PeersCB) (void *cls,
-			 const struct GNUNET_CADET_PeerListEntry *ple);
+typedef void (*GNUNET_CADET_PeersCB) (
+  void *cls,
+  const struct GNUNET_CADET_PeerListEntry *ple);
 
 
 /**
@@ -488,8 +453,8 @@ struct GNUNET_CADET_PeersLister;
  */
 struct GNUNET_CADET_PeersLister *
 GNUNET_CADET_list_peers (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			 GNUNET_CADET_PeersCB callback,
-			 void *callback_cls);
+                         GNUNET_CADET_PeersCB callback,
+                         void *callback_cls);
 
 
 /**
@@ -528,7 +493,6 @@ struct GNUNET_CADET_PeerPathDetail
    * path ends with the destination peer (given in @e peer).
    */
   const struct GNUNET_PeerIdentity *path;
-
 };
 
 
@@ -539,9 +503,9 @@ struct GNUNET_CADET_PeerPathDetail
  * @param cls Closure.
  * @param ppd details about a path to the peer, NULL for end of information
  */
-typedef void
-(*GNUNET_CADET_PathCB) (void *cls,
-			const struct GNUNET_CADET_PeerPathDetail *ppd);
+typedef void (*GNUNET_CADET_PathCB) (
+  void *cls,
+  const struct GNUNET_CADET_PeerPathDetail *ppd);
 
 
 /**
@@ -561,9 +525,9 @@ struct GNUNET_CADET_GetPath;
  */
 struct GNUNET_CADET_GetPath *
 GNUNET_CADET_get_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
-		       const struct GNUNET_PeerIdentity *id,
-		       GNUNET_CADET_PathCB callback,
-		       void *callback_cls);
+                       const struct GNUNET_PeerIdentity *id,
+                       GNUNET_CADET_PathCB callback,
+                       void *callback_cls);
 
 
 /**
@@ -617,9 +581,9 @@ struct GNUNET_CADET_TunnelDetails
  * @param cls Closure.
  * @param td tunnel details, NULL for end of list
  */
-typedef void
-(*GNUNET_CADET_TunnelsCB) (void *cls,
-			   const struct GNUNET_CADET_TunnelDetails *td);
+typedef void (*GNUNET_CADET_TunnelsCB) (
+  void *cls,
+  const struct GNUNET_CADET_TunnelDetails *td);
 
 
 /**
@@ -640,8 +604,8 @@ struct GNUNET_CADET_ListTunnels;
  */
 struct GNUNET_CADET_ListTunnels *
 GNUNET_CADET_list_tunnels (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			   GNUNET_CADET_TunnelsCB callback,
-			   void *callback_cls);
+                           GNUNET_CADET_TunnelsCB callback,
+                           void *callback_cls);
 
 
 /**
@@ -654,7 +618,7 @@ void *
 GNUNET_CADET_list_tunnels_cancel (struct GNUNET_CADET_ListTunnels *lt);
 
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus
@@ -664,6 +628,6 @@ GNUNET_CADET_list_tunnels_cancel (struct GNUNET_CADET_ListTunnels *lt);
 /* ifndef GNUNET_CADET_SERVICE_H */
 #endif
 
-/** @} */  /* end of group */
+/** @} */ /* end of group */
 
 /* end of gnunet_cadet_service.h */

@@ -92,9 +92,6 @@
 /* Define to 1 if you have the <ctype.h> header file. */
 #define HAVE_CTYPE_H 1
 
-/* Define to 1 if you have the <curl/curl.h> header file. */
-#define HAVE_CURL_CURL_H 1
-
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #define HAVE_DCGETTEXT 1
@@ -106,6 +103,10 @@
 /* Define to 1 if you have the declaration of `gcry_mpi_set_opaque_copy', and
    to 0 if you don't. */
 #define HAVE_DECL_GCRY_MPI_SET_OPAQUE_COPY 1
+
+/* Define to 1 if you have the declaration of `struct in6_ifreq', and to 0 if
+   you don't. */
+#define HAVE_DECL_STRUCT_IN6_IFREQ 0
 
 /* Define to 1 if you have the declaration of `_stati64', and to 0 if you
    don't. */
@@ -129,6 +130,9 @@
 
 /* Define to 1 if you have the <execinfo.h> header file. */
 #define HAVE_EXECINFO_H 1
+
+/* explicit_bzero supported */
+/* #undef HAVE_EXPLICIT_BZERO */
 
 /* Define to 1 if you have the <extractor.h> header file. */
 #define HAVE_EXTRACTOR_H 1
@@ -196,9 +200,6 @@
 /* Define to 1 if `presolve' is a member of `glp_iocp'. */
 #define HAVE_GLP_IOCP_PRESOLVE 1
 
-/* Define to 1 if you have the <gnurl/curl.h> header file. */
-/* #undef HAVE_GNURL_CURL_H */
-
 /* We have GnuTLS */
 #define HAVE_GNUTLS true
 
@@ -242,7 +243,7 @@
 #define HAVE_JANSSON 1
 
 /* Define to 1 if you have the <jansson.h> header file. */
-#define HAVE_JANSSON_H 1
+/* #undef HAVE_JANSSON_H */
 
 /* Define to 1 if you have the <kstat.h> header file. */
 /* #undef HAVE_KSTAT_H */
@@ -259,7 +260,7 @@
 /* Lacking bluetooth library */
 #define HAVE_LIBBLUETOOTH 1
 
-/* Have CURL */
+/* Lacking libcurl */
 #define HAVE_LIBCURL 1
 
 /* Define to 1 if you have the `curl-gnutls' library (-lcurl-gnutls). */
@@ -355,6 +356,9 @@
 /* memrchr supported */
 #define HAVE_MEMRCHR 1
 
+/* memset_s supported */
+/* #undef HAVE_MEMSET_S */
+
 /* We have libmicrohttpd */
 #define HAVE_MHD 1
 
@@ -365,7 +369,7 @@
 #define HAVE_MREMAP 1
 
 /* Define to 1 if you have the <mysql/mysql.h> header file. */
-#define HAVE_MYSQL_MYSQL_H 1
+/* #undef HAVE_MYSQL_MYSQL_H */
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
@@ -568,6 +572,9 @@
 /* Define to 1 if you have the <terminos.h> header file. */
 /* #undef HAVE_TERMINOS_H */
 
+/* Define this if __thread is supported */
+#define HAVE_THREAD_LOCAL_GCC 1
+
 /* Define if struct tm has the tm_gmtoff member. */
 #define HAVE_TM_GMTOFF 1
 
@@ -601,6 +608,12 @@
 /* Define to 1 if `vfork' works. */
 #define HAVE_WORKING_VFORK 1
 
+/* Lacking zbar library */
+#define HAVE_ZBAR 1
+
+/* Define to 1 if you have the <zbar.h> header file. */
+/* #undef HAVE_ZBAR_H */
+
 /* Have compression library */
 #define HAVE_ZLIB /**/
 
@@ -612,6 +625,12 @@
 
 /* Path to ifconfig */
 #define IFCONFIG "/sbin/ifconfig"
+
+/* Not including the man pages in the build and installation */
+#define INCLUDE_MANPAGES 1
+
+/* Path to ip6tables */
+#define IP6TABLES "/sbin/ip6tables"
 
 /* Path to iptables */
 #define IPTABLES "/sbin/iptables"
@@ -777,7 +796,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.11.0"
+#define PACKAGE_STRING "gnunet 0.11.6"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -786,7 +805,10 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.11.0"
+#define PACKAGE_VERSION "0.11.6"
+
+/* Path to ip */
+#define PATH_TO_IP "/bin/ip"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -812,6 +834,9 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
+/* Path to sysctl */
+#define SYSCTL "/sbin/sysctl"
+
 /* Canonical compilation */
 #define TALER_WALLET_ONLY 0
 
@@ -828,10 +853,10 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-965cf32ea"
+#define VCS_VERSION "git-98f2f7c90"
 
 /* Version number of package */
-#define VERSION "0.11.0"
+#define VERSION "0.11.6"
 
 /* This is a Windows system */
 /* #undef WINDOWS */

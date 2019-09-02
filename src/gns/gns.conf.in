@@ -3,7 +3,7 @@ START_ON_DEMAND = @START_ON_DEMAND@
 IMMEDIATE_START = YES
 HOSTNAME = localhost
 BINARY = gnunet-service-gns
-UNIXPATH = $GNUNET_USER_RUNTIME_DIR/gnunet-service-gns.sock
+UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-service-gns.sock
 @JAVAPORT@PORT = 2102
 
 # Do we require users that want to access GNS to run this process
@@ -26,12 +26,14 @@ INTERCEPT_DNS = NO
 
 # Zones
 .pin = DWJASSPE33MRN8T6Q0PENRNBTQY0E6ZYGTRCDP5DGPBF2CRJMJEG
-.fr = TFDAXBXMAN40MCG4E8Y9Y1C6D16JCMDPH2VMD30KMB92SECEMYGG
+#.fr = TFDAXBXMAN40MCG4E8Y9Y1C6D16JCMDPH2VMD30KMB92SECEMYGG
 
 [gns-proxy]
 BINARY = gnunet-gns-proxy
 START_ON_DEMAND = NO
 RUN_PER_USER = YES
+BIND_TO=127.0.0.1
+BIND_TO6=::1
 
 # Where is the certificate for the GNS proxy stored?
 PROXY_CACERT = $GNUNET_DATA_HOME/gns/gns_ca_cert.pem
@@ -42,6 +44,8 @@ PROXY_UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-gns-proxy.sock
 BINARY = gnunet-dns2gns
 START_ON_DEMAND = NO
 RUN_PER_USER = YES
+BIND_TO=127.0.0.1
+BIND_TO6=::1
 
 # -d: DNS resolver to use, -s: suffix to use, -f: fcfs suffix to use
 OPTIONS = -d 8.8.8.8

@@ -44,10 +44,14 @@
  *
  * @param cls the closure given alongside this function.
  * @param id the PeerID that was returned
+ * @param probability The probability with which this sampler has seen all ids
+ * @param num_observed How many ids this sampler has observed
  */
 typedef void
 (*RPS_sampler_rand_peer_ready_cont) (void *cls,
-                                     const struct GNUNET_PeerIdentity *id);
+                                     const struct GNUNET_PeerIdentity *id,
+                                     double probability,
+                                     uint32_t num_observed);
 
 
 /**
@@ -69,6 +73,22 @@ typedef void
 (*RPS_sampler_n_rand_peers_ready_cb) (const struct GNUNET_PeerIdentity *ids,
                                       uint32_t num_peers,
                                       void *cls);
+
+
+/**
+ * Callback that is called from _get_n_rand_peers() when the PeerIDs are ready.
+ *
+ * @param cls the closure given alongside this function.
+ * @param probability Probability with which all IDs have been observed
+ * @param num_observed Number of observed IDs
+ * @param ids the PeerIDs that were returned
+ *        to be freed
+ */
+  typedef void
+(*RPS_sampler_sinlge_info_ready_cb) (const struct GNUNET_PeerIdentity *ids,
+                                     void *cls,
+                                     double probability,
+                                     uint32_t num_observed);
 
 
 /**
@@ -95,6 +115,11 @@ struct GetPeerCls
    * The #RPS_SamplerRequestHandle this single request belongs to.
    */
   struct RPS_SamplerRequestHandle *req_handle;
+
+  /**
+   * The #RPS_SamplerRequestHandleSingleInfo this single request belongs to.
+   */
+  struct RPS_SamplerRequestHandleSingleInfo *req_single_info_handle;
 
   /**
    * The task for this function.
@@ -147,6 +172,25 @@ struct RPS_Sampler
   struct GNUNET_TIME_Relative max_round_interval;
 
   /**
+   * @brief The estimated total number of peers in the network
+   */
+  uint32_t num_peers_estim;
+
+  /**
+   * @brief The desired probability with which we want to have observed all
+   * peers.
+   */
+  double desired_probability;
+
+  /**
+   * @brief A factor that catches the 'bias' of a random stream of peer ids.
+   *
+   * As introduced by Brahms: Factor between the number of unique ids in a
+   * truly random stream and number of unique ids in the gossip stream.
+   */
+  double deficiency_factor;
+
+  /**
    * Stores the function to return peers. Which one it is depends on whether
    * the Sampler is the modified one or not.
    */
@@ -158,9 +202,57 @@ struct RPS_Sampler
   struct RPS_SamplerRequestHandle *req_handle_head;
   struct RPS_SamplerRequestHandle *req_handle_tail;
 
+  /**
+   * Head and tail for the DLL to store the #RPS_SamplerRequestHandleSingleInfo
+   */
+  struct RPS_SamplerRequestHandleSingleInfo *req_handle_single_head;
+  struct RPS_SamplerRequestHandleSingleInfo *req_handle_single_tail;
+
   struct SamplerNotifyUpdateCTX *notify_ctx_head;
   struct SamplerNotifyUpdateCTX *notify_ctx_tail;
 };
+
+
+/**
+ * @brief Update the current estimate of the network size stored at the sampler
+ *
+ * Used for computing the condition when to return elements to the client
+ *
+ * @param sampler The sampler to update
+ * @param num_peers The estimated value
+ */
+void
+RPS_sampler_update_with_nw_size (struct RPS_Sampler *sampler,
+                                 uint32_t num_peers);
+
+
+/**
+ * @brief Set the probability that is needed at least with what a sampler
+ * element has to have observed all elements from the network.
+ *
+ * Only used/useful with the client sampler
+ * (Maybe move to rps-sampler_client.{h|c} ?)
+ *
+ * @param sampler
+ * @param desired_probability
+ */
+void
+RPS_sampler_set_desired_probability (struct RPS_Sampler *sampler,
+                                     double desired_probability);
+
+
+/**
+ * @brief Set the deficiency factor.
+ *
+ * Only used/useful with the client sampler
+ * (Maybe move to rps-sampler_client.{h|c} ?)
+ *
+ * @param sampler
+ * @param desired_probability
+ */
+void
+RPS_sampler_set_deficiency_factor (struct RPS_Sampler *sampler,
+                                   double deficiency_factor);
 
 
 /**
@@ -245,6 +337,19 @@ RPS_sampler_get_n_rand_peers (struct RPS_Sampler *sampler,
 
 
 /**
+ * Get one random peer with additional information.
+ *
+ * @param sampler the sampler to get peers from.
+ * @param cb callback that will be called once the ids are ready.
+ * @param cls closure given to @a cb
+ */
+struct RPS_SamplerRequestHandleSingleInfo *
+RPS_sampler_get_rand_peer_info (struct RPS_Sampler *sampler,
+                                RPS_sampler_sinlge_info_ready_cb cb,
+                                void *cls);
+
+
+/**
  * Counts how many Samplers currently hold a given PeerID.
  *
  * @param sampler the sampler to count ids in.
@@ -264,6 +369,16 @@ RPS_sampler_count_id (struct RPS_Sampler *sampler,
  */
 void
 RPS_sampler_request_cancel (struct RPS_SamplerRequestHandle *req_handle);
+
+
+/**
+ * Cancle a request issued through #RPS_sampler_n_rand_peers_ready_cb.
+ *
+ * @param req_handle the handle to the request
+ */
+void
+RPS_sampler_request_single_info_cancel (
+    struct RPS_SamplerRequestHandleSingleInfo *req_single_info_handle);
 
 
 /**

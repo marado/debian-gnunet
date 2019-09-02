@@ -92,9 +92,10 @@ target_triplet = @target@
 subdir = src/include
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -151,7 +152,8 @@ am__gnunetinclude_HEADERS_DIST = platform.h plibc.h winproc.h \
 	gnunet_constants.h gnunet_configuration_lib.h \
 	gnunet_consensus_service.h gnunet_container_lib.h \
 	gnunet_conversation_service.h gnunet_core_service.h \
-	gnunet_crypto_lib.h gnunet_curl_lib.h gnunet_datacache_lib.h \
+	gnunet_credential_service.h gnunet_crypto_lib.h \
+	gnunet_curl_lib.h gnunet_datacache_lib.h \
 	gnunet_datacache_plugin.h gnunet_datastore_service.h \
 	gnunet_datastore_plugin.h gnunet_db_lib.h gnunet_dht_service.h \
 	gnunet_disk_lib.h gnunet_dnsparser_lib.h gnunet_dnsstub_lib.h \
@@ -161,11 +163,10 @@ am__gnunetinclude_HEADERS_DIST = platform.h plibc.h winproc.h \
 	gnunet_gnsrecord_plugin.h gnunet_hello_lib.h \
 	gnunet_helper_lib.h gnunet_identity_service.h gnunet_abe_lib.h \
 	gnunet_reclaim_attribute_lib.h \
-	gnunet_reclaim_attribute_plugin.h gnunet_reclaim_plugin.h \
-	gnunet_reclaim_service.h gnunet_json_lib.h gnunet_load_lib.h \
-	gnunet_cadet_service.h gnunet_microphone_lib.h \
-	gnunet_mst_lib.h gnunet_mq_lib.h gnunet_my_lib.h \
-	gnunet_mysql_lib.h gnunet_namecache_plugin.h \
+	gnunet_reclaim_attribute_plugin.h gnunet_reclaim_service.h \
+	gnunet_json_lib.h gnunet_load_lib.h gnunet_cadet_service.h \
+	gnunet_microphone_lib.h gnunet_mst_lib.h gnunet_mq_lib.h \
+	gnunet_my_lib.h gnunet_mysql_lib.h gnunet_namecache_plugin.h \
 	gnunet_namecache_service.h gnunet_namestore_plugin.h \
 	gnunet_namestore_service.h gnunet_nat_auto_service.h \
 	gnunet_nat_service.h gnunet_nc_lib.h gnunet_network_lib.h \
@@ -183,7 +184,8 @@ am__gnunetinclude_HEADERS_DIST = platform.h plibc.h winproc.h \
 	gnunet_statistics_service.h gnunet_strings_lib.h \
 	gnunet_testbed_service.h gnunet_testbed_logger_service.h \
 	gnunet_testing_lib.h gnunet_time_lib.h \
-	gnunet_transport_service.h gnunet_transport_address_service.h \
+	gnunet_transport_service.h \
+	gnunet_transport_application_service.h \
 	gnunet_transport_communication_service.h \
 	gnunet_transport_core_service.h \
 	gnunet_transport_hello_service.h \
@@ -323,7 +325,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -381,6 +388,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -408,8 +416,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -451,6 +462,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@
@@ -524,6 +536,7 @@ EXTRA_DIST = \
 @TALER_ONLY_FALSE@  gnunet_container_lib.h \
 @TALER_ONLY_FALSE@  gnunet_conversation_service.h \
 @TALER_ONLY_FALSE@  gnunet_core_service.h \
+@TALER_ONLY_FALSE@  gnunet_credential_service.h \
 @TALER_ONLY_FALSE@  gnunet_crypto_lib.h \
 @TALER_ONLY_FALSE@  gnunet_curl_lib.h \
 @TALER_ONLY_FALSE@  gnunet_datacache_lib.h \
@@ -549,7 +562,6 @@ EXTRA_DIST = \
 @TALER_ONLY_FALSE@  gnunet_abe_lib.h \
 @TALER_ONLY_FALSE@  gnunet_reclaim_attribute_lib.h \
 @TALER_ONLY_FALSE@  gnunet_reclaim_attribute_plugin.h \
-@TALER_ONLY_FALSE@  gnunet_reclaim_plugin.h \
 @TALER_ONLY_FALSE@  gnunet_reclaim_service.h \
 @TALER_ONLY_FALSE@  gnunet_json_lib.h \
 @TALER_ONLY_FALSE@  gnunet_load_lib.h \
@@ -602,7 +614,7 @@ EXTRA_DIST = \
 @TALER_ONLY_FALSE@  gnunet_testing_lib.h \
 @TALER_ONLY_FALSE@  gnunet_time_lib.h \
 @TALER_ONLY_FALSE@  gnunet_transport_service.h \
-@TALER_ONLY_FALSE@  gnunet_transport_address_service.h \
+@TALER_ONLY_FALSE@  gnunet_transport_application_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_communication_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_core_service.h \
 @TALER_ONLY_FALSE@  gnunet_transport_hello_service.h \

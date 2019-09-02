@@ -24,7 +24,6 @@
  * @author Christian Grothoff
  *
  * TODO:
- * - add and use util/ check for IPv6 availability (#5553)
  * - support DNS names in BINDTO option (#5528)
  * - support NAT connection reversal method (#5529)
  * - support other TCP-specific NAT traversal methods (#5531)
@@ -42,6 +41,13 @@
 #include "gnunet_nat_service.h"
 #include "gnunet_statistics_service.h"
 #include "gnunet_transport_communication_service.h"
+
+/**
+ * How long do we believe our addresses to remain up (before
+ * the other peer should revalidate).
+ */
+#define ADDRESS_VALIDITY_PERIOD \
+  GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_HOURS, 4)
 
 /**
  * How many messages do we keep at most in the queue to the
@@ -79,7 +85,9 @@
  * Size of the initial key exchange message sent first in both
  * directions.
  */
-#define INITIAL_KX_SIZE (sizeof (struct GNUNET_CRYPTO_EcdhePublicKey)+sizeof (struct TCPConfirmation))
+#define INITIAL_KX_SIZE                           \
+  (sizeof (struct GNUNET_CRYPTO_EcdhePublicKey) + \
+   sizeof (struct TCPConfirmation))
 
 
 /**
@@ -149,7 +157,6 @@ struct TCPConfirmation
    * (if receiver persists times by sender).
    */
   struct GNUNET_TIME_AbsoluteNBO monotonic_time;
-
 };
 
 
@@ -170,7 +177,7 @@ struct TCPBox
   /**
    * HMAC for the following encrypted message.  Yes, we MUST use
    * mac-then-encrypt here, as we want to hide the message sizes on
-   * the wire (zero plaintext design!).  Using CTR mode padding oracle
+   * the wire (zero plaintext design!).  Using CTR mode, padding oracle
    * attacks do not apply.  Besides, due to the use of ephemeral keys
    * (hopefully with effective replay protection from monotonic time!)
    * the attacker is limited in using the oracle.
@@ -179,7 +186,6 @@ struct TCPBox
 
   /* followed by as may bytes of payload as indicated in @e header,
      excluding the TCPBox itself! */
-
 };
 
 
@@ -220,7 +226,6 @@ struct TCPRekey
    * (if receiver persists times by sender).
    */
   struct GNUNET_TIME_AbsoluteNBO monotonic_time;
-
 };
 
 
@@ -246,7 +251,6 @@ struct TCPFinish
    * the attacker is limited in using the oracle.
    */
   struct GNUNET_ShortHashCode hmac;
-
 };
 
 
@@ -291,7 +295,8 @@ struct Queue
   struct GNUNET_HashCode out_hmac;
 
   /**
-   * Our ephemeral key. Stored here temporarily during rekeying / key generation.
+   * Our ephemeral key. Stored here temporarily during rekeying / key
+   * generation.
    */
   struct GNUNET_CRYPTO_EcdhePrivateKey ephemeral;
 
@@ -422,13 +427,6 @@ struct Queue
    * #core_read_finished_cb() has been called.
    */
   int destroyed;
-
-  /**
-   * #GNUNET_YES after #inject_key() placed the rekey message into the
-   * plaintext buffer. Once the plaintext buffer is drained, this
-   * means we must switch to the new key material.
-   */
-  int rekey_state;
 
   /**
    * #GNUNET_YES if we just rekeyed and must thus possibly
@@ -583,8 +581,8 @@ queue_destroy (struct Queue *queue)
   struct GNUNET_MQ_Handle *mq;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Disconnecting queue for peer `%s'\n",
-	      GNUNET_i2s (&queue->target));
+              "Disconnecting queue for peer `%s'\n",
+              GNUNET_i2s (&queue->target));
   if (NULL != (mq = queue->mq))
   {
     queue->mq = NULL;
@@ -595,14 +593,13 @@ queue_destroy (struct Queue *queue)
     GNUNET_TRANSPORT_communicator_mq_del (queue->qh);
     queue->qh = NULL;
   }
-  GNUNET_assert (GNUNET_YES ==
-                 GNUNET_CONTAINER_multipeermap_remove (queue_map,
-						       &queue->target,
-						       queue));
+  GNUNET_assert (
+    GNUNET_YES ==
+    GNUNET_CONTAINER_multipeermap_remove (queue_map, &queue->target, queue));
   GNUNET_STATISTICS_set (stats,
-			 "# queues active",
-			 GNUNET_CONTAINER_multipeermap_size (queue_map),
-			 GNUNET_NO);
+                         "# queues active",
+                         GNUNET_CONTAINER_multipeermap_size (queue_map),
+                         GNUNET_NO);
   if (NULL != queue->read_task)
   {
     GNUNET_SCHEDULER_cancel (queue->read_task);
@@ -623,9 +620,9 @@ queue_destroy (struct Queue *queue)
     GNUNET_free (queue);
   if (NULL == listen_task)
     listen_task = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
-						 listen_sock,
-						 &listen_cb,
-						 NULL);
+                                                 listen_sock,
+                                                 &listen_cb,
+                                                 NULL);
 }
 
 
@@ -646,18 +643,16 @@ calculate_hmac (struct GNUNET_HashCode *hmac_secret,
   struct GNUNET_HashCode mac;
 
   GNUNET_CRYPTO_hmac_raw (hmac_secret,
-			  sizeof (struct GNUNET_HashCode),
-			  buf,
-			  buf_size,
-			  &mac);
+                          sizeof (struct GNUNET_HashCode),
+                          buf,
+                          buf_size,
+                          &mac);
   /* truncate to `struct GNUNET_ShortHashCode` */
-  memcpy (smac,
-	  &mac,
-	  sizeof (struct GNUNET_ShortHashCode));
+  memcpy (smac, &mac, sizeof (struct GNUNET_ShortHashCode));
   /* ratchet hmac key */
   GNUNET_CRYPTO_hash (hmac_secret,
-		      sizeof (struct GNUNET_HashCode),
-		      hmac_secret);
+                      sizeof (struct GNUNET_HashCode),
+                      hmac_secret);
 }
 
 
@@ -672,21 +667,14 @@ queue_finish (struct Queue *queue)
 {
   struct TCPFinish fin;
 
-  memset (&fin,
-	  0,
-	  sizeof (fin));
+  memset (&fin, 0, sizeof (fin));
   fin.header.size = htons (sizeof (fin));
   fin.header.type = htons (GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_FINISH);
-  calculate_hmac (&queue->out_hmac,
-                  &fin,
-                  sizeof (fin),
-                  &fin.hmac);
+  calculate_hmac (&queue->out_hmac, &fin, sizeof (fin), &fin.hmac);
   /* if there is any message left in pwrite_buf, we
      overwrite it (possibly dropping the last message
      from CORE hard here) */
-  memcpy (queue->pwrite_buf,
-	  &fin,
-	  sizeof (fin));
+  memcpy (queue->pwrite_buf, &fin, sizeof (fin));
   queue->pwrite_off = sizeof (fin);
   /* This flag will ensure that #queue_write() no longer
      notifies CORE about the possibility of sending
@@ -706,8 +694,8 @@ queue_finish (struct Queue *queue)
 static void
 reschedule_queue_timeout (struct Queue *queue)
 {
-  queue->timeout
-    = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
+  queue->timeout =
+    GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
 }
 
 
@@ -728,20 +716,18 @@ queue_read (void *cls);
  * @param success #GNUNET_OK on success
  */
 static void
-core_read_finished_cb (void *cls,
-		       int success)
+core_read_finished_cb (void *cls, int success)
 {
   struct Queue *queue = cls;
 
   if (GNUNET_OK != success)
     GNUNET_STATISTICS_update (stats,
-			      "# messages lost in communicator API towards CORE",
-			      1,
-			      GNUNET_NO);
+                              "# messages lost in communicator API towards CORE",
+                              1,
+                              GNUNET_NO);
   queue->backpressure--;
   /* handle deferred queue destruction */
-  if ( (queue->destroyed) &&
-       (0 == queue->backpressure) )
+  if ((queue->destroyed) && (0 == queue->backpressure))
   {
     GNUNET_free (queue);
     return;
@@ -749,11 +735,12 @@ core_read_finished_cb (void *cls,
   reschedule_queue_timeout (queue);
   /* possibly unchoke reading, now that CORE made progress */
   if (NULL == queue->read_task)
-    queue->read_task
-      = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_absolute_get_remaining (queue->timeout),
-				       queue->sock,
-				       &queue_read,
-				       queue);
+    queue->read_task =
+      GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_absolute_get_remaining (
+                                       queue->timeout),
+                                     queue->sock,
+                                     &queue_read,
+                                     queue);
 }
 
 
@@ -768,8 +755,8 @@ core_read_finished_cb (void *cls,
  */
 static void
 pass_plaintext_to_core (struct Queue *queue,
-			const void *plaintext,
-			size_t plaintext_len)
+                        const void *plaintext,
+                        size_t plaintext_len)
 {
   const struct GNUNET_MessageHeader *hdr = plaintext;
   int ret;
@@ -782,18 +769,19 @@ pass_plaintext_to_core (struct Queue *queue,
     return;
   }
   ret = GNUNET_TRANSPORT_communicator_receive (ch,
-					       &queue->target,
-					       hdr,
-					       &core_read_finished_cb,
-					       queue);
+                                               &queue->target,
+                                               hdr,
+                                               ADDRESS_VALIDITY_PERIOD,
+                                               &core_read_finished_cb,
+                                               queue);
   if (GNUNET_OK == ret)
     queue->backpressure++;
   GNUNET_break (GNUNET_NO != ret); /* backpressure not working!? */
   if (GNUNET_SYSERR == ret)
     GNUNET_STATISTICS_update (stats,
-			      "# bytes lost due to CORE not running",
-			      plaintext_len,
-			      GNUNET_NO);
+                              "# bytes lost due to CORE not running",
+                              plaintext_len,
+                              GNUNET_NO);
 }
 
 
@@ -808,53 +796,50 @@ pass_plaintext_to_core (struct Queue *queue,
  */
 static void
 setup_cipher (const struct GNUNET_HashCode *dh,
-	      const struct GNUNET_PeerIdentity *pid,
-	      gcry_cipher_hd_t *cipher,
-	      struct GNUNET_HashCode *hmac_key)
+              const struct GNUNET_PeerIdentity *pid,
+              gcry_cipher_hd_t *cipher,
+              struct GNUNET_HashCode *hmac_key)
 {
-  char key[256/8];
-  char ctr[128/8];
+  char key[256 / 8];
+  char ctr[128 / 8];
 
   gcry_cipher_open (cipher,
-		    GCRY_CIPHER_AES256 /* low level: go for speed */,
-		    GCRY_CIPHER_MODE_CTR,
-		    0 /* flags */);
+                    GCRY_CIPHER_AES256 /* low level: go for speed */,
+                    GCRY_CIPHER_MODE_CTR,
+                    0 /* flags */);
+  GNUNET_assert (GNUNET_YES == GNUNET_CRYPTO_kdf (key,
+                                                  sizeof (key),
+                                                  "TCP-key",
+                                                  strlen ("TCP-key"),
+                                                  dh,
+                                                  sizeof (*dh),
+                                                  pid,
+                                                  sizeof (*pid),
+                                                  NULL,
+                                                  0));
+  gcry_cipher_setkey (*cipher, key, sizeof (key));
+  GNUNET_assert (GNUNET_YES == GNUNET_CRYPTO_kdf (ctr,
+                                                  sizeof (ctr),
+                                                  "TCP-ctr",
+                                                  strlen ("TCP-ctr"),
+                                                  dh,
+                                                  sizeof (*dh),
+                                                  pid,
+                                                  sizeof (*pid),
+                                                  NULL,
+                                                  0));
+  gcry_cipher_setctr (*cipher, ctr, sizeof (ctr));
   GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CRYPTO_kdf (key,
-				    sizeof (key),
-				    "TCP-key",
-				    strlen ("TCP-key"),
-				    dh,
-				    sizeof (*dh),
-				    pid,
-				    sizeof (*pid),
-				    NULL, 0));
-  gcry_cipher_setkey (*cipher,
-		      key,
-		      sizeof (key));
-  GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CRYPTO_kdf (ctr,
-				    sizeof (ctr),
-				    "TCP-ctr",
-				    strlen ("TCP-ctr"),
-				    dh,
-				    sizeof (*dh),
-				    pid,
-				    sizeof (*pid),
-				    NULL, 0));
-  gcry_cipher_setctr (*cipher,
-		      ctr,
-		      sizeof (ctr));
-  GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CRYPTO_kdf (hmac_key,
-				    sizeof (struct GNUNET_HashCode),
-				    "TCP-hmac",
-				    strlen ("TCP-hmac"),
-				    dh,
-				    sizeof (*dh),
-				    pid,
-				    sizeof (*pid),
-				    NULL, 0));
+                 GNUNET_CRYPTO_kdf (hmac_key,
+                                    sizeof (struct GNUNET_HashCode),
+                                    "TCP-hmac",
+                                    strlen ("TCP-hmac"),
+                                    dh,
+                                    sizeof (*dh),
+                                    pid,
+                                    sizeof (*pid),
+                                    NULL,
+                                    0));
 }
 
 
@@ -866,17 +851,12 @@ setup_cipher (const struct GNUNET_HashCode *dh,
  */
 static void
 setup_in_cipher (const struct GNUNET_CRYPTO_EcdhePublicKey *ephemeral,
-		 struct Queue *queue)
+                 struct Queue *queue)
 {
   struct GNUNET_HashCode dh;
 
-  GNUNET_CRYPTO_eddsa_ecdh (my_private_key,
-			    ephemeral,
-			    &dh);
-  setup_cipher (&dh,
-		&my_identity,
-		&queue->in_cipher,
-		&queue->in_hmac);
+  GNUNET_CRYPTO_eddsa_ecdh (my_private_key, ephemeral, &dh);
+  setup_cipher (&dh, &my_identity, &queue->in_cipher, &queue->in_hmac);
 }
 
 
@@ -889,8 +869,7 @@ setup_in_cipher (const struct GNUNET_CRYPTO_EcdhePublicKey *ephemeral,
  * @param rekey the rekey message
  */
 static void
-do_rekey (struct Queue *queue,
-	  const struct TCPRekey *rekey)
+do_rekey (struct Queue *queue, const struct TCPRekey *rekey)
 {
   struct TcpHandshakeSignature thp;
 
@@ -900,11 +879,12 @@ do_rekey (struct Queue *queue,
   thp.receiver = my_identity;
   thp.ephemeral = rekey->ephemeral;
   thp.monotonic_time = rekey->monotonic_time;
+  /* FIXME: check monotonic time is monotonic... */
   if (GNUNET_OK !=
       GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_COMMUNICATOR_TCP_REKEY,
-				  &thp.purpose,
-				  &rekey->sender_sig,
-				  &queue->target.public_key))
+                                  &thp.purpose,
+                                  &rekey->sender_sig,
+                                  &queue->target.public_key))
   {
     GNUNET_break (0);
     queue_finish (queue);
@@ -912,8 +892,7 @@ do_rekey (struct Queue *queue,
   }
   gcry_cipher_close (queue->in_cipher);
   queue->rekeyed = GNUNET_YES;
-  setup_in_cipher (&rekey->ephemeral,
-		   queue);
+  setup_in_cipher (&rekey->ephemeral, queue);
 }
 
 
@@ -927,14 +906,11 @@ do_rekey (struct Queue *queue,
 static size_t
 try_handle_plaintext (struct Queue *queue)
 {
-  const struct GNUNET_MessageHeader *hdr
-    = (const struct GNUNET_MessageHeader *) queue->pread_buf;
-  const struct TCPBox *box
-    = (const struct TCPBox *) queue->pread_buf;
-  const struct TCPRekey *rekey
-    = (const struct TCPRekey *) queue->pread_buf;
-  const struct TCPFinish *fin
-    = (const struct TCPFinish *) queue->pread_buf;
+  const struct GNUNET_MessageHeader *hdr =
+    (const struct GNUNET_MessageHeader *) queue->pread_buf;
+  const struct TCPBox *box = (const struct TCPBox *) queue->pread_buf;
+  const struct TCPRekey *rekey = (const struct TCPRekey *) queue->pread_buf;
+  const struct TCPFinish *fin = (const struct TCPFinish *) queue->pread_buf;
   struct TCPRekey rekeyz;
   struct TCPFinish finz;
   struct GNUNET_ShortHashCode tmac;
@@ -950,21 +926,14 @@ try_handle_plaintext (struct Queue *queue)
     /* Special case: header size excludes box itself! */
     if (ntohs (hdr->size) + sizeof (struct TCPBox) > queue->pread_off)
       return 0;
-    calculate_hmac (&queue->in_hmac,
-                    &box[1],
-                    ntohs (hdr->size),
-                    &tmac);
-    if (0 != memcmp (&tmac,
-		     &box->hmac,
-		     sizeof (tmac)))
+    calculate_hmac (&queue->in_hmac, &box[1], ntohs (hdr->size), &tmac);
+    if (0 != memcmp (&tmac, &box->hmac, sizeof (tmac)))
     {
       GNUNET_break_op (0);
       queue_finish (queue);
       return 0;
     }
-    pass_plaintext_to_core (queue,
-			    (const void *) &box[1],
-			    ntohs (hdr->size));
+    pass_plaintext_to_core (queue, (const void *) &box[1], ntohs (hdr->size));
     size = ntohs (hdr->size) + sizeof (*box);
     break;
   case GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_REKEY:
@@ -977,23 +946,15 @@ try_handle_plaintext (struct Queue *queue)
       return 0;
     }
     rekeyz = *rekey;
-    memset (&rekeyz.hmac,
-	    0,
-	    sizeof (rekeyz.hmac));
-    calculate_hmac (&queue->in_hmac,
-                    &rekeyz,
-                    sizeof (rekeyz),
-                    &tmac);
-    if (0 != memcmp (&tmac,
-		     &box->hmac,
-		     sizeof (tmac)))
+    memset (&rekeyz.hmac, 0, sizeof (rekeyz.hmac));
+    calculate_hmac (&queue->in_hmac, &rekeyz, sizeof (rekeyz), &tmac);
+    if (0 != memcmp (&tmac, &box->hmac, sizeof (tmac)))
     {
       GNUNET_break_op (0);
       queue_finish (queue);
       return 0;
     }
-    do_rekey (queue,
-	      rekey);
+    do_rekey (queue, rekey);
     size = ntohs (hdr->size);
     break;
   case GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_FINISH:
@@ -1006,16 +967,9 @@ try_handle_plaintext (struct Queue *queue)
       return 0;
     }
     finz = *fin;
-    memset (&finz.hmac,
-	    0,
-	    sizeof (finz.hmac));
-    calculate_hmac (&queue->in_hmac,
-                    &rekeyz,
-                    sizeof (rekeyz),
-                    &tmac);
-    if (0 != memcmp (&tmac,
-		     &fin->hmac,
-		     sizeof (tmac)))
+    memset (&finz.hmac, 0, sizeof (finz.hmac));
+    calculate_hmac (&queue->in_hmac, &rekeyz, sizeof (rekeyz), &tmac);
+    if (0 != memcmp (&tmac, &fin->hmac, sizeof (tmac)))
     {
       GNUNET_break_op (0);
       queue_finish (queue);
@@ -1048,47 +1002,42 @@ queue_read (void *cls)
 
   queue->read_task = NULL;
   rcvd = GNUNET_NETWORK_socket_recv (queue->sock,
-				     &queue->cread_buf[queue->cread_off],
-				     BUF_SIZE - queue->cread_off);
+                                     &queue->cread_buf[queue->cread_off],
+                                     BUF_SIZE - queue->cread_off);
   if (-1 == rcvd)
   {
-    if ( (EAGAIN != errno) &&
-	 (EINTR != errno) )
+    if ((EAGAIN != errno) && (EINTR != errno))
     {
-      GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG,
-			   "recv");
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG, "recv");
       queue_finish (queue);
       return;
     }
     /* try again */
-    queue->read_task
-      = GNUNET_SCHEDULER_add_read_net (left,
-				       queue->sock,
-				       &queue_read,
-				       queue);
+    queue->read_task =
+      GNUNET_SCHEDULER_add_read_net (left, queue->sock, &queue_read, queue);
     return;
   }
   if (0 != rcvd)
     reschedule_queue_timeout (queue);
   queue->cread_off += rcvd;
-  while ( (queue->pread_off < sizeof (queue->pread_buf)) &&
-	  (queue->cread_off > 0) )
+  while ((queue->pread_off < sizeof (queue->pread_buf)) &&
+         (queue->cread_off > 0))
   {
     size_t max = GNUNET_MIN (sizeof (queue->pread_buf) - queue->pread_off,
-			     queue->cread_off);
+                             queue->cread_off);
     size_t done;
     size_t total;
 
     GNUNET_assert (0 ==
-		   gcry_cipher_decrypt (queue->in_cipher,
-					&queue->pread_buf[queue->pread_off],
-					max,
-					queue->cread_buf,
-					max));
+                   gcry_cipher_decrypt (queue->in_cipher,
+                                        &queue->pread_buf[queue->pread_off],
+                                        max,
+                                        queue->cread_buf,
+                                        max));
     queue->pread_off += max;
     total = 0;
-    while ( (GNUNET_NO == queue->rekeyed) &&
-	    (0 != (done = try_handle_plaintext (queue))) )
+    while ((GNUNET_NO == queue->rekeyed) &&
+           (0 != (done = try_handle_plaintext (queue))))
     {
       /* 'done' bytes of plaintext were used, shift buffer */
       GNUNET_assert (done <= queue->pread_off);
@@ -1096,8 +1045,8 @@ queue_read (void *cls)
 	 avoided if we pass 'total' into try_handle_plaintext()
 	 and use it at an offset into the buffer there! */
       memmove (queue->pread_buf,
-	       &queue->pread_buf[done],
-	       queue->pread_off - done);
+               &queue->pread_buf[done],
+               queue->pread_off - done);
       queue->pread_off -= done;
       total += done;
     }
@@ -1111,9 +1060,7 @@ queue_read (void *cls)
       max = total;
       queue->rekeyed = GNUNET_NO;
     }
-    memmove (queue->cread_buf,
-	     &queue->cread_buf[max],
-	     queue->cread_off - max);
+    memmove (queue->cread_buf, &queue->cread_buf[max], queue->cread_off - max);
     queue->cread_off -= max;
   }
 
@@ -1125,19 +1072,17 @@ queue_read (void *cls)
     if (max_queue_length < queue->backpressure)
     {
       /* continue reading */
-      queue->read_task
-	= GNUNET_SCHEDULER_add_read_net (left,
-					 queue->sock,
-					 &queue_read,
-					 queue);
+      queue->read_task =
+        GNUNET_SCHEDULER_add_read_net (left, queue->sock, &queue_read, queue);
     }
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Queue %p was idle for %s, disconnecting\n",
-	      queue,
-	      GNUNET_STRINGS_relative_time_to_string (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT,
-						      GNUNET_YES));
+              "Queue %p was idle for %s, disconnecting\n",
+              queue,
+              GNUNET_STRINGS_relative_time_to_string (
+                GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT,
+                GNUNET_YES));
   queue_finish (queue);
 }
 
@@ -1150,8 +1095,7 @@ queue_read (void *cls)
  * @return converted bindto specification
  */
 static struct sockaddr *
-tcp_address_to_sockaddr (const char *bindto,
-			 socklen_t *sock_len)
+tcp_address_to_sockaddr (const char *bindto, socklen_t *sock_len)
 {
   struct sockaddr *in;
   unsigned int port;
@@ -1159,25 +1103,21 @@ tcp_address_to_sockaddr (const char *bindto,
   char *colon;
   char *cp;
 
-  if (1 == SSCANF (bindto,
-		   "%u%1s",
-		   &port,
-		   dummy))
+  if (1 == SSCANF (bindto, "%u%1s", &port, dummy))
   {
     /* interpreting value as just a PORT number */
     if (port > UINT16_MAX)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  "BINDTO specification `%s' invalid: value too large for port\n",
-		  bindto);
+                  "BINDTO specification `%s' invalid: value too large for port\n",
+                  bindto);
       return NULL;
     }
-    /* FIXME: add test to util/ for IPv6 availability,
-       and depending on the result, go directly for v4-only */
-    if (GNUNET_YES ==
-	GNUNET_CONFIGURATION_get_value_yesno (cfg,
-					      COMMUNICATOR_CONFIG_SECTION,
-					      "DISABLE_V6"))
+    if ((GNUNET_NO == GNUNET_NETWORK_test_pf (PF_INET6)) ||
+        (GNUNET_YES ==
+         GNUNET_CONFIGURATION_get_value_yesno (cfg,
+                                               COMMUNICATOR_CONFIG_SECTION,
+                                               "DISABLE_V6")))
     {
       struct sockaddr_in *i4;
 
@@ -1206,26 +1146,24 @@ tcp_address_to_sockaddr (const char *bindto,
     /* interpet value after colon as port */
     *colon = '\0';
     colon++;
-    if (1 == SSCANF (colon,
-		     "%u%1s",
-		     &port,
-		     dummy))
+    if (1 == SSCANF (colon, "%u%1s", &port, dummy))
     {
       /* interpreting value as just a PORT number */
       if (port > UINT16_MAX)
       {
-	GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		    "BINDTO specification `%s' invalid: value too large for port\n",
-		    bindto);
-	GNUNET_free (cp);
-	return NULL;
+        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                    "BINDTO specification `%s' invalid: value too large for port\n",
+                    bindto);
+        GNUNET_free (cp);
+        return NULL;
       }
     }
     else
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  "BINDTO specification `%s' invalid: last ':' not followed by number\n",
-		  bindto);
+      GNUNET_log (
+        GNUNET_ERROR_TYPE_ERROR,
+        "BINDTO specification `%s' invalid: last ':' not followed by number\n",
+        bindto);
       GNUNET_free (cp);
       return NULL;
     }
@@ -1239,13 +1177,10 @@ tcp_address_to_sockaddr (const char *bindto,
     /* try IPv4 */
     struct sockaddr_in v4;
 
-    if (1 == inet_pton (AF_INET,
-			cp,
-			&v4))
+    if (1 == inet_pton (AF_INET, cp, &v4))
     {
       v4.sin_port = htons ((uint16_t) port);
-      in = GNUNET_memdup (&v4,
-			  sizeof (v4));
+      in = GNUNET_memdup (&v4, sizeof (v4));
       *sock_len = sizeof (v4);
       GNUNET_free (cp);
       return in;
@@ -1257,19 +1192,15 @@ tcp_address_to_sockaddr (const char *bindto,
     const char *start;
 
     start = cp;
-    if ( ('[' == *cp) &&
-	 (']' == cp[strlen (cp)-1]) )
+    if (('[' == *cp) && (']' == cp[strlen (cp) - 1]))
     {
       start++; /* skip over '[' */
-      cp[strlen (cp) -1] = '\0'; /* eat ']' */
+      cp[strlen (cp) - 1] = '\0'; /* eat ']' */
     }
-    if (1 == inet_pton (AF_INET6,
-			start,
-			&v6))
+    if (1 == inet_pton (AF_INET6, start, &v6))
     {
       v6.sin6_port = htons ((uint16_t) port);
-      in = GNUNET_memdup (&v6,
-			  sizeof (v6));
+      in = GNUNET_memdup (&v6, sizeof (v6));
       *sock_len = sizeof (v6);
       GNUNET_free (cp);
       return in;
@@ -1292,21 +1223,13 @@ setup_out_cipher (struct Queue *queue)
 {
   struct GNUNET_HashCode dh;
 
-  GNUNET_CRYPTO_ecdh_eddsa (&queue->ephemeral,
-			    &queue->target.public_key,
-			    &dh);
+  GNUNET_CRYPTO_ecdh_eddsa (&queue->ephemeral, &queue->target.public_key, &dh);
   /* we don't need the private key anymore, drop it! */
-  memset (&queue->ephemeral,
-	  0,
-	  sizeof (queue->ephemeral));
-  setup_cipher (&dh,
-		&queue->target,
-		&queue->out_cipher,
-		&queue->out_hmac);
-
+  memset (&queue->ephemeral, 0, sizeof (queue->ephemeral));
+  setup_cipher (&dh, &queue->target, &queue->out_cipher, &queue->out_hmac);
   queue->rekey_time = GNUNET_TIME_relative_to_absolute (REKEY_TIME_INTERVAL);
-  queue->rekey_left_bytes = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
-						      REKEY_MAX_BYTES);
+  queue->rekey_left_bytes =
+    GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK, REKEY_MAX_BYTES);
 }
 
 
@@ -1323,47 +1246,26 @@ inject_rekey (struct Queue *queue)
   struct TcpHandshakeSignature thp;
 
   GNUNET_assert (0 == queue->pwrite_off);
-  memset (&rekey,
-	  0,
-	  sizeof (rekey));
+  memset (&rekey, 0, sizeof (rekey));
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CRYPTO_ecdhe_key_create2 (&queue->ephemeral));
+                 GNUNET_CRYPTO_ecdhe_key_create2 (&queue->ephemeral));
   rekey.header.type = ntohs (GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_REKEY);
   rekey.header.size = ntohs (sizeof (rekey));
-  GNUNET_CRYPTO_ecdhe_key_get_public (&queue->ephemeral,
-				      &rekey.ephemeral);
-  rekey.monotonic_time = GNUNET_TIME_absolute_hton (GNUNET_TIME_absolute_get_monotonic (cfg));
+  GNUNET_CRYPTO_ecdhe_key_get_public (&queue->ephemeral, &rekey.ephemeral);
+  rekey.monotonic_time =
+    GNUNET_TIME_absolute_hton (GNUNET_TIME_absolute_get_monotonic (cfg));
   thp.purpose.purpose = htonl (GNUNET_SIGNATURE_COMMUNICATOR_TCP_REKEY);
   thp.purpose.size = htonl (sizeof (thp));
   thp.sender = my_identity;
   thp.receiver = queue->target;
   thp.ephemeral = rekey.ephemeral;
   thp.monotonic_time = rekey.monotonic_time;
-  GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CRYPTO_eddsa_sign (my_private_key,
-					   &thp.purpose,
-					   &rekey.sender_sig));
-  calculate_hmac (&queue->out_hmac,
-                  &rekey,
-                  sizeof (rekey),
-                  &rekey.hmac);
-  memcpy (queue->pwrite_buf,
-	  &rekey,
-	  sizeof (rekey));
-  queue->rekey_state = GNUNET_YES;
-}
-
-
-/**
- * We encrypted the rekey message, now update actually swap the key
- * material and update the key freshness parameters of @a queue.
- */
-static void
-switch_key (struct Queue *queue)
-{
-  queue->rekey_state = GNUNET_NO;
-  gcry_cipher_close (queue->out_cipher);
-  setup_out_cipher (queue);
+  GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_eddsa_sign (my_private_key,
+                                                        &thp.purpose,
+                                                        &rekey.sender_sig));
+  calculate_hmac (&queue->out_hmac, &rekey, sizeof (rekey), &rekey.hmac);
+  memcpy (queue->pwrite_buf, &rekey, sizeof (rekey));
+  queue->pwrite_off = sizeof (rekey);
 }
 
 
@@ -1380,37 +1282,38 @@ queue_write (void *cls)
   ssize_t sent;
 
   queue->write_task = NULL;
-  sent = GNUNET_NETWORK_socket_send (queue->sock,
-				     queue->cwrite_buf,
-				     queue->cwrite_off);
-  if ( (-1 == sent) &&
-       (EAGAIN != errno) &&
-       (EINTR != errno) )
+  if (0 != queue->cwrite_off)
   {
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-			 "send");
-    queue_destroy (queue);
-    return;
-  }
-  if (sent > 0)
-  {
-    size_t usent = (size_t) sent;
+    sent = GNUNET_NETWORK_socket_send (queue->sock,
+                                       queue->cwrite_buf,
+                                       queue->cwrite_off);
+    if ((-1 == sent) && (EAGAIN != errno) && (EINTR != errno))
+    {
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "send");
+      queue_destroy (queue);
+      return;
+    }
+    if (sent > 0)
+    {
+      size_t usent = (size_t) sent;
 
-    memmove (queue->cwrite_buf,
-	     &queue->cwrite_buf[usent],
-	     queue->cwrite_off - usent);
-    reschedule_queue_timeout (queue);
- }
+      memmove (queue->cwrite_buf,
+               &queue->cwrite_buf[usent],
+               queue->cwrite_off - usent);
+      reschedule_queue_timeout (queue);
+    }
+  }
   /* can we encrypt more? (always encrypt full messages, needed
      such that #mq_cancel() can work!) */
-  if (queue->cwrite_off + queue->pwrite_off <= BUF_SIZE)
+  if ((0 < queue->rekey_left_bytes) &&
+      (queue->cwrite_off + queue->pwrite_off <= BUF_SIZE))
   {
     GNUNET_assert (0 ==
-		   gcry_cipher_encrypt (queue->out_cipher,
-					&queue->cwrite_buf[queue->cwrite_off],
-					queue->pwrite_off,
-					queue->pwrite_buf,
-					queue->pwrite_off));
+                   gcry_cipher_encrypt (queue->out_cipher,
+                                        &queue->cwrite_buf[queue->cwrite_off],
+                                        queue->pwrite_off,
+                                        queue->pwrite_buf,
+                                        queue->pwrite_off));
     if (queue->rekey_left_bytes > queue->pwrite_off)
       queue->rekey_left_bytes -= queue->pwrite_off;
     else
@@ -1418,34 +1321,34 @@ queue_write (void *cls)
     queue->cwrite_off += queue->pwrite_off;
     queue->pwrite_off = 0;
   }
-  if ( (GNUNET_YES == queue->rekey_state) &&
-       (0 == queue->pwrite_off) )
-    switch_key (queue);
-  if ( (0 == queue->pwrite_off) &&
-       ( (0 == queue->rekey_left_bytes) ||
-	 (0 == GNUNET_TIME_absolute_get_remaining (queue->rekey_time).rel_value_us) ) )
+  if ((0 == queue->pwrite_off) &&
+      ((0 == queue->rekey_left_bytes) ||
+       (0 ==
+        GNUNET_TIME_absolute_get_remaining (queue->rekey_time).rel_value_us)))
+  {
+    gcry_cipher_close (queue->out_cipher);
+    setup_out_cipher (queue);
     inject_rekey (queue);
-  if ( (0 == queue->pwrite_off) &&
-       (! queue->finishing) &&
-       (queue->mq_awaits_continue) )
+  }
+  if ((0 == queue->pwrite_off) && (! queue->finishing) &&
+      (queue->mq_awaits_continue))
   {
     queue->mq_awaits_continue = GNUNET_NO;
     GNUNET_MQ_impl_send_continue (queue->mq);
   }
   /* did we just finish writing 'finish'? */
-  if ( (0 == queue->cwrite_off) &&
-       (GNUNET_YES == queue->finishing) )
+  if ((0 == queue->cwrite_off) && (GNUNET_YES == queue->finishing))
   {
     queue_destroy (queue);
     return;
   }
   /* do we care to write more? */
-  if (0 < queue->cwrite_off)
-    queue->write_task
-      = GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
-					queue->sock,
-					&queue_write,
-					queue);
+  if ((0 < queue->cwrite_off) || (0 < queue->pwrite_off))
+    queue->write_task =
+      GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
+                                      queue->sock,
+                                      &queue_write,
+                                      queue);
 }
 
 
@@ -1459,8 +1362,8 @@ queue_write (void *cls)
  */
 static void
 mq_send (struct GNUNET_MQ_Handle *mq,
-	 const struct GNUNET_MessageHeader *msg,
-	 void *impl_state)
+         const struct GNUNET_MessageHeader *msg,
+         void *impl_state)
 {
   struct Queue *queue = impl_state;
   uint16_t msize = ntohs (msg->size);
@@ -1472,17 +1375,10 @@ mq_send (struct GNUNET_MQ_Handle *mq,
   GNUNET_assert (0 == queue->pread_off);
   box.header.type = htons (GNUNET_MESSAGE_TYPE_COMMUNICATOR_TCP_BOX);
   box.header.size = htons (msize);
-  calculate_hmac (&queue->out_hmac,
-                  msg,
-                  msize,
-                  &box.hmac);
-  memcpy (&queue->pread_buf[queue->pread_off],
-	  &box,
-	  sizeof (box));
+  calculate_hmac (&queue->out_hmac, msg, msize, &box.hmac);
+  memcpy (&queue->pread_buf[queue->pread_off], &box, sizeof (box));
   queue->pread_off += sizeof (box);
-  memcpy (&queue->pread_buf[queue->pread_off],
-	  msg,
-	  msize);
+  memcpy (&queue->pread_buf[queue->pread_off], msg, msize);
   queue->pread_off += msize;
   GNUNET_assert (NULL != queue->sock);
   if (NULL == queue->write_task)
@@ -1490,7 +1386,7 @@ mq_send (struct GNUNET_MQ_Handle *mq,
       GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
                                       queue->sock,
                                       &queue_write,
-				      queue);
+                                      queue);
 }
 
 
@@ -1503,8 +1399,7 @@ mq_send (struct GNUNET_MQ_Handle *mq,
  * @param impl_state our `struct Queue`
  */
 static void
-mq_destroy (struct GNUNET_MQ_Handle *mq,
-	    void *impl_state)
+mq_destroy (struct GNUNET_MQ_Handle *mq, void *impl_state)
 {
   struct Queue *queue = impl_state;
 
@@ -1523,8 +1418,7 @@ mq_destroy (struct GNUNET_MQ_Handle *mq,
  * @param impl_state our `struct Queue`
  */
 static void
-mq_cancel (struct GNUNET_MQ_Handle *mq,
-	   void *impl_state)
+mq_cancel (struct GNUNET_MQ_Handle *mq, void *impl_state)
 {
   struct Queue *queue = impl_state;
 
@@ -1543,15 +1437,14 @@ mq_cancel (struct GNUNET_MQ_Handle *mq,
  * @param error error code
  */
 static void
-mq_error (void *cls,
-	  enum GNUNET_MQ_Error error)
+mq_error (void *cls, enum GNUNET_MQ_Error error)
 {
   struct Queue *queue = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-	      "MQ error in queue to %s: %d\n",
-	      GNUNET_i2s (&queue->target),
-	      (int) error);
+              "MQ error in queue to %s: %d\n",
+              GNUNET_i2s (&queue->target),
+              (int) error);
   queue_finish (queue);
 }
 
@@ -1564,30 +1457,28 @@ mq_error (void *cls,
  * @param queue queue to boot
  */
 static void
-boot_queue (struct Queue *queue,
-	    enum GNUNET_TRANSPORT_ConnectionStatus cs)
+boot_queue (struct Queue *queue, enum GNUNET_TRANSPORT_ConnectionStatus cs)
 {
-  queue->nt = GNUNET_NT_scanner_get_type (is,
-					  queue->address,
-					  queue->address_len);
-  (void) GNUNET_CONTAINER_multipeermap_put (queue_map,
-					    &queue->target,
-					    queue,
-					    GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
+  queue->nt =
+    GNUNET_NT_scanner_get_type (is, queue->address, queue->address_len);
+  (void) GNUNET_CONTAINER_multipeermap_put (
+    queue_map,
+    &queue->target,
+    queue,
+    GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
   GNUNET_STATISTICS_set (stats,
-			 "# queues active",
-			 GNUNET_CONTAINER_multipeermap_size (queue_map),
-			 GNUNET_NO);
-  queue->timeout
-    = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
-  queue->mq
-    = GNUNET_MQ_queue_for_callbacks (&mq_send,
-				     &mq_destroy,
-				     &mq_cancel,
-				     queue,
-				     NULL,
-				     &mq_error,
-				     queue);
+                         "# queues active",
+                         GNUNET_CONTAINER_multipeermap_size (queue_map),
+                         GNUNET_NO);
+  queue->timeout =
+    GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
+  queue->mq = GNUNET_MQ_queue_for_callbacks (&mq_send,
+                                             &mq_destroy,
+                                             &mq_cancel,
+                                             queue,
+                                             NULL,
+                                             &mq_error,
+                                             queue);
   {
     char *foreign_addr;
 
@@ -1595,29 +1486,26 @@ boot_queue (struct Queue *queue,
     {
     case AF_INET:
       GNUNET_asprintf (&foreign_addr,
-		       "%s-%s",
-		       COMMUNICATOR_ADDRESS_PREFIX,
-		       GNUNET_a2s(queue->address,
-				  queue->address_len));
+                       "%s-%s",
+                       COMMUNICATOR_ADDRESS_PREFIX,
+                       GNUNET_a2s (queue->address, queue->address_len));
       break;
     case AF_INET6:
       GNUNET_asprintf (&foreign_addr,
-		       "%s-%s",
-		       COMMUNICATOR_ADDRESS_PREFIX,
-		       GNUNET_a2s(queue->address,
-				  queue->address_len));
+                       "%s-%s",
+                       COMMUNICATOR_ADDRESS_PREFIX,
+                       GNUNET_a2s (queue->address, queue->address_len));
       break;
     default:
       GNUNET_assert (0);
     }
-    queue->qh
-      = GNUNET_TRANSPORT_communicator_mq_add (ch,
-					      &queue->target,
-					      foreign_addr,
-					      0 /* no MTU */,
-					      queue->nt,
-					      cs,
-					      queue->mq);
+    queue->qh = GNUNET_TRANSPORT_communicator_mq_add (ch,
+                                                      &queue->target,
+                                                      foreign_addr,
+                                                      0 /* no MTU */,
+                                                      queue->nt,
+                                                      cs,
+                                                      queue->mq);
     GNUNET_free (foreign_addr);
   }
 }
@@ -1635,34 +1523,32 @@ boot_queue (struct Queue *queue,
  */
 static void
 transmit_kx (struct Queue *queue,
-	     const struct GNUNET_CRYPTO_EcdhePublicKey *epub)
+             const struct GNUNET_CRYPTO_EcdhePublicKey *epub)
 {
   struct TcpHandshakeSignature ths;
   struct TCPConfirmation tc;
 
-  memcpy (queue->cwrite_buf,
-	  epub,
-	  sizeof (*epub));
+  memcpy (queue->cwrite_buf, epub, sizeof (*epub));
   queue->cwrite_off = sizeof (epub);
   /* compute 'tc' and append in encrypted format to cwrite_buf */
   tc.sender = my_identity;
-  tc.monotonic_time = GNUNET_TIME_absolute_hton (GNUNET_TIME_absolute_get_monotonic (cfg));
+  tc.monotonic_time =
+    GNUNET_TIME_absolute_hton (GNUNET_TIME_absolute_get_monotonic (cfg));
   ths.purpose.purpose = htonl (GNUNET_SIGNATURE_COMMUNICATOR_TCP_HANDSHAKE);
   ths.purpose.size = htonl (sizeof (ths));
   ths.sender = my_identity;
   ths.receiver = queue->target;
   ths.ephemeral = *epub;
   ths.monotonic_time = tc.monotonic_time;
-  GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CRYPTO_eddsa_sign (my_private_key,
-					   &ths.purpose,
-					   &tc.sender_sig));
+  GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_eddsa_sign (my_private_key,
+                                                        &ths.purpose,
+                                                        &tc.sender_sig));
   GNUNET_assert (0 ==
-		 gcry_cipher_encrypt (queue->out_cipher,
-				      &queue->cwrite_buf[queue->cwrite_off],
-				      sizeof (tc),
-				      &tc,
-				      sizeof (tc)));
+                 gcry_cipher_encrypt (queue->out_cipher,
+                                      &queue->cwrite_buf[queue->cwrite_off],
+                                      sizeof (tc),
+                                      &tc,
+                                      sizeof (tc)));
   queue->cwrite_off += sizeof (tc);
 }
 
@@ -1680,12 +1566,10 @@ start_initial_kx_out (struct Queue *queue)
   struct GNUNET_CRYPTO_EcdhePublicKey epub;
 
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CRYPTO_ecdhe_key_create2 (&queue->ephemeral));
-  GNUNET_CRYPTO_ecdhe_key_get_public (&queue->ephemeral,
-				      &epub);
+                 GNUNET_CRYPTO_ecdhe_key_create2 (&queue->ephemeral));
+  GNUNET_CRYPTO_ecdhe_key_get_public (&queue->ephemeral, &epub);
   setup_out_cipher (queue);
-  transmit_kx (queue,
-	       &epub);
+  transmit_kx (queue, &epub);
 }
 
 
@@ -1702,29 +1586,30 @@ start_initial_kx_out (struct Queue *queue)
  */
 static int
 decrypt_and_check_tc (struct Queue *queue,
-		      struct TCPConfirmation *tc,
-		      char *ibuf)
+                      struct TCPConfirmation *tc,
+                      char *ibuf)
 {
   struct TcpHandshakeSignature ths;
 
-  GNUNET_assert (0 ==
-		 gcry_cipher_decrypt (queue->in_cipher,
-				      tc,
-				      sizeof (*tc),
-				      &ibuf[sizeof (struct GNUNET_CRYPTO_EcdhePublicKey)],
-				      sizeof (tc)));
+  GNUNET_assert (
+    0 ==
+    gcry_cipher_decrypt (queue->in_cipher,
+                         tc,
+                         sizeof (*tc),
+                         &ibuf[sizeof (struct GNUNET_CRYPTO_EcdhePublicKey)],
+                         sizeof (tc)));
   ths.purpose.purpose = htonl (GNUNET_SIGNATURE_COMMUNICATOR_TCP_HANDSHAKE);
   ths.purpose.size = htonl (sizeof (ths));
   ths.sender = tc->sender;
   ths.receiver = my_identity;
-  memcpy (&ths.ephemeral,
-	  ibuf,
-	  sizeof (struct GNUNET_CRYPTO_EcdhePublicKey));
+  memcpy (&ths.ephemeral, ibuf, sizeof (struct GNUNET_CRYPTO_EcdhePublicKey));
   ths.monotonic_time = tc->monotonic_time;
+  /* FIXME: check monotonic time against previous mono times 
+     from this sender! */
   return GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_COMMUNICATOR_TCP_HANDSHAKE,
-				     &ths.purpose,
-				     &tc->sender_sig,
-				     &tc->sender.public_key);
+                                     &ths.purpose,
+                                     &tc->sender_sig,
+                                     &tc->sender.public_key);
 }
 
 
@@ -1738,9 +1623,7 @@ free_proto_queue (struct ProtoQueue *pq)
 {
   GNUNET_NETWORK_socket_close (pq->sock);
   GNUNET_free (pq->address);
-  GNUNET_CONTAINER_DLL_remove (proto_head,
-			       proto_tail,
-			       pq);
+  GNUNET_CONTAINER_DLL_remove (proto_head, proto_tail, pq);
   GNUNET_free (pq);
 }
 
@@ -1768,48 +1651,38 @@ proto_read_kx (void *cls)
     return;
   }
   rcvd = GNUNET_NETWORK_socket_recv (pq->sock,
-				     &pq->ibuf[pq->ibuf_off],
-				     sizeof (pq->ibuf) - pq->ibuf_off);
+                                     &pq->ibuf[pq->ibuf_off],
+                                     sizeof (pq->ibuf) - pq->ibuf_off);
   if (-1 == rcvd)
   {
-    if ( (EAGAIN != errno) &&
-	 (EINTR != errno) )
+    if ((EAGAIN != errno) && (EINTR != errno))
     {
-      GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG,
-			   "recv");
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG, "recv");
       free_proto_queue (pq);
       return;
     }
     /* try again */
-    pq->read_task = GNUNET_SCHEDULER_add_read_net (left,
-						   pq->sock,
-						   &proto_read_kx,
-						   pq);
+    pq->read_task =
+      GNUNET_SCHEDULER_add_read_net (left, pq->sock, &proto_read_kx, pq);
     return;
   }
   pq->ibuf_off += rcvd;
   if (pq->ibuf_off > sizeof (pq->ibuf))
   {
     /* read more */
-    pq->read_task = GNUNET_SCHEDULER_add_read_net (left,
-						   pq->sock,
-						   &proto_read_kx,
-						   pq);
+    pq->read_task =
+      GNUNET_SCHEDULER_add_read_net (left, pq->sock, &proto_read_kx, pq);
     return;
   }
   /* we got all the data, let's find out who we are talking to! */
   queue = GNUNET_new (struct Queue);
   setup_in_cipher ((const struct GNUNET_CRYPTO_EcdhePublicKey *) pq->ibuf,
-		   queue);
-  if (GNUNET_OK !=
-      decrypt_and_check_tc (queue,
-			    &tc,
-			    pq->ibuf))
+                   queue);
+  if (GNUNET_OK != decrypt_and_check_tc (queue, &tc, pq->ibuf))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		"Invalid TCP KX received from %s\n",
-		GNUNET_a2s (queue->address,
-			    queue->address_len));
+                "Invalid TCP KX received from %s\n",
+                GNUNET_a2s (queue->address, queue->address_len));
     gcry_cipher_close (queue->in_cipher);
     GNUNET_free (queue);
     free_proto_queue (pq);
@@ -1819,16 +1692,18 @@ proto_read_kx (void *cls)
   queue->address_len = pq->address_len;
   queue->target = tc.sender;
   start_initial_kx_out (queue);
-  boot_queue (queue,
-	      GNUNET_TRANSPORT_CS_INBOUND);
-  queue->read_task
-    = GNUNET_SCHEDULER_add_read_net (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT,
-				     queue->sock,
-				     &queue_read,
-				     queue);
-  GNUNET_CONTAINER_DLL_remove (proto_head,
-			       proto_tail,
-			       pq);
+  boot_queue (queue, GNUNET_TRANSPORT_CS_INBOUND);
+  queue->read_task =
+    GNUNET_SCHEDULER_add_read_net (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT,
+                                   queue->sock,
+                                   &queue_read,
+                                   queue);
+  queue->write_task =
+    GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
+                                    queue->sock,
+                                    &queue_write,
+                                    queue);
+  GNUNET_CONTAINER_DLL_remove (proto_head, proto_tail, pq);
   GNUNET_free (pq);
 }
 
@@ -1851,43 +1726,33 @@ listen_cb (void *cls)
   listen_task = NULL;
   GNUNET_assert (NULL != listen_sock);
   addrlen = sizeof (in);
-  memset (&in,
-	  0,
-	  sizeof (in));
+  memset (&in, 0, sizeof (in));
   sock = GNUNET_NETWORK_socket_accept (listen_sock,
-				       (struct sockaddr *) &in,
-				       &addrlen);
-  if ( (NULL == sock) &&
-       ( (EMFILE == errno) ||
-	 (ENFILE == errno) ) )
+                                       (struct sockaddr *) &in,
+                                       &addrlen);
+  if ((NULL == sock) && ((EMFILE == errno) || (ENFILE == errno)))
     return; /* system limit reached, wait until connection goes down */
   listen_task = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
-					       listen_sock,
-					       &listen_cb,
-					       NULL);
-  if ( (NULL == sock) &&
-       ( (EAGAIN == errno) ||
-	 (ENOBUFS == errno) ) )
+                                               listen_sock,
+                                               &listen_cb,
+                                               NULL);
+  if ((NULL == sock) && ((EAGAIN == errno) || (ENOBUFS == errno)))
     return;
   if (NULL == sock)
   {
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-                         "accept");
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "accept");
     return;
   }
   pq = GNUNET_new (struct ProtoQueue);
   pq->address_len = addrlen;
-  pq->address = GNUNET_memdup (&in,
-			       addrlen);
+  pq->address = GNUNET_memdup (&in, addrlen);
   pq->timeout = GNUNET_TIME_relative_to_absolute (PROTO_QUEUE_TIMEOUT);
   pq->sock = sock;
   pq->read_task = GNUNET_SCHEDULER_add_read_net (PROTO_QUEUE_TIMEOUT,
-						 pq->sock,
-						 &proto_read_kx,
-						 pq);
-  GNUNET_CONTAINER_DLL_insert (proto_head,
-			       proto_tail,
-			       pq);
+                                                 pq->sock,
+                                                 &proto_read_kx,
+                                                 pq);
+  GNUNET_CONTAINER_DLL_insert (proto_head, proto_tail, pq);
 }
 
 
@@ -1914,58 +1779,46 @@ queue_read_kx (void *cls)
     return;
   }
   rcvd = GNUNET_NETWORK_socket_recv (queue->sock,
-				     &queue->cread_buf[queue->cread_off],
-				     BUF_SIZE - queue->cread_off);
+                                     &queue->cread_buf[queue->cread_off],
+                                     BUF_SIZE - queue->cread_off);
   if (-1 == rcvd)
   {
-    if ( (EAGAIN != errno) &&
-	 (EINTR != errno) )
+    if ((EAGAIN != errno) && (EINTR != errno))
     {
-      GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG,
-			   "recv");
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG, "recv");
       queue_destroy (queue);
       return;
     }
-    queue->read_task = GNUNET_SCHEDULER_add_read_net (left,
-						      queue->sock,
-						      &queue_read_kx,
-						      queue);
+    queue->read_task =
+      GNUNET_SCHEDULER_add_read_net (left, queue->sock, &queue_read_kx, queue);
     return;
   }
   queue->cread_off += rcvd;
-  if (queue->cread_off <
-      INITIAL_KX_SIZE)
+  if (queue->cread_off < INITIAL_KX_SIZE)
   {
     /* read more */
-    queue->read_task = GNUNET_SCHEDULER_add_read_net (left,
-						      queue->sock,
-						      &queue_read_kx,
-						      queue);
+    queue->read_task =
+      GNUNET_SCHEDULER_add_read_net (left, queue->sock, &queue_read_kx, queue);
     return;
   }
   /* we got all the data, let's find out who we are talking to! */
-  setup_in_cipher ((const struct GNUNET_CRYPTO_EcdhePublicKey *) queue->cread_buf,
-		   queue);
-  if (GNUNET_OK !=
-      decrypt_and_check_tc (queue,
-			    &tc,
-			    queue->cread_buf))
+  setup_in_cipher ((const struct GNUNET_CRYPTO_EcdhePublicKey *)
+                     queue->cread_buf,
+                   queue);
+  if (GNUNET_OK != decrypt_and_check_tc (queue, &tc, queue->cread_buf))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		"Invalid TCP KX received from %s\n",
-		GNUNET_a2s (queue->address,
-			    queue->address_len));
+                "Invalid TCP KX received from %s\n",
+                GNUNET_a2s (queue->address, queue->address_len));
     queue_destroy (queue);
     return;
   }
-  if (0 != memcmp (&tc.sender,
-		   &queue->target,
-		   sizeof (struct GNUNET_PeerIdentity)))
+  if (0 !=
+      memcmp (&tc.sender, &queue->target, sizeof (struct GNUNET_PeerIdentity)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-		"Invalid sender in TCP KX received from %s\n",
-		GNUNET_a2s (queue->address,
-			    queue->address_len));
+                "Invalid sender in TCP KX received from %s\n",
+                GNUNET_a2s (queue->address, queue->address_len));
     queue_destroy (queue);
     return;
   }
@@ -1974,11 +1827,10 @@ queue_read_kx (void *cls)
   reschedule_queue_timeout (queue);
   /* prepare to continue with regular read task immediately */
   memmove (queue->cread_buf,
-	   &queue->cread_buf[INITIAL_KX_SIZE],
-	   queue->cread_off - (INITIAL_KX_SIZE));
+           &queue->cread_buf[INITIAL_KX_SIZE],
+           queue->cread_off - (INITIAL_KX_SIZE));
   queue->cread_off -= INITIAL_KX_SIZE;
-  queue->read_task = GNUNET_SCHEDULER_add_now (&queue_read,
-					       queue);
+  queue->read_task = GNUNET_SCHEDULER_add_now (&queue_read, queue);
 }
 
 
@@ -1997,12 +1849,11 @@ queue_read_kx (void *cls)
  * @param peer identity of the other peer
  * @param address where to send the message, human-readable
  *        communicator-specific format, 0-terminated, UTF-8
- * @return #GNUNET_OK on success, #GNUNET_SYSERR if the provided address is invalid
+ * @return #GNUNET_OK on success, #GNUNET_SYSERR if the provided address is
+ * invalid
  */
 static int
-mq_init (void *cls,
-	 const struct GNUNET_PeerIdentity *peer,
-	 const char *address)
+mq_init (void *cls, const struct GNUNET_PeerIdentity *peer, const char *address)
 {
   struct Queue *queue;
   const char *path;
@@ -2011,37 +1862,31 @@ mq_init (void *cls,
   struct GNUNET_NETWORK_Handle *sock;
 
   if (0 != strncmp (address,
-		    COMMUNICATOR_ADDRESS_PREFIX "-",
-		    strlen (COMMUNICATOR_ADDRESS_PREFIX "-")))
+                    COMMUNICATOR_ADDRESS_PREFIX "-",
+                    strlen (COMMUNICATOR_ADDRESS_PREFIX "-")))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
   path = &address[strlen (COMMUNICATOR_ADDRESS_PREFIX "-")];
-  in = tcp_address_to_sockaddr (path,
-				&in_len);
+  in = tcp_address_to_sockaddr (path, &in_len);
 
-  sock = GNUNET_NETWORK_socket_create (in->sa_family,
-				       SOCK_STREAM,
-				       IPPROTO_TCP);
+  sock = GNUNET_NETWORK_socket_create (in->sa_family, SOCK_STREAM, IPPROTO_TCP);
   if (NULL == sock)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-		"socket(%d) failed: %s",
-		in->sa_family,
-		STRERROR (errno));
+                "socket(%d) failed: %s",
+                in->sa_family,
+                STRERROR (errno));
     GNUNET_free (in);
     return GNUNET_SYSERR;
   }
-  if (GNUNET_OK !=
-      GNUNET_NETWORK_socket_connect (sock,
-				     in,
-				     in_len))
+  if (GNUNET_OK != GNUNET_NETWORK_socket_connect (sock, in, in_len))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-		"connect to `%s' failed: %s",
-		address,
-		STRERROR (errno));
+                "connect to `%s' failed: %s",
+                address,
+                STRERROR (errno));
     GNUNET_NETWORK_socket_close (sock);
     GNUNET_free (in);
     return GNUNET_SYSERR;
@@ -2052,23 +1897,18 @@ mq_init (void *cls,
   queue->address = in;
   queue->address_len = in_len;
   queue->sock = sock;
-  boot_queue (queue,
-	      GNUNET_TRANSPORT_CS_OUTBOUND);
-  queue->read_task
-    = GNUNET_SCHEDULER_add_read_net (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT,
-				     queue->sock,
-				     &queue_read_kx,
-				     queue);
-  if (NULL == queue)
-  {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		"Failed to setup queue to %s at `%s'\n",
-		GNUNET_i2s (peer),
-		path);
-    GNUNET_NETWORK_socket_close (sock);
-    return GNUNET_NO;
-  }
+  boot_queue (queue, GNUNET_TRANSPORT_CS_OUTBOUND);
+  queue->read_task =
+    GNUNET_SCHEDULER_add_read_net (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT,
+                                   queue->sock,
+                                   &queue_read_kx,
+                                   queue);
   start_initial_kx_out (queue);
+  queue->write_task =
+    GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
+                                    queue->sock,
+                                    &queue_write,
+                                    queue);
   return GNUNET_OK;
 }
 
@@ -2083,8 +1923,8 @@ mq_init (void *cls,
  */
 static int
 get_queue_delete_it (void *cls,
-		     const struct GNUNET_PeerIdentity *target,
-		     void *value)
+                     const struct GNUNET_PeerIdentity *target,
+                     void *value)
 {
   struct Queue *queue = value;
 
@@ -2103,10 +1943,12 @@ get_queue_delete_it (void *cls,
 static void
 do_shutdown (void *cls)
 {
+  while (NULL != proto_head)
+    free_proto_queue (proto_head);
   if (NULL != nat)
   {
-     GNUNET_NAT_unregister (nat);
-     nat = NULL;
+    GNUNET_NAT_unregister (nat);
+    nat = NULL;
   }
   if (NULL != listen_task)
   {
@@ -2115,13 +1957,10 @@ do_shutdown (void *cls)
   }
   if (NULL != listen_sock)
   {
-    GNUNET_break (GNUNET_OK ==
-                  GNUNET_NETWORK_socket_close (listen_sock));
+    GNUNET_break (GNUNET_OK == GNUNET_NETWORK_socket_close (listen_sock));
     listen_sock = NULL;
   }
-  GNUNET_CONTAINER_multipeermap_iterate (queue_map,
-					 &get_queue_delete_it,
-                                         NULL);
+  GNUNET_CONTAINER_multipeermap_iterate (queue_map, &get_queue_delete_it, NULL);
   GNUNET_CONTAINER_multipeermap_destroy (queue_map);
   if (NULL != ch)
   {
@@ -2130,8 +1969,7 @@ do_shutdown (void *cls)
   }
   if (NULL != stats)
   {
-    GNUNET_STATISTICS_destroy (stats,
-			       GNUNET_NO);
+    GNUNET_STATISTICS_destroy (stats, GNUNET_NO);
     stats = NULL;
   }
   if (NULL != my_private_key)
@@ -2141,8 +1979,8 @@ do_shutdown (void *cls)
   }
   if (NULL != is)
   {
-     GNUNET_NT_scanner_done (is);
-     is = NULL;
+    GNUNET_NT_scanner_done (is);
+    is = NULL;
   }
 }
 
@@ -2185,11 +2023,11 @@ enc_notify_cb (void *cls,
  */
 static void
 nat_address_cb (void *cls,
-		void **app_ctx,
-		int add_remove,
-		enum GNUNET_NAT_AddressClass ac,
-		const struct sockaddr *addr,
-		socklen_t addrlen)
+                void **app_ctx,
+                int add_remove,
+                enum GNUNET_NAT_AddressClass ac,
+                const struct sockaddr *addr,
+                socklen_t addrlen)
 {
   char *my_addr;
   struct GNUNET_TRANSPORT_AddressIdentifier *ai;
@@ -2199,17 +2037,15 @@ nat_address_cb (void *cls,
     enum GNUNET_NetworkType nt;
 
     GNUNET_asprintf (&my_addr,
-		     "%s-%s",
-		     COMMUNICATOR_ADDRESS_PREFIX,
-		     GNUNET_a2s (addr,
-				 addrlen));
-    nt = GNUNET_NT_scanner_get_type (is,
-				     addr,
-				     addrlen);
-    ai = GNUNET_TRANSPORT_communicator_address_add (ch,
-						    my_addr,
-						    nt,
-						    GNUNET_TIME_UNIT_FOREVER_REL);
+                     "%s-%s",
+                     COMMUNICATOR_ADDRESS_PREFIX,
+                     GNUNET_a2s (addr, addrlen));
+    nt = GNUNET_NT_scanner_get_type (is, addr, addrlen);
+    ai =
+      GNUNET_TRANSPORT_communicator_address_add (ch,
+                                                 my_addr,
+                                                 nt,
+                                                 GNUNET_TIME_UNIT_FOREVER_REL);
     GNUNET_free (my_addr);
     *app_ctx = ai;
   }
@@ -2246,9 +2082,9 @@ run (void *cls,
   cfg = c;
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (cfg,
-					       COMMUNICATOR_CONFIG_SECTION,
-					       "BINDTO",
-					       &bindto))
+                                               COMMUNICATOR_CONFIG_SECTION,
+                                               "BINDTO",
+                                               &bindto))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
                                COMMUNICATOR_CONFIG_SECTION,
@@ -2257,40 +2093,32 @@ run (void *cls,
   }
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_number (cfg,
-					     COMMUNICATOR_CONFIG_SECTION,
-					     "MAX_QUEUE_LENGTH",
-					     &max_queue_length))
+                                             COMMUNICATOR_CONFIG_SECTION,
+                                             "MAX_QUEUE_LENGTH",
+                                             &max_queue_length))
     max_queue_length = DEFAULT_MAX_QUEUE_LENGTH;
 
-  in = tcp_address_to_sockaddr (bindto,
-				&in_len);
+  in = tcp_address_to_sockaddr (bindto, &in_len);
   if (NULL == in)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		"Failed to setup TCP socket address with path `%s'\n",
-		bindto);
+                "Failed to setup TCP socket address with path `%s'\n",
+                bindto);
     GNUNET_free (bindto);
     return;
   }
-  listen_sock = GNUNET_NETWORK_socket_create (in->sa_family,
-					      SOCK_STREAM,
-					      IPPROTO_TCP);
+  listen_sock =
+    GNUNET_NETWORK_socket_create (in->sa_family, SOCK_STREAM, IPPROTO_TCP);
   if (NULL == listen_sock)
   {
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
-			 "socket");
+    GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "socket");
     GNUNET_free (in);
     GNUNET_free (bindto);
     return;
   }
-  if (GNUNET_OK !=
-      GNUNET_NETWORK_socket_bind (listen_sock,
-                                  in,
-				  in_len))
+  if (GNUNET_OK != GNUNET_NETWORK_socket_bind (listen_sock, in, in_len))
   {
-    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
-			      "bind",
-			      bindto);
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR, "bind", bindto);
     GNUNET_NETWORK_socket_close (listen_sock);
     listen_sock = NULL;
     GNUNET_free (in);
@@ -2301,12 +2129,10 @@ run (void *cls,
      thus, get the real IN-address from the socket */
   sto_len = sizeof (in_sto);
   if (0 != getsockname (GNUNET_NETWORK_get_fd (listen_sock),
-			(struct sockaddr *) &in_sto,
-			&sto_len))
+                        (struct sockaddr *) &in_sto,
+                        &sto_len))
   {
-    memcpy (&in_sto,
-	    in,
-	    in_len);
+    memcpy (&in_sto, in, in_len);
     sto_len = in_len;
   }
   GNUNET_free (in);
@@ -2314,37 +2140,34 @@ run (void *cls,
   in = (struct sockaddr *) &in_sto;
   in_len = sto_len;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Bound to `%s'\n",
-	      GNUNET_a2s ((const struct sockaddr *) &in_sto,
-			  sto_len));
-  stats = GNUNET_STATISTICS_create ("C-TCP",
-				    cfg);
-  GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
-				 NULL);
+              "Bound to `%s'\n",
+              GNUNET_a2s ((const struct sockaddr *) &in_sto, sto_len));
+  stats = GNUNET_STATISTICS_create ("C-TCP", cfg);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
   is = GNUNET_NT_scanner_init ();
   my_private_key = GNUNET_CRYPTO_eddsa_key_create_from_configuration (cfg);
   if (NULL == my_private_key)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Transport service is lacking key configuration settings. Exiting.\n"));
+    GNUNET_log (
+      GNUNET_ERROR_TYPE_ERROR,
+      _ (
+        "Transport service is lacking key configuration settings. Exiting.\n"));
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  GNUNET_CRYPTO_eddsa_key_get_public (my_private_key,
-                                      &my_identity.public_key);
+  GNUNET_CRYPTO_eddsa_key_get_public (my_private_key, &my_identity.public_key);
   /* start listening */
   listen_task = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
-					       listen_sock,
-					       &listen_cb,
-					       NULL);
-  queue_map = GNUNET_CONTAINER_multipeermap_create (10,
-						    GNUNET_NO);
+                                               listen_sock,
+                                               &listen_cb,
+                                               NULL);
+  queue_map = GNUNET_CONTAINER_multipeermap_create (10, GNUNET_NO);
   ch = GNUNET_TRANSPORT_communicator_connect (cfg,
-					      COMMUNICATOR_CONFIG_SECTION,
-					      COMMUNICATOR_ADDRESS_PREFIX,
+                                              COMMUNICATOR_CONFIG_SECTION,
+                                              COMMUNICATOR_ADDRESS_PREFIX,
                                               GNUNET_TRANSPORT_CC_RELIABLE,
-					      &mq_init,
-					      NULL,
+                                              &mq_init,
+                                              NULL,
                                               &enc_notify_cb,
                                               NULL);
   if (NULL == ch)
@@ -2354,14 +2177,14 @@ run (void *cls,
     return;
   }
   nat = GNUNET_NAT_register (cfg,
-			     COMMUNICATOR_CONFIG_SECTION,
-			     IPPROTO_TCP,
-			     1 /* one address */,
-			     (const struct sockaddr **) &in,
-			     &in_len,
-			     &nat_address_cb,
-			     NULL /* FIXME: support reversal: #5529 */,
-			     NULL /* closure */);
+                             COMMUNICATOR_CONFIG_SECTION,
+                             IPPROTO_TCP,
+                             1 /* one address */,
+                             (const struct sockaddr **) &in,
+                             &in_len,
+                             &nat_address_cb,
+                             NULL /* FIXME: support reversal: #5529 */,
+                             NULL /* closure */);
 }
 
 
@@ -2373,28 +2196,25 @@ run (void *cls,
  * @return 0 ok, 1 on error
  */
 int
-main (int argc,
-      char *const *argv)
+main (int argc, char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END
-  };
+    GNUNET_GETOPT_OPTION_END};
   int ret;
 
-  if (GNUNET_OK !=
-      GNUNET_STRINGS_get_utf8_args (argc, argv,
-				    &argc, &argv))
+  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
 
-  ret =
-      (GNUNET_OK ==
-       GNUNET_PROGRAM_run (argc, argv,
-                           "gnunet-communicator-tcp",
-                           _("GNUnet TCP communicator"),
-                           options,
-			   &run,
-			   NULL)) ? 0 : 1;
-  GNUNET_free ((void*) argv);
+  ret = (GNUNET_OK == GNUNET_PROGRAM_run (argc,
+                                          argv,
+                                          "gnunet-communicator-tcp",
+                                          _ ("GNUnet TCP communicator"),
+                                          options,
+                                          &run,
+                                          NULL))
+          ? 0
+          : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }
 

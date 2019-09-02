@@ -29,14 +29,13 @@
  */
 #ifndef GNUNET_CURL_LIB_H
 #define GNUNET_CURL_LIB_H
-#if HAVE_CURL_CURL_H
+#if HAVE_LIBCURL
 #include <curl/curl.h>
-#elif HAVE_GNURL_CURL_H
+#elif HAVE_LIBGNURL
 #include <gnurl/curl.h>
 #else
 #error "needs curl or gnurl"
 #endif
-#include <jansson.h>
 #include "gnunet_util_lib.h"
 
 
@@ -233,6 +232,30 @@ GNUNET_CURL_job_add (struct GNUNET_CURL_Context *ctx,
 
 
 /**
+ * Schedule a CURL request to be executed and call the given @a jcc
+ * upon its completion.  Note that the context will make use of the
+ * CURLOPT_PRIVATE facility of the CURL @a eh.
+ *
+ * This function modifies the CURL handle to add the
+ * "Content-Type: application/json" header if @a add_json is set.
+ *
+ * @param ctx context to execute the job in
+ * @param eh curl easy handle for the request, will
+ *           be executed AND cleaned up
+ * @param job_headers extra headers to add for this request
+ * @param jcc callback to invoke upon completion
+ * @param jcc_cls closure for @a jcc
+ * @return NULL on error (in this case, @eh is still released!)
+ */
+struct GNUNET_CURL_Job *
+GNUNET_CURL_job_add2 (struct GNUNET_CURL_Context *ctx,
+                     CURL *eh,
+                     const struct curl_slist *job_headers,
+                     GNUNET_CURL_JobCompletionCallback jcc,
+                     void *jcc_cls);
+
+
+/**
  * Cancel a job.  Must only be called before the job completion
  * callback is called for the respective job.
  *
@@ -292,6 +315,16 @@ GNUNET_CURL_gnunet_rc_destroy (struct GNUNET_CURL_RescheduleContext *rc);
  */
 void
 GNUNET_CURL_gnunet_scheduler_reschedule (void *cls);
+
+
+/**
+ * Enable sending the async scope ID as a header.
+ *
+ * @param ctx the context to enable this for
+ * @param header_name name of the header to send.
+ */
+void
+GNUNET_CURL_enable_async_scope_header (struct GNUNET_CURL_Context *ctx, const char *header_name);
 
 
 #endif

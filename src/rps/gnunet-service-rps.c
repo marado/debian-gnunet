@@ -345,7 +345,7 @@ struct Sub
   unsigned int sampler_size_est_need;
 
   /**
-   * Time inverval the do_round task runs in.
+   * Time interval the do_round task runs in.
    */
   struct GNUNET_TIME_Relative round_interval;
 
@@ -1015,7 +1015,6 @@ get_channel (struct PeerContext *peer_ctx)
                                    peer_ctx->send_channel_ctx, /* context */
                                    &peer_ctx->peer_id,
                                    &peer_ctx->sub->hash,
-                                   GNUNET_CADET_OPTION_RELIABLE,
                                    NULL, /* WindowSize handler */
                                    &cleanup_destroyed_channel, /* Disconnect handler */
                                    cadet_handlers);
@@ -2161,7 +2160,7 @@ rem_from_list (struct GNUNET_PeerIdentity **peer_list,
 
   for ( i = 0 ; i < *list_size ; i++ )
   {
-    if (0 == GNUNET_CRYPTO_cmp_peer_identity (&tmp[i], peer))
+    if (0 == GNUNET_memcmp (&tmp[i], peer))
     {
       if (i < *list_size -1)
       { /* Not at the last entry -- shift peers left */
@@ -2602,6 +2601,13 @@ insert_in_sampler (void *cls,
      * messages to it */
     //indicate_sending_intention (peer);
   }
+  if (sub == msub)
+  {
+    GNUNET_STATISTICS_update (stats,
+                              "# observed peers in gossip",
+                              1,
+                              GNUNET_NO);
+  }
 #ifdef TO_FILE
   sub->num_observed_peers++;
   GNUNET_CONTAINER_multipeermap_put
@@ -2611,6 +2617,10 @@ insert_in_sampler (void *cls,
      GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
   uint32_t num_observed_unique_peers =
     GNUNET_CONTAINER_multipeermap_size (sub->observed_unique_peers);
+  GNUNET_STATISTICS_set (stats,
+                         "# unique peers in gossip",
+                         num_observed_unique_peers,
+                         GNUNET_NO);
 #ifdef TO_FILE_FULL
   to_file (sub->file_name_observed_log,
           "%" PRIu32 " %" PRIu32 " %f\n",
@@ -2742,7 +2752,7 @@ clean_peer (struct Sub *sub,
         "Going to remove send channel to peer %s\n",
         GNUNET_i2s (peer));
     #if ENABLE_MALICIOUS
-    if (0 != GNUNET_CRYPTO_cmp_peer_identity (&attacked_peer,
+    if (0 != GNUNET_memcmp (&attacked_peer,
                                               peer))
       (void) destroy_sending_channel (get_peer_ctx (sub->peer_map,
                                                     peer));
@@ -3500,6 +3510,15 @@ handle_peer_push (void *cls,
   if (channel_ctx->peer_ctx->sub == msub)
   {
     GNUNET_STATISTICS_update(stats, "# push message received", 1, GNUNET_NO);
+    if (NULL != map_single_hop &&
+        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                             peer))
+    {
+      GNUNET_STATISTICS_update (stats,
+                                "# push message received (multi-hop peer)",
+                                1,
+                                GNUNET_NO);
+    }
   }
 
   #if ENABLE_MALICIOUS
@@ -3587,7 +3606,7 @@ handle_peer_pull_request (void *cls,
 
   else if (2 == mal_type)
   { /* Try to partition network */
-    if (0 == GNUNET_CRYPTO_cmp_peer_identity (&attacked_peer, peer))
+    if (0 == GNUNET_memcmp (&attacked_peer, peer))
     {
       send_pull_reply (peer_ctx, mal_peers, num_mal_peers);
     }
@@ -3881,6 +3900,15 @@ send_push (struct PeerContext *peer_ctx)
                               "# push send issued",
                               1,
                               GNUNET_NO);
+    if (NULL != map_single_hop &&
+        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                             &peer_ctx->peer_id))
+    {
+      GNUNET_STATISTICS_update (stats,
+                                "# push send issued (multi-hop peer)",
+                                1,
+                                GNUNET_NO);
+    }
   }
 }
 

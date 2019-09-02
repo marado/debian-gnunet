@@ -1,6 +1,6 @@
 This is gnunet.info, produced by makeinfo version 6.5 from gnunet.texi.
 
-Copyright © 2001-2018 GNUnet e.V.
+Copyright © 2001-2019 GNUnet e.V.
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -23,6 +23,183 @@ INFO-DIR-SECTION Networking
 START-INFO-DIR-ENTRY
 * GNUnet: (gnunet).       Framework for secure peer-to-peer networking
 END-INFO-DIR-ENTRY
+
+
+File: gnunet.info,  Node: Performance regression analysis with Gauger,  Next: TESTBED Subsystem,  Prev: TESTING library,  Up: GNUnet Developer Handbook
+
+7.12 Performance regression analysis with Gauger
+================================================
+
+To help avoid performance regressions, GNUnet uses Gauger.  Gauger is a
+simple logging tool that allows remote hosts to send performance data to
+a central server, where this data can be analyzed and visualized.
+Gauger shows graphs of the repository revisions and the performance data
+recorded for each revision, so sudden performance peaks or drops can be
+identified and linked to a specific revision number.
+
+   In the case of GNUnet, the buildbots log the performance data
+obtained during the tests after each build.  The data can be accessed on
+GNUnet’s Gauger page.
+
+   The menu on the left allows to select either the results of just one
+build bot (under "Hosts") or review the data from all hosts for a given
+test result (under "Metrics").  In case of very different absolute value
+of the results, for instance arm vs.  amd64 machines, the option
+"Normalize" on a metric view can help to get an idea about the
+performance evolution across all hosts.
+
+   Using Gauger in GNUnet and having the performance of a module tracked
+over time is very easy.  First of course, the testcase must generate
+some consistent metric, which makes sense to have logged.  Highly
+volatile or random dependent metrics probably are not ideal candidates
+for meaningful regression detection.
+
+   To start logging any value, just include ‘gauger.h’ in your testcase
+code.  Then, use the macro ‘GAUGER()’ to make the Buildbots log whatever
+value is of interest for you to ‘gnunet.org’’s Gauger server.  No setup
+is necessary as most Buildbots have already everything in place and new
+metrics are created on demand.  To delete a metric, you need to contact
+a member of the GNUnet development team (a file will need to be removed
+manually from the respective directory).
+
+   The code in the test should look like this:
+
+     [other includes]
+     #include <gauger.h>
+
+     int main (int argc, char *argv[]) {
+
+       [run test, generate data]
+         GAUGER("YOUR_MODULE",
+                "METRIC_NAME",
+                (float)value,
+                "UNIT"); }
+
+   Where:
+
+*YOUR_MODULE* is a category in the gauger page and should be
+     the name of the module or subsystem like "Core" or "DHT"
+*METRIC* is
+     the name of the metric being collected and should be concise and
+     descriptive, like "PUT operations in sqlite-datastore".
+*value* is the value
+     of the metric that is logged for this run.
+*UNIT* is the unit in
+     which the value is measured, for instance "kb/s" or "kb of
+     RAM/node".
+
+   If you wish to use Gauger for your own project, you can grab a copy
+of the latest stable release or check out Gauger’s Subversion
+repository.
+
+
+File: gnunet.info,  Node: TESTBED Subsystem,  Next: libgnunetutil,  Prev: Performance regression analysis with Gauger,  Up: GNUnet Developer Handbook
+
+7.13 TESTBED Subsystem
+======================
+
+The TESTBED subsystem facilitates testing and measuring of multi-peer
+deployments on a single host or over multiple hosts.
+
+   The architecture of the testbed module is divided into the following:
+
+   • Testbed API: An API which is used by the testing driver programs.
+     It provides with functions for creating, destroying, starting,
+     stopping peers, etc.
+
+   • Testbed service (controller): A service which is started through
+     the Testbed API. This service handles operations to create,
+     destroy, start, stop peers, connect them, modify their
+     configurations.
+
+   • Testbed helper: When a controller has to be started on a host, the
+     testbed API starts the testbed helper on that host which in turn
+     starts the controller.  The testbed helper receives a configuration
+     for the controller through its stdin and changes it to ensure the
+     controller doesn’t run into any port conflict on that host.
+
+   The testbed service (controller) is different from the other GNUnet
+services in that it is not started by ARM and is not supposed to be run
+as a daemon.  It is started by the testbed API through a testbed helper.
+In a typical scenario involving multiple hosts, a controller is started
+on each host.  Controllers take up the actual task of creating peers,
+starting and stopping them on the hosts they run.
+
+   While running deployments on a single localhost the testbed API
+starts the testbed helper directly as a child process.  When running
+deployments on remote hosts the testbed API starts Testbed Helpers on
+each remote host through remote shell.  By default testbed API uses SSH
+as a remote shell.  This can be changed by setting the environmental
+variable GNUNET_TESTBED_RSH_CMD to the required remote shell program.
+This variable can also contain parameters which are to be passed to the
+remote shell program.  For e.g:
+
+     export GNUNET_TESTBED_RSH_CMD="ssh -o BatchMode=yes \
+     -o NoHostAuthenticationForLocalhost=yes %h"
+
+   Substitutions are allowed in the command string above, this allows
+for substitutions through placemarks which begin with a ‘%’.  At present
+the following substitutions are supported
+
+   • %h: hostname
+   • %u: username
+   • %p: port
+
+   Note that the substitution placemark is replaced only when the
+corresponding field is available and only once.  Specifying
+
+     %u@%h
+
+   doesn’t work either.  If you want to user username substitutions for
+‘SSH’, use the argument ‘-l’ before the username substitution.
+
+   For example:
+     ssh -l %u -p %p %h
+
+   The testbed API and the helper communicate through the helpers stdin
+and stdout.  As the helper is started through a remote shell on remote
+hosts any output messages from the remote shell interfere with the
+communication and results in a failure while starting the helper.  For
+this reason, it is suggested to use flags to make the remote shells
+produce no output messages and to have password-less logins.  The
+default remote shell, SSH, the default options are:
+
+     -o BatchMode=yes -o NoHostBasedAuthenticationForLocalhost=yes"
+
+   Password-less logins should be ensured by using SSH keys.
+
+   Since the testbed API executes the remote shell as a non-interactive
+shell, certain scripts like .bashrc, .profiler may not be executed.  If
+this is the case testbed API can be forced to execute an interactive
+shell by setting up the environmental variable
+‘GNUNET_TESTBED_RSH_CMD_SUFFIX’ to a shell program.
+
+   An example could be:
+
+     export GNUNET_TESTBED_RSH_CMD_SUFFIX="sh -lc"
+
+   The testbed API will then execute the remote shell program as:
+
+     $GNUNET_TESTBED_RSH_CMD -p $port $dest $GNUNET_TESTBED_RSH_CMD_SUFFIX \
+     gnunet-helper-testbed
+
+   On some systems, problems may arise while starting testbed helpers if
+GNUnet is installed into a custom location since the helper may not be
+found in the standard path.  This can be addressed by setting the
+variable ‘‘HELPER_BINARY_PATH’’ to the path of the testbed helper.
+Testbed API will then use this path to start helper binaries both
+locally and remotely.
+
+   Testbed API can accessed by including the ‘gnunet_testbed_service.h’
+file and linking with ‘-lgnunettestbed’.
+
+* Menu:
+
+* Supported Topologies::
+* Hosts file format::
+* Topology file format::
+* Testbed Barriers::
+* TESTBED Caveats::
 
 
 File: gnunet.info,  Node: Supported Topologies,  Next: Hosts file format,  Up: TESTBED Subsystem
@@ -155,7 +332,7 @@ to connect each origin peer to the target peer.
 [2->1], [3->1],[4->3], [0->3], [2->0] ‘ 1:2|3 3:4| 0 0: 2 ’
 
 
-File: gnunet.info,  Node: Testbed Barriers,  Next: Automatic large-scale deployment in the PlanetLab testbed,  Prev: Topology file format,  Up: TESTBED Subsystem
+File: gnunet.info,  Node: Testbed Barriers,  Next: TESTBED Caveats,  Prev: Topology file format,  Up: TESTBED Subsystem
 
 7.13.4 Testbed Barriers
 -----------------------
@@ -280,156 +457,9 @@ ensuring that the barrier is reached by all the controllers and the
 downward propagation is for triggering that the barrier is crossed.
 
 
-File: gnunet.info,  Node: Automatic large-scale deployment in the PlanetLab testbed,  Next: TESTBED Caveats,  Prev: Testbed Barriers,  Up: TESTBED Subsystem
+File: gnunet.info,  Node: TESTBED Caveats,  Prev: Testbed Barriers,  Up: TESTBED Subsystem
 
-7.13.5 Automatic large-scale deployment in the PlanetLab testbed
-----------------------------------------------------------------
-
-PlanetLab is a testbed for computer networking and distributed systems
-research.  It was established in 2002 and as of June 2010 was composed
-of 1090 nodes at 507 sites worldwide.
-
-   To automate the GNUnet we created a set of automation tools to
-simplify the large-scale deployment.  We provide you a set of scripts
-you can use to deploy GNUnet on a set of nodes and manage your
-installation.
-
-   Please also check <https://old.gnunet.org/installation-fedora8-svn>
-and <https://old.gnunet.org/installation-fedora12-svn> to find detailed
-instructions how to install GNUnet on a PlanetLab node.
-
-* Menu:
-
-* PlanetLab Automation for Fedora8 nodes::
-* Install buildslave on PlanetLab nodes running fedora core 8::
-* Setup a new PlanetLab testbed using GPLMT::
-* Why do i get an ssh error when using the regex profiler?::
-
-
-File: gnunet.info,  Node: PlanetLab Automation for Fedora8 nodes,  Next: Install buildslave on PlanetLab nodes running fedora core 8,  Up: Automatic large-scale deployment in the PlanetLab testbed
-
-7.13.5.1 PlanetLab Automation for Fedora8 nodes
-...............................................
-
-
-File: gnunet.info,  Node: Install buildslave on PlanetLab nodes running fedora core 8,  Next: Setup a new PlanetLab testbed using GPLMT,  Prev: PlanetLab Automation for Fedora8 nodes,  Up: Automatic large-scale deployment in the PlanetLab testbed
-
-7.13.5.2 Install buildslave on PlanetLab nodes running fedora core 8
-....................................................................
-
-Since most of the PlanetLab nodes are running the very old Fedora core 8
-image, installing the buildslave software is quite some pain.  For our
-PlanetLab testbed we figured out how to install the buildslave software
-best.
-
-   Install Distribute for Python:
-
-     curl http://python-distribute.org/distribute_setup.py | sudo python
-
-   Install Distribute for zope.interface <= 3.8.0 (4.0 and 4.0.1 will
-not work):
-
-     export PYPI=https://pypi.python.org/packages/source
-     wget $PYPI/z/zope.interface/zope.interface-3.8.0.tar.gz
-     tar zvfz zope.interface-3.8.0.tar.gz
-     cd zope.interface-3.8.0
-     sudo python setup.py install
-
-   Install the buildslave software (0.8.6 was the latest version):
-
-     export GCODE="http://buildbot.googlecode.com/files"
-     wget $GCODE/buildbot-slave-0.8.6p1.tar.gz
-     tar xvfz buildbot-slave-0.8.6p1.tar.gz
-     cd buildslave-0.8.6p1
-     sudo python setup.py install
-
-   The setup will download the matching twisted package and install it.
-It will also try to install the latest version of zope.interface which
-will fail to install.  Buildslave will work anyway since version 3.8.0
-was installed before!
-
-
-File: gnunet.info,  Node: Setup a new PlanetLab testbed using GPLMT,  Next: Why do i get an ssh error when using the regex profiler?,  Prev: Install buildslave on PlanetLab nodes running fedora core 8,  Up: Automatic large-scale deployment in the PlanetLab testbed
-
-7.13.5.3 Setup a new PlanetLab testbed using GPLMT
-..................................................
-
-   • Get a new slice and assign nodes Ask your PlanetLab PI to give you
-     a new slice and assign the nodes you need
-   • Install a buildmaster You can stick to the buildbot
-     documentation: <http://buildbot.net/buildbot/docs/current/manual/installation.html>
-   • Install the buildslave software on all nodes To install the
-     buildslave on all nodes assigned to your slice you can use the
-     tasklist ‘install_buildslave_fc8.xml’ provided with GPLMT:
-
-          ./gplmt.py -c contrib/tumple_gnunet.conf -t \
-          contrib/tasklists/install_buildslave_fc8.xml -a -p <planetlab password>
-
-   • Create the buildmaster configuration and the slave setup commands
-
-     The master and the and the slaves have need to have credentials and
-     the master has to have all nodes configured.  This can be done with
-     the ‘create_buildbot_configuration.py’ script in the ‘scripts’
-     directory.
-
-     This scripts takes a list of nodes retrieved directly from
-     PlanetLab or read from a file and a configuration template and
-     creates:
-
-        • a tasklist which can be executed with gplmt to setup the
-          slaves
-        • a master.cfg file containing a PlanetLab nodes
-
-     A configuration template is included in the <contrib>, most
-     important is that the script replaces the following tags in the
-     template:
-
-     %GPLMT_BUILDER_DEFINITION
-     : GPLMT_BUILDER_SUMMARY GPLMT_SLAVES %GPLMT_SCHEDULER_BUILDERS
-
-     Create configuration for all nodes assigned to a slice:
-
-          ./create_buildbot_configuration.py -u <planetlab username> \
-          -p <planetlab password> -s <slice> -m <buildmaster+port> \
-          -t <template>
-
-     Create configuration for some nodes in a file:
-
-          ./create_buildbot_configuration.p -f <node_file> \
-          -m <buildmaster+port> -t <template>
-
-   • Copy the ‘master.cfg’ to the buildmaster and start it Use ‘buildbot
-     start <basedir>’ to start the server
-   • Setup the buildslaves
-
-
-File: gnunet.info,  Node: Why do i get an ssh error when using the regex profiler?,  Prev: Setup a new PlanetLab testbed using GPLMT,  Up: Automatic large-scale deployment in the PlanetLab testbed
-
-7.13.5.4 Why do i get an ssh error when using the regex profiler?
-.................................................................
-
-Why do i get an ssh error "Permission denied (publickey,password)."
-when using the regex profiler although passwordless ssh to localhost
-works using publickey and ssh-agent?
-
-   You have to generate a public/private-key pair with no
-password: ‘ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_localhost’ and then
-add the following to your ~/.ssh/config file:
-
-   ‘Host 127.0.0.1 IdentityFile ~/.ssh/id_localhost’
-
-   now make sure your hostsfile looks like
-
-     [USERNAME]@127.0.0.1:22 [USERNAME]@127.0.0.1:22
-
-   You can test your setup by running ‘ssh 127.0.0.1’ in a terminal and
-then in the opened session run it again.  If you were not asked for a
-password on either login, then you should be good to go.
-
-
-File: gnunet.info,  Node: TESTBED Caveats,  Prev: Automatic large-scale deployment in the PlanetLab testbed,  Up: TESTBED Subsystem
-
-7.13.6 TESTBED Caveats
+7.13.5 TESTBED Caveats
 ----------------------
 
 This section documents a few caveats when using the GNUnet testbed
@@ -443,7 +473,7 @@ subsystem.
 
 File: gnunet.info,  Node: CORE must be started,  Next: ATS must want the connections,  Up: TESTBED Caveats
 
-7.13.6.1 CORE must be started
+7.13.5.1 CORE must be started
 .............................
 
 A uncomplicated issue is bug #3993
@@ -466,7 +496,7 @@ to over-optimize by not starting any services with ‘IMMEDIATE_START’.
 
 File: gnunet.info,  Node: ATS must want the connections,  Prev: CORE must be started,  Up: TESTBED Caveats
 
-7.13.6.2 ATS must want the connections
+7.13.5.2 ATS must want the connections
 ......................................
 
 When TESTBED sets up connections, it only offers the respective HELLO
@@ -546,10 +576,11 @@ the program at various levels.
 
    ‘gnunet_common.h’ defines several *log levels*:
 
-ERROR for errors (really problematic situations, often leading to
-     crashes)
-WARNING for warnings (troubling situations that might have
-     negative consequences, although not fatal)
+ERROR for errors
+     (really problematic situations, often leading to crashes)
+WARNING for warnings
+     (troubling situations that might have negative consequences,
+     although not fatal)
 INFO for various information.
      Used somewhat rarely, as GNUnet statistics is used to hold and
      display most of the information that users might find interesting.
@@ -866,7 +897,7 @@ configure option:
 
    Since now activating DEBUG automatically makes it VERBOSE and
 activates *all* debug messages by default, you probably want to use the
-https://old.gnunet.org/logging (https://old.gnunet.org/logging)
+https://docs.gnunet.org/#Logging (https://docs.gnunet.org/#Logging)
 functionality to filter only relevant messages.  A suitable
 configuration could be:
 
@@ -1626,11 +1657,12 @@ File: gnunet.info,  Node: Availability,  Prev: Conclusion,  Up: Optimizing Memor
 7.14.6.5 Availability
 .....................
 
-The new multi hash map code was committed in SVN 24319 (will be in
-GNUnet 0.9.4).  Various subsystems (transport, core, dht, file-sharing)
-were previously audited and modified to take advantage of the new
-capability.  In particular, memory consumption of the file-sharing
-service is expected to drop by 20-30% due to this change.
+The new multi hash map code was committed in SVN 24319 (which made its
+way into GNUnet version 0.9.4).  Various subsystems (transport, core,
+dht, file-sharing) were previously audited and modified to take
+advantage of the new capability.  In particular, memory consumption of
+the file-sharing service is expected to drop by 20-30% due to this
+change.
 
 
 File: gnunet.info,  Node: CONTAINER_MDLL API,  Prev: Optimizing Memory Consumption of GNUnet's (Multi-) Hash Maps,  Up: libgnunetutil
@@ -2130,7 +2162,10 @@ exists in the 0.7.x and 0.8.x branch.  SMTP support is currently not
 available in GNUnet 0.9.x.  This page also describes the transport layer
 abstraction (as it existed in 0.7.x and 0.8.x) in more detail and gives
 some benchmarking results.  The performance results presented are quite
-old and maybe outdated at this point.
+old and maybe outdated at this point.  For the readers in the year 2019,
+you will notice by the mention of version 0.7, 0.8, and 0.9 that this
+section has to be taken with your usual grain of salt and be updated
+eventually.
 
    • Why use SMTP for a peer-to-peer transport?
    • SMTPHow does it work?
@@ -3279,7 +3314,7 @@ several times to CADET, even do one connection per listening port).  The
 function returns a handle which has to be used for any further
 interaction with the service.
 
-   To connect to a remote peer a client has to call the
+   To connect to a remote peer, a client has to call the
 ‘GNUNET_CADET_channel_create’ function.  The most important parameters
 given are the remote peer’s identity (it public key) and a port, which
 specifies which application on the remote peer to connect to, similar to
@@ -6103,6 +6138,14 @@ This section discusses the challenges and problems faced when writing
 the Ascension tool.  It also takes a look at possible improvements in
 the future.
 
+   Consider the following diagram that shows the workflow of Ascension:
+
+ [image src="images/ascension_ssd.png" alt="Ascensions workflow" ]
+
+   Further the interaction between components of GNUnet are shown in the
+diagram below:
+ [image src="images/ascension_interaction.png" alt="Ascensions workflow" ]
+
 * Menu:
 
 * Conversions between DNS and GNS::
@@ -6117,23 +6160,24 @@ File: gnunet.info,  Node: Conversions between DNS and GNS,  Next: DNS Zone Size,
 
 The differences between the two name systems lies in the details and is
 not always transparent.  For instance an SRV record is converted to a
-GNS only BOX record.
+BOX record which is unique to GNS.
 
    This is done by converting to a BOX record from an existing SRV
 record:
 
      # SRV
      # _service._proto.name. TTL class SRV priority weight port target
-     _sip._tcp.example.com. 14000 IN	SRV	0 0 5060 www.example.com.
+     _sip._tcp.example.com. 14000 IN SRV     0 0 5060 www.example.com.
      # BOX
      # TTL BOX flags port protocol recordtype priority weight port target
      14000 BOX n 5060 6 33 0 0 5060 www.example.com
 
-   Other records that have such a transformation is the MX record type,
-as well as the SOA record type.
+   Other records that need to undergo such transformation is the MX
+record type, as well as the SOA record type.
 
    Transformation of a SOA record into GNS works as described in the
 following example.  Very important to note are the rname and mname keys.
+
      # BIND syntax for a clean SOA record
         IN SOA master.example.com. hostmaster.example.com. (
          2017030300 ; serial
@@ -6142,8 +6186,9 @@ following example.  Very important to note are the rname and mname keys.
          604800     ; expire
          600 )      ; ttl
      # Recordline for adding the record
-     $ gnunet-namestore -z example.com -a -n  -t SOA -V rname=master.example.com \
-       mname=hostmaster.example.com 2017030300,3600,1800,604800,600 -e 7200s
+     $ gnunet-namestore -z example.com -a -n  -t SOA -V \
+         rname=master.example.com mname=hostmaster.example.com  \
+         2017030300,3600,1800,604800,600 -e 7200s
 
    The transformation of MX records is done in a simple way.
      # mail.example.com. 3600 IN MX 10 mail.example.com.
@@ -6152,8 +6197,8 @@ following example.  Very important to note are the rname and mname keys.
    Finally, one of the biggest struggling points were the NS records
 that are found in top level domain zones.  The intended behaviour for
 those is to add GNS2DNS records for those so that gnunet-gns can resolve
-records for those domains on its own.  This requires migration of the
-DNS GLUE records as well, provided that they are within the same zone.
+records for those domains on its own.  Those require the values from DNS
+GLUE records, provided they are within the same zone.
 
    The following two examples show one record with a GLUE record and the
 other one does not have a GLUE record.  This takes place in the ’com’
@@ -6161,10 +6206,12 @@ TLD.
 
      # ns1.example.com 86400 IN A 127.0.0.1
      # example.com 86400 IN NS ns1.example.com.
-     $ gnunet-namestore -z com -n example -R 86400 GNS2DNS n example.com@127.0.0.1
+     $ gnunet-namestore -z com -n example -R 86400 GNS2DNS n \
+         example.com@127.0.0.1
 
      # example.com 86400 IN NS ns1.example.org.
-     $ gnunet-namestore -z com -n example -R 86400 GNS2DNS n example.com@ns1.example.org
+     $ gnunet-namestore -z com -n example -R 86400 GNS2DNS n \
+         example.com@ns1.example.org
 
    As you can see, one of the GNS2DNS records has an IP address listed
 and the other one a DNS name.  For the first one there is a GLUE record
@@ -6185,7 +6232,7 @@ control over unwanted zones.
    • SRV
    • TXT
 
-   This is not due to a technical limitation but rather a practical one.
+   This is not due to technical limitations but rather a practical ones.
 The problem occurs with DNSSEC enabled DNS zones.  As records within
 those zones are signed periodically, and every new signature is an
 update to the zone, there are many revisions of zones.  This results in
@@ -6196,6 +6243,12 @@ call of the namestore.  Furthermore certain record types need
 transformation into a GNS compatible format which, depending on the
 record type, takes more time.
 
+   Further a blacklist was added to drop for instance DNSSEC related
+records.  Also if a record type is neither in the white list nor the
+blacklist it is considered as a loss of data and a message is shown to
+the user.  This helps with transparency and also with contributing, as
+the not supported record types can then be added accordingly.
+
 
 File: gnunet.info,  Node: DNS Zone Size,  Next: Performance,  Prev: Conversions between DNS and GNS,  Up: Importing DNS Zones into GNS
 
@@ -6204,12 +6257,12 @@ File: gnunet.info,  Node: DNS Zone Size,  Next: Performance,  Prev: Conversions 
 
 Another very big problem exists with very large zones.  When migrating a
 small zone the delay between adding of records and their expiry is
-negligible.  However when working with a TLD zone that has more that 1
-million records this delay becomes a problem.
+negligible.  However when working with big zones that easily have more
+than a few million records this delay becomes a problem.
 
    Records will start to expire well before the zone has finished
-migrating.  This causes unwanted anomalies when trying to resolve
-records.
+migrating.  This is usually not a problem but can cause a high CPU load
+when a peer is restarted and the records have expired.
 
    A good solution has not been found yet.  One of the idea that floated
 around was that the records should be added with the s (shadow) flag to
@@ -6219,15 +6272,19 @@ the zone and would require deletion of said record(s).
 
    Another problem that still persists is how to refresh records.
 Expired records are still displayed when calling gnunet-namestore but do
-not resolve with gnunet-gns.  When doing incremental zone transfers this
-becomes especially apparent.
+not resolve with gnunet-gns.  Zonemaster will sign the expired records
+again and make sure that the records are still valid.  With a recent
+change this was fixed as gnunet-gns to improve the suffix lookup which
+allows for a fast lookup even with thousands of local egos.
 
-   I estimate that the limit lies at about 200’000 records in a zone as
-this is the limit that my machine is capable of adding within one hour.
-This was calculated by running cProfile on the application with a zone
-of 5000 records and calculating what abouts a much bigger zones with 8
-million records would take.  This results in a nice metric of records
-migrated per hour.
+   Currently the pace of adding records in general is around 10 records
+per second.  Crypto is the upper limit for adding of records.  The
+performance of your machine can be tested with the perf_crypto_* tools.
+There is still a big discrepancy between the pace of Ascension and the
+theoretical limit.
+
+   A performance metric for measuring improvements has not yet been
+implemented in Ascension.
 
 
 File: gnunet.info,  Node: Performance,  Prev: DNS Zone Size,  Up: Importing DNS Zones into GNS
@@ -6237,26 +6294,30 @@ File: gnunet.info,  Node: Performance,  Prev: DNS Zone Size,  Up: Importing DNS 
 
 The performance when migrating a zone using the Ascension tool is
 limited by a handful of factors.  First of all ascension is written in
-Python3 and calls the CLI tools of GNUnet.  Furthermore all the records
+Python3 and calls the CLI tools of GNUnet.  This is comparable to a fork
+and exec call which costs a few CPU cycles.  Furthermore all the records
 that are added to the same label are signed using the zones private key.
 This signing operation is very resource heavy and was optimized during
-development by adding the ’-R’ (Recordline) option to gnunet-namestore.
-This allows to add multiple records at once using the CLI.
-
-   The result of this was a much faster migration of TLD zones, as most
-records with the same label have two name servers.
+development by adding the ’-R’ (Recordline) option to gnunet-namestore
+which allows to specify multiple records using the CLI tool.  Assuming
+that in a TLD zone every domain has at least two name servers this
+halves the amount of signatures needed.
 
    Another improvement that could be made is with the addition of
-multiple threads when opening the GNUnet CLI tools.  This could be
-implemented by simply creating more workers in the program but
-performance improvements were not tested.
+multiple threads or using asynchronous subprocesses when opening the
+GNUnet CLI tools.  This could be implemented by simply creating more
+workers in the program but performance improvements were not tested.
 
-   During the entire development of Ascension sqlite was used as a
-database backend for GNUnet.  Other backends have not been tested yet.
+   Ascension was tested using different hardware and database backends.
+Performance differences between SQLite and postgresql are marginal and
+almost non existent.  What did make a huge impact on record adding
+performance was the storage medium.  On a traditional mechanical hard
+drive adding of records were slow compared to a solid state disk.
 
    In conclusion there are many bottlenecks still around in the program,
-namely the signing process and the single threaded implementation.  In
-the future a solution that uses the C API would be cleaner and better.
+namely the single threaded implementation and inefficient, sequential
+calls of gnunet-namestore.  In the future a solution that uses the C API
+would be cleaner and better.
 
 
 File: gnunet.info,  Node: GNS Namecache,  Next: REVOCATION Subsystem,  Prev: GNU Name System (GNS),  Up: GNUnet Developer Handbook
@@ -6474,63 +6535,4 @@ being revoked.  Thus, they can only be created while the private key is
 in the possession of the respective user.  This is another reason to
 create a revocation message ahead of time and store it in a secure
 location.
-
-
-File: gnunet.info,  Node: libgnunetrevocation,  Next: The REVOCATION Client-Service Protocol,  Prev: Revocation Message Design Requirements,  Up: REVOCATION Subsystem
-
-7.36.3 libgnunetrevocation
---------------------------
-
-The REVOCATION API consists of two parts, to query and to issue
-revocations.
-
-* Menu:
-
-* Querying for revoked keys::
-* Preparing revocations::
-* Issuing revocations::
-
-
-File: gnunet.info,  Node: Querying for revoked keys,  Next: Preparing revocations,  Up: libgnunetrevocation
-
-7.36.3.1 Querying for revoked keys
-..................................
-
-‘GNUNET_REVOCATION_query’ is used to check if a given ECDSA public key
-has been revoked.  The given callback will be invoked with the result of
-the check.  The query can be canceled using
-‘GNUNET_REVOCATION_query_cancel’ on the return value.
-
-
-File: gnunet.info,  Node: Preparing revocations,  Next: Issuing revocations,  Prev: Querying for revoked keys,  Up: libgnunetrevocation
-
-7.36.3.2 Preparing revocations
-..............................
-
-It is often desirable to create a revocation record ahead-of-time and
-store it in an off-line location to be used later in an emergency.  This
-is particularly true for GNUnet revocations, where performing the
-revocation operation itself is computationally expensive and thus is
-likely to take some time.  Thus, if users want the ability to perform
-revocations quickly in an emergency, they must pre-compute the
-revocation message.  The revocation API enables this with two functions
-that are used to compute the revocation message, but not trigger the
-actual revocation operation.
-
-   ‘GNUNET_REVOCATION_check_pow’ should be used to calculate the
-proof-of-work required in the revocation message.  This function takes
-the public key, the required number of bits for the proof of work (which
-in GNUnet is a network-wide constant) and finally a proof-of-work number
-as arguments.  The function then checks if the given proof-of-work
-number is a valid proof of work for the given public key.  Clients
-preparing a revocation are expected to call this function repeatedly
-(typically with a monotonically increasing sequence of numbers of the
-proof-of-work number) until a given number satisfies the check.  That
-number should then be saved for later use in the revocation operation.
-
-   ‘GNUNET_REVOCATION_sign_revocation’ is used to generate the signature
-that is required in a revocation message.  It takes the private key that
-(possibly in the future) is to be revoked and returns the signature.
-The signature can again be saved to disk for later use, which will then
-allow performing a revocation even without access to the private key.
 

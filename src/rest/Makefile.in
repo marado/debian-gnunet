@@ -95,9 +95,10 @@ libexec_PROGRAMS = gnunet-rest-server$(EXEEXT)
 subdir = src/rest
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -117,7 +118,7 @@ CONFIG_HEADER = $(top_builddir)/gnunet_config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" \
-	"$(DESTDIR)$(pkgcfgdir)"
+	"$(DESTDIR)$(plugindir)" "$(DESTDIR)$(pkgcfgdir)"
 PROGRAMS = $(libexec_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -146,17 +147,37 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-LTLIBRARIES = $(lib_LTLIBRARIES)
+LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
+libgnunet_plugin_rest_config_la_DEPENDENCIES = libgnunetrest.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_config_la_OBJECTS = plugin_rest_config.lo
+libgnunet_plugin_rest_config_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_config_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+libgnunet_plugin_rest_config_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_config_la_LDFLAGS) $(LDFLAGS) -o $@
+libgnunet_plugin_rest_copying_la_DEPENDENCIES = libgnunetrest.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_copying_la_OBJECTS = plugin_rest_copying.lo
+libgnunet_plugin_rest_copying_la_OBJECTS =  \
+	$(am_libgnunet_plugin_rest_copying_la_OBJECTS)
+libgnunet_plugin_rest_copying_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_copying_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunetrest_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_libgnunetrest_la_OBJECTS = rest.lo
 libgnunetrest_la_OBJECTS = $(am_libgnunetrest_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 libgnunetrest_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetrest_la_LDFLAGS) $(LDFLAGS) \
@@ -182,7 +203,8 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/gnunet-rest-server.Po \
-	./$(DEPDIR)/rest.Plo
+	./$(DEPDIR)/plugin_rest_config.Plo \
+	./$(DEPDIR)/plugin_rest_copying.Plo ./$(DEPDIR)/rest.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -202,9 +224,12 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgnunetrest_la_SOURCES) $(gnunet_rest_server_SOURCES)
-DIST_SOURCES = $(libgnunetrest_la_SOURCES) \
-	$(gnunet_rest_server_SOURCES)
+SOURCES = $(libgnunet_plugin_rest_config_la_SOURCES) \
+	$(libgnunet_plugin_rest_copying_la_SOURCES) \
+	$(libgnunetrest_la_SOURCES) $(gnunet_rest_server_SOURCES)
+DIST_SOURCES = $(libgnunet_plugin_rest_config_la_SOURCES) \
+	$(libgnunet_plugin_rest_copying_la_SOURCES) \
+	$(libgnunetrest_la_SOURCES) $(gnunet_rest_server_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -281,7 +306,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -339,6 +369,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -366,8 +397,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -409,6 +443,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@
@@ -460,10 +495,36 @@ pkgcfg_DATA = \
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIBS = -lgcov
 lib_LTLIBRARIES = \
-	libgnunetrest.la 
+  libgnunetrest.la 
+
+plugin_LTLIBRARIES = \
+  libgnunet_plugin_rest_copying.la \
+  libgnunet_plugin_rest_config.la
 
 EXTRA_DIST = \
  rest.conf
+
+libgnunet_plugin_rest_copying_la_SOURCES = \
+  plugin_rest_copying.c
+
+libgnunet_plugin_rest_copying_la_LIBADD = \
+  libgnunetrest.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -lmicrohttpd
+
+libgnunet_plugin_rest_copying_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
+
+libgnunet_plugin_rest_config_la_SOURCES = \
+  plugin_rest_config.c
+
+libgnunet_plugin_rest_config_la_LIBADD = \
+  libgnunetrest.la \
+  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
+  $(LTLIBINTL) -lmicrohttpd -ljansson
+
+libgnunet_plugin_rest_config_la_LDFLAGS = \
+ $(GN_PLUGIN_LDFLAGS)
 
 gnunet_rest_server_SOURCES = \
  gnunet-rest-server.c
@@ -601,6 +662,47 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
+install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	list2=; for p in $$list; do \
+	  if test -f $$p; then \
+	    list2="$$list2 $$p"; \
+	  else :; fi; \
+	done; \
+	test -z "$$list2" || { \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(plugindir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(plugindir)" || exit 1; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(plugindir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(plugindir)"; \
+	}
+
+uninstall-pluginLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
+	for p in $$list; do \
+	  $(am__strip_dir) \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(plugindir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(plugindir)/$$f"; \
+	done
+
+clean-pluginLTLIBRARIES:
+	-test -z "$(plugin_LTLIBRARIES)" || rm -f $(plugin_LTLIBRARIES)
+	@list='$(plugin_LTLIBRARIES)'; \
+	locs=`for p in $$list; do echo $$p; done | \
+	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
+	      sort -u`; \
+	test -z "$$locs" || { \
+	  echo rm -f $${locs}; \
+	  rm -f $${locs}; \
+	}
+
+libgnunet_plugin_rest_config.la: $(libgnunet_plugin_rest_config_la_OBJECTS) $(libgnunet_plugin_rest_config_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_config_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_config_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_rest_config_la_OBJECTS) $(libgnunet_plugin_rest_config_la_LIBADD) $(LIBS)
+
+libgnunet_plugin_rest_copying.la: $(libgnunet_plugin_rest_copying_la_OBJECTS) $(libgnunet_plugin_rest_copying_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_rest_copying_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(libgnunet_plugin_rest_copying_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_rest_copying_la_OBJECTS) $(libgnunet_plugin_rest_copying_la_LIBADD) $(LIBS)
+
 libgnunetrest.la: $(libgnunetrest_la_OBJECTS) $(libgnunetrest_la_DEPENDENCIES) $(EXTRA_libgnunetrest_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetrest_la_LINK) -rpath $(libdir) $(libgnunetrest_la_OBJECTS) $(libgnunetrest_la_LIBADD) $(LIBS)
 
@@ -615,6 +717,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-rest-server.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_config.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_copying.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rest.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -760,7 +864,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(DATA)
 installdirs:
-	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgcfgdir)"; do \
+	for dir in "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(pkgcfgdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -796,10 +900,12 @@ maintainer-clean-generic:
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
-	clean-libtool mostlyclean-am
+	clean-libtool clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/gnunet-rest-server.Po
+	-rm -f ./$(DEPDIR)/plugin_rest_config.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_copying.Plo
 	-rm -f ./$(DEPDIR)/rest.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -817,7 +923,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pkgcfgDATA
+install-data-am: install-pkgcfgDATA install-pluginLTLIBRARIES
 
 install-dvi: install-dvi-am
 
@@ -847,6 +953,8 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/gnunet-rest-server.Po
+	-rm -f ./$(DEPDIR)/plugin_rest_config.Plo
+	-rm -f ./$(DEPDIR)/plugin_rest_copying.Plo
 	-rm -f ./$(DEPDIR)/rest.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
@@ -865,26 +973,27 @@ ps: ps-am
 ps-am:
 
 uninstall-am: uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
-	uninstall-pkgcfgDATA
+	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
-	clean-libtool cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
-	install-pdf install-pdf-am install-pkgcfgDATA install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA
+	clean-libtool clean-pluginLTLIBRARIES cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-libexecPROGRAMS \
+	install-man install-pdf install-pdf-am install-pkgcfgDATA \
+	install-pluginLTLIBRARIES install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
+	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
 .PRECIOUS: Makefile
 

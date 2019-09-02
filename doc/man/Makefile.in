@@ -90,15 +90,16 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@TEXI2MDOC_GENERATION_TRUE@am__append_1 = gnunet-documentation.7 \
-@TEXI2MDOC_GENERATION_TRUE@	      gnunet-c-tutorial.7
-
+@TEXI2MDOC_GENERATION_TRUE@am__append_1 = gnunet-documentation.7 gnunet-c-tutorial.7
+@TEXI2MDOC_GENERATION_TRUE@am__append_2 = gnunet-c-tutorial.7 gnunet-documentation.7
+@TEXI2MDOC_GENERATION_TRUE@am__append_3 = gnunet-documentation.7 gnunet-c-tutorial.7
 subdir = doc/man
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
-	$(top_srcdir)/m4/align.m4 \
+	$(top_srcdir)/m4/align.m4 $(top_srcdir)/m4/as-auto-alt.m4 \
 	$(top_srcdir)/m4/ax_compare_version.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/check-libheader.m4 \
 	$(top_srcdir)/m4/gettext.m4 $(top_srcdir)/m4/iconv.m4 \
 	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/lib-ld.m4 \
 	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
@@ -164,12 +165,14 @@ am__uninstall_files_from_dir = { \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
 man1dir = $(mandir)/man1
-am__installdirs = "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man5dir)"
+am__installdirs = "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man5dir)" \
+	"$(DESTDIR)$(man7dir)"
 man5dir = $(mandir)/man5
+man7dir = $(mandir)/man7
 NROFF = nroff
 MANS = $(man_MANS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
-am__DIST_COMMON = $(srcdir)/Makefile.in
+am__DIST_COMMON = $(srcdir)/Makefile.in README TODO
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
@@ -219,7 +222,12 @@ GN_PLUGIN_LDFLAGS = @GN_PLUGIN_LDFLAGS@
 GREP = @GREP@
 GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
+HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
+HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOPUS = @HAVE_LIBOPUS@
+HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
+HAVE_ZBAR = @HAVE_ZBAR@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -277,6 +285,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PERL = @PERL@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
@@ -304,8 +313,11 @@ UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
 VAR_IFCONFIG_BINARY = @VAR_IFCONFIG_BINARY@
+VAR_IP6TABLES_BINARY = @VAR_IP6TABLES_BINARY@
 VAR_IPTABLES_BINARY = @VAR_IPTABLES_BINARY@
+VAR_IP_BINARY = @VAR_IP_BINARY@
 VAR_SSH_BINARY = @VAR_SSH_BINARY@
+VAR_SYSCTL_BINARY = @VAR_SYSCTL_BINARY@
 VAR_UPNPC_BINARY = @VAR_UPNPC_BINARY@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
@@ -347,6 +359,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+features_msg = @features_msg@
 gitcommand = @gitcommand@
 host = @host@
 host_alias = @host_alias@
@@ -387,54 +400,26 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 do_subst = $(SED) -e 's,[@]SYSCONFDIR[@],$(sysconfdir),g'
-CLEANFILES = gnunet.conf.5
-man_MANS = \
-  gnunet.conf.5 \
-  gnunet-arm.1 \
-  gnunet-ats.1 \
-  gnunet-auto-share.1 \
-  gnunet-bcd.1 \
-  gnunet-config.1 \
-  gnunet-core.1 \
-  gnunet-conversation.1 \
-  gnunet-conversation-test.1 \
-  gnunet-directory.1 \
-  gnunet-dns2gns.1 \
-  gnunet-datastore.1 \
-  gnunet-download.1 \
-  gnunet-download-manager.1 \
-  gnunet-ecc.1 \
-  gnunet-fs.1 \
-  gnunet-gns.1 \
-  gnunet-gns-proxy.1 \
-  gnunet-identity.1 \
-  gnunet-cadet.1 \
-  gnunet-namecache.1 \
-  gnunet-namestore.1 \
-  gnunet-namestore-fcfsd.1 \
-  gnunet-nat.1 \
-  gnunet-nat-auto.1 \
-  gnunet-nat-server.1 \
-  gnunet-peerinfo.1 \
-  gnunet-publish.1 \
-  gnunet-qr.1 \
-  gnunet-resolver.1 \
-  gnunet-revocation.1 \
-  gnunet-scalarproduct.1 \
-  gnunet-scrypt.1 \
-  gnunet-search.1 \
-  gnunet-statistics.1 \
-  gnunet-testbed-profiler.1 \
-  gnunet-testing-run-service.1 \
-  gnunet-timeout.1 \
-  gnunet-transport.1 \
-  gnunet-transport-certificate-creation.1 \
-  gnunet-unindex.1 \
-  gnunet-uri.1 \
-  gnunet-vpn.1 \
-  gnunet-zoneimport.1
-
-EXTRA_DIST = ${man_MANS} gnunet.conf.5.in $(am__append_1)
+CLEANFILES = gnunet.conf.5 *.html $(am__append_1)
+man_MANS = gnunet.conf.5 gnunet-arm.1 gnunet-ats.1 gnunet-auto-share.1 \
+	gnunet-bcd.1 gnunet-config.1 gnunet-core.1 \
+	gnunet-conversation.1 gnunet-conversation-test.1 \
+	gnunet-directory.1 gnunet-dns2gns.1 gnunet-datastore.1 \
+	gnunet-download.1 gnunet-ecc.1 gnunet-fs.1 gnunet-gns.1 \
+	gnunet-gns-proxy.1 gnunet-gns-proxy-setup-ca.1 \
+	gnunet-identity.1 gnunet-cadet.1 gnunet-namecache.1 \
+	gnunet-namestore.1 gnunet-namestore-fcfsd.1 gnunet-nat.1 \
+	gnunet-nat-auto.1 gnunet-nat-server.1 gnunet-nse.1 \
+	gnunet-peerinfo.1 gnunet-publish.1 gnunet-qr.1 \
+	gnunet-reclaim.1 gnunet-resolver.1 gnunet-revocation.1 \
+	gnunet-scalarproduct.1 gnunet-scrypt.1 gnunet-search.1 \
+	gnunet-statistics.1 gnunet-testbed-profiler.1 \
+	gnunet-testing-run-service.1 gnunet-timeout.1 \
+	gnunet-transport.1 gnunet-transport-certificate-creation.1 \
+	gnunet-unindex.1 gnunet-uri.1 gnunet-vpn.1 gnunet-zoneimport.1 \
+	$(am__append_2)
+EXTRA_DIST = ${man_MANS} gnunet.conf.5.in texi2mdoc-generation.sh \
+	README $(am__append_3)
 all: all-am
 
 .SUFFIXES:
@@ -559,6 +544,49 @@ uninstall-man5:
 	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^5][0-9a-z]*$$,5,;x' \
 	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
 	dir='$(DESTDIR)$(man5dir)'; $(am__uninstall_files_from_dir)
+install-man7: $(man_MANS)
+	@$(NORMAL_INSTALL)
+	@list1=''; \
+	list2='$(man_MANS)'; \
+	test -n "$(man7dir)" \
+	  && test -n "`echo $$list1$$list2`" \
+	  || exit 0; \
+	echo " $(MKDIR_P) '$(DESTDIR)$(man7dir)'"; \
+	$(MKDIR_P) "$(DESTDIR)$(man7dir)" || exit 1; \
+	{ for i in $$list1; do echo "$$i"; done;  \
+	if test -n "$$list2"; then \
+	  for i in $$list2; do echo "$$i"; done \
+	    | sed -n '/\.7[a-z]*$$/p'; \
+	fi; \
+	} | while read p; do \
+	  if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; echo "$$p"; \
+	done | \
+	sed -e 'n;s,.*/,,;p;h;s,.*\.,,;s,^[^7][0-9a-z]*$$,7,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,' | \
+	sed 'N;N;s,\n, ,g' | { \
+	list=; while read file base inst; do \
+	  if test "$$base" = "$$inst"; then list="$$list $$file"; else \
+	    echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man7dir)/$$inst'"; \
+	    $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man7dir)/$$inst" || exit $$?; \
+	  fi; \
+	done; \
+	for i in $$list; do echo "$$i"; done | $(am__base_list) | \
+	while read files; do \
+	  test -z "$$files" || { \
+	    echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(man7dir)'"; \
+	    $(INSTALL_DATA) $$files "$(DESTDIR)$(man7dir)" || exit $$?; }; \
+	done; }
+
+uninstall-man7:
+	@$(NORMAL_UNINSTALL)
+	@list=''; test -n "$(man7dir)" || exit 0; \
+	files=`{ for i in $$list; do echo "$$i"; done; \
+	l2='$(man_MANS)'; for i in $$l2; do echo "$$i"; done | \
+	  sed -n '/\.7[a-z]*$$/p'; \
+	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^7][0-9a-z]*$$,7,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
+	dir='$(DESTDIR)$(man7dir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -603,7 +631,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(MANS)
 installdirs:
-	for dir in "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man5dir)"; do \
+	for dir in "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(man5dir)" "$(DESTDIR)$(man7dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -649,8 +677,6 @@ dvi: dvi-am
 
 dvi-am:
 
-html: html-am
-
 html-am:
 
 info: info-am
@@ -673,7 +699,7 @@ install-info: install-info-am
 
 install-info-am:
 
-install-man: install-man1 install-man5
+install-man: install-man1 install-man5 install-man7
 
 install-pdf: install-pdf-am
 
@@ -703,7 +729,7 @@ ps-am:
 
 uninstall-am: uninstall-man
 
-uninstall-man: uninstall-man1 uninstall-man5
+uninstall-man: uninstall-man1 uninstall-man5 uninstall-man7
 
 .MAKE: install-am install-strip
 
@@ -713,18 +739,28 @@ uninstall-man: uninstall-man1 uninstall-man5
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
-	install-man1 install-man5 install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+	install-man1 install-man5 install-man7 install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-man uninstall-man1 uninstall-man5
+	uninstall-am uninstall-man uninstall-man1 uninstall-man5 \
+	uninstall-man7
 
 .PRECIOUS: Makefile
 
 
 gnunet.conf.5: gnunet.conf.5.in Makefile
 	$(do_subst) < $(srcdir)/gnunet.conf.5.in > gnunet.conf.5
+
+@TEXI2MDOC_GENERATION_TRUE@gnunet-c-tutorial.7: Makefile gnunet-tutorial.7
+@TEXI2MDOC_GENERATION_TRUE@	@echo generated texi2mdoc output || true
+
+@TEXI2MDOC_GENERATION_TRUE@gnunet-tutorial.7: Makefile
+@TEXI2MDOC_GENERATION_TRUE@	$(SH) $(srcdir)/texi2mdoc-generation.sh || true
+
+html:
+	$(SH) $(srcdir)/produce_html.sh
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

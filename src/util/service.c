@@ -473,18 +473,12 @@ check_ipv6_listed (const struct GNUNET_STRINGS_IPv6NetworkPolicy *list,
 {
   unsigned int i;
   unsigned int j;
-  struct in6_addr zero;
 
   if (NULL == list)
     return GNUNET_NO;
-  memset (&zero,
-	  0,
-	  sizeof (struct in6_addr));
   i = 0;
 NEXT:
-  while (0 != memcmp (&zero,
-		      &list[i].network,
-		      sizeof (struct in6_addr)))
+  while (0 != GNUNET_is_zero (&list[i].network))
   {
     for (j = 0; j < sizeof (struct in6_addr) / sizeof (int); j++)
       if (((((int *) ip)[j] & ((int *) &list[i].netmask)[j])) !=
@@ -1067,9 +1061,9 @@ add_unixpath (struct sockaddr **saddrs,
 
   un = GNUNET_new (struct sockaddr_un);
   un->sun_family = AF_UNIX;
-  strncpy (un->sun_path,
-	   unixpath,
-	   sizeof (un->sun_path) - 1);
+  GNUNET_strlcpy (un->sun_path,
+	          unixpath,
+	          sizeof (un->sun_path));
 #ifdef LINUX
   if (GNUNET_YES == abstract)
     un->sun_path[0] = '\0';
@@ -1132,50 +1126,14 @@ get_server_addresses (const char *service_name,
   *addrs = NULL;
   *addr_lens = NULL;
   desc = NULL;
-  if (GNUNET_CONFIGURATION_have_value (cfg,
-				       service_name,
-				       "DISABLEV6"))
-  {
-    if (GNUNET_SYSERR ==
-        (disablev6 =
-         GNUNET_CONFIGURATION_get_value_yesno (cfg,
-					       service_name,
-					       "DISABLEV6")))
-      return GNUNET_SYSERR;
-  }
-  else
-    disablev6 = GNUNET_NO;
-
-  if (! disablev6)
-  {
-    /* probe IPv6 support */
-    desc = GNUNET_NETWORK_socket_create (PF_INET6,
-					 SOCK_STREAM,
-					 0);
-    if (NULL == desc)
-    {
-      if ( (ENOBUFS == errno) ||
-	   (ENOMEM == errno) ||
-	   (ENFILE == errno) ||
-	   (EACCES == errno) )
-      {
-        LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR,
-		      "socket");
-        return GNUNET_SYSERR;
-      }
-      LOG (GNUNET_ERROR_TYPE_INFO,
-           _("Disabling IPv6 support for service `%s', failed to create IPv6 socket: %s\n"),
-           service_name,
-	   STRERROR (errno));
-      disablev6 = GNUNET_YES;
-    }
-    else
-    {
-      GNUNET_break (GNUNET_OK ==
-		    GNUNET_NETWORK_socket_close (desc));
-      desc = NULL;
-    }
-  }
+  disablev6 = GNUNET_NO;
+  if ( (GNUNET_NO ==
+	GNUNET_NETWORK_test_pf (PF_INET6)) ||
+       (GNUNET_YES ==
+	GNUNET_CONFIGURATION_get_value_yesno (cfg,
+					      service_name,
+					      "DISABLEV6") ) )
+    disablev6 = GNUNET_YES;
 
   port = 0;
   if (GNUNET_CONFIGURATION_have_value (cfg,

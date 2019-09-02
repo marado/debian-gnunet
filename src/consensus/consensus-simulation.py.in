@@ -17,16 +17,9 @@
 #
 # SPDX-License-Identifier: AGPL3.0-or-later
 
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import division
-from builtins import str
-from builtins import range
-from past.utils import old_div
 import argparse
 import random
 from math import ceil, log, floor
-from past.builtins import xrange
 
 
 def bsc(n):
@@ -43,14 +36,12 @@ def bsc(n):
 
 def simulate(k, n, verbose):
     assert k < n
-    largest_arc = old_div(int(2**ceil(log(n, 2))), 2)
+    largest_arc = int(2**ceil(log(n, 2))) // 2
     num_ghosts = (2 * largest_arc) - n
     if verbose:
         print("we have", num_ghosts, "ghost peers")
         # n.b. all peers with idx<k are evil
     peers = list(range(n))
-    # py2-3 compatible, backwards.
-    # refer to http://python-future.org/compatible_idioms.html#xrange
     info = [1 << x for x in range(n)]
 
     def done_p():
@@ -111,4 +102,4 @@ if __name__ == "__main__":
     sum = 0.0
     for n in range(0, args.r):
         sum += simulate(args.k, args.n, args.verbose)
-    print(old_div(sum, args.r))
+    print(sum // args.r)

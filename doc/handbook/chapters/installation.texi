@@ -6,15 +6,28 @@ source. For instructions on how to install GNUnet as a binary package
 please refer to the official documentation of your operating system or
 package manager.
 
+For understanding this guide properly it is important to know that
+there are two different ways of running GNUnet:
+
+@itemize @bullet
+@item the @emph{single-user setup}
+@item the @emph{multi-user setup}
+@end itemize
+
+The latter variant has a better security model and requires extra preparation
+before running @code{make install} and a different configuration. Beginners who want to
+quickly try out GNUnet can use the @emph{single-user setup}.
+
 @menu
 * Installing dependencies::
 * Getting the Source Code::
-* Create @code{gnunet} user and group::
+* Create user and groups for the system services::
 * Preparing and Compiling the Source Code::
 * Installation::
-* MOVED FROM USER Checking the Installation::
-* MOVED FROM USER The graphical configuration interface::
-* MOVED FROM USER Config Leftovers::
+* Minimal configuration::
+* Checking the Installation::
+* The graphical configuration interface::
+* Config Leftovers::
 @end menu
 
 @c -----------------------------------------------------------------------
@@ -27,36 +40,54 @@ link to the project websites.
 
 The mandatory libraries and applications are
 @itemize @bullet
-@item libtool
 @item autoconf 2.59 or above
 @item automake 1.11.1 or above
-@item pkg-config
+@item gettext
+@item glibc (read below, other libcs should work)
+@item gnutls 3.2.12 or above, recommended to be linked against libunbound
+@item iptables (on Linux systems)
+@item libtool 2.2 or above
+@item libltdl (part of libtool)
 @item libgcrypt 1.6 or above
 @item libextractor
-@item libidn
-@item libmicrohttpd 0.9.52 or above
-@item libnss
+@item libidn2 or libidn
+@item libmicrohttpd 0.9.63 or above
 @item libunistring
-@item gettext
-@item glibc
 @item libgmp
-@item gnutls
-@item libcurl (has to be linked to GnuTLS) or libgnurl
+@item libgnurl or libcurl (libcurl has to be linked to GnuTLS) 7.35.0 or above
+@item Texinfo 5.2 or above (for building the documentation)
+@item Texlive 2012 or above (for building the documentation, and for gnunet-bcd)
+@item makeinfo 4.8 or above
 @item zlib
 @end itemize
 
+Glibc is required for certain NSS features:
+
+@example
+One mechanism of integrating GNS with legacy applications via NSS is
+not available if this is disabled. But applications that don't use the
+glibc for NS resolution won't work anyway with this, so little is lost
+on BSD systems.
+GNS via direct use or via the HTTP or DNS proxies is unaffected.
+@end example
+
+Other libcs should work, the resulting builds just don't include the
+glibc NSS specific code. One example is the build against NetBSD's libc
+as detailed in @uref{https://bugs.gnunet.org/view.php?id=5605}.
+
 In addition GNUnet needs one of of these three databases
 @itemize @bullet
-@item sqlite + libsqlite (the default, requires no further configuration)
+@item sqlite + libsqlite 3.8 or above (the default, requires no further configuration)
 @item postgres + libpq
 @item mysql + libmysqlclient
 @end itemize
 
 These are the dependencies only required for certain features
 @itemize @bullet
-@item Texinfo (for building the documentation)
-@item Texlive (for building the documentation)
+@item guile 1.6.4 for gnunet-download-manager
 @item miniupnpc (for traversing NAT boxes more reliably)
+@item libnss
+@item libglpk 4.45 or above for experimental code
 @item libopus (for running the GNUnet conversation telephony application)
 @item libpulse (for running the GNUnet conversation telephony application)
 @item libogg (for running the GNUnet conversation telephony application)
@@ -65,6 +96,24 @@ These are the dependencies only required for certain features
 (for attribute-based encryption and the identity provider subsystem)
 @item libgabe
 (for attribute-based encryption and the identity provider subsystem)
+@item texi2mdoc (for automatic mdoc generation)
+@item perl5 for some utilities
+@end itemize
+
+These are the test suite requirements:
+@itemize @bullet
+@item python3.7
+@item gnunet (installation first)
+@item which(1)
+@item a shell (possibly Bash, maybe just POSIX sh)
+@end itemize
+
+These are runtime requirements:
+@itemize @bullet
+@item nss (the certutil binary, for gnunet-gns-proxy-setup-ca)
+@item openssl (openssl binary, for gnunet-gns-proxy-setup-ca)
+@item python2.7 for gnunet-qr (at the moment only python2.7 supported)
+@item python-zbar 0.10 or above for gnunet-qr
 @end itemize
 
 @c -----------------------------------------------------------------------
@@ -82,29 +131,48 @@ The archive can be found at
 @uref{https://ftpmirror.gnu.org/gnu/gnunet/}. Extract it using a graphical
 archive tool or @code{tar}:
 @example
-tar xzvf gnunet-0.11.0pre66.tar.gz
+tar xzvf gnunet-@value{VERSION}.tar.gz
 @end example
 
 In the next chapter we will assume that the source code is available
 in the home directory at @code{~/gnunet}.
 
 @c -----------------------------------------------------------------------
-@node Create @code{gnunet} user and group
-@section Create @code{gnunet} user and group
-The GNUnet services should be run as a dedicated user called
-@code{gnunet}. For using them a user should be in the same group as
-this system user.
+@node Create user and groups for the system services
+@section Create user and groups for the system services
 
-Create user @code{gnunet} who is member of the group @code{gnunet} and
-specify a home directory where the GNUnet services will store
-persistant data such as information about peers.
+@cartouche
+For the single-user setup this section can be skipped.
+@end cartouche
+
+The multi-user setup means that there are @emph{system services}, which are
+run once per machine as a dedicated system user (called @code{gnunet}) and
+@emph{user services} which can be started by every user who wants to use
+GNUnet applications. The user services communicate with the system services
+over unix domain sockets. To gain permissions to read and write those sockets
+the users running GNUnet applications will need to be in the @code{gnunet}
+group. In addition the group @code{gnunetdns} may be needed (see below).
+
+Create user @code{gnunet} who is member of the group @code{gnunet}
+(automatically created) and specify a home directory where the GNUnet
+services will store persistant data such as information about peers.
 @example
-$ sudo useradd --system --groups gnunet --home-dir /var/lib/gnunet
+$ sudo useradd --system --home-dir /var/lib/gnunet --create-home gnunet
 @end example
 
 Now add your own user to the @code{gnunet} group.
+
 @example
-$ sudo adduser alice gnunet
+$ sudo usermod -aG gnunet alice
+@end example
+
+Create a group @code{gnunetdns}. This allows using @code{setgid} in a way
+that only the DNS service can run the @code{gnunet-helper-dns} binary. This
+is only needed if @emph{system-wide DNS interception} will be used. For more
+information see @xref{Configuring system-wide DNS interception}.
+
+@example
+$ sudo groupadd gnunetdns
 @end example
 
 @c -----------------------------------------------------------------------
@@ -116,23 +184,30 @@ running @code{configure} the following options can be specified to
 customize the compilation and installation process:
 
 @itemize @bullet
-@item @code{--disable-documentation} - don't build the configuration documents
-@item @code{--enable-looging=[LOGLEVEL]} - choose a loglevel (@code{debug}, @code{info}, @code{warning} or @code{error})
+@item @code{--disable-documentation} - don't build the documentation
+@item @code{--enable-logging=[LOGLEVEL]} - choose a loglevel (@code{debug}, @code{info}, @code{warning} or @code{error})
 @item @code{--prefix=[PATH]} - the directory where the GNUnet libraries and binaries will be installed
 @item @code{--with-extractor=[PATH]} - the path to libextractor
 @item @code{--with-libidn=[PATH]} - the path to libidn
+@item @code{--with-libidn2=[PATH]} - the path to libidn2 (takes priority over libidn if both are found)
 @item @code{--with-microhttpd=[PATH]} - the path to libmicrohttpd
 @item @code{--with-sqlite=[PATH]} - the path to libsqlite
 @item @code{--with-zlib=[PATH]} - the path to zlib
 @item @code{--with-sudo=[PATH]} - path to the sudo binary (no need to run @code{make install} as root if specified)
 @end itemize
 
+Note that the list above is not always up to date and you
+should check the output of @code{./configure --help}, read
+the @file{configure.ac} or send an email asking for assistance
+if you are in doubt of any configure options or require fixes
+for your operating system.
+
 The following example configures the installation prefix
 @code{/usr/lib} and disables building the documentation
 @example
 $ cd ~/gnunet
 $ ./bootstrap
-$ configure --prefix=/usr/lib --disable-configuration
+$ configure --prefix=/usr/lib --disable-documentation
 @end example
 
 After running the bootstrap script and @code{configure} successfully
@@ -147,12 +222,26 @@ $ make -j5
 @section Installation
 The compiled binaries can be installed using @code{make install}. It
 needs to be run as root (or with sudo) because some binaries need the
-@code{suid} bit set. Without that some GNUnet subsystems (such as VPN)
-will not work.
+@code{suid} bit set. Without that some features (e.g. the VPN service,
+system-wide DNS interception, NAT traversal using ICMP) will not work.
 
 @example
 $ sudo make install
 @end example
+
+@menu
+* NSS plugin (Optional)::
+* Installing the GNS Certificate Authority (Optional)::
+@end menu
+
+@node NSS plugin (Optional)
+@subsection NSS plugin (Optional)
+
+@cartouche
+The installation of the NSS plugin is only necessary if GNS
+resolution shall be used with legacy applications (that only
+support DNS).
+@end cartouche
 
 One important library is the GNS plugin for NSS (the name services
 switch) which allows using GNS (the GNU name system) in the normal DNS
@@ -174,7 +263,7 @@ $ ls -l /lib/libnss_*
 Copy the GNS NSS plugin to that directory:
 
 @example
-cp ~/gnunet/src/gns/nss/libnss_gns.so.2 /lib
+cp ~/gnunet/src/gns/nss/.libs/libnss_gns.so.2 /lib
 @end example
 
 Now, to activate the plugin, you need to edit your
@@ -191,34 +280,68 @@ The exact details may differ a bit, which is fine. Add the text
 hosts: files gns [NOTFOUND=return] mdns4_minimal [NOTFOUND=return] dns mdns4
 @end example
 
-Optionally, if GNS shall be used with a browser, execute the GNS
-CA-setup script. It will isetup the GNS Certificate Authority with the
-user's browser.
+@node Installing the GNS Certificate Authority (Optional)
+@subsection Installing the GNS Certificate Authority (Optional)
+
+@cartouche
+Installing the GNS certificate authority is only necessary if GNS shall
+be used in a browser.
+@end cartouche
+
+The GNS Certificate authority can provide TLS certificates for GNS names while
+downloading webpages from legacy webservers. This allows browsers to use HTTPS
+in combinations with GNS name resolution.
+
+To install it execute the GNS CA-setup script. So far Firefox and Chromium are
+supported.
+
 @example
 $ gnunet-gns-proxy-setup-ca
 @end example
 
-Finally install a configuration file in
-@code{~/.gnunet/gnunet.conf}. Below you find an example config which
-allows you to start GNUnet.
+A local proxy server, that takes care of the name resolution and provides
+certificates on-the-fly needs to be started:
+
+@example
+$ /usr/lib/gnunet/libexec/gnunet-gns-proxy
+@end example
+
+Now GNS should work in browsers that are configured to use a SOCKS proxy on
+@code{localhost:7777}.
+
+
+@node Minimal configuration
+@section Minimal configuration
+GNUnet needs a configuration file to start. For the @emph{single-user setup}
+an empty file is sufficient:
+
+@example
+$ touch ~/.config/gnunet.conf
+@end example
+
+For the @emph{multi-user setup} we need an extra config file for the system
+services. The default location is @code{/etc/gnunet.conf}. The minimal
+content of that file which activates the system services roll is:
 
 @example
 [arm]
-SYSTEM_ONLY = NO
-USER_ONLY = NO
+START_SYSTEM_SERVICES = YES
+START_USER_SERVICES = NO
+@end example
 
-[transport]
-PLUGINS = tcp
+The config file for the user services (@code{~/.config/gnunet.conf}) needs
+the opposite configuration to activate the user services roll:
+
+@example
+[arm]
+START_SYSTEM_SERVICES = NO
+START_USER_SERVICES = YES
 @end example
 
 
+@node Checking the Installation
+@section Checking the Installation
 
-
-
-
-@node MOVED FROM USER Checking the Installation
-@section MOVED FROM USER Checking the Installation
-@c %**end of header
 
 This section describes a quick, casual way to check if your GNUnet
 installation works. However, if it does not, we do not cover
@@ -226,21 +349,79 @@ steps for recovery --- for this, please study the instructions
 provided in the developer handbook as well as the system-specific
 instruction in the source code repository.
 Please note that the system specific instructions are not provided
-as part of this handbook!.
+as part of this handbook!
 
 
 @menu
+* Starting GNUnet::
 * gnunet-gtk::
 * Statistics::
 * Peer Information::
 @end menu
 
+@cindex Starting GNUnet
 @cindex GNUnet GTK
 @cindex GTK
 @cindex GTK user interface
+
+@node Starting GNUnet
+@subsection Starting GNUnet
+The GNUnet services are started and stopped by the ARM service (Automatic
+Restart Manager). For the @emph{single-user setup} a simple
+
+@example
+$ gnunet-arm -s
+@end example
+
+starts a default set of services. Later GNUnet applications can request more
+services to start without additional user interaction. GNUnet can be stopped
+again using the @code{-e} option:
+
+@example
+$ gnunet-arm -e
+@end example
+
+The list of running services can be displayed using the @code{-I} option.
+It should look similar to this example:
+
+@example
+$ gnunet-arm -I
+Running services:
+topology (gnunet-daemon-topology)
+nat (gnunet-service-nat)
+vpn (gnunet-service-vpn)
+gns (gnunet-service-gns)
+cadet (gnunet-service-cadet)
+namecache (gnunet-service-namecache)
+hostlist (gnunet-daemon-hostlist)
+revocation (gnunet-service-revocation)
+ats (gnunet-service-ats)
+peerinfo (gnunet-service-peerinfo)
+zonemaster (gnunet-service-zonemaster)
+zonemaster-monitor (gnunet-service-zonemaster-monitor)
+dht (gnunet-service-dht)
+namestore (gnunet-service-namestore)
+set (gnunet-service-set)
+statistics (gnunet-service-statistics)
+nse (gnunet-service-nse)
+fs (gnunet-service-fs)
+peerstore (gnunet-service-peerstore)
+core (gnunet-service-core)
+rest (gnunet-rest-server)
+transport (gnunet-service-transport)
+datastore (gnunet-service-datastore)
+@end example
+
+For the @emph{multi-user setup} first the system services need to be started
+as the system user, i.e. the user @code{gnunet} needs to execute
+@code{gnunet-arm -s}. This should be done by the system's init system.
+Then the user who wants to start GNUnet applications has to run
+@code{gnunet-arm -s} too. It is recommented to automate this, e.g. using
+the user's crontab.
+
 @node gnunet-gtk
 @subsection gnunet-gtk
-@c %**end of header
+
 
 The @command{gnunet-gtk} package contains several graphical
 user interfaces for the respective GNUnet applications.
@@ -251,17 +432,24 @@ Currently these interfaces cover:
 @item Peer Information
 @item GNU Name System
 @item File Sharing
-@item Identity Management
 @item Conversation
+@item Setup
 @end itemize
+
+Previously, many of these interfaces were combined into one application
+called @command{gnunet-gtk}, with different tabs for each interface. This
+combined application has been removed in version 0.11.0, but each of the
+interfaces is still available as a standalone application
+(@command{gnunet-statistics-gtk} for statistics, @command{gnunet-fs-gtk}
+for filesharing, etc).
 
 @node Statistics
 @subsection Statistics
-@c %**end of header
+
 
 We assume that you have started gnunet via @code{gnunet-arm} or via your
 system-provided method for starting services.
-First, you should launch GNUnet gtk.
+First, you should launch GNUnet's graphical statistics interface.
 You can do this from the command-line by typing
 
 @example
@@ -274,7 +462,7 @@ least if your peer has been running for more than a few seconds). The
 lines indicate how many other peers your peer is connected to (via
 different mechanisms) and how large the entire overlay network is
 currently estimated to be. The X-axis represents time (in seconds
-since the start of @command{gnunet-gtk}).
+since the start of @command{gnunet-statistics-gtk}).
 
 You can click on "Traffic" to see information about the amount of
 bandwidth your peer has consumed, and on "Storage" to check the amount
@@ -290,10 +478,10 @@ whatever it is you are looking at the Gtk+ interface describes a
 
 @node Peer Information
 @subsection Peer Information
-@c %**end of header
 
-First, you should launch the graphical user interface.  You can do
-this from the command-line by typing
+
+First, you should launch the peer information graphical user interface.
+You can do this from the command-line by typing
 
 @example
 $ gnunet-peerinfo-gtk
@@ -310,8 +498,8 @@ configuration.
 
 @c NOTE: Inserted from Installation Handbook in original ``order'':
 @c FIXME: Move this to User Handbook.
-@node MOVED FROM USER The graphical configuration interface
-@section MOVED FROM USER The graphical configuration interface
+@node The graphical configuration interface
+@section The graphical configuration interface
 
 If you also would like to use @command{gnunet-gtk} and
 @command{gnunet-setup} (highly recommended for beginners), do:
@@ -347,7 +535,7 @@ If you also would like to use @command{gnunet-gtk} and
 * Configuring the GNUnet VPN::
 * Bandwidth Configuration::
 * Configuring NAT::
-* Peer configuration for distributions::
+* Peer configuration for distributors (e.g. Operating Systems)::
 @end menu
 
 @node Configuring your peer
@@ -358,7 +546,7 @@ This chapter will describe the various configuration options in GNUnet.
 The easiest way to configure your peer is to use the
 @command{gnunet-setup} tool.
 @command{gnunet-setup} is part of the @command{gnunet-gtk}
-application. You might have to install it separately.
+package. You might have to install it separately.
 
 Many of the specific sections from this chapter actually are linked from
 within @command{gnunet-setup} to help you while using the setup tool.
@@ -837,7 +1025,7 @@ a @code{gn090} table here, it probably works.
 
 @node Configuring the datacache
 @subsection Configuring the datacache
-@c %**end of header
+
 
 The datacache is what GNUnet uses for storing temporary data. This data is
 expected to be wiped completely each time GNUnet is restarted (or the
@@ -889,7 +1077,8 @@ strength of the adversary).
 @node Configuring logging
 @subsection Configuring logging
 
-Logging in GNUnet 0.9.0 is controlled via the "-L" and "-l" options.
+Since version 0.9.0, logging in GNUnet is controlled via the
+@code{-L} and @code{-l} options.
 Using @code{-L}, a log level can be specified. With log level
 @code{ERROR} only serious errors are logged.
 The default log level is @code{WARNING} which causes anything of
@@ -1676,12 +1865,19 @@ $ gnunet-namestore -a -e "1 d" -n "homepage" \
 At this point we can start the proxy. Simply execute
 
 @example
-$ gnunet-gns-proxy
+$ gnunet-arm -i gns-proxy
+@end example
+
+To run the proxy at all times in the future, you should
+change your configuration as follows:
+
+@example
+$ gnunet-config -s gns-proxy -o AUTOSTART -V YES
 @end example
 
 @noindent
-Configure your browser to use this SOCKSv5 proxy on port 7777 and visit
-this link.
+Configure your browser to use this SOCKSv5 proxy using
+@code{localhost} on port 7777.
 If you use @command{Firefox} (or one of its derivatives/forks such as
 Icecat) you also have to go to @code{about:config} and set the key
 @code{network.proxy.socks_remote_dns} to @code{true}.
@@ -1728,10 +1924,21 @@ Keeping a virtual environment helps with keeping things tidy and prevents
 breaking of Ascension through a future Python update.
 
 The advantage of using a virtual environment is, that all the dependencies can
-be installed separately in different versions without touching your system
+be installed separately in different versions without touching your systems
 Python installation and its dependencies.
 
-@xref{Migrating an existing DNS zone into GNS}, for usage manual of the tool.
+Another way to install Ascension on Debian is to install the python3-ascension
+package. It can be found within the above mentioned Ascension git repository.
+This also adds a system user ascension and runs a GNUnet peer in the
+background. Attention: This only works if a recent version of GNUnet is
+installed on your system. The version number of Ascension is chosen according
+to the required feature level of GNUnet. I.e. Ascension 0.11.5 is only
+compatible with GNUnet 0.11.5 and upwards. As Debian's packages for GNUnet are
+outdated even in experimental, you will need to install GNUnet manually
+@xref{Installing GNUnet}.
+
+Please check @xref{Migrating an existing DNS zone into GNS}, for usage manual
+of the tool.
 
 @node Configuring the GNUnet VPN
 @subsection Configuring the GNUnet VPN
@@ -1765,7 +1972,7 @@ The other options as shown on the gnunet-setup tool are:
 @node IPv4 address for interface
 @subsubsection IPv4 address for interface
 
-This is the IPv4 address the VPN interface will get. You should pick an
+This is the IPv4 address the VPN interface will get. You should pick a
 'private' IPv4 network that is not yet in use for you system. For example,
 if you use @code{10.0.0.1/255.255.0.0} already, you might use
 @code{10.1.0.1/255.255.0.0}.
@@ -1920,29 +2127,29 @@ connect to NATed peers using autonomous NAT traversal, you need to check
 the "Enable connecting to NATed peers using ICMP method" box.
 
 
-@node Peer configuration for distributions
-@subsection Peer configuration for distributions
+@node Peer configuration for distributors (e.g. Operating Systems)
+@subsection Peer configuration for distributors (e.g. Operating Systems)
 
 The "GNUNET_DATA_HOME" in "[path]" in @file{/etc/gnunet.conf} should be
 manually set to "/var/lib/gnunet/data/" as the default
 "~/.local/share/gnunet/" is probably not that appropriate in this case.
-Similarly, distributions may consider pointing "GNUNET_RUNTIME_DIR" to
+Similarly, distributors may consider pointing "GNUNET_RUNTIME_DIR" to
 "/var/run/gnunet/" and "GNUNET_HOME" to "/var/lib/gnunet/". Also, should a
-distribution decide to override system defaults, all of these changes
+distributor decide to override system defaults, all of these changes
 should be done in a custom @file{/etc/gnunet.conf} and not in the files
 in the @file{config.d/} directory.
 
 Given the proposed access permissions, the "gnunet-setup" tool must be
 run as use "gnunet" (and with option "-c /etc/gnunet.conf" so that it
 modifies the system configuration). As always, gnunet-setup should be run
-after the GNUnet peer was stopped using "gnunet-arm -e". Distributions
+after the GNUnet peer was stopped using "gnunet-arm -e". Distributors
 might want to include a wrapper for gnunet-setup that allows the
 desktop-user to "sudo" (i.e. using gtksudo) to the "gnunet" user account
 and then runs "gnunet-arm -e", "gnunet-setup" and "gnunet-arm -s" in
 sequence.
 
-@node MOVED FROM USER Config Leftovers
-@section MOVED FROM USER Config Leftovers
+@node Config Leftovers
+@section Config Leftovers
 
 This section describes how to start a GNUnet peer. It assumes that you
 have already compiled and installed GNUnet and its' dependencies.
@@ -2201,7 +2408,7 @@ However, as TCP is generally less efficient and it is rarely the case
 that a single GNUnet peer is supposed to serve an entire local network,
 the default configuration should disable TCP access to all GNUnet
 services on systems with support for UNIX domain sockets.
-As of GNUnet 0.9.2, configuration files with TCP access disabled should be
+Since GNUnet 0.9.2, configuration files with TCP access disabled should be
 generated by default. Users can re-enable TCP access to particular
 services simply by specifying a non-zero port number in the section of
 the respective service.

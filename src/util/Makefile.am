@@ -78,6 +78,7 @@ libgnunetutil_la_SOURCES = \
   container_meta_data.c \
   container_multihashmap.c \
   container_multishortmap.c \
+  container_multiuuidmap.c \
   container_multipeermap.c \
   container_multihashmap32.c \
   crypto_symmetric.c \
@@ -160,7 +161,7 @@ libgnunetutil_la_LIBADD = \
 
 libgnunetutil_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
-  -version-info 13:0:0
+  -version-info 13:1:0
 
 libgnunetutil_taler_wallet_la_SOURCES = \
   common_allocation.c \
@@ -204,24 +205,15 @@ libexec_PROGRAMS = \
  gnunet-timeout \
  $(W32CONSOLEHELPER)
 
-do_subst = $(SED) -e 's,[@]PREFIX[@],$(prefix),g'
-
-gnunet-qr: gnunet-qr.in Makefile
-	$(do_subst) < $(srcdir)/gnunet-qr.in > gnunet-qr
-	chmod +x gnunet-qr
-
-CLEANFILES = gnunet-qr
-
-bin_SCRIPTS =\
- gnunet-qr \
- gnunet-qr.py
-
 bin_PROGRAMS = \
  gnunet-resolver \
  gnunet-config \
  $(GNUNET_ECC) \
  $(GNUNET_SCRYPT) \
  gnunet-uri
+if HAVE_ZBAR
+bin_PROGRAMS += gnunet-qr
+endif
 
 noinst_PROGRAMS = \
  gnunet-config-diff \
@@ -281,12 +273,20 @@ gnunet_config_LDADD = \
   libgnunetutil.la \
   $(GN_LIBINTL)
 
-
 gnunet_uri_SOURCES = \
  gnunet-uri.c
 gnunet_uri_LDADD = \
   libgnunetutil.la \
   $(GN_LIBINTL)
+
+
+gnunet_qr_SOURCES = \
+  gnunet-qr.c
+gnunet_qr_LDADD = \
+  libgnunetutil.la \
+  $(GN_LIBINTL)
+gnunet_qr_LDFLAGS= \
+  -lzbar
 
 plugin_LTLIBRARIES = \
   libgnunet_plugin_test.la
@@ -668,6 +668,4 @@ EXTRA_DIST = \
   test_program_data.conf \
   test_resolver_api_data.conf \
   test_service_data.conf \
-  test_speedup_data.conf \
-  gnunet-qr.py \
-  gnunet-qr.in
+  test_speedup_data.conf

@@ -1,71 +1,100 @@
-.TH GNUNET-PEERINFO 1 "March 4, 2013" "GNUnet"
-.SH NAME
-gnunet\-peerinfo \- Display information about other peers.
-.SH SYNOPSIS
-.B gnunet\-peerinfo
-.RI [ options ]
-.SH DESCRIPTION
-.PP
-\fBgnunet\-peerinfo\fP display the known addresses and trust of known peers.
-.SH OPTIONS
-.B
-.IP "\-c FILENAME, \-\-config=FILENAME"
-Load config file (default: ~/.config/gnunet.conf)
-.B
-.IP "\-g, \-\-get\-hello"
+.\" This file is part of GNUnet.
+.\" Copyright (C) 2001-2019 GNUnet e.V.
+.\"
+.\" Permission is granted to copy, distribute and/or modify this document
+.\" under the terms of the GNU Free Documentation License, Version 1.3 or
+.\" any later version published by the Free Software Foundation; with no
+.\" Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+.\" copy of the license is included in the file
+.\" FDL-1.3.
+.\"
+.\" A copy of the license is also available from the Free Software
+.\" Foundation Web site at http://www.gnu.org/licenses/fdl.html}.
+.\"
+.\" Alternately, this document is also available under the General
+.\" Public License, version 3 or later, as published by the Free Software
+.\" Foundation.  A copy of the license is included in the file
+.\" GPL3.
+.\"
+.\" A copy of the license is also available from the Free Software
+.\" Foundation Web site at http://www.gnu.org/licenses/gpl.html
+.\"
+.\" SPDX-License-Identifier: GPL3.0-or-later OR FDL1.3-or-later
+.\"
+.Dd March 4, 2013
+.Dt GNUNET-PEERINFO 1
+.Os
+.Sh NAME
+.Nm gnunet-peerinfo
+.Nd
+display information about other peers
+.Sh SYNOPSIS
+.Nm
+.Op Fl c Ar FILENAME | Fl \-config= Ns Ar FILENAME
+.Op Fl g | \-get\-hello
+.Op Fl h | \-help
+.Op Fl i | \-info
+.Op Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
+.Op Fl l Ar LOGFILE | Fl \-logfile= ns Ar LOGFILE
+.Op Fl n | \-numeric
+.Op Fl p Ar HELLO | Fl \-put\-hello= Ns Ar HELLO
+.Op Fl q | \-quiet
+.Op Fl s | \-self
+.Op Fl v | \-version
+.Sh DESCRIPTION
+.Nm
+displays the known addresses and trust of known peers.
+.Bl -tag -width indent
+.It Fl c Ar FILENAME | Fl \-config= Ns Ar FILENAME
+Load config file, default FILENAME of the config is 
+.Pa ~/.config/gnunet.conf .
+.It Fl g | \-get\-hello
 Output HELLO uri(s)
-.B
-.IP "\-h, \-\-help"
-Print help page
-.B
-.IP "\-i, \-\-info"
-List all known peers (and their addresses)
-.B
-.IP "\-L LOGLEVEL, \-\-loglevel=LOGLEVEL"
+.It Fl h | \-help
+Print the help page.
+.It Fl i | \-info
+List all known peers (and their addresses).
+.It Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
 Set the loglevel
-.B
-.IP "\-l LOGFILE, \-\-logfile=LOGFILE"
+.It Fl l Ar LOGFILE | Fl \-logfile= ns Ar LOGFILE
 Log messages to LOGFILE
-.B
-.IP "\-n, \-\-numeric"
+.It Fl n | \-numeric
 Disable resolution of IPs to hostnames
-.B
-.IP "\-p, \-\-put\-hello=HELLO"
+.It Fl p Ar HELLO | Fl \-put\-hello= Ns Ar HELLO
 Add given HELLO uri to the database
-.B
-.IP "\-q, \-\-quiet"
+.It Fl q | \-quiet
 Do not print anything but the peer identities
-.B
-.IP "\-s, \-\-self"
-Print only our own identity (together with "\-q", this is the exact
-line that other peers would have to put in to their friends file in
-order to consider this peer one of their friends in F2F mode).
-.B
-.IP "\-v, \-\-version"
+.It Fl s | \-self
+Print only our own identity.
+Together with
+.Fl q ,
+this is the exact line that other peers would have to put in to their friends file in order to consider this peer one of their friends in F2F mode.
+.It Fl v | \-version
 Print the version number
-.SH BUGS
-Report bugs by using mantis <https://bugs.gnunet.org/> or by sending
-electronic mail to <gnunet\-developers@gnu.org>
-.SH SEE ALSO
-gnunet.conf(5)
-.PP
-The full documentation for
-.B gnunet
-is maintained as a Texinfo manual.
+.El
+.Sh SEE ALSO
+.Xr gnunet.conf 5
+.sp
+The full documentation for gnunet is maintained as a Texinfo manual.
 If the
-.B info
-and
-.B gnunet
-programs are properly installed at your site, the command
-.IP
-.B info gnunet
-.PP
+.Xr info 1
+and gnunet programs are properly installed at your site, the command
+.Pp
+.Dl info gnunet
+.Pp
 should give you access to the complete handbook,
-.IP
-.B info gnunet-c-tutorial
-.PP
+.Pp
+.Dl info gnunet-c-tutorial
+.Pp
 will give you access to a tutorial for developers.
-.PP
-Depending on your installation, this information is also
-available in
-\fBgnunet\fP(7) and \fBgnunet-c-tutorial\fP(7).
+.sp
+Depending on your installation, this information is also available in
+.Xr gnunet 7 and
+.Xr gnunet-c-tutorial 7 .
+.\".Sh HISTORY
+.\".Sh AUTHORS
+.Sh BUGS
+Report bugs by using
+.Lk https://bugs.gnunet.org
+or by sending electronic mail to
+.Aq Mt gnunet-developers@gnu.org .

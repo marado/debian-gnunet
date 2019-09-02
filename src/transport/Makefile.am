@@ -141,7 +141,6 @@ endif
 
 noinst_PROGRAMS = \
  gnunet-transport-profiler \
- gnunet-communicator-unix \
  gnunet-communicator-tcp \
  gnunet-communicator-udp \
  gnunet-service-tng \
@@ -149,12 +148,13 @@ noinst_PROGRAMS = \
  $(WLAN_BIN_RECEIVER)
 
 if HAVE_TESTING
-TESTING_LIBS = libgnunettransporttesting.la
+TESTING_LIBS = libgnunettransporttesting.la \
+							 libgnunettransporttesting2.la
 endif
 
 lib_LTLIBRARIES = \
   libgnunettransport.la \
-  libgnunettransportaddress.la \
+  libgnunettransportapplication.la \
   libgnunettransportcore.la \
   libgnunettransportcommunicator.la \
   libgnunettransportmonitor.la \
@@ -174,6 +174,15 @@ libgnunettransporttesting_la_LIBADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(GN_LIBINTL)
 libgnunettransporttesting_la_LDFLAGS = \
+ $(GN_LIB_LDFLAGS)
+
+libgnunettransporttesting2_la_SOURCES = \
+  transport-testing2.c transport-testing2.h
+libgnunettransporttesting2_la_LIBADD = \
+  libgnunettransport.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/util/libgnunetutil.la
+libgnunettransporttesting2_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS)
 
 libgnunettransport_la_SOURCES = \
@@ -196,16 +205,15 @@ libgnunettransport_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 4:0:2
 
-
-
-libgnunettransportaddress_la_SOURCES = \
-  transport_api2_address.c
-libgnunettransportaddress_la_LIBADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL)
-libgnunettransportaddress_la_LDFLAGS = \
+libgnunettransportapplication_la_SOURCES = \
+  transport_api2_application.c
+libgnunettransportapplication_la_LIBADD = \
+ $(top_builddir)/src/util/libgnunetutil.la \
+ $(LTLIBINTL)
+libgnunettransportapplication_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) $(WINFLAGS) \
   -version-info 0:0:0
+
 
 libgnunettransportcore_la_SOURCES = \
   transport_api2_core.c
@@ -240,21 +248,28 @@ libexec_PROGRAMS = \
  $(WLAN_BIN) \
  $(WLAN_BIN_DUMMY) \
  $(BT_BIN) \
- gnunet-service-transport
+ gnunet-service-transport \
+ gnunet-communicator-unix \
+ gnunet-communicator-udp \
+ gnunet-communicator-tcp
 
 
 
 bin_PROGRAMS = \
- gnunet-transport \
+ gnunet-transport
+
+bin_SCRIPTS = \
  gnunet-transport-certificate-creation
 
-#bin_SCRIPTS = \
-# gnunet-transport-certificate-creation
+# See: https://www.gnu.org/software/automake/manual/html_node/Scripts.html#Scripts
+do_subst = sed -e 's,[@]pkgdatadir[@],$(pkgdatadir),g'
 
-gnunet_transport_certificate_creation_SOURCES = \
- gnunet-transport-certificate-creation.c
-gnunet_transport_certificate_creation_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet-transport-certificate-creation: gnunet-transport-certificate-creation.in Makefile
+	$(do_subst) < $(srcdir)/gnunet-transport-certificate-creation.in > gnunet-transport-certificate-creation
+	chmod +x gnunet-transport-certificate-creation
+
+
 
 gnunet_communicator_unix_SOURCES = \
  gnunet-communicator-unix.c
@@ -276,6 +291,7 @@ gnunet_communicator_tcp_LDADD = \
 gnunet_communicator_udp_SOURCES = \
  gnunet-communicator-udp.c
 gnunet_communicator_udp_LDADD = \
+  libgnunettransportapplication.la \
   libgnunettransportcommunicator.la \
   $(top_builddir)/src/nat/libgnunetnatnew.la \
   $(top_builddir)/src/nt/libgnunetnt.la \
@@ -360,11 +376,11 @@ gnunet_service_transport_CFLAGS = \
 gnunet_service_tng_SOURCES = \
  gnunet-service-tng.c
 gnunet_service_tng_LDADD = \
-  $(top_builddir)/src/ats/libgnunetatstransport.la \
   $(top_builddir)/src/peerstore/libgnunetpeerstore.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
+  $(LIBGCRYPT_LIBS) \
   $(GN_LIBINTL)
 
 plugin_LTLIBRARIES = \
@@ -377,12 +393,6 @@ plugin_LTLIBRARIES = \
   $(HTTPS_SERVER_PLUGIN_LA) \
   $(WLAN_PLUGIN_LA) \
   $(BT_PLUGIN_LA)
-
-if HAVE_EXPERIMENTAL
-plugin_LTLIBRARIES += \
-  libgnunet_plugin_transport_xt.la \
-  libgnunet_plugin_transport_xu.la
-endif
 
 # Note: real plugins of course need to be added
 # to the plugin_LTLIBRARIES above
@@ -399,18 +409,6 @@ libgnunet_plugin_transport_tcp_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(LTLIBINTL)
 libgnunet_plugin_transport_tcp_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
-
-libgnunet_plugin_transport_xt_la_SOURCES = \
-  plugin_transport_xt.c
-libgnunet_plugin_transport_xt_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-  $(top_builddir)/src/nat/libgnunetnatnew.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
-libgnunet_plugin_transport_xt_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_template_la_SOURCES = \
@@ -459,19 +457,6 @@ libgnunet_plugin_transport_udp_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(LTLIBINTL)
 libgnunet_plugin_transport_udp_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
-
-libgnunet_plugin_transport_xu_la_SOURCES = \
-  plugin_transport_xu.c plugin_transport_xu.h
-libgnunet_plugin_transport_xu_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-  $(top_builddir)/src/nat/libgnunetnatnew.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
-libgnunet_plugin_transport_xu_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_unix_la_SOURCES = \
@@ -621,6 +606,8 @@ if HAVE_GETOPT_BINARY
 check_PROGRAMS += \
 test_transport_api_slow_ats
 endif
+check_PROGRAMS += \
+test_communicator_unix
 endif
 
 if ENABLE_TEST_RUN
@@ -798,6 +785,12 @@ test_plugin_udp_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la  \
  libgnunettransporttesting.la
+
+test_communicator_unix_SOURCES = \
+ test_communicator_unix.c
+test_communicator_unix_LDADD = \
+ libgnunettransporttesting2.la \
+ $(top_builddir)/src/util/libgnunetutil.la
 
 test_plugin_unix_SOURCES = \
  test_plugin_transport.c
@@ -1349,6 +1342,7 @@ test_transport_api_slow_ats_LDADD = \
 
 
 EXTRA_DIST = \
+gnunet-transport-certificate-creation.in \
 communicator-unix.conf \
 test_plugin_hostkey \
 test_plugin_hostkey.ecc \
@@ -1487,4 +1481,6 @@ test_transport_api_slow_ats_peer2.conf \
   tcp_connection_legacy.c \
   tcp_server_mst_legacy.c \
   tcp_server_legacy.c \
-  tcp_service_legacy.c
+  tcp_service_legacy.c \
+test_communicator_1.conf \
+test_communicator_1.conf

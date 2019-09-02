@@ -467,10 +467,10 @@ struct CadetTunnel
 static int
 alice_or_betty (const struct GNUNET_PeerIdentity *other)
 {
-  if (0 > GNUNET_CRYPTO_cmp_peer_identity (&my_full_id,
+  if (0 > GNUNET_memcmp (&my_full_id,
                                            other))
     return GNUNET_YES;
-  else if (0 < GNUNET_CRYPTO_cmp_peer_identity (&my_full_id,
+  else if (0 < GNUNET_memcmp (&my_full_id,
                                                 other))
     return GNUNET_NO;
   else
@@ -1013,9 +1013,8 @@ try_old_ax_keys (struct CadetTunnelAxolotl *ax,
             0,
             &key->HK,
             hmac);
-    if (0 == memcmp (hmac,
-                     &src->hmac,
-                     sizeof (*hmac)))
+    if (0 == GNUNET_memcmp (hmac,
+                     &src->hmac))
     {
       valid_HK = &key->HK;
       break;
@@ -1047,9 +1046,8 @@ try_old_ax_keys (struct CadetTunnelAxolotl *ax,
           (N != key->Kn) )
     key = key->next;
   if ( (NULL == key) ||
-       (0 != memcmp (&key->HK,
-                     valid_HK,
-                     sizeof (*valid_HK))) )
+       (0 != GNUNET_memcmp (&key->HK,
+                     valid_HK)) )
     return -1;
 
   /* Decrypt payload */
@@ -1181,9 +1179,8 @@ t_ax_decrypt_and_validate (struct CadetTunnelAxolotl *ax,
           sizeof (struct GNUNET_CADET_AxHeader) + esize,
           0, &ax->HKr,
           &msg_hmac);
-  if (0 != memcmp (&msg_hmac,
-                   &src->hmac,
-                   sizeof (msg_hmac)))
+  if (0 != GNUNET_memcmp (&msg_hmac,
+                   &src->hmac))
   {
     static const char ctx[] = "axolotl ratchet";
     struct GNUNET_CRYPTO_SymmetricSessionKey keys[3]; /* RKp, NHKp, CKp */
@@ -1197,9 +1194,8 @@ t_ax_decrypt_and_validate (struct CadetTunnelAxolotl *ax,
             0,
             &ax->NHKr,
             &msg_hmac);
-    if (0 != memcmp (&msg_hmac,
-                     &src->hmac,
-                     sizeof (msg_hmac)))
+    if (0 != GNUNET_memcmp (&msg_hmac,
+                     &src->hmac))
     {
       /* Try the skipped keys, if that fails, we're out of luck. */
       return try_old_ax_keys (ax,
@@ -1528,9 +1524,8 @@ update_ax_by_kx (struct CadetTunnelAxolotl *ax,
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  if (0 == memcmp (&ax->DHRr,
-                   ratchet_key,
-                   sizeof (*ratchet_key)))
+  if (0 == GNUNET_memcmp (&ax->DHRr,
+                     ratchet_key))
   {
     GNUNET_STATISTICS_update (stats,
                               "# Ratchet key already known",
@@ -1872,9 +1867,8 @@ check_ee (const struct GNUNET_CRYPTO_EcdhePrivateKey *e1,
                  GNUNET_CRYPTO_ecc_ecdh (e2,
                                          &p1,
                                          &hc2));
-  GNUNET_break (0 == memcmp (&hc1,
-                             &hc2,
-                             sizeof (hc1)));
+  GNUNET_break (0 == GNUNET_memcmp (&hc1,
+                             &hc2));
 }
 
 
@@ -1899,9 +1893,8 @@ check_ed (const struct GNUNET_CRYPTO_EcdhePrivateKey *e1,
                  GNUNET_CRYPTO_eddsa_ecdh (e2,
                                            &p1,
                                            &hc2));
-  GNUNET_break (0 == memcmp (&hc1,
-                             &hc2,
-                             sizeof (hc1)));
+  GNUNET_break (0 == GNUNET_memcmp (&hc1,
+                             &hc2));
 }
 
 
@@ -1974,9 +1967,8 @@ GCT_handle_kx_auth (struct CadetTConnection *ct,
   GNUNET_CRYPTO_hash (&ax_tmp.RK,
                       sizeof (ax_tmp.RK),
                       &kx_auth);
-  if (0 != memcmp (&kx_auth,
-                   &msg->auth,
-                   sizeof (kx_auth)))
+  if (0 != GNUNET_memcmp (&kx_auth,
+                   &msg->auth))
   {
     /* This KX_AUTH is not using the latest KX/KX_AUTH data
        we transmitted to the sender, refuse it, try KX again. */
@@ -1992,9 +1984,8 @@ GCT_handle_kx_auth (struct CadetTConnection *ct,
 
       GNUNET_CRYPTO_ecdhe_key_get_public (&ax_tmp.kx_0,
                                           &ephemeral_key);
-      if (0 != memcmp (&ephemeral_key,
-                       &msg->r_ephemeral_key_XXX,
-                       sizeof (ephemeral_key)))
+      if (0 != GNUNET_memcmp (&ephemeral_key,
+                       &msg->r_ephemeral_key_XXX))
       {
         LOG (GNUNET_ERROR_TYPE_WARNING,
            "My ephemeral is %s!\n",
@@ -2077,7 +2068,7 @@ get_next_free_ctn (struct CadetTunnel *t)
   int cmp;
   uint32_t highbit;
 
-  cmp = GNUNET_CRYPTO_cmp_peer_identity (&my_full_id,
+  cmp = GNUNET_memcmp (&my_full_id,
                                          GCP_get_id (GCT_get_destination (t)));
   if (0 < cmp)
     highbit = HIGH_BIT;
@@ -2740,7 +2731,6 @@ consider_path_cb (void *cls,
   ct->cc = GCC_create (t->destination,
                        path,
                        off,
-                       GNUNET_CADET_OPTION_DEFAULT, /* FIXME: set based on what channels want/need! */
                        ct,
                        &connection_ready_cb,
                        ct);
@@ -3213,7 +3203,6 @@ GCT_create_tunnel (struct CadetPeer *destination)
 int
 GCT_add_inbound_connection (struct CadetTunnel *t,
                             const struct GNUNET_CADET_ConnectionTunnelIdentifier *cid,
-                            enum GNUNET_CADET_ChannelOption options,
                             struct CadetPeerPath *path)
 {
   struct CadetTConnection *ct;
@@ -3223,7 +3212,6 @@ GCT_add_inbound_connection (struct CadetTunnel *t,
   ct->t = t;
   ct->cc = GCC_create_inbound (t->destination,
                                path,
-                               options,
                                ct,
                                cid,
                                &connection_ready_cb,

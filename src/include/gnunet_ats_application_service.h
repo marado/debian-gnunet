@@ -83,9 +83,9 @@ struct GNUNET_ATS_ApplicationSuggestHandle;
  */
 struct GNUNET_ATS_ApplicationSuggestHandle *
 GNUNET_ATS_application_suggest (struct GNUNET_ATS_ApplicationHandle *ch,
-                                 const struct GNUNET_PeerIdentity *peer,
-                                 enum GNUNET_MQ_PreferenceKind pk,
-                                 struct GNUNET_BANDWIDTH_Value32NBO bw);
+                                const struct GNUNET_PeerIdentity *peer,
+                                enum GNUNET_MQ_PreferenceKind pk,
+                                struct GNUNET_BANDWIDTH_Value32NBO bw);
 
 
 /**

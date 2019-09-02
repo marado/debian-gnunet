@@ -47,6 +47,7 @@ gnunetinclude_HEADERS = \
   gnunet_container_lib.h \
   gnunet_conversation_service.h \
   gnunet_core_service.h \
+  gnunet_credential_service.h \
   gnunet_crypto_lib.h \
   gnunet_curl_lib.h \
   gnunet_datacache_lib.h \
@@ -72,7 +73,6 @@ gnunetinclude_HEADERS = \
   gnunet_abe_lib.h \
   gnunet_reclaim_attribute_lib.h \
   gnunet_reclaim_attribute_plugin.h \
-  gnunet_reclaim_plugin.h \
   gnunet_reclaim_service.h \
   gnunet_json_lib.h \
   gnunet_load_lib.h \
@@ -125,7 +125,7 @@ gnunetinclude_HEADERS = \
   gnunet_testing_lib.h \
   gnunet_time_lib.h \
   gnunet_transport_service.h \
-  gnunet_transport_address_service.h \
+  gnunet_transport_application_service.h \
   gnunet_transport_communication_service.h \
   gnunet_transport_core_service.h \
   gnunet_transport_hello_service.h \

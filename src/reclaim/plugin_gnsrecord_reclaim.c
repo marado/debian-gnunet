@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,10 +24,11 @@
  * @author Martin Schanzenbach
  */
 #include "platform.h"
+
 #include "gnunet_util_lib.h"
+
 #include "gnunet_gnsrecord_lib.h"
 #include "gnunet_gnsrecord_plugin.h"
-
 
 /**
  * Convert the 'value' of a record to a string.
@@ -39,46 +40,20 @@
  * @return NULL on error, otherwise human-readable representation of the value
  */
 static char *
-value_to_string (void *cls,
-                 uint32_t type,
-                 const void *data,
-                 size_t data_size)
+value_to_string (void *cls, uint32_t type, const void *data, size_t data_size)
 {
-  const struct GNUNET_CRYPTO_EcdhePrivateKey *ecdhe_privkey;
-  const struct GNUNET_CRYPTO_EcdsaPublicKey *audience_pubkey;
-  const char *scopes;
-  char *ecdhe_str;
-  char *aud_str;
-  char *result;
-
-  switch (type)
-  {
-    case GNUNET_GNSRECORD_TYPE_ID_ATTR:
-      return GNUNET_STRINGS_data_to_string_alloc (data, data_size);
-    case GNUNET_GNSRECORD_TYPE_ID_TOKEN: //DEPRECATED
-    case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT:
-    case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT:
-      return GNUNET_strndup (data, data_size);
-    case GNUNET_GNSRECORD_TYPE_ABE_KEY:
-    case GNUNET_GNSRECORD_TYPE_ABE_MASTER:
-      return GNUNET_STRINGS_data_to_string_alloc (data, data_size); 
-    case GNUNET_GNSRECORD_TYPE_ID_TOKEN_METADATA: //DEPRECATED
-        ecdhe_privkey = data;
-        audience_pubkey = data+sizeof (struct GNUNET_CRYPTO_EcdhePrivateKey);
-        scopes =  (char*) audience_pubkey+(sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
-        ecdhe_str = GNUNET_STRINGS_data_to_string_alloc (ecdhe_privkey,
-                                                        sizeof (struct GNUNET_CRYPTO_EcdhePrivateKey));
-        aud_str = GNUNET_STRINGS_data_to_string_alloc (audience_pubkey,
-                                                       sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
-        GNUNET_asprintf (&result,
-                         "%s;%s;%s",
-                         ecdhe_str, aud_str, scopes);
-        GNUNET_free (aud_str);
-        GNUNET_free (ecdhe_str);
-        return result;
-
-    default:
-      return NULL;
+  switch (type) {
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR:
+    return GNUNET_STRINGS_data_to_string_alloc (data, data_size);
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT:
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT:
+    return GNUNET_strndup (data, data_size);
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR_REF:
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_TICKET:
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_MASTER:
+    return GNUNET_STRINGS_data_to_string_alloc (data, data_size);
+  default:
+    return NULL;
   }
 }
 
@@ -95,81 +70,25 @@ value_to_string (void *cls,
  * @return #GNUNET_OK on success
  */
 static int
-string_to_value (void *cls,
-                 uint32_t type,
-                 const char *s,
-                 void **data,
+string_to_value (void *cls, uint32_t type, const char *s, void **data,
                  size_t *data_size)
 {
-  char* ecdhe_str;
-  char* aud_keystr;
-  char* write_ptr;
-  char* tmp_tok;
-  char* str;
-
   if (NULL == s)
     return GNUNET_SYSERR;
-  switch (type)
-  {
-    case GNUNET_GNSRECORD_TYPE_ID_ATTR:
-      return GNUNET_STRINGS_string_to_data (s,
-                                            strlen (s),
-                                            *data,
-                                            *data_size);
-    case GNUNET_GNSRECORD_TYPE_ID_TOKEN:
-    case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT:
-    case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT:
-      *data = GNUNET_strdup (s);
-      *data_size = strlen (s);
-      return GNUNET_OK;
-    case GNUNET_GNSRECORD_TYPE_ABE_KEY:
-    case GNUNET_GNSRECORD_TYPE_ABE_MASTER:
-      return GNUNET_STRINGS_string_to_data (s,
-                                            strlen (s),
-                                            *data,
-                                            *data_size);
-    case GNUNET_GNSRECORD_TYPE_ID_TOKEN_METADATA:
-      tmp_tok = GNUNET_strdup (s);
-      ecdhe_str = strtok (tmp_tok, ";");
-      if (NULL == ecdhe_str)
-      {
-        GNUNET_free (tmp_tok);
-        return GNUNET_SYSERR;
-      }
-      aud_keystr = strtok (NULL, ";");
-      if (NULL == aud_keystr)
-      {
-        GNUNET_free (tmp_tok);
-        return GNUNET_SYSERR;
-      }
-      str = strtok (NULL, ";");
-      if (NULL == str)
-      {
-        GNUNET_free (tmp_tok);
-        return GNUNET_SYSERR;
-      }
-      *data_size = strlen (str) + 1
-        +sizeof (struct GNUNET_CRYPTO_EcdhePrivateKey)
-        +sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey);
-      *data = GNUNET_malloc (*data_size);
-
-      write_ptr = *data;
-      GNUNET_STRINGS_string_to_data (ecdhe_str,
-                                     strlen (ecdhe_str),
-                                     write_ptr,
-                                     sizeof (struct GNUNET_CRYPTO_EcdhePrivateKey));
-      write_ptr += sizeof (struct GNUNET_CRYPTO_EcdhePrivateKey);
-      GNUNET_STRINGS_string_to_data (aud_keystr,
-                                     strlen (aud_keystr),
-                                     write_ptr,
-                                     sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
-      write_ptr += sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey);
-      GNUNET_memcpy (write_ptr, str, strlen (str) + 1); //with 0-Terminator
-      GNUNET_free (tmp_tok);
-      return GNUNET_OK;
-
-    default:
-      return GNUNET_SYSERR;
+  switch (type) {
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR:
+    return GNUNET_STRINGS_string_to_data (s, strlen (s), *data, *data_size);
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT:
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT:
+    *data = GNUNET_strdup (s);
+    *data_size = strlen (s);
+    return GNUNET_OK;
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR_REF:
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_MASTER:
+  case GNUNET_GNSRECORD_TYPE_RECLAIM_TICKET:
+    return GNUNET_STRINGS_string_to_data (s, strlen (s), *data, *data_size);
+  default:
+    return GNUNET_SYSERR;
   }
 }
 
@@ -182,15 +101,13 @@ static struct {
   const char *name;
   uint32_t number;
 } name_map[] = {
-  { "ID_ATTR", GNUNET_GNSRECORD_TYPE_ID_ATTR },
-  { "ID_TOKEN", GNUNET_GNSRECORD_TYPE_ID_TOKEN },
-  { "ABE_KEY", GNUNET_GNSRECORD_TYPE_ABE_KEY },
-  { "ABE_MASTER", GNUNET_GNSRECORD_TYPE_ABE_MASTER },
-  { "ID_TOKEN_METADATA", GNUNET_GNSRECORD_TYPE_ID_TOKEN_METADATA },
-  { "RECLAIM_OIDC_CLIENT", GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT },
-  { "RECLAIM_OIDC_REDIRECT", GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT },
-  { NULL, UINT32_MAX }
-};
+    {"RECLAIM_ATTR", GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR},
+    {"RECLAIM_ATTR_REF", GNUNET_GNSRECORD_TYPE_RECLAIM_ATTR_REF},
+    {"RECLAIM_MASTER", GNUNET_GNSRECORD_TYPE_RECLAIM_MASTER},
+    {"RECLAIM_OIDC_CLIENT", GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_CLIENT},
+    {"RECLAIM_OIDC_REDIRECT", GNUNET_GNSRECORD_TYPE_RECLAIM_OIDC_REDIRECT},
+    {"RECLAIM_TICKET", GNUNET_GNSRECORD_TYPE_RECLAIM_TICKET},
+    {NULL, UINT32_MAX}};
 
 
 /**
@@ -201,14 +118,13 @@ static struct {
  * @return corresponding number, UINT32_MAX on error
  */
 static uint32_t
-typename_to_number (void *cls,
-                    const char *dns_typename)
+typename_to_number (void *cls, const char *dns_typename)
 {
   unsigned int i;
 
-  i=0;
-  while ( (NULL != name_map[i].name) &&
-          (0 != strcasecmp (dns_typename, name_map[i].name)) )
+  i = 0;
+  while ((NULL != name_map[i].name) &&
+         (0 != strcasecmp (dns_typename, name_map[i].name)))
     i++;
   return name_map[i].number;
 }
@@ -222,14 +138,12 @@ typename_to_number (void *cls,
  * @return corresponding typestring, NULL on error
  */
 static const char *
-number_to_typename (void *cls,
-                    uint32_t type)
+number_to_typename (void *cls, uint32_t type)
 {
   unsigned int i;
 
-  i=0;
-  while ( (NULL != name_map[i].name) &&
-          (type != name_map[i].number) )
+  i = 0;
+  while ((NULL != name_map[i].name) && (type != name_map[i].number))
     i++;
   return name_map[i].name;
 }

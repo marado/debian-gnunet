@@ -1,10 +1,151 @@
+Wed 24 Jul 2019 05:43:43 PM CEST
+  Releasing GNUnet 0.11.6. -CG
+
+Mon Jul 15 09:57:20 2019 +0200
+  The REST server now has a configurable CORS Origin setting -schanzen
+
+Fri Jul 5 22:11:04 2019 +0200
+  Added detection of SUID binaries
+  through GNUNET_OS_get_suid_binary_path -lurchi
+
+Sat 29 Jun 2019 10:18:55 AM CEST
+  Renamed "heap" namestore backend to "flat" as it does
+  persist data in a file. Made it work with databases larger
+  than 16 MB. -CG
+
+Fri Jun 28 14:10:53 2019 +0200
+  RECLAIM: Reissue of tickets (same attributes, same identity)
+  will no longer create a new ticket, but reuse the old. -alexia
+
+Thu Jun 27 10:34:46 2019 +0200
+  The REST server now returns the Origin header value in the
+  CORS header reponse. -schanzen
+
+Thu Jun 27 09:08:06 2019 +0200
+  GNS NSS plugin will not timeout and not hang forever and block
+  gethostbyname. Final resolution pending #5782 -schanzen
+
+Sat Jun 22 10:38:43 2019 +0200
+  Add gnutls support for GNS CA certificate generation -schanzen
+
+Sat 15 Jun 2019 11:45:35 PM CEST
+  Improved gnunet-gns performance for many ego scenario. -CG
+
+Fri 14 Jun 2019 07:17:40 PM CEST
+  Add option to gnunet-identity to display private keys. -CG
+
+Wed Jun 5 21:19:46 2019 +0200
+ Releasing GNUnet 0.11.5. -schanzen
+
+Wed May 29 11:17:49 2019 +0200
+  Added CAA record type (RFC 6844). -schanzen
+
+Sat 25 May 2019 08:27:39 AM CEST
+  Significantly speed-up ego creation and deletion via
+  gnunet-identity command when there are many (hundreds)
+  of egos at the same peer. -CG
+
+Sun May 12 12:00:00 2019 +0200
+  Releasing GNUnet 0.11.4. -MS
+
+Thu May 9 23:35:24 2019 +0200
+  gnunet-identity can now output the public key on creation of new
+  egos, and -e can act as a filter when listing all egos. -CG
+
+Thu May 2 08:44:37 2019 +0200
+  gnunet-arm now logs to file by default -CG
+
+Sat Apr 27 21:50:57 2019 +0200
+  RECLAIM: Added ECDH encryption for authorization code payload -schanzen
+
+Sat 27 Apr 2019 06:36:31 AM CEST
+  Bump libmicrohttpd version requirement as some intermediate
+  versions have relevant bugs that cause problems. -CG
+
+Sat Apr 27 01:50:43 2019 +0200
+  RECLAIM: No longer experimental -schanzen
+
+Fri Apr 26 11:08:21 2019 +0200
+  REST: Configuration plugin added -schanzen
+
+Tue Apr 23 23:00:00 UTC 2019
+  All manpages are properly licensed. -ng0
+
+Sun Apr 21 22:22:22 UTC 2019
+  All manpages are now in mdoc format. -ng0
+
+Sat Apr 20 18:38:43 UTC 2019
+  Remove optional gnunet-download-manager.scm and
+  with it the optional dependency on a no longer
+  maintained version of GNU Guile (#5682). -ng0
+
+Sun Apr 14 09:54:20 2019 +0200
+  RECLAIM: Moved away from ABE to GNS encryption. Minor API changed and
+  renaming of records. Deprecated SQLite plugin in favor of namestore.
+  -schanzen
+
+Sun Apr 7 14:40:59 2019 +0200
+  Releasing GNUnet 0.11.3. -CG
+
+Sat 06 Apr 2019 02:36:17 PM CEST
+  Introducing GNUNET_memcmp() and GNUNET_is_zero() for better typing
+  when comparing memory areas. -CG
+
+Fri 05 Apr 2019 11:38:53 PM CEST
+  Use paths of sysctl, ip, ifconfig and ip(6)tables from configure
+  if they work. (#5352). -CG
+
+Thu 04 Apr 2019 12:39:44 PM CEST
+  Hotfix for build issue. Releasing GNUnet 0.11.2. -CG/MS
+
+Wed 03 Apr 2019 03:18:43 PM CEST
+  Releasing GNUnet 0.11.1. -CG
+
+Wed 03 Apr 2019 01:54:44 PM CEST
+  Merged gnunet-qr-c-2 branch, replacing Python-based implementation
+  of gnunet-qr with C-based implementation that also integrates
+  gnunet-uri. -HG/MS/CG
+
+Wed 03 Apr 2019 01:15:57 PM CEST
+  Fixed a few test case regressions (GNS, FS). -CG
+
+Mon Apr 1 22:00:00 UTC 2019
+  documentation/buildsystem: manpages and other documentation parts
+  can now be build more controlled again, this fixes the regression
+  in 0.11.0 where documentation was an on/off switch.
+  New introduced: --enable-include-manpages.
+  Fixed: texi2mdoc integration (--enable-texi2mdoc-generation).
+  buildsystem: decrease python dependency to 3.4 from
+  previously 3.7.
+  -ng0
+
+Tue Mar 12 10:06:17 CET 2019
+  REST: Move back from rest-plugin into respective subsystem directories.
+
+Mon Mar 11 02:47:55 CET 2019
+  Make configure complain if no working libidn is detected. -CG
+
+Sat Mar 9 15:58:45 2019 +0100
+  REST: Config option for address bind. Defaults to localhost.
+  GNS: dns2gns/gns-proxy config option for address bind. Defaults to localhost.
+
+Sat Mar 9 01:58:22 CET 2019
+  gnunet-publish now by default does not expose the creation time,
+  option -d no longer exists, to enable the old behavior use -E. -CG
+
+Sat Mar 2 14:23:10 2019 +0100
+  utils: gnunet-qr.py now installed under pkgshare instead of bin
+
+Thu Feb 28 19:07:59 CET 2019
+  CADET: Fix in order, unrealiable message ordering
+
 Thu 28 Feb 2019 10:54:58 AM CET
-	Releasing GNUnet 0.11.0. -CG
+  Releasing GNUnet 0.11.0. -CG
 
 Wed Jun  6 08:28:27 CEST 2018
-	Releasing GNUnet 0.11.0pre66. Let's try to keep a better
-	ChangeLog again henceforth. -CG
+  Releasing GNUnet 0.11.0pre66. Let's try to keep a better
+  ChangeLog again henceforth. -CG
 
 Sat Jan  7 16:41:34 CET 2017
-	Converting NAT library to new NAT service (and
-	splitting of nat-auto service for auto-configuration). -CG
+  Converting NAT library to new NAT service (and
+  splitting of nat-auto service for auto-configuration). -CG

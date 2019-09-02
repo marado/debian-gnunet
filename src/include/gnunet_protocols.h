@@ -43,9 +43,8 @@
 #define GNUNET_PROTOCOLS_H
 
 #ifdef __cplusplus
-extern "C"
-{
-#if 0                           /* keep Emacsens' auto-indent happy */
+extern "C" {
+#if 0 /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -252,7 +251,8 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_DV_DISCONNECT 50
 
 /**
- * P2P DV message telling plugin that a message transmission failed (negative ACK)
+ * P2P DV message telling plugin that a message transmission failed (negative
+ * ACK)
  */
 #define GNUNET_MESSAGE_TYPE_DV_SEND_NACK 51
 
@@ -622,37 +622,37 @@ extern "C"
 /**
  * Receive information about transiting GETs
  */
-#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_GET             149
+#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_GET 149
 
 /**
  * Receive information about transiting GET responses
  */
-#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_GET_RESP        150
+#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_GET_RESP 150
 
 /**
  * Receive information about transiting PUTs
  */
-#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_PUT             151
+#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_PUT 151
 
 /**
  * Receive information about transiting PUT responses (TODO)
  */
-#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_PUT_RESP        152
+#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_PUT_RESP 152
 
 /**
  * Request information about transiting messages
  */
-#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_START             153
+#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_START 153
 
 /**
  * Stop information about transiting messages
  */
-#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_STOP             154
+#define GNUNET_MESSAGE_TYPE_DHT_MONITOR_STOP 154
 
 /**
  * Certain results are already known to the client, filter those.
  */
-#define GNUNET_MESSAGE_TYPE_DHT_CLIENT_GET_RESULTS_KNOWN             156
+#define GNUNET_MESSAGE_TYPE_DHT_CLIENT_GET_RESULTS_KNOWN 156
 
 /**
  * Further X-VINE DHT messages continued from 880
@@ -827,7 +827,6 @@ extern "C"
  * Type of messages between the gnunet-helper-dns and the service
  */
 #define GNUNET_MESSAGE_TYPE_DNS_HELPER 214
-
 
 
 /*******************************************************************************
@@ -1090,8 +1089,16 @@ extern "C"
 
 /**
  * Message telling transport to limit its receive rate.
+ * (FIXME: was the above comment ever accurate?)
+ *
+ * Note: dead in TNG, replaced by RECV_OK!
  */
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_SET_QUOTA 366
+
+/**
+ * Message telling transport to limit its receive rate.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_RECV_OK 366
 
 /**
  * Request to look addresses of peers in server.
@@ -1490,7 +1497,8 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TESTBED_SLAVE_CONFIGURATION 480
 
 /**
- * Message to signal the result of #GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS request
+ * Message to signal the result of #GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS
+ * request
  */
 #define GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS_RESULT 481
 
@@ -1600,8 +1608,8 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_CONCLUDE 524
 
 /**
- * Sent by service to client in order to signal a completed consensus conclusion.
- * Last message sent in a consensus session.
+ * Sent by service to client in order to signal a completed consensus
+ * conclusion. Last message sent in a consensus session.
  */
 #define GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_CONCLUDE_DONE 525
 
@@ -1646,7 +1654,8 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_HELLO 546
 
 /**
- * Report that the peer is synced with the partner after successfuly decoding the invertible bloom filter.
+ * Report that the peer is synced with the partner after successfuly decoding
+ * the invertible bloom filter.
  */
 #define GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_SYNCED 547
 
@@ -1871,7 +1880,6 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TESTBED_LOGGER_ACK 601
 
 
-
 /**
  * Advertise regex capability.
  */
@@ -1931,6 +1939,23 @@ extern "C"
  * Delete identity (client->service).
  */
 #define GNUNET_MESSAGE_TYPE_IDENTITY_DELETE 631
+
+/**
+ * First message send from identity client to service to
+ * lookup a single ego.  The service will respond with a
+ * #GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE message if the ego
+ * exists, or a #GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE if not.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP 632
+
+/**
+ * First message send from identity client to service to lookup a
+ * single ego matching the given suffix (longest match).  The service
+ * will respond with a #GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE message if
+ * the ego exists, or a #GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE if
+ * not.
+ */
+#define GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX 633
 
 
 /*******************************************************************************
@@ -2021,9 +2046,6 @@ extern "C"
  * Bob -> Alice ECC crypto data
  */
 #define GNUNET_MESSAGE_TYPE_SCALARPRODUCT_ECC_BOB_CRYPTODATA 652
-
-
-
 
 
 /*******************************************************************************
@@ -2122,8 +2144,10 @@ extern "C"
 /** S<--C: PSYC message which contains one or more message parts. */
 #define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE 691
 
-/** M<->S<->C: PSYC message which contains a header and one or more message parts. */
-#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_HEADER 692 // FIXME: start using this where appropriate
+/** M<->S<->C: PSYC message which contains a header and one or more message
+ * parts. */
+#define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_HEADER \
+  692 // FIXME: start using this where appropriate
 
 /** Message part: method */
 #define GNUNET_MESSAGE_TYPE_PSYC_MESSAGE_METHOD 693
@@ -2331,7 +2355,6 @@ extern "C"
  * C<->S: End of replay response.
  */
 #define GNUNET_MESSAGE_TYPE_MULTICAST_REPLAY_RESPONSE_END 762
-
 
 
 /*******************************************************************************
@@ -2544,7 +2567,7 @@ extern "C"
 /**
  * Acknowledge receiving ACT MALICIOUS request
  */
-#define GNUNET_MESSAGE_TYPE_DHT_CLIENT_ACT_MALICIOUS_OK  894
+#define GNUNET_MESSAGE_TYPE_DHT_CLIENT_ACT_MALICIOUS_OK 894
 
 #endif
 
@@ -2606,23 +2629,22 @@ extern "C"
 /**
  * RPS check liveliness message to check liveliness of other peer
  */
-#define GNUNET_MESSAGE_TYPE_RPS_PP_CHECK_LIVE     950
+#define GNUNET_MESSAGE_TYPE_RPS_PP_CHECK_LIVE 950
 
 /**
  * RPS PUSH message to push own ID to another peer
  */
-#define GNUNET_MESSAGE_TYPE_RPS_PP_PUSH           951
+#define GNUNET_MESSAGE_TYPE_RPS_PP_PUSH 951
 
 /**
  * RPS PULL REQUEST message to request the local view of another peer
  */
-#define GNUNET_MESSAGE_TYPE_RPS_PP_PULL_REQUEST   952
+#define GNUNET_MESSAGE_TYPE_RPS_PP_PULL_REQUEST 952
 
 /**
  * RPS PULL REPLY message which contains the view of the other peer
  */
-#define GNUNET_MESSAGE_TYPE_RPS_PP_PULL_REPLY     953
-
+#define GNUNET_MESSAGE_TYPE_RPS_PP_PULL_REPLY 953
 
 
 /* Client-Service Messages */
@@ -2631,25 +2653,25 @@ extern "C"
 /**
  * RPS CS SEED Message for the Client to seed peers into rps
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_SEED           954
+#define GNUNET_MESSAGE_TYPE_RPS_CS_SEED 954
 
 #if ENABLE_MALICIOUS
 /**
  * Turn RPS service malicious
  */
-#define GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS     955
+#define GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS 955
 
 #endif /* ENABLE_MALICIOUS */
 
 /**
  * RPS client-service message to start a sub sampler
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_SUB_START           956
+#define GNUNET_MESSAGE_TYPE_RPS_CS_SUB_START 956
 
 /**
  * RPS client-service message to stop a sub sampler
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_SUB_STOP            957
+#define GNUNET_MESSAGE_TYPE_RPS_CS_SUB_STOP 957
 
 /* Debugging API continues at 1130 */
 
@@ -2662,7 +2684,7 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_STORE 961
 
-#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_STORE_RESPONSE 962
+#define GNUNET_MESSAGE_TYPE_RECLAIM_SUCCESS_RESPONSE 962
 
 #define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_ITERATION_START 963
 
@@ -2690,11 +2712,13 @@ extern "C"
 
 #define GNUNET_MESSAGE_TYPE_RECLAIM_TICKET_ITERATION_NEXT 975
 
+#define GNUNET_MESSAGE_TYPE_RECLAIM_ATTRIBUTE_DELETE 976
+
 /**************************************************
  *
  * CREDENTIAL MESSAGE TYPES
  */
-#define GNUNET_MESSAGE_TYPE_CREDENTIAL_VERIFY     981
+#define GNUNET_MESSAGE_TYPE_CREDENTIAL_VERIFY 981
 
 #define GNUNET_MESSAGE_TYPE_CREDENTIAL_VERIFY_RESULT 982
 
@@ -2774,7 +2798,6 @@ extern "C"
  * Axolotl key exchange response with authentication.
  */
 #define GNUNET_MESSAGE_TYPE_CADET_TUNNEL_KX_AUTH 1009
-
 
 
 /**********************************  Channel  *********************************/
@@ -2964,7 +2987,8 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_NAT_AUTO_CFG_RESULT 1068
 
 
-/* 1080-1109 reserved for TMCG (Heiko Stamer, see gnunet-developers, January 2017) */
+/* 1080-1109 reserved for TMCG (Heiko Stamer, see gnunet-developers, January
+ * 2017) */
 
 
 /******************************************************************************/
@@ -2987,7 +3011,6 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_AUCTION_CLIENT_OUTCOME 1112
 
 
-
 /******************************************************************************/
 /*********************************  RPS DEBUG  ********************************/
 /******************************************************************************/
@@ -3000,12 +3023,12 @@ extern "C"
 /**
  * @brief Send update of the view
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_REPLY   1131
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_REPLY 1131
 
 /**
  * @brief Cancel getting updates of the view
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_CANCEL  1132
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_CANCEL 1132
 
 
 /**
@@ -3016,12 +3039,12 @@ extern "C"
 /**
  * @brief Send peer of biased stream
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REPLY   1134
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REPLY 1134
 
 /**
  * @brief Cancel getting biased strem
  */
-#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_CANCEL  1135
+#define GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_CANCEL 1135
 
 
 /*******************************************************
@@ -3110,11 +3133,6 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT 1214
 
 /**
- * Acknowledgement generated for a fragment.
- */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT_ACK 1215
-
-/**
  * Wrapper around non-fragmented CORE message used to measure RTT
  * and ensure reliability.
  */
@@ -3141,11 +3159,9 @@ extern "C"
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL_INCOMING 1220
 
 /**
- * We learned a possible network address of another peer. Transport
- * should consider verifying it, and if successful, remembering it
- * in the Peerstore.
+ * Transport signalling incoming backchannel message to a communicator.
  */
-#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_CONSIDER_VERIFY 1221
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_FLOW_CONTROL 1221
 
 
 /**
@@ -3177,8 +3193,38 @@ extern "C"
  */
 #define GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_FC_LIMITS 1276
 
+/**
+ * Type of the 'struct ExpressPreferenceMessage' send by clients to TRANSPORT
+ * to establish bandwidth preference.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_SUGGEST 1300
+
+/**
+ * Type of the 'struct ExpressPreferenceMessage' send by clients to TRANSPORT
+ * to abandon bandwidth preference.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_SUGGEST_CANCEL 1301
+
+/**
+ * Type of the 'struct RequestHelloValidationMessage' send by clients to
+ * TRANSPORT to trigger validation of addresses.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_REQUEST_HELLO_VALIDATION 1302
+
+
+/**
+ * P2P message: transport requests confirmation that an address works.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_CHALLENGE 1303
+
+/**
+ * P2P message: transport proves that an address worked.
+ */
+#define GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_RESPONSE 1304
+
 
 /* ************** NEW (NG) ATS Messages ************* */
+/* NOTE: it is not clear ATS will survive in TNG      */
 
 /**
  * Type of the 'struct ExpressPreferenceMessage' send by clients to ATS
@@ -3255,14 +3301,13 @@ extern "C"
  */
 
 
-
 /**
  * Type used to match 'all' message types.
  */
 #define GNUNET_MESSAGE_TYPE_ALL 65535
 
 
-#if 0                           /* keep Emacsens' auto-indent happy */
+#if 0 /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

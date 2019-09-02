@@ -65,15 +65,18 @@ close_all_files ();
 #define to_file(file_name, ...) do { \
     char tmp_buf[512] = "";\
     int size;\
-    if (NULL == file_name) return; \
+    if (NULL == file_name) break; \
     size = GNUNET_snprintf(tmp_buf,sizeof(tmp_buf),__VA_ARGS__);\
     if (0 > size)\
+    {\
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,\
            "Failed to create tmp_buf\n");\
-    else\
-      GNUNET_DISK_file_write (get_file_handle (file_name),\
-                              tmp_buf,\
-                              strnlen (tmp_buf, 512));\
+      break;\
+    }\
+    (void) strncat(tmp_buf,"\n",512);\
+    GNUNET_DISK_file_write (get_file_handle (file_name),\
+                            tmp_buf,\
+                            strnlen (tmp_buf, 512));\
   } while (0);
 
 
@@ -82,12 +85,15 @@ close_all_files ();
     memset (tmp_buf, 0, len);\
     size = GNUNET_snprintf(tmp_buf,sizeof(tmp_buf),__VA_ARGS__);\
     if (0 > size)\
+    {\
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,\
            "Failed to create tmp_buf\n");\
-    else\
-      GNUNET_DISK_file_write (get_file_handle (file_name),\
-                              tmp_buf,\
-                              strnlen (tmp_buf, 512));\
+      break;\
+    }\
+    (void) strncat(tmp_buf,"\n",len);\
+    GNUNET_DISK_file_write (get_file_handle (file_name),\
+                            tmp_buf,\
+                            strnlen (tmp_buf, len));\
   } while (0);
 #else /* TO_FILE */
 #  define to_file(file_name, ...)
@@ -95,7 +101,7 @@ close_all_files ();
 #endif /* TO_FILE */
 
 char *
-store_prefix_file_name (const struct GNUNET_PeerIdentity *peer,
+store_prefix_file_name (const unsigned int index,
                         const char *prefix);
 
 void
@@ -106,6 +112,27 @@ to_file_raw_unaligned (const char *file_name,
                        const char *buf,
                        size_t size_buf,
                        unsigned bits_needed);
+
+
+/**
+ * @brief Factorial
+ *
+ * @param x Number of which to compute the factorial
+ *
+ * @return Factorial of @a x
+ */
+uint32_t fac (uint32_t x);
+
+
+/**
+ * @brief Binomial coefficient (n choose k)
+ *
+ * @param n
+ * @param k
+ *
+ * @return Binomial coefficient of @a n and @a k
+ */
+uint32_t binom (uint32_t n, uint32_t k);
 
 #endif /* RPS_TEST_UTIL_H */
 /* end of gnunet-service-rps.c */
