@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ME=`whoami`
 if [ "$ME" != "root" ]
@@ -26,17 +26,12 @@ then
   echo "This test requires nslookup.  Skipping."
   exit 77
 fi
-if [ ! -x `which iptables` ]
-then
-    echo "This test requires iptables.  Skipping."
-    exit 77
-fi
-if ! iptables -t mangle --list > /dev/null 2>&1
+if ! iptables -t mangle --list &> /dev/null
 then
   echo "This test requires iptables with 'mangle' support. Skipping."
   exit 77
 fi
-if grep % /etc/resolv.conf > /dev/null 2>&1
+if grep % /etc/resolv.conf &> /dev/null
 then
   echo "This system seems to use a DNS server on an IPv6 link-local address, which is not supported. Skipping."
   exit 77
@@ -57,6 +52,5 @@ else
  echo "Test run, with success."
  ret=0
 fi
-# TODO: jobs is a possible bashism. Fix.
 kill `jobs -p`
 exit $ret

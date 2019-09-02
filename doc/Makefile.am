@@ -1,14 +1,9 @@
 # This Makefile.am is in the public domain
 if DOCUMENTATION
-  SUBDIRS = doxygen handbook tutorial
+  SUBDIRS = man doxygen handbook tutorial
 endif
-
 if !DOCUMENTATION
-  SUBDIRS = doxygen
-endif
-
-if INCLUDE_MANPAGES
-  SUBDIRS += man
+  SUBDIRS = man doxygen
 endif
 
 EXTRA_DIST =							\

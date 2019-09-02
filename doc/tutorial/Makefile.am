@@ -8,7 +8,7 @@ docdir = $(datadir)/doc/gnunet/
 #	$(DOT_FILES:%.dot=%.pdf)
 
 # See ../handbook/Makefile.am comment!
-AM_MAKEINFOHTMLFLAGS = --no-split --css-include=style.css --css-include=manual.css
+AM_MAKEINFOHTMLFLAGS = --no-split --css-include=docstyle.css
 
 #DOT_OPTIONS =							\
 #	-Gratio=.9 -Gnodesep=.005 -Granksep=.00005		\
@@ -93,7 +93,12 @@ version.texi/replacement/revert:
 	@echo "@set VERSION GPACKAGE_VERSION" > gversion.texi
 	@echo "@set EDITION GPACKAGE_VERSION" >> gversion.texi
 
-
+if TEXI2MDOC_GENERATION
+gnunet-tutorial.7: version.texi/replacement
+	@echo Attempting to output an mdoc formatted section 7 document
+	@texi2mdoc -I$(pwd):$(pwd)/chapters gnunet-c-tutorial.texi > ../man/gnunet-c-tutorial.7
+# TODO: (Maybe) other outputs resulting from this.
+endif
 
 # FIXME: rm *.html and *.pdf
 #doc-clean:

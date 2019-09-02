@@ -1,67 +1,61 @@
-.Dd September 13, 2014
-.Dt GNUNET-TESTBED-PROFILER 1
-.Os
-.Sh NAME
-.Nm gnunet-testbed-profiler
-.Nd
-profiling driver for the testbed
-.Sh SYNOPSIS
-.Nm
-.Op Fl c Ar FILENAME | Fl \-config= Ns Ar FILENAME
-.Op Fl e Ar COUNT | Fl \-num-errors= Ns Ar COUNT
-.Op Fl H Ar FILENAME |  Fl \-hosts= Ns Ar FILENAME
-.Op Fl h | \-help
-.Op Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
-.Op Fl l Ar LOGFILE |  Fl \-logfile= Ns Ar LOGFILE
-.Op Fl n | \-non-interactive
-.Op Fl p Ar COUNT | Fl \-num-peers= Ns Ar COUNT
-.Op Fl v | \-version
-.Sh DESCRIPTION
-.Nm
-is a command line profiling driver for the testbed.
-.Sh OPTIONS
-.Bl -tag -width Ds
-.It Fl c Ar FILENAME | Fl \-config= Ns Ar FILENAME
+.TH GNUNET\-TESTBED\-PROFILER 1 "September 13, 2014" "GNUnet"
+.SH NAME
+gnunet\-testbed\-profiler \- Profiling driver for the testbed.
+.SH SYNOPSIS
+.B gnunet\-testbed\-profiler
+.RI [ options ]
+.br
+.SH DESCRIPTION
+\fBgnunet\-testbed\-profiler\fP is a command line profiling driver for the testbed.
+.SH OPTIONS
+.B
+.IP "\-c FILENAME,  \-\-config=FILENAME"
 Use the configuration file FILENAME.
-.It Fl e Ar COUNT | Fl \-num-errors= Ns Ar COUNT
+.B
+.IP "\-e COUNT,  \-\-num\-errors=COUNT"
 Tolerate COUNT number of continious timeout failures.
-.It Fl H Ar FILENAME |  Fl \-hosts= Ns Ar FILENAME
+.B
+.IP "\-H FILENAME,  \-\-hosts=FILENAME"
 Name of the file with the login information for the testbed.
-.It Fl h | \-help
+.B
+.IP "\-h, \-\-help"
 Print short help on options.
-.It Fl L Ar LOGLEVEL | Fl \-loglevel= Ns Ar LOGLEVEL
-Use LOGLEVEL for logging.
-Valid values are DEBUG, INFO, WARNING and ERROR.
-.It Fl l Ar LOGFILE |  Fl \-logfile= Ns Ar LOGFILE
+.B
+.IP "\-L LOGLEVEL, \-\-loglevel=LOGLEVEL"
+Use LOGLEVEL for logging.  Valid values are DEBUG, INFO, WARNING and ERROR.
+.B
+.IP "\-l LOGFILE, \-\-logfile=LOGFILE"
 Configure logging to write logs to LOGFILE.
-.It Fl n | \-non-interactive
-Run profiler in non-interactive mode where upon testbed setup the profiler does not wait for a keystroke but continues to run until a termination signal is received.
-.It Fl p Ar COUNT | Fl \-num-peers= Ns Ar COUNT
+.B
+.IP "\-n, \-\-non\-interactive"
+Run profiler in non-interactive mode where upon testbed setup the
+profiler does not wait for a keystroke but continues to run until a
+termination signal is received.
+.B
+.IP "\-p COUNT, \-\-num\-peers=COUNT"
 Create COUNT number of peers.
-.It Fl v | \-version
+.B
+.IP "\-v, \-\-version"
 Print GNUnet version number.
-.El
-.Sh SEE ALSO
-The full documentation for gnunet is maintained as a Texinfo manual.
-If the
-.Xr info 1
-and gnunet programs are properly installed at your site, the command
-.Pp
-.Dl info gnunet
-.Pp
+.SH BUGS
+Report bugs by using Mantis <https://bugs.gnunet.org/> or by sending electronic mail to <gnunet\-developers@gnu.org>
+.SH "SEE ALSO"
+The full documentation for
+.B gnunet
+is maintained as a Texinfo manual.  If the
+.B info
+and
+.B gnunet
+programs are properly installed at your site, the command
+.IP
+.B info gnunet
+.PP
 should give you access to the complete handbook,
-.Pp
-.Dl info gnunet-c-tutorial
-.Pp
+.IP
+.B info gnunet-c-tutorial
+.PP
 will give you access to a tutorial for developers.
-.sp
-Depending on your installation, this information is also available in
-.Xr gnunet 7 and
-.Xr gnunet-c-tutorial 7 .
-.\".Sh HISTORY
-.\".Sh AUTHORS
-.Sh BUGS
-Report bugs by using
-.Lk https://bugs.gnunet.org
-or by sending electronic mail to
-.Aq Mt gnunet-developers@gnu.org .
+.PP
+Depending on your installation, this information is also
+available in
+\fBgnunet\fP(7) and \fBgnunet-c-tutorial\fP(7).

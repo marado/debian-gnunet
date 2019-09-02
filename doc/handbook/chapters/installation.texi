@@ -12,9 +12,9 @@ package manager.
 * Create @code{gnunet} user and group::
 * Preparing and Compiling the Source Code::
 * Installation::
-* Checking the Installation::
-* The graphical configuration interface::
-* Config Leftovers::
+* MOVED FROM USER Checking the Installation::
+* MOVED FROM USER The graphical configuration interface::
+* MOVED FROM USER Config Leftovers::
 @end menu
 
 @c -----------------------------------------------------------------------
@@ -27,54 +27,36 @@ link to the project websites.
 
 The mandatory libraries and applications are
 @itemize @bullet
+@item libtool
 @item autoconf 2.59 or above
 @item automake 1.11.1 or above
-@item gettext
-@item glibc (read below, other libcs should work)
-@item gnutls 3.2.12 or above, recommended to be linked against libunbound
-@item iptables (on Linux systems)
-@item libtool 2.2 or above
-@item libltdl (part of libtool)
+@item pkg-config
 @item libgcrypt 1.6 or above
 @item libextractor
-@item libidn2 or libidn
+@item libidn
 @item libmicrohttpd 0.9.52 or above
+@item libnss
 @item libunistring
+@item gettext
+@item glibc
 @item libgmp
-@item libgnurl or libcurl (libcurl has to be linked to GnuTLS) 7.35.0 or above
-@item Texinfo 5.2 or above (for building the documentation)
-@item Texlive 2012 or above (for building the documentation, and for gnunet-bcd)
-@item makeinfo 4.8 or above
+@item gnutls
+@item libcurl (has to be linked to GnuTLS) or libgnurl
 @item zlib
 @end itemize
 
-Glibc is required for certain NSS features:
-
-@example
-One mechanism of integrating GNS with legacy applications via NSS is
-not available if this is disabled. But applications that don't use the
-glibc for NS resolution won't work anyway with this, so little is lost
-on BSD systems.
-GNS via direct use or via the HTTP or DNS proxies is unaffected.
-@end example
-
-Other libcs should work, the resulting builds just don't include the
-glibc NSS specific code. One example is the build against NetBSD's libc
-as detailed in @uref{https://bugs.gnunet.org/view.php?id=5605}.
-
 In addition GNUnet needs one of of these three databases
 @itemize @bullet
-@item sqlite + libsqlite 3.8 or above (the default, requires no further configuration)
+@item sqlite + libsqlite (the default, requires no further configuration)
 @item postgres + libpq
 @item mysql + libmysqlclient
 @end itemize
 
 These are the dependencies only required for certain features
 @itemize @bullet
-@item guile 1.6.4 for gnunet-download-manager
+@item Texinfo (for building the documentation)
+@item Texlive (for building the documentation)
 @item miniupnpc (for traversing NAT boxes more reliably)
-@item libnss
-@item libglpk 4.45 or above for experimental code
 @item libopus (for running the GNUnet conversation telephony application)
 @item libpulse (for running the GNUnet conversation telephony application)
 @item libogg (for running the GNUnet conversation telephony application)
@@ -83,24 +65,6 @@ These are the dependencies only required for certain features
 (for attribute-based encryption and the identity provider subsystem)
 @item libgabe
 (for attribute-based encryption and the identity provider subsystem)
-@item texi2mdoc (for automatic mdoc generation)
-@item perl5 for some utilities
-@end itemize
-
-These are the test suite requirements:
-@itemize @bullet
-@item python3.7
-@item gnunet (installation first)
-@item which(1)
-@item a shell (possibly Bash, maybe just POSIX sh)
-@end itemize
-
-These are runtime requirements:
-@itemize @bullet
-@item nss (the certutil binary, for gnunet-gns-proxy-setup-ca)
-@item openssl (openssl binary, for gnunet-gns-proxy-setup-ca)
-@item python2.7 for gnunet-qr (at the moment only python2.7 supported)
-@item python-zbar 0.10 or above for gnunet-qr
 @end itemize
 
 @c -----------------------------------------------------------------------
@@ -118,7 +82,7 @@ The archive can be found at
 @uref{https://ftpmirror.gnu.org/gnu/gnunet/}. Extract it using a graphical
 archive tool or @code{tar}:
 @example
-tar xzvf gnunet-@value{VERSION}.tar.gz
+tar xzvf gnunet-0.11.0pre66.tar.gz
 @end example
 
 In the next chapter we will assume that the source code is available
@@ -152,23 +116,16 @@ running @code{configure} the following options can be specified to
 customize the compilation and installation process:
 
 @itemize @bullet
-@item @code{--disable-documentation} - don't build the documentation
+@item @code{--disable-documentation} - don't build the configuration documents
 @item @code{--enable-looging=[LOGLEVEL]} - choose a loglevel (@code{debug}, @code{info}, @code{warning} or @code{error})
 @item @code{--prefix=[PATH]} - the directory where the GNUnet libraries and binaries will be installed
 @item @code{--with-extractor=[PATH]} - the path to libextractor
 @item @code{--with-libidn=[PATH]} - the path to libidn
-@item @code{--with-libidn2=[PATH]} - the path to libidn2 (takes priority over libidn if both are found)
 @item @code{--with-microhttpd=[PATH]} - the path to libmicrohttpd
 @item @code{--with-sqlite=[PATH]} - the path to libsqlite
 @item @code{--with-zlib=[PATH]} - the path to zlib
 @item @code{--with-sudo=[PATH]} - path to the sudo binary (no need to run @code{make install} as root if specified)
 @end itemize
-
-Note that the list above is not always up to date and you
-should check the output of @code{./configure --help}, read
-the @file{configure.ac} or send an email asking for assistance
-if you are in doubt of any configure options or require fixes
-for your operating system.
 
 The following example configures the installation prefix
 @code{/usr/lib} and disables building the documentation
@@ -259,9 +216,9 @@ PLUGINS = tcp
 
 
 
-@node Checking the Installation
-@section Checking the Installation
-
+@node MOVED FROM USER Checking the Installation
+@section MOVED FROM USER Checking the Installation
+@c %**end of header
 
 This section describes a quick, casual way to check if your GNUnet
 installation works. However, if it does not, we do not cover
@@ -283,7 +240,7 @@ as part of this handbook!.
 @cindex GTK user interface
 @node gnunet-gtk
 @subsection gnunet-gtk
-
+@c %**end of header
 
 The @command{gnunet-gtk} package contains several graphical
 user interfaces for the respective GNUnet applications.
@@ -294,24 +251,17 @@ Currently these interfaces cover:
 @item Peer Information
 @item GNU Name System
 @item File Sharing
+@item Identity Management
 @item Conversation
-@item Setup
 @end itemize
-
-Previously, many of these interfaces were combined into one application
-called @command{gnunet-gtk}, with different tabs for each interface. This
-combined application has been removed in version 0.11.0, but each of the
-interfaces is still available as a standalone application
-(@command{gnunet-statistics-gtk} for statistics, @command{gnunet-fs-gtk}
-for filesharing, etc).
 
 @node Statistics
 @subsection Statistics
-
+@c %**end of header
 
 We assume that you have started gnunet via @code{gnunet-arm} or via your
 system-provided method for starting services.
-First, you should launch GNUnet's graphical statistics interface.
+First, you should launch GNUnet gtk.
 You can do this from the command-line by typing
 
 @example
@@ -324,7 +274,7 @@ least if your peer has been running for more than a few seconds). The
 lines indicate how many other peers your peer is connected to (via
 different mechanisms) and how large the entire overlay network is
 currently estimated to be. The X-axis represents time (in seconds
-since the start of @command{gnunet-statistics-gtk}).
+since the start of @command{gnunet-gtk}).
 
 You can click on "Traffic" to see information about the amount of
 bandwidth your peer has consumed, and on "Storage" to check the amount
@@ -340,10 +290,10 @@ whatever it is you are looking at the Gtk+ interface describes a
 
 @node Peer Information
 @subsection Peer Information
+@c %**end of header
 
-
-First, you should launch the peer information graphical user interface.
-You can do this from the command-line by typing
+First, you should launch the graphical user interface.  You can do
+this from the command-line by typing
 
 @example
 $ gnunet-peerinfo-gtk
@@ -360,8 +310,8 @@ configuration.
 
 @c NOTE: Inserted from Installation Handbook in original ``order'':
 @c FIXME: Move this to User Handbook.
-@node The graphical configuration interface
-@section The graphical configuration interface
+@node MOVED FROM USER The graphical configuration interface
+@section MOVED FROM USER The graphical configuration interface
 
 If you also would like to use @command{gnunet-gtk} and
 @command{gnunet-setup} (highly recommended for beginners), do:
@@ -397,7 +347,7 @@ If you also would like to use @command{gnunet-gtk} and
 * Configuring the GNUnet VPN::
 * Bandwidth Configuration::
 * Configuring NAT::
-* Peer configuration for distributors (e.g. Operating Systems)::
+* Peer configuration for distributions::
 @end menu
 
 @node Configuring your peer
@@ -408,7 +358,7 @@ This chapter will describe the various configuration options in GNUnet.
 The easiest way to configure your peer is to use the
 @command{gnunet-setup} tool.
 @command{gnunet-setup} is part of the @command{gnunet-gtk}
-package. You might have to install it separately.
+application. You might have to install it separately.
 
 Many of the specific sections from this chapter actually are linked from
 within @command{gnunet-setup} to help you while using the setup tool.
@@ -887,7 +837,7 @@ a @code{gn090} table here, it probably works.
 
 @node Configuring the datacache
 @subsection Configuring the datacache
-
+@c %**end of header
 
 The datacache is what GNUnet uses for storing temporary data. This data is
 expected to be wiped completely each time GNUnet is restarted (or the
@@ -939,8 +889,7 @@ strength of the adversary).
 @node Configuring logging
 @subsection Configuring logging
 
-Since version 0.9.0, logging in GNUnet is controlled via the
-@code{-L} and @code{-l} options.
+Logging in GNUnet 0.9.0 is controlled via the "-L" and "-l" options.
 Using @code{-L}, a log level can be specified. With log level
 @code{ERROR} only serious errors are logged.
 The default log level is @code{WARNING} which causes anything of
@@ -1816,7 +1765,7 @@ The other options as shown on the gnunet-setup tool are:
 @node IPv4 address for interface
 @subsubsection IPv4 address for interface
 
-This is the IPv4 address the VPN interface will get. You should pick a
+This is the IPv4 address the VPN interface will get. You should pick an
 'private' IPv4 network that is not yet in use for you system. For example,
 if you use @code{10.0.0.1/255.255.0.0} already, you might use
 @code{10.1.0.1/255.255.0.0}.
@@ -1971,29 +1920,29 @@ connect to NATed peers using autonomous NAT traversal, you need to check
 the "Enable connecting to NATed peers using ICMP method" box.
 
 
-@node Peer configuration for distributors (e.g. Operating Systems)
-@subsection Peer configuration for distributors (e.g. Operating Systems)
+@node Peer configuration for distributions
+@subsection Peer configuration for distributions
 
 The "GNUNET_DATA_HOME" in "[path]" in @file{/etc/gnunet.conf} should be
 manually set to "/var/lib/gnunet/data/" as the default
 "~/.local/share/gnunet/" is probably not that appropriate in this case.
-Similarly, distributors may consider pointing "GNUNET_RUNTIME_DIR" to
+Similarly, distributions may consider pointing "GNUNET_RUNTIME_DIR" to
 "/var/run/gnunet/" and "GNUNET_HOME" to "/var/lib/gnunet/". Also, should a
-distributor decide to override system defaults, all of these changes
+distribution decide to override system defaults, all of these changes
 should be done in a custom @file{/etc/gnunet.conf} and not in the files
 in the @file{config.d/} directory.
 
 Given the proposed access permissions, the "gnunet-setup" tool must be
 run as use "gnunet" (and with option "-c /etc/gnunet.conf" so that it
 modifies the system configuration). As always, gnunet-setup should be run
-after the GNUnet peer was stopped using "gnunet-arm -e". Distributors
+after the GNUnet peer was stopped using "gnunet-arm -e". Distributions
 might want to include a wrapper for gnunet-setup that allows the
 desktop-user to "sudo" (i.e. using gtksudo) to the "gnunet" user account
 and then runs "gnunet-arm -e", "gnunet-setup" and "gnunet-arm -s" in
 sequence.
 
-@node Config Leftovers
-@section Config Leftovers
+@node MOVED FROM USER Config Leftovers
+@section MOVED FROM USER Config Leftovers
 
 This section describes how to start a GNUnet peer. It assumes that you
 have already compiled and installed GNUnet and its' dependencies.
@@ -2252,7 +2201,7 @@ However, as TCP is generally less efficient and it is rarely the case
 that a single GNUnet peer is supposed to serve an entire local network,
 the default configuration should disable TCP access to all GNUnet
 services on systems with support for UNIX domain sockets.
-Since GNUnet 0.9.2, configuration files with TCP access disabled should be
+As of GNUnet 0.9.2, configuration files with TCP access disabled should be
 generated by default. Users can re-enable TCP access to particular
 services simply by specifying a non-zero port number in the section of
 the respective service.

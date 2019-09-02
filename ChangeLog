@@ -1,51 +1,10 @@
-Wed 03 Apr 2019 03:18:43 PM CEST
-  Releasing GNUnet 0.11.1. -CG
-
-Wed 03 Apr 2019 01:54:44 PM CEST
-  Merged gnunet-qr-c-2 branch, replacing Python-based implementation
-  of gnunet-qr with C-based implementation that also integrates
-  gnunet-uri. -HG/MS/CG
-
-Wed 03 Apr 2019 01:15:57 PM CEST
-  Fixed a few test case regressions (GNS, FS). -CG
-
-Mon Apr 1 22:00:00 UTC 2019
-  documentation/buildsystem: manpages and other documentation parts
-  can now be build more controlled again, this fixes the regression
-  in 0.11.0 where documentation was an on/off switch.
-  New introduced: --enable-include-manpages.
-  Fixed: texi2mdoc integration (--enable-texi2mdoc-generation).
-  buildsystem: decrease python dependency to 3.4 from
-  previously 3.7.
-  -ng0
-
-Tue Mar 12 10:06:17 CET 2019
-  REST: Move back from rest-plugin into respective subsystem directories.
-
-Mon Mar 11 02:47:55 CET 2019
-  Make configure complain if no working libidn is detected. -CG
-
-Sat Mar 9 15:58:45 2019 +0100
-  REST: Config option for address bind. Defaults to localhost.
-  GNS: dns2gns/gns-proxy config option for address bind. Defaults to localhost.
-
-Sat Mar 9 01:58:22 CET 2019
-  gnunet-publish now by default does not expose the creation time,
-  option -d no longer exists, to enable the old behavior use -E. -CG
-
-Sat Mar 2 14:23:10 2019 +0100
-  utils: gnunet-qr.py now installed under pkgshare instead of bin
-
-Thu Feb 28 19:07:59 CET 2019
-  CADET: Fix in order, unrealiable message ordering
-
 Thu 28 Feb 2019 10:54:58 AM CET
-  Releasing GNUnet 0.11.0. -CG
+	Releasing GNUnet 0.11.0. -CG
 
 Wed Jun  6 08:28:27 CEST 2018
-  Releasing GNUnet 0.11.0pre66. Let's try to keep a better
-  ChangeLog again henceforth. -CG
+	Releasing GNUnet 0.11.0pre66. Let's try to keep a better
+	ChangeLog again henceforth. -CG
 
 Sat Jan  7 16:41:34 CET 2017
-  Converting NAT library to new NAT service (and
-  splitting of nat-auto service for auto-configuration). -CG
+	Converting NAT library to new NAT service (and
+	splitting of nat-auto service for auto-configuration). -CG

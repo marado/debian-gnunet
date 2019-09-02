@@ -1331,10 +1331,7 @@ GCCH_handle_channel_plaintext_data (struct CadetChannel *ch,
       ccc->client_ready = GNUNET_NO;
       GSC_send_to_client (ccc->c,
                           env);
-      if (GNUNET_NO == ch->out_of_order)
-        ch->mid_recv.mid = htonl (1 + ntohl (msg->mid.mid));
-      else
-        ch->mid_recv.mid = htonl (1 + ntohl (ch->mid_recv.mid));
+      ch->mid_recv.mid = htonl (1 + ntohl (ch->mid_recv.mid));
       ch->mid_futures >>= 1;
       if ( (GNUNET_YES == ch->out_of_order) &&
 	   (GNUNET_NO == ch->reliable) )
@@ -1425,7 +1422,7 @@ GCCH_handle_channel_plaintext_data (struct CadetChannel *ch,
       ccc->client_ready = GNUNET_NO;
       GSC_send_to_client (ccc->c,
                           next_msg->env);
-      ch->mid_recv.mid = htonl (1 + ntohl (next_msg->mid.mid));
+      ch->mid_recv.mid = htonl (1 + ntohl (ch->mid_recv.mid));
       ch->mid_futures >>= 1;
       send_channel_data_ack (ch);
       GNUNET_CONTAINER_DLL_remove (ccc->head_recv,

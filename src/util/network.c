@@ -83,64 +83,24 @@ struct GNUNET_NETWORK_Handle
 int
 GNUNET_NETWORK_test_pf (int pf)
 {
-  static int cache_v4 = -1;
-  static int cache_v6 = -1;
-  static int cache_un = -1;
   int s;
-  int ret;
 
-  switch (pf)
-  {
-  case PF_INET:
-    if (-1 != cache_v4)
-      return cache_v4;
-    break;
-  case PF_INET6:
-    if (-1 != cache_v6)
-      return cache_v6;
-    break;
-#ifdef PF_UNIX
-  case PF_UNIX:
-    if (-1 != cache_un)
-      return cache_un;
-    break;
-#endif
-  }
   s = socket (pf, SOCK_STREAM, 0);
   if (-1 == s)
   {
-    if (EAFNOSUPPORT != errno)
-    {
-      GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-			   "socket");
-      return GNUNET_SYSERR;
-    }
-    ret = GNUNET_NO;
+    if (EAFNOSUPPORT == errno)
+      return GNUNET_NO;
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "Failed to create test socket: %s\n",
+                STRERROR (errno));
+    return GNUNET_SYSERR;
   }
-  else
-  {
 #if WINDOWS
-    closesocket (s);
+  closesocket (s);
 #else
-    close (s);
+  close (s);
 #endif
-    ret = GNUNET_OK;
-  }
-  switch (pf)
-  {
-  case PF_INET:
-    cache_v4 = ret;
-    break;
-  case PF_INET6:
-    cache_v6 = ret;
-    break;
-#ifdef PF_UNIX
-  case PF_UNIX:
-    cache_un = ret;
-    break;
-#endif
-  }
-  return ret;
+  return GNUNET_OK;
 }
 
 
@@ -181,8 +141,7 @@ GNUNET_NETWORK_shorten_unixpath (char *unixpath)
     *end = '\0';
   }
   GNUNET_CRYPTO_hash_to_enc (&sh, &ae);
-  ae.encoding[16] = '\0';
-  strcat (unixpath, (char *) ae.encoding);
+  strncat (unixpath, (char *) ae.encoding, 16);
   return unixpath;
 }
 

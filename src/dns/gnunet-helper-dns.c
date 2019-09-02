@@ -83,7 +83,7 @@
  */
 #define MAX_SIZE 65536
 
-#if !HAVE_DECL_STRUCT_IN6_IFREQ
+#ifndef _LINUX_IN6_H
 /**
  * This is in linux/include/net/ipv6.h, but not always exported...
  */

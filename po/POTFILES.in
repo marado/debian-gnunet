@@ -92,7 +92,6 @@ src/credential/credential_serialization.c
 src/credential/gnunet-credential.c
 src/credential/gnunet-service-credential.c
 src/credential/plugin_gnsrecord_credential.c
-src/credential/plugin_rest_credential.c
 src/curl/curl.c
 src/curl/curl_reschedule.c
 src/datacache/datacache.c
@@ -188,7 +187,6 @@ src/gns/nss/nss_gns.c
 src/gns/nss/nss_gns_query.c
 src/gns/plugin_block_gns.c
 src/gns/plugin_gnsrecord_gns.c
-src/gns/plugin_rest_gns.c
 src/gnsrecord/gnsrecord.c
 src/gnsrecord/gnsrecord_crypto.c
 src/gnsrecord/gnsrecord_misc.c
@@ -209,7 +207,6 @@ src/identity/gnunet-identity.c
 src/identity/gnunet-service-identity.c
 src/identity/identity_api.c
 src/identity/identity_api_lookup.c
-src/identity/plugin_rest_identity.c
 src/json/json.c
 src/json/json_generator.c
 src/json/json_gnsrecord.c
@@ -234,7 +231,6 @@ src/namestore/namestore_api_monitor.c
 src/namestore/plugin_namestore_heap.c
 src/namestore/plugin_namestore_postgres.c
 src/namestore/plugin_namestore_sqlite.c
-src/namestore/plugin_rest_namestore.c
 src/nat-auto/gnunet-nat-auto.c
 src/nat-auto/gnunet-nat-auto_legacy.c
 src/nat-auto/gnunet-nat-server.c
@@ -262,7 +258,6 @@ src/nt/nt.c
 src/peerinfo/gnunet-service-peerinfo.c
 src/peerinfo/peerinfo_api.c
 src/peerinfo/peerinfo_api_notify.c
-src/peerinfo/plugin_rest_peerinfo.c
 src/peerinfo-tool/gnunet-peerinfo.c
 src/peerinfo-tool/gnunet-peerinfo_plugins.c
 src/peerstore/gnunet-peerstore.c
@@ -283,12 +278,8 @@ src/reclaim-attribute/plugin_reclaim_attribute_gnuid.c
 src/reclaim-attribute/reclaim_attribute.c
 src/reclaim/gnunet-reclaim.c
 src/reclaim/gnunet-service-reclaim.c
-src/reclaim/json_reclaim.c
-src/reclaim/oidc_helper.c
 src/reclaim/plugin_gnsrecord_reclaim.c
 src/reclaim/plugin_reclaim_sqlite.c
-src/reclaim/plugin_rest_openid_connect.c
-src/reclaim/plugin_rest_reclaim.c
 src/reclaim/reclaim_api.c
 src/regex/gnunet-daemon-regexprofiler.c
 src/regex/gnunet-regex-profiler.c
@@ -305,7 +296,16 @@ src/regex/regex_test_graph.c
 src/regex/regex_test_lib.c
 src/regex/regex_test_random.c
 src/rest/gnunet-rest-server.c
-src/rest/plugin_rest_copying.c
+src/rest-plugins/json_reclaim.c
+src/rest-plugins/oidc_helper.c
+src/rest-plugins/plugin_rest_copying.c
+src/rest-plugins/plugin_rest_credential.c
+src/rest-plugins/plugin_rest_gns.c
+src/rest-plugins/plugin_rest_identity.c
+src/rest-plugins/plugin_rest_namestore.c
+src/rest-plugins/plugin_rest_openid_connect.c
+src/rest-plugins/plugin_rest_peerinfo.c
+src/rest-plugins/plugin_rest_reclaim.c
 src/rest/rest.c
 src/revocation/gnunet-revocation.c
 src/revocation/gnunet-service-revocation.c
@@ -418,6 +418,8 @@ src/transport/plugin_transport_udp_broadcasting.c
 src/transport/plugin_transport_udp.c
 src/transport/plugin_transport_unix.c
 src/transport/plugin_transport_wlan.c
+src/transport/plugin_transport_xt.c
+src/transport/plugin_transport_xu.c
 src/transport/tcp_connection_legacy.c
 src/transport/tcp_server_legacy.c
 src/transport/tcp_server_mst_legacy.c
@@ -478,7 +480,6 @@ src/util/gnunet-config.c
 src/util/gnunet-config-diff.c
 src/util/gnunet-ecc.c
 src/util/gnunet-helper-w32-console.c
-src/util/gnunet-qr.c
 src/util/gnunet-resolver.c
 src/util/gnunet-scrypt.c
 src/util/gnunet-service-resolver.c

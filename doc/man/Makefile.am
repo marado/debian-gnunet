@@ -5,23 +5,7 @@ do_subst = $(SED) -e 's,[@]SYSCONFDIR[@],$(sysconfdir),g'
 gnunet.conf.5: gnunet.conf.5.in Makefile
 	$(do_subst) < $(srcdir)/gnunet.conf.5.in > gnunet.conf.5
 
-if TEXI2MDOC_GENERATION
-gnunet-c-tutorial.7: Makefile gnunet-tutorial.7
-	@echo generated texi2mdoc output || true
-
-gnunet-tutorial.7: Makefile
-	$(SH) $(srcdir)/texi2mdoc-generation.sh || true
-
-endif
-
-CLEANFILES = gnunet.conf.5 *.html
-
-if TEXI2MDOC_GENERATION
-CLEANFILES += gnunet-documentation.7 gnunet-c-tutorial.7
-endif
-
-html:
-	$(SH) $(srcdir)/produce_html.sh
+CLEANFILES = gnunet.conf.5
 
 man_MANS = \
   gnunet.conf.5 \
@@ -42,7 +26,6 @@ man_MANS = \
   gnunet-fs.1 \
   gnunet-gns.1 \
   gnunet-gns-proxy.1 \
-  gnunet-gns-proxy-setup-ca.1 \
   gnunet-identity.1 \
   gnunet-cadet.1 \
   gnunet-namecache.1 \
@@ -51,7 +34,6 @@ man_MANS = \
   gnunet-nat.1 \
   gnunet-nat-auto.1 \
   gnunet-nat-server.1 \
-  gnunet-nse.1 \
   gnunet-peerinfo.1 \
   gnunet-publish.1 \
   gnunet-qr.1 \
@@ -71,15 +53,10 @@ man_MANS = \
   gnunet-vpn.1 \
   gnunet-zoneimport.1
 
-if TEXI2MDOC_GENERATION
-man_MANS += gnunet-c-tutorial.7 gnunet-documentation.7
-endif
-
 EXTRA_DIST = ${man_MANS} \
- gnunet.conf.5.in \
- texi2mdoc-generation.sh \
- README
+ gnunet.conf.5.in
 
 if TEXI2MDOC_GENERATION
-EXTRA_DIST += gnunet-documentation.7 gnunet-c-tutorial.7
+EXTRA_DIST += gnunet-documentation.7 \
+	      gnunet-c-tutorial.7
 endif

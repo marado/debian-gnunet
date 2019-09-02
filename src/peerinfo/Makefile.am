@@ -5,8 +5,6 @@ pkgcfgdir= $(pkgdatadir)/config.d/
 
 libexecdir= $(pkglibdir)/libexec/
 
-plugindir = $(libdir)/gnunet
-
 pkgcfg_DATA = \
   peerinfo.conf
 
@@ -19,28 +17,7 @@ if USE_COVERAGE
   XLIB = -lgcov
 endif
 
-if HAVE_MHD
-if HAVE_JSON
-REST_PLUGIN = libgnunet_plugin_rest_peerinfo.la
-endif
-endif
-
 lib_LTLIBRARIES = libgnunetpeerinfo.la
-
-plugin_LTLIBRARIES = $(REST_PLUGIN)
-
-libgnunet_plugin_rest_peerinfo_la_SOURCES = \
-  plugin_rest_peerinfo.c
-libgnunet_plugin_rest_peerinfo_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  libgnunetpeerinfo.la \
-  $(top_builddir)/src/rest/libgnunetrest.la \
-  $(top_builddir)/src/json/libgnunetjson.la \
-  $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
-libgnunet_plugin_rest_peerinfo_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
-
 
 libgnunetpeerinfo_la_SOURCES = \
   peerinfo_api.c peerinfo.h \
