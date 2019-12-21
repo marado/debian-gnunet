@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-daemon-latency-logger.c
@@ -33,7 +33,7 @@
 /**
  * Logging shorthand
  */
-#define LOG(type,...)                           \
+#define LOG(type, ...)                           \
   GNUNET_log (type, __VA_ARGS__)
 
 /**
@@ -49,12 +49,13 @@
  */
 #define LOG_SQLITE(db, msg, level, cmd)                                 \
   do {                                                                  \
-    GNUNET_log_from (level, "sqlite", _("`%s' failed at %s:%d with error: %s\n"), \
-                     cmd, __FILE__,__LINE__, sqlite3_errmsg(db));  \
+    GNUNET_log_from (level, "sqlite", _ ( \
+                       "`%s' failed at %s:%d with error: %s\n"), \
+                     cmd, __FILE__, __LINE__, sqlite3_errmsg (db));  \
     if (msg != NULL)                                                    \
-      GNUNET_asprintf(msg, _("`%s' failed at %s:%u with error: %s"), cmd, \
-                      __FILE__, __LINE__, sqlite3_errmsg(db));     \
-  } while(0)
+      GNUNET_asprintf (msg, _ ("`%s' failed at %s:%u with error: %s"), cmd, \
+                       __FILE__, __LINE__, sqlite3_errmsg (db));     \
+  } while (0)
 
 
 /**
@@ -72,7 +73,6 @@ struct Entry
    * FIXME: type!
    */
   unsigned int latency;
-
 };
 
 
@@ -143,11 +143,13 @@ do_shutdown (void *cls)
   if (NULL != map)
   {
     GNUNET_assert (GNUNET_SYSERR !=
-                   GNUNET_CONTAINER_multipeermap_iterate (map, free_iterator, NULL));
+                   GNUNET_CONTAINER_multipeermap_iterate (map, free_iterator,
+                                                          NULL));
     GNUNET_CONTAINER_multipeermap_destroy (map);
     map = NULL;
   }
 }
+
 
 /**
  * Signature of a function that is called with QoS information about an address.
@@ -171,15 +173,15 @@ addr_info_cb (void *cls,
               const struct GNUNET_ATS_Properties *prop)
 {
   static const char *query_insert =
-      "INSERT INTO ats_info("
-      " id,"
-      " val,"
-      " timestamp"
-      ") VALUES ("
-      " ?1,"
-      " ?2,"
-      " datetime('now')"
-      ");";
+    "INSERT INTO ats_info("
+    " id,"
+    " val,"
+    " timestamp"
+    ") VALUES ("
+    " ?1,"
+    " ?2,"
+    " datetime('now')"
+    ");";
   struct Entry *entry;
   int latency; /* FIXME: type!? */
 
@@ -211,13 +213,13 @@ addr_info_cb (void *cls,
       goto err_shutdown;
     }
   }
-  if ( (SQLITE_OK != sqlite3_bind_text (stmt_insert, 1,
-                                        GNUNET_i2s (&address->peer), -1,
-                                        SQLITE_STATIC)) ||
-        (SQLITE_OK != sqlite3_bind_int (stmt_insert, 2, latency)) )
+  if ((SQLITE_OK != sqlite3_bind_text (stmt_insert, 1,
+                                       GNUNET_i2s (&address->peer), -1,
+                                       SQLITE_STATIC)) ||
+      (SQLITE_OK != sqlite3_bind_int (stmt_insert, 2, latency)))
   {
-     LOG_SQLITE (db, NULL, GNUNET_ERROR_TYPE_ERROR, "sqlite3_bind_text");
-     goto err_shutdown;
+    LOG_SQLITE (db, NULL, GNUNET_ERROR_TYPE_ERROR, "sqlite3_bind_text");
+    goto err_shutdown;
   }
   if (SQLITE_DONE != sqlite3_step (stmt_insert))
   {
@@ -240,8 +242,8 @@ addr_info_cb (void *cls,
   entry->latency = latency;
   return;
 
- err_shutdown:
-      GNUNET_SCHEDULER_shutdown ();
+err_shutdown:
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -258,11 +260,11 @@ run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   const char *query_create =
-      "CREATE TABLE ats_info ("
-      "id TEXT,"
-      "val INTEGER,"
-      "timestamp NUMERIC"
-      ");";
+    "CREATE TABLE ats_info ("
+    "id TEXT,"
+    "val INTEGER,"
+    "timestamp NUMERIC"
+    ");";
   char *dbfile;
 
   if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_filename (c, "LATENCY-LOGGER",
@@ -300,7 +302,7 @@ run (void *cls, char *const *args, const char *cfgfile,
  * Execution entry point
  */
 int
-main (int argc, char * const *argv)
+main (int argc, char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
@@ -310,10 +312,11 @@ main (int argc, char * const *argv)
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
   ret =
-      (GNUNET_OK ==
-       GNUNET_PROGRAM_run (argc, argv, "gnunet-daemon-latency-logger",
-                           _("Daemon to log latency values of connections to neighbours"),
-                           options, &run, NULL)) ? 0 : 1;
-  GNUNET_free ((void*) argv);
+    (GNUNET_OK ==
+     GNUNET_PROGRAM_run (argc, argv, "gnunet-daemon-latency-logger",
+                         _ (
+                           "Daemon to log latency values of connections to neighbours"),
+                         options, &run, NULL)) ? 0 : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }

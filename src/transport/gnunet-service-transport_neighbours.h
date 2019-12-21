@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/gnunet-service-transport_neighbours.h
@@ -105,7 +105,8 @@ GST_neighbours_send (const struct GNUNET_PeerIdentity *target,
  * @return how long to wait before reading more from this sender
  */
 struct GNUNET_TIME_Relative
-GST_neighbours_calculate_receive_delay (const struct GNUNET_PeerIdentity *sender,
+GST_neighbours_calculate_receive_delay (const struct
+                                        GNUNET_PeerIdentity *sender,
                                         ssize_t size,
                                         int *do_forward);
 
@@ -228,8 +229,10 @@ GST_neighbours_notify_data_sent (const struct GNUNET_HELLO_Address *address,
 void
 GST_neighbours_switch_to_address (const struct GNUNET_HELLO_Address *address,
                                   struct GNUNET_ATS_Session *session,
-                                  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
-                                  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out);
+                                  struct GNUNET_BANDWIDTH_Value32NBO
+                                  bandwidth_in,
+                                  struct GNUNET_BANDWIDTH_Value32NBO
+                                  bandwidth_out);
 
 
 /**
@@ -255,8 +258,10 @@ GST_neighbours_handle_session_syn (const struct GNUNET_MessageHeader *message,
  * @return #GNUNET_OK if the message was fine, #GNUNET_SYSERR on serious error
  */
 int
-GST_neighbours_handle_session_syn_ack (const struct GNUNET_MessageHeader *message,
-                                       const struct GNUNET_HELLO_Address *address,
+GST_neighbours_handle_session_syn_ack (const struct
+                                       GNUNET_MessageHeader *message,
+                                       const struct
+                                       GNUNET_HELLO_Address *address,
                                        struct GNUNET_ATS_Session *session);
 
 
@@ -272,8 +277,8 @@ GST_neighbours_handle_session_syn_ack (const struct GNUNET_MessageHeader *messag
  */
 int
 GST_neighbours_handle_session_ack (const struct GNUNET_MessageHeader *message,
-				   const struct GNUNET_HELLO_Address *address,
-				   struct GNUNET_ATS_Session *session);
+                                   const struct GNUNET_HELLO_Address *address,
+                                   struct GNUNET_ATS_Session *session);
 
 
 /**
@@ -306,8 +311,10 @@ GST_neighbours_handle_quota_message (const struct GNUNET_PeerIdentity *peer,
  * @param msg the disconnect message
  */
 void
-GST_neighbours_handle_disconnect_message (const struct GNUNET_PeerIdentity *peer,
-                                          const struct GNUNET_MessageHeader *msg);
+GST_neighbours_handle_disconnect_message (const struct
+                                          GNUNET_PeerIdentity *peer,
+                                          const struct
+                                          GNUNET_MessageHeader *msg);
 
 
 #endif

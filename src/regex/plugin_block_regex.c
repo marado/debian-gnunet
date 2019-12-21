@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file regex/plugin_block_regex.c
@@ -70,7 +70,8 @@ block_plugin_regex_create_group (void *cls,
   guard = va_arg (va, const char *);
   if (0 == strcmp (guard,
                    "seen-set-size"))
-    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned int),
+    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned
+                                                                   int),
                                                            BLOOMFILTER_K);
   else if (0 == strcmp (guard,
                         "filter-size"))
@@ -126,16 +127,16 @@ evaluate_block_regex (void *cls,
   if (NULL == reply_block)
   {
     if (0 != xquery_size)
-      {
-        const char *s;
+    {
+      const char *s;
 
-        s = (const char *) xquery;
-        if ('\0' != s[xquery_size - 1]) /* must be valid 0-terminated string */
-          {
-            GNUNET_break_op (0);
-            return GNUNET_BLOCK_EVALUATION_REQUEST_INVALID;
-          }
+      s = (const char *) xquery;
+      if ('\0' != s[xquery_size - 1])     /* must be valid 0-terminated string */
+      {
+        GNUNET_break_op (0);
+        return GNUNET_BLOCK_EVALUATION_REQUEST_INVALID;
       }
+    }
     return GNUNET_BLOCK_EVALUATION_REQUEST_VALID;
   }
   if (0 != xquery_size)
@@ -143,7 +144,7 @@ evaluate_block_regex (void *cls,
     const char *s;
 
     s = (const char *) xquery;
-    if ('\0' != s[xquery_size - 1]) /* must be valid 0-terminated string */
+    if ('\0' != s[xquery_size - 1])   /* must be valid 0-terminated string */
     {
       GNUNET_break_op (0);
       return GNUNET_BLOCK_EVALUATION_REQUEST_INVALID;
@@ -158,18 +159,20 @@ evaluate_block_regex (void *cls,
     return GNUNET_BLOCK_EVALUATION_REQUEST_INVALID;
   }
   switch (REGEX_BLOCK_check (reply_block,
-			     reply_block_size,
-			     query,
-			     xquery))
+                             reply_block_size,
+                             query,
+                             xquery))
   {
-    case GNUNET_SYSERR:
-      GNUNET_break_op(0);
-      return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
-    case GNUNET_NO:
-      /* xquery missmatch, can happen */
-      return GNUNET_BLOCK_EVALUATION_RESULT_IRRELEVANT;
-    default:
-      break;
+  case GNUNET_SYSERR:
+    GNUNET_break_op (0);
+    return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
+
+  case GNUNET_NO:
+    /* xquery missmatch, can happen */
+    return GNUNET_BLOCK_EVALUATION_RESULT_IRRELEVANT;
+
+  default:
+    break;
   }
   GNUNET_CRYPTO_hash (reply_block,
                       reply_block_size,
@@ -221,21 +224,23 @@ evaluate_block_regex_accept (void *cls,
   }
   if (NULL == reply_block)
     return GNUNET_BLOCK_EVALUATION_REQUEST_VALID;
-  if (sizeof (struct RegexAcceptBlock) != reply_block_size)
+  if (sizeof(struct RegexAcceptBlock) != reply_block_size)
   {
-    GNUNET_break_op(0);
+    GNUNET_break_op (0);
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
   }
   rba = reply_block;
   if (ntohl (rba->purpose.size) !=
-      sizeof (struct GNUNET_CRYPTO_EccSignaturePurpose) +
-      sizeof (struct GNUNET_TIME_AbsoluteNBO) +
-      sizeof (struct GNUNET_HashCode))
+      sizeof(struct GNUNET_CRYPTO_EccSignaturePurpose)
+      + sizeof(struct GNUNET_TIME_AbsoluteNBO)
+      + sizeof(struct GNUNET_HashCode))
   {
-    GNUNET_break_op(0);
+    GNUNET_break_op (0);
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
   }
-  if (0 == GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_ntoh (rba->expiration_time)).rel_value_us)
+  if (0 == GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_ntoh (
+                                                 rba->expiration_time)).
+      rel_value_us)
   {
     /* technically invalid, but can happen without an error, so
        we're nice by reporting it as a 'duplicate' */
@@ -243,11 +248,11 @@ evaluate_block_regex_accept (void *cls,
   }
   if (GNUNET_OK !=
       GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_PURPOSE_REGEX_ACCEPT,
-				&rba->purpose,
-				&rba->signature,
-				&rba->peer.public_key))
+                                  &rba->purpose,
+                                  &rba->signature,
+                                  &rba->peer.public_key))
   {
-    GNUNET_break_op(0);
+    GNUNET_break_op (0);
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
   }
   GNUNET_CRYPTO_hash (reply_block,
@@ -296,27 +301,28 @@ block_plugin_regex_evaluate (void *cls,
 
   switch (type)
   {
-    case GNUNET_BLOCK_TYPE_REGEX:
-      result = evaluate_block_regex (cls,
-                                     type,
-                                     bg,
-                                     eo,
-                                     query,
-                                     xquery, xquery_size,
-                                     reply_block, reply_block_size);
-      break;
-    case GNUNET_BLOCK_TYPE_REGEX_ACCEPT:
-      result = evaluate_block_regex_accept (cls,
-                                            type,
-                                            bg,
-                                            eo,
-                                            query,
-                                            xquery, xquery_size,
-                                            reply_block, reply_block_size);
-      break;
+  case GNUNET_BLOCK_TYPE_REGEX:
+    result = evaluate_block_regex (cls,
+                                   type,
+                                   bg,
+                                   eo,
+                                   query,
+                                   xquery, xquery_size,
+                                   reply_block, reply_block_size);
+    break;
 
-    default:
-      result = GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED;
+  case GNUNET_BLOCK_TYPE_REGEX_ACCEPT:
+    result = evaluate_block_regex_accept (cls,
+                                          type,
+                                          bg,
+                                          eo,
+                                          query,
+                                          xquery, xquery_size,
+                                          reply_block, reply_block_size);
+    break;
+
+  default:
+    result = GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED;
   }
   return result;
 }
@@ -342,26 +348,28 @@ block_plugin_regex_get_key (void *cls,
 {
   switch (type)
   {
-    case GNUNET_BLOCK_TYPE_REGEX:
-      if (GNUNET_OK !=
-	  REGEX_BLOCK_get_key (block, block_size,
-			       key))
-      {
-	GNUNET_break_op (0);
-	return GNUNET_NO;
-      }
-      return GNUNET_OK;
-    case GNUNET_BLOCK_TYPE_REGEX_ACCEPT:
-      if (sizeof (struct RegexAcceptBlock) != block_size)
-      {
-	GNUNET_break_op (0);
-	return GNUNET_NO;
-      }
-      *key = ((struct RegexAcceptBlock *) block)->key;
-      return GNUNET_OK;
-    default:
-      GNUNET_break (0);
-      return GNUNET_SYSERR;
+  case GNUNET_BLOCK_TYPE_REGEX:
+    if (GNUNET_OK !=
+        REGEX_BLOCK_get_key (block, block_size,
+                             key))
+    {
+      GNUNET_break_op (0);
+      return GNUNET_NO;
+    }
+    return GNUNET_OK;
+
+  case GNUNET_BLOCK_TYPE_REGEX_ACCEPT:
+    if (sizeof(struct RegexAcceptBlock) != block_size)
+    {
+      GNUNET_break_op (0);
+      return GNUNET_NO;
+    }
+    *key = ((struct RegexAcceptBlock *) block)->key;
+    return GNUNET_OK;
+
+  default:
+    GNUNET_break (0);
+    return GNUNET_SYSERR;
   }
 }
 
@@ -372,8 +380,7 @@ block_plugin_regex_get_key (void *cls,
 void *
 libgnunet_plugin_block_regex_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_REGEX,
     GNUNET_BLOCK_TYPE_REGEX_ACCEPT,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
@@ -400,5 +407,6 @@ libgnunet_plugin_block_regex_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_regex.c */

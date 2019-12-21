@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet-service-dht_routing.h
@@ -76,7 +76,7 @@ GDS_ROUTING_add (const struct GNUNET_PeerIdentity *sender,
                  enum GNUNET_BLOCK_Type type,
                  struct GNUNET_BLOCK_Group *bg,
                  enum GNUNET_DHT_RouteOption options,
-                 const struct GNUNET_HashCode * key,
+                 const struct GNUNET_HashCode *key,
                  const void *xquery,
                  size_t xquery_size);
 

@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2004, 2009 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2004, 2009 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -64,7 +64,7 @@ static void
 end_badly (void *cls)
 {
   timeout_task = NULL;
-  GNUNET_break(0);
+  GNUNET_break (0);
   if (NULL != pnc_wo_fo)
   {
     GNUNET_PEERINFO_notify_cancel (pnc_wo_fo);
@@ -105,8 +105,9 @@ done (void *cls)
   if ((GNUNET_YES == res_cb_w_fo) && (GNUNET_NO == res_cb_wo_fo))
     global_ret = 0;
   else
-    GNUNET_break(0);
+    GNUNET_break (0);
 }
+
 
 static ssize_t
 address_generator (void *cls, size_t max, void *buf)
@@ -122,7 +123,8 @@ address_generator (void *cls, size_t max, void *buf)
   address.transport_name = "peerinfotest";
   address.address_length = *agc;
   ret = GNUNET_HELLO_add_address (&address,
-      GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_HOURS), buf, max);
+                                  GNUNET_TIME_relative_to_absolute (
+                                    GNUNET_TIME_UNIT_HOURS), buf, max);
   (*agc)--;
   return ret;
 }
@@ -130,36 +132,37 @@ address_generator (void *cls, size_t max, void *buf)
 
 static void
 process_w_fo (void *cls,
-	      const struct GNUNET_PeerIdentity *peer,
-	      const struct GNUNET_HELLO_Message *hello,
-	      const char *err_msg)
+              const struct GNUNET_PeerIdentity *peer,
+              const struct GNUNET_HELLO_Message *hello,
+              const char *err_msg)
 {
   if (err_msg != NULL)
   {
-    GNUNET_log(GNUNET_ERROR_TYPE_ERROR,
-        _("Error in communication with PEERINFO service\n"));
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                _ ("Error in communication with PEERINFO service\n"));
     GNUNET_SCHEDULER_add_now (&done, NULL);
     return;
   }
 
   if (NULL != peer)
   {
-    GNUNET_log(GNUNET_ERROR_TYPE_INFO,
-        "Received callback for peer `%s' %s HELLO\n", GNUNET_i2s (peer),
-        (NULL != hello) ? "with" : "without");
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Received callback for peer `%s' %s HELLO\n", GNUNET_i2s (peer),
+                (NULL != hello) ? "with" : "without");
 
     if (NULL == hello)
       return;
 
     if (GNUNET_NO == GNUNET_HELLO_is_friend_only (hello))
     {
-      GNUNET_break(0);
+      GNUNET_break (0);
       return;
     }
 
-    GNUNET_log(GNUNET_ERROR_TYPE_INFO, "Received %s HELLO for peer `%s'\n",
-        (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)) ? "friend only" : "public",
-        GNUNET_i2s (peer));
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Received %s HELLO for peer `%s'\n",
+                (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)) ?
+                "friend only" : "public",
+                GNUNET_i2s (peer));
     if (0 == GNUNET_memcmp (&pid, peer))
     {
       res_cb_w_fo = GNUNET_YES;
@@ -169,39 +172,41 @@ process_w_fo (void *cls,
   }
 }
 
+
 static void
 process_wo_fo (void *cls, const struct GNUNET_PeerIdentity *peer,
-    const struct GNUNET_HELLO_Message *hello, const char *err_msg)
+               const struct GNUNET_HELLO_Message *hello, const char *err_msg)
 {
   if (err_msg != NULL)
   {
-    GNUNET_log(GNUNET_ERROR_TYPE_ERROR,
-        _("Error in communication with PEERINFO service\n"));
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                _ ("Error in communication with PEERINFO service\n"));
     GNUNET_SCHEDULER_add_now (&done, NULL);
     return;
   }
 
   if (NULL != peer)
   {
-    GNUNET_log(GNUNET_ERROR_TYPE_INFO,
-        "Received callback for peer `%s' %s HELLO\n", GNUNET_i2s (peer),
-        (NULL != hello) ? "with" : "without");
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Received callback for peer `%s' %s HELLO\n", GNUNET_i2s (peer),
+                (NULL != hello) ? "with" : "without");
 
     if (NULL == hello)
       return;
 
     if (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello))
     {
-      GNUNET_break(0);
+      GNUNET_break (0);
       return;
     }
 
-    GNUNET_log(GNUNET_ERROR_TYPE_INFO, "Received %s HELLO for peer `%s'\n",
-        (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)) ? "friend only" : "public",
-        GNUNET_i2s (peer));
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Received %s HELLO for peer `%s'\n",
+                (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)) ?
+                "friend only" : "public",
+                GNUNET_i2s (peer));
     if (0 == GNUNET_memcmp (&pid, peer))
     {
-      GNUNET_break(0);
+      GNUNET_break (0);
       res_cb_wo_fo = GNUNET_YES;
     }
   }
@@ -219,7 +224,7 @@ add_peer ()
   h2 = GNUNET_HELLO_create (&pid.public_key, &address_generator, &agc,
                             GNUNET_YES);
   GNUNET_PEERINFO_add_peer (h, h2, NULL, NULL);
-  GNUNET_free(h2);
+  GNUNET_free (h2);
 }
 
 
@@ -233,7 +238,7 @@ run (void *cls,
   pnc_w_fo = GNUNET_PEERINFO_notify (mycfg, GNUNET_YES, &process_w_fo, NULL);
   pnc_wo_fo = GNUNET_PEERINFO_notify (mycfg, GNUNET_NO, &process_wo_fo, NULL);
   h = GNUNET_PEERINFO_connect (cfg);
-  GNUNET_assert(NULL != h);
+  GNUNET_assert (NULL != h);
   add_peer ();
 }
 
@@ -245,11 +250,12 @@ main (int argc, char *argv[])
   res_cb_wo_fo = GNUNET_NO;
   global_ret = 3;
   if (0 != GNUNET_TESTING_service_run ("test-peerinfo-api-friend-only",
-				       "peerinfo",
-				       "test_peerinfo_api_data.conf",
-				       &run, NULL))
+                                       "peerinfo",
+                                       "test_peerinfo_api_data.conf",
+                                       &run, NULL))
     return 1;
   return global_ret;
 }
+
 
 /* end of test_peerinfo_api_notify_friend_only.c */

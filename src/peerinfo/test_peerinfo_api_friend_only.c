@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file peerinfo/test_peerinfo_api_friend_only.c
@@ -58,12 +58,13 @@ address_generator (void *cls,
     return GNUNET_SYSERR; /* Done */
   memset (&address.peer,
           0,
-          sizeof (struct GNUNET_PeerIdentity));
+          sizeof(struct GNUNET_PeerIdentity));
   address.address = "Address";
   address.transport_name = "peerinfotest";
   address.address_length = *agc;
   ret = GNUNET_HELLO_add_address (&address,
-                                  GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_HOURS),
+                                  GNUNET_TIME_relative_to_absolute (
+                                    GNUNET_TIME_UNIT_HOURS),
                                   buf,
                                   max);
   (*agc)--;
@@ -78,7 +79,7 @@ add_peer ()
   size_t agc;
 
   agc = 2;
-  memset (&pid, 32, sizeof (pid));
+  memset (&pid, 32, sizeof(pid));
   h2 = GNUNET_HELLO_create (&pid.public_key,
                             &address_generator,
                             &agc,
@@ -88,7 +89,6 @@ add_peer ()
                             NULL,
                             NULL);
   GNUNET_free (h2);
-
 }
 
 
@@ -126,8 +126,8 @@ process (void *cls,
     return;
   }
 
-  if ( (NULL != hello) &&
-       (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)) )
+  if ((NULL != hello) &&
+      (GNUNET_YES == GNUNET_HELLO_is_friend_only (hello)))
   {
     fprintf (stderr,
              "Received friend-only HELLO\n");
@@ -161,11 +161,12 @@ main (int argc,
 {
   global_ret = 3;
   if (0 != GNUNET_TESTING_service_run ("test-peerinfo-api-friend-only",
-				       "peerinfo",
-				       "test_peerinfo_api_data.conf",
-				       &run, NULL))
+                                       "peerinfo",
+                                       "test_peerinfo_api_data.conf",
+                                       &run, NULL))
     return 1;
   return global_ret;
 }
+
 
 /* end of test_peerinfo_api_friend_only */

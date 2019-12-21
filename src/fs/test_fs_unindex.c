@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_fs_unindex.c
@@ -78,59 +78,65 @@ abort_unindex_task (void *cls)
 static void *
 progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
 {
-
   switch (event->status)
   {
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Publish is progressing (%llu/%llu at level %u off %llu)...\n",
-		(unsigned long long) event->value.publish.completed,
-		(unsigned long long) event->value.publish.size,
-		event->value.publish.specifics.progress.depth,
-		(unsigned long long) event->value.publish.specifics.
-		progress.offset);
+                "Publish is progressing (%llu/%llu at level %u off %llu)...\n",
+                (unsigned long long) event->value.publish.completed,
+                (unsigned long long) event->value.publish.size,
+                event->value.publish.specifics.progress.depth,
+                (unsigned long long) event->value.publish.specifics.
+                progress.offset);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
     printf ("Publishing complete, %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000000LL /
-                                  (1 +
-                                   GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value_us) / 1024));
+            (unsigned long long) (FILESIZE * 1000000LL
+                                  / (1
+                                     + GNUNET_TIME_absolute_get_duration
+                                       (start).rel_value_us) / 1024));
     start = GNUNET_TIME_absolute_get ();
     unindex = GNUNET_FS_unindex_start (fs, fn, "unindex");
     GNUNET_assert (unindex != NULL);
     break;
+
   case GNUNET_FS_STATUS_UNINDEX_COMPLETED:
     printf ("Unindex complete,  %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000000LL /
-                                  (1 +
-                                   GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value_us) / 1024));
+            (unsigned long long) (FILESIZE * 1000000LL
+                                  / (1
+                                     + GNUNET_TIME_absolute_get_duration
+                                       (start).rel_value_us) / 1024));
     GNUNET_SCHEDULER_add_now (&abort_unindex_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_UNINDEX_PROGRESS:
     GNUNET_assert (unindex == event->value.unindex.uc);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Unindex is progressing (%llu/%llu at level %u off %llu)...\n",
-		(unsigned long long) event->value.unindex.completed,
-		(unsigned long long) event->value.unindex.size,
-		event->value.unindex.specifics.progress.depth,
-		(unsigned long long) event->value.unindex.specifics.
-		progress.offset);
+                "Unindex is progressing (%llu/%llu at level %u off %llu)...\n",
+                (unsigned long long) event->value.unindex.completed,
+                (unsigned long long) event->value.unindex.size,
+                event->value.unindex.specifics.progress.depth,
+                (unsigned long long) event->value.unindex.specifics.
+                progress.offset);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_ERROR:
-    FPRINTF (stderr, "Error publishing file: %s\n",
+    fprintf (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     GNUNET_break (0);
     GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_UNINDEX_ERROR:
-    FPRINTF (stderr, "Error unindexing file: %s\n",
+    fprintf (stderr, "Error unindexing file: %s\n",
              event->value.unindex.specifics.error.message);
     GNUNET_SCHEDULER_add_now (&abort_unindex_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_START:
     GNUNET_assert (0 == strcmp ("publish-context", event->value.publish.cctx));
     GNUNET_assert (NULL == event->value.publish.pctx);
@@ -138,6 +144,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_assert (0 == event->value.publish.completed);
     GNUNET_assert (1 == event->value.publish.anonymity);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_STOPPED:
     GNUNET_assert (publish == event->value.publish.pc);
     GNUNET_assert (FILESIZE == event->value.publish.size);
@@ -145,6 +152,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_FS_stop (fs);
     fs = NULL;
     break;
+
   case GNUNET_FS_STATUS_UNINDEX_START:
     GNUNET_assert (unindex == NULL);
     GNUNET_assert (0 == strcmp ("unindex", event->value.unindex.cctx));
@@ -152,10 +160,12 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_assert (FILESIZE == event->value.unindex.size);
     GNUNET_assert (0 == event->value.unindex.completed);
     break;
+
   case GNUNET_FS_STATUS_UNINDEX_STOPPED:
     GNUNET_assert (unindex == event->value.unindex.uc);
     GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
+
   default:
     printf ("Unexpected event: %d\n", event->status);
     break;
@@ -189,8 +199,8 @@ run (void *cls,
     buf[i] = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 256);
   GNUNET_assert (FILESIZE ==
                  GNUNET_DISK_fn_write (fn, buf, FILESIZE,
-                                       GNUNET_DISK_PERM_USER_READ |
-                                       GNUNET_DISK_PERM_USER_WRITE));
+                                       GNUNET_DISK_PERM_USER_READ
+                                       | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_free (buf);
   meta = GNUNET_CONTAINER_meta_data_create ();
   kuri = GNUNET_FS_uri_ksk_create_from_args (2, keywords);
@@ -206,8 +216,8 @@ run (void *cls,
   GNUNET_assert (NULL != fi);
   start = GNUNET_TIME_absolute_get ();
   publish =
-      GNUNET_FS_publish_start (fs, fi, NULL, NULL, NULL,
-                               GNUNET_FS_PUBLISH_OPTION_NONE);
+    GNUNET_FS_publish_start (fs, fi, NULL, NULL, NULL,
+                             GNUNET_FS_PUBLISH_OPTION_NONE);
   GNUNET_assert (publish != NULL);
 }
 
@@ -216,10 +226,11 @@ int
 main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-fs-unindex",
-				    "test_fs_unindex_data.conf",
-				    &run, NULL))
+                                    "test_fs_unindex_data.conf",
+                                    &run, NULL))
     return 1;
   return 0;
 }
+
 
 /* end of test_fs_unindex.c */

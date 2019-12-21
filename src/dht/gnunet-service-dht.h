@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet-service-dht.h
@@ -57,7 +57,6 @@ extern struct GNUNET_STATISTICS_Handle *GDS_stats;
  * Our HELLO
  */
 extern struct GNUNET_MessageHeader *GDS_my_hello;
-
 
 
 /**
@@ -130,7 +129,7 @@ GDS_CLIENTS_process_get_resp (enum GNUNET_BLOCK_Type type,
                               const struct GNUNET_PeerIdentity *put_path,
                               unsigned int put_path_length,
                               struct GNUNET_TIME_Absolute exp,
-                              const struct GNUNET_HashCode * key,
+                              const struct GNUNET_HashCode *key,
                               const void *data,
                               size_t size);
 

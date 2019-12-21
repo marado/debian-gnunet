@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_quota_compliance.c
  * @brief base test case for transport implementations
@@ -71,7 +71,7 @@ report ()
     delta = 1;
   datarate = (total_bytes_recv * 1000 * 1000) / delta;
 
-  FPRINTF (stderr,
+  fprintf (stderr,
            "Throughput was %llu b/s\n",
            datarate);
   ccc->global_ret = GNUNET_OK;
@@ -120,7 +120,7 @@ get_size (unsigned int iter)
   size_t ret;
 
   ret = (iter * iter * iter) % 60000;
-  ret += sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage);
+  ret += sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage);
   return ret;
 }
 
@@ -131,7 +131,6 @@ notify_receive (void *cls,
                 const struct GNUNET_PeerIdentity *sender,
                 const struct GNUNET_TRANSPORT_TESTING_TestMessage *hdr)
 {
-
   if (GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE != ntohs (hdr->header.type))
     return;
   total_bytes_recv += ntohs (hdr->header.size);
@@ -160,11 +159,11 @@ measure (void *cls)
   counter++;
   if ((DURATION.rel_value_us / 1000 / 1000LL) < counter)
   {
-    FPRINTF (stderr, "%s",  ".\n");
+    fprintf (stderr, "%s", ".\n");
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  FPRINTF (stderr, "%s",  ".");
+  fprintf (stderr, "%s", ".");
   measure_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
                                                &measure,
                                                NULL);
@@ -255,6 +254,7 @@ check (void *cls,
     .shutdown_task = &custom_shutdown,
     .timeout = TIMEOUT
   };
+
   ccc = &my_ccc;
 
   if (NULL != strstr (test_name_,
@@ -274,7 +274,7 @@ check (void *cls,
                 quota_in[1],
                 quota_out[1]);
   }
-  for (unsigned int i=0;i<2;i++)
+  for (unsigned int i = 0; i < 2; i++)
   {
     gen_cfgs[i] = generate_config (cfg_files[i],
                                    quota_in[i],
@@ -305,10 +305,10 @@ main (int argc,
     GNUNET_break (0);
     return 1;
   }
-  for (unsigned int i=0;i<2;i++)
+  for (unsigned int i = 0; i < 2; i++)
   {
-    if ( (NULL != gen_cfgs[i]) &&
-         (GNUNET_YES == GNUNET_DISK_file_test (gen_cfgs[i])) )
+    if ((NULL != gen_cfgs[i]) &&
+        (GNUNET_YES == GNUNET_DISK_file_test (gen_cfgs[i])))
     {
       GNUNET_DISK_directory_remove (gen_cfgs[i]);
       GNUNET_free (gen_cfgs[i]);

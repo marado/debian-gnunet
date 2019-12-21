@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Bartlomiej Polot
@@ -31,7 +31,7 @@
 extern "C"
 {
 #if 0
-  /* keep Emacsens' auto-indent happy */
+/* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -74,8 +74,8 @@ struct REGEX_BLOCK_Edge
  */
 int
 REGEX_BLOCK_check_proof (const char *proof,
-			 size_t proof_len,
-			 const struct GNUNET_HashCode *key);
+                         size_t proof_len,
+                         const struct GNUNET_HashCode *key);
 
 
 /**
@@ -92,9 +92,9 @@ REGEX_BLOCK_check_proof (const char *proof,
  */
 int
 REGEX_BLOCK_check (const struct RegexBlock *block,
-		   size_t size,
-		   const struct GNUNET_HashCode *query,
-		   const char *xquery);
+                   size_t size,
+                   const struct GNUNET_HashCode *query,
+                   const char *xquery);
 
 
 /* FIXME: might want to use 'struct REGEX_BLOCK_Edge' here instead of 3 arguments! */
@@ -147,8 +147,8 @@ REGEX_BLOCK_iterate (const struct RegexBlock *block,
  */
 int
 REGEX_BLOCK_get_key (const struct RegexBlock *block,
-		     size_t block_len,
-		     struct GNUNET_HashCode *key);
+                     size_t block_len,
+                     struct GNUNET_HashCode *key);
 
 
 /**
@@ -160,7 +160,7 @@ REGEX_BLOCK_get_key (const struct RegexBlock *block,
  */
 int
 GNUNET_BLOCK_is_accepting (const struct RegexBlock *block,
-			   size_t block_len);
+                           size_t block_len);
 
 
 /**
@@ -175,10 +175,10 @@ GNUNET_BLOCK_is_accepting (const struct RegexBlock *block,
  */
 struct RegexBlock *
 REGEX_BLOCK_create (const char *proof,
-		    unsigned int num_edges,
-		    const struct REGEX_BLOCK_Edge *edges,
-		    int accepting,
-		    size_t *rsize);
+                    unsigned int num_edges,
+                    const struct REGEX_BLOCK_Edge *edges,
+                    int accepting,
+                    size_t *rsize);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

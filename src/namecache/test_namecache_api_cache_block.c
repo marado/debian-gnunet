@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namecache/test_namecache_api.c
  * @brief testcase for namecache_api.c: store a record and perform a lookup
@@ -37,7 +37,7 @@
 
 static struct GNUNET_NAMECACHE_Handle *nsh;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -108,7 +108,7 @@ rd_decrypt_cb (void *cls,
   GNUNET_assert (0 == memcmp (&rd_cmp_data, rd[0].data, TEST_RECORD_DATALEN));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Block was decrypted successfully \n");
+              "Block was decrypted successfully \n");
 
   GNUNET_SCHEDULER_add_now (&end, NULL);
 }
@@ -119,6 +119,7 @@ name_lookup_proc (void *cls,
                   const struct GNUNET_GNSRECORD_Block *block)
 {
   const char *name = cls;
+
   nsqe = NULL;
 
   GNUNET_assert (NULL != cls);
@@ -132,18 +133,21 @@ name_lookup_proc (void *cls,
   if (NULL == block)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namecache returned no block\n"));
+                _ ("Namecache returned no block\n"));
     if (NULL != endbadly_task)
       GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task =  GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Namecache returned block, decrypting \n");
-  GNUNET_assert (GNUNET_OK == GNUNET_GNSRECORD_block_decrypt(block,
-  		&pubkey, name, &rd_decrypt_cb, (void *) name));
+              "Namecache returned block, decrypting \n");
+  GNUNET_assert (GNUNET_OK == GNUNET_GNSRECORD_block_decrypt (block,
+                                                              &pubkey, name,
+                                                              &rd_decrypt_cb,
+                                                              (void *) name));
 }
+
 
 static void
 cache_cont (void *cls, int32_t success, const char *emsg)
@@ -154,15 +158,15 @@ cache_cont (void *cls, int32_t success, const char *emsg)
   GNUNET_assert (NULL != cls);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store cached record for `%s': %s\n",
-	      name,
-	      (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
+              "Name store cached record for `%s': %s\n",
+              name,
+              (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
 
   /* Create derived hash */
   GNUNET_GNSRECORD_query_from_public_key (&pubkey, name, &derived_hash);
 
   nsqe = GNUNET_NAMECACHE_lookup_block (nsh, &derived_hash,
-					 &name_lookup_proc, (void *) name);
+                                        &name_lookup_proc, (void *) name);
 }
 
 
@@ -174,22 +178,23 @@ run (void *cls,
   struct GNUNET_GNSRECORD_Data rd;
   struct GNUNET_GNSRECORD_Block *block;
   char *hostkey_file;
-  const char * name = "dummy.dummy.gnunet";
+  const char *name = "dummy.dummy.gnunet";
 
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly, NULL);
+                                                &endbadly, NULL);
   GNUNET_asprintf (&hostkey_file,
-		   "zonefiles%s%s",
-		   DIR_SEPARATOR_STR,
-		   "N0UJMP015AFUNR2BTNM3FKPBLG38913BL8IDMCO2H0A1LIB81960.zkey");
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Using zonekey file `%s' \n", hostkey_file);
+                   "zonefiles%s%s",
+                   DIR_SEPARATOR_STR,
+                   "N0UJMP015AFUNR2BTNM3FKPBLG38913BL8IDMCO2H0A1LIB81960.zkey");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Using zonekey file `%s' \n",
+              hostkey_file);
   privkey = GNUNET_CRYPTO_ecdsa_key_create_from_file (hostkey_file);
   GNUNET_free (hostkey_file);
   GNUNET_assert (privkey != NULL);
   GNUNET_CRYPTO_ecdsa_key_get_public (privkey, &pubkey);
 
 
-  rd.expiration_time = GNUNET_TIME_absolute_get().abs_value_us + 10000000000;
+  rd.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us + 10000000000;
   rd.record_type = TEST_RECORD_TYPE;
   rd.data_size = TEST_RECORD_DATALEN;
   rd.data = GNUNET_malloc (TEST_RECORD_DATALEN);
@@ -211,7 +216,7 @@ run (void *cls,
   if (NULL == nsh)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-              _("Namecache cannot connect to namecache\n"));
+                _ ("Namecache cannot connect to namecache\n"));
     GNUNET_SCHEDULER_shutdown ();
     GNUNET_free (block);
     return;
@@ -224,10 +229,10 @@ run (void *cls,
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namecache cannot cache no block\n"));
+                _ ("Namecache cannot cache no block\n"));
   }
   GNUNET_free (block);
-  GNUNET_free ((void *)rd.data);
+  GNUNET_free ((void *) rd.data);
 }
 
 
@@ -238,10 +243,10 @@ main (int argc, char *argv[])
   res = 1;
   if (0 !=
       GNUNET_TESTING_service_run ("test-namecache-api",
-				  "namecache",
-				  "test_namecache_api.conf",
-				  &run,
-				  NULL))
+                                  "namecache",
+                                  "test_namecache_api.conf",
+                                  &run,
+                                  NULL))
     return 1;
   return res;
 }

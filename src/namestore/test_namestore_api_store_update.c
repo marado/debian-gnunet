@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_store_update.c
  * @brief testcase for namestore_api.c: store a record, update it and perform a lookup
@@ -46,7 +46,7 @@ static struct GNUNET_NAMESTORE_Handle *nsh;
 
 static struct GNUNET_NAMECACHE_Handle *nch;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -147,7 +147,8 @@ rd_decrypt_cb (void *cls,
                 "Block was decrypted successfully, updating record \n");
 
     rd_new.flags = GNUNET_GNSRECORD_RF_NONE;
-    rd_new.expiration_time = GNUNET_TIME_absolute_get().abs_value_us + 1000000000;
+    rd_new.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us
+                             + 1000000000;
     rd_new.record_type = TEST_RECORD_TYPE;
     rd_new.data_size = TEST_RECORD_DATALEN2;
     rd_new.data = GNUNET_malloc (TEST_RECORD_DATALEN2);
@@ -193,14 +194,14 @@ name_lookup_proc (void *cls,
   if (NULL == block)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Namecache returned no block for `%s'\n"),
+                _ ("Namecache returned no block for `%s'\n"),
                 name);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Namecache returned block, decrypting \n");
+              "Namecache returned block, decrypting \n");
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_GNSRECORD_block_decrypt (block,
                                                  &pubkey,
@@ -221,15 +222,15 @@ put_cont (void *cls,
   nsqe = NULL;
   GNUNET_assert (NULL != cls);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store added record for `%s': %s\n",
-	      name,
-	      (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
+              "Name store added record for `%s': %s\n",
+              name,
+              (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
   /* Create derived hash */
   GNUNET_GNSRECORD_query_from_private_key (privkey,
                                            name,
                                            &derived_hash);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Looking in namecache for `%s'\n",
+              "Looking in namecache for `%s'\n",
               GNUNET_h2s (&derived_hash));
   ncqe = GNUNET_NAMECACHE_lookup_block (nch,
                                         &derived_hash,
@@ -248,14 +249,14 @@ run (void *cls,
   GNUNET_SCHEDULER_add_shutdown (&end,
                                  NULL);
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
+                                                &endbadly,
                                                 NULL);
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
   GNUNET_CRYPTO_ecdsa_key_get_public (privkey,
                                       &pubkey);
   rd.flags = GNUNET_GNSRECORD_RF_NONE;
-  rd.expiration_time = GNUNET_TIME_absolute_get().abs_value_us + 1000000000;
+  rd.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us + 1000000000;
   rd.record_type = TEST_RECORD_TYPE;
   rd.data_size = TEST_RECORD_DATALEN;
   rd.data = GNUNET_malloc (TEST_RECORD_DATALEN);
@@ -277,9 +278,9 @@ run (void *cls,
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore cannot store no block\n"));
+                _ ("Namestore cannot store no block\n"));
   }
-  GNUNET_free ((void *)rd.data);
+  GNUNET_free ((void *) rd.data);
 }
 
 

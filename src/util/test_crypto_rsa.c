@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2014,2015 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2014,2015 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_crypto_rsa.c
@@ -89,9 +89,30 @@ main (int argc,
   GNUNET_assert (NULL != pub_copy);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CRYPTO_rsa_verify (&hash, sig, pub_copy));
+  {
+    char *buf;
+    size_t buf_size;
+    struct GNUNET_CRYPTO_RsaPublicKey *pub2;
+    struct GNUNET_CRYPTO_RsaSignature *sig2;
+
+    buf_size = GNUNET_CRYPTO_rsa_public_key_encode (pub,
+                                                    &buf);
+    pub2 = GNUNET_CRYPTO_rsa_public_key_decode (buf,
+                                                buf_size);
+    GNUNET_free (buf);
+    buf_size = GNUNET_CRYPTO_rsa_signature_encode (sig,
+                                                   &buf);
+    sig2 = GNUNET_CRYPTO_rsa_signature_decode (buf,
+                                               buf_size);
+    GNUNET_free (buf);
+    GNUNET_assert (GNUNET_OK ==
+                   GNUNET_CRYPTO_rsa_verify (&hash, sig2, pub2));
+    GNUNET_CRYPTO_rsa_public_key_free (pub2);
+    GNUNET_CRYPTO_rsa_signature_free (sig2);
+  }
   /* corrupt our hash and see if the signature is still valid */
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_WEAK, &hash,
-                              sizeof (struct GNUNET_HashCode));
+                              sizeof(struct GNUNET_HashCode));
   GNUNET_assert (GNUNET_OK != GNUNET_CRYPTO_rsa_verify (&hash,
                                                         sig,
                                                         pub));
@@ -100,20 +121,20 @@ main (int argc,
 
   /* test blind signing */
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_WEAK,
-			      &bsec,
-			      sizeof (bsec));
+                              &bsec,
+                              sizeof(bsec));
   GNUNET_CRYPTO_rsa_blind (&hash,
-			   &bsec,
-			   pub,
-			   &blind_buf,&bsize);
+                           &bsec,
+                           pub,
+                           &blind_buf, &bsize);
   GNUNET_assert (0 != bsize);
   bsig = GNUNET_CRYPTO_rsa_sign_blinded (priv,
                                          blind_buf,
                                          bsize);
   GNUNET_free (blind_buf);
   sig = GNUNET_CRYPTO_rsa_unblind (bsig,
-				   &bsec,
-				   pub);
+                                   &bsec,
+                                   pub);
   GNUNET_CRYPTO_rsa_signature_free (bsig);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CRYPTO_rsa_verify (&hash, sig, pub));

@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 
 /**
@@ -34,7 +34,7 @@
 /**
  * Logging shorthand
  */
-#define LOG(type,...)                           \
+#define LOG(type, ...)                           \
   GNUNET_log (type, __VA_ARGS__)
 
 /**
@@ -111,7 +111,7 @@ do_shutdown (void *cls)
  * @return GNUNET_OK if the connection is allowed, GNUNET_SYSERR if not
  */
 static int
-check_access (void *cls, const struct GNUNET_PeerIdentity * pid)
+check_access (void *cls, const struct GNUNET_PeerIdentity *pid)
 {
   int contains;
 
@@ -134,21 +134,21 @@ check_access (void *cls, const struct GNUNET_PeerIdentity * pid)
  */
 static void
 setup_ac (const char *fname,
-	  const struct GNUNET_CONFIGURATION_Handle *cfg)
+          const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   uint64_t fsize;
   unsigned int npeers;
   unsigned int cnt;
 
   GNUNET_assert (GNUNET_OK !=
-		 GNUNET_DISK_file_size (fname, &fsize, GNUNET_NO,
-					GNUNET_YES));
-  if (0 != (fsize % sizeof (struct GNUNET_PeerIdentity)))
+                 GNUNET_DISK_file_size (fname, &fsize, GNUNET_NO,
+                                        GNUNET_YES));
+  if (0 != (fsize % sizeof(struct GNUNET_PeerIdentity)))
   {
     GNUNET_break (0);
     return;
   }
-  npeers = fsize / sizeof (struct GNUNET_PeerIdentity);
+  npeers = fsize / sizeof(struct GNUNET_PeerIdentity);
   if (0 != npeers)
   {
     map = GNUNET_CONTAINER_multipeermap_create (npeers, GNUNET_YES);
@@ -158,9 +158,9 @@ setup_ac (const char *fname,
   for (cnt = 0; cnt < npeers; cnt++)
   {
     if (GNUNET_SYSERR ==
-	GNUNET_CONTAINER_multipeermap_put (map, &ilist[cnt],
-					   &ilist[cnt],
-					   GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
+        GNUNET_CONTAINER_multipeermap_put (map, &ilist[cnt],
+                                           &ilist[cnt],
+                                           GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
     {
       cleanup_map ();
       GNUNET_free (ilist);
@@ -191,9 +191,9 @@ run (void *cls,
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (c,
-					       "PATHS",
-					       "GNUNET_HOME",
-					       &shome))
+                                               "PATHS",
+                                               "GNUNET_HOME",
+                                               &shome))
   {
     GNUNET_break (0);
     return;
@@ -240,14 +240,15 @@ main (int argc, char *const *argv)
 
   if (GNUNET_OK !=
       GNUNET_STRINGS_get_utf8_args (argc, argv,
-				    &argc, &argv))
+                                    &argc, &argv))
     return 2;
   ret =
-      (GNUNET_OK ==
-       GNUNET_PROGRAM_run (argc, argv,
-			   "gnunet-daemon-testbed-blacklist",
-                           _("Daemon to restrict incoming transport layer connections during testbed deployments"),
-                           options, &run, NULL)) ? 0 : 1;
-  GNUNET_free ((void*) argv);
+    (GNUNET_OK ==
+     GNUNET_PROGRAM_run (argc, argv,
+                         "gnunet-daemon-testbed-blacklist",
+                         _ (
+                           "Daemon to restrict incoming transport layer connections during testbed deployments"),
+                         options, &run, NULL)) ? 0 : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -31,7 +31,7 @@
 /**
  * Generic logging shortcut
  */
-#define LOG(kind,...)				\
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 /**
@@ -115,7 +115,7 @@ struct GNUNET_TESTBED_Operation *op9;
 /**
  * The delay task identifier
  */
-struct GNUNET_SCHEDULER_Task * step_task;
+struct GNUNET_SCHEDULER_Task *step_task;
 
 
 /**
@@ -123,19 +123,19 @@ struct GNUNET_SCHEDULER_Task * step_task;
  */
 enum Test
 {
-    /**
-     * Initial stage
-     */
+  /**
+   * Initial stage
+   */
   TEST_INIT,
 
-    /**
-     * op1 has been started
-     */
+  /**
+   * op1 has been started
+   */
   TEST_OP1_STARTED,
 
-    /**
-     * op1 has been released
-     */
+  /**
+   * op1 has been released
+   */
   TEST_OP1_RELEASED,
 
   /**
@@ -144,14 +144,14 @@ enum Test
    */
   TEST_PAUSE,
 
-    /**
-     * op2 has started
-     */
+  /**
+   * op2 has started
+   */
   TEST_OP2_STARTED,
 
-    /**
-     * op2 released
-     */
+  /**
+   * op2 released
+   */
   TEST_OP2_RELEASED,
 
   /**
@@ -282,19 +282,24 @@ step (void *cls)
     GNUNET_TESTBED_operation_queue_insert2_ (q2, op4, 2);
     GNUNET_TESTBED_operation_begin_wait_ (op4);
     break;
+
   case TEST_OP1_RELEASED:
     result = TEST_PAUSE;
     GNUNET_TESTBED_operation_queue_reset_max_active_ (q1, 2);
     break;
+
   case TEST_OP2_STARTED:
     GNUNET_TESTBED_operation_release_ (op2);
     break;
+
   case TEST_OP3_STARTED:
     GNUNET_TESTBED_operation_release_ (op3);
     break;
+
   case TEST_OP4_STARTED:
     GNUNET_TESTBED_operation_release_ (op4);
     break;
+
   case TEST_OP6_RELEASED:
     op8 = GNUNET_TESTBED_operation_create_ (&op8, &start_cb, &release_cb);
     GNUNET_TESTBED_operation_queue_insert2_ (q1, op8, 2);
@@ -302,11 +307,13 @@ step (void *cls)
     result = TEST_OP8_WAITING;
     GNUNET_TESTBED_operation_begin_wait_ (op8);
     break;
+
   case TEST_OP8_STARTED:
     GNUNET_TESTBED_operation_inactivate_ (op8);
     result = TEST_OP8_INACTIVE_1;
     step_task = GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_OP8_INACTIVE_1:
     GNUNET_TESTBED_operation_activate_ (op8);
     result = TEST_OP8_ACTIVE;
@@ -316,14 +323,17 @@ step (void *cls)
     GNUNET_TESTBED_operation_begin_wait_ (op9);
     step_task = GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_OP8_ACTIVE:
     GNUNET_TESTBED_operation_inactivate_ (op8);
     /* op8 should be released by now due to above call */
     GNUNET_assert (TEST_OP8_RELEASED == result);
     break;
+
   case TEST_OP9_STARTED:
     GNUNET_TESTBED_operation_release_ (op9);
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -345,52 +355,59 @@ start_cb (void *cls)
     result = TEST_OP1_STARTED;
     GNUNET_assert (NULL == step_task);
     step_task =
-        GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
+      GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_PAUSE:
     GNUNET_assert (&op2 == cls);
     result = TEST_OP2_STARTED;
     GNUNET_assert (NULL == step_task);
     step_task =
-        GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
+      GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_OP2_RELEASED:
     GNUNET_assert (&op3 == cls);
     result = TEST_OP3_STARTED;
     GNUNET_assert (NULL == step_task);
     step_task =
-        GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
+      GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_OP3_RELEASED:
     GNUNET_assert (&op4 == cls);
     result = TEST_OP4_STARTED;
     GNUNET_assert (NULL == step_task);
     step_task =
-        GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
+      GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
-  case TEST_OP4_RELEASED:
-  {
-    static int nops;
 
-    nops++;
-    if (nops == 3)
+  case TEST_OP4_RELEASED:
     {
-      result = TEST_OP5_6_7_STARTED;
-      GNUNET_TESTBED_operation_release_ (op5);
-      op5 = NULL;
+      static int nops;
+
+      nops++;
+      if (nops == 3)
+      {
+        result = TEST_OP5_6_7_STARTED;
+        GNUNET_TESTBED_operation_release_ (op5);
+        op5 = NULL;
+      }
     }
-  }
     break;
+
   case TEST_OP7_RELEASED:
     GNUNET_assert (&op8 == cls);
     result = TEST_OP8_STARTED;
     step_task = GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_OP8_RELEASED:
     GNUNET_assert (&op9 == cls);
     result = TEST_OP9_STARTED;
     step_task = GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -416,18 +433,21 @@ release_cb (void *cls)
     result = TEST_OP1_RELEASED;
     op1 = NULL;
     step_task =
-        GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
+      GNUNET_SCHEDULER_add_delayed (STEP_DELAY, &step, NULL);
     break;
+
   case TEST_OP2_STARTED:
     GNUNET_assert (&op2 == cls);
     result = TEST_OP2_RELEASED;
     GNUNET_assert (NULL == step_task);
     break;
+
   case TEST_OP3_STARTED:
     GNUNET_assert (&op3 == cls);
     result = TEST_OP3_RELEASED;
     GNUNET_assert (NULL == step_task);
     break;
+
   case TEST_OP4_STARTED:
     GNUNET_assert (&op4 == cls);
     result = TEST_OP4_RELEASED;
@@ -443,26 +463,31 @@ release_cb (void *cls)
     GNUNET_TESTBED_operation_queue_insert2_ (q2, op7, 1);
     GNUNET_TESTBED_operation_begin_wait_ (op7);
     break;
+
   case TEST_OP5_6_7_STARTED:
     result = TEST_OP5_RELEASED;
     op5 = NULL;
     GNUNET_TESTBED_operation_release_ (op6);
     break;
+
   case TEST_OP5_RELEASED:
     op6 = NULL;
     result = TEST_OP6_RELEASED;
     GNUNET_TESTBED_operation_inactivate_ (op7);
     step_task = GNUNET_SCHEDULER_add_now (&step, NULL);
     break;
+
   case TEST_OP8_WAITING:
     GNUNET_assert (&op7 == cls);
     op7 = NULL;
     result = TEST_OP7_RELEASED;
     break;
+
   case TEST_OP8_ACTIVE:
     result = TEST_OP8_RELEASED;
     op8 = NULL;
     break;
+
   case TEST_OP9_STARTED:
     GNUNET_assert (&op9 == cls);
     result = TEST_OP9_RELEASED;
@@ -471,6 +496,7 @@ release_cb (void *cls)
     q1 = NULL;
     q2 = NULL;
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -514,14 +540,14 @@ main (int argc, char **argv)
 {
   int ret;
   char *const argv2[] =
-      { "test_testbed_api_operations", "-c", "test_testbed_api.conf", NULL };
+  { "test_testbed_api_operations", "-c", "test_testbed_api.conf", NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] =
-      { GNUNET_GETOPT_OPTION_END };
+  { GNUNET_GETOPT_OPTION_END };
 
   ret =
-      GNUNET_PROGRAM_run ((sizeof (argv2) / sizeof (char *)) - 1, argv2,
-                          "test_testbed_api_operations", "nohelp", options,
-                          &run, NULL);
+    GNUNET_PROGRAM_run ((sizeof(argv2) / sizeof(char *)) - 1, argv2,
+                        "test_testbed_api_operations", "nohelp", options,
+                        &run, NULL);
   if ((GNUNET_OK != ret) || (TEST_OP9_RELEASED != result))
     return 1;
   op1 = NULL;
@@ -537,5 +563,6 @@ main (int argc, char **argv)
   q2 = NULL;
   return 0;
 }
+
 
 /* end of test_testbed_api_operations.c */

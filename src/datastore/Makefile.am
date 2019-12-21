@@ -10,10 +10,6 @@ libexecdir= $(pkglibdir)/libexec/
 pkgcfg_DATA = \
   datastore.conf
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIBS = -lgcov
@@ -30,7 +26,7 @@ libgnunetdatastore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunetdatastore_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 1:0:0
 
 bin_PROGRAMS = \

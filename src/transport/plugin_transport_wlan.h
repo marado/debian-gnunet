@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet
- Copyright (C) 2010, 2011 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2010, 2011 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -32,12 +32,7 @@
 /**
  * Number fo bytes in a mac address.
  */
-#ifdef MINGW
-  #define MAC_ADDR_SIZE 8
-  typedef uint8_t u_int8_t;
-#else
-  #define MAC_ADDR_SIZE 6
-#endif
+#define MAC_ADDR_SIZE 6
 
 /**
  * Value for "Management" in the 'frame_control' field of the
@@ -90,7 +85,6 @@ struct GNUNET_TRANSPORT_WLAN_HelperControlMessage
  */
 struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame
 {
-
   /**
    * Address 1: destination address in ad-hoc mode or AP, BSSID if station,
    */
@@ -105,7 +99,6 @@ struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame
    * Packet type ID.
    */
   uint16_t type;
-
 };
 
 
@@ -157,9 +150,7 @@ struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame
   u_int8_t llc[4];
 
   /* payload */
-
 } GNUNET_PACKED;
-
 
 
 /**
@@ -168,7 +159,6 @@ struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame
  */
 struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage
 {
-
   /**
    * Type is 'GNUNET_MESSAGE_TYPE_WLAN_DATA_TO_HELPER'.
    */
@@ -209,7 +199,6 @@ struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage
  */
 struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage
 {
-
   /**
    * Type is 'GNUNET_MESSAGE_TYPE_WLAN_DATA_FROM_HELPER'.
    */
@@ -273,7 +262,7 @@ GNUNET_NETWORK_STRUCT_END
  * GNUnet bssid
  */
 static const struct GNUNET_TRANSPORT_WLAN_MacAddress mac_bssid_gnunet = {
-  {0x13, 0x22, 0x33, 0x44, 0x55, 0x66}
+  { 0x13, 0x22, 0x33, 0x44, 0x55, 0x66 }
 };
 
 
@@ -281,7 +270,7 @@ static const struct GNUNET_TRANSPORT_WLAN_MacAddress mac_bssid_gnunet = {
  * Broadcast MAC
  */
 static const struct GNUNET_TRANSPORT_WLAN_MacAddress bc_all_mac = {
-  {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}
+  { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }
 };
 
 #endif

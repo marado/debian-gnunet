@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file conversation/gnunet-helper-audio-record-gst.c
  * @brief program to record audio data from the microphone (GStreamer version)
@@ -108,6 +108,7 @@ quit ()
     gst_element_set_state (pipeline, GST_STATE_NULL);
 }
 
+
 static gboolean
 bus_call (GstBus *bus, GstMessage *msg, gpointer data)
 {
@@ -133,6 +134,7 @@ bus_call (GstBus *bus, GstMessage *msg, gpointer data)
       quit ();
       break;
     }
+
   default:
     break;
   }
@@ -140,12 +142,16 @@ bus_call (GstBus *bus, GstMessage *msg, gpointer data)
   return TRUE;
 }
 
+
 void
-source_child_added (GstChildProxy *child_proxy, GObject *object, gchar *name, gpointer user_data)
+source_child_added (GstChildProxy *child_proxy, GObject *object, gchar *name,
+                    gpointer user_data)
 {
   if (GST_IS_AUDIO_BASE_SRC (object))
-    g_object_set (object, "buffer-time", (gint64) BUFFER_TIME, "latency-time", (gint64) LATENCY_TIME, NULL);
+    g_object_set (object, "buffer-time", (gint64) BUFFER_TIME, "latency-time",
+                  (gint64) LATENCY_TIME, NULL);
 }
+
 
 static void
 signalhandler (int s)
@@ -174,69 +180,67 @@ main (int argc, char **argv)
   dump_pure_ogg = getenv ("GNUNET_RECORD_PURE_OGG") ? 1 : 0;
 #endif
 
-#ifdef WINDOWS
-  setmode (1, _O_BINARY);
-#endif
-
   /* Initialisation */
   gst_init (&argc, &argv);
 
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_log_setup ("gnunet-helper-audio-record",
-				   "WARNING",
-				   NULL));
+                 GNUNET_log_setup ("gnunet-helper-audio-record",
+                                   "WARNING",
+                                   NULL));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Audio source starts\n");
+              "Audio source starts\n");
 
   audio_message.header.type = htons (GNUNET_MESSAGE_TYPE_CONVERSATION_AUDIO);
 
   /* Create gstreamer elements */
   pipeline = gst_pipeline_new ("audio-recorder");
-  source   = gst_element_factory_make ("autoaudiosrc",  "audiosource");
-  filter   = gst_element_factory_make ("capsfilter",    "filter");
-  conv     = gst_element_factory_make ("audioconvert",  "converter");
-  resampler= gst_element_factory_make ("audioresample", "resampler");
-  encoder  = gst_element_factory_make ("opusenc",       "opus-encoder");
-  oggmux   = gst_element_factory_make ("oggmux",        "ogg-muxer");
-  sink     = gst_element_factory_make ("appsink",       "audio-output");
+  source = gst_element_factory_make ("autoaudiosrc", "audiosource");
+  filter = gst_element_factory_make ("capsfilter", "filter");
+  conv = gst_element_factory_make ("audioconvert", "converter");
+  resampler = gst_element_factory_make ("audioresample", "resampler");
+  encoder = gst_element_factory_make ("opusenc", "opus-encoder");
+  oggmux = gst_element_factory_make ("oggmux", "ogg-muxer");
+  sink = gst_element_factory_make ("appsink", "audio-output");
 
-  if (!pipeline || !filter || !source || !conv || !resampler || !encoder || !oggmux || !sink)
+  if (! pipeline || ! filter || ! source || ! conv || ! resampler ||
+      ! encoder || ! oggmux || ! sink)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-        "One element could not be created. Exiting.\n");
+                "One element could not be created. Exiting.\n");
     return -1;
   }
 
-  g_signal_connect (source, "child-added", G_CALLBACK (source_child_added), NULL);
+  g_signal_connect (source, "child-added", G_CALLBACK (source_child_added),
+                    NULL);
 
   /* Set up the pipeline */
 
   caps = gst_caps_new_simple ("audio/x-raw",
-    "format", G_TYPE_STRING, "S16LE",
+                              "format", G_TYPE_STRING, "S16LE",
 /*    "rate", G_TYPE_INT, SAMPLING_RATE,*/
-    "channels", G_TYPE_INT, OPUS_CHANNELS,
+                              "channels", G_TYPE_INT, OPUS_CHANNELS,
 /*    "layout", G_TYPE_STRING, "interleaved",*/
-     NULL);
+                              NULL);
   g_object_set (G_OBJECT (filter),
-      "caps", caps,
-      NULL);
+                "caps", caps,
+                NULL);
   gst_caps_unref (caps);
 
   g_object_set (G_OBJECT (encoder),
 /*      "bitrate", 64000, */
 /*      "bandwidth", OPUS_BANDWIDTH_FULLBAND, */
-      "inband-fec", INBAND_FEC_MODE,
-      "packet-loss-percentage", PACKET_LOSS_PERCENTAGE,
-      "max-payload-size", MAX_PAYLOAD_SIZE,
-      "audio", FALSE, /* VoIP, not audio */
-      "frame-size", OPUS_FRAME_SIZE,
-      NULL);
+                "inband-fec", INBAND_FEC_MODE,
+                "packet-loss-percentage", PACKET_LOSS_PERCENTAGE,
+                "max-payload-size", MAX_PAYLOAD_SIZE,
+                "audio", FALSE, /* VoIP, not audio */
+                "frame-size", OPUS_FRAME_SIZE,
+                NULL);
 
   g_object_set (G_OBJECT (oggmux),
-      "max-delay", OGG_MAX_DELAY,
-      "max-page-delay", OGG_MAX_PAGE_DELAY,
-      NULL);
+                "max-delay", OGG_MAX_DELAY,
+                "max-page-delay", OGG_MAX_PAGE_DELAY,
+                NULL);
 
   /* we add a message handler */
   bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -245,11 +249,13 @@ main (int argc, char **argv)
 
   /* we add all elements into the pipeline */
   /* audiosource | converter | resampler | opus-encoder | audio-output */
-  gst_bin_add_many (GST_BIN (pipeline), source, filter, conv, resampler, encoder,
-      oggmux, sink, NULL);
+  gst_bin_add_many (GST_BIN (pipeline), source, filter, conv, resampler,
+                    encoder,
+                    oggmux, sink, NULL);
 
   /* we link the elements together */
-  gst_element_link_many (source, filter, conv, resampler, encoder, oggmux, sink, NULL);
+  gst_element_link_many (source, filter, conv, resampler, encoder, oggmux, sink,
+                         NULL);
 
   /* Set the pipeline to "playing" state*/
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Now playing\n");
@@ -258,7 +264,7 @@ main (int argc, char **argv)
 
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Running...\n");
   /* Iterate */
-  while (!abort_send)
+  while (! abort_send)
   {
     GstSample *s;
     GstBuffer *b;
@@ -291,14 +297,15 @@ main (int argc, char **argv)
         }
       }
       else
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got sample with no info\n");
+        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got sample with no info\n");
       s_caps = gst_sample_get_caps (s);
       if (s_caps)
       {
         caps_str = gst_caps_to_string (s_caps);
         if (caps_str)
         {
-          GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got sample with caps %s\n", caps_str);
+          GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got sample with caps %s\n",
+                      caps_str);
           g_free (caps_str);
         }
       }
@@ -306,24 +313,25 @@ main (int argc, char **argv)
         GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Got sample with no caps\n");
     }
     b = gst_sample_get_buffer (s);
-    if (NULL == b || !gst_buffer_map (b, &m, GST_MAP_READ))
+    if ((NULL == b) || ! gst_buffer_map (b, &m, GST_MAP_READ))
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "got NULL buffer %p or failed to map the buffer\n", b);
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "got NULL buffer %p or failed to map the buffer\n", b);
       gst_sample_unref (s);
       continue;
     }
 
     len = m.size;
-    if (len > UINT16_MAX - sizeof (struct AudioMessage))
+    if (len > UINT16_MAX - sizeof(struct AudioMessage))
     {
       GNUNET_break (0);
-      len = UINT16_MAX - sizeof (struct AudioMessage);
+      len = UINT16_MAX - sizeof(struct AudioMessage);
     }
-    msg_size = sizeof (struct AudioMessage) + len;
+    msg_size = sizeof(struct AudioMessage) + len;
     audio_message.header.size = htons ((uint16_t) msg_size);
 
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-        "Sending %u bytes of audio data\n", (unsigned int) msg_size);
+                "Sending %u bytes of audio data\n", (unsigned int) msg_size);
     for (phase = 0; phase < 2; phase++)
     {
       size_t offset;
@@ -336,7 +344,7 @@ main (int argc, char **argv)
           continue;
 #endif
         ptr = (const char *) &audio_message;
-        to_send = sizeof (audio_message);
+        to_send = sizeof(audio_message);
       }
       else
       {
@@ -344,7 +352,8 @@ main (int argc, char **argv)
         to_send = len;
       }
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-          "Sending %u bytes on phase %d\n", (unsigned int) to_send, phase);
+                  "Sending %u bytes on phase %d\n", (unsigned int) to_send,
+                  phase);
       for (offset = 0; offset < to_send; offset += ret)
       {
         ret = write (1, &ptr[offset], to_send - offset);

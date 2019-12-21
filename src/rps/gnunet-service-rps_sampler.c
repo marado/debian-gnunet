@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/gnunet-service-rps_sampler.c
@@ -37,7 +37,7 @@
 
 #include "rps-test_util.h"
 
-#define LOG(kind, ...) GNUNET_log_from(kind,"rps-sampler",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "rps-sampler", __VA_ARGS__)
 
 
 // multiple 'clients'?
@@ -49,8 +49,8 @@
 // hist_size_init, hist_size_max
 
 /***********************************************************************
- * WARNING: This section needs to be reviewed regarding the use of
- * functions providing (pseudo)randomness!
+* WARNING: This section needs to be reviewed regarding the use of
+* functions providing (pseudo)randomness!
 ***********************************************************************/
 
 // TODO care about invalid input of the caller (size 0 or less...)
@@ -161,7 +161,7 @@ struct RPS_SamplerRequestHandle
 ///**
 // * Global sampler variable.
 // */
-//struct RPS_Sampler *sampler;
+// struct RPS_Sampler *sampler;
 
 
 /**
@@ -177,7 +177,7 @@ static size_t max_size;
 /**
  * The size the extended sampler elements currently have.
  */
-//static size_t extra_size;
+// static size_t extra_size;
 
 /**
  * Inedex to the sampler element that is the next to be returned
@@ -206,15 +206,16 @@ RPS_sampler_init (size_t init_size,
 
   sampler->max_round_interval = max_round_interval;
   sampler->get_peers = sampler_get_rand_peer;
-  //sampler->sampler_elements = GNUNET_new_array(init_size, struct GNUNET_PeerIdentity);
-  //GNUNET_array_grow (sampler->sampler_elements, sampler->sampler_size, min_size);
+  // sampler->sampler_elements = GNUNET_new_array(init_size, struct GNUNET_PeerIdentity);
+  // GNUNET_array_grow (sampler->sampler_elements, sampler->sampler_size, min_size);
   RPS_sampler_resize (sampler, init_size);
 
   client_get_index = 0;
 
-  //GNUNET_assert (init_size == sampler->sampler_size);
+  // GNUNET_assert (init_size == sampler->sampler_size);
   return sampler;
 }
+
 
 /**
  * Get one random peer out of the sampled peers.
@@ -239,11 +240,11 @@ sampler_get_rand_peer (void *cls)
    * at random from the interval of the gossip list
    */
   r_index = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_STRONG,
-      sampler->sampler_size);
+                                      sampler->sampler_size);
 
   if (EMPTY == sampler->sampler_elements[r_index]->is_empty)
   {
-    //LOG (GNUNET_ERROR_TYPE_DEBUG,
+    // LOG (GNUNET_ERROR_TYPE_DEBUG,
     //     "Not returning randomly selected, empty PeerID. - Rescheduling.\n");
 
     gpc->notify_ctx =
@@ -257,7 +258,8 @@ sampler_get_rand_peer (void *cls)
                                gpc->req_handle->gpc_tail,
                                gpc);
   *gpc->id = sampler->sampler_elements[r_index]->peer_id;
-  gpc->cont (gpc->cont_cls, gpc->id, 0, sampler->sampler_elements[r_index]->num_peers);
+  gpc->cont (gpc->cont_cls, gpc->id, 0,
+             sampler->sampler_elements[r_index]->num_peers);
 
   GNUNET_free (gpc);
 }

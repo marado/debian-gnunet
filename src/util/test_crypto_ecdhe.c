@@ -11,13 +11,13 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
 
-*/
+ */
 /**
  * @file util/test_crypto_ecdhe.c
  * @brief testcase for ECC ECDHE public key crypto
@@ -40,17 +40,18 @@ main (int argc, char *argv[])
 
   if (! gcry_check_version ("1.6.0"))
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              _
-             ("libgcrypt has not the expected version (version %s is required).\n"),
+             (
+               "libgcrypt has not the expected version (version %s is required).\n"),
              "1.6.0");
     return 0;
   }
   if (getenv ("GNUNET_GCRYPT_DEBUG"))
-    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1u , 0);
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1u, 0);
   GNUNET_log_setup ("test-crypto-ecdhe", "WARNING", NULL);
 
-  for (unsigned int i=0;i<100;i++)
+  for (unsigned int i = 0; i < 100; i++)
   {
     fprintf (stderr,
              ".");
@@ -61,11 +62,12 @@ main (int argc, char *argv[])
     GNUNET_CRYPTO_ecc_ecdh (priv1, &pub2, &ecdh1);
     GNUNET_CRYPTO_ecc_ecdh (priv2, &pub1, &ecdh2);
     GNUNET_assert (0 == memcmp (&ecdh1, &ecdh2,
-                                sizeof (struct GNUNET_HashCode)));
+                                sizeof(struct GNUNET_HashCode)));
     GNUNET_free (priv1);
     GNUNET_free (priv2);
   }
   return 0;
 }
+
 
 /* end of test_crypto_ecdhe.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/util/crypto_kdf.c
@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "gnunet_crypto_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-kdf", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-crypto-kdf", __VA_ARGS__)
 
 /**
  * @brief Derive key
@@ -62,9 +62,7 @@ GNUNET_CRYPTO_kdf_v (void *result,
    * hash function."
    *
    * http://eprint.iacr.org/2010/264
-   */
-
-  return GNUNET_CRYPTO_hkdf_v (result,
+   */return GNUNET_CRYPTO_hkdf_v (result,
                                out_len,
                                GCRY_MD_SHA512,
                                GCRY_MD_SHA256,
@@ -134,7 +132,7 @@ GNUNET_CRYPTO_kdf_mod_mpi (gcry_mpi_t *r,
   gcry_error_t rc;
   unsigned int nbits;
   size_t rsize;
-  unsigned int ctr;
+  uint16_t ctr;
 
   nbits = gcry_mpi_get_nbits (n);
   /* GNUNET_assert (nbits > 512); */
@@ -143,32 +141,35 @@ GNUNET_CRYPTO_kdf_mod_mpi (gcry_mpi_t *r,
   while (1)
   {
     /* Ain't clear if n is always divisible by 8 */
-    uint8_t buf[ (nbits-1)/8 + 1 ];
+    uint8_t buf[ (nbits - 1) / 8 + 1 ];
+
+    uint16_t ctr_nbo = htons (ctr);
 
     rc = GNUNET_CRYPTO_kdf (buf,
-                            sizeof (buf),
+                            sizeof(buf),
                             xts, xts_len,
                             skm, skm_len,
-                            ctx, strlen(ctx),
-                            &ctr, sizeof(ctr),
+                            ctx, strlen (ctx),
+                            &ctr_nbo, sizeof(ctr_nbo),
                             NULL, 0);
     GNUNET_assert (GNUNET_YES == rc);
 
     rc = gcry_mpi_scan (r,
                         GCRYMPI_FMT_USG,
                         (const unsigned char *) buf,
-                        sizeof (buf),
+                        sizeof(buf),
                         &rsize);
     GNUNET_assert (0 == rc);  /* Allocation erro? */
 
     gcry_mpi_clear_highbit (*r, nbits);
-    GNUNET_assert( 0 == gcry_mpi_test_bit (*r, nbits) );
+    GNUNET_assert (0 == gcry_mpi_test_bit (*r, nbits));
     ++ctr;
     /* We reject this FDH if either *r > n and retry with another ctr */
-    if (0 > gcry_mpi_cmp(*r, n))
+    if (0 > gcry_mpi_cmp (*r, n))
       break;
     gcry_mpi_release (*r);
   }
 }
+
 
 /* end of crypto_kdf.c */

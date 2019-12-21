@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -52,13 +52,13 @@ static void *dummy_cls = (void *) 0xDEAD0001;
 /**
  * Abort task identifier
  */
-static struct GNUNET_SCHEDULER_Task * abort_task;
+static struct GNUNET_SCHEDULER_Task *abort_task;
 
 /**
  * States in this test
  */
-enum {
-
+enum
+{
   /**
    * Test has just been initialized
    */
@@ -89,14 +89,14 @@ enum {
  * Fail testcase
  */
 #define FAIL_TEST(cond, ret) do {                               \
-    if (!(cond)) {                                              \
-      GNUNET_break(0);                                          \
+    if (! (cond)) {                                              \
+      GNUNET_break (0);                                          \
       if (NULL != abort_task)               \
         GNUNET_SCHEDULER_cancel (abort_task);                   \
       abort_task = GNUNET_SCHEDULER_add_now (&do_abort, NULL);  \
       ret;                                                      \
     }                                                           \
-  } while (0)
+} while (0)
 
 
 /**
@@ -114,7 +114,7 @@ do_abort (void *cls)
     GNUNET_TESTBED_operation_done (op);
     op = NULL;
   }
-  GNUNET_SCHEDULER_shutdown();
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -131,8 +131,8 @@ op_comp_cb (void *cls,
             struct GNUNET_TESTBED_Operation *op,
             const char *emsg)
 {
-  FAIL_TEST (cls == dummy_cls, return);
-  FAIL_TEST (NULL == emsg, return);
+  FAIL_TEST (cls == dummy_cls, return );
+  FAIL_TEST (NULL == emsg, return );
   GNUNET_TESTBED_operation_done (op);
   op = NULL;
   switch (state)
@@ -147,6 +147,7 @@ op_comp_cb (void *cls,
                                              0);
     GNUNET_assert (NULL != op);
     break;
+
   case STATE_SERVICE_DOWN:
     state = STATE_SERVICE_UP;
     GNUNET_SCHEDULER_cancel (abort_task);
@@ -154,8 +155,9 @@ op_comp_cb (void *cls,
     state = STATE_OK;
     GNUNET_SCHEDULER_shutdown ();
     break;
+
   default:
-    FAIL_TEST (0, return);
+    FAIL_TEST (0, return );
   }
 }
 
@@ -180,7 +182,7 @@ test_master (void *cls,
              unsigned int links_succeeded,
              unsigned int links_failed)
 {
-  FAIL_TEST (NUM_PEERS == num_peers, return);
+  FAIL_TEST (NUM_PEERS == num_peers, return );
   state = STATE_PEERS_STARTED;
   peers = peers_;
   op = GNUNET_TESTBED_peer_manage_service (dummy_cls,
@@ -189,9 +191,9 @@ test_master (void *cls,
                                            op_comp_cb,
                                            dummy_cls,
                                            1);
-  FAIL_TEST (NULL != op, return);
+  FAIL_TEST (NULL != op, return );
   abort_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
-                                             (GNUNET_TIME_UNIT_MINUTES, 1),
+                                               (GNUNET_TIME_UNIT_MINUTES, 1),
                                              &do_abort, NULL);
 }
 

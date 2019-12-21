@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file topology/friends.c
@@ -55,7 +55,7 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                                &fn))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "topology",
+                               "topology",
                                "FRIENDS");
     return GNUNET_SYSERR;
   }
@@ -68,24 +68,24 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
     GNUNET_free (fn);
     return GNUNET_SYSERR;
   }
-  if ( (GNUNET_OK !=
-        GNUNET_DISK_file_test (fn)) &&
-       (GNUNET_OK !=
-        GNUNET_DISK_fn_write (fn,
-                              NULL,
-                              0,
-                              GNUNET_DISK_PERM_USER_READ |
-                              GNUNET_DISK_PERM_USER_WRITE |
-                              GNUNET_DISK_OPEN_CREATE)) )
+  if ((GNUNET_OK !=
+       GNUNET_DISK_file_test (fn)) &&
+      (GNUNET_OK !=
+       GNUNET_DISK_fn_write (fn,
+                             NULL,
+                             0,
+                             GNUNET_DISK_PERM_USER_READ
+                             | GNUNET_DISK_PERM_USER_WRITE
+                             | GNUNET_DISK_OPEN_CREATE)))
     GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
                               "write",
                               fn);
-  if ( (GNUNET_OK !=
-        GNUNET_DISK_file_size (fn,
-                               &fsize,
-                               GNUNET_NO,
-                               GNUNET_YES)) ||
-       (0 == fsize) )
+  if ((GNUNET_OK !=
+       GNUNET_DISK_file_size (fn,
+                              &fsize,
+                              GNUNET_NO,
+                              GNUNET_YES)) ||
+      (0 == fsize))
   {
     GNUNET_free (fn);
     return GNUNET_OK;
@@ -100,8 +100,8 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
   ssize = GNUNET_DISK_fn_read (fn,
                                data,
                                fsize);
-  if ( (ssize < 0) ||
-       (fsize != (uint64_t) ssize) )
+  if ((ssize < 0) ||
+      (fsize != (uint64_t) ssize))
   {
     GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
                               "read",
@@ -114,8 +114,8 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
   pos = 0;
   while (pos < fsize)
   {
-    while ( (pos < fsize) &&
-            (! isspace ((unsigned char) data[pos])) )
+    while ((pos < fsize) &&
+           (! isspace ((unsigned char) data[pos])))
       pos++;
     if (GNUNET_OK !=
         GNUNET_CRYPTO_eddsa_public_key_from_string (&data[start],
@@ -123,10 +123,11 @@ GNUNET_FRIENDS_parse (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                                     &pid.public_key))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _("Syntax error in FRIENDS file at offset %llu, skipping bytes `%.*s'.\n"),
+                  _ (
+                    "Syntax error in FRIENDS file at offset %llu, skipping bytes `%.*s'.\n"),
                   (unsigned long long) pos,
-		  (int) (pos - start),
-		  &data[start]);
+                  (int) (pos - start),
+                  &data[start]);
       pos++;
       start = pos;
       continue;
@@ -170,14 +171,14 @@ GNUNET_FRIENDS_write_start (const struct GNUNET_CONFIGURATION_Handle *cfg)
       GNUNET_CONFIGURATION_get_value_filename (cfg, "TOPOLOGY", "FRIENDS", &fn))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "topology", "FRIENDS");
+                               "topology", "FRIENDS");
     return NULL;
   }
   if (GNUNET_OK !=
       GNUNET_DISK_directory_create_for_file (fn))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Directory for file `%s' does not seem to be writable.\n"),
+                _ ("Directory for file `%s' does not seem to be writable.\n"),
                 fn);
     GNUNET_free (fn);
     return NULL;
@@ -185,11 +186,11 @@ GNUNET_FRIENDS_write_start (const struct GNUNET_CONFIGURATION_Handle *cfg)
   if (GNUNET_OK == GNUNET_DISK_file_test (fn))
     GNUNET_DISK_file_backup (fn);
   w = GNUNET_new (struct GNUNET_FRIENDS_Writer);
-  w->fh = GNUNET_DISK_file_open  (fn,
-                                  GNUNET_DISK_OPEN_CREATE |
-                                  GNUNET_DISK_OPEN_WRITE |
-                                  GNUNET_DISK_OPEN_FAILIFEXISTS,
-                                  GNUNET_DISK_PERM_USER_READ);
+  w->fh = GNUNET_DISK_file_open (fn,
+                                 GNUNET_DISK_OPEN_CREATE
+                                 | GNUNET_DISK_OPEN_WRITE
+                                 | GNUNET_DISK_OPEN_FAILIFEXISTS,
+                                 GNUNET_DISK_PERM_USER_READ);
   GNUNET_free (fn);
   if (NULL == w->fh)
   {

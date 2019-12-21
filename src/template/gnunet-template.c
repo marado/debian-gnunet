@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file template/gnunet-template.c
@@ -63,7 +63,9 @@ main (int argc, char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
     /* FIMXE: add options here */
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
+
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
 
@@ -74,10 +76,11 @@ main (int argc, char *const *argv)
                                           options,
                                           &run,
                                           NULL))
-          ? ret
-          : 1;
+        ? ret
+        : 1;
   GNUNET_free ((void *) argv);
   return ret;
 }
+
 
 /* end of gnunet-template.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport-testing-main.c
  * @brief convenience main function for tests
@@ -59,7 +59,6 @@ struct GNUNET_TRANSPORT_TESTING_ConnectRequestList
    * Peer being connected.
    */
   struct GNUNET_TRANSPORT_TESTING_PeerContext *p2;
-
 };
 
 
@@ -96,7 +95,7 @@ do_shutdown (void *cls)
     GNUNET_TRANSPORT_TESTING_connect_peers_cancel (crl->cr);
     GNUNET_free (crl);
   }
-  for (unsigned int i=0;i<ccc->num_peers;i++)
+  for (unsigned int i = 0; i < ccc->num_peers; i++)
   {
     if (NULL != ccc->p[i])
     {
@@ -206,14 +205,16 @@ connect_cb (void *cls)
  * @return NULL if @a peer was not found
  */
 struct GNUNET_TRANSPORT_TESTING_PeerContext *
-GNUNET_TRANSPORT_TESTING_find_peer (struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext *ccc,
+GNUNET_TRANSPORT_TESTING_find_peer (struct
+                                    GNUNET_TRANSPORT_TESTING_ConnectCheckContext
+                                    *ccc,
                                     const struct GNUNET_PeerIdentity *peer)
 {
-  for (unsigned int i=0;i<ccc->num_peers;i++)
-    if ( (NULL != ccc->p[i]) &&
-         (0 == memcmp (peer,
-                       &ccc->p[i]->id,
-                       sizeof (*peer))) )
+  for (unsigned int i = 0; i < ccc->num_peers; i++)
+    if ((NULL != ccc->p[i]) &&
+        (0 == memcmp (peer,
+                      &ccc->p[i]->id,
+                      sizeof(*peer))))
       return ccc->p[i];
   return NULL;
 }
@@ -280,7 +281,7 @@ my_nd (void *cls,
  */
 static int
 check_test (void *cls,
-	    const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
+            const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
 {
   return GNUNET_OK;
 }
@@ -294,7 +295,7 @@ check_test (void *cls,
  */
 static void
 handle_test (void *cls,
-	     const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
+             const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
 {
   struct ConnectPairInfo *cpi = cls;
   struct GNUNET_TRANSPORT_TESTING_InternalPeerContext *ipi = cpi->ipi;
@@ -317,7 +318,7 @@ handle_test (void *cls,
  */
 static int
 check_test2 (void *cls,
-	     const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
+             const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
 {
   return GNUNET_OK;
 }
@@ -331,7 +332,7 @@ check_test2 (void *cls,
  */
 static void
 handle_test2 (void *cls,
-	      const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
+              const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
 {
   struct ConnectPairInfo *cpi = cls;
   struct GNUNET_TRANSPORT_TESTING_InternalPeerContext *ipi = cpi->ipi;
@@ -356,8 +357,9 @@ do_connect (void *cls)
   struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext *ccc = cls;
 
   ccc->connect_task = NULL;
-  for (unsigned int i=0;i<ccc->num_peers;i++)
-    for (unsigned int j=(ccc->bi_directional ? 0 : i+1);j<ccc->num_peers;j++)
+  for (unsigned int i = 0; i < ccc->num_peers; i++)
+    for (unsigned int j = (ccc->bi_directional ? 0 : i + 1); j < ccc->num_peers;
+         j++)
     {
       struct GNUNET_TRANSPORT_TESTING_ConnectRequestList *crl;
 
@@ -452,7 +454,7 @@ connect_check_run (void *cls,
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
                                  ccc);
   ok = GNUNET_OK;
-  for (unsigned int i=0;i<ccc->num_peers;i++)
+  for (unsigned int i = 0; i < ccc->num_peers; i++)
   {
     struct GNUNET_MQ_MessageHandler handlers[] = {
       GNUNET_MQ_hd_var_size (test,
@@ -463,7 +465,7 @@ connect_check_run (void *cls,
                              GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE2,
                              struct GNUNET_TRANSPORT_TESTING_TestMessage,
                              NULL),
-      GNUNET_MQ_handler_end()
+      GNUNET_MQ_handler_end ()
     };
     ccc->p[i] = GNUNET_TRANSPORT_TESTING_start_peer (ccc->tth,
                                                      ccc->cfg_files[i],
@@ -471,7 +473,7 @@ connect_check_run (void *cls,
                                                      handlers,
                                                      &my_nc,
                                                      &my_nd,
-						     &ccc->ip[i],
+                                                     &ccc->ip[i],
                                                      &start_cb,
                                                      &ccc->ip[i]);
     if (NULL == ccc->p[i])
@@ -503,7 +505,8 @@ connect_check_run (void *cls,
  */
 int
 GNUNET_TRANSPORT_TESTING_connect_check (void *cls,
-                                        struct GNUNET_TRANSPORT_TESTING_Handle *tth_,
+                                        struct GNUNET_TRANSPORT_TESTING_Handle *
+                                        tth_,
                                         const char *test_plugin_,
                                         const char *test_name_,
                                         unsigned int num_peers,
@@ -515,7 +518,7 @@ GNUNET_TRANSPORT_TESTING_connect_check (void *cls,
   struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext *ccc = cls;
   struct GNUNET_TRANSPORT_TESTING_PeerContext *p[num_peers];
   struct GNUNET_TRANSPORT_TESTING_InternalPeerContext ip[num_peers];
-  char * argv[] = {
+  char *argv[] = {
     (char *) test_name_,
     "-c",
     (char *) ccc->config_file,
@@ -530,13 +533,13 @@ GNUNET_TRANSPORT_TESTING_connect_check (void *cls,
   ccc->global_ret = GNUNET_OK;
   ccc->p = p;
   ccc->ip = ip;
-  for (unsigned int i=0;i<num_peers;i++)
+  for (unsigned int i = 0; i < num_peers; i++)
   {
     ip[i].off = i;
     ip[i].ccc = ccc;
   }
   if (GNUNET_OK !=
-      GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+      GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
                           argv,
                           test_name_,
                           "nohelp",
@@ -580,9 +583,9 @@ GNUNET_TRANSPORT_TESTING_main_ (const char *argv0,
   test_source = GNUNET_TRANSPORT_TESTING_get_test_source_name (filename);
   test_plugin = GNUNET_TRANSPORT_TESTING_get_test_plugin_name (argv0,
                                                                test_source);
-  for (unsigned int i=0;i<num_peers;i++)
+  for (unsigned int i = 0; i < num_peers; i++)
     cfg_names[i] = GNUNET_TRANSPORT_TESTING_get_config_name (argv0,
-                                                             i+1);
+                                                             i + 1);
   tth = GNUNET_TRANSPORT_TESTING_init ();
   if (NULL == tth)
   {
@@ -598,12 +601,13 @@ GNUNET_TRANSPORT_TESTING_main_ (const char *argv0,
                  cfg_names);
     GNUNET_TRANSPORT_TESTING_done (tth);
   }
-  for (unsigned int i=0;i<num_peers;i++)
+  for (unsigned int i = 0; i < num_peers; i++)
     GNUNET_free (cfg_names[i]);
   GNUNET_free (test_source);
   GNUNET_free_non_null (test_plugin);
   GNUNET_free (test_name);
   return ret;
 }
+
 
 /* end of transport-testing-main.c */

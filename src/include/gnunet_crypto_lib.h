@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file include/gnunet_crypto_lib.h
@@ -148,11 +148,10 @@ struct GNUNET_CRYPTO_EccSignaturePurpose
 
 /**
  * @brief an ECC signature using EdDSA.
- * See https://gnunet.org/ed25519
+ * See cr.yp.to/papers.html#ed25519
  */
 struct GNUNET_CRYPTO_EddsaSignature
 {
-
   /**
    * R value.
    */
@@ -170,7 +169,6 @@ struct GNUNET_CRYPTO_EddsaSignature
  */
 struct GNUNET_CRYPTO_EcdsaSignature
 {
-
   /**
    * R value.
    */
@@ -654,6 +652,21 @@ void
 GNUNET_CRYPTO_hash (const void *block,
                     size_t size,
                     struct GNUNET_HashCode *ret);
+
+
+/**
+ * Calculate the 'proof-of-work' hash (an expensive hash).
+ *
+ * @param salt salt to use in pow calculation
+ * @param buf data to hash
+ * @param buf_len number of bytes in @a buf
+ * @param result where to write the resulting hash
+ */
+void
+GNUNET_CRYPTO_pow_hash (const char *salt,
+                        const void *buf,
+                        size_t buf_len,
+                        struct GNUNET_HashCode *result);
 
 
 /**
@@ -1338,7 +1351,7 @@ GNUNET_CRYPTO_ecdsa_key_get_anonymous (void);
  * configuration file (!).  This function is used so that
  * at a later point code can be certain that reading a
  * hostkey is fast (for example in time-dependent testcases).
-*
+ *
  * @param cfg_name name of the configuration file to use
  */
 void

@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @author Philippe Buschmann
@@ -120,6 +120,16 @@
 #define OIDC_NONCE_KEY "nonce"
 
 /**
+ * OIDC PKCE code challenge
+ */
+#define OIDC_CODE_CHALLENGE_KEY "code_challenge"
+
+/**
+ * OIDC PKCE code verifier
+ */
+#define OIDC_CODE_VERIFIER_KEY "code_verifier"
+
+/**
  * OIDC cookie expiration (in seconds)
  */
 #define OIDC_COOKIE_EXPIRATION 3
@@ -208,13 +218,13 @@
 /**
  * OIDC ignored parameter array
  */
-static char *OIDC_ignored_parameter_array[] = {"display",
-                                               "prompt",
-                                               "ui_locales",
-                                               "response_mode",
-                                               "id_token_hint",
-                                               "login_hint",
-                                               "acr_values"};
+static char *OIDC_ignored_parameter_array[] = { "display",
+                                                "prompt",
+                                                "ui_locales",
+                                                "response_mode",
+                                                "id_token_hint",
+                                                "login_hint",
+                                                "acr_values" };
 
 /**
  * OIDC Hash map that keeps track of issued cookies
@@ -294,6 +304,16 @@ struct OIDC_Variables
    * User cancelled authorization/login
    */
   int user_cancelled;
+
+  /**
+   * The PKCE code_challenge
+   */
+  char *code_challenge;
+
+  /**
+   * The PKCE code_verifier
+   */
+  char *code_verifier;
 
   /**
    * The response JSON
@@ -497,6 +517,7 @@ cleanup_handle (struct RequestHandle *handle)
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *claim_tmp;
   struct EgoEntry *ego_entry;
   struct EgoEntry *ego_tmp;
+
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Cleaning up\n");
   if (NULL != handle->timeout_task)
     GNUNET_SCHEDULER_cancel (handle->timeout_task);
@@ -554,6 +575,7 @@ cleanup_handle (struct RequestHandle *handle)
   }
   GNUNET_free (handle);
 }
+
 
 static void
 cleanup_handle_delayed (void *cls)
@@ -631,6 +653,7 @@ do_redirect_error (void *cls)
   struct RequestHandle *handle = cls;
   struct MHD_Response *resp;
   char *redirect;
+
   GNUNET_asprintf (&redirect,
                    "%s?error=%s&error_description=%s%s%s",
                    handle->oidc->redirect_uri,
@@ -645,6 +668,7 @@ do_redirect_error (void *cls)
   GNUNET_free (redirect);
 }
 
+
 /**
  * Task run on timeout, sends error message.  Cleans up everything.
  *
@@ -658,6 +682,7 @@ do_timeout (void *cls)
   handle->timeout_task = NULL;
   do_error (handle);
 }
+
 
 /**
  * Return attributes for claim
@@ -723,7 +748,7 @@ cookie_identity_interpretation (struct RequestHandle *handle)
                       strlen (OIDC_COOKIE_HEADER_KEY),
                       &cache_key);
   if (GNUNET_NO == GNUNET_CONTAINER_multihashmap_contains (handle->rest_handle
-                                                             ->header_param_map,
+                                                           ->header_param_map,
                                                            &cache_key))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "No cookie found\n");
@@ -795,6 +820,7 @@ cookie_identity_interpretation (struct RequestHandle *handle)
   GNUNET_free (cookies);
 }
 
+
 /**
  * Redirects to login page stored in configuration file
  */
@@ -812,7 +838,7 @@ login_redirect (void *cls)
                                                           &login_base_url))
   {
     GNUNET_asprintf (&new_redirect,
-                     "%s?%s=%s&%s=%s&%s=%s&%s=%s&%s=%s&%s=%s",
+                     "%s?%s=%s&%s=%s&%s=%s&%s=%s&%s=%s&%s=%s&%s=%s",
                      login_base_url,
                      OIDC_RESPONSE_TYPE_KEY,
                      handle->oidc->response_type,
@@ -824,6 +850,9 @@ login_redirect (void *cls)
                      handle->oidc->scope,
                      OIDC_STATE_KEY,
                      (NULL != handle->oidc->state) ? handle->oidc->state : "",
+                     OIDC_CODE_CHALLENGE_KEY,
+                     (NULL != handle->oidc->code_challenge) ?
+                     handle->oidc->code_challenge : "",
                      OIDC_NONCE_KEY,
                      (NULL != handle->oidc->nonce) ? handle->oidc->nonce : "");
     resp = GNUNET_REST_create_response ("");
@@ -843,6 +872,7 @@ login_redirect (void *cls)
   GNUNET_SCHEDULER_add_now (&cleanup_handle_delayed, handle);
 }
 
+
 /**
  * Does internal server error when iteration failed.
  */
@@ -850,6 +880,7 @@ static void
 oidc_iteration_error (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_SERVER_ERROR);
   handle->response_code = MHD_HTTP_INTERNAL_SERVER_ERROR;
   GNUNET_SCHEDULER_add_now (&do_error, handle);
@@ -880,16 +911,16 @@ oidc_ticket_issue_cb (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
   handle->ticket = *ticket;
   ticket_str =
     GNUNET_STRINGS_data_to_string_alloc (&handle->ticket,
-                                         sizeof (struct GNUNET_RECLAIM_Ticket));
+                                         sizeof(struct GNUNET_RECLAIM_Ticket));
   // TODO change if more attributes are needed (see max_age)
   code_string = OIDC_build_authz_code (&handle->priv_key,
                                        &handle->ticket,
                                        handle->attr_list,
-                                       handle->oidc->nonce);
+                                       handle->oidc->nonce,
+                                       handle->oidc->code_challenge);
   if ((NULL != handle->redirect_prefix) && (NULL != handle->redirect_suffix) &&
       (NULL != handle->tld))
   {
-
     GNUNET_asprintf (&redirect_uri,
                      "%s.%s/%s?%s=%s&state=%s",
                      handle->redirect_prefix,
@@ -917,10 +948,12 @@ oidc_ticket_issue_cb (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
   GNUNET_free (code_string);
 }
 
+
 static void
 oidc_collect_finished_cb (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   handle->attr_it = NULL;
   handle->ticket_it = NULL;
   if (NULL == handle->attr_list->list_head)
@@ -1020,10 +1053,10 @@ code_redirect (void *cls)
     {
       if (GNUNET_OK !=
           GNUNET_CRYPTO_ecdsa_public_key_from_string (handle->oidc
-                                                        ->login_identity,
+                                                      ->login_identity,
                                                       strlen (
                                                         handle->oidc
-                                                          ->login_identity),
+                                                        ->login_identity),
                                                       &pubkey))
       {
         handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_COOKIE);
@@ -1167,7 +1200,7 @@ lookup_redirect_uri_result (void *cls,
       GNUNET_STRINGS_string_to_data (tmp_key_str,
                                      strlen (tmp_key_str),
                                      &redirect_zone,
-                                     sizeof (redirect_zone));
+                                     sizeof(redirect_zone));
     }
     GNUNET_SCHEDULER_add_now (&build_redirect, handle);
     GNUNET_free (tmp);
@@ -1199,14 +1232,16 @@ client_redirect (void *cls)
                        handle);
 }
 
+
 static char *
 get_url_parameter_copy (const struct RequestHandle *handle, const char *key)
 {
   struct GNUNET_HashCode hc;
   char *value;
+
   GNUNET_CRYPTO_hash (key, strlen (key), &hc);
   if (GNUNET_YES != GNUNET_CONTAINER_multihashmap_contains (handle->rest_handle
-                                                              ->url_param_map,
+                                                            ->url_param_map,
                                                             &hc))
     return NULL;
   value =
@@ -1271,7 +1306,7 @@ build_authz_response (void *cls)
 
   // TODO check other values if needed
   number_of_ignored_parameter =
-    sizeof (OIDC_ignored_parameter_array) / sizeof (char *);
+    sizeof(OIDC_ignored_parameter_array) / sizeof(char *);
   for (iterator = 0; iterator < number_of_ignored_parameter; iterator++)
   {
     GNUNET_CRYPTO_hash (OIDC_ignored_parameter_array[iterator],
@@ -1279,7 +1314,7 @@ build_authz_response (void *cls)
                         &cache_key);
     if (GNUNET_YES ==
         GNUNET_CONTAINER_multihashmap_contains (handle->rest_handle
-                                                  ->url_param_map,
+                                                ->url_param_map,
                                                 &cache_key))
     {
       handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_ACCESS_DENIED);
@@ -1330,6 +1365,7 @@ build_authz_response (void *cls)
     GNUNET_SCHEDULER_add_now (&client_redirect, handle);
 }
 
+
 /**
  * Iterate over tlds in config
  */
@@ -1348,6 +1384,7 @@ tld_iter (void *cls, const char *section, const char *option, const char *value)
   if (0 == GNUNET_memcmp (&pkey, &handle->oidc->client_pkey))
     handle->tld = GNUNET_strdup (option + 1);
 }
+
 
 /**
  * Responds to authorization GET and url-encoded POST request
@@ -1380,6 +1417,15 @@ authorize_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
     handle->response_code = MHD_HTTP_INTERNAL_SERVER_ERROR;
     GNUNET_SCHEDULER_add_now (&do_error, handle);
     return;
+  }
+
+  // OPTIONAL value: code_challenge
+  handle->oidc->code_challenge = get_url_parameter_copy (handle,
+                                                         OIDC_CODE_CHALLENGE_KEY);
+  if (NULL == handle->oidc->code_challenge)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "OAuth authorization request does not contain PKCE parameters!\n");
   }
 
   if (GNUNET_OK !=
@@ -1415,6 +1461,7 @@ authorize_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
   GNUNET_SCHEDULER_add_now (&build_authz_response, handle);
 }
 
+
 /**
  * Combines an identity with a login time and responds OK to login request
  *
@@ -1438,6 +1485,7 @@ login_cont (struct GNUNET_REST_RequestHandle *con_handle,
   json_error_t error;
   json_t *identity;
   char term_data[handle->rest_handle->data_size + 1];
+
   term_data[handle->rest_handle->data_size] = '\0';
   GNUNET_memcpy (term_data,
                  handle->rest_handle->data,
@@ -1484,6 +1532,7 @@ login_cont (struct GNUNET_REST_RequestHandle *con_handle,
   GNUNET_SCHEDULER_add_now (&cleanup_handle_delayed, handle);
 }
 
+
 static int
 check_authorization (struct RequestHandle *handle,
                      struct GNUNET_CRYPTO_EcdsaPublicKey *cid)
@@ -1500,7 +1549,7 @@ check_authorization (struct RequestHandle *handle,
                       strlen (OIDC_AUTHORIZATION_HEADER_KEY),
                       &cache_key);
   if (GNUNET_NO == GNUNET_CONTAINER_multihashmap_contains (handle->rest_handle
-                                                             ->header_param_map,
+                                                           ->header_param_map,
                                                            &cache_key))
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_CLIENT);
@@ -1596,11 +1645,12 @@ check_authorization (struct RequestHandle *handle,
   GNUNET_STRINGS_string_to_data (client_id,
                                  strlen (client_id),
                                  cid,
-                                 sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
+                                 sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey));
 
   GNUNET_free (basic_authorization);
   return GNUNET_OK;
 }
+
 
 const struct EgoEntry *
 find_ego (struct RequestHandle *handle,
@@ -1618,6 +1668,7 @@ find_ego (struct RequestHandle *handle,
   }
   return NULL;
 }
+
 
 static void
 persist_access_token (const struct RequestHandle *handle,
@@ -1637,6 +1688,7 @@ persist_access_token (const struct RequestHandle *handle,
                    ticketbuf,
                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
 }
+
 
 /**
  * Responds to token url-encoded POST request
@@ -1666,6 +1718,7 @@ token_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
   char *access_token;
   char *jwt_secret;
   char *nonce;
+  char *code_verifier;
 
   /*
    * Check Authorization
@@ -1728,8 +1781,19 @@ token_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
     return;
   }
   privkey = GNUNET_IDENTITY_ego_get_private_key (ego_entry->ego);
+
+  // REQUIRED code verifier
+  code_verifier = get_url_parameter_copy (handle, OIDC_CODE_VERIFIER_KEY);
+  if (NULL == code_verifier)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "OAuth authorization request does not contain PKCE parameters!\n");
+
+  }
+
   // decode code
-  if (GNUNET_OK != OIDC_parse_authz_code (privkey, code, &ticket, &cl, &nonce))
+  if (GNUNET_OK != OIDC_parse_authz_code (privkey, code, code_verifier, &ticket,
+                                          &cl, &nonce))
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_REQUEST);
     handle->edesc = GNUNET_strdup ("invalid code");
@@ -1791,6 +1855,7 @@ token_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
   GNUNET_SCHEDULER_add_now (&cleanup_handle_delayed, handle);
 }
 
+
 /**
  * Collects claims and stores them in handle
  */
@@ -1815,6 +1880,7 @@ consume_ticket (void *cls,
   json_object_set_new (handle->oidc->response, attr->name, value);
   GNUNET_free (tmp_value);
 }
+
 
 /**
  * Responds to userinfo GET and url-encoded POST request
@@ -1843,7 +1909,7 @@ userinfo_endpoint (struct GNUNET_REST_RequestHandle *con_handle,
                       strlen (OIDC_AUTHORIZATION_HEADER_KEY),
                       &cache_key);
   if (GNUNET_NO == GNUNET_CONTAINER_multihashmap_contains (handle->rest_handle
-                                                             ->header_param_map,
+                                                           ->header_param_map,
                                                            &cache_key))
   {
     handle->emsg = GNUNET_strdup (OIDC_ERROR_KEY_INVALID_TOKEN);
@@ -1933,16 +1999,16 @@ init_cont (struct RequestHandle *handle)
 {
   struct GNUNET_REST_RequestHandlerError err;
   static const struct GNUNET_REST_RequestHandler handlers[] =
-    {{MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_AUTHORIZE, &authorize_endpoint},
-     {MHD_HTTP_METHOD_POST,
+  { { MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_AUTHORIZE, &authorize_endpoint },
+    { MHD_HTTP_METHOD_POST,
       GNUNET_REST_API_NS_AUTHORIZE,
-      &authorize_endpoint}, // url-encoded
-     {MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_LOGIN, &login_cont},
-     {MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_TOKEN, &token_endpoint},
-     {MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_USERINFO, &userinfo_endpoint},
-     {MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_USERINFO, &userinfo_endpoint},
-     {MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_OIDC, &options_cont},
-     GNUNET_REST_HANDLER_END};
+      &authorize_endpoint },   // url-encoded
+    { MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_LOGIN, &login_cont },
+    { MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_TOKEN, &token_endpoint },
+    { MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_USERINFO, &userinfo_endpoint },
+    { MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_USERINFO, &userinfo_endpoint },
+    { MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_OIDC, &options_cont },
+    GNUNET_REST_HANDLER_END };
 
   if (GNUNET_NO ==
       GNUNET_REST_handle_request (handle->rest_handle, handlers, &err, handle))
@@ -1951,6 +2017,7 @@ init_cont (struct RequestHandle *handle)
     GNUNET_SCHEDULER_add_now (&do_error, handle);
   }
 }
+
 
 /**
  * If listing is enabled, prints information about the egos.
@@ -2003,6 +2070,7 @@ list_ego (void *cls,
   }
   GNUNET_assert (NULL != ego);
   if (ID_REST_STATE_INIT == handle->state)
+
   {
     ego_entry = GNUNET_new (struct EgoEntry);
     GNUNET_IDENTITY_ego_get_public_key (ego, &pk);
@@ -2057,12 +2125,14 @@ list_ego (void *cls,
   }
 }
 
+
 static void
 rest_identity_process_request (struct GNUNET_REST_RequestHandle *rest_handle,
                                GNUNET_REST_ResultProcessor proc,
                                void *proc_cls)
 {
   struct RequestHandle *handle = GNUNET_new (struct RequestHandle);
+
   handle->oidc = GNUNET_new (struct OIDC_Variables);
   if (NULL == OIDC_cookie_jar_map)
     OIDC_cookie_jar_map = GNUNET_CONTAINER_multihashmap_create (10, GNUNET_NO);
@@ -2088,6 +2158,7 @@ rest_identity_process_request (struct GNUNET_REST_RequestHandle *rest_handle,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Connected\n");
 }
 
+
 /**
  * Entry point for the plugin.
  *
@@ -2103,7 +2174,7 @@ libgnunet_plugin_rest_openid_connect_init (void *cls)
   cfg = cls;
   if (NULL != plugin.cfg)
     return NULL; /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   api = GNUNET_new (struct GNUNET_REST_Plugin);
   api->cls = &plugin;
@@ -2134,6 +2205,7 @@ libgnunet_plugin_rest_openid_connect_done (void *cls)
 {
   struct GNUNET_REST_Plugin *api = cls;
   struct Plugin *plugin = api->cls;
+
   plugin->cfg = NULL;
 
   struct GNUNET_CONTAINER_MultiHashMapIterator *hashmap_it;
@@ -2159,5 +2231,6 @@ libgnunet_plugin_rest_openid_connect_done (void *cls)
               "OpenID Connect REST plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_rest_openid_connect.c */

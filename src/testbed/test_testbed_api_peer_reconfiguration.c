@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -47,13 +47,13 @@ static struct GNUNET_TESTBED_Operation *op;
 /**
  * Abort task identifier
  */
-static struct GNUNET_SCHEDULER_Task * abort_task;
+static struct GNUNET_SCHEDULER_Task *abort_task;
 
 /**
  * States in this test
  */
-enum {
-
+enum
+{
   /**
    * Test has just been initialized
    */
@@ -68,21 +68,20 @@ enum {
    * Peer has been reconfigured.  Test completed successfully
    */
   STATE_PEER_RECONFIGURED
-
 } state;
 
 /**
  * Fail testcase
  */
 #define FAIL_TEST(cond, ret) do {                               \
-    if (!(cond)) {                                              \
-      GNUNET_break(0);                                          \
+    if (! (cond)) {                                              \
+      GNUNET_break (0);                                          \
       if (NULL != abort_task)               \
         GNUNET_SCHEDULER_cancel (abort_task);                   \
       abort_task = GNUNET_SCHEDULER_add_now (&do_abort, NULL);  \
       ret;                                                      \
     }                                                           \
-  } while (0)
+} while (0)
 
 
 /**
@@ -100,7 +99,7 @@ do_abort (void *cls)
     GNUNET_TESTBED_operation_done (op);
     op = NULL;
   }
-  GNUNET_SCHEDULER_shutdown();
+  GNUNET_SCHEDULER_shutdown ();
 }
 
 
@@ -120,7 +119,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
   {
     GNUNET_TESTBED_operation_done (op);
     op = NULL;
-    FAIL_TEST (0, return);
+    FAIL_TEST (0, return );
   }
   if (NULL != event->details.operation_finished.emsg)
   {
@@ -128,7 +127,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
              event->details.operation_finished.emsg);
     GNUNET_TESTBED_operation_done (op);
     op = NULL;
-    FAIL_TEST (0, return);
+    FAIL_TEST (0, return );
   }
   GNUNET_TESTBED_operation_done (op);
   state = STATE_PEER_RECONFIGURED;
@@ -160,17 +159,18 @@ test_master (void *cls,
 {
   struct GNUNET_CONFIGURATION_Handle *cfg;
 
-  FAIL_TEST (NUM_PEERS == num_peers, return);
+  FAIL_TEST (NUM_PEERS == num_peers, return );
   state = STATE_PEER_STARTED;
   peers = peers_;
   cfg = GNUNET_CONFIGURATION_create ();
   FAIL_TEST (GNUNET_OK == GNUNET_CONFIGURATION_load
-             (cfg, "test_testbed_api_testbed_run_topologyrandom.conf"), return);
+               (cfg, "test_testbed_api_testbed_run_topologyrandom.conf"),
+             return );
   op = GNUNET_TESTBED_peer_update_configuration (peers[0], cfg);
   GNUNET_CONFIGURATION_destroy (cfg);
-  FAIL_TEST (NULL != op, return);
+  FAIL_TEST (NULL != op, return );
   abort_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
-                                             (GNUNET_TIME_UNIT_SECONDS, 30),
+                                               (GNUNET_TIME_UNIT_SECONDS, 30),
                                              &do_abort, NULL);
 }
 

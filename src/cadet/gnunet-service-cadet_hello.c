@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/gnunet-service-cadet_hello.c
  * @brief spread knowledge about how to contact us (get HELLO from peerinfo),
@@ -35,7 +35,7 @@
 #include "gnunet-service-cadet_hello.h"
 #include "gnunet-service-cadet_peer.h"
 
-#define LOG(level, ...) GNUNET_log_from(level,"cadet-hll",__VA_ARGS__)
+#define LOG(level, ...) GNUNET_log_from (level, "cadet-hll", __VA_ARGS__)
 
 /**
  * Hello message of local peer.
@@ -69,11 +69,11 @@ got_hello (void *cls,
 {
   struct CadetPeer *peer;
 
-  if ( (NULL == id) ||
-       (NULL == hello) )
+  if ((NULL == id) ||
+      (NULL == hello))
     return;
   if (0 == GNUNET_memcmp (id,
-                   &my_full_id))
+                          &my_full_id))
   {
     GNUNET_free_non_null (mine);
     mine = (struct GNUNET_HELLO_Message *) GNUNET_copy_message (&hello->header);
@@ -85,7 +85,8 @@ got_hello (void *cls,
        "Hello for %s (%d bytes), expires on %s\n",
        GNUNET_i2s (id),
        GNUNET_HELLO_size (hello),
-       GNUNET_STRINGS_absolute_time_to_string (GNUNET_HELLO_get_last_expiration (hello)));
+       GNUNET_STRINGS_absolute_time_to_string (
+         GNUNET_HELLO_get_last_expiration (hello)));
   peer = GCP_get (id,
                   GNUNET_YES);
   GCP_set_hello (peer,
@@ -144,5 +145,6 @@ GCH_get_mine (void)
 {
   return mine;
 }
+
 
 /* end of gnunet-service-cadet-new_hello.c */

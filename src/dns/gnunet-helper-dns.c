@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dns/gnunet-helper-dns.c
@@ -65,7 +65,9 @@
  */
 #include "platform.h"
 
-#include <linux/if_tun.h>
+#ifdef IF_TUN_HDR
+#include IF_TUN_HDR
+#endif
 
 /**
  * Need 'struct GNUNET_MessageHeader'.
@@ -83,7 +85,7 @@
  */
 #define MAX_SIZE 65536
 
-#if !HAVE_DECL_STRUCT_IN6_IFREQ
+#if ! HAVE_DECL_STRUCT_IN6_IFREQ
 /**
  * This is in linux/include/net/ipv6.h, but not always exported...
  */
@@ -169,7 +171,7 @@ signal_handler (int signal)
  */
 static void
 open_dev_null (int target_fd,
-	       int flags)
+               int flags)
 {
   int fd;
 
@@ -196,7 +198,7 @@ open_dev_null (int target_fd,
  */
 static int
 fork_and_exec (const char *file,
-	       char *const cmd[])
+               char *const cmd[])
 {
   int status;
   pid_t pid;
@@ -206,8 +208,8 @@ fork_and_exec (const char *file,
   if (-1 == pid)
   {
     fprintf (stderr,
-	     "fork failed: %s\n",
-	     strerror (errno));
+             "fork failed: %s\n",
+             strerror (errno));
     return 1;
   }
   if (0 == pid)
@@ -222,19 +224,20 @@ fork_and_exec (const char *file,
     (void) execv (file, cmd);
     /* can only get here on error */
     fprintf (stderr,
-	     "exec `%s' failed: %s\n",
-	     file,
-	     strerror (errno));
+             "exec `%s' failed: %s\n",
+             file,
+             strerror (errno));
     _exit (1);
   }
   /* keep running waitpid as long as the only error we get is 'EINTR' */
-  while ( (-1 == (ret = waitpid (pid, &status, 0))) &&
-	  (errno == EINTR) );
+  while ((-1 == (ret = waitpid (pid, &status, 0))) &&
+         (errno == EINTR))
+    ;
   if (-1 == ret)
   {
     fprintf (stderr,
-	     "waitpid failed: %s\n",
-	     strerror (errno));
+             "waitpid failed: %s\n",
+             strerror (errno));
     return 1;
   }
   if (! (WIFEXITED (status) && (0 == WEXITSTATUS (status))))
@@ -277,7 +280,7 @@ init_tun (char *dev)
     return -1;
   }
 
-  memset (&ifr, 0, sizeof (ifr));
+  memset (&ifr, 0, sizeof(ifr));
   ifr.ifr_flags = IFF_TUN;
 
   if ('\0' != *dev)
@@ -313,13 +316,13 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
   /*
    * parse the new address
    */
-  memset (&sa6, 0, sizeof (struct sockaddr_in6));
+  memset (&sa6, 0, sizeof(struct sockaddr_in6));
   sa6.sin6_family = AF_INET6;
   if (1 != inet_pton (AF_INET6, address, sa6.sin6_addr.s6_addr))
   {
     fprintf (stderr,
-	     "Failed to parse IPv6 address `%s': %s\n",
-	     address,
+             "Failed to parse IPv6 address `%s': %s\n",
+             address,
              strerror (errno));
     exit (1);
   }
@@ -327,13 +330,13 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
   if (-1 == (fd = socket (PF_INET6, SOCK_DGRAM, 0)))
   {
     fprintf (stderr,
-	     "Error creating IPv6 socket: %s (ignored)\n",
-	     strerror (errno));
+             "Error creating IPv6 socket: %s (ignored)\n",
+             strerror (errno));
     /* ignore error, maybe only IPv4 works on this system! */
     return;
   }
 
-  memset (&ifr, 0, sizeof (struct ifreq));
+  memset (&ifr, 0, sizeof(struct ifreq));
   /*
    * Get the index of the if
    */
@@ -345,7 +348,7 @@ set_address6 (const char *dev, const char *address, unsigned long prefix_len)
     exit (1);
   }
 
-  memset (&ifr6, 0, sizeof (struct in6_ifreq));
+  memset (&ifr6, 0, sizeof(struct in6_ifreq));
   ifr6.ifr6_addr = sa6.sin6_addr;
   ifr6.ifr6_ifindex = ifr.ifr_ifindex;
   ifr6.ifr6_prefixlen = prefix_len;
@@ -406,7 +409,7 @@ set_address4 (const char *dev, const char *address, const char *mask)
   struct sockaddr_in *addr;
   struct ifreq ifr;
 
-  memset (&ifr, 0, sizeof (struct ifreq));
+  memset (&ifr, 0, sizeof(struct ifreq));
   addr = (struct sockaddr_in *) &(ifr.ifr_addr);
   addr->sin_family = AF_INET;
 
@@ -416,8 +419,8 @@ set_address4 (const char *dev, const char *address, const char *mask)
   if (1 != inet_pton (AF_INET, address, &addr->sin_addr.s_addr))
   {
     fprintf (stderr,
-	     "Failed to parse IPv4 address `%s': %s\n",
-	     address,
+             "Failed to parse IPv4 address `%s': %s\n",
+             address,
              strerror (errno));
     exit (1);
   }
@@ -425,8 +428,8 @@ set_address4 (const char *dev, const char *address, const char *mask)
   if (-1 == (fd = socket (PF_INET, SOCK_DGRAM, 0)))
   {
     fprintf (stderr,
-	     "Error creating IPv4 socket: %s\n",
-	     strerror (errno));
+             "Error creating IPv4 socket: %s\n",
+             strerror (errno));
     exit (1);
   }
 
@@ -499,7 +502,7 @@ set_address4 (const char *dev, const char *address, const char *mask)
 
 /**
  * Start forwarding to and from the tunnel.  This function runs with
- * "reduced" priviledges (saved UID is still 0, but effective UID is
+ * "reduced" privileges (saved UID is still 0, but effective UID is
  * the real user ID).
  *
  * @param fd_tun tunnel FD
@@ -574,34 +577,34 @@ run (int fd_tun)
     if (r > 0)
     {
       if (FD_ISSET (cpipe[0], &fds_r))
-	return; /* aborted by signal */
+        return;     /* aborted by signal */
 
       if (FD_ISSET (fd_tun, &fds_r))
       {
         buftun_size =
-            read (fd_tun, buftun + sizeof (struct GNUNET_MessageHeader),
-                  MAX_SIZE - sizeof (struct GNUNET_MessageHeader));
+          read (fd_tun, buftun + sizeof(struct GNUNET_MessageHeader),
+                MAX_SIZE - sizeof(struct GNUNET_MessageHeader));
         if (-1 == buftun_size)
         {
-	  if ( (errno == EINTR) ||
-	       (errno == EAGAIN) )
-	    {
-	      buftun_size = 0;
-	      continue;
-	    }
+          if ((errno == EINTR) ||
+              (errno == EAGAIN))
+          {
+            buftun_size = 0;
+            continue;
+          }
           fprintf (stderr, "read-error: %s\n", strerror (errno));
-	  return;
+          return;
         }
-	if (0 == buftun_size)
+        if (0 == buftun_size)
         {
           fprintf (stderr, "EOF on tun\n");
-	  return;
+          return;
         }
-	buftun_read = buftun;
-	{
+        buftun_read = buftun;
+        {
           struct GNUNET_MessageHeader *hdr =
-              (struct GNUNET_MessageHeader *) buftun;
-          buftun_size += sizeof (struct GNUNET_MessageHeader);
+            (struct GNUNET_MessageHeader *) buftun;
+          buftun_size += sizeof(struct GNUNET_MessageHeader);
           hdr->type = htons (GNUNET_MESSAGE_TYPE_DNS_HELPER);
           hdr->size = htons (buftun_size);
         }
@@ -612,19 +615,19 @@ run (int fd_tun)
 
         if (-1 == written)
         {
-	  if ( (errno == EINTR) ||
-	       (errno == EAGAIN) )
-	    continue;
+          if ((errno == EINTR) ||
+              (errno == EAGAIN))
+            continue;
           fprintf (stderr, "write-error to stdout: %s\n", strerror (errno));
           return;
         }
-	if (0 == written)
+        if (0 == written)
         {
           fprintf (stderr, "write returned 0\n");
           return;
         }
-	buftun_size -= written;
-	buftun_read += written;
+        buftun_size -= written;
+        buftun_read += written;
       }
 
       if (FD_ISSET (0, &fds_r))
@@ -632,25 +635,25 @@ run (int fd_tun)
         bufin_size = read (0, bufin + bufin_rpos, MAX_SIZE - bufin_rpos);
         if (-1 == bufin_size)
         {
-	  bufin_read = NULL;
-	  if ( (errno == EINTR) ||
-	       (errno == EAGAIN) )
-	    continue;
+          bufin_read = NULL;
+          if ((errno == EINTR) ||
+              (errno == EAGAIN))
+            continue;
           fprintf (stderr, "read-error: %s\n", strerror (errno));
-	  return;
+          return;
         }
-	if (0 == bufin_size)
+        if (0 == bufin_size)
         {
-	  bufin_read = NULL;
+          bufin_read = NULL;
           fprintf (stderr, "EOF on stdin\n");
-	  return;
+          return;
         }
         {
           struct GNUNET_MessageHeader *hdr;
 
 PROCESS_BUFFER:
           bufin_rpos += bufin_size;
-          if (bufin_rpos < sizeof (struct GNUNET_MessageHeader))
+          if (bufin_rpos < sizeof(struct GNUNET_MessageHeader))
             continue;
           hdr = (struct GNUNET_MessageHeader *) bufin;
           if (ntohs (hdr->type) != GNUNET_MESSAGE_TYPE_DNS_HELPER)
@@ -658,11 +661,11 @@ PROCESS_BUFFER:
             fprintf (stderr, "protocol violation!\n");
             return;
           }
-	  if (ntohs (hdr->size) > bufin_rpos)
+          if (ntohs (hdr->size) > bufin_rpos)
             continue;
-          bufin_read = bufin + sizeof (struct GNUNET_MessageHeader);
-          bufin_size = ntohs (hdr->size) - sizeof (struct GNUNET_MessageHeader);
-          bufin_rpos -= bufin_size + sizeof (struct GNUNET_MessageHeader);
+          bufin_read = bufin + sizeof(struct GNUNET_MessageHeader);
+          bufin_size = ntohs (hdr->size) - sizeof(struct GNUNET_MessageHeader);
+          bufin_rpos -= bufin_size + sizeof(struct GNUNET_MessageHeader);
         }
       }
       else if (FD_ISSET (fd_tun, &fds_w))
@@ -671,13 +674,13 @@ PROCESS_BUFFER:
 
         if (-1 == written)
         {
-	  if ( (errno == EINTR) ||
-	       (errno == EAGAIN) )
-	    continue;
+          if ((errno == EINTR) ||
+              (errno == EAGAIN))
+            continue;
           fprintf (stderr, "write-error to tun: %s\n", strerror (errno));
-	  return;
+          return;
         }
-	if (0 == written)
+        if (0 == written)
         {
           fprintf (stderr, "write returned 0\n");
           return;
@@ -688,7 +691,7 @@ PROCESS_BUFFER:
           if (0 == bufin_size)
           {
             memmove (bufin, bufin_read, bufin_rpos);
-            bufin_read = NULL;  /* start reading again */
+            bufin_read = NULL;         /* start reading again */
             bufin_size = 0;
             goto PROCESS_BUFFER;
           }
@@ -728,7 +731,7 @@ PROCESS_BUFFER:
  *         25-39 failed to drop privs and then failed to undo some changes to routing table
  *         40 failed to regain privs
  *         41-55 failed to regain prisv and then failed to undo some changes to routing table
- *         254 insufficient priviledges
+ *         254 insufficient privileges
  *         255 failed to handle kill signal properly
  */
 int
@@ -780,8 +783,8 @@ main (int argc, char *const*argv)
     else
     {
       fprintf (stderr,
-	       "Fatal: executable iptables not found in approved directories: %s\n",
-	       strerror (errno));
+               "Fatal: executable iptables not found in approved directories: %s\n",
+               strerror (errno));
       return 3;
     }
 #ifdef IP6TABLES
@@ -796,8 +799,8 @@ main (int argc, char *const*argv)
     else
     {
       fprintf (stderr,
-	       "Fatal: executable ip6tables not found in approved directories: %s\n",
-	       strerror (errno));
+               "Fatal: executable ip6tables not found in approved directories: %s\n",
+               strerror (errno));
       return 3;
     }
 #ifdef PATH_TO_IP
@@ -809,13 +812,13 @@ main (int argc, char *const*argv)
       sbin_ip = "/sbin/ip";
     else if (0 == access ("/usr/sbin/ip", X_OK))
       sbin_ip = "/usr/sbin/ip";
-    else if (0 == access ("/bin/ip", X_OK)) /* gentoo has it there */
+    else if (0 == access ("/bin/ip", X_OK))  /* gentoo has it there */
       sbin_ip = "/bin/ip";
     else
     {
       fprintf (stderr,
-	       "Fatal: executable ip not found in approved directories: %s\n",
-	       strerror (errno));
+               "Fatal: executable ip not found in approved directories: %s\n",
+               strerror (errno));
       return 4;
     }
 #ifdef SYSCTL
@@ -837,7 +840,7 @@ main (int argc, char *const*argv)
   }
 
   /* setup 'mygid' string */
-  snprintf (mygid, sizeof (mygid), "%d", (int) getegid());
+  snprintf (mygid, sizeof(mygid), "%d", (int) getegid ());
 
   /* do not die on SIGPIPE */
   if (SIG_ERR == signal (SIGPIPE, SIG_IGN))
@@ -851,8 +854,8 @@ main (int argc, char *const*argv)
   if (0 != pipe (cpipe))
   {
     fprintf (stderr,
-	     "Fatal: could not setup control pipe: %s\n",
-	     strerror (errno));
+             "Fatal: could not setup control pipe: %s\n",
+             strerror (errno));
     return 6;
   }
   if (cpipe[0] >= FD_SETSIZE)
@@ -876,22 +879,23 @@ main (int argc, char *const*argv)
     flags |= O_NONBLOCK;
     if (0 != fcntl (cpipe[1], F_SETFL, flags))
     {
-      fprintf (stderr, "Failed to make pipe non-blocking: %s", strerror (errno));
+      fprintf (stderr, "Failed to make pipe non-blocking: %s", strerror (
+                 errno));
       (void) close (cpipe[0]);
       (void) close (cpipe[1]);
       return 6;
     }
   }
-  if ( (SIG_ERR == signal (SIGTERM, &signal_handler)) ||
+  if ((SIG_ERR == signal (SIGTERM, &signal_handler)) ||
 #if (SIGTERM != GNUNET_TERM_SIG)
-       (SIG_ERR == signal (GNUNET_TERM_SIG, &signal_handler)) ||
+      (SIG_ERR == signal (GNUNET_TERM_SIG, &signal_handler)) ||
 #endif
-       (SIG_ERR == signal (SIGINT, &signal_handler)) ||
-       (SIG_ERR == signal (SIGHUP, &signal_handler)) )
+      (SIG_ERR == signal (SIGINT, &signal_handler)) ||
+      (SIG_ERR == signal (SIGHUP, &signal_handler)))
   {
     fprintf (stderr,
-	     "Fatal: could not initialize signal handler: %s\n",
-	     strerror (errno));
+             "Fatal: could not initialize signal handler: %s\n",
+             strerror (errno));
     (void) close (cpipe[0]);
     (void) close (cpipe[1]);
     return 7;
@@ -905,10 +909,10 @@ main (int argc, char *const*argv)
   /* Disable rp filtering */
   if (0 == nortsetup)
   {
-    char *const sysctl_args[] = {"sysctl", "-w",
-      "net.ipv4.conf.all.rp_filter=0", NULL};
-    char *const sysctl_args2[] = {"sysctl", "-w",
-      "net.ipv4.conf.default.rp_filter=0", NULL};
+    char *const sysctl_args[] = { "sysctl", "-w",
+                                  "net.ipv4.conf.all.rp_filter=0", NULL };
+    char *const sysctl_args2[] = { "sysctl", "-w",
+                                   "net.ipv4.conf.default.rp_filter=0", NULL };
     if ((0 != fork_and_exec (sbin_sysctl, sysctl_args)) ||
         (0 != fork_and_exec (sbin_sysctl, sysctl_args2)))
     {
@@ -944,7 +948,7 @@ main (int argc, char *const*argv)
       fprintf (stderr, "Fatal: prefix_len out of range\n");
       (void) signal (SIGTERM, SIG_IGN);
 #if (SIGTERM != GNUNET_TERM_SIG)
-    (void) signal (GNUNET_TERM_SIG, SIG_IGN);
+      (void) signal (GNUNET_TERM_SIG, SIG_IGN);
 #endif
       (void) signal (SIGINT, SIG_IGN);
       (void) signal (SIGHUP, SIG_IGN);
@@ -969,85 +973,77 @@ main (int argc, char *const*argv)
      to port 53 on UDP, without hijacking */
   if (0 == nortsetup)
   {
-    r = 8; /* failed to fully setup routing table */
+    r = 8;   /* failed to fully setup routing table */
     {
-      char *const mangle_args[] =
-        {
-	 "iptables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
-	 "udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
-	 "ACCEPT", NULL
-        };
+      char *const mangle_args[] = {
+        "iptables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
+        "udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
+        "ACCEPT", NULL
+      };
       if (0 != fork_and_exec (sbin_iptables, mangle_args))
         goto cleanup_rest;
     }
     {
-      char *const mangle_args[] =
-        {
-	 "ip6tables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
-	 "udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
-	 "ACCEPT", NULL
-        };
+      char *const mangle_args[] = {
+        "ip6tables", "-m", "owner", "-t", "mangle", "-I", "OUTPUT", "1", "-p",
+        "udp", "--gid-owner", mygid, "--dport", DNS_PORT, "-j",
+        "ACCEPT", NULL
+      };
       if (0 != fork_and_exec (sbin_ip6tables, mangle_args))
         goto cleanup_mangle_1b;
     }
     /* Mark all of the other DNS traffic using our mark DNS_MARK,
        unless it is on a link-local IPv6 address, which we cannot support. */
     {
-      char *const mark_args[] =
-        {
-	 "iptables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
-	 "udp", "--dport", DNS_PORT,
-         "-j", "MARK", "--set-mark", DNS_MARK,
-	 NULL
-        };
+      char *const mark_args[] = {
+        "iptables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
+        "udp", "--dport", DNS_PORT,
+        "-j", "MARK", "--set-mark", DNS_MARK,
+        NULL
+      };
       if (0 != fork_and_exec (sbin_iptables, mark_args))
         goto cleanup_mangle_1;
     }
     {
-      char *const mark_args[] =
-        {
-	 "ip6tables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
-	 "udp", "--dport", DNS_PORT,
-         "!", "-s", "fe80::/10", /* this line excludes link-local traffic */
-         "-j", "MARK", "--set-mark", DNS_MARK,
-	 NULL
-        };
+      char *const mark_args[] = {
+        "ip6tables", "-t", "mangle", "-I", "OUTPUT", "2", "-p",
+        "udp", "--dport", DNS_PORT,
+        "!", "-s", "fe80::/10",   /* this line excludes link-local traffic */
+        "-j", "MARK", "--set-mark", DNS_MARK,
+        NULL
+      };
       if (0 != fork_and_exec (sbin_ip6tables, mark_args))
         goto cleanup_mark_2b;
     }
     /* Forward all marked DNS traffic to our DNS_TABLE */
     {
-      char *const forward_args[] =
-        {
-	 "ip", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
-        };
+      char *const forward_args[] = {
+        "ip", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+      };
       if (0 != fork_and_exec (sbin_ip, forward_args))
         goto cleanup_mark_2;
     }
     {
-      char *const forward_args[] =
-        {
-          "ip", "-6", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
-        };
+      char *const forward_args[] = {
+        "ip", "-6", "rule", "add", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+      };
       if (0 != fork_and_exec (sbin_ip, forward_args))
         goto cleanup_forward_3b;
     }
     /* Finally, add rule in our forwarding table to pass to our virtual interface */
     {
-      char *const route_args[] =
-        {
-	 "ip", "route", "add", "default", "dev", dev,
-	 "table", DNS_TABLE, NULL
-        };
+      char *const route_args[] = {
+        "ip", "route", "add", "default", "dev", dev,
+        "table", DNS_TABLE, NULL
+      };
       if (0 != fork_and_exec (sbin_ip, route_args))
         goto cleanup_forward_3;
     }
     {
-      char *const route_args[] =
-        {
-          "ip", "-6", "route", "add", "default", "dev", dev,
-          "table", DNS_TABLE, NULL
-        };
+      char *const route_args[] = {
+        "ip", "-6", "route", "add", "default", "dev", dev,
+        "table", DNS_TABLE, NULL
+      };
       if (0 != fork_and_exec (sbin_ip, route_args))
         goto cleanup_route_4b;
     }
@@ -1081,7 +1077,8 @@ main (int argc, char *const*argv)
 #ifdef HAVE_SETRESUID
   if (0 != setresuid (uid, 0, 0))
   {
-    fprintf (stderr, "Failed to setresuid back to root: %s\n", strerror (errno));
+    fprintf (stderr, "Failed to setresuid back to root: %s\n", strerror (
+               errno));
     r = 40;
     goto cleanup_route_4;
   }
@@ -1096,104 +1093,96 @@ main (int argc, char *const*argv)
 
   /* update routing tables again -- this is why we could not fully drop privs */
   /* now undo updating of routing tables; normal exit or clean-up-on-error case */
- cleanup_route_4:
+cleanup_route_4:
   if (0 == nortsetup)
   {
-    char *const route_clean_args[] =
-      {
-	"ip", "-6", "route", "del", "default", "dev", dev,
-	"table", DNS_TABLE, NULL
-      };
+    char *const route_clean_args[] = {
+      "ip", "-6", "route", "del", "default", "dev", dev,
+      "table", DNS_TABLE, NULL
+    };
     if (0 != fork_and_exec (sbin_ip, route_clean_args))
       r += 1;
   }
- cleanup_route_4b:
+cleanup_route_4b:
   if (0 == nortsetup)
   {
-    char *const route_clean_args[] =
-      {
-	"ip", "route", "del", "default", "dev", dev,
-	"table", DNS_TABLE, NULL
-      };
+    char *const route_clean_args[] = {
+      "ip", "route", "del", "default", "dev", dev,
+      "table", DNS_TABLE, NULL
+    };
     if (0 != fork_and_exec (sbin_ip, route_clean_args))
       r += 1;
   }
- cleanup_forward_3:
+cleanup_forward_3:
   if (0 == nortsetup)
   {
-    char *const forward_clean_args[] =
-      {
-	"ip", "-6", "rule", "del", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
-      };
+    char *const forward_clean_args[] = {
+      "ip", "-6", "rule", "del", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+    };
     if (0 != fork_and_exec (sbin_ip, forward_clean_args))
       r += 2;
   }
- cleanup_forward_3b:
+cleanup_forward_3b:
   if (0 == nortsetup)
   {
-    char *const forward_clean_args[] =
-      {
-	"ip", "rule", "del", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
-      };
+    char *const forward_clean_args[] = {
+      "ip", "rule", "del", "fwmark", DNS_MARK, "table", DNS_TABLE, NULL
+    };
     if (0 != fork_and_exec (sbin_ip, forward_clean_args))
       r += 2;
   }
- cleanup_mark_2:
+cleanup_mark_2:
   if (0 == nortsetup)
   {
-    char *const mark_clean_args[] =
-      {
-	"ip6tables", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
-	"--dport", DNS_PORT,
-        "!", "-s", "fe80::/10", /* this line excludes link-local traffic */
-        "-j", "MARK", "--set-mark", DNS_MARK, NULL
-      };
+    char *const mark_clean_args[] = {
+      "ip6tables", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
+      "--dport", DNS_PORT,
+      "!", "-s", "fe80::/10",   /* this line excludes link-local traffic */
+      "-j", "MARK", "--set-mark", DNS_MARK, NULL
+    };
     if (0 != fork_and_exec (sbin_ip6tables, mark_clean_args))
       r += 4;
   }
- cleanup_mark_2b:
+cleanup_mark_2b:
   if (0 == nortsetup)
   {
-    char *const mark_clean_args[] =
-      {
-	"iptables", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
-	"--dport", DNS_PORT, "-j", "MARK", "--set-mark", DNS_MARK, NULL
-      };
+    char *const mark_clean_args[] = {
+      "iptables", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
+      "--dport", DNS_PORT, "-j", "MARK", "--set-mark", DNS_MARK, NULL
+    };
     if (0 != fork_and_exec (sbin_iptables, mark_clean_args))
       r += 4;
   }
- cleanup_mangle_1:
+cleanup_mangle_1:
   if (0 == nortsetup)
   {
-    char *const mangle_clean_args[] =
-      {
-	"ip6tables", "-m", "owner", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
-	 "--gid-owner", mygid, "--dport", DNS_PORT, "-j", "ACCEPT",
-	NULL
-      };
+    char *const mangle_clean_args[] = {
+      "ip6tables", "-m", "owner", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
+      "--gid-owner", mygid, "--dport", DNS_PORT, "-j", "ACCEPT",
+      NULL
+    };
     if (0 != fork_and_exec (sbin_ip6tables, mangle_clean_args))
       r += 8;
   }
- cleanup_mangle_1b:
+cleanup_mangle_1b:
   if (0 == nortsetup)
   {
-    char *const mangle_clean_args[] =
-      {
-	"iptables", "-m", "owner", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
-	 "--gid-owner", mygid, "--dport", DNS_PORT, "-j", "ACCEPT",
-	NULL
-      };
+    char *const mangle_clean_args[] = {
+      "iptables", "-m", "owner", "-t", "mangle", "-D", "OUTPUT", "-p", "udp",
+      "--gid-owner", mygid, "--dport", DNS_PORT, "-j", "ACCEPT",
+      NULL
+    };
     if (0 != fork_and_exec (sbin_iptables, mangle_clean_args))
       r += 8;
   }
 
- cleanup_rest:
+cleanup_rest:
   /* close virtual interface */
   (void) close (fd_tun);
   /* remove signal handler so we can close the pipes */
   (void) signal (SIGTERM, SIG_IGN);
 #if (SIGTERM != GNUNET_TERM_SIG)
-    (void) signal (GNUNET_TERM_SIG, SIG_IGN);
+  (void) signal (GNUNET_TERM_SIG, SIG_IGN);
 #endif
   (void) signal (SIGINT, SIG_IGN);
   (void) signal (SIGHUP, SIG_IGN);
@@ -1201,5 +1190,6 @@ main (int argc, char *const*argv)
   (void) close (cpipe[1]);
   return r;
 }
+
 
 /* end of gnunet-helper-dns.c */

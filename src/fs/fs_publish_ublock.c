@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_publish_ublock.c
@@ -44,19 +44,20 @@
  */
 static void
 derive_ublock_encryption_key (struct GNUNET_CRYPTO_SymmetricSessionKey *skey,
-			      struct GNUNET_CRYPTO_SymmetricInitializationVector *iv,
-			      const char *label,
-			      const struct GNUNET_CRYPTO_EcdsaPublicKey *pub)
+                              struct GNUNET_CRYPTO_SymmetricInitializationVector
+                              *iv,
+                              const char *label,
+                              const struct GNUNET_CRYPTO_EcdsaPublicKey *pub)
 {
   struct GNUNET_HashCode key;
 
   /* derive key from 'label' and public key of the namespace */
   GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CRYPTO_kdf (&key, sizeof (key),
-				    "UBLOCK-ENC", strlen ("UBLOCK-ENC"),
-				    label, strlen (label),
-				    pub, sizeof (*pub),
-				    NULL, 0));
+                 GNUNET_CRYPTO_kdf (&key, sizeof(key),
+                                    "UBLOCK-ENC", strlen ("UBLOCK-ENC"),
+                                    label, strlen (label),
+                                    pub, sizeof(*pub),
+                                    NULL, 0));
   GNUNET_CRYPTO_hash_to_aes_key (&key, skey, iv);
 }
 
@@ -72,19 +73,19 @@ derive_ublock_encryption_key (struct GNUNET_CRYPTO_SymmetricSessionKey *skey,
  */
 void
 GNUNET_FS_ublock_decrypt_ (const void *input,
-			   size_t input_len,
-			   const struct GNUNET_CRYPTO_EcdsaPublicKey *ns,
-			   const char *label,
-			   void *output)
+                           size_t input_len,
+                           const struct GNUNET_CRYPTO_EcdsaPublicKey *ns,
+                           const char *label,
+                           void *output)
 {
   struct GNUNET_CRYPTO_SymmetricInitializationVector iv;
   struct GNUNET_CRYPTO_SymmetricSessionKey skey;
 
   derive_ublock_encryption_key (&skey, &iv,
-				label, ns);
+                                label, ns);
   GNUNET_CRYPTO_symmetric_decrypt (input, input_len,
-			     &skey, &iv,
-                             output);
+                                   &skey, &iv,
+                                   output);
 }
 
 
@@ -93,7 +94,6 @@ GNUNET_FS_ublock_decrypt_ (const void *input,
  */
 struct GNUNET_FS_PublishUblockContext
 {
-
   /**
    * Function to call when done.
    */
@@ -112,8 +112,7 @@ struct GNUNET_FS_PublishUblockContext
   /**
    * Task to run continuation asynchronously.
    */
-  struct GNUNET_SCHEDULER_Task * task;
-
+  struct GNUNET_SCHEDULER_Task *task;
 };
 
 
@@ -131,9 +130,9 @@ struct GNUNET_FS_PublishUblockContext
  */
 static void
 ublock_put_cont (void *cls,
-		 int32_t success,
-		 struct GNUNET_TIME_Absolute min_expiration,
-		 const char *msg)
+                 int32_t success,
+                 struct GNUNET_TIME_Absolute min_expiration,
+                 const char *msg)
 {
   struct GNUNET_FS_PublishUblockContext *uc = cls;
 
@@ -177,15 +176,15 @@ run_cont (void *cls)
  */
 struct GNUNET_FS_PublishUblockContext *
 GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
-			   struct GNUNET_DATASTORE_Handle *dsh,
-			   const char *label,
-			   const char *ulabel,
-			   const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
-			   const struct GNUNET_CONTAINER_MetaData *meta,
-			   const struct GNUNET_FS_Uri *uri,
-			   const struct GNUNET_FS_BlockOptions *bo,
-			   enum GNUNET_FS_PublishOptions options,
-			   GNUNET_FS_UBlockContinuation cont, void *cont_cls)
+                           struct GNUNET_DATASTORE_Handle *dsh,
+                           const char *label,
+                           const char *ulabel,
+                           const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
+                           const struct GNUNET_CONTAINER_MetaData *meta,
+                           const struct GNUNET_FS_Uri *uri,
+                           const struct GNUNET_FS_BlockOptions *bo,
+                           enum GNUNET_FS_PublishOptions options,
+                           GNUNET_FS_UBlockContinuation cont, void *cont_cls)
 {
   struct GNUNET_FS_PublishUblockContext *uc;
   struct GNUNET_HashCode query;
@@ -215,11 +214,11 @@ GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
     ulen = 1;
   else
     ulen = strlen (ulabel) + 1;
-  size = mdsize + sizeof (struct UBlock) + slen + ulen;
+  size = mdsize + sizeof(struct UBlock) + slen + ulen;
   if (size > MAX_UBLOCK_SIZE)
   {
     size = MAX_UBLOCK_SIZE;
-    mdsize = size - sizeof (struct UBlock) - (slen + ulen);
+    mdsize = size - sizeof(struct UBlock) - (slen + ulen);
   }
   ub_plain = GNUNET_malloc (size);
   kbe = (char *) &ub_plain[1];
@@ -233,48 +232,48 @@ GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
   if (NULL != meta)
     mdsize =
       GNUNET_CONTAINER_meta_data_serialize (meta, &sptr, mdsize,
-					    GNUNET_CONTAINER_META_DATA_SERIALIZE_PART);
+                                            GNUNET_CONTAINER_META_DATA_SERIALIZE_PART);
   if (-1 == mdsize)
   {
     GNUNET_break (0);
     GNUNET_free (ub_plain);
-    cont (cont_cls, _("Internal error."));
+    cont (cont_cls, _ ("Internal error."));
     return NULL;
   }
-  size = sizeof (struct UBlock) + slen + mdsize + ulen;
+  size = sizeof(struct UBlock) + slen + mdsize + ulen;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Publishing under identifier `%s'\n",
+              "Publishing under identifier `%s'\n",
               label);
   /* get public key of the namespace */
   GNUNET_CRYPTO_ecdsa_key_get_public (ns,
-				    &pub);
+                                      &pub);
   derive_ublock_encryption_key (&skey, &iv,
-				label, &pub);
+                                label, &pub);
 
   /* encrypt ublock */
   ub_enc = GNUNET_malloc (size);
   GNUNET_CRYPTO_symmetric_encrypt (&ub_plain[1],
-			     ulen + slen + mdsize,
-			     &skey, &iv,
-                             &ub_enc[1]);
+                                   ulen + slen + mdsize,
+                                   &skey, &iv,
+                                   &ub_enc[1]);
   GNUNET_free (ub_plain);
-  ub_enc->purpose.size = htonl (ulen + slen + mdsize +
-				sizeof (struct UBlock)
-				- sizeof (struct GNUNET_CRYPTO_EcdsaSignature));
+  ub_enc->purpose.size = htonl (ulen + slen + mdsize
+                                + sizeof(struct UBlock)
+                                - sizeof(struct GNUNET_CRYPTO_EcdsaSignature));
   ub_enc->purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_FS_UBLOCK);
 
   /* derive signing-key from 'label' and public key of the namespace */
   nsd = GNUNET_CRYPTO_ecdsa_private_key_derive (ns, label, "fs-ublock");
   GNUNET_CRYPTO_ecdsa_key_get_public (nsd,
-				    &ub_enc->verification_key);
+                                      &ub_enc->verification_key);
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CRYPTO_ecdsa_sign (nsd,
-					 &ub_enc->purpose,
-					 &ub_enc->signature));
+                 GNUNET_CRYPTO_ecdsa_sign (nsd,
+                                           &ub_enc->purpose,
+                                           &ub_enc->signature));
   GNUNET_CRYPTO_hash (&ub_enc->verification_key,
-		      sizeof (ub_enc->verification_key),
-		      &query);
+                      sizeof(ub_enc->verification_key),
+                      &query);
   GNUNET_free (nsd);
 
   uc = GNUNET_new (struct GNUNET_FS_PublishUblockContext);
@@ -286,7 +285,7 @@ GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
       GNUNET_DATASTORE_put (dsh,
                             0,
                             &query,
-                            ulen + slen + mdsize + sizeof (struct UBlock),
+                            ulen + slen + mdsize + sizeof(struct UBlock),
                             ub_enc,
                             GNUNET_BLOCK_TYPE_FS_UBLOCK,
                             bo->content_priority,
@@ -320,5 +319,6 @@ GNUNET_FS_publish_ublock_cancel_ (struct GNUNET_FS_PublishUblockContext *uc)
     GNUNET_SCHEDULER_cancel (uc->task);
   GNUNET_free (uc);
 }
+
 
 /* end of fs_publish_ublock.c */

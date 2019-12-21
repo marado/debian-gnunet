@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  *
@@ -80,7 +80,8 @@ extern "C"
  * How often do we signal applications that a probe for a particular
  * search result is running? (used to visualize probes).
  */
-#define GNUNET_FS_PROBE_UPDATE_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 250)
+#define GNUNET_FS_PROBE_UPDATE_FREQUENCY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 250)
 
 /**
  * A Universal Resource Identifier (URI), opaque.
@@ -102,7 +103,6 @@ typedef int
                               int is_mandatory);
 
 
-
 /**
  * Get a unique key from a URI.  This is for putting URIs
  * into HashMaps.  The key may change between FS implementations.
@@ -113,7 +113,7 @@ typedef int
  */
 int
 GNUNET_FS_uri_to_key (const struct GNUNET_FS_Uri *uri,
-		      struct GNUNET_HashCode *key);
+                      struct GNUNET_HashCode *key);
 
 
 /**
@@ -147,7 +147,7 @@ GNUNET_FS_uri_ksk_to_string_fancy (const struct GNUNET_FS_Uri *uri);
  */
 void
 GNUNET_FS_uri_ksk_add_keyword (struct GNUNET_FS_Uri *uri,
-			       const char *keyword,
+                               const char *keyword,
                                int is_mandatory);
 
 
@@ -322,7 +322,7 @@ GNUNET_FS_uri_ksk_create (const char *keywords,
  */
 struct GNUNET_FS_Uri *
 GNUNET_FS_uri_ksk_create_from_args (unsigned int argc,
-				    const char **argv);
+                                    const char **argv);
 
 
 /**
@@ -356,7 +356,7 @@ GNUNET_FS_uri_test_sks (const struct GNUNET_FS_Uri *uri);
  */
 struct GNUNET_FS_Uri *
 GNUNET_FS_uri_sks_create (const struct GNUNET_CRYPTO_EcdsaPublicKey *ns,
-			  const char *id);
+                          const char *id);
 
 
 /**
@@ -483,11 +483,11 @@ GNUNET_FS_GETOPT_METADATA (char shortName,
  * @return #GNUNET_OK on success
  */
 int
-GNUNET_FS_getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
+GNUNET_FS_getopt_set_metadata (struct
+                               GNUNET_GETOPT_CommandLineProcessorContext *ctx,
                                void *scls,
                                const char *option,
                                const char *value);
-
 
 
 /* ************************* sharing API ***************** */
@@ -724,7 +724,6 @@ enum GNUNET_FS_Status
    * Notification that we are making progress sharing a directory.
    */
   GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY = 37
-
 };
 
 
@@ -774,19 +773,16 @@ struct GNUNET_FS_FileInformation;
  */
 struct GNUNET_FS_ProgressInfo
 {
-
   /**
    * Values that depend on the event type.
    */
   union
   {
-
     /**
      * Values for all "GNUNET_FS_STATUS_PUBLISH_*" events.
      */
     struct
     {
-
       /**
        * Context for controlling the upload.
        */
@@ -850,52 +846,48 @@ struct GNUNET_FS_ProgressInfo
        */
       union
       {
-
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_PUBLISH_PROGRESS events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_PUBLISH_PROGRESS events.
+         */
         struct
         {
-
           /**
-	   * Data block we just published.
-	   */
+           * Data block we just published.
+           */
           const void *data;
 
           /**
-	   * At what offset in the file is "data"?
-	   */
+           * At what offset in the file is "data"?
+           */
           uint64_t offset;
 
           /**
-	   * Length of the data block.
-	   */
+           * Length of the data block.
+           */
           uint64_t data_len;
 
           /**
-	   * Depth of the given block in the tree;
-	   * 0 would be the lowest level (DBLOCKs).
-	   */
+           * Depth of the given block in the tree;
+           * 0 would be the lowest level (DBLOCKs).
+           */
           unsigned int depth;
-
         } progress;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY events.
+         */
         struct
         {
-
           /**
-	   * How far are we along in the overall directory?
-	   */
+           * How far are we along in the overall directory?
+           */
           uint64_t completed;
 
           /**
-	   * How big do we estimate the entire directory to be?
-	   */
+           * How big do we estimate the entire directory to be?
+           */
           uint64_t total;
 
           /**
@@ -905,68 +897,59 @@ struct GNUNET_FS_ProgressInfo
            * "publish"-level of this struct.)
            */
           struct GNUNET_TIME_Relative eta;
-
         } progress_directory;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_PUBLISH_RESUME events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_PUBLISH_RESUME events.
+         */
         struct
         {
-
           /**
-	   * Error message, NULL if no error was encountered so far.
-	   */
+           * Error message, NULL if no error was encountered so far.
+           */
           const char *message;
 
           /**
-	   * URI of the file (if the download had been completed)
-	   */
+           * URI of the file (if the download had been completed)
+           */
           const struct GNUNET_FS_Uri *chk_uri;
 
           /**
-	   * SKS URI of the file (if the download had been completed)
-	   */
+           * SKS URI of the file (if the download had been completed)
+           */
           const struct GNUNET_FS_Uri *sks_uri;
-
         } resume;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_PUBLISH_COMPLETED events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_PUBLISH_COMPLETED events.
+         */
         struct
         {
-
           /**
-	   * CHK URI of the file.
-	   */
+           * CHK URI of the file.
+           */
           const struct GNUNET_FS_Uri *chk_uri;
 
           /**
-	   * SKS URI of the file (if the download had been completed)
-	   */
+           * SKS URI of the file (if the download had been completed)
+           */
           const struct GNUNET_FS_Uri *sks_uri;
-
         } completed;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_PUBLISH_ERROR events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_PUBLISH_ERROR events.
+         */
         struct
         {
-
           /**
-	   * Error message, never NULL.
-	   */
+           * Error message, never NULL.
+           */
           const char *message;
-
         } error;
-
       } specifics;
-
     } publish;
 
 
@@ -975,7 +958,6 @@ struct GNUNET_FS_ProgressInfo
      */
     struct
     {
-
       /**
        * Context for controlling the download.
        */
@@ -1051,111 +1033,100 @@ struct GNUNET_FS_ProgressInfo
        */
       union
       {
-
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_DOWNLOAD_PROGRESS events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_DOWNLOAD_PROGRESS events.
+         */
         struct
         {
-
           /**
-	   * Data block we just obtained, can be NULL (even if
-	   * data_len > 0) if we found the entire block 'intact' on
-	   * disk.  In this case, it is also possible for 'data_len'
-	   * to be larger than an individual (32k) block.
-	   */
+           * Data block we just obtained, can be NULL (even if
+           * data_len > 0) if we found the entire block 'intact' on
+           * disk.  In this case, it is also possible for 'data_len'
+           * to be larger than an individual (32k) block.
+           */
           const void *data;
 
           /**
-	   * At what offset in the file is "data"?
-	   */
+           * At what offset in the file is "data"?
+           */
           uint64_t offset;
 
           /**
-	   * Length of the data block.
-	   */
+           * Length of the data block.
+           */
           uint64_t data_len;
 
           /**
-	   * How much time passed between us asking for this block and
+           * How much time passed between us asking for this block and
            * actually getting it? #GNUNET_TIME_UNIT_FOREVER_REL if unknown.
-	   */
+           */
           struct GNUNET_TIME_Relative block_download_duration;
 
           /**
-	   * Depth of the given block in the tree;
-	   * 0 would be the lowest level (DBLOCKS).
-	   */
+           * Depth of the given block in the tree;
+           * 0 would be the lowest level (DBLOCKS).
+           */
           unsigned int depth;
 
           /**
-	   * How much respect did we offer for downloading this block? (estimate,
-	   * because we might have the same request pending for multiple clients,
-	   * and of course because a transmission may have failed at a lower
-	   * layer).
-	   */
+           * How much respect did we offer for downloading this block? (estimate,
+           * because we might have the same request pending for multiple clients,
+           * and of course because a transmission may have failed at a lower
+           * layer).
+           */
           uint32_t respect_offered;
 
           /**
-	   * How often did we transmit the request? (estimate,
-	   * because we might have the same request pending for multiple clients,
-	   * and of course because a transmission may have failed at a lower
-	   * layer).
-	   */
+           * How often did we transmit the request? (estimate,
+           * because we might have the same request pending for multiple clients,
+           * and of course because a transmission may have failed at a lower
+           * layer).
+           */
           uint32_t num_transmissions;
-
         } progress;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_DOWNLOAD_START events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_DOWNLOAD_START events.
+         */
         struct
         {
-
           /**
-	   * Known metadata for the download.
-	   */
+           * Known metadata for the download.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
-
         } start;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_DOWNLOAD_RESUME events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_DOWNLOAD_RESUME events.
+         */
         struct
         {
-
           /**
-	   * Known metadata for the download.
-	   */
+           * Known metadata for the download.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * Error message, NULL if we have not encountered any error yet.
-	   */
+           * Error message, NULL if we have not encountered any error yet.
+           */
           const char *message;
-
         } resume;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_DOWNLOAD_ERROR events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_DOWNLOAD_ERROR events.
+         */
         struct
         {
-
           /**
-	   * Error message.
-	   */
+           * Error message.
+           */
           const char *message;
-
         } error;
-
       } specifics;
-
     } download;
 
     /**
@@ -1163,7 +1134,6 @@ struct GNUNET_FS_ProgressInfo
      */
     struct
     {
-
       /**
        * Context for controlling the search, NULL for
        * searches that were not explicitly triggered
@@ -1213,252 +1183,233 @@ struct GNUNET_FS_ProgressInfo
        */
       union
       {
-
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_RESULT events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_RESULT events.
+         */
         struct
         {
-
           /**
-	   * Metadata for the search result.
-	   */
+           * Metadata for the search result.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * URI for the search result.
-	   */
+           * URI for the search result.
+           */
           const struct GNUNET_FS_Uri *uri;
 
           /**
-	   * Handle to the result (for starting downloads).
-	   */
+           * Handle to the result (for starting downloads).
+           */
           struct GNUNET_FS_SearchResult *result;
 
           /**
-	   * Applicability rank (the larger, the better the result
-	   * fits the search criteria).
-	   */
+           * Applicability rank (the larger, the better the result
+           * fits the search criteria).
+           */
           uint32_t applicability_rank;
-
         } result;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_RESUME_RESULT events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_RESUME_RESULT events.
+         */
         struct
         {
-
           /**
-	   * Metadata for the search result.
-	   */
+           * Metadata for the search result.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * URI for the search result.
-	   */
+           * URI for the search result.
+           */
           const struct GNUNET_FS_Uri *uri;
 
           /**
-	   * Handle to the result (for starting downloads).
-	   */
+           * Handle to the result (for starting downloads).
+           */
           struct GNUNET_FS_SearchResult *result;
 
           /**
-	   * Current availability rank (negative:
-	   * unavailable, positive: available)
-	   */
+           * Current availability rank (negative:
+           * unavailable, positive: available)
+           */
           int32_t availability_rank;
 
           /**
-	   * On how many total queries is the given
-	   * availability_rank based?
-	   */
+           * On how many total queries is the given
+           * availability_rank based?
+           */
           uint32_t availability_certainty;
 
           /**
-	   * Updated applicability rank (the larger,
-	   * the better the result fits the search
-	   * criteria).
-	   */
+           * Updated applicability rank (the larger,
+           * the better the result fits the search
+           * criteria).
+           */
           uint32_t applicability_rank;
-
         } resume_result;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_UPDATE events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_UPDATE events.
+         */
         struct
         {
-
           /**
-	   * Private context set for for this result
-	   * during the "RESULT" event.
-	   */
+           * Private context set for for this result
+           * during the "RESULT" event.
+           */
           void *cctx;
 
           /**
-	   * Metadata for the search result.
-	   */
+           * Metadata for the search result.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * URI for the search result.
-	   */
+           * URI for the search result.
+           */
           const struct GNUNET_FS_Uri *uri;
 
           /**
-	   * Current availability rank (negative:
-	   * unavailable, positive: available)
-	   */
+           * Current availability rank (negative:
+           * unavailable, positive: available)
+           */
           int32_t availability_rank;
 
           /**
-	   * On how many total queries is the given
-	   * availability_rank based?
-	   */
+           * On how many total queries is the given
+           * availability_rank based?
+           */
           uint32_t availability_certainty;
 
           /**
-	   * Updated applicability rank (the larger,
-	   * the better the result fits the search
-	   * criteria).
-	   */
+           * Updated applicability rank (the larger,
+           * the better the result fits the search
+           * criteria).
+           */
           uint32_t applicability_rank;
 
-	  /**
-	   * How long has the current probe been active?
-	   */
-	  struct GNUNET_TIME_Relative current_probe_time;
-
+          /**
+           * How long has the current probe been active?
+           */
+          struct GNUNET_TIME_Relative current_probe_time;
         } update;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_RESULT_SUSPEND events.
-	 * These events are automatically triggered for
-	 * each search result before the
-	 * #GNUNET_FS_STATUS_SEARCH_SUSPEND event.  This
-	 * happens primarily to give the client a chance
-	 * to clean up the "cctx" (if needed).
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_RESULT_SUSPEND events.
+         * These events are automatically triggered for
+         * each search result before the
+         * #GNUNET_FS_STATUS_SEARCH_SUSPEND event.  This
+         * happens primarily to give the client a chance
+         * to clean up the "cctx" (if needed).
+         */
         struct
         {
-
           /**
-	   * Private context set for for this result
-	   * during the "RESULT" event.
-	   */
+           * Private context set for for this result
+           * during the "RESULT" event.
+           */
           void *cctx;
 
           /**
-	   * Metadata for the search result.
-	   */
+           * Metadata for the search result.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * URI for the search result.
-	   */
+           * URI for the search result.
+           */
           const struct GNUNET_FS_Uri *uri;
-
         } result_suspend;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_RESULT_STOPPED events.
-	 * These events are automatically triggered for
-	 * each search result before the
-	 * #GNUNET_FS_STATUS_SEARCH_STOPPED event.  This
-	 * happens primarily to give the client a chance
-	 * to clean up the "cctx" (if needed).
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_RESULT_STOPPED events.
+         * These events are automatically triggered for
+         * each search result before the
+         * #GNUNET_FS_STATUS_SEARCH_STOPPED event.  This
+         * happens primarily to give the client a chance
+         * to clean up the "cctx" (if needed).
+         */
         struct
         {
-
           /**
-	   * Private context set for for this result
-	   * during the "RESULT" event.
-	   */
+           * Private context set for for this result
+           * during the "RESULT" event.
+           */
           void *cctx;
 
           /**
-	   * Metadata for the search result.
-	   */
+           * Metadata for the search result.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * URI for the search result.
-	   */
+           * URI for the search result.
+           */
           const struct GNUNET_FS_Uri *uri;
-
         } result_stopped;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_RESUME events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_RESUME events.
+         */
         struct
         {
-
           /**
-	   * Error message, NULL if we have not encountered any error yet.
-	   */
+           * Error message, NULL if we have not encountered any error yet.
+           */
           const char *message;
 
           /**
-	   * Is this search currently paused?
-	   */
+           * Is this search currently paused?
+           */
           int is_paused;
-
         } resume;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_SEARCH_ERROR events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_SEARCH_ERROR events.
+         */
         struct
         {
-
           /**
-	   * Error message.
-	   */
+           * Error message.
+           */
           const char *message;
-
         } error;
 
         /**
-	 * Values for #GNUNET_FS_STATUS_SEARCH_RESULT_NAMESPACE events.
-	 */
+         * Values for #GNUNET_FS_STATUS_SEARCH_RESULT_NAMESPACE events.
+         */
         struct
         {
-
           /**
-	   * Short, human-readable name of the namespace.
-	   */
+           * Short, human-readable name of the namespace.
+           */
           const char *name;
 
           /**
-	   * Root identifier for the namespace, can be NULL.
-	   */
+           * Root identifier for the namespace, can be NULL.
+           */
           const char *root;
 
           /**
-	   * Metadata for the namespace.
-	   */
+           * Metadata for the namespace.
+           */
           const struct GNUNET_CONTAINER_MetaData *meta;
 
           /**
-	   * Public key of the namespace.
-	   */
+           * Public key of the namespace.
+           */
           struct GNUNET_CRYPTO_EcdsaPublicKey pseudonym;
-
         } ns;
-
       } specifics;
-
     } search;
 
     /**
@@ -1466,7 +1417,6 @@ struct GNUNET_FS_ProgressInfo
      */
     struct
     {
-
       /**
        * Context for controlling the unindexing.
        */
@@ -1512,69 +1462,59 @@ struct GNUNET_FS_ProgressInfo
        */
       union
       {
-
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_UNINDEX_PROGRESS events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_UNINDEX_PROGRESS events.
+         */
         struct
         {
-
           /**
-	   * Data block we just unindexed.
-	   */
+           * Data block we just unindexed.
+           */
           const void *data;
 
           /**
-	   * At what offset in the file is "data"?
-	   */
+           * At what offset in the file is "data"?
+           */
           uint64_t offset;
 
           /**
-	   * Length of the data block.
-	   */
+           * Length of the data block.
+           */
           uint64_t data_len;
 
           /**
-	   * Depth of the given block in the tree;
-	   * 0 would be the lowest level (DBLOCKS).
-	   */
+           * Depth of the given block in the tree;
+           * 0 would be the lowest level (DBLOCKS).
+           */
           unsigned int depth;
-
         } progress;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_UNINDEX_RESUME events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_UNINDEX_RESUME events.
+         */
         struct
         {
-
           /**
-	   * Error message, NULL if we have not encountered any error yet.
-	   */
+           * Error message, NULL if we have not encountered any error yet.
+           */
           const char *message;
-
         } resume;
 
         /**
-	 * These values are only valid for
-	 * #GNUNET_FS_STATUS_UNINDEX_ERROR events.
-	 */
+         * These values are only valid for
+         * #GNUNET_FS_STATUS_UNINDEX_ERROR events.
+         */
         struct
         {
-
           /**
-	   * Error message.
-	   */
+           * Error message.
+           */
           const char *message;
-
         } error;
-
       } specifics;
-
     } unindex;
-
   } value;
 
   /**
@@ -1639,7 +1579,6 @@ enum GNUNET_FS_Flags
  */
 enum GNUNET_FS_OPTIONS
 {
-
   /**
    * Last option in the VARARG list.
    */
@@ -1668,7 +1607,6 @@ enum GNUNET_FS_OPTIONS
  */
 struct GNUNET_FS_BlockOptions
 {
-
   /**
    * At what time should the block expire?  Data blocks (DBLOCKS and
    * IBLOCKS) may still be used even if they are expired (however,
@@ -1703,7 +1641,6 @@ struct GNUNET_FS_BlockOptions
    * first place).
    */
   uint32_t replication_level;
-
 };
 
 
@@ -1727,10 +1664,10 @@ struct GNUNET_FS_Handle;
 struct GNUNET_FS_Handle *
 GNUNET_FS_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
                  const char *client_name,
-		 GNUNET_FS_ProgressCallback upcb,
+                 GNUNET_FS_ProgressCallback upcb,
                  void *upcb_cls,
-		 enum GNUNET_FS_Flags flags,
-		 ...);
+                 enum GNUNET_FS_Flags flags,
+                 ...);
 
 
 /**
@@ -1766,7 +1703,7 @@ typedef int
                                        struct GNUNET_FS_FileInformation *fi,
                                        uint64_t length,
                                        struct GNUNET_CONTAINER_MetaData *meta,
-                                       struct GNUNET_FS_Uri ** uri,
+                                       struct GNUNET_FS_Uri **uri,
                                        struct GNUNET_FS_BlockOptions *bo,
                                        int *do_index,
                                        void **client_info);
@@ -1826,10 +1763,13 @@ struct GNUNET_FS_FileInformation *
 GNUNET_FS_file_information_create_from_file (struct GNUNET_FS_Handle *h,
                                              void *client_info,
                                              const char *filename,
-                                             const struct GNUNET_FS_Uri *keywords,
-                                             const struct GNUNET_CONTAINER_MetaData *meta,
+                                             const struct
+                                             GNUNET_FS_Uri *keywords,
+                                             const struct
+                                             GNUNET_CONTAINER_MetaData *meta,
                                              int do_index,
-                                             const struct GNUNET_FS_BlockOptions *bo);
+                                             const struct
+                                             GNUNET_FS_BlockOptions *bo);
 
 
 /**
@@ -1853,10 +1793,13 @@ GNUNET_FS_file_information_create_from_data (struct GNUNET_FS_Handle *h,
                                              void *client_info,
                                              uint64_t length,
                                              void *data,
-                                             const struct GNUNET_FS_Uri *keywords,
-                                             const struct GNUNET_CONTAINER_MetaData *meta,
+                                             const struct
+                                             GNUNET_FS_Uri *keywords,
+                                             const struct
+                                             GNUNET_CONTAINER_MetaData *meta,
                                              int do_index,
-                                             const struct GNUNET_FS_BlockOptions *bo);
+                                             const struct
+                                             GNUNET_FS_BlockOptions *bo);
 
 
 /**
@@ -2042,7 +1985,7 @@ struct GNUNET_FS_PublishContext *
 GNUNET_FS_publish_start (struct GNUNET_FS_Handle *h,
                          struct GNUNET_FS_FileInformation *fi,
                          const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
-			 const char *nid,
+                         const char *nid,
                          const char *nuid,
                          enum GNUNET_FS_PublishOptions options);
 
@@ -2136,7 +2079,7 @@ struct GNUNET_FS_PublishSksContext *
 GNUNET_FS_publish_sks (struct GNUNET_FS_Handle *h,
                        const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
                        const char *identifier,
-		       const char *update,
+                       const char *update,
                        const struct GNUNET_CONTAINER_MetaData *meta,
                        const struct GNUNET_FS_Uri *uri,
                        const struct GNUNET_FS_BlockOptions *bo,
@@ -2206,7 +2149,7 @@ GNUNET_FS_get_indexed_files_cancel (struct GNUNET_FS_GetIndexedContext *gic);
  */
 struct GNUNET_FS_UnindexContext *
 GNUNET_FS_unindex_start (struct GNUNET_FS_Handle *h,
-			 const char *filename,
+                         const char *filename,
                          void *cctx);
 
 
@@ -2229,10 +2172,13 @@ GNUNET_FS_unindex_stop (struct GNUNET_FS_UnindexContext *uc);
  * @param next_id identifier that should be used for updates
  */
 typedef void (*GNUNET_FS_IdentifierProcessor) (void *cls,
-					       const char *last_id,
-                                               const struct GNUNET_FS_Uri *last_uri,
-                                               const struct GNUNET_CONTAINER_MetaData *last_meta,
-					       const char *next_id);
+                                               const char *last_id,
+                                               const struct
+                                               GNUNET_FS_Uri *last_uri,
+                                               const struct
+                                               GNUNET_CONTAINER_MetaData *
+                                               last_meta,
+                                               const char *next_id);
 
 
 /**
@@ -2258,7 +2204,8 @@ typedef void (*GNUNET_FS_IdentifierProcessor) (void *cls,
  */
 void
 GNUNET_FS_namespace_list_updateable (struct GNUNET_FS_Handle *h,
-				     const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
+                                     const struct
+                                     GNUNET_CRYPTO_EcdsaPrivateKey *ns,
                                      const char *next_id,
                                      GNUNET_FS_IdentifierProcessor ip,
                                      void *ip_cls);
@@ -2270,14 +2217,14 @@ GNUNET_FS_namespace_list_updateable (struct GNUNET_FS_Handle *h,
  */
 enum GNUNET_FS_SearchOptions
 {
-    /**
-     * No options (use defaults for everything).
-     */
+  /**
+   * No options (use defaults for everything).
+   */
   GNUNET_FS_SEARCH_OPTION_NONE = 0,
 
-    /**
-     * Only search the local host, do not search remote systems (no P2P)
-     */
+  /**
+   * Only search the local host, do not search remote systems (no P2P)
+   */
   GNUNET_FS_SEARCH_OPTION_LOOPBACK_ONLY = 1
 };
 
@@ -2338,10 +2285,10 @@ GNUNET_FS_search_stop (struct GNUNET_FS_SearchContext *sc);
  */
 struct GNUNET_FS_SearchResult *
 GNUNET_FS_probe (struct GNUNET_FS_Handle *h,
-		 const struct GNUNET_FS_Uri *uri,
-		 const struct GNUNET_CONTAINER_MetaData *meta,
-		 void *client_info,
-		 uint32_t anonymity);
+                 const struct GNUNET_FS_Uri *uri,
+                 const struct GNUNET_CONTAINER_MetaData *meta,
+                 void *client_info,
+                 uint32_t anonymity);
 
 
 /**
@@ -2392,7 +2339,6 @@ enum GNUNET_FS_DownloadOptions
    */
   GNUNET_FS_DOWNLOAD_IS_PROBE = (1 << 31)
 };
-
 
 
 /**
@@ -2507,7 +2453,6 @@ void
 GNUNET_FS_download_resume (struct GNUNET_FS_DownloadContext *dc);
 
 
-
 /* ******************** Directory API *********************** */
 
 
@@ -2544,7 +2489,8 @@ GNUNET_FS_meta_data_make_directory (struct GNUNET_CONTAINER_MetaData *md);
  * @return NULL if meta data is useless for suggesting a filename
  */
 char *
-GNUNET_FS_meta_data_suggest_filename (const struct GNUNET_CONTAINER_MetaData *md);
+GNUNET_FS_meta_data_suggest_filename (const struct
+                                      GNUNET_CONTAINER_MetaData *md);
 
 
 /**
@@ -2643,7 +2589,7 @@ GNUNET_FS_directory_builder_add (struct GNUNET_FS_DirectoryBuilder *bld,
  */
 int
 GNUNET_FS_directory_builder_finish (struct GNUNET_FS_DirectoryBuilder *bld,
-                                    size_t * rsize, void **rdata);
+                                    size_t *rsize, void **rdata);
 
 
 /* ******************** DirScanner API *********************** */
@@ -2653,7 +2599,6 @@ GNUNET_FS_directory_builder_finish (struct GNUNET_FS_DirectoryBuilder *bld,
  */
 enum GNUNET_FS_DirScannerProgressUpdateReason
 {
-
   /**
    * We've started processing a file or directory.
    */
@@ -2685,7 +2630,6 @@ enum GNUNET_FS_DirScannerProgressUpdateReason
    * There was an internal error.  Application should abort the scan.
    */
   GNUNET_FS_DIRSCANNER_INTERNAL_ERROR
-
 };
 
 
@@ -2701,9 +2645,11 @@ enum GNUNET_FS_DirScannerProgressUpdateReason
  * @param reason kind of progress we are making
  */
 typedef void (*GNUNET_FS_DirScannerProgressCallback) (void *cls,
-						      const char *filename,
-						      int is_directory,
-						      enum GNUNET_FS_DirScannerProgressUpdateReason reason);
+                                                      const char *filename,
+                                                      int is_directory,
+                                                      enum
+                                                      GNUNET_FS_DirScannerProgressUpdateReason
+                                                      reason);
 
 
 /**
@@ -2763,7 +2709,6 @@ struct GNUNET_FS_ShareTreeItem
    * #GNUNET_YES if this is a directory
    */
   int is_directory;
-
 };
 
 
@@ -2786,10 +2731,10 @@ struct GNUNET_FS_DirScanner;
  */
 struct GNUNET_FS_DirScanner *
 GNUNET_FS_directory_scan_start (const char *filename,
-				int disable_extractor,
-				const char *ex,
-				GNUNET_FS_DirScannerProgressCallback cb,
-				void *cb_cls);
+                                int disable_extractor,
+                                const char *ex,
+                                GNUNET_FS_DirScannerProgressCallback cb,
+                                void *cb_cls);
 
 
 /**

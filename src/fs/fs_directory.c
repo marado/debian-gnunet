@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_directory.c
@@ -51,17 +51,20 @@
  *  we have no mime-type information (treat as #GNUNET_NO)
  */
 int
-GNUNET_FS_meta_data_test_for_directory (const struct GNUNET_CONTAINER_MetaData *md)
+GNUNET_FS_meta_data_test_for_directory (const struct
+                                        GNUNET_CONTAINER_MetaData *md)
 {
   char *mime;
   int ret;
 
   if (NULL == md)
     return GNUNET_SYSERR;
-  mime = GNUNET_CONTAINER_meta_data_get_by_type (md, EXTRACTOR_METATYPE_MIMETYPE);
+  mime = GNUNET_CONTAINER_meta_data_get_by_type (md,
+                                                 EXTRACTOR_METATYPE_MIMETYPE);
   if (NULL == mime)
     return GNUNET_SYSERR;
-  ret = (0 == strcasecmp (mime, GNUNET_FS_DIRECTORY_MIME)) ? GNUNET_YES : GNUNET_NO;
+  ret = (0 == strcasecmp (mime, GNUNET_FS_DIRECTORY_MIME)) ? GNUNET_YES :
+        GNUNET_NO;
   GNUNET_free (mime);
   return ret;
 }
@@ -79,7 +82,7 @@ GNUNET_FS_meta_data_make_directory (struct GNUNET_CONTAINER_MetaData *md)
   char *mime;
 
   mime =
-      GNUNET_CONTAINER_meta_data_get_by_type (md, EXTRACTOR_METATYPE_MIMETYPE);
+    GNUNET_CONTAINER_meta_data_get_by_type (md, EXTRACTOR_METATYPE_MIMETYPE);
   if (mime != NULL)
   {
     GNUNET_break (0 == strcmp (mime, GNUNET_FS_DIRECTORY_MIME));
@@ -99,7 +102,6 @@ GNUNET_FS_meta_data_make_directory (struct GNUNET_CONTAINER_MetaData *md)
  */
 struct GetFullDataClosure
 {
-
   /**
    * Extracted binary meta data.
    */
@@ -194,7 +196,7 @@ GNUNET_FS_directory_list_contents (size_t size,
   char *filename;
 
   if ((offset == 0) &&
-      ((size < 8 + sizeof (uint32_t)) ||
+      ((size < 8 + sizeof(uint32_t)) ||
        (0 != memcmp (cdata,
                      GNUNET_FS_DIRECTORY_MAGIC,
                      8))))
@@ -204,16 +206,16 @@ GNUNET_FS_directory_list_contents (size_t size,
   {
     GNUNET_memcpy (&mdSize,
                    &cdata[8],
-                   sizeof (uint32_t));
+                   sizeof(uint32_t));
     mdSize = ntohl (mdSize);
-    if (mdSize > size - 8 - sizeof (uint32_t))
+    if (mdSize > size - 8 - sizeof(uint32_t))
     {
       /* invalid size */
       GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                  _("MAGIC mismatch.  This is not a GNUnet directory.\n"));
+                  _ ("MAGIC mismatch.  This is not a GNUnet directory.\n"));
       return GNUNET_SYSERR;
     }
-    md = GNUNET_CONTAINER_meta_data_deserialize (&cdata[8 + sizeof (uint32_t)],
+    md = GNUNET_CONTAINER_meta_data_deserialize (&cdata[8 + sizeof(uint32_t)],
                                                  mdSize);
     if (md == NULL)
     {
@@ -227,7 +229,7 @@ GNUNET_FS_directory_list_contents (size_t size,
          0,
          NULL);
     GNUNET_CONTAINER_meta_data_destroy (md);
-    pos = 8 + sizeof (uint32_t) + mdSize;
+    pos = 8 + sizeof(uint32_t) + mdSize;
   }
   while (pos < size)
   {
@@ -272,9 +274,9 @@ GNUNET_FS_directory_list_contents (size_t size,
 
     GNUNET_memcpy (&mdSize,
                    &cdata[pos],
-                   sizeof (uint32_t));
+                   sizeof(uint32_t));
     mdSize = ntohl (mdSize);
-    pos += sizeof (uint32_t);
+    pos += sizeof(uint32_t);
     if (pos + mdSize > size)
     {
       GNUNET_FS_uri_destroy (uri);
@@ -291,8 +293,8 @@ GNUNET_FS_directory_list_contents (size_t size,
     }
     pos += mdSize;
     filename =
-        GNUNET_CONTAINER_meta_data_get_by_type (md,
-                                                EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME);
+      GNUNET_CONTAINER_meta_data_get_by_type (md,
+                                              EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME);
     full_data.size = 0;
     full_data.data = NULL;
     GNUNET_CONTAINER_meta_data_iterate (md,
@@ -314,6 +316,7 @@ GNUNET_FS_directory_list_contents (size_t size,
   }
   return GNUNET_OK;
 }
+
 
 /**
  * Entries in the directory (builder).
@@ -404,10 +407,10 @@ GNUNET_FS_directory_builder_add (struct GNUNET_FS_DirectoryBuilder *bld,
   struct GNUNET_CONTAINER_MetaData *meta;
   const struct GNUNET_CONTAINER_MetaData *meta_use;
 
-  GNUNET_assert (!GNUNET_FS_uri_test_ksk (uri));
+  GNUNET_assert (! GNUNET_FS_uri_test_ksk (uri));
   if (NULL != data)
   {
-    GNUNET_assert (!GNUNET_FS_uri_test_sks (uri));
+    GNUNET_assert (! GNUNET_FS_uri_test_sks (uri));
     if (GNUNET_FS_uri_test_chk (uri))
     {
       fsize = GNUNET_FS_uri_chk_get_file_size (uri);
@@ -439,8 +442,8 @@ GNUNET_FS_directory_builder_add (struct GNUNET_FS_DirectoryBuilder *bld,
                                        EXTRACTOR_METAFORMAT_BINARY, NULL, data,
                                        fsize);
     mdxs = GNUNET_CONTAINER_meta_data_get_serialized_size (meta);
-    if ((slen + sizeof (uint32_t) + mdxs - 1) / DBLOCK_SIZE ==
-        (slen + sizeof (uint32_t) + mds - 1) / DBLOCK_SIZE)
+    if ((slen + sizeof(uint32_t) + mdxs - 1) / DBLOCK_SIZE ==
+        (slen + sizeof(uint32_t) + mds - 1) / DBLOCK_SIZE)
     {
       /* adding full data would not cause us to cross
        * additional blocks, so add it! */
@@ -451,15 +454,15 @@ GNUNET_FS_directory_builder_add (struct GNUNET_FS_DirectoryBuilder *bld,
 
   if (mds > GNUNET_MAX_MALLOC_CHECKED / 2)
     mds = GNUNET_MAX_MALLOC_CHECKED / 2;
-  e = GNUNET_malloc (sizeof (struct BuilderEntry) + slen + mds +
-                     sizeof (uint32_t));
+  e = GNUNET_malloc (sizeof(struct BuilderEntry) + slen + mds
+                     + sizeof(uint32_t));
   ser = (char *) &e[1];
   GNUNET_memcpy (ser, uris, slen);
   GNUNET_free (uris);
-  sptr = &ser[slen + sizeof (uint32_t)];
+  sptr = &ser[slen + sizeof(uint32_t)];
   ret =
-      GNUNET_CONTAINER_meta_data_serialize (meta_use, &sptr, mds,
-                                            GNUNET_CONTAINER_META_DATA_SERIALIZE_PART);
+    GNUNET_CONTAINER_meta_data_serialize (meta_use, &sptr, mds,
+                                          GNUNET_CONTAINER_META_DATA_SERIALIZE_PART);
   if (NULL != meta)
     GNUNET_CONTAINER_meta_data_destroy (meta);
   if (ret == -1)
@@ -467,8 +470,8 @@ GNUNET_FS_directory_builder_add (struct GNUNET_FS_DirectoryBuilder *bld,
   else
     mds = ret;
   big = htonl (mds);
-  GNUNET_memcpy (&ser[slen], &big, sizeof (uint32_t));
-  e->len = slen + sizeof (uint32_t) + mds;
+  GNUNET_memcpy (&ser[slen], &big, sizeof(uint32_t));
+  e->len = slen + sizeof(uint32_t) + mds;
   e->next = bld->head;
   bld->head = e;
   bld->count++;
@@ -502,7 +505,7 @@ do_align (size_t start_position, size_t end_position)
  * @param perm the permutation of the blocks (updated)
  */
 static void
-block_align (size_t start, unsigned int count, const size_t * sizes,
+block_align (size_t start, unsigned int count, const size_t *sizes,
              unsigned int *perm)
 {
   unsigned int i;
@@ -572,7 +575,7 @@ block_align (size_t start, unsigned int count, const size_t * sizes,
  */
 int
 GNUNET_FS_directory_builder_finish (struct GNUNET_FS_DirectoryBuilder *bld,
-                                    size_t * rsize,
+                                    size_t *rsize,
                                     void **rdata)
 {
   char *data;
@@ -589,7 +592,7 @@ GNUNET_FS_directory_builder_finish (struct GNUNET_FS_DirectoryBuilder *bld,
   ssize_t ret;
   uint32_t big;
 
-  size = strlen (GNUNET_DIRECTORY_MAGIC) + sizeof (uint32_t);
+  size = strlen (GNUNET_DIRECTORY_MAGIC) + sizeof(uint32_t);
   size += GNUNET_CONTAINER_meta_data_get_serialized_size (bld->meta);
   sizes = NULL;
   perm = NULL;
@@ -638,18 +641,18 @@ GNUNET_FS_directory_builder_finish (struct GNUNET_FS_DirectoryBuilder *bld,
                  strlen (GNUNET_DIRECTORY_MAGIC));
   off = strlen (GNUNET_DIRECTORY_MAGIC);
 
-  sptr = &data[off + sizeof (uint32_t)];
+  sptr = &data[off + sizeof(uint32_t)];
   ret =
-      GNUNET_CONTAINER_meta_data_serialize (bld->meta,
-                                            &sptr,
-                                            size - off - sizeof (uint32_t),
-                                            GNUNET_CONTAINER_META_DATA_SERIALIZE_FULL);
+    GNUNET_CONTAINER_meta_data_serialize (bld->meta,
+                                          &sptr,
+                                          size - off - sizeof(uint32_t),
+                                          GNUNET_CONTAINER_META_DATA_SERIALIZE_FULL);
   GNUNET_assert (ret != -1);
   big = htonl (ret);
   GNUNET_memcpy (&data[off],
                  &big,
-                 sizeof (uint32_t));
-  off += sizeof (uint32_t) + ret;
+                 sizeof(uint32_t));
+  off += sizeof(uint32_t) + ret;
   for (j = 0; j < bld->count; j++)
   {
     i = perm[j];

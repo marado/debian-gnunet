@@ -95,20 +95,19 @@ target_triplet = @target@
 noinst_PROGRAMS = gnunet-transport-profiler$(EXEEXT) \
 	gnunet-communicator-tcp$(EXEEXT) \
 	gnunet-communicator-udp$(EXEEXT) gnunet-service-tng$(EXEEXT) \
-	$(am__EXEEXT_36) $(am__EXEEXT_37)
-libexec_PROGRAMS = $(am__EXEEXT_33) $(am__EXEEXT_34) $(am__EXEEXT_35) \
+	$(am__EXEEXT_37) $(am__EXEEXT_38)
+libexec_PROGRAMS = $(am__EXEEXT_34) $(am__EXEEXT_35) $(am__EXEEXT_36) \
 	gnunet-service-transport$(EXEEXT) \
 	gnunet-communicator-unix$(EXEEXT) \
 	gnunet-communicator-udp$(EXEEXT) \
 	gnunet-communicator-tcp$(EXEEXT)
 bin_PROGRAMS = gnunet-transport$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@am__append_1 = libgnunet_plugin_transport_udp.la
 @HAVE_TESTING_TRUE@check_PROGRAMS =  \
 @HAVE_TESTING_TRUE@	test_transport_address_switch_tcp$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_transport_address_switch_udp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_testing_startstop$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_testing_restart$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_plugin_tcp$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_plugin_udp$(EXEEXT) $(am__EXEEXT_1) \
+@HAVE_TESTING_TRUE@	test_plugin_tcp$(EXEEXT) $(am__EXEEXT_1) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_2) $(am__EXEEXT_3) \
 @HAVE_TESTING_TRUE@	test_http_common$(EXEEXT) $(am__EXEEXT_4) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_5) $(am__EXEEXT_6) \
@@ -121,17 +120,13 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @HAVE_TESTING_TRUE@	test_transport_api_timeout_tcp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_api_limited_sockets_tcp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_api_tcp_nat$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_transport_api_udp$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_8) $(am__EXEEXT_9) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_10) \
-@HAVE_TESTING_TRUE@	test_transport_api_udp_nat$(EXEEXT) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_11) $(am__EXEEXT_12) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_13) $(am__EXEEXT_14) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_15) $(am__EXEEXT_16) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_17) $(am__EXEEXT_18) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_19) $(am__EXEEXT_20) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_21) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_10) $(am__EXEEXT_11) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_12) $(am__EXEEXT_13) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_14) $(am__EXEEXT_15) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_16) $(am__EXEEXT_17) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_18) $(am__EXEEXT_19) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_20) $(am__EXEEXT_21) \
 @HAVE_TESTING_TRUE@	test_transport_api_multi$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_api_monitor_peers$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_blacklisting_no_bl$(EXEEXT) \
@@ -145,27 +140,33 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @HAVE_TESTING_TRUE@	test_transport_api_manipulation_cfg$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_api_reliability_tcp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_transport_api_reliability_tcp_nat$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_transport_api_reliability_udp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_22) $(am__EXEEXT_23) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_24) $(am__EXEEXT_25) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_26) \
 @HAVE_TESTING_TRUE@	test_quota_compliance_tcp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	test_quota_compliance_tcp_asymmetric$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_quota_compliance_udp$(EXEEXT) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_27) $(am__EXEEXT_28) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_29) $(am__EXEEXT_30) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_31) $(am__EXEEXT_32) \
-@HAVE_TESTING_TRUE@	test_communicator_unix$(EXEEXT)
-@HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__append_1 = \
+@HAVE_TESTING_TRUE@	test_communicator_unix$(EXEEXT) \
+@HAVE_TESTING_TRUE@	$(am__EXEEXT_33)
+@HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__append_2 = \
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@test_transport_api_slow_ats
 
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@am__append_3 = \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_address_switch_udp \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_plugin_udp \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_udp \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_timeout_udp \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_udp_nat \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_reliability_udp \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_quota_compliance_udp
+
 @ENABLE_TEST_RUN_TRUE@TESTS = test_transport_address_switch_tcp$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_transport_address_switch_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_14) $(am__EXEEXT_17) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_testing_startstop$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_testing_restart$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_plugin_tcp$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_plugin_udp$(EXEEXT) $(am__EXEEXT_1) \
+@ENABLE_TEST_RUN_TRUE@	test_plugin_tcp$(EXEEXT) $(am__EXEEXT_1) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_2) $(am__EXEEXT_3) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_blacklisting_tcp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_disconnect_tcp$(EXEEXT) \
@@ -174,9 +175,7 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_restart_2peers$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_limited_sockets_tcp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_tcp_nat$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_transport_api_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_8) $(am__EXEEXT_10) \
-@ENABLE_TEST_RUN_TRUE@	test_transport_api_udp_nat$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_11) $(am__EXEEXT_15) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_18) $(am__EXEEXT_20) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_multi$(EXEEXT) \
@@ -192,22 +191,29 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_manipulation_cfg$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_reliability_tcp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_reliability_tcp_nat$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_transport_api_reliability_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_22) $(am__EXEEXT_23) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_24) $(am__EXEEXT_25) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_26) \
 @ENABLE_TEST_RUN_TRUE@	test_quota_compliance_tcp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	test_quota_compliance_tcp_asymmetric$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_quota_compliance_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_27) $(am__EXEEXT_28) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_29) \
 @ENABLE_TEST_RUN_TRUE@	test_transport_api_timeout_tcp$(EXEEXT) \
-@ENABLE_TEST_RUN_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_9) $(am__EXEEXT_13) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_16) $(am__EXEEXT_19) \
-@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) $(am__EXEEXT_38)
-@ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__append_2 = \
+@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_21) $(am__EXEEXT_39) \
+@ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_40)
+@ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__append_4 = \
 @ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@test_transport_api_slow_ats
+
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@am__append_5 = \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_transport_address_switch_udp \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_plugin_udp \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_transport_api_udp \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_transport_api_timeout_udp \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_transport_api_udp_nat \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_transport_api_reliability_udp \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@  test_quota_compliance_udp
 
 subdir = src/transport
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -237,7 +243,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" \
 	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkgcfgdir)"
-@MINGW_FALSE@am__EXEEXT_1 = test_plugin_unix$(EXEEXT)
+am__EXEEXT_1 = test_plugin_unix$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_2 =  \
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@	test_plugin_wlan$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_3 = test_plugin_bluetooth$(EXEEXT)
@@ -247,9 +253,9 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 @HAVE_LIBGNURL_TRUE@am__EXEEXT_5 = test_plugin_https_client$(EXEEXT)
 @HAVE_MHD_TRUE@am__EXEEXT_6 = test_plugin_http_server$(EXEEXT)
 @HAVE_MHD_TRUE@am__EXEEXT_7 = test_plugin_https_server$(EXEEXT)
-@MINGW_FALSE@am__EXEEXT_8 = test_transport_api_unix$(EXEEXT)
-@MINGW_FALSE@am__EXEEXT_9 = test_transport_api_timeout_unix$(EXEEXT)
-@LINUX_TRUE@@MINGW_FALSE@am__EXEEXT_10 = test_transport_api_unix_abstract$(EXEEXT)
+am__EXEEXT_8 = test_transport_api_unix$(EXEEXT)
+am__EXEEXT_9 = test_transport_api_timeout_unix$(EXEEXT)
+@LINUX_TRUE@am__EXEEXT_10 = test_transport_api_unix_abstract$(EXEEXT)
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@am__EXEEXT_11 = test_transport_api_http$(EXEEXT)
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_11 = test_transport_api_http$(EXEEXT)
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@am__EXEEXT_12 = test_transport_api_http_reverse$(EXEEXT)
@@ -268,20 +274,19 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_19 = test_transport_api_timeout_wlan$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_20 = test_transport_api_bluetooth$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_21 = test_transport_api_timeout_bluetooth$(EXEEXT)
-@MINGW_FALSE@am__EXEEXT_22 =  \
-@MINGW_FALSE@	test_transport_api_reliability_unix$(EXEEXT)
+am__EXEEXT_22 = test_transport_api_reliability_unix$(EXEEXT)
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@am__EXEEXT_23 = test_transport_api_reliability_http$(EXEEXT) \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@	test_transport_api_reliability_http_xhr$(EXEEXT)
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_23 = test_transport_api_reliability_http$(EXEEXT) \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@	test_transport_api_reliability_http_xhr$(EXEEXT)
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@am__EXEEXT_24 = test_transport_api_reliability_https$(EXEEXT) \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@	test_transport_api_reliability_https_xhr$(EXEEXT)
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_24 = test_transport_api_reliability_https$(EXEEXT) \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@	test_transport_api_reliability_https_xhr$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@am__EXEEXT_24 = test_transport_api_reliability_https$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@	test_transport_api_reliability_https_xhr$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_24 = test_transport_api_reliability_https$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@	test_transport_api_reliability_https_xhr$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_25 = test_transport_api_reliability_wlan$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_26 = test_transport_api_reliability_bluetooth$(EXEEXT)
-@MINGW_FALSE@am__EXEEXT_27 = test_quota_compliance_unix$(EXEEXT) \
-@MINGW_FALSE@	test_quota_compliance_unix_asymmetric$(EXEEXT)
+am__EXEEXT_27 = test_quota_compliance_unix$(EXEEXT) \
+	test_quota_compliance_unix_asymmetric$(EXEEXT)
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@am__EXEEXT_28 = test_quota_compliance_http$(EXEEXT) \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@	test_quota_compliance_http_asymmetric$(EXEEXT)
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@am__EXEEXT_28 = test_quota_compliance_http$(EXEEXT) \
@@ -295,12 +300,18 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_31 = test_quota_compliance_bluetooth$(EXEEXT) \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@	test_quota_compliance_bluetooth_asymmetric$(EXEEXT)
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__EXEEXT_32 = test_transport_api_slow_ats$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_33 = gnunet-helper-transport-wlan$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_34 = gnunet-helper-transport-wlan-dummy$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_35 = gnunet-helper-transport-bluetooth$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@@MINGW_TRUE@am__EXEEXT_35 = gnunet-helper-transport-bluetooth$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_36 = gnunet-transport-wlan-sender$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_37 = gnunet-transport-wlan-receiver$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@am__EXEEXT_33 = test_transport_address_switch_udp$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_plugin_udp$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_udp$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_udp_nat$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_reliability_udp$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_quota_compliance_udp$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_34 = gnunet-helper-transport-wlan$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_35 = gnunet-helper-transport-wlan-dummy$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_36 = gnunet-helper-transport-bluetooth$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_37 = gnunet-transport-wlan-sender$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_38 = gnunet-transport-wlan-receiver$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS) $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -351,9 +362,6 @@ libgnunet_plugin_transport_bluetooth_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$(LDFLAGS) -o $@
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am_libgnunet_plugin_transport_bluetooth_la_rpath = -rpath \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@	$(plugindir)
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@@MINGW_TRUE@am_libgnunet_plugin_transport_bluetooth_la_rpath =  \
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@@MINGW_TRUE@	-rpath \
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@@MINGW_TRUE@	$(plugindir)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_transport_http_client_la_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
@@ -375,6 +383,7 @@ libgnunet_plugin_transport_http_client_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 @HAVE_LIBGNURL_TRUE@am_libgnunet_plugin_transport_http_client_la_rpath =  \
 @HAVE_LIBGNURL_TRUE@	-rpath $(plugindir)
 libgnunet_plugin_transport_http_server_la_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
@@ -412,6 +421,7 @@ libgnunet_plugin_transport_https_client_la_LINK = $(LIBTOOL) \
 @HAVE_LIBGNURL_TRUE@am_libgnunet_plugin_transport_https_client_la_rpath =  \
 @HAVE_LIBGNURL_TRUE@	-rpath $(plugindir)
 libgnunet_plugin_transport_https_server_la_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
@@ -456,22 +466,27 @@ libgnunet_plugin_transport_template_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_transport_template_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
-libgnunet_plugin_transport_udp_la_DEPENDENCIES =  \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-	$(top_builddir)/src/nat/libgnunetnatnew.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_transport_udp_la_OBJECTS =  \
-	plugin_transport_udp.lo plugin_transport_udp_broadcasting.lo
+@HAVE_EXPERIMENTAL_TRUE@libgnunet_plugin_transport_udp_la_DEPENDENCIES = $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/nat/libgnunetnatnew.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(am__DEPENDENCIES_1)
+am__libgnunet_plugin_transport_udp_la_SOURCES_DIST =  \
+	plugin_transport_udp.c plugin_transport_udp.h \
+	plugin_transport_udp_broadcasting.c
+@HAVE_EXPERIMENTAL_TRUE@am_libgnunet_plugin_transport_udp_la_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	plugin_transport_udp.lo \
+@HAVE_EXPERIMENTAL_TRUE@	plugin_transport_udp_broadcasting.lo
 libgnunet_plugin_transport_udp_la_OBJECTS =  \
 	$(am_libgnunet_plugin_transport_udp_la_OBJECTS)
 libgnunet_plugin_transport_udp_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_transport_udp_la_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_EXPERIMENTAL_TRUE@am_libgnunet_plugin_transport_udp_la_rpath =  \
+@HAVE_EXPERIMENTAL_TRUE@	-rpath $(plugindir)
 libgnunet_plugin_transport_unix_la_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -486,8 +501,6 @@ libgnunet_plugin_transport_unix_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_transport_unix_la_LDFLAGS) $(LDFLAGS) -o $@
-@MINGW_FALSE@am_libgnunet_plugin_transport_unix_la_rpath = -rpath \
-@MINGW_FALSE@	$(plugindir)
 libgnunet_plugin_transport_wlan_la_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -625,8 +638,7 @@ am_gnunet_helper_transport_bluetooth_OBJECTS =  \
 	gnunet-helper-transport-bluetooth.$(OBJEXT)
 gnunet_helper_transport_bluetooth_OBJECTS =  \
 	$(am_gnunet_helper_transport_bluetooth_OBJECTS)
-@MINGW_TRUE@gnunet_helper_transport_bluetooth_DEPENDENCIES =  \
-@MINGW_TRUE@	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_helper_transport_bluetooth_LDADD = $(LDADD)
 gnunet_helper_transport_bluetooth_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -757,13 +769,16 @@ test_plugin_tcp_DEPENDENCIES = libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunettransporttesting.la
-am_test_plugin_udp_OBJECTS = test_plugin_transport.$(OBJEXT)
+am__test_plugin_udp_SOURCES_DIST = test_plugin_transport.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_plugin_udp_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_plugin_transport.$(OBJEXT)
 test_plugin_udp_OBJECTS = $(am_test_plugin_udp_OBJECTS)
-test_plugin_udp_DEPENDENCIES = libgnunettransport.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_plugin_udp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
 am_test_plugin_unix_OBJECTS = test_plugin_transport.$(OBJEXT)
 test_plugin_unix_OBJECTS = $(am_test_plugin_unix_OBJECTS)
 test_plugin_unix_DEPENDENCIES = libgnunettransport.la \
@@ -862,16 +877,18 @@ test_quota_compliance_tcp_asymmetric_DEPENDENCIES =  \
 	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunettransporttesting.la
-am_test_quota_compliance_udp_OBJECTS =  \
-	test_quota_compliance.$(OBJEXT)
+am__test_quota_compliance_udp_SOURCES_DIST = test_quota_compliance.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_quota_compliance_udp_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_quota_compliance.$(OBJEXT)
 test_quota_compliance_udp_OBJECTS =  \
 	$(am_test_quota_compliance_udp_OBJECTS)
-test_quota_compliance_udp_DEPENDENCIES = libgnunettransport.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/ats/libgnunetats.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_quota_compliance_udp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/nt/libgnunetnt.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
 am_test_quota_compliance_unix_OBJECTS =  \
 	test_quota_compliance.$(OBJEXT)
 test_quota_compliance_unix_OBJECTS =  \
@@ -944,16 +961,17 @@ test_transport_address_switch_tcp_DEPENDENCIES =  \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunettransporttesting.la
-am_test_transport_address_switch_udp_OBJECTS =  \
-	test_transport_address_switch.$(OBJEXT)
+am__test_transport_address_switch_udp_SOURCES_DIST =  \
+	test_transport_address_switch.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_transport_address_switch_udp_OBJECTS = test_transport_address_switch.$(OBJEXT)
 test_transport_address_switch_udp_OBJECTS =  \
 	$(am_test_transport_address_switch_udp_OBJECTS)
-test_transport_address_switch_udp_DEPENDENCIES =  \
-	libgnunettransport.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_address_switch_udp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
 am_test_transport_api_blacklisting_tcp_OBJECTS =  \
 	test_transport_api_blacklisting.$(OBJEXT)
 test_transport_api_blacklisting_tcp_OBJECTS =  \
@@ -1119,15 +1137,16 @@ test_transport_api_reliability_tcp_nat_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunettransporttesting.la
-am_test_transport_api_reliability_udp_OBJECTS =  \
-	test_transport_api_reliability.$(OBJEXT)
+am__test_transport_api_reliability_udp_SOURCES_DIST =  \
+	test_transport_api_reliability.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_transport_api_reliability_udp_OBJECTS = test_transport_api_reliability.$(OBJEXT)
 test_transport_api_reliability_udp_OBJECTS =  \
 	$(am_test_transport_api_reliability_udp_OBJECTS)
-test_transport_api_reliability_udp_DEPENDENCIES =  \
-	libgnunettransport.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_reliability_udp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
 am_test_transport_api_reliability_unix_OBJECTS =  \
 	test_transport_api_reliability.$(OBJEXT)
 test_transport_api_reliability_unix_OBJECTS =  \
@@ -1220,14 +1239,17 @@ test_transport_api_timeout_tcp_DEPENDENCIES = libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunettransporttesting.la
-am_test_transport_api_timeout_udp_OBJECTS =  \
-	test_transport_api_timeout.$(OBJEXT)
+am__test_transport_api_timeout_udp_SOURCES_DIST =  \
+	test_transport_api_timeout.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_transport_api_timeout_udp_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_transport_api_timeout.$(OBJEXT)
 test_transport_api_timeout_udp_OBJECTS =  \
 	$(am_test_transport_api_timeout_udp_OBJECTS)
-test_transport_api_timeout_udp_DEPENDENCIES = libgnunettransport.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_timeout_udp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
 am_test_transport_api_timeout_unix_OBJECTS =  \
 	test_transport_api_timeout.$(OBJEXT)
 test_transport_api_timeout_unix_OBJECTS =  \
@@ -1244,19 +1266,25 @@ test_transport_api_timeout_wlan_DEPENDENCIES = libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunettransporttesting.la
-am_test_transport_api_udp_OBJECTS = test_transport_api.$(OBJEXT)
+am__test_transport_api_udp_SOURCES_DIST = test_transport_api.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_transport_api_udp_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_transport_api.$(OBJEXT)
 test_transport_api_udp_OBJECTS = $(am_test_transport_api_udp_OBJECTS)
-test_transport_api_udp_DEPENDENCIES = libgnunettransport.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
-am_test_transport_api_udp_nat_OBJECTS = test_transport_api.$(OBJEXT)
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_udp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
+am__test_transport_api_udp_nat_SOURCES_DIST = test_transport_api.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_transport_api_udp_nat_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_transport_api.$(OBJEXT)
 test_transport_api_udp_nat_OBJECTS =  \
 	$(am_test_transport_api_udp_nat_OBJECTS)
-test_transport_api_udp_nat_DEPENDENCIES = libgnunettransport.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_udp_nat_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting.la
 am_test_transport_api_unix_OBJECTS = test_transport_api.$(OBJEXT)
 test_transport_api_unix_OBJECTS =  \
 	$(am_test_transport_api_unix_OBJECTS)
@@ -1574,7 +1602,7 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(libgnunet_plugin_transport_https_server_la_SOURCES) \
 	$(libgnunet_plugin_transport_tcp_la_SOURCES) \
 	$(libgnunet_plugin_transport_template_la_SOURCES) \
-	$(libgnunet_plugin_transport_udp_la_SOURCES) \
+	$(am__libgnunet_plugin_transport_udp_la_SOURCES_DIST) \
 	$(libgnunet_plugin_transport_unix_la_SOURCES) \
 	$(libgnunet_plugin_transport_wlan_la_SOURCES) \
 	$(libgnunettransport_la_SOURCES) \
@@ -1602,8 +1630,8 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(test_plugin_http_server_SOURCES) \
 	$(test_plugin_https_client_SOURCES) \
 	$(test_plugin_https_server_SOURCES) $(test_plugin_tcp_SOURCES) \
-	$(test_plugin_udp_SOURCES) $(test_plugin_unix_SOURCES) \
-	$(test_plugin_wlan_SOURCES) \
+	$(am__test_plugin_udp_SOURCES_DIST) \
+	$(test_plugin_unix_SOURCES) $(test_plugin_wlan_SOURCES) \
 	$(test_quota_compliance_bluetooth_SOURCES) \
 	$(test_quota_compliance_bluetooth_asymmetric_SOURCES) \
 	$(test_quota_compliance_http_SOURCES) \
@@ -1612,7 +1640,7 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(test_quota_compliance_https_asymmetric_SOURCES) \
 	$(test_quota_compliance_tcp_SOURCES) \
 	$(test_quota_compliance_tcp_asymmetric_SOURCES) \
-	$(test_quota_compliance_udp_SOURCES) \
+	$(am__test_quota_compliance_udp_SOURCES_DIST) \
 	$(test_quota_compliance_unix_SOURCES) \
 	$(test_quota_compliance_unix_asymmetric_SOURCES) \
 	$(test_quota_compliance_wlan_SOURCES) \
@@ -1620,7 +1648,7 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(test_transport_address_switch_http_SOURCES) \
 	$(test_transport_address_switch_https_SOURCES) \
 	$(test_transport_address_switch_tcp_SOURCES) \
-	$(test_transport_address_switch_udp_SOURCES) \
+	$(am__test_transport_address_switch_udp_SOURCES_DIST) \
 	$(test_transport_api_blacklisting_tcp_SOURCES) \
 	$(am__test_transport_api_bluetooth_SOURCES_DIST) \
 	$(test_transport_api_disconnect_tcp_SOURCES) \
@@ -1640,7 +1668,7 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(test_transport_api_reliability_https_xhr_SOURCES) \
 	$(test_transport_api_reliability_tcp_SOURCES) \
 	$(test_transport_api_reliability_tcp_nat_SOURCES) \
-	$(test_transport_api_reliability_udp_SOURCES) \
+	$(am__test_transport_api_reliability_udp_SOURCES_DIST) \
 	$(test_transport_api_reliability_unix_SOURCES) \
 	$(test_transport_api_reliability_wlan_SOURCES) \
 	$(test_transport_api_restart_1peer_SOURCES) \
@@ -1652,11 +1680,11 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(test_transport_api_timeout_http_SOURCES) \
 	$(test_transport_api_timeout_https_SOURCES) \
 	$(test_transport_api_timeout_tcp_SOURCES) \
-	$(test_transport_api_timeout_udp_SOURCES) \
+	$(am__test_transport_api_timeout_udp_SOURCES_DIST) \
 	$(test_transport_api_timeout_unix_SOURCES) \
 	$(test_transport_api_timeout_wlan_SOURCES) \
-	$(test_transport_api_udp_SOURCES) \
-	$(test_transport_api_udp_nat_SOURCES) \
+	$(am__test_transport_api_udp_SOURCES_DIST) \
+	$(am__test_transport_api_udp_nat_SOURCES_DIST) \
 	$(test_transport_api_unix_SOURCES) \
 	$(test_transport_api_unix_abstract_SOURCES) \
 	$(am__test_transport_api_wlan_SOURCES_DIST) \
@@ -1850,7 +1878,14 @@ am__set_TESTS_bases = \
   bases=`echo $$bases`
 RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
-@ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__EXEEXT_38 = test_transport_api_slow_ats$(EXEEXT)
+@ENABLE_TEST_RUN_TRUE@@HAVE_GETOPT_BINARY_TRUE@am__EXEEXT_39 = test_transport_api_slow_ats$(EXEEXT)
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@am__EXEEXT_40 = test_transport_address_switch_udp$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@	test_plugin_udp$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@	test_transport_api_udp$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@	test_transport_api_udp_nat$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@	test_transport_api_reliability_udp$(EXEEXT) \
+@ENABLE_TEST_RUN_TRUE@@HAVE_EXPERIMENTAL_TRUE@	test_quota_compliance_udp$(EXEEXT)
 TEST_SUITE_LOG = test-suite.log
 TEST_EXTENSIONS = @EXEEXT@ .test
 LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
@@ -1879,20 +1914,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -1900,6 +1932,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -1925,6 +1958,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -1962,11 +1996,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -2010,6 +2048,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -2029,6 +2070,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -2039,7 +2081,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -2109,7 +2150,6 @@ pkgcfg_DATA = \
   transport.conf \
   communicator-unix.conf
 
-@HAVE_MHD_TRUE@GN_LIBMHD = -lmicrohttpd
 @HAVE_MHD_TRUE@HTTP_SERVER_PLUGIN_LA = libgnunet_plugin_transport_http_server.la
 @HAVE_MHD_TRUE@HTTPS_SERVER_PLUGIN_LA = libgnunet_plugin_transport_https_server.la
 @HAVE_MHD_TRUE@HTTP_SERVER_PLUGIN_TEST = test_plugin_http_server
@@ -2150,11 +2190,11 @@ pkgcfg_DATA = \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@HTTPS_API_TEST = test_transport_api_https
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@HTTPS_API_TIMEOUT_TEST = test_transport_api_timeout_https
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@HTTPS_API_TIMEOUT_TEST = test_transport_api_timeout_https
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@HTTPS_REL_TEST = test_transport_api_reliability_https \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@		  test_transport_api_reliability_https_xhr
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@HTTPS_REL_TEST = test_transport_api_reliability_https \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@		  test_transport_api_reliability_https_xhr
 
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@HTTPS_REL_TEST = test_transport_api_reliability_https \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@		  test_transport_api_reliability_https_xhr
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@HTTPS_REL_TEST = test_transport_api_reliability_https \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@		  test_transport_api_reliability_https_xhr
 
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@HTTPS_QUOTA_TEST = test_quota_compliance_https \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@		test_quota_compliance_https_asymmetric
@@ -2178,9 +2218,7 @@ pkgcfg_DATA = \
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@		test_quota_compliance_wlan_asymmetric
 
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@BT_BIN = gnunet-helper-transport-bluetooth
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@@MINGW_TRUE@BT_BIN = gnunet-helper-transport-bluetooth
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@BT_PLUGIN_LA = libgnunet_plugin_transport_bluetooth.la
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@@MINGW_TRUE@BT_PLUGIN_LA = libgnunet_plugin_transport_bluetooth.la
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@BT_PLUGIN_TEST = test_plugin_bluetooth
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@BT_API_TEST = test_transport_api_bluetooth
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@BT_TIMEOUT_TEST = test_transport_api_timeout_bluetooth
@@ -2190,15 +2228,15 @@ pkgcfg_DATA = \
 
 
 # end of HAVE_EXPERIMENTAL
-@MINGW_FALSE@UNIX_PLUGIN_LA = libgnunet_plugin_transport_unix.la
-@MINGW_FALSE@UNIX_PLUGIN_TEST = test_transport_api_unix
-@MINGW_FALSE@UNIX_TEST = test_plugin_unix
-@MINGW_FALSE@UNIX_PLUGIN_TIMEOUT_TEST = test_transport_api_timeout_unix
-@MINGW_FALSE@UNIX_REL_TEST = test_transport_api_reliability_unix
-@MINGW_FALSE@UNIX_QUOTA_TEST = test_quota_compliance_unix \
-@MINGW_FALSE@     test_quota_compliance_unix_asymmetric
+UNIX_PLUGIN_LA = libgnunet_plugin_transport_unix.la
+UNIX_PLUGIN_TEST = test_transport_api_unix
+UNIX_TEST = test_plugin_unix
+UNIX_PLUGIN_TIMEOUT_TEST = test_transport_api_timeout_unix
+UNIX_REL_TEST = test_transport_api_reliability_unix
+UNIX_QUOTA_TEST = test_quota_compliance_unix \
+     test_quota_compliance_unix_asymmetric
 
-@LINUX_TRUE@@MINGW_FALSE@UNIX_API_ABSTRACT_TEST = test_transport_api_unix_abstract
+@LINUX_TRUE@UNIX_API_ABSTRACT_TEST = test_transport_api_unix_abstract
 @HAVE_TESTING_TRUE@TESTING_LIBS = libgnunettransporttesting.la \
 @HAVE_TESTING_TRUE@							 libgnunettransporttesting2.la
 
@@ -2237,7 +2275,8 @@ libgnunettransporttesting2_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunettransporttesting2_la_LDFLAGS = \
- $(GN_LIB_LDFLAGS)
+  $(GN_LIBINTL) \
+  $(GN_LIB_LDFLAGS)
 
 libgnunettransport_la_SOURCES = \
   transport.h \
@@ -2257,7 +2296,7 @@ libgnunettransport_la_LIBADD = \
   $(GN_LIBINTL)
 
 libgnunettransport_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 4:0:2
 
 libgnunettransportapplication_la_SOURCES = \
@@ -2268,7 +2307,7 @@ libgnunettransportapplication_la_LIBADD = \
  $(LTLIBINTL)
 
 libgnunettransportapplication_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 libgnunettransportcore_la_SOURCES = \
@@ -2279,7 +2318,7 @@ libgnunettransportcore_la_LIBADD = \
   $(GN_LIBINTL)
 
 libgnunettransportcore_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 libgnunettransportcommunicator_la_SOURCES = \
@@ -2290,7 +2329,7 @@ libgnunettransportcommunicator_la_LIBADD = \
   $(GN_LIBINTL)
 
 libgnunettransportcommunicator_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 libgnunettransportmonitor_la_SOURCES = \
@@ -2301,7 +2340,7 @@ libgnunettransportmonitor_la_LIBADD = \
   $(GN_LIBINTL)
 
 libgnunettransportmonitor_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 bin_SCRIPTS = \
@@ -2365,11 +2404,7 @@ gnunet_transport_wlan_receiver_LDADD = \
 gnunet_helper_transport_bluetooth_SOURCES = \
  gnunet-helper-transport-bluetooth.c
 
-@MINGW_TRUE@gnunet_helper_transport_bluetooth_LDADD = \
-@MINGW_TRUE@  $(top_builddir)/src/util/libgnunetutil.la
-
-@MINGW_FALSE@gnunet_helper_transport_bluetooth_LDFLAGS = -lbluetooth
-@MINGW_TRUE@gnunet_helper_transport_bluetooth_LDFLAGS = -lws2_32
+gnunet_helper_transport_bluetooth_LDFLAGS = -lbluetooth
 gnunet_transport_profiler_SOURCES = \
  gnunet-transport-profiler.c
 
@@ -2415,7 +2450,7 @@ gnunet_service_transport_LDADD = \
   $(GN_LIBINTL)
 
 gnunet_service_transport_CFLAGS = \
-  $(CFLAGS)
+  $(AM_CFLAGS)
 
 # -DANALYZE
 gnunet_service_tng_SOURCES = \
@@ -2429,17 +2464,11 @@ gnunet_service_tng_LDADD = \
   $(LIBGCRYPT_LIBS) \
   $(GN_LIBINTL)
 
-plugin_LTLIBRARIES = \
-  libgnunet_plugin_transport_tcp.la \
-  libgnunet_plugin_transport_udp.la \
-  $(UNIX_PLUGIN_LA) \
-  $(HTTP_CLIENT_PLUGIN_LA) \
-  $(HTTPS_CLIENT_PLUGIN_LA) \
-  $(HTTP_SERVER_PLUGIN_LA) \
-  $(HTTPS_SERVER_PLUGIN_LA) \
-  $(WLAN_PLUGIN_LA) \
-  $(BT_PLUGIN_LA)
-
+plugin_LTLIBRARIES = libgnunet_plugin_transport_tcp.la \
+	$(UNIX_PLUGIN_LA) $(HTTP_CLIENT_PLUGIN_LA) \
+	$(HTTPS_CLIENT_PLUGIN_LA) $(HTTP_SERVER_PLUGIN_LA) \
+	$(HTTPS_SERVER_PLUGIN_LA) $(WLAN_PLUGIN_LA) $(BT_PLUGIN_LA) \
+	$(am__append_1)
 
 # Note: real plugins of course need to be added
 # to the plugin_LTLIBRARIES above
@@ -2484,7 +2513,7 @@ libgnunet_plugin_transport_wlan_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_wlan_la_CFLAGS = \
- $(CFLAGS) -DBUILD_WLAN
+ $(AM_CFLAGS) -DBUILD_WLAN
 
 libgnunet_plugin_transport_bluetooth_la_SOURCES = \
   plugin_transport_wlan.c plugin_transport_wlan.h
@@ -2500,23 +2529,23 @@ libgnunet_plugin_transport_bluetooth_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_bluetooth_la_CFLAGS = \
- $(CFLAGS) -DBUILD_BLUETOOTH
+ $(AM_CFLAGS) -DBUILD_BLUETOOTH
 
-libgnunet_plugin_transport_udp_la_SOURCES = \
-  plugin_transport_udp.c plugin_transport_udp.h \
-  plugin_transport_udp_broadcasting.c
+@HAVE_EXPERIMENTAL_TRUE@libgnunet_plugin_transport_udp_la_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@  plugin_transport_udp.c plugin_transport_udp.h \
+@HAVE_EXPERIMENTAL_TRUE@  plugin_transport_udp_broadcasting.c
 
-libgnunet_plugin_transport_udp_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
-  $(top_builddir)/src/nat/libgnunetnatnew.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
+@HAVE_EXPERIMENTAL_TRUE@libgnunet_plugin_transport_udp_la_LIBADD = \
+@HAVE_EXPERIMENTAL_TRUE@  $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@  $(top_builddir)/src/fragmentation/libgnunetfragmentation.la \
+@HAVE_EXPERIMENTAL_TRUE@  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_EXPERIMENTAL_TRUE@  $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
+@HAVE_EXPERIMENTAL_TRUE@  $(top_builddir)/src/nat/libgnunetnatnew.la \
+@HAVE_EXPERIMENTAL_TRUE@  $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@  $(LTLIBINTL)
 
-libgnunet_plugin_transport_udp_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
+@HAVE_EXPERIMENTAL_TRUE@libgnunet_plugin_transport_udp_la_LDFLAGS = \
+@HAVE_EXPERIMENTAL_TRUE@ $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_unix_la_SOURCES = \
   plugin_transport_unix.c
@@ -2542,18 +2571,17 @@ libgnunet_plugin_transport_http_client_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunet_plugin_transport_http_client_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
+  $(GN_LIBINTL) \
+  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_http_client_la_CFLAGS = \
- $(CFLAGS)
-
-libgnunet_plugin_transport_http_client_la_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
+ $(CPP_GNURL) $(AM_CFLAGS)
 
 libgnunet_plugin_transport_http_server_la_SOURCES = \
   plugin_transport_http_server.c plugin_transport_http_common.c
 
 libgnunet_plugin_transport_http_server_la_LIBADD = \
+  $(MHD_LIBS) \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
@@ -2561,11 +2589,11 @@ libgnunet_plugin_transport_http_server_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunet_plugin_transport_http_server_la_LDFLAGS = \
- $(GN_LIBMHD) \
+  $(GN_LIBINTL) \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_http_server_la_CFLAGS = \
- $(CFLAGS)
+ $(MHD_CFLAGS) $(AM_CFLAGS)
 
 libgnunet_plugin_transport_https_client_la_SOURCES = \
   plugin_transport_http_client.c plugin_transport_http_common.c
@@ -2578,18 +2606,17 @@ libgnunet_plugin_transport_https_client_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunet_plugin_transport_https_client_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
+  $(GN_LIBINTL) \
+  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_https_client_la_CFLAGS = \
- $(CFLAGS) -DBUILD_HTTPS
-
-libgnunet_plugin_transport_https_client_la_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
+ $(CPP_GNURL) $(AM_CFLAGS) -DBUILD_HTTPS
 
 libgnunet_plugin_transport_https_server_la_SOURCES = \
   plugin_transport_http_server.c plugin_transport_http_common.c
 
 libgnunet_plugin_transport_https_server_la_LIBADD = \
+  $(MHD_LIBS) \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
@@ -2597,11 +2624,11 @@ libgnunet_plugin_transport_https_server_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunet_plugin_transport_https_server_la_LDFLAGS = \
- $(GN_LIBMHD) \
+  $(GN_LIBINTL) \
  $(GN_PLUGIN_LDFLAGS)
 
 libgnunet_plugin_transport_https_server_la_CFLAGS = \
- $(CFLAGS) -DBUILD_HTTPS
+ $(MHD_CFLAGS) $(AM_CFLAGS) -DBUILD_HTTPS
 
 @ENABLE_TEST_RUN_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 test_transport_testing_startstop_SOURCES = \
@@ -2712,15 +2739,15 @@ test_plugin_tcp_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  \
  libgnunettransporttesting.la
 
-test_plugin_udp_SOURCES = \
- test_plugin_transport.c
+@HAVE_EXPERIMENTAL_TRUE@test_plugin_udp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_plugin_transport.c
 
-test_plugin_udp_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/statistics/libgnunetstatistics.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/util/libgnunetutil.la  \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_plugin_udp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la  \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
 test_communicator_unix_SOURCES = \
  test_communicator_unix.c
@@ -2957,32 +2984,32 @@ test_transport_api_reliability_wlan_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
-test_transport_api_udp_SOURCES = \
- test_transport_api.c
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_udp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_transport_api.c
 
-test_transport_api_udp_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/util/libgnunetutil.la  \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_udp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la  \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
-test_transport_api_timeout_udp_SOURCES = \
- test_transport_api_timeout.c
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_timeout_udp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_transport_api_timeout.c
 
-test_transport_api_timeout_udp_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/util/libgnunetutil.la \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_timeout_udp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
-test_transport_api_udp_nat_SOURCES = \
- test_transport_api.c
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_udp_nat_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_transport_api.c
 
-test_transport_api_udp_nat_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/util/libgnunetutil.la  \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_udp_nat_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la  \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
 test_transport_api_unix_SOURCES = \
  test_transport_api.c
@@ -3140,14 +3167,14 @@ test_transport_api_reliability_unix_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
-test_transport_api_reliability_udp_SOURCES = \
- test_transport_api_reliability.c
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_reliability_udp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_transport_api_reliability.c
 
-test_transport_api_reliability_udp_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/util/libgnunetutil.la \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_api_reliability_udp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
 @LINUX_TRUE@test_transport_api_wlan_SOURCES = \
 @LINUX_TRUE@ test_transport_api.c
@@ -3177,15 +3204,15 @@ test_transport_address_switch_tcp_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
-test_transport_address_switch_udp_SOURCES = \
- test_transport_address_switch.c
+@HAVE_EXPERIMENTAL_TRUE@test_transport_address_switch_udp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_transport_address_switch.c
 
-test_transport_address_switch_udp_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/statistics/libgnunetstatistics.la \
- $(top_builddir)/src/util/libgnunetutil.la \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_transport_address_switch_udp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
 test_transport_address_switch_http_SOURCES = \
  test_transport_address_switch.c
@@ -3229,16 +3256,16 @@ test_quota_compliance_tcp_asymmetric_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
-test_quota_compliance_udp_SOURCES = \
- test_quota_compliance.c
+@HAVE_EXPERIMENTAL_TRUE@test_quota_compliance_udp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_quota_compliance.c
 
-test_quota_compliance_udp_LDADD = \
- libgnunettransport.la \
- $(top_builddir)/src/hello/libgnunethello.la \
- $(top_builddir)/src/ats/libgnunetats.la \
- $(top_builddir)/src/nt/libgnunetnt.la \
- $(top_builddir)/src/util/libgnunetutil.la \
- libgnunettransporttesting.la
+@HAVE_EXPERIMENTAL_TRUE@test_quota_compliance_udp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransport.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/hello/libgnunethello.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/ats/libgnunetats.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/nt/libgnunetnt.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
 test_quota_compliance_unix_SOURCES = \
  test_quota_compliance.c
@@ -3732,10 +3759,10 @@ libgnunet_plugin_transport_template.la: $(libgnunet_plugin_transport_template_la
 	$(AM_V_CCLD)$(libgnunet_plugin_transport_template_la_LINK)  $(libgnunet_plugin_transport_template_la_OBJECTS) $(libgnunet_plugin_transport_template_la_LIBADD) $(LIBS)
 
 libgnunet_plugin_transport_udp.la: $(libgnunet_plugin_transport_udp_la_OBJECTS) $(libgnunet_plugin_transport_udp_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_transport_udp_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_transport_udp_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_transport_udp_la_OBJECTS) $(libgnunet_plugin_transport_udp_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libgnunet_plugin_transport_udp_la_LINK) $(am_libgnunet_plugin_transport_udp_la_rpath) $(libgnunet_plugin_transport_udp_la_OBJECTS) $(libgnunet_plugin_transport_udp_la_LIBADD) $(LIBS)
 
 libgnunet_plugin_transport_unix.la: $(libgnunet_plugin_transport_unix_la_OBJECTS) $(libgnunet_plugin_transport_unix_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_transport_unix_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_transport_unix_la_LINK) $(am_libgnunet_plugin_transport_unix_la_rpath) $(libgnunet_plugin_transport_unix_la_OBJECTS) $(libgnunet_plugin_transport_unix_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libgnunet_plugin_transport_unix_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_transport_unix_la_OBJECTS) $(libgnunet_plugin_transport_unix_la_LIBADD) $(LIBS)
 
 libgnunet_plugin_transport_wlan.la: $(libgnunet_plugin_transport_wlan_la_OBJECTS) $(libgnunet_plugin_transport_wlan_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_transport_wlan_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_transport_wlan_la_LINK) $(am_libgnunet_plugin_transport_wlan_la_rpath) $(libgnunet_plugin_transport_wlan_la_OBJECTS) $(libgnunet_plugin_transport_wlan_la_LIBADD) $(LIBS)
@@ -4257,18 +4284,18 @@ libgnunet_plugin_transport_bluetooth_la-plugin_transport_wlan.lo: plugin_transpo
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_bluetooth_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_bluetooth_la-plugin_transport_wlan.lo `test -f 'plugin_transport_wlan.c' || echo '$(srcdir)/'`plugin_transport_wlan.c
 
 libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo: plugin_transport_http_client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_http_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.Tpo -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.Tpo -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.Tpo $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_transport_http_client.c' object='libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_http_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
 
 libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo: plugin_transport_http_common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_http_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.Tpo -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.Tpo -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.Tpo $(DEPDIR)/libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_transport_http_common.c' object='libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_http_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_http_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
 
 libgnunet_plugin_transport_http_server_la-plugin_transport_http_server.lo: plugin_transport_http_server.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_server_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_http_server_la-plugin_transport_http_server.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_http_server_la-plugin_transport_http_server.Tpo -c -o libgnunet_plugin_transport_http_server_la-plugin_transport_http_server.lo `test -f 'plugin_transport_http_server.c' || echo '$(srcdir)/'`plugin_transport_http_server.c
@@ -4285,18 +4312,18 @@ libgnunet_plugin_transport_http_server_la-plugin_transport_http_common.lo: plugi
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_http_server_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_http_server_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
 
 libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo: plugin_transport_http_client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_https_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.Tpo -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.Tpo -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.Tpo $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_transport_http_client.c' object='libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_https_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_client.lo `test -f 'plugin_transport_http_client.c' || echo '$(srcdir)/'`plugin_transport_http_client.c
 
 libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo: plugin_transport_http_common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_https_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.Tpo -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.Tpo -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.Tpo $(DEPDIR)/libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_transport_http_common.c' object='libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libgnunet_plugin_transport_https_client_la_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_client_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_transport_https_client_la-plugin_transport_http_common.lo `test -f 'plugin_transport_http_common.c' || echo '$(srcdir)/'`plugin_transport_http_common.c
 
 libgnunet_plugin_transport_https_server_la-plugin_transport_http_server.lo: plugin_transport_http_server.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_transport_https_server_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_transport_https_server_la-plugin_transport_http_server.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_transport_https_server_la-plugin_transport_http_server.Tpo -c -o libgnunet_plugin_transport_https_server_la-plugin_transport_http_server.lo `test -f 'plugin_transport_http_server.c' || echo '$(srcdir)/'`plugin_transport_http_server.c
@@ -4644,13 +4671,6 @@ test_transport_address_switch_tcp.log: test_transport_address_switch_tcp$(EXEEXT
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_transport_address_switch_udp.log: test_transport_address_switch_udp$(EXEEXT)
-	@p='test_transport_address_switch_udp$(EXEEXT)'; \
-	b='test_transport_address_switch_udp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_transport_address_switch_http.log: test_transport_address_switch_http$(EXEEXT)
 	@p='test_transport_address_switch_http$(EXEEXT)'; \
 	b='test_transport_address_switch_http'; \
@@ -4682,13 +4702,6 @@ test_transport_testing_restart.log: test_transport_testing_restart$(EXEEXT)
 test_plugin_tcp.log: test_plugin_tcp$(EXEEXT)
 	@p='test_plugin_tcp$(EXEEXT)'; \
 	b='test_plugin_tcp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_plugin_udp.log: test_plugin_udp$(EXEEXT)
-	@p='test_plugin_udp$(EXEEXT)'; \
-	b='test_plugin_udp'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -4763,13 +4776,6 @@ test_transport_api_tcp_nat.log: test_transport_api_tcp_nat$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_transport_api_udp.log: test_transport_api_udp$(EXEEXT)
-	@p='test_transport_api_udp$(EXEEXT)'; \
-	b='test_transport_api_udp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_transport_api_unix.log: test_transport_api_unix$(EXEEXT)
 	@p='test_transport_api_unix$(EXEEXT)'; \
 	b='test_transport_api_unix'; \
@@ -4780,13 +4786,6 @@ test_transport_api_unix.log: test_transport_api_unix$(EXEEXT)
 test_transport_api_unix_abstract.log: test_transport_api_unix_abstract$(EXEEXT)
 	@p='test_transport_api_unix_abstract$(EXEEXT)'; \
 	b='test_transport_api_unix_abstract'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_transport_api_udp_nat.log: test_transport_api_udp_nat$(EXEEXT)
-	@p='test_transport_api_udp_nat$(EXEEXT)'; \
-	b='test_transport_api_udp_nat'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -4910,13 +4909,6 @@ test_transport_api_reliability_tcp_nat.log: test_transport_api_reliability_tcp_n
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_transport_api_reliability_udp.log: test_transport_api_reliability_udp$(EXEEXT)
-	@p='test_transport_api_reliability_udp$(EXEEXT)'; \
-	b='test_transport_api_reliability_udp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_transport_api_reliability_unix.log: test_transport_api_reliability_unix$(EXEEXT)
 	@p='test_transport_api_reliability_unix$(EXEEXT)'; \
 	b='test_transport_api_reliability_unix'; \
@@ -4980,13 +4972,6 @@ test_quota_compliance_tcp_asymmetric.log: test_quota_compliance_tcp_asymmetric$(
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_quota_compliance_udp.log: test_quota_compliance_udp$(EXEEXT)
-	@p='test_quota_compliance_udp$(EXEEXT)'; \
-	b='test_quota_compliance_udp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_quota_compliance_unix.log: test_quota_compliance_unix$(EXEEXT)
 	@p='test_quota_compliance_unix$(EXEEXT)'; \
 	b='test_quota_compliance_unix'; \
@@ -5036,13 +5021,6 @@ test_transport_api_timeout_tcp.log: test_transport_api_timeout_tcp$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_transport_api_timeout_udp.log: test_transport_api_timeout_udp$(EXEEXT)
-	@p='test_transport_api_timeout_udp$(EXEEXT)'; \
-	b='test_transport_api_timeout_udp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_transport_api_timeout_unix.log: test_transport_api_timeout_unix$(EXEEXT)
 	@p='test_transport_api_timeout_unix$(EXEEXT)'; \
 	b='test_transport_api_timeout_unix'; \
@@ -5081,6 +5059,55 @@ test_transport_api_timeout_bluetooth.log: test_transport_api_timeout_bluetooth$(
 test_transport_api_slow_ats.log: test_transport_api_slow_ats$(EXEEXT)
 	@p='test_transport_api_slow_ats$(EXEEXT)'; \
 	b='test_transport_api_slow_ats'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_transport_address_switch_udp.log: test_transport_address_switch_udp$(EXEEXT)
+	@p='test_transport_address_switch_udp$(EXEEXT)'; \
+	b='test_transport_address_switch_udp'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_plugin_udp.log: test_plugin_udp$(EXEEXT)
+	@p='test_plugin_udp$(EXEEXT)'; \
+	b='test_plugin_udp'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_transport_api_udp.log: test_transport_api_udp$(EXEEXT)
+	@p='test_transport_api_udp$(EXEEXT)'; \
+	b='test_transport_api_udp'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_transport_api_timeout_udp.log: test_transport_api_timeout_udp$(EXEEXT)
+	@p='test_transport_api_timeout_udp$(EXEEXT)'; \
+	b='test_transport_api_timeout_udp'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_transport_api_udp_nat.log: test_transport_api_udp_nat$(EXEEXT)
+	@p='test_transport_api_udp_nat$(EXEEXT)'; \
+	b='test_transport_api_udp_nat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_transport_api_reliability_udp.log: test_transport_api_reliability_udp$(EXEEXT)
+	@p='test_transport_api_reliability_udp$(EXEEXT)'; \
+	b='test_transport_api_reliability_udp'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_quota_compliance_udp.log: test_quota_compliance_udp$(EXEEXT)
+	@p='test_quota_compliance_udp$(EXEEXT)'; \
+	b='test_quota_compliance_udp'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -5177,7 +5204,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-@HAVE_EXPERIMENTAL_FALSE@install-exec-hook:
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
@@ -5281,8 +5307,7 @@ install-dvi-am:
 
 install-exec-am: install-binPROGRAMS install-binSCRIPTS \
 	install-libLTLIBRARIES install-libexecPROGRAMS
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
+
 install-html: install-html-am
 
 install-html-am:
@@ -5395,7 +5420,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
 	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
 
-.MAKE: check-am install-am install-exec-am install-strip
+.MAKE: check-am install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
 	check-am clean clean-binPROGRAMS clean-checkPROGRAMS \
@@ -5406,26 +5431,21 @@ uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-binSCRIPTS \
 	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-exec-hook install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
-	install-pdf install-pdf-am install-pkgcfgDATA \
-	install-pluginLTLIBRARIES install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
-	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
+	install-pkgcfgDATA install-pluginLTLIBRARIES install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
+	uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-libLTLIBRARIES \
+	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
+	uninstall-pluginLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@install-exec-hook:
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@	$(top_srcdir)/src/transport/install-wlan-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@	$(top_srcdir)/src/transport/install-bluetooth-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
-@HAVE_EXPERIMENTAL_TRUE@@LINUX_FALSE@install-exec-hook:
 
 gnunet-transport-certificate-creation: gnunet-transport-certificate-creation.in Makefile
 	$(do_subst) < $(srcdir)/gnunet-transport-certificate-creation.in > gnunet-transport-certificate-creation

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/nc.c
@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-nc", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-nc", __VA_ARGS__)
 
 
 /**
@@ -36,7 +36,6 @@
  */
 struct SubscriberList
 {
-
   /**
    * This is a doubly linked list.
    */
@@ -57,12 +56,11 @@ struct SubscriberList
    * the MQ's destruction.
    */
   struct GNUNET_MQ_DestroyNotificationHandle *mq_nh;
-  
+
   /**
    * Message queue for the subscriber.
    */
   struct GNUNET_MQ_Handle *mq;
-
 };
 
 
@@ -76,7 +74,6 @@ struct SubscriberList
  */
 struct GNUNET_NotificationContext
 {
-
   /**
    * Head of list of subscribers receiving notifications.
    */
@@ -91,7 +88,6 @@ struct GNUNET_NotificationContext
    * Maximum number of optional messages to queue per subscriber.
    */
   unsigned int queue_length;
-
 };
 
 
@@ -103,12 +99,12 @@ struct GNUNET_NotificationContext
 static void
 handle_mq_destroy (void *cls)
 {
-  struct SubscriberList *pos = cls; 
+  struct SubscriberList *pos = cls;
   struct GNUNET_NotificationContext *nc = pos->nc;
 
   GNUNET_CONTAINER_DLL_remove (nc->subscribers_head,
-			       nc->subscribers_tail,
-			       pos);
+                               nc->subscribers_tail,
+                               pos);
   GNUNET_free (pos);
 }
 
@@ -145,8 +141,8 @@ GNUNET_notification_context_destroy (struct GNUNET_NotificationContext *nc)
   while (NULL != (pos = nc->subscribers_head))
   {
     GNUNET_CONTAINER_DLL_remove (nc->subscribers_head,
-				 nc->subscribers_tail,
-				 pos);
+                                 nc->subscribers_tail,
+                                 pos);
     GNUNET_MQ_destroy_notify_cancel (pos->mq_nh);
     GNUNET_free (pos);
   }
@@ -162,22 +158,23 @@ GNUNET_notification_context_destroy (struct GNUNET_NotificationContext *nc)
  */
 void
 GNUNET_notification_context_add (struct GNUNET_NotificationContext *nc,
-				 struct GNUNET_MQ_Handle *mq)
+                                 struct GNUNET_MQ_Handle *mq)
 {
   struct SubscriberList *cl;
 
   for (cl = nc->subscribers_head; NULL != cl; cl = cl->next)
     if (cl->mq == mq)
-      return; /* already present */
+      return;
+  /* already present */
   cl = GNUNET_new (struct SubscriberList);
   GNUNET_CONTAINER_DLL_insert (nc->subscribers_head,
-			       nc->subscribers_tail,
-			       cl);
+                               nc->subscribers_tail,
+                               cl);
   cl->nc = nc;
   cl->mq = mq;
   cl->mq_nh = GNUNET_MQ_destroy_notify (cl->mq,
-					&handle_mq_destroy,
-					cl);
+                                        &handle_mq_destroy,
+                                        cl);
 }
 
 
@@ -190,20 +187,20 @@ GNUNET_notification_context_add (struct GNUNET_NotificationContext *nc,
  */
 void
 GNUNET_notification_context_broadcast (struct GNUNET_NotificationContext *nc,
-				       const struct GNUNET_MessageHeader *msg,
-				       int can_drop)
+                                       const struct GNUNET_MessageHeader *msg,
+                                       int can_drop)
 {
   struct SubscriberList *pos;
   struct GNUNET_MQ_Envelope *env;
 
   for (pos = nc->subscribers_head; NULL != pos; pos = pos->next)
   {
-    if ( (GNUNET_YES == can_drop) &&
-	 (GNUNET_MQ_get_length (pos->mq) > nc->queue_length) )
+    if ((GNUNET_YES == can_drop) &&
+        (GNUNET_MQ_get_length (pos->mq) > nc->queue_length))
       continue;
     env = GNUNET_MQ_msg_copy (msg);
     GNUNET_MQ_send (pos->mq,
-		    env);
+                    env);
   }
 }
 
@@ -225,5 +222,6 @@ GNUNET_notification_context_get_size (struct GNUNET_NotificationContext *nc)
     num++;
   return num;
 }
+
 
 /* end of nc.c */

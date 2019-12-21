@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/gnunet-service-rps_view.c
@@ -62,8 +62,8 @@ View_create (uint32_t len)
   view->length = len;
   view->array = GNUNET_new_array (len, struct GNUNET_PeerIdentity);
   view->mpm =
-    GNUNET_CONTAINER_multipeermap_create (len, GNUNET_NO); /* might even be
-                                                            * set to _YES */
+    GNUNET_CONTAINER_multipeermap_create (len, GNUNET_NO);  /* might even be
+                                                           * set to _YES */
   return view;
 }
 
@@ -84,8 +84,8 @@ View_change_len (struct View *view,
   uint32_t *index;
 
   if (GNUNET_CONTAINER_multipeermap_size (view->mpm) < len)
-  { /* Simply shrink */
-    /* We might simply clear and free the left over space */
+  {   /* Simply shrink */
+      /* We might simply clear and free the left over space */
     GNUNET_array_grow (view->array, view->length, len);
   }
   else /* We have to remove elements */
@@ -105,7 +105,7 @@ View_change_len (struct View *view,
       index = GNUNET_new (uint32_t);
       *index = i;
       GNUNET_CONTAINER_multipeermap_put (view->mpm, &view->array[i], index,
-          GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
+                                         GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
     }
   }
   GNUNET_assert (view->length == len);
@@ -153,7 +153,7 @@ View_put (struct View *view,
 {
   uint32_t *index;
 
-  if ((view->length <= View_size (view)) || /* If array is 'full' */
+  if ((view->length <= View_size (view)) ||  /* If array is 'full' */
       (GNUNET_YES == View_contains_peer (view, peer)))
   {
     return GNUNET_NO;
@@ -164,7 +164,7 @@ View_put (struct View *view,
     *index = (uint32_t) View_size (view);
     view->array[*index] = *peer;
     GNUNET_CONTAINER_multipeermap_put (view->mpm, peer, index,
-        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
+                                       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
     return GNUNET_OK;
   }
 }
@@ -212,7 +212,7 @@ View_remove_peer (struct View *view,
   GNUNET_assert (NULL != index);
   last_index = View_size (view) - 1;
   if (*index < last_index)
-  { /* Fill the 'gap' in the array with the last peer */
+  {   /* Fill the 'gap' in the array with the last peer */
     view->array[*index] = view->array[last_index];
     GNUNET_assert (GNUNET_YES == View_contains_peer (view,
                                                      &view->array[last_index]));
@@ -260,11 +260,12 @@ void
 View_clear (struct View *view)
 {
   for (uint32_t i = 0; 0 < View_size (view); i++)
-  { /* Need to free indices stored at peers */
+  {   /* Need to free indices stored at peers */
     uint32_t *index;
 
     GNUNET_assert (GNUNET_YES ==
-        GNUNET_CONTAINER_multipeermap_contains (view->mpm, &view->array[i]));
+                   GNUNET_CONTAINER_multipeermap_contains (view->mpm,
+                                                           &view->array[i]));
     index = GNUNET_CONTAINER_multipeermap_get (view->mpm, &view->array[i]);
     GNUNET_assert (NULL != index);
     GNUNET_free (index);
@@ -288,5 +289,6 @@ View_destroy (struct View *view)
   GNUNET_CONTAINER_multipeermap_destroy (view->mpm);
   GNUNET_free (view);
 }
+
 
 /* end of gnunet-service-rps_view.c */

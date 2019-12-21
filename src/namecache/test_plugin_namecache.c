@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file namecache/test_plugin_namecache.c
  * @brief Test for the namecache plugins
@@ -65,12 +65,12 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
   struct GNUNET_NAMECACHE_PluginFunctions *ret;
   char *libname;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _("Loading `%s' namecache plugin\n"),
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _ ("Loading `%s' namecache plugin\n"),
               plugin_name);
   GNUNET_asprintf (&libname, "libgnunet_plugin_namecache_%s", plugin_name);
-  if (NULL == (ret = GNUNET_PLUGIN_load (libname, (void*) cfg)))
+  if (NULL == (ret = GNUNET_PLUGIN_load (libname, (void *) cfg)))
   {
-    FPRINTF (stderr, "Failed to load plugin `%s'!\n", plugin_name);
+    fprintf (stderr, "Failed to load plugin `%s'!\n", plugin_name);
     GNUNET_free (libname);
     return NULL;
   }
@@ -89,9 +89,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   nsp = load_plugin (cfg);
   if (NULL == nsp)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
-	     "Failed to initialize namecache.  Database likely not setup, skipping test.\n");
+             "Failed to initialize namecache.  Database likely not setup, skipping test.\n");
     return;
   }
 
@@ -118,14 +118,15 @@ main (int argc, char *argv[])
                     "WARNING",
                     NULL);
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_snprintf (cfg_name, sizeof (cfg_name), "test_plugin_namecache_%s.conf",
+  GNUNET_snprintf (cfg_name, sizeof(cfg_name), "test_plugin_namecache_%s.conf",
                    plugin_name);
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1, xargv,
+  GNUNET_PROGRAM_run ((sizeof(xargv) / sizeof(char *)) - 1, xargv,
                       "test-plugin-namecache", "nohelp", options, &run, NULL);
   if (ok != 0)
-    FPRINTF (stderr, "Missed some testcases: %d\n", ok);
+    fprintf (stderr, "Missed some testcases: %d\n", ok);
   GNUNET_DISK_directory_remove ("/tmp/gnunet-test-plugin-namecache-sqlite");
   return ok;
 }
+
 
 /* end of test_plugin_namecache.c */

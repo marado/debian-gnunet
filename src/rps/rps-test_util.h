@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/rps-test_util.h
@@ -63,38 +63,45 @@ close_all_files ();
  */
 #ifdef TO_FILE
 #define to_file(file_name, ...) do { \
-    char tmp_buf[512] = "";\
-    int size;\
+    char tmp_buf[512] = ""; \
+    int size; \
     if (NULL == file_name) break; \
-    size = GNUNET_snprintf(tmp_buf,sizeof(tmp_buf),__VA_ARGS__);\
-    if (0 > size)\
-    {\
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,\
-           "Failed to create tmp_buf\n");\
-      break;\
-    }\
-    (void) strncat(tmp_buf,"\n",512);\
-    GNUNET_DISK_file_write (get_file_handle (file_name),\
-                            tmp_buf,\
-                            strnlen (tmp_buf, 512));\
-  } while (0);
+    size = GNUNET_snprintf (tmp_buf, sizeof(tmp_buf), __VA_ARGS__); \
+    if (0 > size) \
+    { \
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING, \
+                  "Failed to create tmp_buf\n"); \
+      break; \
+    } \
+    (void) strncat (tmp_buf, "\n", 512); \
+    GNUNET_DISK_file_write (get_file_handle (file_name), \
+                            tmp_buf, \
+                            strnlen (tmp_buf, 512)); \
+} while (0);
 
 
-#define to_file_w_len(file_name, len, ...) do {char tmp_buf[len];\
-    int size;\
-    memset (tmp_buf, 0, len);\
-    size = GNUNET_snprintf(tmp_buf,sizeof(tmp_buf),__VA_ARGS__);\
-    if (0 > size)\
-    {\
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,\
-           "Failed to create tmp_buf\n");\
-      break;\
-    }\
-    (void) strncat(tmp_buf,"\n",len);\
-    GNUNET_DISK_file_write (get_file_handle (file_name),\
-                            tmp_buf,\
-                            strnlen (tmp_buf, len));\
-  } while (0);
+#define to_file_w_len(file_name, len, ...) do { char tmp_buf [len]; \
+                                                int size; \
+                                                memset (tmp_buf, 0, len); \
+                                                size = GNUNET_snprintf (tmp_buf, \
+                                                                        sizeof( \
+                                                                          tmp_buf), \
+                                                                        __VA_ARGS__); \
+                                                if (0 > size) \
+                                                { \
+                                                  GNUNET_log ( \
+                                                    GNUNET_ERROR_TYPE_WARNING, \
+                                                    "Failed to create tmp_buf\n"); \
+                                                  break; \
+                                                } \
+                                                (void) strncat (tmp_buf, "\n", \
+                                                                len); \
+                                                GNUNET_DISK_file_write ( \
+                                                  get_file_handle (file_name), \
+                                                  tmp_buf, \
+                                                  strnlen ( \
+                                                    tmp_buf, len)); \
+} while (0);
 #else /* TO_FILE */
 #  define to_file(file_name, ...)
 #  define to_file_w_len(file_name, len, ...)

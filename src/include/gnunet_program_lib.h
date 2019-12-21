@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -105,7 +105,7 @@ GNUNET_PROGRAM_run (int argc,
                     const char *binaryHelp,
                     const struct GNUNET_GETOPT_CommandLineOption *options,
                     GNUNET_PROGRAM_Main task,
-		    void *task_cls);
+                    void *task_cls);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

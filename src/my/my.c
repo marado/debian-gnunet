@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file my/my.c
  * @brief library to help with access to a MySQL database
@@ -35,8 +35,8 @@
  * @param sh handle to SELECT statment
  * @param params parameters to the statement
  * @return
-      #GNUNET_YES if we can prepare all statement
-      #GNUNET_SYSERR if we can't prepare all statement
+ #GNUNET_YES if we can prepare all statement
+ #GNUNET_SYSERR if we can't prepare all statement
  */
 int
 GNUNET_MY_exec_prepared (struct GNUNET_MYSQL_Context *mc,
@@ -48,17 +48,17 @@ GNUNET_MY_exec_prepared (struct GNUNET_MYSQL_Context *mc,
   MYSQL_STMT *stmt;
 
   num = 0;
-  for (unsigned int i=0;NULL != params[i].conv;i++)
+  for (unsigned int i = 0; NULL != params[i].conv; i++)
     num += params[i].num_params;
   {
     MYSQL_BIND qbind[num];
     unsigned int off;
 
     memset (qbind,
-	    0,
-	    sizeof(qbind));
+            0,
+            sizeof(qbind));
     off = 0;
-    for (unsigned int i=0;NULL != (p = &params[i])->conv;i++)
+    for (unsigned int i = 0; NULL != (p = &params[i])->conv; i++)
     {
       if (GNUNET_OK !=
           p->conv (p->conv_cls,
@@ -78,7 +78,7 @@ GNUNET_MY_exec_prepared (struct GNUNET_MYSQL_Context *mc,
     {
       GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                        "my",
-                       _("`%s' failed at %s:%d with error: %s\n"),
+                       _ ("`%s' failed at %s:%d with error: %s\n"),
                        "mysql_stmt_bind_param",
                        __FILE__, __LINE__,
                        mysql_stmt_error (stmt));
@@ -90,7 +90,7 @@ GNUNET_MY_exec_prepared (struct GNUNET_MYSQL_Context *mc,
     {
       GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                        "my",
-                       _("`%s' failed at %s:%d with error: %s\n"),
+                       _ ("`%s' failed at %s:%d with error: %s\n"),
                        "mysql_stmt_execute", __FILE__, __LINE__,
                        mysql_stmt_error (stmt));
       GNUNET_MYSQL_statements_invalidate (mc);
@@ -114,7 +114,7 @@ void
 GNUNET_MY_cleanup_query (struct GNUNET_MY_QueryParam *qp,
                          MYSQL_BIND *qbind)
 {
-  for (unsigned int i=0; NULL != qp[i].conv ;i++)
+  for (unsigned int i = 0; NULL != qp[i].conv; i++)
     if (NULL != qp[i].cleaner)
       qp[i].cleaner (qp[i].conv_cls,
                      &qbind[i]);
@@ -153,7 +153,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
   }
 
   num_fields = 0;
-  for (unsigned int i=0;NULL != rs[i].pre_conv;i++)
+  for (unsigned int i = 0; NULL != rs[i].pre_conv; i++)
     num_fields += rs[i].num_fields;
 
   if (mysql_stmt_field_count (stmt) != num_fields)
@@ -167,9 +167,9 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
     MYSQL_BIND result[num_fields];
     unsigned int field_off;
 
-    memset (result, 0, sizeof (MYSQL_BIND) * num_fields);
+    memset (result, 0, sizeof(MYSQL_BIND) * num_fields);
     field_off = 0;
-    for (unsigned int i=0;NULL != rs[i].pre_conv;i++)
+    for (unsigned int i = 0; NULL != rs[i].pre_conv; i++)
     {
       struct GNUNET_MY_ResultSpec *rp = &rs[i];
 
@@ -193,7 +193,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
     {
       GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                        "my",
-                       _("%s failed at %s:%d with error: %s\n"),
+                       _ ("%s failed at %s:%d with error: %s\n"),
                        "mysql_stmt_bind_result",
                        __FILE__, __LINE__,
                        mysql_stmt_error (stmt));
@@ -212,7 +212,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
     {
       GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                        "my",
-                       _("%s failed at %s:%d with error: %s\n"),
+                       _ ("%s failed at %s:%d with error: %s\n"),
                        "mysql_stmt_fetch",
                        __FILE__, __LINE__,
                        mysql_stmt_error (stmt));
@@ -221,7 +221,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
       return GNUNET_SYSERR;
     }
     field_off = 0;
-    for (unsigned int i=0;NULL != rs[i].post_conv;i++)
+    for (unsigned int i = 0; NULL != rs[i].post_conv; i++)
     {
       struct GNUNET_MY_ResultSpec *rp = &rs[i];
 
@@ -237,7 +237,10 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
                       "Post-conversion for MySQL result failed at offset %u\n",
                       i);
           mysql_stmt_free_result (stmt);
-          GNUNET_MY_cleanup_result (rs);
+          for (unsigned int j = 0; j < i; j++)
+            if (NULL != rs[j].cleaner)
+              rs[j].cleaner (rs[j].conv_cls,
+                             rs[j].dst);
           return GNUNET_SYSERR;
         }
       field_off += rp->num_fields;
@@ -256,7 +259,7 @@ GNUNET_MY_extract_result (struct GNUNET_MYSQL_StatementHandle *sh,
 void
 GNUNET_MY_cleanup_result (struct GNUNET_MY_ResultSpec *rs)
 {
-  for (unsigned int i=0;NULL != rs[i].post_conv;i++)
+  for (unsigned int i = 0; NULL != rs[i].post_conv; i++)
     if (NULL != rs[i].cleaner)
       rs[i].cleaner (rs[i].conv_cls,
                      &rs[i]);

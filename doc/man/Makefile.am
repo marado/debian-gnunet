@@ -1,27 +1,49 @@
 # This Makefile.am is in the public domain
 
-do_subst = $(SED) -e 's,[@]SYSCONFDIR[@],$(sysconfdir),g'
-
 gnunet.conf.5: gnunet.conf.5.in Makefile
-	$(do_subst) < $(srcdir)/gnunet.conf.5.in > gnunet.conf.5
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/gnunet.conf.5.in > $(srcdir)/gnunet.conf.5
+
+CLEANFILES = gnunet.conf.5
 
 if TEXI2MDOC_GENERATION
-gnunet-c-tutorial.7: Makefile gnunet-tutorial.7
-	@echo generated texi2mdoc output || true
-
 gnunet-tutorial.7: Makefile
-	$(SH) $(srcdir)/texi2mdoc-generation.sh || true
+	@texi2mdoc -I../tutorial:../tutorial/chapters ../tutorial/tutorial.texi > gnunet-tutorial.7
 
+gnunet-documentation.7: Makefile
+	@texi2mdoc -I../handbook:../handbook/chapters ../handbook/gnunet.texi > gnunet-documentation.7
+
+CLEANFILES += gnunet-documentation.7 gnunet-tutorial.7
 endif
 
-CLEANFILES = gnunet.conf.5 *.html
+if HAVE_EXPERIMENTAL
+if HAVE_MANDOC
+# After I went through the alternatives with the focus
+# on staying as portable as possible to other make
+# implementations, I have to face the fact after hours
+# that this is the most portable way to achieve what
+# I want and that the alternatives are depressing and
+# nonfunctional.
+produce_html.sh: produce_html.sh.in Makefile
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/produce_html.sh.in > produce_html.sh
+	@chmod +x produce_html.sh
 
-if TEXI2MDOC_GENERATION
-CLEANFILES += gnunet-documentation.7 gnunet-c-tutorial.7
-endif
+CLEANFILES += produce_html.sh
 
-html:
+.PHONY: man-html
+man-html: produce_html.sh
 	$(SH) $(srcdir)/produce_html.sh
+
+htmldocdir = $(datadir)/doc/gnunet/manhtml/
+.PHONY: man-html-install
+man-html-install:
+	@mkdir -p $(htmldocdir)
+	@mv $(srcdir)/*.html $(htmldocdir)
+man-html-uninstall:
+	@rm $(htmldocdir)/*.html
+
+CLEANFILES += *.html
+endif
+endif
 
 man_MANS = \
   gnunet.conf.5 \
@@ -29,6 +51,7 @@ man_MANS = \
   gnunet-ats.1 \
   gnunet-auto-share.1 \
   gnunet-bcd.1 \
+  gnunet-bugreport.1 \
   gnunet-config.1 \
   gnunet-core.1 \
   gnunet-conversation.1 \
@@ -72,14 +95,10 @@ man_MANS = \
   gnunet-zoneimport.1
 
 if TEXI2MDOC_GENERATION
-man_MANS += gnunet-c-tutorial.7 gnunet-documentation.7
+man_MANS += gnunet-tutorial.7 gnunet-documentation.7
 endif
 
 EXTRA_DIST = ${man_MANS} \
  gnunet.conf.5.in \
- texi2mdoc-generation.sh \
+ produce_html.sh.in \
  README
-
-if TEXI2MDOC_GENERATION
-EXTRA_DIST += gnunet-documentation.7 gnunet-c-tutorial.7
-endif

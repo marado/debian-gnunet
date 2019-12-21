@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet-service-dht.c
@@ -67,7 +67,7 @@ struct GNUNET_TIME_Relative hello_expiration;
  */
 static void
 process_hello (void *cls,
-	       const struct GNUNET_MessageHeader *message)
+               const struct GNUNET_MessageHeader *message)
 {
   GNUNET_free_non_null (GDS_my_hello);
   GDS_my_hello = GNUNET_malloc (ntohs (message->size));
@@ -103,7 +103,7 @@ shutdown_task (void *cls)
   if (NULL != GDS_stats)
   {
     GNUNET_STATISTICS_destroy (GDS_stats,
-			       GNUNET_YES);
+                               GNUNET_YES);
     GDS_stats = NULL;
   }
   GNUNET_free_non_null (GDS_my_hello);
@@ -128,9 +128,9 @@ run (void *cls,
   GDS_service = service;
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_time (c,
-					   "transport",
-					   "HELLO_EXPIRATION",
-					   &hello_expiration))
+                                           "transport",
+                                           "HELLO_EXPIRATION",
+                                           &hello_expiration))
   {
     hello_expiration = GNUNET_CONSTANTS_HELLO_ADDRESS_EXPIRATION;
   }
@@ -149,18 +149,16 @@ run (void *cls,
     return;
   }
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   ghh = GNUNET_TRANSPORT_hello_get (GDS_cfg,
-				    GNUNET_TRANSPORT_AC_GLOBAL,
+                                    GNUNET_TRANSPORT_AC_GLOBAL,
                                     &process_hello,
                                     NULL);
 }
 
 
 /* Finally, define the main method */
-GDS_DHT_SERVICE_INIT("dht", &run);
-
-
+GDS_DHT_SERVICE_INIT ("dht", &run);
 
 
 /* end of gnunet-service-dht.c */

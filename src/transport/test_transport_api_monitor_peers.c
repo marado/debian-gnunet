@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_monitor_peers.c
  * @brief base test case for transport peer monitor API
@@ -33,7 +33,8 @@
 /**
  * How long until we give up on transmitting the message?
  */
-#define TIMEOUT_TRANSMIT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30)
+#define TIMEOUT_TRANSMIT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 30)
 
 #define TEST_MESSAGE_SIZE 2600
 
@@ -99,10 +100,10 @@ sendtask (void *cls)
 static void
 check_done ()
 {
-  if ( (GNUNET_YES == p1_c) &&
-       (GNUNET_YES == p2_c) &&
-       p1_c_notify &&
-       p2_c_notify)
+  if ((GNUNET_YES == p1_c) &&
+      (GNUNET_YES == p2_c) &&
+      p1_c_notify &&
+      p2_c_notify)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Both peers state to be connected\n");
@@ -120,11 +121,11 @@ notify_connect (void *cls,
   GNUNET_TRANSPORT_TESTING_log_connect (cls,
                                         me,
                                         other);
-  if (0 == memcmp (other, &ccc->p[0]->id, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (other, &ccc->p[0]->id, sizeof(struct GNUNET_PeerIdentity)))
   {
     p1_c_notify = GNUNET_YES;
   }
-  if (0 == memcmp (other, &ccc->p[1]->id, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (other, &ccc->p[1]->id, sizeof(struct GNUNET_PeerIdentity)))
   {
     p2_c_notify = GNUNET_YES;
   }
@@ -146,10 +147,10 @@ monitor1_cb (void *cls,
               "Monitor 1: %s %s %s\n",
               GNUNET_i2s (&address->peer),
               GNUNET_TRANSPORT_ps2s (state),
-              GNUNET_STRINGS_absolute_time_to_string(state_timeout));
-  if ( (0 == memcmp (&address->peer, &ccc->p[1]->id, sizeof (ccc->p[1]->id))) &&
-       (GNUNET_YES == GNUNET_TRANSPORT_is_connected(state)) &&
-       (GNUNET_NO == p1_c) )
+              GNUNET_STRINGS_absolute_time_to_string (state_timeout));
+  if ((0 == memcmp (&address->peer, &ccc->p[1]->id, sizeof(ccc->p[1]->id))) &&
+      (GNUNET_YES == GNUNET_TRANSPORT_is_connected (state)) &&
+      (GNUNET_NO == p1_c))
   {
     p1_c = GNUNET_YES;
     check_done ();
@@ -171,10 +172,10 @@ monitor2_cb (void *cls,
               "Monitor 2: %s %s %s\n",
               GNUNET_i2s (&address->peer),
               GNUNET_TRANSPORT_ps2s (state),
-              GNUNET_STRINGS_absolute_time_to_string(state_timeout));
-  if ( (0 == memcmp (&address->peer, &ccc->p[0]->id, sizeof (ccc->p[0]->id))) &&
-       (GNUNET_YES == GNUNET_TRANSPORT_is_connected(state)) &&
-       (GNUNET_NO == p2_c) )
+              GNUNET_STRINGS_absolute_time_to_string (state_timeout));
+  if ((0 == memcmp (&address->peer, &ccc->p[0]->id, sizeof(ccc->p[0]->id))) &&
+      (GNUNET_YES == GNUNET_TRANSPORT_is_connected (state)) &&
+      (GNUNET_NO == p2_c))
   {
     p2_c = GNUNET_YES;
     check_done ();
@@ -220,5 +221,6 @@ main (int argc, char *argv[])
     return 1;
   return 0;
 }
+
 
 /* end of test_transport_api_monitor_peers.c */

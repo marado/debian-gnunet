@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2017 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2017 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file sq/sq_query_helper.c
  * @brief helper functions for queries
@@ -64,7 +64,7 @@ bind_fixed_blob (void *cls,
  */
 struct GNUNET_SQ_QueryParam
 GNUNET_SQ_query_param_fixed_size (const void *ptr,
-				  size_t ptr_size)
+                                  size_t ptr_size)
 {
   struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_fixed_blob,
@@ -72,6 +72,7 @@ GNUNET_SQ_query_param_fixed_size (const void *ptr,
     .size = ptr_size,
     .num_params = 1
   };
+
   return qp;
 }
 
@@ -126,6 +127,7 @@ GNUNET_SQ_query_param_string (const char *ptr)
     .data = ptr,
     .num_params = 1
   };
+
   return qp;
 }
 
@@ -154,7 +156,7 @@ bind_rsa_pub (void *cls,
 
   GNUNET_break (NULL == cls);
   buf_size = GNUNET_CRYPTO_rsa_public_key_encode (rsa,
-						  &buf);
+                                                  &buf);
   if (SQLITE_OK !=
       sqlite3_bind_blob64 (stmt,
                            (int) off,
@@ -177,14 +179,16 @@ bind_rsa_pub (void *cls,
  * @param x the query parameter to pass.
  */
 struct GNUNET_SQ_QueryParam
-GNUNET_SQ_query_param_rsa_public_key (const struct GNUNET_CRYPTO_RsaPublicKey *x)
+GNUNET_SQ_query_param_rsa_public_key (const struct
+                                      GNUNET_CRYPTO_RsaPublicKey *x)
 {
- struct GNUNET_SQ_QueryParam qp = {
+  struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_rsa_pub,
     .data = x,
     .num_params = 1
   };
- return qp;
+
+  return qp;
 }
 
 
@@ -212,7 +216,7 @@ bind_rsa_sig (void *cls,
 
   GNUNET_break (NULL == cls);
   buf_size = GNUNET_CRYPTO_rsa_signature_encode (sig,
-						 &buf);
+                                                 &buf);
   if (SQLITE_OK !=
       sqlite3_bind_blob64 (stmt,
                            (int) off,
@@ -237,12 +241,13 @@ bind_rsa_sig (void *cls,
 struct GNUNET_SQ_QueryParam
 GNUNET_SQ_query_param_rsa_signature (const struct GNUNET_CRYPTO_RsaSignature *x)
 {
- struct GNUNET_SQ_QueryParam qp = {
+  struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_rsa_sig,
     .data = x,
     .num_params = 1
   };
- return qp;
+
+  return qp;
 }
 
 
@@ -270,7 +275,7 @@ bind_abstime (void *cls,
   abs = *u;
   if (abs.abs_value_us > INT64_MAX)
     abs.abs_value_us = INT64_MAX;
-  GNUNET_assert (sizeof (uint64_t) == data_len);
+  GNUNET_assert (sizeof(uint64_t) == data_len);
   if (SQLITE_OK !=
       sqlite3_bind_int64 (stmt,
                           (int) off,
@@ -289,12 +294,13 @@ bind_abstime (void *cls,
 struct GNUNET_SQ_QueryParam
 GNUNET_SQ_query_param_absolute_time (const struct GNUNET_TIME_Absolute *x)
 {
- struct GNUNET_SQ_QueryParam qp = {
+  struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_abstime,
     .data = x,
-    .size = sizeof (struct GNUNET_TIME_Absolute),
+    .size = sizeof(struct GNUNET_TIME_Absolute),
     .num_params = 1
   };
+
   return qp;
 }
 
@@ -323,7 +329,7 @@ bind_nbotime (void *cls,
   abs = GNUNET_TIME_absolute_ntoh (*u);
   if (abs.abs_value_us > INT64_MAX)
     abs.abs_value_us = INT64_MAX;
-  GNUNET_assert (sizeof (uint64_t) == data_len);
+  GNUNET_assert (sizeof(uint64_t) == data_len);
   if (SQLITE_OK !=
       sqlite3_bind_int64 (stmt,
                           (int) off,
@@ -340,14 +346,16 @@ bind_nbotime (void *cls,
  * @param x pointer to the query parameter to pass
  */
 struct GNUNET_SQ_QueryParam
-GNUNET_SQ_query_param_absolute_time_nbo (const struct GNUNET_TIME_AbsoluteNBO *x)
+GNUNET_SQ_query_param_absolute_time_nbo (const struct
+                                         GNUNET_TIME_AbsoluteNBO *x)
 {
- struct GNUNET_SQ_QueryParam qp = {
+  struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_nbotime,
     .data = x,
-    .size = sizeof (struct GNUNET_TIME_AbsoluteNBO),
+    .size = sizeof(struct GNUNET_TIME_AbsoluteNBO),
     .num_params = 1
   };
+
   return qp;
 }
 
@@ -372,7 +380,7 @@ bind_u16 (void *cls,
 {
   const uint16_t *u = data;
 
-  GNUNET_assert (sizeof (uint16_t) == data_len);
+  GNUNET_assert (sizeof(uint16_t) == data_len);
   if (SQLITE_OK !=
       sqlite3_bind_int (stmt,
                         (int) off,
@@ -390,12 +398,13 @@ bind_u16 (void *cls,
 struct GNUNET_SQ_QueryParam
 GNUNET_SQ_query_param_uint16 (const uint16_t *x)
 {
- struct GNUNET_SQ_QueryParam qp = {
+  struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_u16,
     .data = x,
-    .size = sizeof (uint16_t),
+    .size = sizeof(uint16_t),
     .num_params = 1
   };
+
   return qp;
 }
 
@@ -420,14 +429,15 @@ bind_u32 (void *cls,
 {
   const uint32_t *u = data;
 
-  GNUNET_assert (sizeof (uint32_t) == data_len);
+  GNUNET_assert (sizeof(uint32_t) == data_len);
   if (SQLITE_OK !=
       sqlite3_bind_int64 (stmt,
                           (int) off,
-                          (sqlite3_int64) *u))
+                          (sqlite3_int64) * u))
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
+
 
 /**
  * Generate query parameter for an uint32_t in host byte order.
@@ -437,12 +447,13 @@ bind_u32 (void *cls,
 struct GNUNET_SQ_QueryParam
 GNUNET_SQ_query_param_uint32 (const uint32_t *x)
 {
- struct GNUNET_SQ_QueryParam qp = {
+  struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_u32,
     .data = x,
-    .size = sizeof (uint32_t),
+    .size = sizeof(uint32_t),
     .num_params = 1
   };
+
   return qp;
 }
 
@@ -467,11 +478,11 @@ bind_u64 (void *cls,
 {
   const uint64_t *u = data;
 
-  GNUNET_assert (sizeof (uint64_t) == data_len);
+  GNUNET_assert (sizeof(uint64_t) == data_len);
   if (SQLITE_OK !=
       sqlite3_bind_int64 (stmt,
                           (int) off,
-                          (sqlite3_int64) *u))
+                          (sqlite3_int64) * u))
     return GNUNET_SYSERR;
   return GNUNET_OK;
 }
@@ -488,10 +499,12 @@ GNUNET_SQ_query_param_uint64 (const uint64_t *x)
   struct GNUNET_SQ_QueryParam qp = {
     .conv = &bind_u64,
     .data = x,
-    .size = sizeof (uint64_t),
+    .size = sizeof(uint64_t),
     .num_params = 1
   };
+
   return qp;
 }
+
 
 /* end of sq_query_helper.c */

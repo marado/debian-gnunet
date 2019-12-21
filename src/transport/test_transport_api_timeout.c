@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_timeout.c
  * @brief test case for transport plugin implementations complying timeout
@@ -65,12 +65,12 @@ custom_shutdown (void *cls)
   }
   else
   {
-    ccc->global_ret =- GNUNET_SYSERR;
+    ccc->global_ret = -GNUNET_SYSERR;
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Fail! Had %u disconnects while waiting %s\n",
                 disconnects,
-		GNUNET_STRINGS_relative_time_to_string (WAIT,
-							GNUNET_YES));
+                GNUNET_STRINGS_relative_time_to_string (WAIT,
+                                                        GNUNET_YES));
   }
 }
 
@@ -84,7 +84,7 @@ notify_receive (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received message of type %d from peer %s!\n",
               ntohs (message->header.type),
-	      GNUNET_i2s (sender));
+              GNUNET_i2s (sender));
 }
 
 
@@ -114,25 +114,25 @@ timer (void *cls)
   timer_task = NULL;
   percentage += 10;
   time_running = GNUNET_TIME_relative_add (time_running,
-					   GNUNET_TIME_relative_divide (WAIT,
-									10));
+                                           GNUNET_TIME_relative_divide (WAIT,
+                                                                        10));
 
   if (time_running.rel_value_us ==
       GNUNET_TIME_relative_max (time_running, WAIT).rel_value_us)
   {
-    FPRINTF (stderr, "%s",  "100%%\n");
+    fprintf (stderr, "%s", "100%%\n");
     shutdown_flag = GNUNET_YES;
     GNUNET_SCHEDULER_shutdown ();
   }
   else
   {
-    FPRINTF (stderr,
-	     "%u%%..",
-	     percentage);
+    fprintf (stderr,
+             "%u%%..",
+             percentage);
     timer_task =
-        GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_divide (WAIT, 10),
-                                      &timer,
-				      NULL);
+      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_divide (WAIT, 10),
+                                    &timer,
+                                    NULL);
   }
 }
 
@@ -159,5 +159,6 @@ main (int argc,
     return 1;
   return 0;
 }
+
 
 /* end of test_transport_api_timeout.c*/

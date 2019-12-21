@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file hello/hello-ng.c
@@ -76,13 +76,13 @@ GNUNET_HELLO_sign_address (
   char *sig_str;
 
   sa.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_ADDRESS);
-  sa.purpose.size = htonl (sizeof (sa));
+  sa.purpose.size = htonl (sizeof(sa));
   sa.mono_time = GNUNET_TIME_absolute_hton (mono_time);
   GNUNET_CRYPTO_hash (address, strlen (address), &sa.h_addr);
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CRYPTO_eddsa_sign (private_key, &sa.purpose, &sig));
   sig_str = NULL;
-  (void) GNUNET_STRINGS_base64_encode (&sig, sizeof (sig), &sig_str);
+  (void) GNUNET_STRINGS_base64_encode (&sig, sizeof(sig), &sig_str);
   *result_size =
     1 + GNUNET_asprintf ((char **) result,
                          "%s;%llu;%u;%s",
@@ -150,7 +150,7 @@ GNUNET_HELLO_extract_address (const void *raw,
   }
   raw_mono_time.abs_value_us = raw_us;
   sig = NULL;
-  if (sizeof (struct GNUNET_CRYPTO_EddsaSignature) !=
+  if (sizeof(struct GNUNET_CRYPTO_EddsaSignature) !=
       GNUNET_STRINGS_base64_decode (raws, sc - raws, (void **) &sig))
   {
     GNUNET_break_op (0);
@@ -160,7 +160,7 @@ GNUNET_HELLO_extract_address (const void *raw,
   raw_addr = sc3 + 1;
 
   sa.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_ADDRESS);
-  sa.purpose.size = htonl (sizeof (sa));
+  sa.purpose.size = htonl (sizeof(sa));
   sa.mono_time = GNUNET_TIME_absolute_hton (raw_mono_time);
   GNUNET_CRYPTO_hash (raw_addr, strlen (raw_addr), &sa.h_addr);
   if (GNUNET_YES !=

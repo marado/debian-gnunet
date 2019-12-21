@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,7 +33,7 @@
 /**
  * logging short hand
  */
-#define LOG(type,...) \
+#define LOG(type, ...) \
   GNUNET_log (type, __VA_ARGS__);
 
 /**
@@ -97,8 +97,8 @@ do_wait (void *cls)
 {
   tt = NULL;
   wh = GNUNET_TESTBED_barrier_wait (TEST_BARRIER_NAME,
-				    &barrier_wait_cb,
-				    NULL);
+                                    &barrier_wait_cb,
+                                    NULL);
   GNUNET_break (NULL != wh);
 }
 
@@ -121,13 +121,13 @@ run (void *cls,
 
   rsec = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_NONCE,
                                    10);
-  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                                                    rsec),
-				     &do_wait,
+  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                       GNUNET_TIME_UNIT_SECONDS,
+                                       rsec),
+                                     &do_wait,
                                      NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
 }
-
 
 
 /**
@@ -142,11 +142,11 @@ main (int argc, char **argv)
   int ret;
 
   ret =
-      GNUNET_PROGRAM_run (argc, argv,
-                          "test-barriers",
-                          "nohelp",
-                          options,
-                          &run,
-                          NULL);
+    GNUNET_PROGRAM_run (argc, argv,
+                        "test-barriers",
+                        "nohelp",
+                        options,
+                        &run,
+                        NULL);
   return ret;
 }

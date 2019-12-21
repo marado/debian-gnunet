@@ -35,7 +35,7 @@ anyone interested in Free Software and Freedom-enhancing Networking is
 welcome to join the effort. This Developer Handbook attempts to provide
 an initial introduction to some of the key design choices and central
 components of the system.
-This part of the GNUNet documentation is far from complete,
+This part of the GNUnet documentation is far from complete,
 and we welcome informed contributions, be it in the form of
 new chapters, sections or insightful comments.
 
@@ -230,12 +230,11 @@ Library for accessing satellite connection quality reports
 @item @command{libgnurl}
 gnURL (feature-restricted variant of cURL/libcurl)
 @item @command{www}
-work in progress of the new gnunet.org website (Jinja2 framework based to
-replace our current Drupal website)
+the gnunet.org website (Jinja2 based)
 @item @command{bibliography}
 Our collected bibliography, papers, references, and so forth
 @item @command{gnunet-videos-}
-Videos about and around gnunet activities
+Videos about and around GNUnet activities
 @end table
 
 Finally, there are various external projects (see links for a list of
@@ -720,7 +719,6 @@ Here you can find some rules to help you write code for GNUnet.
 @itemize @bullet
 @item gnunet_config.h --- generated
 @item platform.h --- first included
-@item plibc.h --- external library
 @item gnunet_common.h --- fundamental routines
 @item gnunet_directories.h --- generated
 @item gettext.h --- external library
@@ -1211,7 +1209,9 @@ We advise against compiling widely used packages such as GnuTLS
 yourself if your OS provides a variant already unless you take care
 of maintenance of the packages then.
 
-In the optimistic case, this command will give you all the dependencies:
+In the optimistic case, this command will give you all the dependencies
+on Debian, Debian derived systems or any Linux Operating System using
+the apt package manager:
 
 @example
 sudo apt-get install libgnurl libmicrohttpd libextractor
@@ -1220,38 +1220,39 @@ sudo apt-get install libgnurl libmicrohttpd libextractor
 From experience we know that at the very least libgnurl is not
 available in some environments. You could substitute libgnurl
 with libcurl, but we recommend to install libgnurl, as it gives
-you a predefined libcurl with the small set GNUnet requires. In
-the past namespaces of libcurl and libgnurl were shared, which
-caused problems when you wanted to integrate both of them in one
-Operating System. This has been resolved, and they can be installed
-side by side now.
+you a predefined libcurl with the small set GNUnet requires.
+libgnurl has been developed to co-exist with libcurl installations,
+installing it will cause no filename or namespace collisions.
 
 @cindex libgnurl
 @cindex compiling libgnurl
 GNUnet and some of its function depend on a limited subset of cURL/libcurl.
 Rather than trying to enforce a certain configuration on the world, we
-opted to maintain a microfork of it that ensures we can link against the
-right set of features. We called this specialized set of libcurl
-``libgnurl''. It is fully ABI compatible with libcurl and currently used
-by GNUnet and some of its dependencies.
+opted to maintain a microfork of it that ensures that we can link
+against the right set of features.
+We called this specialized set of libcurl "libgnurl".
+It is fully ABI compatible with libcurl and currently used by
+GNUnet and some of its dependencies.
 
 We download libgnurl and its digital signature from the GNU fileserver,
 assuming @env{TMPDIR} exists.
 
+@quotation
 Note: TMPDIR might be @file{/tmp}, @env{TMPDIR}, @env{TMP} or any other
 location. For consistency we assume @env{TMPDIR} points to @file{/tmp}
 for the remainder of this section.
+@end quotation
 
 @example
 cd \$TMPDIR
-wget https://ftp.gnu.org/gnu/gnunet/gnurl-7.60.0.tar.Z
-wget https://ftp.gnu.org/gnu/gnunet/gnurl-7.60.0.tar.Z.sig
+wget https://ftp.gnu.org/gnu/gnunet/gnurl-7.65.3.tar.Z
+wget https://ftp.gnu.org/gnu/gnunet/gnurl-7.65.3.tar.Z.sig
 @end example
 
 Next, verify the digital signature of the file:
 
 @example
-gpg --verify gnurl-7.60.0.tar.Z.sig
+gpg --verify gnurl-7.65.3.tar.Z.sig
 @end example
 
 If gpg fails, you might try with @command{gpg2} on your OS. If the error
@@ -1263,19 +1264,28 @@ keyserver first:
 gpg --keyserver pgp.mit.edu --recv-keys A88C8ADD129828D7EAC02E52E22F9BBFEE348588
 @end example
 
+or
+
+@example
+gpg --keyserver hkps://keys.openpgp.org --recv-keys A88C8ADD129828D7EAC02E52E22F9BBFEE348588
+@end example
+
 and rerun the verification command.
 
 libgnurl will require the following packages to be present at runtime:
-gnutls (with DANE support / libunbound), libidn, zlib and at compile time:
-libtool, groff, perl, pkg-config, and python 2.7.
+GnuTLS (with DANE support / libunbound), libidn, zlib and at compile time:
+libtool, perl, pkg-config, and (for tests) python (2.7, or
+any version of python 3).
 
 Once you have verified that all the required packages are present on your
-system, we can proceed to compile libgnurl:
+system, we can proceed to compile libgnurl. This assumes you will install
+gnurl in the default location as prefix. To change this, pass --prefix= to
+the configure-gnurl script (which is a simple wrapper around configure).
 
 @example
-tar -xvf gnurl-7.60.0.tar.Z
-cd gnurl-7.60.0
-sh configure --disable-ntlm-wb
+tar -xvf gnurl-7.65.3.tar.Z
+cd gnurl-7.65.3
+sh ./configure-gnurl
 make
 make -C tests test
 sudo make install
@@ -1308,12 +1318,15 @@ Make sure to first install the various mandatory and optional
 dependencies including development headers from your distribution.
 
 Other dependencies that you should strongly consider to install is a
-database (MySQL, sqlite or Postgres).
-The following instructions will assume that you installed at least sqlite.
+database (MySQL, SQLite3 or Postgres).
+The following instructions will assume that you installed at least
+SQLite3 (commonly distributed as ``sqlite'' or ``sqlite3'').
 For most distributions you should be able to find pre-build packages for
 the database. Again, make sure to install the client libraries @b{and} the
 respective development headers (if they are packaged separately) as well.
 
+@c TODO: Do these platform specific descriptions still exist? If not,
+@c we should find a way to sync website parts with this texinfo.
 You can find specific, detailed instructions for installing of the
 dependencies (and possibly the rest of the GNUnet installation) in the
 platform-specific descriptions, which can be found in the Index.
@@ -1350,7 +1363,7 @@ sudo addgroup --system gnunetdns
 @end example
 
 @noindent
-On other Unixes and GNU systems, this should have the same effect:
+On other Unix-like systems, this should have the same effect:
 
 @example
 sudo useradd --system --groups gnunet --home-dir /var/lib/gnunet
@@ -1446,7 +1459,7 @@ Again, adding a @code{crontab} entry to autostart the peer is advised:
 @end example
 
 @noindent
-Note that some GNUnet services (such as SOCKS5 proxies) may need a
+Note that some GNUnet services (such as socks5 proxies) may need a
 system-wide TCP port for each user.
 For those services, systems with more than one user may require each user
 to specify a different port number in their personal configuration file.
@@ -1634,6 +1647,7 @@ However, most of the time only one ARM process is needed. Note that on
 exit, the testcase should shutdown ARM with a @code{TERM} signal (to give
 it the chance to cleanly stop its child processes).
 
+@c TODO: Is this still compiling and working as intended?
 The following code illustrates spawning and killing an ARM process from a
 testcase:
 
@@ -2376,7 +2390,7 @@ anyway).
 
 Every logging call in GNUnet code will be (at run time) matched against
 the log definitions passed to the process. If a log definition fields are
-matching the call arguments, then the call log level is compared the the
+matching the call arguments, then the call log level is compared to the
 log level of that definition. If the call log level is less or equal to
 the definition log level, the call is allowed to proceed. Otherwise the
 logging call is forbidden, and nothing is logged. If no definitions
@@ -2396,8 +2410,8 @@ any attempts to make the same call later will be allowed or disallowed
 right away. Because of that runtime log level evaluation should not
 significantly affect the process performance.
 Log definition parsing is only done once, at the first call to
-@code{GNUNET_log_setup ()} made by the process (which is usually done soon after
-it starts).
+@code{GNUNET_log_setup ()} made by the process (which is usually
+done soon after it starts).
 
 At the moment of writing there is no way to specify logging definitions
 from configuration files, only via environment variables.
@@ -2561,8 +2575,7 @@ Pretty hard to follow, huh?
 
 From now on, it is not necessary to include the #if / #endif statements to
 achieve the same behavior. The @code{GNUNET_log} and @code{GNUNET_log_from}
-macros take
-care of it for you, depending on the configure option:
+macros take care of it for you, depending on the configure option:
 
 @itemize @bullet
 @item If @code{--enable-logging} is set to @code{no}, the binary will
@@ -2574,8 +2587,7 @@ no effect. Other messages (ERROR, WARNING, INFO, etc) will be included.
 @item If @code{--enable-logging} is set to @code{verbose}, or
 @code{veryverbose} the binary will contain DEBUG messages (still, it will
 be necessary to run with @command{-L DEBUG} or set the DEBUG config option
-to show
-them).
+to show them).
 @end itemize
 
 
@@ -3046,7 +3058,7 @@ messages. For convenience,@ some queues also allow to specify a list of
 message handlers. The message queue will then also wait for incoming
 messages and dispatch them appropriately.
 
-An envelope holds the the memory for a message, as well as metadata
+An envelope holds the memory for a message, as well as metadata
 (Where is the envelope queued? What should happen after it has been
 sent?). Any envelope can only be queued in one message queue.
 
@@ -3119,7 +3131,7 @@ message type and the message size are already set. The message's size is
 inferred from the type of the @code{msg} pointer: It will be set to
 'sizeof(*msg)', properly converted to network byte order.
 
-If the message body's size is dynamic, the the macro
+If the message body's size is dynamic, then the macro
 @code{GNUNET_MQ_msg_extra} can be used to allocate an envelope whose
 message has additional space allocated after the @code{msg} structure.
 
@@ -4162,7 +4174,7 @@ ask on the IRC channel.
 
 If you are a GNU/Linux user and you want to use the Bluetooth
 transport plugin you should install the
-@command{BlueZ development libraries} (if they aren't already
+@command{BlueZ} development libraries (if they aren't already
 installed).
 For instructions about how to install the libraries you should
 check out the BlueZ site
@@ -4171,16 +4183,16 @@ you have the necessary libraries, don't worry, just run the GNUnet
 configure script and you will be able to see a notification at the end
 which will warn you if you don't have the necessary libraries.
 
-If you are a Windows user you should have installed the
-@emph{MinGW}/@emph{MSys2} with the latest updates (especially the
-@emph{ws2bth} header). If this is your first build of GNUnet on Windows
-you should check out the SBuild repository. It will semi-automatically
-assembles a @emph{MinGW}/@emph{MSys2} installation with a lot of extra
-packages which are needed for the GNUnet build. So this will ease your
-work!@ Finally you just have to be sure that you have the correct drivers
-for your Bluetooth device installed and that your device is on and in a
-discoverable mode. The Windows Bluetooth Stack supports only the RFCOMM
-protocol so we cannot turn on your device programatically!
+@c If you are a Windows user you should have installed the
+@c @emph{MinGW}/@emph{MSys2} with the latest updates (especially the
+@c @emph{ws2bth} header). If this is your first build of GNUnet on Windows
+@c you should check out the SBuild repository. It will semi-automatically
+@c assembles a @emph{MinGW}/@emph{MSys2} installation with a lot of extra
+@c packages which are needed for the GNUnet build. So this will ease your
+@c work!@ Finally you just have to be sure that you have the correct drivers
+@c for your Bluetooth device installed and that your device is on and in a
+@c discoverable mode. The Windows Bluetooth Stack supports only the RFCOMM
+@c protocol so we cannot turn on your device programatically!
 
 @c FIXME: Change to unique title
 @node How does it work2?
@@ -4320,11 +4332,11 @@ sending data for benchmarking to the other peer.
 This scenario will try to connect the second peer to the first one and
 then start sending data for benchmarking.
 
-On Windows you cannot test the plugin functionality using two Bluetooth
-devices from the same machine because after you install the drivers there
-will occur some conflicts between the Bluetooth stacks. (At least that is
-what happened on my machine : I wasn't able to use the Bluesoleil stack and
-the WINDCOMM one in the same time).
+@c On Windows you cannot test the plugin functionality using two Bluetooth
+@c devices from the same machine because after you install the drivers there
+@c will occur some conflicts between the Bluetooth stacks. (At least that is
+@c what happened on my machine : I wasn't able to use the Bluesoleil stack and
+@c the WINDCOMM one in the same time).
 
 If you have two different machines and your configuration files are good
 you can use the same scenario presented on the beginning of this section.
@@ -4352,7 +4364,7 @@ platforms.
 
 @itemize @bullet
 @item Linux functionality
-@item Windows functionality
+@c @item Windows functionality
 @item Pending Features
 @end itemize
 
@@ -4363,7 +4375,7 @@ platforms.
 * THE INITIALIZATION::
 * THE LOOP::
 * Details about the broadcast implementation::
-* Windows functionality::
+@c * Windows functionality::
 * Pending features::
 @end menu
 
@@ -4398,7 +4410,7 @@ the @emph{open_device} method
 
 On the @emph{open_device} method:
 @itemize @bullet
-@item creates a HCI socket used to send control events to the the device
+@item creates a HCI socket used to send control events to the device
 @item searches for the device ID using the interface name
 @item saves the device MAC address
 @item checks if the interface is down and tries to bring it UP
@@ -4510,68 +4522,68 @@ not we try to connect to it and in case of success we save the address and
 the socket on the list. If we are already connected to that device we
 simply use the socket.
 
-@node Windows functionality
-@subsubsection Windows functionality
+@c @node Windows functionality
+@c @subsubsection Windows functionality
 
 
-For Windows I decided to use the Microsoft Bluetooth stack which has the
-advantage of coming standard from Windows XP SP2. The main disadvantage is
-that it only supports the RFCOMM protocol so we will not be able to have
-a low level control over the Bluetooth device. Therefore it is the user
-responsibility to check if the device is up and in the discoverable mode.
-Also there are no tools which could be used for debugging in order to read
-the data coming from and going to a Bluetooth device, which obviously
-hindered my work. Another thing that slowed down the implementation of the
-plugin (besides that I wasn't too accommodated with the win32 API) was that
-there were some bugs on MinGW regarding the Bluetooth. Now they are solved
-but you should keep in mind that you should have the latest updates
-(especially the @emph{ws2bth} header).
+@c For Windows I decided to use the Microsoft Bluetooth stack which has the
+@c advantage of coming standard from Windows XP SP2. The main disadvantage is
+@c that it only supports the RFCOMM protocol so we will not be able to have
+@c a low level control over the Bluetooth device. Therefore it is the user
+@c responsibility to check if the device is up and in the discoverable mode.
+@c Also there are no tools which could be used for debugging in order to read
+@c the data coming from and going to a Bluetooth device, which obviously
+@c hindered my work. Another thing that slowed down the implementation of the
+@c plugin (besides that I wasn't too accommodated with the win32 API) was that
+@c there were some bugs on MinGW regarding the Bluetooth. Now they are solved
+@c but you should keep in mind that you should have the latest updates
+@c (especially the @emph{ws2bth} header).
 
-Besides the fact that it uses the Windows Sockets, the Windows
-implementation follows the same principles as the GNU/Linux one:
+@c Besides the fact that it uses the Windows Sockets, the Windows
+@c implementation follows the same principles as the GNU/Linux one:
 
-@itemize @bullet
-@item It has a initalization part where it initializes the
-Windows Sockets, creates a RFCOMM socket which will be binded and switched
-to the listening mode and registers a SDP service. In the Microsoft
-Bluetooth API there are two ways to work with the SDP:
-@itemize @bullet
-@item an easy way which works with very simple service records
-@item a hard way which is useful when you need to update or to delete the
-record
-@end itemize
-@end itemize
+@c @itemize @bullet
+@c @item It has a initalization part where it initializes the
+@c Windows Sockets, creates a RFCOMM socket which will be binded and switched
+@c to the listening mode and registers a SDP service. In the Microsoft
+@c Bluetooth API there are two ways to work with the SDP:
+@c @itemize @bullet
+@c @item an easy way which works with very simple service records
+@c @item a hard way which is useful when you need to update or to delete the
+@c record
+@c @end itemize
+@c @end itemize
 
-Since I only needed the SDP service to find out on which port the device
-is listening on and that did not change, I decided to use the easy way.
-In order to register the service I used the @emph{WSASetService} function
-and I generated the @emph{Universally Unique Identifier} with the
-@emph{guidgen.exe} Windows's tool.
+@c Since I only needed the SDP service to find out on which port the device
+@c is listening on and that did not change, I decided to use the easy way.
+@c In order to register the service I used the @emph{WSASetService} function
+@c and I generated the @emph{Universally Unique Identifier} with the
+@c @emph{guidgen.exe} Windows's tool.
 
-In the loop section the only difference from the GNU/Linux implementation
-is that I used the @code{GNUNET_NETWORK} library for
-functions like @emph{accept}, @emph{bind}, @emph{connect} or
-@emph{select}. I decided to use the
-@code{GNUNET_NETWORK} library because I also needed to interact
-with the STDIN and STDOUT handles and on Windows
-the select function is only defined for sockets,
-and it will not work for arbitrary file handles.
+@c In the loop section the only difference from the GNU/Linux implementation
+@c is that I used the @code{GNUNET_NETWORK} library for
+@c functions like @emph{accept}, @emph{bind}, @emph{connect} or
+@c @emph{select}. I decided to use the
+@c @code{GNUNET_NETWORK} library because I also needed to interact
+@c with the STDIN and STDOUT handles and on Windows
+@c the select function is only defined for sockets,
+@c and it will not work for arbitrary file handles.
 
-Another difference between GNU/Linux and Windows implementation is that in
-GNU/Linux, the Bluetooth address is represented in 48 bits
-while in Windows is represented in 64 bits.
-Therefore I had to do some changes on @emph{plugin_transport_wlan} header.
+@c Another difference between GNU/Linux and Windows implementation is that in
+@c GNU/Linux, the Bluetooth address is represented in 48 bits
+@c while in Windows is represented in 64 bits.
+@c Therefore I had to do some changes on @emph{plugin_transport_wlan} header.
 
-Also, currently on Windows the Bluetooth plugin doesn't have support for
-broadcast messages. When it receives a broadcast message it will skip it.
+@c Also, currently on Windows the Bluetooth plugin doesn't have support for
+@c broadcast messages. When it receives a broadcast message it will skip it.
 
 @node Pending features
 @subsubsection Pending features
 
 
 @itemize @bullet
-@item Implement the broadcast functionality on Windows @emph{(currently
-working on)}
+@c @item Implement the broadcast functionality on Windows @emph{(currently
+@c working on)}
 @item Implement a testcase for the helper :@ @emph{The testcase
 consists of a program which emulates the plugin and uses the helper. It
 will simulate connections, disconnections and data transfers.}
@@ -5703,7 +5715,7 @@ the response can easily be split into separate HELLO messages by the
 client.
 
 A HOSTLIST client connecting to the HOSTLIST server will receive the
-hostlist as a HTTP response and the the server will terminate the
+hostlist as an HTTP response and the server will terminate the
 connection with the result code @code{HTTP 200 OK}.
 The connection will be closed immediately if no hostlist is available.
 
@@ -7600,7 +7612,7 @@ record types.
 * GNS plugins::
 * The GNS Client-Service Protocol::
 * Hijacking the DNS-Traffic using gnunet-service-dns::
-* Serving DNS lookups via GNS on W32::
+@c * Serving DNS lookups via GNS on W32::
 * Importing DNS Zones into GNS::
 @end menu
 
@@ -7862,75 +7874,75 @@ Line 2 marks every other packet to a DNS-Server with mark 3 (chosen
 arbitrarily). The third line adds a routing policy based on this mark
 3 via the routing table.
 
-@node Serving DNS lookups via GNS on W32
-@subsection Serving DNS lookups via GNS on W32
+@c @node Serving DNS lookups via GNS on W32
+@c @subsection Serving DNS lookups via GNS on W32
 
 
 
-This section documents how the libw32nsp (and
-gnunet-gns-helper-service-w32) do DNS resolutions of DNS queries on the
-local system. This only applies to GNUnet running on W32.
+@c This section documents how the libw32nsp (and
+@c gnunet-gns-helper-service-w32) do DNS resolutions of DNS queries on the
+@c local system. This only applies to GNUnet running on W32.
 
-W32 has a concept of "Namespaces" and "Namespace providers".
-These are used to present various name systems to applications in a
-generic way.
-Namespaces include DNS, mDNS, NLA and others. For each namespace any
-number of providers could be registered, and they are queried in an order
-of priority (which is adjustable).
+@c W32 has a concept of "Namespaces" and "Namespace providers".
+@c These are used to present various name systems to applications in a
+@c generic way.
+@c Namespaces include DNS, mDNS, NLA and others. For each namespace any
+@c number of providers could be registered, and they are queried in an order
+@c of priority (which is adjustable).
 
-Applications can resolve names by using WSALookupService*() family of
-functions.
+@c Applications can resolve names by using WSALookupService*() family of
+@c functions.
 
-However, these are WSA-only facilities. Common BSD socket functions for
-namespace resolutions are gethostbyname and getaddrinfo (among others).
-These functions are implemented internally (by default - by mswsock,
-which also implements the default DNS provider) as wrappers around
-WSALookupService*() functions (see "Sample Code for a Service Provider"
-on MSDN).
+@c However, these are WSA-only facilities. Common BSD socket functions for
+@c namespace resolutions are gethostbyname and getaddrinfo (among others).
+@c These functions are implemented internally (by default - by mswsock,
+@c which also implements the default DNS provider) as wrappers around
+@c WSALookupService*() functions (see "Sample Code for a Service Provider"
+@c on MSDN).
 
-On W32 GNUnet builds a libw32nsp - a namespace provider, which can then be
-installed into the system by using w32nsp-install (and uninstalled by
-w32nsp-uninstall), as described in "Installation Handbook".
+@c On W32 GNUnet builds a libw32nsp - a namespace provider, which can then be
+@c installed into the system by using w32nsp-install (and uninstalled by
+@c w32nsp-uninstall), as described in "Installation Handbook".
 
-libw32nsp is very simple and has almost no dependencies. As a response to
-NSPLookupServiceBegin(), it only checks that the provider GUID passed to
-it by the caller matches GNUnet DNS Provider GUID,
-then connects to
-gnunet-gns-helper-service-w32 at 127.0.0.1:5353 (hardcoded) and sends the
-name resolution request there, returning the connected socket to the
-caller.
+@c libw32nsp is very simple and has almost no dependencies. As a response to
+@c NSPLookupServiceBegin(), it only checks that the provider GUID passed to
+@c it by the caller matches GNUnet DNS Provider GUID,
+@c then connects to
+@c gnunet-gns-helper-service-w32 at 127.0.0.1:5353 (hardcoded) and sends the
+@c name resolution request there, returning the connected socket to the
+@c caller.
 
-When the caller invokes NSPLookupServiceNext(), libw32nsp reads a
-completely formed reply from that socket, unmarshalls it, then gives
-it back to the caller.
+@c When the caller invokes NSPLookupServiceNext(), libw32nsp reads a
+@c completely formed reply from that socket, unmarshalls it, then gives
+@c it back to the caller.
 
-At the moment gnunet-gns-helper-service-w32 is implemented to ever give
-only one reply, and subsequent calls to NSPLookupServiceNext() will fail
-with WSA_NODATA (first call to NSPLookupServiceNext() might also fail if
-GNS failed to find the name, or there was an error connecting to it).
+@c At the moment gnunet-gns-helper-service-w32 is implemented to ever give
+@c only one reply, and subsequent calls to NSPLookupServiceNext() will fail
+@c with WSA_NODATA (first call to NSPLookupServiceNext() might also fail if
+@c GNS failed to find the name, or there was an error connecting to it).
 
-gnunet-gns-helper-service-w32 does most of the processing:
+@c gnunet-gns-helper-service-w32 does most of the processing:
 
-@itemize @bullet
-@item Maintains a connection to GNS.
-@item Reads GNS config and loads appropriate keys.
-@item Checks service GUID and decides on the type of record to look up,
-refusing to make a lookup outright when unsupported service GUID is
-passed.
-@item Launches the lookup
-@end itemize
+@c @itemize @bullet
+@c @item Maintains a connection to GNS.
+@c @item Reads GNS config and loads appropriate keys.
+@c @item Checks service GUID and decides on the type of record to look up,
+@c refusing to make a lookup outright when unsupported service GUID is
+@c passed.
+@c @item Launches the lookup
+@c @end itemize
 
-When lookup result arrives, gnunet-gns-helper-service-w32 forms a complete
-reply (including filling a WSAQUERYSETW structure and, possibly, a binary
-blob with a hostent structure for gethostbyname() client), marshalls it,
-and sends it back to libw32nsp. If no records were found, it sends an
-empty header.
+@c When lookup result arrives, gnunet-gns-helper-service-w32 forms a complete
+@c reply (including filling a WSAQUERYSETW structure and, possibly, a binary
+@c blob with a hostent structure for gethostbyname() client), marshalls it,
+@c and sends it back to libw32nsp. If no records were found, it sends an
+@c empty header.
 
-This works for most normal applications that use gethostbyname() or
-getaddrinfo() to resolve names, but fails to do anything with
-applications that use alternative means of resolving names (such as
-sending queries to a DNS server directly by themselves).
-This includes some of well known utilities, like "ping" and "nslookup".
+@c This works for most normal applications that use gethostbyname() or
+@c getaddrinfo() to resolve names, but fails to do anything with
+@c applications that use alternative means of resolving names (such as
+@c sending queries to a DNS server directly by themselves).
+@c This includes some of well known utilities, like "ping" and "nslookup".
 
 @node Importing DNS Zones into GNS
 @subsection Importing DNS Zones into GNS
@@ -8918,7 +8930,8 @@ independently of the frequency in the input set. Both an element that
 was put into the sampler a single time and an element that was put into
 it a million times have the same probability of being the output.
 This is achieved with exploiting min-wise independent
-permutations. In the RPS service we use HMACs: On the initialisation of a sampler
+permutations.
+In the RPS service we use HMACs: On the initialisation of a sampler
 element, a key is chosen at random. On each input the HMAC with the
 random key is computed. The sampler element keeps the element with the
 minimal HMAC.

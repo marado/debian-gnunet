@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -118,9 +118,11 @@ typedef void
  */
 typedef struct GNUNET_TIME_Relative
 (*GNUNET_TRANSPORT_PluginReceiveCallback) (void *cls,
-                                           const struct GNUNET_HELLO_Address *address,
+                                           const struct
+                                           GNUNET_HELLO_Address *address,
                                            struct GNUNET_ATS_Session *session,
-                                           const struct GNUNET_MessageHeader *message);
+                                           const struct
+                                           GNUNET_MessageHeader *message);
 
 
 /**
@@ -134,9 +136,9 @@ typedef struct GNUNET_TIME_Relative
  * @return type of the network the address belongs to
  */
 typedef enum GNUNET_NetworkType
-(*GNUNET_TRANSPORT_AddressToType) (void *cls,
-                                   const struct sockaddr *addr,
-                                   size_t addrlen);
+(*GNUNET_TRANSPORT_AddressToType)(void *cls,
+                                  const struct sockaddr *addr,
+                                  size_t addrlen);
 
 
 /**
@@ -148,7 +150,8 @@ typedef enum GNUNET_NetworkType
  */
 typedef void
 (*GNUNET_TRANSPORT_UpdateAddressDistance) (void *cls,
-                                           const struct GNUNET_HELLO_Address *address,
+                                           const struct
+                                           GNUNET_HELLO_Address *address,
                                            uint32_t distance);
 
 
@@ -164,7 +167,8 @@ typedef void
 typedef void
 (*GNUNET_TRANSPORT_AddressNotification) (void *cls,
                                          int add_remove,
-                                         const struct GNUNET_HELLO_Address *address);
+                                         const struct
+                                         GNUNET_HELLO_Address *address);
 
 
 /**
@@ -277,7 +281,6 @@ struct GNUNET_TRANSPORT_PluginEnvironment
    * UDP) can ignore this value.
    */
   uint32_t max_connections;
-
 };
 
 
@@ -302,7 +305,8 @@ struct GNUNET_TRANSPORT_PluginEnvironment
  */
 typedef void
 (*GNUNET_TRANSPORT_TransmitContinuation) (void *cls,
-                                          const struct GNUNET_PeerIdentity *target,
+                                          const struct
+                                          GNUNET_PeerIdentity *target,
                                           int result,
                                           size_t size_payload,
                                           size_t size_on_wire);
@@ -362,7 +366,8 @@ typedef ssize_t
  */
 typedef int
 (*GNUNET_TRANSPORT_DisconnectSessionFunction) (void *cls,
-                                               struct GNUNET_ATS_Session *session);
+                                               struct GNUNET_ATS_Session *
+                                               session);
 
 
 /**
@@ -391,7 +396,8 @@ typedef unsigned int
  */
 typedef void
 (*GNUNET_TRANSPORT_DisconnectPeerFunction) (void *cls,
-                                            const struct GNUNET_PeerIdentity *target);
+                                            const struct
+                                            GNUNET_PeerIdentity *target);
 
 
 /**
@@ -435,7 +441,8 @@ typedef void
                                           size_t addrlen,
                                           int numeric,
                                           struct GNUNET_TIME_Relative timeout,
-                                          GNUNET_TRANSPORT_AddressStringCallback asc,
+                                          GNUNET_TRANSPORT_AddressStringCallback
+                                          asc,
                                           void *asc_cls);
 
 
@@ -484,7 +491,8 @@ typedef struct GNUNET_ATS_Session *
  */
 typedef void
 (*GNUNET_TRANSPORT_UpdateSessionTimeout) (void *cls,
-                                          const struct GNUNET_PeerIdentity *peer,
+                                          const struct
+                                          GNUNET_PeerIdentity *peer,
                                           struct GNUNET_ATS_Session *session);
 
 
@@ -550,8 +558,8 @@ typedef int
  * @return the network type
  */
 typedef enum GNUNET_NetworkType
-(*GNUNET_TRANSPORT_GetNetworkType) (void *cls,
-                                    struct GNUNET_ATS_Session *session);
+(*GNUNET_TRANSPORT_GetNetworkType)(void *cls,
+                                   struct GNUNET_ATS_Session *session);
 
 
 /**
@@ -562,8 +570,9 @@ typedef enum GNUNET_NetworkType
  * @return the network type
  */
 typedef enum GNUNET_NetworkType
-(*GNUNET_TRANSPORT_GetNetworkTypeForAddress) (void *cls,
-                                              const struct GNUNET_HELLO_Address *address);
+(*GNUNET_TRANSPORT_GetNetworkTypeForAddress)(void *cls,
+                                             const struct
+                                             GNUNET_HELLO_Address *address);
 
 
 /**
@@ -581,7 +590,8 @@ typedef enum GNUNET_NetworkType
 typedef void
 (*GNUNET_TRANSPORT_SessionInfoCallback) (void *cls,
                                          struct GNUNET_ATS_Session *session,
-                                         const struct GNUNET_TRANSPORT_SessionInfo *info);
+                                         const struct
+                                         GNUNET_TRANSPORT_SessionInfo *info);
 
 
 /**
@@ -598,7 +608,8 @@ typedef void
  */
 typedef void
 (*GNUNET_TRANSPORT_SessionMonitorSetup) (void *cls,
-                                         GNUNET_TRANSPORT_SessionInfoCallback sic,
+                                         GNUNET_TRANSPORT_SessionInfoCallback
+                                         sic,
                                          void *sic_cls);
 
 
@@ -608,7 +619,6 @@ typedef void
  */
 struct GNUNET_TRANSPORT_PluginFunctions
 {
-
   /**
    * Closure for all of the callbacks.
    */

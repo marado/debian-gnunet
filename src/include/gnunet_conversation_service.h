@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2013, 2014, 2016 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2013, 2014, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -53,7 +53,7 @@
 #ifdef __cplusplus
 extern "C"
 {
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -88,7 +88,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct GNUNET_CONVERSATION_PhoneRecord
 {
-
   /**
    * Version of the phone record, for now always one.  We may
    * use other versions for anonymously hosted phone lines in
@@ -110,7 +109,6 @@ struct GNUNET_CONVERSATION_PhoneRecord
    * Phone line (CADET port) to connect to.
    */
   struct GNUNET_HashCode line_port;
-
 };
 
 GNUNET_NETWORK_STRUCT_END
@@ -131,7 +129,6 @@ enum GNUNET_CONVERSATION_PhoneEventCode
    * We must no longer use the caller's handle.
    */
   GNUNET_CONVERSATION_EC_PHONE_HUNG_UP
-
 };
 
 
@@ -145,9 +142,12 @@ enum GNUNET_CONVERSATION_PhoneEventCode
  */
 typedef void
 (*GNUNET_CONVERSATION_PhoneEventHandler)(void *cls,
-                                         enum GNUNET_CONVERSATION_PhoneEventCode code,
-                                         struct GNUNET_CONVERSATION_Caller *caller,
-                                         const struct GNUNET_CRYPTO_EcdsaPublicKey *caller_id);
+                                         enum GNUNET_CONVERSATION_PhoneEventCode
+                                         code,
+                                         struct GNUNET_CONVERSATION_Caller *
+                                         caller,
+                                         const struct
+                                         GNUNET_CRYPTO_EcdsaPublicKey *caller_id);
 
 
 /**
@@ -157,7 +157,6 @@ typedef void
  */
 enum GNUNET_CONVERSATION_CallerEventCode
 {
-
   /**
    * We are the callee and the caller suspended the call.  Note that
    * both sides can independently suspend and resume calls; a call is
@@ -171,7 +170,6 @@ enum GNUNET_CONVERSATION_CallerEventCode
    * only "working" of both sides are active.
    */
   GNUNET_CONVERSATION_EC_CALLER_RESUME
-
 };
 
 
@@ -185,7 +183,9 @@ enum GNUNET_CONVERSATION_CallerEventCode
  */
 typedef void
 (*GNUNET_CONVERSATION_CallerEventHandler)(void *cls,
-                                          enum GNUNET_CONVERSATION_CallerEventCode code);
+                                          enum
+                                          GNUNET_CONVERSATION_CallerEventCode
+                                          code);
 
 
 /**
@@ -214,8 +214,9 @@ struct GNUNET_CONVERSATION_Phone;
 struct GNUNET_CONVERSATION_Phone *
 GNUNET_CONVERSATION_phone_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                   const struct GNUNET_IDENTITY_Ego *ego,
-				  GNUNET_CONVERSATION_PhoneEventHandler event_handler,
-				  void *event_handler_cls);
+                                  GNUNET_CONVERSATION_PhoneEventHandler
+                                  event_handler,
+                                  void *event_handler_cls);
 
 
 /**
@@ -228,7 +229,7 @@ GNUNET_CONVERSATION_phone_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
  */
 void
 GNUNET_CONVERSATION_phone_get_record (struct GNUNET_CONVERSATION_Phone *phone,
-				      struct GNUNET_GNSRECORD_Data *rd);
+                                      struct GNUNET_GNSRECORD_Data *rd);
 
 
 /**
@@ -243,7 +244,8 @@ GNUNET_CONVERSATION_phone_get_record (struct GNUNET_CONVERSATION_Phone *phone,
  */
 void
 GNUNET_CONVERSATION_caller_pick_up (struct GNUNET_CONVERSATION_Caller *caller,
-                                    GNUNET_CONVERSATION_CallerEventHandler event_handler,
+                                    GNUNET_CONVERSATION_CallerEventHandler
+                                    event_handler,
                                     void *event_handler_cls,
                                     struct GNUNET_SPEAKER_Handle *speaker,
                                     struct GNUNET_MICROPHONE_Handle *mic);
@@ -305,7 +307,6 @@ struct GNUNET_CONVERSATION_Call;
  */
 enum GNUNET_CONVERSATION_CallEventCode
 {
-
   /**
    * We are the caller and are now ringing the other party (GNS lookup
    * succeeded).
@@ -354,7 +355,6 @@ enum GNUNET_CONVERSATION_CallEventCode
    * is restarted during a call.
    */
   GNUNET_CONVERSATION_EC_CALL_ERROR
-
 };
 
 
@@ -366,7 +366,8 @@ enum GNUNET_CONVERSATION_CallEventCode
  */
 typedef void
 (*GNUNET_CONVERSATION_CallEventHandler)(void *cls,
-                                        enum GNUNET_CONVERSATION_CallEventCode code);
+                                        enum GNUNET_CONVERSATION_CallEventCode
+                                        code);
 
 
 /**
@@ -386,12 +387,13 @@ typedef void
  */
 struct GNUNET_CONVERSATION_Call *
 GNUNET_CONVERSATION_call_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
-				struct GNUNET_IDENTITY_Ego *caller_id,
-				const char *callee,
-				struct GNUNET_SPEAKER_Handle *speaker,
-				struct GNUNET_MICROPHONE_Handle *mic,
-				GNUNET_CONVERSATION_CallEventHandler event_handler,
-				void *event_handler_cls);
+                                struct GNUNET_IDENTITY_Ego *caller_id,
+                                const char *callee,
+                                struct GNUNET_SPEAKER_Handle *speaker,
+                                struct GNUNET_MICROPHONE_Handle *mic,
+                                GNUNET_CONVERSATION_CallEventHandler
+                                event_handler,
+                                void *event_handler_cls);
 
 
 /**
@@ -426,7 +428,7 @@ void
 GNUNET_CONVERSATION_call_stop (struct GNUNET_CONVERSATION_Call *call);
 
 
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

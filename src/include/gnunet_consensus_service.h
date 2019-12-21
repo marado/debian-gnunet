@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -64,8 +64,8 @@ extern "C"
  * @param element new element, NULL on error
  */
 typedef void (*GNUNET_CONSENSUS_ElementCallback) (void *cls,
-                                                  const struct GNUNET_SET_Element *element);
-
+                                                  const struct
+                                                  GNUNET_SET_Element *element);
 
 
 /**
@@ -136,7 +136,6 @@ GNUNET_CONSENSUS_insert (struct GNUNET_CONSENSUS_Handle *consensus,
                          const struct GNUNET_SET_Element *element,
                          GNUNET_CONSENSUS_InsertDoneCallback idc,
                          void *idc_cls);
-
 
 
 /**

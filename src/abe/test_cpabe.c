@@ -11,13 +11,13 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
 
-*/
+ */
 /**
  * @author Martin Schanzenbach
  * @file util/test_crypto_abe.c
@@ -38,21 +38,22 @@ testAbecipher ()
   char **attrs;
   int size;
   char *res;
+
   msk = GNUNET_ABE_cpabe_create_master_key ();
   size = GNUNET_ABE_cpabe_encrypt (TESTSTRING, strlen (TESTSTRING) + 1,
-                                      "testattr", //Policy
-                                      msk,
-                                      (void*)&result);
+                                   "testattr",    // Policy
+                                   msk,
+                                   (void *) &result);
   GNUNET_assert (-1 != size);
-  attrs = GNUNET_malloc (2 * sizeof (char*));
+  attrs = GNUNET_malloc (2 * sizeof(char*));
   attrs[0] = "testattr";
   attrs[1] = NULL;
   key = GNUNET_ABE_cpabe_create_key (msk,
-                                        attrs);
+                                     attrs);
 
   size = GNUNET_ABE_cpabe_decrypt (result, size,
-                                      key,
-                                      (void*)&res);
+                                   key,
+                                   (void *) &res);
   if (strlen (TESTSTRING) + 1 != size)
   {
     printf ("abeciphertest failed: decryptBlock returned %d\n", size);
@@ -83,5 +84,6 @@ main (int argc, char *argv[])
   }
   return 0;
 }
+
 
 /* end of test_crypto_aes.c */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/core_api_monitor_peers.c
@@ -34,7 +34,6 @@
  */
 struct GNUNET_CORE_MonitorHandle
 {
-
   /**
    * Our configuration.
    */
@@ -113,11 +112,11 @@ static void
 reconnect (struct GNUNET_CORE_MonitorHandle *mh)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (receive_info,
-                              GNUNET_MESSAGE_TYPE_CORE_MONITOR_NOTIFY,
-                              struct MonitorNotifyMessage,
-                              mh),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (receive_info,
+                             GNUNET_MESSAGE_TYPE_CORE_MONITOR_NOTIFY,
+                             struct MonitorNotifyMessage,
+                             mh),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_MessageHeader *msg;
 

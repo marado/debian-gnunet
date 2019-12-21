@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fs/gnunet-auto-share.c
  * @brief automatically publish files on GNUnet
@@ -40,7 +40,6 @@
  */
 struct WorkItem
 {
-
   /**
    * PENDING Work is kept in a linked list.
    */
@@ -170,8 +169,8 @@ get_state_file ()
                    "%s%s.auto-share",
                    dir_name,
                    (DIR_SEPARATOR == dir_name[strlen (dir_name) - 1])
-                     ? ""
-                     : DIR_SEPARATOR_STR);
+                   ? ""
+                   : DIR_SEPARATOR_STR);
   return ret;
 }
 
@@ -202,7 +201,7 @@ load_state ()
   {
     if ((GNUNET_OK != GNUNET_BIO_read_string (rh, "filename", &fn, 1024)) ||
         (GNUNET_OK !=
-         GNUNET_BIO_read (rh, "id", &id, sizeof (struct GNUNET_HashCode))))
+         GNUNET_BIO_read (rh, "id", &id, sizeof(struct GNUNET_HashCode))))
       goto error;
     wi = GNUNET_new (struct WorkItem);
     wi->id = id;
@@ -254,7 +253,7 @@ write_item (void *cls, const struct GNUNET_HashCode *key, void *value)
               GNUNET_h2s (&wi->id));
   if ((GNUNET_OK != GNUNET_BIO_write_string (wh, wi->filename)) ||
       (GNUNET_OK !=
-       GNUNET_BIO_write (wh, &wi->id, sizeof (struct GNUNET_HashCode))))
+       GNUNET_BIO_write (wh, &wi->id, sizeof(struct GNUNET_HashCode))))
     return GNUNET_SYSERR; /* write error, abort iteration */
   return GNUNET_OK;
 }
@@ -360,7 +359,7 @@ maint_child_death (void *cls)
     return;
   }
   /* consume the signal */
-  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof (c)));
+  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof(c)));
 
   ret = GNUNET_OS_process_status (publish_proc, &type, &code);
   GNUNET_assert (GNUNET_SYSERR != ret);
@@ -368,7 +367,7 @@ maint_child_death (void *cls)
   {
     /* process still running? Then where did the SIGCHLD come from?
        Well, let's declare it spurious (kernel bug?) and keep rolling.
-    */
+     */
     GNUNET_break (0);
     run_task = GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
                                                pr,
@@ -424,7 +423,7 @@ sighandler_child_death ()
     GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle (sigpipe,
                                                      GNUNET_DISK_PIPE_END_WRITE),
                             &c,
-                            sizeof (c)));
+                            sizeof(c)));
   errno = old_errno; /* restore errno */
 }
 
@@ -458,13 +457,13 @@ work (void *cls)
     argv[argc++] = "-d";
   argv[argc++] = "-c";
   argv[argc++] = cfg_filename;
-  GNUNET_snprintf (anon_level, sizeof (anon_level), "%u", anonymity_level);
+  GNUNET_snprintf (anon_level, sizeof(anon_level), "%u", anonymity_level);
   argv[argc++] = "-a";
   argv[argc++] = anon_level;
-  GNUNET_snprintf (content_prio, sizeof (content_prio), "%u", content_priority);
+  GNUNET_snprintf (content_prio, sizeof(content_prio), "%u", content_priority);
   argv[argc++] = "-p";
   argv[argc++] = content_prio;
-  GNUNET_snprintf (repl_level, sizeof (repl_level), "%u", replication_level);
+  GNUNET_snprintf (repl_level, sizeof(repl_level), "%u", replication_level);
   argv[argc++] = "-r";
   argv[argc++] = repl_level;
   argv[argc++] = wi->filename;
@@ -512,7 +511,7 @@ determine_id (void *cls, const char *filename)
   struct GNUNET_HashCode fx[2];
   struct GNUNET_HashCode ft;
 
-  if (0 != STAT (filename, &sbuf))
+  if (0 != stat (filename, &sbuf))
   {
     GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "stat", filename);
     return GNUNET_OK;
@@ -525,16 +524,16 @@ determine_id (void *cls, const char *filename)
     fattr[0] = GNUNET_htonll (sbuf.st_size);
     fattr[0] = GNUNET_htonll (sbuf.st_mtime);
 
-    GNUNET_CRYPTO_hash (fattr, sizeof (fattr), &fx[1]);
+    GNUNET_CRYPTO_hash (fattr, sizeof(fattr), &fx[1]);
   }
   else
   {
-    memset (&fx[1], 1, sizeof (struct GNUNET_HashCode));
+    memset (&fx[1], 1, sizeof(struct GNUNET_HashCode));
     GNUNET_DISK_directory_scan (filename, &determine_id, &fx[1]);
   }
   /* use hash here to make hierarchical structure distinct from
      all files on the same level */
-  GNUNET_CRYPTO_hash (fx, sizeof (fx), &ft);
+  GNUNET_CRYPTO_hash (fx, sizeof(fx), &ft);
   /* use XOR here so that order of the files in the directory
      does not matter! */
   GNUNET_CRYPTO_hash_xor (&ft, id, id);
@@ -565,12 +564,12 @@ add_file (void *cls, const char *filename)
     return GNUNET_OK; /* skip internal file */
   GNUNET_CRYPTO_hash (filename, strlen (filename), &key);
   wi = GNUNET_CONTAINER_multihashmap_get (work_finished, &key);
-  memset (&id, 0, sizeof (struct GNUNET_HashCode));
+  memset (&id, 0, sizeof(struct GNUNET_HashCode));
   determine_id (&id, filename);
   if (NULL != wi)
   {
-    if (0 == memcmp (&id, &wi->id, sizeof (struct GNUNET_HashCode)))
-      return GNUNET_OK; /* skip: we did this one already */
+    if (0 == memcmp (&id, &wi->id, sizeof(struct GNUNET_HashCode)))
+      return GNUNET_OK;   /* skip: we did this one already */
     /* contents changed, need to re-do the directory... */
     GNUNET_assert (
       GNUNET_YES ==
@@ -651,7 +650,7 @@ run (void *cls,
       (GNUNET_YES != GNUNET_DISK_directory_test (args[0], GNUNET_YES)))
   {
     printf (_ (
-      "You must specify one and only one directory name for automatic publication.\n"));
+              "You must specify one and only one directory name for automatic publication.\n"));
     ret = -1;
     return;
   }
@@ -697,7 +696,6 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_uint ('a',
                                "anonymity",
                                "LEVEL",
@@ -734,7 +732,8 @@ main (int argc, char *const *argv)
 
     GNUNET_GETOPT_option_verbose (&verbose),
 
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
   struct WorkItem *wi;
   int ok;
   struct GNUNET_SIGNAL_Context *shc_chld;
@@ -755,8 +754,8 @@ main (int argc, char *const *argv)
        options,
        &run,
        NULL))
-      ? ret
-      : 1;
+    ? ret
+    : 1;
   if (NULL != work_finished)
   {
     (void) GNUNET_CONTAINER_multihashmap_iterate (work_finished,
@@ -779,5 +778,6 @@ main (int argc, char *const *argv)
   GNUNET_free ((void *) argv);
   return ok;
 }
+
 
 /* end of gnunet-auto-share.c */

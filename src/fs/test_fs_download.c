@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_fs_download.c
@@ -57,7 +57,7 @@ static struct GNUNET_FS_DownloadContext *download;
 
 static struct GNUNET_FS_PublishContext *publish;
 
-static struct GNUNET_SCHEDULER_Task * timeout_kill;
+static struct GNUNET_SCHEDULER_Task *timeout_kill;
 
 static char *fn;
 
@@ -114,7 +114,8 @@ abort_download_task (void *cls)
     GNUNET_FS_download_stop (download, GNUNET_YES);
     download = NULL;
   }
-  GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_size (fn, &size, GNUNET_YES, GNUNET_NO));
+  GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_size (fn, &size, GNUNET_YES,
+                                                     GNUNET_NO));
   GNUNET_assert (size == FILESIZE);
   GNUNET_DISK_directory_remove (fn);
   GNUNET_free (fn);
@@ -127,89 +128,96 @@ abort_download_task (void *cls)
 static void *
 progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
 {
-
   switch (event->status)
   {
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Publish is progressing (%llu/%llu at level %u off %llu)...\n",
-		(unsigned long long) event->value.publish.completed,
-		(unsigned long long) event->value.publish.size,
-		event->value.publish.specifics.progress.depth,
-		(unsigned long long) event->value.publish.specifics.
-		progress.offset);
+                "Publish is progressing (%llu/%llu at level %u off %llu)...\n",
+                (unsigned long long) event->value.publish.completed,
+                (unsigned long long) event->value.publish.size,
+                event->value.publish.specifics.progress.depth,
+                (unsigned long long) event->value.publish.specifics.
+                progress.offset);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
     fprintf (stdout,
-	     "Publishing complete, %llu kb/s.\n",
-	     (unsigned long long) (FILESIZE * 1000000LL /
-				   (1 +
-				    GNUNET_TIME_absolute_get_duration
-				    (start).rel_value_us) / 1024LL));
+             "Publishing complete, %llu kb/s.\n",
+             (unsigned long long) (FILESIZE * 1000000LL
+                                   / (1
+                                      + GNUNET_TIME_absolute_get_duration
+                                        (start).rel_value_us) / 1024LL));
     GAUGER ("FS",
-	    (GNUNET_YES == indexed)
-	    ? "Publishing speed (indexing)"
-	     : "Publishing speed (insertion)",
-	    (unsigned long long) (FILESIZE * 1000000LL /
-				  (1 +
-				   GNUNET_TIME_absolute_get_duration
-				   (start).rel_value_us) / 1024LL), "kb/s");
+            (GNUNET_YES == indexed)
+            ? "Publishing speed (indexing)"
+            : "Publishing speed (insertion)",
+            (unsigned long long) (FILESIZE * 1000000LL
+                                  / (1
+                                     + GNUNET_TIME_absolute_get_duration
+                                       (start).rel_value_us) / 1024LL), "kb/s");
     fn = GNUNET_DISK_mktemp ("gnunet-download-test-dst");
     start = GNUNET_TIME_absolute_get ();
     download =
-        GNUNET_FS_download_start (fs,
-                                  event->value.publish.specifics.
-                                  completed.chk_uri, NULL, fn, NULL, 0,
-                                  FILESIZE, anonymity_level,
-				  GNUNET_FS_DOWNLOAD_OPTION_NONE,
-                                  "download", NULL);
+      GNUNET_FS_download_start (fs,
+                                event->value.publish.specifics.
+                                completed.chk_uri, NULL, fn, NULL, 0,
+                                FILESIZE, anonymity_level,
+                                GNUNET_FS_DOWNLOAD_OPTION_NONE,
+                                "download", NULL);
     GNUNET_assert (download != NULL);
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_COMPLETED:
     fprintf (stdout,
-	     "Download complete,  %llu kb/s.\n",
-	     (unsigned long long) (FILESIZE * 1000000LL /
-				   (1 +
-				    GNUNET_TIME_absolute_get_duration
-				    (start).rel_value_us) / 1024LL));
+             "Download complete,  %llu kb/s.\n",
+             (unsigned long long) (FILESIZE * 1000000LL
+                                   / (1
+                                      + GNUNET_TIME_absolute_get_duration
+                                        (start).rel_value_us) / 1024LL));
     GAUGER ("FS",
-	    (GNUNET_YES == indexed)
-	    ? "Local download speed (indexed)"
-	    : "Local download speed (inserted)",
-            (unsigned long long) (FILESIZE * 1000000LL /
-                                  (1 +
-                                   GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value_us) / 1024LL), "kb/s");
+            (GNUNET_YES == indexed)
+            ? "Local download speed (indexed)"
+            : "Local download speed (inserted)",
+            (unsigned long long) (FILESIZE * 1000000LL
+                                  / (1
+                                     + GNUNET_TIME_absolute_get_duration
+                                       (start).rel_value_us) / 1024LL), "kb/s");
     GNUNET_SCHEDULER_add_now (&abort_download_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_PROGRESS:
     GNUNET_assert (download == event->value.download.dc);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Download is progressing (%llu/%llu at level %u off %llu)...\n",
-		(unsigned long long) event->value.download.completed,
-		(unsigned long long) event->value.download.size,
-		event->value.download.specifics.progress.depth,
-		(unsigned long long) event->value.download.specifics.
-		progress.offset);
+                "Download is progressing (%llu/%llu at level %u off %llu)...\n",
+                (unsigned long long) event->value.download.completed,
+                (unsigned long long) event->value.download.size,
+                event->value.download.specifics.progress.depth,
+                (unsigned long long) event->value.download.specifics.
+                progress.offset);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_ERROR:
-    FPRINTF (stderr, "Error publishing file: %s\n",
+    fprintf (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     GNUNET_break (0);
     GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     GNUNET_SCHEDULER_shutdown ();
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_ERROR:
-    FPRINTF (stderr, "Error downloading file: %s\n",
+    fprintf (stderr, "Error downloading file: %s\n",
              event->value.download.specifics.error.message);
     GNUNET_SCHEDULER_add_now (&abort_download_task, NULL);
     GNUNET_SCHEDULER_shutdown ();
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_ACTIVE:
   case GNUNET_FS_STATUS_DOWNLOAD_INACTIVE:
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_START:
     GNUNET_assert (0 == strcmp ("publish-context", event->value.publish.cctx));
     GNUNET_assert (NULL == event->value.publish.pctx);
@@ -217,12 +225,14 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_assert (0 == event->value.publish.completed);
     GNUNET_assert (1 == event->value.publish.anonymity);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_STOPPED:
     GNUNET_assert (publish == event->value.publish.pc);
     GNUNET_assert (FILESIZE == event->value.publish.size);
     GNUNET_assert (1 == event->value.publish.anonymity);
     GNUNET_SCHEDULER_add_now (&stop_fs_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_START:
     GNUNET_assert (0 == strcmp ("download", event->value.download.cctx));
     GNUNET_assert (NULL == event->value.download.pctx);
@@ -232,10 +242,12 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_assert (0 == event->value.download.completed);
     GNUNET_assert (1 == event->value.download.anonymity);
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_STOPPED:
     GNUNET_assert (download == event->value.download.dc);
     GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
+
   default:
     printf ("Unexpected event: %d\n", event->status);
     break;
@@ -263,8 +275,8 @@ run (void *cls,
 
   if (GNUNET_YES ==
       GNUNET_CONFIGURATION_get_value_yesno (cfg,
-					    "download-test",
-					    "USE_STREAM"))
+                                            "download-test",
+                                            "USE_STREAM"))
     anonymity_level = 0;
   else
     anonymity_level = 1;
@@ -283,25 +295,26 @@ run (void *cls,
 
   if (GNUNET_YES ==
       GNUNET_CONFIGURATION_get_value_yesno (cfg,
-					    "download-test",
-					    "USE_INDEX"))
+                                            "download-test",
+                                            "USE_INDEX"))
   {
     fn1 = GNUNET_DISK_mktemp ("gnunet-download-indexed-test");
     GNUNET_assert (FILESIZE ==
-		   GNUNET_DISK_fn_write (fn1, buf, FILESIZE,
-					 GNUNET_DISK_PERM_USER_READ |
-					 GNUNET_DISK_PERM_USER_WRITE));
+                   GNUNET_DISK_fn_write (fn1, buf, FILESIZE,
+                                         GNUNET_DISK_PERM_USER_READ
+                                         | GNUNET_DISK_PERM_USER_WRITE));
     GNUNET_free (buf);
-    fi = GNUNET_FS_file_information_create_from_file (fs, "publish-context", fn1,
-						      kuri, meta, GNUNET_YES,
-						      &bo);
+    fi = GNUNET_FS_file_information_create_from_file (fs, "publish-context",
+                                                      fn1,
+                                                      kuri, meta, GNUNET_YES,
+                                                      &bo);
     indexed = GNUNET_YES;
   }
   else
   {
     fi = GNUNET_FS_file_information_create_from_data (fs, "publish-context",
-						      FILESIZE, buf, kuri, meta,
-						      GNUNET_NO, &bo);
+                                                      FILESIZE, buf, kuri, meta,
+                                                      GNUNET_NO, &bo);
     /* note: buf will be free'd as part of 'fi' now */
     indexed = GNUNET_NO;
   }
@@ -309,11 +322,11 @@ run (void *cls,
   GNUNET_CONTAINER_meta_data_destroy (meta);
   GNUNET_assert (NULL != fi);
   timeout_kill =
-      GNUNET_SCHEDULER_add_delayed (TIMEOUT, &timeout_kill_task, NULL);
+    GNUNET_SCHEDULER_add_delayed (TIMEOUT, &timeout_kill_task, NULL);
   start = GNUNET_TIME_absolute_get ();
   publish =
-      GNUNET_FS_publish_start (fs, fi, NULL, NULL, NULL,
-                               GNUNET_FS_PUBLISH_OPTION_NONE);
+    GNUNET_FS_publish_start (fs, fi, NULL, NULL, NULL,
+                             GNUNET_FS_PUBLISH_OPTION_NONE);
   GNUNET_assert (publish != NULL);
 }
 
@@ -337,15 +350,16 @@ main (int argc, char *argv[])
     config_name = "test_fs_download_cadet.conf";
   }
   if (0 != GNUNET_TESTING_peer_run (binary_name,
-				    config_name,
-				    &run, (void *) binary_name))
+                                    config_name,
+                                    &run, (void *) binary_name))
     return 1;
   if (NULL != fn1)
   {
-    UNLINK (fn1);
+    unlink (fn1);
     GNUNET_free (fn1);
   }
   return err;
 }
+
 
 /* end of test_fs_download.c */

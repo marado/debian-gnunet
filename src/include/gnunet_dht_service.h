@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -51,8 +51,8 @@ extern "C"
 /**
  * Default republication frequency for stored data in the DHT.
  */
-#define GNUNET_DHT_DEFAULT_REPUBLISH_FREQUENCY GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_MINUTES, 60)
-
+#define GNUNET_DHT_DEFAULT_REPUBLISH_FREQUENCY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 60)
 
 
 /**
@@ -257,8 +257,8 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
  */
 void
 GNUNET_DHT_get_filter_known_results (struct GNUNET_DHT_GetHandle *get_handle,
-				     unsigned int num_results,
-				     const struct GNUNET_HashCode *results);
+                                     unsigned int num_results,
+                                     const struct GNUNET_HashCode *results);
 
 /**
  * Stop async DHT-get.  Frees associated resources.
@@ -353,7 +353,6 @@ typedef void
                             const struct GNUNET_HashCode *key,
                             const void *data,
                             size_t size);
-
 
 
 /**

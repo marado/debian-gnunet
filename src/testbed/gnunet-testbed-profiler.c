@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-testbed-profiler.c
@@ -32,7 +32,7 @@
 /**
  * Generic loggins shorthand
  */
-#define LOG(kind,...)                                           \
+#define LOG(kind, ...)                                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 
@@ -175,22 +175,24 @@ controller_event_cb (void *cls,
       {
         printf ("\nAborting due to very high failure rate\n");
         print_overlay_links_summary ();
-	GNUNET_SCHEDULER_shutdown ();
+        GNUNET_SCHEDULER_shutdown ();
         return;
       }
     }
     break;
+
   case GNUNET_TESTBED_ET_CONNECT:
-  {
-    if (0 != cont_fails)
-      cont_fails--;
-    if (0 == established_links)
-      printf ("Establishing links. Please wait\n");
-    printf (".");
-    fflush (stdout);
-    established_links++;
-  }
+    {
+      if (0 != cont_fails)
+        cont_fails--;
+      if (0 == established_links)
+        printf ("Establishing links. Please wait\n");
+      printf (".");
+      fflush (stdout);
+      established_links++;
+    }
     break;
+
   default:
     GNUNET_break (0);
   }
@@ -225,7 +227,7 @@ test_run (void *cls,
     abort_task = NULL;
     return;
   }
-#if (!ENABLE_SUPERMUC)
+#if (! ENABLE_SUPERMUC)
   fprintf (stdout, "Testbed running, waiting for keystroke to shut down\n");
   fflush (stdout);
   (void) getc (stdin);
@@ -250,7 +252,7 @@ run (void *cls, char *const *args, const char *cfgfile,
 {
   if (0 == num_peers)
   {
-    LOG (GNUNET_ERROR_TYPE_ERROR, _("Exiting as the number of peers is %u\n"),
+    LOG (GNUNET_ERROR_TYPE_ERROR, _ ("Exiting as the number of peers is %u\n"),
          num_peers);
     return;
   }
@@ -259,11 +261,11 @@ run (void *cls, char *const *args, const char *cfgfile,
   event_mask |= (1LL << GNUNET_TESTBED_ET_CONNECT);
   event_mask |= (1LL << GNUNET_TESTBED_ET_OPERATION_FINISHED);
   GNUNET_TESTBED_run (hosts_file, cfg, num_peers, event_mask,
-		      &controller_event_cb, NULL,
-		      &test_run, NULL);
+                      &controller_event_cb, NULL,
+                      &test_run, NULL);
   abort_task =
-      GNUNET_SCHEDULER_add_shutdown (&do_abort,
-				     NULL);
+    GNUNET_SCHEDULER_add_shutdown (&do_abort,
+                                   NULL);
 }
 
 
@@ -284,20 +286,23 @@ main (int argc, char *const *argv)
     GNUNET_GETOPT_option_uint ('e',
                                "num-errors",
                                "COUNT",
-                               gettext_noop ("tolerate COUNT number of continious timeout failures"),
+                               gettext_noop (
+                                 "tolerate COUNT number of continious timeout failures"),
                                &num_cont_fails),
     GNUNET_GETOPT_option_flag ('n',
                                "non-interactive",
-                               gettext_noop ("run profiler in non-interactive mode where upon "
-                                             "testbed setup the profiler does not wait for a "
-                                             "keystroke but continues to run until a termination "
-                                             "signal is received"),
-                                  &noninteractive),
-#if !ENABLE_SUPERMUC
+                               gettext_noop (
+                                 "run profiler in non-interactive mode where upon "
+                                 "testbed setup the profiler does not wait for a "
+                                 "keystroke but continues to run until a termination "
+                                 "signal is received"),
+                               &noninteractive),
+#if ! ENABLE_SUPERMUC
     GNUNET_GETOPT_option_string ('H',
                                  "hosts",
                                  "FILENAME",
-                                 gettext_noop ("name of the file with the login information for the testbed"),
+                                 gettext_noop (
+                                   "name of the file with the login information for the testbed"),
                                  &hosts_file),
 #endif
     GNUNET_GETOPT_OPTION_END
@@ -311,8 +316,8 @@ main (int argc, char *const *argv)
     return 2;
   result = GNUNET_SYSERR;
   ret =
-      GNUNET_PROGRAM_run (argc, argv, "gnunet-testbed-profiler", binaryHelp,
-                          options, &run, NULL);
+    GNUNET_PROGRAM_run (argc, argv, "gnunet-testbed-profiler", binaryHelp,
+                        options, &run, NULL);
   GNUNET_free ((void *) argv);
   if (GNUNET_OK != ret)
     return ret;

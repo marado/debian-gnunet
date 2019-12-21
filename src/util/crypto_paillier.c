@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -36,8 +36,10 @@
  * @param[out] private_key Where to store the private key?
  */
 void
-GNUNET_CRYPTO_paillier_create (struct GNUNET_CRYPTO_PaillierPublicKey *public_key,
-                               struct GNUNET_CRYPTO_PaillierPrivateKey *private_key)
+GNUNET_CRYPTO_paillier_create (struct
+                               GNUNET_CRYPTO_PaillierPublicKey *public_key,
+                               struct GNUNET_CRYPTO_PaillierPrivateKey *
+                               private_key)
 {
   gcry_mpi_t p;
   gcry_mpi_t q;
@@ -49,7 +51,8 @@ GNUNET_CRYPTO_paillier_create (struct GNUNET_CRYPTO_PaillierPublicKey *public_ke
      is executed more than once is very very low... */
   p = NULL;
   q = NULL;
-  do {
+  do
+  {
     if (NULL != p)
       gcry_mpi_release (p);
     if (NULL != q)
@@ -72,7 +75,8 @@ GNUNET_CRYPTO_paillier_create (struct GNUNET_CRYPTO_PaillierPublicKey *public_ke
                 p,
                 q);
   GNUNET_CRYPTO_mpi_print_unsigned (public_key,
-                                    sizeof (struct GNUNET_CRYPTO_PaillierPublicKey),
+                                    sizeof(struct
+                                           GNUNET_CRYPTO_PaillierPublicKey),
                                     n);
 
   /* compute phi(n) = (p-1)(q-1) */
@@ -113,10 +117,12 @@ GNUNET_CRYPTO_paillier_create (struct GNUNET_CRYPTO_PaillierPublicKey *public_ke
  *         or -1 if less than one homomorphic operation is possible
  */
 int
-GNUNET_CRYPTO_paillier_encrypt1 (const struct GNUNET_CRYPTO_PaillierPublicKey *public_key,
-                                const gcry_mpi_t m,
-                                int desired_ops,
-                                struct GNUNET_CRYPTO_PaillierCiphertext *ciphertext)
+GNUNET_CRYPTO_paillier_encrypt1 (const struct
+                                 GNUNET_CRYPTO_PaillierPublicKey *public_key,
+                                 const gcry_mpi_t m,
+                                 int desired_ops,
+                                 struct GNUNET_CRYPTO_PaillierCiphertext *
+                                 ciphertext)
 {
   int possible_opts;
   gcry_mpi_t n_square;
@@ -145,16 +151,17 @@ GNUNET_CRYPTO_paillier_encrypt1 (const struct GNUNET_CRYPTO_PaillierPublicKey *p
   if (possible_opts < 1)
     possible_opts = 0;
   /* soft-cap by caller */
-  possible_opts = (desired_ops < possible_opts)? desired_ops : possible_opts;
+  possible_opts = (desired_ops < possible_opts) ? desired_ops : possible_opts;
 
   ciphertext->remaining_ops = htonl (possible_opts);
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&n,
                                    public_key,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
   highbit = GNUNET_CRYPTO_PAILLIER_BITS - 1;
-  while ( (! gcry_mpi_test_bit (n, highbit)) &&
-          (0 != highbit) )
+  while ((! gcry_mpi_test_bit (n, highbit)) &&
+         (0 != highbit))
     highbit--;
   if (0 == highbit)
   {
@@ -169,7 +176,8 @@ GNUNET_CRYPTO_paillier_encrypt1 (const struct GNUNET_CRYPTO_PaillierPublicKey *p
   gcry_mpi_mul (n_square, n, n);
 
   /* generate r < n (without bias) */
-  do {
+  do
+  {
     gcry_mpi_randomize (r, highbit + 1, GCRY_STRONG_RANDOM);
   }
   while (gcry_mpi_cmp (r, n) >= 0);
@@ -209,10 +217,12 @@ GNUNET_CRYPTO_paillier_encrypt1 (const struct GNUNET_CRYPTO_PaillierPublicKey *p
  *         or -1 if less than one homomorphic operation is possible
  */
 int
-GNUNET_CRYPTO_paillier_encrypt (const struct GNUNET_CRYPTO_PaillierPublicKey *public_key,
+GNUNET_CRYPTO_paillier_encrypt (const struct
+                                GNUNET_CRYPTO_PaillierPublicKey *public_key,
                                 const gcry_mpi_t m,
                                 int desired_ops,
-                                struct GNUNET_CRYPTO_PaillierCiphertext *ciphertext)
+                                struct GNUNET_CRYPTO_PaillierCiphertext *
+                                ciphertext)
 {
   int possible_opts;
   gcry_mpi_t n_square;
@@ -236,8 +246,7 @@ GNUNET_CRYPTO_paillier_encrypt (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
      number has the same length (or is smaller), by counting the
      number of possible operations.  We essentially divide max_num by
      2 until the result is no longer larger than 'm', incrementing the
-     maximum number of operations in each round, starting at -2 */
-  for (possible_opts = -2; gcry_mpi_cmp (max_num, m) > 0; possible_opts++)
+     maximum number of operations in each round, starting at -2 */for (possible_opts = -2; gcry_mpi_cmp (max_num, m) > 0; possible_opts++)
     gcry_mpi_div (max_num,
                   NULL,
                   max_num,
@@ -253,12 +262,13 @@ GNUNET_CRYPTO_paillier_encrypt (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&n,
                                    public_key,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
 
   /* check public key for number of bits, bail out if key is all zeros */
   highbit = GNUNET_CRYPTO_PAILLIER_BITS - 1;
-  while ( (! gcry_mpi_test_bit (n, highbit)) &&
-          (0 != highbit) )
+  while ((! gcry_mpi_test_bit (n, highbit)) &&
+         (0 != highbit))
     highbit--;
   if (0 == highbit)
   {
@@ -270,7 +280,8 @@ GNUNET_CRYPTO_paillier_encrypt (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
 
   /* generate r < n (without bias) */
   GNUNET_assert (NULL != (r = gcry_mpi_new (0)));
-  do {
+  do
+  {
     gcry_mpi_randomize (r, highbit + 1, GCRY_STRONG_RANDOM);
   }
   while (gcry_mpi_cmp (r, n) >= 0);
@@ -304,7 +315,7 @@ GNUNET_CRYPTO_paillier_encrypt (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
   gcry_mpi_release (rn);
 
   GNUNET_CRYPTO_mpi_print_unsigned (ciphertext->bits,
-                                    sizeof (ciphertext->bits),
+                                    sizeof(ciphertext->bits),
                                     c);
   gcry_mpi_release (c);
 
@@ -321,9 +332,12 @@ GNUNET_CRYPTO_paillier_encrypt (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
  * @param[out] m Decryption of @a ciphertext with @private_key.
  */
 void
-GNUNET_CRYPTO_paillier_decrypt (const struct GNUNET_CRYPTO_PaillierPrivateKey *private_key,
-                                const struct GNUNET_CRYPTO_PaillierPublicKey *public_key,
-                                const struct GNUNET_CRYPTO_PaillierCiphertext *ciphertext,
+GNUNET_CRYPTO_paillier_decrypt (const struct
+                                GNUNET_CRYPTO_PaillierPrivateKey *private_key,
+                                const struct
+                                GNUNET_CRYPTO_PaillierPublicKey *public_key,
+                                const struct
+                                GNUNET_CRYPTO_PaillierCiphertext *ciphertext,
                                 gcry_mpi_t m)
 {
   gcry_mpi_t mu;
@@ -337,16 +351,17 @@ GNUNET_CRYPTO_paillier_decrypt (const struct GNUNET_CRYPTO_PaillierPrivateKey *p
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&lambda,
                                    private_key->lambda,
-                                   sizeof (private_key->lambda));
+                                   sizeof(private_key->lambda));
   GNUNET_CRYPTO_mpi_scan_unsigned (&mu,
                                    private_key->mu,
-                                   sizeof (private_key->mu));
+                                   sizeof(private_key->mu));
   GNUNET_CRYPTO_mpi_scan_unsigned (&n,
                                    public_key,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
   GNUNET_CRYPTO_mpi_scan_unsigned (&c,
                                    ciphertext->bits,
-                                   sizeof (ciphertext->bits));
+                                   sizeof(ciphertext->bits));
 
   /* n_square = n * n */
   GNUNET_assert (0 != (n_square = gcry_mpi_new (0)));
@@ -395,9 +410,12 @@ GNUNET_CRYPTO_paillier_decrypt (const struct GNUNET_CRYPTO_PaillierPrivateKey *p
  *         #GNUNET_SYSERR if no more homomorphic operations are remaining.
  */
 int
-GNUNET_CRYPTO_paillier_hom_add (const struct GNUNET_CRYPTO_PaillierPublicKey *public_key,
-                                const struct GNUNET_CRYPTO_PaillierCiphertext *c1,
-                                const struct GNUNET_CRYPTO_PaillierCiphertext *c2,
+GNUNET_CRYPTO_paillier_hom_add (const struct
+                                GNUNET_CRYPTO_PaillierPublicKey *public_key,
+                                const struct
+                                GNUNET_CRYPTO_PaillierCiphertext *c1,
+                                const struct
+                                GNUNET_CRYPTO_PaillierCiphertext *c2,
                                 struct GNUNET_CRYPTO_PaillierCiphertext *result)
 {
   gcry_mpi_t a;
@@ -410,7 +428,7 @@ GNUNET_CRYPTO_paillier_hom_add (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
 
   o1 = (int32_t) ntohl (c1->remaining_ops);
   o2 = (int32_t) ntohl (c2->remaining_ops);
-  if ( (0 >= o1) || (0 >= o2) )
+  if ((0 >= o1) || (0 >= o2))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -418,13 +436,14 @@ GNUNET_CRYPTO_paillier_hom_add (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&a,
                                    c1->bits,
-                                   sizeof (c1->bits));
+                                   sizeof(c1->bits));
   GNUNET_CRYPTO_mpi_scan_unsigned (&b,
                                    c2->bits,
-                                   sizeof (c2->bits));
+                                   sizeof(c2->bits));
   GNUNET_CRYPTO_mpi_scan_unsigned (&n,
                                    public_key,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
 
   /* n_square = n * n */
   GNUNET_assert (0 != (n_square = gcry_mpi_new (0)));
@@ -440,7 +459,7 @@ GNUNET_CRYPTO_paillier_hom_add (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
 
   result->remaining_ops = htonl (GNUNET_MIN (o1, o2) - 1);
   GNUNET_CRYPTO_mpi_print_unsigned (result->bits,
-                                    sizeof (result->bits),
+                                    sizeof(result->bits),
                                     c);
   gcry_mpi_release (c);
   return ntohl (result->remaining_ops);
@@ -454,11 +473,12 @@ GNUNET_CRYPTO_paillier_hom_add (const struct GNUNET_CRYPTO_PaillierPublicKey *pu
  * @return the number of remaining homomorphic operations
  */
 int
-GNUNET_CRYPTO_paillier_hom_get_remaining (const struct GNUNET_CRYPTO_PaillierCiphertext *c)
+GNUNET_CRYPTO_paillier_hom_get_remaining (const struct
+                                          GNUNET_CRYPTO_PaillierCiphertext *c)
 {
   GNUNET_assert (NULL != c);
   return ntohl (c->remaining_ops);
 }
 
-/* end of crypto_paillier.c */
 
+/* end of crypto_paillier.c */

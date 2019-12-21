@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2014, 2015, 2016 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2014, 2015, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file src/include/gnunet_curl_lib.h
  * @brief library to make it easy to download JSON replies over HTTP
@@ -56,7 +56,6 @@ typedef void
  */
 struct GNUNET_CURL_DownloadBuffer
 {
-
   /**
    * Download buffer
    */
@@ -72,7 +71,6 @@ struct GNUNET_CURL_DownloadBuffer
    * (i.e. response too large).
    */
   int eno;
-
 };
 
 
@@ -91,7 +89,7 @@ typedef void *
 
 /**
  * Deallocate the response.
- * 
+ *
  * @param response object to clean
  */
 typedef void
@@ -199,12 +197,27 @@ struct GNUNET_CURL_Job;
  *
  * @param cls closure
  * @param response_code HTTP response code from server, 0 on hard error
- * @param json response, NULL if response was not in JSON format
+ * @param response in JSON, NULL if response was not in JSON format
  */
 typedef void
 (*GNUNET_CURL_JobCompletionCallback)(void *cls,
                                      long response_code,
                                      const void *response);
+
+
+/**
+ * Function to call upon completion of a raw job.
+ *
+ * @param cls closure
+ * @param response_code HTTP response code from server, 0 on hard error
+ * @param body http body of the response
+ * @param body_size number of bytes in @a body
+ */
+typedef void
+(*GNUNET_CURL_RawJobCompletionCallback)(void *cls,
+                                        long response_code,
+                                        const void *body,
+                                        size_t body_size);
 
 
 /**
@@ -249,10 +262,33 @@ GNUNET_CURL_job_add (struct GNUNET_CURL_Context *ctx,
  */
 struct GNUNET_CURL_Job *
 GNUNET_CURL_job_add2 (struct GNUNET_CURL_Context *ctx,
-                     CURL *eh,
-                     const struct curl_slist *job_headers,
-                     GNUNET_CURL_JobCompletionCallback jcc,
-                     void *jcc_cls);
+                      CURL *eh,
+                      const struct curl_slist *job_headers,
+                      GNUNET_CURL_JobCompletionCallback jcc,
+                      void *jcc_cls);
+
+
+/**
+ * Schedule a CURL request to be executed and call the given @a jcc
+ * upon its completion.  Note that the context will make use of the
+ * CURLOPT_PRIVATE facility of the CURL @a eh.  Used to download
+ * resources that are NOT in JSON.  The raw body will be returned.
+ *
+ * @param ctx context to execute the job in
+ * @param eh curl easy handle for the request, will
+ *           be executed AND cleaned up
+ * @param job_headers extra headers to add for this request
+ * @param max_reply_size largest acceptable response body
+ * @param jcc callback to invoke upon completion
+ * @param jcc_cls closure for @a jcc
+ * @return NULL on error (in this case, @eh is still released!)
+ */
+struct GNUNET_CURL_Job *
+GNUNET_CURL_job_add_raw (struct GNUNET_CURL_Context *ctx,
+                         CURL *eh,
+                         const struct curl_slist *job_headers,
+                         GNUNET_CURL_RawJobCompletionCallback jcc,
+                         void *jcc_cls);
 
 
 /**
@@ -324,7 +360,8 @@ GNUNET_CURL_gnunet_scheduler_reschedule (void *cls);
  * @param header_name name of the header to send.
  */
 void
-GNUNET_CURL_enable_async_scope_header (struct GNUNET_CURL_Context *ctx, const char *header_name);
+GNUNET_CURL_enable_async_scope_header (struct GNUNET_CURL_Context *ctx, const
+                                       char *header_name);
 
 
 #endif

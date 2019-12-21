@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file identity/gnunet-identity.c
  * @brief IDENTITY management command line tool
@@ -269,7 +269,7 @@ set_done (void *cls, const char *emsg)
  * @param identifier identifier assigned by the user for this ego,
  *                   NULL if the user just deleted the ego and it
  *                   must thus no longer be used
-*/
+ */
 static void
 print_ego (void *cls,
            struct GNUNET_IDENTITY_Ego *ego,
@@ -359,9 +359,9 @@ run (void *cls,
   }
   sh = GNUNET_IDENTITY_connect (cfg,
                                 (monitor | list) || (NULL != set_ego) ||
-                                    (NULL != set_subsystem)
-                                  ? &print_ego
-                                  : NULL,
+                                (NULL != set_subsystem)
+                                ? &print_ego
+                                : NULL,
                                 NULL);
   if (NULL != delete_ego)
     delete_op =
@@ -385,48 +385,48 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] =
-    {GNUNET_GETOPT_option_string ('C',
-                                  "create",
-                                  "NAME",
-                                  gettext_noop ("create ego NAME"),
-                                  &create_ego),
-     GNUNET_GETOPT_option_string ('D',
-                                  "delete",
-                                  "NAME",
-                                  gettext_noop ("delete ego NAME "),
-                                  &delete_ego),
-     GNUNET_GETOPT_option_flag ('d',
-                                "display",
-                                gettext_noop ("display all egos"),
-                                &list),
-     GNUNET_GETOPT_option_flag ('q',
-                                "quiet",
-                                gettext_noop ("reduce output"),
-                                &quiet),
-     GNUNET_GETOPT_option_string (
-       'e',
-       "ego",
-       "NAME",
-       gettext_noop (
-         "set default identity to NAME for a subsystem SUBSYSTEM (use together with -s) or restrict results to NAME (use together with -d)"),
-       &set_ego),
-     GNUNET_GETOPT_option_flag ('m',
-                                "monitor",
-                                gettext_noop ("run in monitor mode egos"),
-                                &monitor),
-     GNUNET_GETOPT_option_flag ('p',
-                                "private-keys",
-                                gettext_noop ("display private keys as well"),
-                                &private_keys),
-     GNUNET_GETOPT_option_string (
-       's',
-       "set",
-       "SUBSYSTEM",
-       gettext_noop (
-         "set default identity to EGO for a subsystem SUBSYSTEM (use together with -e)"),
-       &set_subsystem),
-     GNUNET_GETOPT_option_verbose (&verbose),
-     GNUNET_GETOPT_OPTION_END};
+  { GNUNET_GETOPT_option_string ('C',
+                                 "create",
+                                 "NAME",
+                                 gettext_noop ("create ego NAME"),
+                                 &create_ego),
+    GNUNET_GETOPT_option_string ('D',
+                                 "delete",
+                                 "NAME",
+                                 gettext_noop ("delete ego NAME "),
+                                 &delete_ego),
+    GNUNET_GETOPT_option_flag ('d',
+                               "display",
+                               gettext_noop ("display all egos"),
+                               &list),
+    GNUNET_GETOPT_option_flag ('q',
+                               "quiet",
+                               gettext_noop ("reduce output"),
+                               &quiet),
+    GNUNET_GETOPT_option_string (
+      'e',
+      "ego",
+      "NAME",
+      gettext_noop (
+        "set default identity to NAME for a subsystem SUBSYSTEM (use together with -s) or restrict results to NAME (use together with -d)"),
+      &set_ego),
+    GNUNET_GETOPT_option_flag ('m',
+                               "monitor",
+                               gettext_noop ("run in monitor mode egos"),
+                               &monitor),
+    GNUNET_GETOPT_option_flag ('p',
+                               "private-keys",
+                               gettext_noop ("display private keys as well"),
+                               &private_keys),
+    GNUNET_GETOPT_option_string (
+      's',
+      "set",
+      "SUBSYSTEM",
+      gettext_noop (
+        "set default identity to EGO for a subsystem SUBSYSTEM (use together with -e)"),
+      &set_subsystem),
+    GNUNET_GETOPT_option_verbose (&verbose),
+    GNUNET_GETOPT_OPTION_END };
   int res;
 
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
@@ -445,5 +445,6 @@ main (int argc, char *const *argv)
     return 3;
   return global_ret;
 }
+
 
 /* end of gnunet-identity.c */

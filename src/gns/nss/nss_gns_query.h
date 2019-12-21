@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 #ifndef NSS_GNS_QUERY_H
 #define NSS_GNS_QUERY_H
 
@@ -44,7 +44,8 @@ struct userdata
 {
   int count;
   int data_len; /* only valid when doing reverse lookup */
-  union  {
+  union
+  {
     ipv4_address_t ipv4[MAX_ENTRIES];
     ipv6_address_t ipv6[MAX_ENTRIES];
     char *name[MAX_ENTRIES];
@@ -65,8 +66,8 @@ struct userdata
  *          else 0
  */
 int
-gns_resolve_name(int af,
-                 const char *name,
-                 struct userdata *userdata);
+gns_resolve_name (int af,
+                  const char *name,
+                  struct userdata *userdata);
 
 #endif

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -89,7 +89,6 @@ struct GNUNET_TRANSPORT_CommunicatorHandle;
  */
 enum GNUNET_TRANSPORT_CommunicatorCharacteristics
 {
-
   /**
    * Characteristics are unknown (i.e. DV).
    */
@@ -104,7 +103,6 @@ enum GNUNET_TRANSPORT_CommunicatorCharacteristics
    * Transmission is unreliable (i.e. UDP)
    */
   GNUNET_TRANSPORT_CC_UNRELIABLE = 2
-
 };
 
 
@@ -226,7 +224,6 @@ struct GNUNET_TRANSPORT_QueueHandle;
  */
 enum GNUNET_TRANSPORT_ConnectionStatus
 {
-
   /**
    * Connection is down.
    */

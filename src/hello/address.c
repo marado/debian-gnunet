@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file hello/address.c
@@ -36,7 +36,7 @@
  * @return #GNUNET_YES or #GNUNET_NO
  */
 int
-GNUNET_HELLO_address_check_option (const struct GNUNET_HELLO_Address * address,
+GNUNET_HELLO_address_check_option (const struct GNUNET_HELLO_Address *address,
                                    enum GNUNET_HELLO_AddressInfo option)
 {
   if (option == (address->local_info & option))
@@ -52,10 +52,10 @@ GNUNET_HELLO_address_check_option (const struct GNUNET_HELLO_Address * address,
  * @return the size
  */
 size_t
-GNUNET_HELLO_address_get_size (const struct GNUNET_HELLO_Address * address)
+GNUNET_HELLO_address_get_size (const struct GNUNET_HELLO_Address *address)
 {
-  return sizeof (struct GNUNET_HELLO_Address) + address->address_length +
-    strlen (address->transport_name) + 1;
+  return sizeof(struct GNUNET_HELLO_Address) + address->address_length
+         + strlen (address->transport_name) + 1;
 }
 
 
@@ -81,8 +81,8 @@ GNUNET_HELLO_address_allocate (const struct GNUNET_PeerIdentity *peer,
   char *end;
 
   slen = strlen (transport_name) + 1;
-  addr = GNUNET_malloc (sizeof (struct GNUNET_HELLO_Address) +
-                        address_length + slen);
+  addr = GNUNET_malloc (sizeof(struct GNUNET_HELLO_Address)
+                        + address_length + slen);
   addr->peer = *peer;
   addr->address = &addr[1];
   addr->address_length = address_length;
@@ -90,11 +90,11 @@ GNUNET_HELLO_address_allocate (const struct GNUNET_PeerIdentity *peer,
   end = (char *) &addr[1];
   addr->transport_name = &end[address_length];
   GNUNET_memcpy (end,
-          address,
-          address_length);
+                 address,
+                 address_length);
   GNUNET_memcpy (&end[address_length],
-          transport_name,
-          slen);
+                 transport_name,
+                 slen);
   return addr;
 }
 
@@ -132,8 +132,8 @@ GNUNET_HELLO_address_cmp (const struct GNUNET_HELLO_Address *a1,
 {
   int ret;
 
-  if ( (NULL == a1) &&
-       (NULL == a2) )
+  if ((NULL == a1) &&
+      (NULL == a2))
     return 0;
   if (NULL == a1)
     return 1;

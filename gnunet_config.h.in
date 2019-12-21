@@ -2,11 +2,11 @@
 
 #define _GNU_SOURCE  1
 
+/* Using texinfo version 4 specific switches */
+#undef ACTIVATE_TEXINFO4
+
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 #undef CLOSEDIR_VOID
-
-/* This is a Cygwin system */
-#undef CYGWIN
 
 /* This is an Apple Darwin system */
 #undef DARWIN
@@ -14,7 +14,7 @@
 /* Not building the documentation */
 #undef DOCUMENTATION
 
-/* Not building only the documentation */
+/* Doing a normal build, more than only documentation */
 #undef DOCUMENTATION_ONLY
 
 /* Benchmarks are enabled */
@@ -39,14 +39,8 @@
 /* Build with support for SuperMUC */
 #undef ENABLE_SUPERMUC
 
-/* enable workarounds used on Windows (only useful for test cases) */
-#undef ENABLE_WINDOWS_WORKAROUNDS
-
 /* Build a Mac OS X Framework */
 #undef FRAMEWORK_BUILD
-
-/* This is a FreeBSD system */
-#undef FREEBSD
 
 /* This is a GNU system */
 #undef GNU
@@ -62,6 +56,9 @@
    otherwise */
 #undef GNUNET_EXTRA_LOGGING
 
+/* Not installing gnunet-logread */
+#undef GNUNET_LOGREAD
+
 /* Lacking ABE library */
 #undef HAVE_ABE
 
@@ -73,6 +70,12 @@
 
 /* Define to 1 if you have the `atoll' function. */
 #undef HAVE_ATOLL
+
+/* Path to awk */
+#undef HAVE_AWK
+
+/* Define to 1 if you have the <bluetooth/bluetooth.h> header file. */
+#undef HAVE_BLUETOOTH_BLUETOOTH_H
 
 /* Define to 1 if you have the <byteswap.h> header file. */
 #undef HAVE_BYTESWAP_H
@@ -106,10 +109,6 @@
 /* Define to 1 if you have the declaration of `struct in6_ifreq', and to 0 if
    you don't. */
 #undef HAVE_DECL_STRUCT_IN6_IFREQ
-
-/* Define to 1 if you have the declaration of `_stati64', and to 0 if you
-   don't. */
-#undef HAVE_DECL__STATI64
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
@@ -148,32 +147,17 @@
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #undef HAVE_FSEEKO
 
-/* Define this if getaddrinfo() is available */
-#undef HAVE_GETADDRINFO
-
 /* getaddrinfo_a supported */
 #undef HAVE_GETADDRINFO_A
 
-/* Define this if gethostbyaddr() is available */
-#undef HAVE_GETHOSTBYADDR
-
-/* Define this if gethostbyname() is available */
-#undef HAVE_GETHOSTBYNAME
-
 /* Define to 1 if you have the `gethostbyname2' function. */
 #undef HAVE_GETHOSTBYNAME2
-
-/* Define this if gethostname() is available */
-#undef HAVE_GETHOSTNAME
 
 /* Define to 1 if you have the `getifaddrs' function. */
 #undef HAVE_GETIFADDRS
 
 /* getloadavg supported */
 #undef HAVE_GETLOADAVG
-
-/* Define this if getnameinfo() is available */
-#undef HAVE_GETNAMEINFO
 
 /* Define to 1 if you have the `getpeereid' function. */
 #undef HAVE_GETPEEREID
@@ -192,12 +176,6 @@
 
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
-
-/* Define to 1 if you have the <glpk.h> header file. */
-#undef HAVE_GLPK_H
-
-/* Define to 1 if `presolve' is a member of `glp_iocp'. */
-#undef HAVE_GLP_IOCP_PRESOLVE
 
 /* We have GnuTLS */
 #undef HAVE_GNUTLS
@@ -228,9 +206,6 @@
 
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #undef HAVE_IFADDRS_H
-
-/* Define this if inet_ntoa() is available */
-#undef HAVE_INET_NTOA
 
 /* Define to 1 if you have the `initgroups' function. */
 #undef HAVE_INITGROUPS
@@ -268,14 +243,8 @@
 /* Have libextractor */
 #undef HAVE_LIBEXTRACTOR
 
-/* Have GLPK */
-#undef HAVE_LIBGLPK
-
 /* Lacking libgnurl */
 #undef HAVE_LIBGNURL
-
-/* Define to 1 if you have the `gnurx' library (-lgnurx). */
-#undef HAVE_LIBGNURX
 
 /* Define to 1 if you have 'libidn' (-lidn). */
 #undef HAVE_LIBIDN
@@ -297,9 +266,6 @@
 
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
-
-/* Define to 1 if you have the `plibc' library (-lplibc). */
-#undef HAVE_LIBPLIBC
 
 /* Define to 1 if you have the <libpq-fe.h> header file. */
 #undef HAVE_LIBPQ_FE_H
@@ -361,9 +327,6 @@
 /* We have libmicrohttpd */
 #undef HAVE_MHD
 
-/* Define to 1 if you have the <microhttpd.h> header file. */
-#undef HAVE_MICROHTTPD_H
-
 /* Define to 1 if you have the `mremap' function. */
 #undef HAVE_MREMAP
 
@@ -391,29 +354,35 @@
 /* Define to 1 if the system has the type `off_t'. */
 #undef HAVE_OFF_T
 
-/* lacking ogg */
+/* Lacking ogg */
 #undef HAVE_OGG
 
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
 #undef HAVE_OGG_OGG_H
 
-/* Have libopus library */
+/* Lacking libopus library */
 #undef HAVE_OPUS
+
+/* Define to 1 if you have the <opus/opus.h> header file. */
+#undef HAVE_OPUS_OPUS_H
 
 /* Lacking pbc library */
 #undef HAVE_PBC
 
-/* Define to 1 if PostgreSQL libraries are available */
+/* Path to Perl */
+#undef HAVE_PERL
+
+/* Lacking PostgreSQL */
 #undef HAVE_POSTGRESQL
 
-/* Have libpulse(audio) library */
+/* Lacking libpulse(audio) library */
 #undef HAVE_PULSE
+
+/* Define to 1 if you have the <pulse/simple.h> header file. */
+#undef HAVE_PULSE_SIMPLE_H
 
 /* Define to 1 if you have the `random' function. */
 #undef HAVE_RANDOM
-
-/* Define this if select() is available */
-#undef HAVE_SELECT
 
 /* Define to 1 if you have the `setresuid' function. */
 #undef HAVE_SETRESUID
@@ -435,9 +404,6 @@
 
 /* Do we have sockaddr_un.sun_len? */
 #undef HAVE_SOCKADDR_UN_SUN_LEN
-
-/* Define this if socket() is available */
-#undef HAVE_SOCKET
 
 /* Define to 1 if you have the <sockLib.h> header file. */
 #undef HAVE_SOCKLIB_H
@@ -568,9 +534,6 @@
 /* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
 #undef HAVE_SYS_WAIT_H
 
-/* Define to 1 if you have the <terminos.h> header file. */
-#undef HAVE_TERMINOS_H
-
 /* Define this if __thread is supported */
 #undef HAVE_THREAD_LOCAL_GCC
 
@@ -625,7 +588,10 @@
 /* Path to ifconfig */
 #undef IFCONFIG
 
-/* Not including the man pages in the build and installation */
+/* if_tun.h include path */
+#undef IF_TUN_HDR
+
+/* Using texinfo version 5 or later switches */
 #undef INCLUDE_MANPAGES
 
 /* Path to ip6tables */
@@ -770,17 +736,8 @@
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #undef LT_OBJDIR
 
-/* This is a MinGW system */
-#undef MINGW
-
 /* required libgcrypt version */
 #undef NEED_LIBGCRYPT_VERSION
-
-/* This is a NetBSD system */
-#undef NETBSD
-
-/* This is an OpenBSD system */
-#undef OPENBSD
 
 /* Some strange OS */
 #undef OTHEROS
@@ -824,9 +781,6 @@
 /* This is a Solaris system */
 #undef SOLARIS
 
-/* This is a BSD system */
-#undef SOMEBSD
-
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 #undef STAT_MACROS_BROKEN
 
@@ -857,9 +811,6 @@
 /* Version number of package */
 #undef VERSION
 
-/* This is a Windows system */
-#undef WINDOWS
-
 /* Define to 1 if the X Window System is missing or not being used. */
 #undef X_DISPLAY_MISSING
 
@@ -879,9 +830,6 @@
 
 /* Need with solaris or errno doesnt work */
 #undef _REENTRANT
-
-/* This is a Windows system */
-#undef _WIN32
 
 /* Define curl_free() as free() if our version of curl lacks curl_free. */
 #undef curl_free

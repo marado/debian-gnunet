@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -374,7 +374,6 @@ struct GNUNET_TESTBED_Operation
    * Is this a failed operation?
    */
   int failed;
-
 };
 
 /**
@@ -446,15 +445,19 @@ remove_queue_entry (struct GNUNET_TESTBED_Operation *op, unsigned int index)
   case OP_STATE_INIT:
     GNUNET_assert (0);
     break;
+
   case OP_STATE_WAITING:
     GNUNET_CONTAINER_DLL_remove (opq->wq_head, opq->wq_tail, entry);
     break;
+
   case OP_STATE_READY:
     GNUNET_CONTAINER_DLL_remove (opq->rq_head, opq->rq_tail, entry);
     break;
+
   case OP_STATE_ACTIVE:
     GNUNET_CONTAINER_DLL_remove (opq->aq_head, opq->aq_tail, entry);
     break;
+
   case OP_STATE_INACTIVE:
     GNUNET_CONTAINER_DLL_remove (opq->nq_head, opq->nq_tail, entry);
     break;
@@ -503,15 +506,19 @@ change_state (struct GNUNET_TESTBED_Operation *op, enum OperationState state)
     case OP_STATE_INIT:
       GNUNET_assert (0);
       break;
+
     case OP_STATE_WAITING:
       GNUNET_CONTAINER_DLL_insert_tail (opq->wq_head, opq->wq_tail, entry);
       break;
+
     case OP_STATE_READY:
       GNUNET_CONTAINER_DLL_insert_tail (opq->rq_head, opq->rq_tail, entry);
       break;
+
     case OP_STATE_ACTIVE:
       GNUNET_CONTAINER_DLL_insert_tail (opq->aq_head, opq->aq_tail, entry);
       break;
+
     case OP_STATE_INACTIVE:
       GNUNET_CONTAINER_DLL_insert_tail (opq->nq_head, opq->nq_tail, entry);
       break;
@@ -534,7 +541,7 @@ rq_remove (struct GNUNET_TESTBED_Operation *op)
   GNUNET_CONTAINER_DLL_remove (rq_head, rq_tail, op->rq_entry);
   GNUNET_free (op->rq_entry);
   op->rq_entry = NULL;
-  if ( (NULL == rq_head) && (NULL != process_rq_task_id) )
+  if ((NULL == rq_head) && (NULL != process_rq_task_id))
   {
     GNUNET_SCHEDULER_cancel (process_rq_task_id);
     process_rq_task_id = NULL;
@@ -606,10 +613,10 @@ rq_add (struct GNUNET_TESTBED_Operation *op)
 static int
 is_queue_empty (struct OperationQueue *opq)
 {
-  if ( (NULL != opq->wq_head)
-       || (NULL != opq->rq_head)
-       || (NULL != opq->aq_head)
-       || (NULL != opq->nq_head) )
+  if ((NULL != opq->wq_head)
+      || (NULL != opq->rq_head)
+      || (NULL != opq->aq_head)
+      || (NULL != opq->nq_head))
     return GNUNET_NO;
   return GNUNET_YES;
 }
@@ -685,10 +692,10 @@ decide_capacity (struct OperationQueue *opq,
   for (n_ops = 0; n_ops < n_evict_entries;)
   {
     op = evict_entries[n_ops]->op;
-    GNUNET_array_append (ops, n_ops, op); /* increments n-ops */
+    GNUNET_array_append (ops, n_ops, op);  /* increments n-ops */
   }
 
- ret:
+ret:
   GNUNET_free_non_null (evict_entries);
   if (NULL != ops_)
     *ops_ = ops;
@@ -737,7 +744,6 @@ merge_ops (struct GNUNET_TESTBED_Operation ***old,
   *old = cur;
   *n_old = n_cur;
 }
-
 
 
 /**
@@ -861,14 +867,15 @@ adaptive_queue_set_max_active (struct OperationQueue *queue, unsigned int n)
   unsigned int cnt;
 
   cleanup_tslots (queue);
-  n = GNUNET_MIN (n ,fctx->max_active_bound);
-  fctx->tslots_freeptr = GNUNET_malloc (n * sizeof (struct TimeSlot));
+  n = GNUNET_MIN (n, fctx->max_active_bound);
+  fctx->tslots_freeptr = GNUNET_malloc (n * sizeof(struct TimeSlot));
   fctx->nfailed = 0;
   for (cnt = 0; cnt < n; cnt++)
   {
     tslot = &fctx->tslots_freeptr[cnt];
     tslot->queue = queue;
-    GNUNET_CONTAINER_DLL_insert_tail (fctx->alloc_head, fctx->alloc_tail, tslot);
+    GNUNET_CONTAINER_DLL_insert_tail (fctx->alloc_head, fctx->alloc_tail,
+                                      tslot);
   }
   GNUNET_TESTBED_operation_queue_reset_max_active_ (queue, n);
 }
@@ -918,7 +925,7 @@ adapt_parallelism (struct OperationQueue *queue)
                                            (unsigned int) avg.rel_value_us,
                                            &sd))
   {
-    adaptive_queue_set_max_active (queue, queue->max_active); /* no change */
+    adaptive_queue_set_max_active (queue, queue->max_active);  /* no change */
     return;
   }
 
@@ -939,7 +946,7 @@ adapt_parallelism (struct OperationQueue *queue)
   if (sd < 0)
     sd = 0;
   GNUNET_assert (0 <= sd);
-  //GNUNET_TESTBED_SD_add_data_ (fctx->sd, (unsigned int) avg.rel_value_us);
+  // GNUNET_TESTBED_SD_add_data_ (fctx->sd, (unsigned int) avg.rel_value_us);
   if (0 == sd)
   {
     adaptive_queue_set_max_active (queue, queue->max_active * 2);
@@ -995,7 +1002,7 @@ update_tslots (struct GNUNET_TESTBED_Operation *op)
       fctx->nfailed++;
       for (i = 0; i < op->nqueues; i++)
         if (queue == op->queues[i])
-            break;
+          break;
       GNUNET_assert (i != op->nqueues);
       op->queues[i]->overload += op->nres[i];
     }
@@ -1098,7 +1105,7 @@ GNUNET_TESTBED_operation_queue_destroy_ (struct OperationQueue *queue)
 {
   if (GNUNET_YES != is_queue_empty (queue))
   {
-    GNUNET_assert (0 == queue->expired); /* Are you calling twice on same queue? */
+    GNUNET_assert (0 == queue->expired);  /* Are you calling twice on same queue? */
     queue->expired = 1;
     GNUNET_array_append (expired_opqs, n_expired_opqs, queue);
     return;
@@ -1163,8 +1170,8 @@ GNUNET_TESTBED_operation_queue_reset_max_active_ (struct OperationQueue *queue,
 
   queue->max_active = max_active;
   queue->overload = 0;
-  while ( (queue->active > queue->max_active)
-          && (NULL != (entry = queue->rq_head)) )
+  while ((queue->active > queue->max_active)
+         && (NULL != (entry = queue->rq_head)))
     defer (entry->op);
   recheck_waiting (queue);
 }
@@ -1253,7 +1260,7 @@ GNUNET_TESTBED_operation_inactivate_ (struct GNUNET_TESTBED_Operation *op)
   GNUNET_assert (OP_STATE_ACTIVE == op->state);
   change_state (op, OP_STATE_INACTIVE);
   nqueues = op->nqueues;
-  ms = sizeof (struct OperationQueue *) * nqueues;
+  ms = sizeof(struct OperationQueue *) * nqueues;
   queues = GNUNET_malloc (ms);
   /* Cloning is needed as the operation be released by waiting operations and
      hence its nqueues memory ptr will be freed */
@@ -1274,7 +1281,6 @@ GNUNET_TESTBED_operation_inactivate_ (struct GNUNET_TESTBED_Operation *op)
 void
 GNUNET_TESTBED_operation_activate_ (struct GNUNET_TESTBED_Operation *op)
 {
-
   GNUNET_assert (OP_STATE_INACTIVE == op->state);
   change_state (op, OP_STATE_ACTIVE);
 }
@@ -1317,8 +1323,10 @@ GNUNET_TESTBED_operation_release_ (struct GNUNET_TESTBED_Operation *op)
     case OP_STATE_INACTIVE:
       GNUNET_assert (0);
       break;
+
     case OP_STATE_WAITING:
       break;
+
     case OP_STATE_ACTIVE:
     case OP_STATE_READY:
       GNUNET_assert (0 != opq->active);
@@ -1361,7 +1369,7 @@ GNUNET_TESTBED_operations_fini ()
   unsigned int i;
   int warn = 0;
 
-  for (i=0; i < n_expired_opqs; i++)
+  for (i = 0; i < n_expired_opqs; i++)
   {
     queue = expired_opqs[i];
     if (GNUNET_NO == is_queue_empty (queue))
@@ -1373,6 +1381,7 @@ GNUNET_TESTBED_operations_fini ()
   if (warn)
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 "Be disciplined.  Some operations were not marked as done.\n");
-
 }
+
+
 /* end of testbed_api_operations.c */

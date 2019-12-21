@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/ats_api_scheduling.c
  * @brief automatic transport selection and outbound bandwidth determination
@@ -38,9 +38,10 @@
 /**
  * How frequently do we scan the interfaces for changes to the addresses?
  */
-#define INTERFACE_PROCESSING_INTERVAL GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 2)
+#define INTERFACE_PROCESSING_INTERVAL GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 2)
 
-#define LOG(kind,...) GNUNET_log_from(kind, "ats-scheduling-api", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "ats-scheduling-api", __VA_ARGS__)
 
 /**
  * Session ID we use if there is no session / slot.
@@ -55,7 +56,6 @@
  */
 struct GNUNET_ATS_AddressRecord
 {
-
   /**
    * Scheduling handle this address record belongs to.
    */
@@ -101,7 +101,6 @@ struct GNUNET_ATS_AddressRecord
  */
 struct GNUNET_ATS_SchedulingHandle
 {
-
   /**
    * Our configuration.
    */
@@ -144,7 +143,6 @@ struct GNUNET_ATS_SchedulingHandle
    * Size of the @e session_array.
    */
   unsigned int session_array_size;
-
 };
 
 
@@ -231,7 +229,7 @@ find_session (struct GNUNET_ATS_SchedulingHandle *sh,
     return NULL;
   }
   if (0 != GNUNET_memcmp (peer,
-                   &ar->address->peer))
+                          &ar->address->peer))
   {
     GNUNET_break (0);
     return NULL;
@@ -254,15 +252,15 @@ find_empty_session_slot (struct GNUNET_ATS_SchedulingHandle *sh)
 
   GNUNET_assert (0 != sh->session_array_size);
   i = 0;
-  while ( ( (NOT_FOUND == off) ||
-            (NULL != sh->session_array[off % sh->session_array_size]) ) &&
-          (i < sh->session_array_size) )
+  while (((NOT_FOUND == off) ||
+          (NULL != sh->session_array[off % sh->session_array_size])) &&
+         (i < sh->session_array_size))
   {
     off++;
     i++;
   }
-  if ( (NOT_FOUND != off % sh->session_array_size) &&
-       (NULL == sh->session_array[off % sh->session_array_size]) )
+  if ((NOT_FOUND != off % sh->session_array_size) &&
+      (NULL == sh->session_array[off % sh->session_array_size]))
     return off;
   i = sh->session_array_size;
   GNUNET_array_grow (sh->session_array,
@@ -293,14 +291,14 @@ find_session_id (struct GNUNET_ATS_SchedulingHandle *sh,
     return NOT_FOUND;
   }
   for (i = 1; i < sh->session_array_size; i++)
-    if ( (NULL != sh->session_array[i]) &&
-         (GNUNET_NO == sh->session_array[i]->in_destroy) &&
-         ( (session == sh->session_array[i]->session) ||
-           (NULL == sh->session_array[i]->session) ) &&
-         (0 == GNUNET_memcmp (&address->peer,
-                       &sh->session_array[i]->address->peer)) &&
-         (0 == GNUNET_HELLO_address_cmp (address,
-                                         sh->session_array[i]->address)) )
+    if ((NULL != sh->session_array[i]) &&
+        (GNUNET_NO == sh->session_array[i]->in_destroy) &&
+        ((session == sh->session_array[i]->session) ||
+         (NULL == sh->session_array[i]->session)) &&
+        (0 == GNUNET_memcmp (&address->peer,
+                             &sh->session_array[i]->address->peer)) &&
+        (0 == GNUNET_HELLO_address_cmp (address,
+                                        sh->session_array[i]->address)))
       return i;
   return NOT_FOUND;
 }
@@ -350,7 +348,7 @@ release_session (struct GNUNET_ATS_SchedulingHandle *sh,
  */
 static void
 handle_ats_session_release (void *cls,
-			    const struct GNUNET_ATS_SessionReleaseMessage *srm)
+                            const struct GNUNET_ATS_SessionReleaseMessage *srm)
 {
   struct GNUNET_ATS_SchedulingHandle *sh = cls;
 
@@ -370,7 +368,7 @@ handle_ats_session_release (void *cls,
  */
 static void
 handle_ats_address_suggestion (void *cls,
-			       const struct AddressSuggestionMessage *m)
+                               const struct AddressSuggestionMessage *m)
 {
   struct GNUNET_ATS_SchedulingHandle *sh = cls;
   struct GNUNET_ATS_AddressRecord *ar;
@@ -398,8 +396,8 @@ handle_ats_address_suggestion (void *cls,
   {
     /* ignore suggestion, as this address is dying, unless BW is 0,
        in that case signal 'disconnect' via BW 0 */
-    if ( (0 == ntohl (m->bandwidth_out.value__)) &&
-         (0 == ntohl (m->bandwidth_in.value__)) )
+    if ((0 == ntohl (m->bandwidth_out.value__)) &&
+        (0 == ntohl (m->bandwidth_in.value__)))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
            "ATS suggests disconnect from peer `%s' with BW %u/%u\n",
@@ -415,9 +413,9 @@ handle_ats_address_suggestion (void *cls,
     }
     return;
   }
-  if ( (NULL == ar->session) &&
-       (GNUNET_HELLO_address_check_option (ar->address,
-                                           GNUNET_HELLO_ADDRESS_INFO_INBOUND)) )
+  if ((NULL == ar->session) &&
+      (GNUNET_HELLO_address_check_option (ar->address,
+                                          GNUNET_HELLO_ADDRESS_INFO_INBOUND)))
   {
     GNUNET_break (0);
     return;
@@ -495,12 +493,12 @@ send_add_address_message (struct GNUNET_ATS_SchedulingHandle *sh,
        ar->slot);
   pm = (char *) &m[1];
   GNUNET_memcpy (pm,
-          ar->address->address,
-          ar->address->address_length);
+                 ar->address->address,
+                 ar->address->address_length);
   if (NULL != ar->address->transport_name)
     GNUNET_memcpy (&pm[ar->address->address_length],
-            ar->address->transport_name,
-            namelen);
+                   ar->address->transport_name,
+                   namelen);
   GNUNET_MQ_send (sh->mq, ev);
 }
 
@@ -547,7 +545,7 @@ reconnect (struct GNUNET_ATS_SchedulingHandle *sh)
   GNUNET_MQ_send (sh->mq, ev);
   if (NULL == sh->mq)
     return;
-  for (i=0;i<sh->session_array_size;i++)
+  for (i = 0; i < sh->session_array_size; i++)
   {
     ar = sh->session_array[i];
     if (NULL == ar)
@@ -607,7 +605,7 @@ GNUNET_ATS_scheduling_done (struct GNUNET_ATS_SchedulingHandle *sh)
     GNUNET_SCHEDULER_cancel (sh->task);
     sh->task = NULL;
   }
-  for (i=0;i<sh->session_array_size;i++)
+  for (i = 0; i < sh->session_array_size; i++)
   {
     if (NULL != (ar = sh->session_array[i]))
     {
@@ -655,9 +653,10 @@ GNUNET_ATS_address_add (struct GNUNET_ATS_SchedulingHandle *sh,
   GNUNET_break (GNUNET_NT_UNSPECIFIED != prop->scope);
   namelen = strlen (address->transport_name) + 1;
   msize = address->address_length + namelen;
-  if ((msize + sizeof (struct AddressUpdateMessage) >= GNUNET_MAX_MESSAGE_SIZE) ||
+  if ((msize + sizeof(struct AddressUpdateMessage) >=
+       GNUNET_MAX_MESSAGE_SIZE) ||
       (address->address_length >= GNUNET_MAX_MESSAGE_SIZE) ||
-      (namelen >= GNUNET_MAX_MESSAGE_SIZE) )
+      (namelen >= GNUNET_MAX_MESSAGE_SIZE))
   {
     /* address too large for us, this should not happen */
     GNUNET_break (0);

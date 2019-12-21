@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport-testing2.c
@@ -228,7 +228,7 @@ check_communicator_available (
 {
   uint16_t size;
 
-  size = ntohs (msg->header.size) - sizeof (*msg);
+  size = ntohs (msg->header.size) - sizeof(*msg);
   if (0 == size)
     return GNUNET_OK; /* receive-only communicator */
   GNUNET_MQ_check_zero_termination (msg);
@@ -252,7 +252,7 @@ handle_communicator_available (
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
   uint16_t size;
 
-  size = ntohs (msg->header.size) - sizeof (*msg);
+  size = ntohs (msg->header.size) - sizeof(*msg);
   if (0 == size)
     return; /* receive-only communicator */
   tc_h->c_characteristics = ntohl (msg->cc);
@@ -282,11 +282,11 @@ check_add_address (void *cls,
 {
   struct TransportClient *tc = cls;
 
-  //if (CT_COMMUNICATOR != tc->type)
-  //{
+  // if (CT_COMMUNICATOR != tc->type)
+  // {
   //  GNUNET_break (0);
   //  return GNUNET_SYSERR;
-  //}
+  // }
   GNUNET_MQ_check_zero_termination (msg);
   return GNUNET_OK;
 }
@@ -307,7 +307,7 @@ handle_add_address (void *cls,
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
   uint16_t size;
 
-  size = ntohs (msg->header.size) - sizeof (*msg);
+  size = ntohs (msg->header.size) - sizeof(*msg);
   if (0 == size)
     return; /* receive-only communicator */
   tc_h->c_address = GNUNET_strdup ((const char *) &msg[1]);
@@ -334,15 +334,15 @@ handle_add_address (void *cls,
  */
 static int
 check_incoming_msg (void *cls,
-                   const struct GNUNET_TRANSPORT_IncomingMessage *msg)
+                    const struct GNUNET_TRANSPORT_IncomingMessage *msg)
 {
-  //struct TransportClient *tc = cls;
+  // struct TransportClient *tc = cls;
 
-  //if (CT_COMMUNICATOR != tc->type)
-  //{
+  // if (CT_COMMUNICATOR != tc->type)
+  // {
   //  GNUNET_break (0);
   //  return GNUNET_SYSERR;
-  //}
+  // }
   GNUNET_MQ_check_boxed_message (msg);
   return GNUNET_OK;
 }
@@ -358,11 +358,12 @@ check_incoming_msg (void *cls,
  */
 static void
 handle_incoming_msg (void *cls,
-                    const struct GNUNET_TRANSPORT_IncomingMessage *msg)
+                     const struct GNUNET_TRANSPORT_IncomingMessage *msg)
 {
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
 
-  if (NULL != tc_h->incoming_msg_cb) {
+  if (NULL != tc_h->incoming_msg_cb)
+  {
     tc_h->incoming_msg_cb (tc_h->cb_cls,
                            tc_h,
                            (const struct GNUNET_MessageHeader *) msg);
@@ -370,7 +371,7 @@ handle_incoming_msg (void *cls,
   else
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Incoming message from communicator but no handler!\n");
+         "Incoming message from communicator but no handler!\n");
   }
   GNUNET_SERVICE_client_continue (tc_h->client);
 }
@@ -554,7 +555,7 @@ transport_communicator_start (
                            GNUNET_MESSAGE_TYPE_TRANSPORT_NEW_COMMUNICATOR,
                            struct GNUNET_TRANSPORT_CommunicatorAvailableMessage,
                            &tc_h),
-    //GNUNET_MQ_hd_var_size (communicator_backchannel,
+    // GNUNET_MQ_hd_var_size (communicator_backchannel,
     //    GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL,
     //    struct GNUNET_TRANSPORT_CommunicatorBackchannel,
     //    NULL),
@@ -562,14 +563,14 @@ transport_communicator_start (
                            GNUNET_MESSAGE_TYPE_TRANSPORT_ADD_ADDRESS,
                            struct GNUNET_TRANSPORT_AddAddressMessage,
                            &tc_h),
-    //GNUNET_MQ_hd_fixed_size (del_address,
+    // GNUNET_MQ_hd_fixed_size (del_address,
     //                         GNUNET_MESSAGE_TYPE_TRANSPORT_DEL_ADDRESS,
     //                         struct GNUNET_TRANSPORT_DelAddressMessage,
     //                         NULL),
     GNUNET_MQ_hd_var_size (incoming_msg,
-        GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG,
-        struct GNUNET_TRANSPORT_IncomingMessage,
-        NULL),
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG,
+                           struct GNUNET_TRANSPORT_IncomingMessage,
+                           NULL),
     GNUNET_MQ_hd_fixed_size (queue_create_ok,
                              GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE_OK,
                              struct GNUNET_TRANSPORT_CreateQueueResponse,
@@ -582,11 +583,11 @@ transport_communicator_start (
                            GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_SETUP,
                            struct GNUNET_TRANSPORT_AddQueueMessage,
                            NULL),
-    //GNUNET_MQ_hd_fixed_size (del_queue_message,
+    // GNUNET_MQ_hd_fixed_size (del_queue_message,
     //                         GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_TEARDOWN,
     //                         struct GNUNET_TRANSPORT_DelQueueMessage,
     //                         NULL),
-    //GNUNET_MQ_hd_fixed_size (send_message_ack,
+    // GNUNET_MQ_hd_fixed_size (send_message_ack,
     //                         GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG_ACK,
     //                         struct GNUNET_TRANSPORT_SendMessageToAck,
     //                         NULL),
@@ -640,8 +641,8 @@ shutdown_communicator (void *cls)
  */
 static void
 communicator_start (
-    struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-    const char *binary_name)
+  struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
+  const char *binary_name)
 {
   char *binary;
 
@@ -683,16 +684,16 @@ communicator_start (
  */
 struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *
 GNUNET_TRANSPORT_TESTING_transport_communicator_service_start (
-   const char *service_name,
-   const char *binary_name,
-   const char *cfg_filename,
-   GNUNET_TRANSPORT_TESTING_CommunicatorAvailableCallback
-     communicator_available_cb,
-   GNUNET_TRANSPORT_TESTING_AddAddressCallback add_address_cb,
-   GNUNET_TRANSPORT_TESTING_QueueCreateReplyCallback queue_create_reply_cb,
-   GNUNET_TRANSPORT_TESTING_AddQueueCallback add_queue_cb,
-   GNUNET_TRANSPORT_TESTING_IncomingMessageCallback incoming_message_cb,
-   void *cb_cls)
+  const char *service_name,
+  const char *binary_name,
+  const char *cfg_filename,
+  GNUNET_TRANSPORT_TESTING_CommunicatorAvailableCallback
+  communicator_available_cb,
+  GNUNET_TRANSPORT_TESTING_AddAddressCallback add_address_cb,
+  GNUNET_TRANSPORT_TESTING_QueueCreateReplyCallback queue_create_reply_cb,
+  GNUNET_TRANSPORT_TESTING_AddQueueCallback add_queue_cb,
+  GNUNET_TRANSPORT_TESTING_IncomingMessageCallback incoming_message_cb,
+  void *cb_cls)
 {
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h;
 
@@ -753,7 +754,7 @@ GNUNET_TRANSPORT_TESTING_transport_communicator_open_queue (
   prefix = GNUNET_HELLO_address_to_prefix (address);
   if (NULL == prefix)
   {
-    GNUNET_break (0); /* We got an invalid address!? */
+    GNUNET_break (0);  /* We got an invalid address!? */
     GNUNET_free (tc_queue);
     return;
   }
@@ -790,10 +791,10 @@ GNUNET_TRANSPORT_TESTING_transport_communicator_open_queue (
 struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorTransmission *
 GNUNET_TRANSPORT_TESTING_transport_communicator_send
   (struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *tc_queue,
-   const void *payload,
-   size_t payload_size/*,
-   GNUNET_TRANSPORT_TESTING_SuccessStatus cb,
-   void *cb_cls*/)
+  const void *payload,
+  size_t payload_size /*,
+                         GNUNET_TRANSPORT_TESTING_SuccessStatus cb,
+                         void *cb_cls*/)
 {
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorTransmission *tc_t;
   struct GNUNET_MessageHeader *mh;
@@ -801,7 +802,7 @@ GNUNET_TRANSPORT_TESTING_transport_communicator_send
   struct GNUNET_MQ_Envelope *env;
   size_t inbox_size;
 
-  inbox_size = sizeof (struct GNUNET_MessageHeader) + payload_size;
+  inbox_size = sizeof(struct GNUNET_MessageHeader) + payload_size;
   mh = GNUNET_malloc (inbox_size);
   mh->size = htons (inbox_size);
   mh->type = GNUNET_MESSAGE_TYPE_DUMMY;

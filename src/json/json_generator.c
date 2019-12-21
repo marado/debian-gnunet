@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2014, 2015, 2016 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2014, 2015, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file json/json_generator.c
  * @brief helper functions for generating JSON from GNUnet data structures
@@ -59,19 +59,22 @@ json_t *
 GNUNET_JSON_from_time_abs (struct GNUNET_TIME_Absolute stamp)
 {
   json_t *j;
-  char *mystr;
-  int ret;
 
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_TIME_round_abs (&stamp));
+
+  j = json_object ();
+
   if (stamp.abs_value_us == GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us)
-    return json_string ("/never/");
-  ret = GNUNET_asprintf (&mystr,
-                         "/Date(%llu)/",
-                         (unsigned long long) (stamp.abs_value_us / (1000LL * 1000LL)));
-  GNUNET_assert (ret > 0);
-  j = json_string (mystr);
-  GNUNET_free (mystr);
+  {
+    json_object_set_new (j,
+                         "t_ms",
+                         json_string ("never"));
+    return j;
+  }
+  json_object_set_new (j,
+                       "t_ms",
+                       json_integer ((json_int_t) (stamp.abs_value_us / 1000LL)));
   return j;
 }
 
@@ -99,19 +102,22 @@ json_t *
 GNUNET_JSON_from_time_rel (struct GNUNET_TIME_Relative stamp)
 {
   json_t *j;
-  char *mystr;
-  int ret;
 
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_TIME_round_rel (&stamp));
+
+  j = json_object ();
+
   if (stamp.rel_value_us == GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us)
-    return json_string ("/forever/");
-  ret = GNUNET_asprintf (&mystr,
-                         "/Delay(%llu)/",
-                         (unsigned long long) (stamp.rel_value_us / (1000LL * 1000LL)));
-  GNUNET_assert (ret > 0);
-  j = json_string (mystr);
-  GNUNET_free (mystr);
+  {
+    json_object_set_new (j,
+                         "d_ms",
+                         json_string ("forever"));
+    return j;
+  }
+  json_object_set_new (j,
+                       "d_ms",
+                       json_integer ((json_int_t) (stamp.rel_value_us / 1000LL)));
   return j;
 }
 
@@ -159,6 +165,7 @@ GNUNET_JSON_from_rsa_signature (const struct GNUNET_CRYPTO_RsaSignature *sig)
   return ret;
 }
 
+
 /**
  * Convert GNS record to JSON.
  *
@@ -167,7 +174,7 @@ GNUNET_JSON_from_rsa_signature (const struct GNUNET_CRYPTO_RsaSignature *sig)
  * @return corresponding JSON encoding
  */
 json_t *
-GNUNET_JSON_from_gnsrecord (const char* rname,
+GNUNET_JSON_from_gnsrecord (const char*rname,
                             const struct GNUNET_GNSRECORD_Data *rd,
                             unsigned int rd_count)
 {
@@ -189,8 +196,9 @@ GNUNET_JSON_from_gnsrecord (const char* rname,
     value_str = GNUNET_GNSRECORD_value_to_string (rd[i].record_type,
                                                   rd[i].data,
                                                   rd[i].data_size);
-    expiration_time = GNUNET_GNSRECORD_record_get_expiration_time(1, &rd[i]);
-    expiration_time_str = GNUNET_STRINGS_absolute_time_to_string (expiration_time);
+    expiration_time = GNUNET_GNSRECORD_record_get_expiration_time (1, &rd[i]);
+    expiration_time_str = GNUNET_STRINGS_absolute_time_to_string (
+      expiration_time);
     record_type_str = GNUNET_GNSRECORD_number_to_typename (rd[i].record_type);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Packing %s %s %s %d\n",

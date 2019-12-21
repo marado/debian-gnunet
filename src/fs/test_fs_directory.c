@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fs/test_fs_directory.c
  * @brief Test for fs_directory.c
@@ -30,7 +30,8 @@
 #include "gnunet_fs_service.h"
 #include "fs_api.h"
 
-#define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; }
+#define ABORT() { fprintf (stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
+                  return 1; }
 
 struct PCLS
 {
@@ -59,8 +60,9 @@ processor (void *cls, const char *filename, const struct GNUNET_FS_Uri *uri,
       return;
     }
   }
-  FPRINTF (stderr, "Error at %s:%d\n", __FILE__, __LINE__);
+  fprintf (stderr, "Error at %s:%d\n", __FILE__, __LINE__);
 }
+
 
 static int
 testDirectory (unsigned int i)
@@ -82,8 +84,8 @@ testDirectory (unsigned int i)
   const char *s;
 
   cls.max = i;
-  uris = GNUNET_malloc (sizeof (struct GNUNET_FS_Uri *) * i);
-  mds = GNUNET_malloc (sizeof (struct GNUNET_CONTAINER_MetaData *) * i);
+  uris = GNUNET_malloc (sizeof(struct GNUNET_FS_Uri *) * i);
+  mds = GNUNET_malloc (sizeof(struct GNUNET_CONTAINER_MetaData *) * i);
   meta = GNUNET_CONTAINER_meta_data_create ();
   GNUNET_CONTAINER_meta_data_insert (meta, "<test>", EXTRACTOR_METATYPE_TITLE,
                                      EXTRACTOR_METAFORMAT_UTF8, "text/plain",
@@ -97,7 +99,7 @@ testDirectory (unsigned int i)
     mds[p] = GNUNET_CONTAINER_meta_data_create ();
     for (q = 0; q <= p; q++)
     {
-      GNUNET_snprintf (txt, sizeof (txt), "%u -- %u\n", p, q);
+      GNUNET_snprintf (txt, sizeof(txt), "%u -- %u\n", p, q);
       GNUNET_CONTAINER_meta_data_insert (mds[p], "<test>",
 #if HAVE_EXTRACTOR_H && HAVE_LIBEXTRACTOR
                                          q % EXTRACTOR_metatype_get_max (),
@@ -107,7 +109,7 @@ testDirectory (unsigned int i)
                                          EXTRACTOR_METAFORMAT_UTF8,
                                          "text/plain", txt, strlen (txt) + 1);
     }
-    GNUNET_snprintf (uri, sizeof (uri),
+    GNUNET_snprintf (uri, sizeof(uri),
                      "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.%u",
                      p);
     emsg = NULL;
@@ -134,9 +136,9 @@ testDirectory (unsigned int i)
     GNUNET_FS_directory_builder_add (db, uris[p], mds[p], NULL);
   GNUNET_FS_directory_builder_finish (db, &dlen, (void **) &data);
   s = GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration
-                                              (start),
-					      GNUNET_YES);
-  FPRINTF (stdout,
+                                                (start),
+                                              GNUNET_YES);
+  fprintf (stdout,
            "Creating directory with %u entires and total size %llu took %s\n",
            i, (unsigned long long) dlen, s);
   if (i < 100)
@@ -179,5 +181,6 @@ main (int argc, char *argv[])
     return 1;
   return 0;
 }
+
 
 /* end of test_fs_directory.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_cp.h
@@ -62,7 +62,6 @@
  */
 struct GSF_PeerPerformanceData
 {
-
   /**
    * List of the last clients for which this peer successfully
    * answered a query.
@@ -128,7 +127,7 @@ struct GSF_PeerPerformanceData
    * The peer's identity (pointer).
    */
   const struct GNUNET_PeerIdentity *peer;
-  
+
   /**
    * Respect rating for this peer
    */
@@ -143,7 +142,6 @@ struct GSF_PeerPerformanceData
    * Number of pending replies (queries are not counted)
    */
   unsigned int pending_replies;
-
 };
 
 
@@ -206,8 +204,8 @@ struct GSF_PeerTransmitHandle;
  */
 void *
 GSF_peer_connect_handler (void *cls,
-			  const struct GNUNET_PeerIdentity *peer,
-			  struct GNUNET_MQ_Handle *mq);
+                          const struct GNUNET_PeerIdentity *peer,
+                          struct GNUNET_MQ_Handle *mq);
 
 
 /**
@@ -228,7 +226,7 @@ GSF_peer_get_ (const struct GNUNET_PeerIdentity *peer);
  */
 void
 GSF_update_peer_latency_ (const struct GNUNET_PeerIdentity *id,
-			  struct GNUNET_TIME_Relative latency);
+                          struct GNUNET_TIME_Relative latency);
 
 
 /**
@@ -245,7 +243,7 @@ void
 GSF_peer_transmit_ (struct GSF_ConnectedPeer *cp,
                     int is_query,
                     uint32_t priority,
-		    struct GNUNET_MQ_Envelope *env);
+                    struct GNUNET_MQ_Envelope *env);
 
 
 /**
@@ -294,7 +292,7 @@ GSF_peer_update_responder_peer_ (struct GSF_ConnectedPeer *cp,
  */
 void
 handle_p2p_migration_stop (void *cls,
-			   const struct MigrationStopMessage *message);
+                           const struct MigrationStopMessage *message);
 
 
 /**
@@ -305,7 +303,7 @@ handle_p2p_migration_stop (void *cls,
  */
 void
 handle_p2p_get (void *cls,
-		const struct GetMessage *gm);
+                const struct GetMessage *gm);
 
 
 /**
@@ -340,8 +338,8 @@ GSF_block_peer_migration_ (struct GSF_ConnectedPeer *cp,
  */
 void
 GSF_peer_disconnect_handler (void *cls,
-			     const struct GNUNET_PeerIdentity *peer,
-			     void *internal_cls);
+                             const struct GNUNET_PeerIdentity *peer,
+                             void *internal_cls);
 
 
 /**
@@ -387,7 +385,6 @@ GSF_connected_peer_get_identity_ (const struct GSF_ConnectedPeer *cp,
  */
 const struct GNUNET_PeerIdentity *
 GSF_connected_peer_get_identity2_ (const struct GSF_ConnectedPeer *cp);
-
 
 
 /**

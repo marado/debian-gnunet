@@ -18,7 +18,7 @@
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
-*/
+ */
 
 /**
  * @file src/util/crypto_hkdf.c
@@ -36,7 +36,7 @@
  * - Matthias Wachs (08.10.2010)
  */
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-hkdf", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-crypto-hkdf", __VA_ARGS__)
 
 /**
  * Set this to 0 if you compile this code outside of GNUnet.
@@ -47,7 +47,6 @@
  * Enable debugging.
  */
 #define DEBUG_HKDF 0
-
 
 
 #if GNUNET_BUILD
@@ -83,6 +82,7 @@ doHMAC (gcry_md_hd_t mac, const void *key, size_t key_len, const void *buf,
 
   return (const void *) gcry_md_read (mac, 0);
 }
+
 
 /**
  * @brief Generate pseudo-random key
@@ -122,6 +122,8 @@ dump (const char *src, const void *p, unsigned int l)
   }
   printf ("\n");
 }
+
+
 #endif
 
 
@@ -173,7 +175,7 @@ GNUNET_CRYPTO_hkdf_v (void *result, size_t out_len, int xtr_algo, int prf_algo,
 
   ctx_len = 0;
   while (NULL != va_arg (args, void *))
-         ctx_len += va_arg (args, size_t);
+    ctx_len += va_arg (args, size_t);
 
   va_end (args);
 
@@ -295,11 +297,12 @@ GNUNET_CRYPTO_hkdf (void *result, size_t out_len, int xtr_algo, int prf_algo,
 
   va_start (argp, skm_len);
   ret =
-      GNUNET_CRYPTO_hkdf_v (result, out_len, xtr_algo, prf_algo, xts, xts_len,
-                            skm, skm_len, argp);
+    GNUNET_CRYPTO_hkdf_v (result, out_len, xtr_algo, prf_algo, xts, xts_len,
+                          skm, skm_len, argp);
   va_end (argp);
 
   return ret;
 }
+
 
 /* end of crypto_hkdf.c */

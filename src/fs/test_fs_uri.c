@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fs/test_fs_uri.c
  * @brief Test for fs_uri.c
@@ -84,9 +84,10 @@ testLocation ()
   struct GNUNET_CRYPTO_EddsaPrivateKey *pk;
 
   baseURI =
-      GNUNET_FS_uri_parse
-      ("gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.15999",
-       &emsg);
+    GNUNET_FS_uri_parse
+    (
+      "gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.15999",
+      &emsg);
   GNUNET_assert (baseURI != NULL);
   GNUNET_assert (emsg == NULL);
   pk = GNUNET_CRYPTO_eddsa_key_create ();
@@ -161,8 +162,9 @@ testNamespace (int i)
 
   if (NULL !=
       (ret =
-       GNUNET_FS_uri_parse ("gnunet://fs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3VUK",
-                            &emsg)))
+         GNUNET_FS_uri_parse (
+           "gnunet://fs/sks/D1KJS9H2A82Q65VKQ0ML3RFU6U1D3VUK",
+           &emsg)))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -170,8 +172,10 @@ testNamespace (int i)
   GNUNET_free (emsg);
   if (NULL !=
       (ret =
-       GNUNET_FS_uri_parse
-       ("gnunet://fs/sks/XQHH4R288W26EBV369F6RCE0PJVJTX2Y74Q2FJPMPGA31HJX2JG/this", &emsg)))
+         GNUNET_FS_uri_parse
+         (
+           "gnunet://fs/sks/XQHH4R288W26EBV369F6RCE0PJVJTX2Y74Q2FJPMPGA31HJX2JG/this",
+           &emsg)))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -185,13 +189,13 @@ testNamespace (int i)
   GNUNET_free (emsg);
   ph = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_CRYPTO_ecdsa_key_get_public (ph, &id);
-  sret = GNUNET_STRINGS_data_to_string (&id, sizeof (id),
-					ubuf, sizeof (ubuf) - 1);
+  sret = GNUNET_STRINGS_data_to_string (&id, sizeof(id),
+                                        ubuf, sizeof(ubuf) - 1);
   GNUNET_assert (NULL != sret);
   sret[0] = '\0';
-  GNUNET_snprintf (buf, sizeof (buf),
-		   "gnunet://fs/sks/%s/test",
-		   ubuf);
+  GNUNET_snprintf (buf, sizeof(buf),
+                   "gnunet://fs/sks/%s/test",
+                   ubuf);
   ret = GNUNET_FS_uri_parse (buf, &emsg);
   if (NULL == ret)
   {
@@ -203,7 +207,7 @@ testNamespace (int i)
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
   }
-  if (!GNUNET_FS_uri_test_sks (ret))
+  if (! GNUNET_FS_uri_test_sks (ret))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -233,9 +237,10 @@ testFile (int i)
 
   if (NULL !=
       (ret =
-       GNUNET_FS_uri_parse
-       ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H00000440000.42",
-        &emsg)))
+         GNUNET_FS_uri_parse
+         (
+           "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H00000440000.42",
+           &emsg)))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -243,9 +248,10 @@ testFile (int i)
   GNUNET_free (emsg);
   if (NULL !=
       (ret =
-       GNUNET_FS_uri_parse
-       ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000",
-        &emsg)))
+         GNUNET_FS_uri_parse
+         (
+           "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000",
+           &emsg)))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
@@ -253,18 +259,20 @@ testFile (int i)
   GNUNET_free (emsg);
   if (NULL !=
       (ret =
-       GNUNET_FS_uri_parse
-       ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.FGH",
-        &emsg)))
+         GNUNET_FS_uri_parse
+         (
+           "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.FGH",
+           &emsg)))
   {
     GNUNET_FS_uri_destroy (ret);
     GNUNET_assert (0);
   }
   GNUNET_free (emsg);
   ret =
-      GNUNET_FS_uri_parse
-      ("gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.42",
-       &emsg);
+    GNUNET_FS_uri_parse
+    (
+      "gnunet://fs/chk/4QZP479A9SKGFNMQ2ZBCYE71YV2QMTVGWTVPB6A10ASVCKXDHB05DKPSC7ZF6E9P9W1VE47394EQY7NXA47Q6R35M7P1MJPGP59D1Z8.D54QD1K5XCG5878T6YZ19AM60MQ6FC0YNVK7QY08KK0KM0FJJ3KQWYG112FN5T07KN7J0X35DF6WVBT9B8ZMZ3X2BXJ22X3KFQ6MV2G.42",
+      &emsg);
   if (ret == NULL)
   {
     GNUNET_free (emsg);
@@ -314,15 +322,16 @@ main (int argc, char *argv[])
   failureCount += testLocation ();
   for (i = 0; i < 255; i++)
   {
-    /* FPRINTF (stderr, "%s",  "."); */
+    /* fprintf (stderr, "%s",  "."); */
     failureCount += testNamespace (i);
     failureCount += testFile (i);
   }
-  /* FPRINTF (stderr, "%s",  "\n"); */
+  /* fprintf (stderr, "%s",  "\n"); */
   GNUNET_DISK_directory_remove ("/tmp/gnunet-test-fs-uri");
   if (failureCount != 0)
     return 1;
   return 0;
 }
+
 
 /* end of test_fs_uri.c */

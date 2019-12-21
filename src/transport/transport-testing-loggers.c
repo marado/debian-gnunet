@@ -1,4 +1,3 @@
-
 /*
      This file is part of GNUnet.
      Copyright (C) 2016 GNUnet e.V.
@@ -12,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport-testing-loggers.c
  * @brief convenience functions for logging common events in tests
@@ -35,7 +34,8 @@
  */
 void
 GNUNET_TRANSPORT_TESTING_log_connect (void *cls,
-                                      struct GNUNET_TRANSPORT_TESTING_PeerContext *me,
+                                      struct
+                                      GNUNET_TRANSPORT_TESTING_PeerContext *me,
                                       const struct GNUNET_PeerIdentity *other)
 {
   char *ps;
@@ -50,7 +50,6 @@ GNUNET_TRANSPORT_TESTING_log_connect (void *cls,
 }
 
 
-
 /**
  * Log a disconnect event.
  *
@@ -60,8 +59,11 @@ GNUNET_TRANSPORT_TESTING_log_connect (void *cls,
  */
 void
 GNUNET_TRANSPORT_TESTING_log_disconnect (void *cls,
-                                         struct GNUNET_TRANSPORT_TESTING_PeerContext *me,
-                                         const struct GNUNET_PeerIdentity *other)
+                                         struct
+                                         GNUNET_TRANSPORT_TESTING_PeerContext *
+                                         me,
+                                         const struct
+                                         GNUNET_PeerIdentity *other)
 {
   char *ps;
 
@@ -73,5 +75,6 @@ GNUNET_TRANSPORT_TESTING_log_disconnect (void *cls,
               ps);
   GNUNET_free (ps);
 }
+
 
 /* end of transport-testing-loggers.c */

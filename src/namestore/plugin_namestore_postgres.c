@@ -1,22 +1,22 @@
- /*
-  * This file is part of GNUnet
-  * Copyright (C) 2009-2013, 2016-2018 GNUnet e.V.
-  *
-  * GNUnet is free software: you can redistribute it and/or modify it
-  * under the terms of the GNU Affero General Public License as published
-  * by the Free Software Foundation, either version 3 of the License,
-  * or (at your option) any later version.
-  *
-  * GNUnet is distributed in the hope that it will be useful, but
-  * WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Affero General Public License for more details.
-  *
-  * You should have received a copy of the GNU Affero General Public License
-  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of GNUnet
+ * Copyright (C) 2009-2013, 2016-2018 GNUnet e.V.
+ *
+ * GNUnet is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * GNUnet is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     SPDX-License-Identifier: AGPL3.0-or-later
-  */
+    SPDX-License-Identifier: AGPL3.0-or-later
+ */
 
 /**
  * @file namestore/plugin_namestore_postgres.c
@@ -31,7 +31,7 @@
 #include "namestore.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "namestore-postgres", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "namestore-postgres", __VA_ARGS__)
 
 
 /**
@@ -39,17 +39,15 @@
  */
 struct Plugin
 {
-
   /**
    * Our configuration.
    */
   const struct GNUNET_CONFIGURATION_Handle *cfg;
 
   /**
-   * Native Postgres database handle.
+   * Postgres database handle.
    */
-  PGconn *dbh;
-
+  struct GNUNET_PQ_Context *dbh;
 };
 
 
@@ -65,20 +63,21 @@ static int
 database_setup (struct Plugin *plugin)
 {
   struct GNUNET_PQ_ExecuteStatement es_temporary =
-    GNUNET_PQ_make_execute ("CREATE TEMPORARY TABLE IF NOT EXISTS ns098records ("
-			    " seq BIGSERIAL PRIMARY KEY,"
-                            " zone_private_key BYTEA NOT NULL DEFAULT '',"
-                            " pkey BYTEA DEFAULT '',"
-                            " rvalue BYTEA NOT NULL DEFAULT '',"
-                            " record_count INTEGER NOT NULL DEFAULT 0,"
-                            " record_data BYTEA NOT NULL DEFAULT '',"
-                            " label TEXT NOT NULL DEFAULT '',"
-                            " CONSTRAINT zl UNIQUE (zone_private_key,label)"
-                            ")"
-                            "WITH OIDS");
+    GNUNET_PQ_make_execute (
+      "CREATE TEMPORARY TABLE IF NOT EXISTS ns098records ("
+      " seq BIGSERIAL PRIMARY KEY,"
+      " zone_private_key BYTEA NOT NULL DEFAULT '',"
+      " pkey BYTEA DEFAULT '',"
+      " rvalue BYTEA NOT NULL DEFAULT '',"
+      " record_count INTEGER NOT NULL DEFAULT 0,"
+      " record_data BYTEA NOT NULL DEFAULT '',"
+      " label TEXT NOT NULL DEFAULT '',"
+      " CONSTRAINT zl UNIQUE (zone_private_key,label)"
+      ")"
+      "WITH OIDS");
   struct GNUNET_PQ_ExecuteStatement es_default =
     GNUNET_PQ_make_execute ("CREATE TABLE IF NOT EXISTS ns098records ("
-			    " seq BIGSERIAL PRIMARY KEY,"
+                            " seq BIGSERIAL PRIMARY KEY,"
                             " zone_private_key BYTEA NOT NULL DEFAULT '',"
                             " pkey BYTEA DEFAULT '',"
                             " rvalue BYTEA NOT NULL DEFAULT '',"
@@ -89,34 +88,12 @@ database_setup (struct Plugin *plugin)
                             ")"
                             "WITH OIDS");
   const struct GNUNET_PQ_ExecuteStatement *cr;
+  struct GNUNET_PQ_ExecuteStatement sc = GNUNET_PQ_EXECUTE_STATEMENT_END;
 
-  plugin->dbh = GNUNET_PQ_connect_with_cfg (plugin->cfg,
-                                            "namestore-postgres");
-  if (NULL == plugin->dbh)
-    return GNUNET_SYSERR;
   if (GNUNET_YES ==
       GNUNET_CONFIGURATION_get_value_yesno (plugin->cfg,
-					    "namestore-postgres",
-					    "ASYNC_COMMIT"))
-  {
-    struct GNUNET_PQ_ExecuteStatement es[] = {
-      GNUNET_PQ_make_try_execute ("SET synchronous_commit TO off"),
-      GNUNET_PQ_EXECUTE_STATEMENT_END
-    };
-
-    if (GNUNET_OK !=
-        GNUNET_PQ_exec_statements (plugin->dbh,
-                                   es))
-    {
-      PQfinish (plugin->dbh);
-      plugin->dbh = NULL;
-      return GNUNET_SYSERR;
-    }
-  }
-  if (GNUNET_YES ==
-      GNUNET_CONFIGURATION_get_value_yesno (plugin->cfg,
-					    "namestore-postgres",
-					    "TEMPORARY_TABLE"))
+                                            "namestore-postgres",
+                                            "TEMPORARY_TABLE"))
   {
     cr = &es_temporary;
   }
@@ -124,6 +101,12 @@ database_setup (struct Plugin *plugin)
   {
     cr = &es_default;
   }
+
+  if (GNUNET_YES ==
+      GNUNET_CONFIGURATION_get_value_yesno (plugin->cfg,
+                                            "namestore-postgres",
+                                            "ASYNC_COMMIT"))
+    sc = GNUNET_PQ_make_try_execute ("SET synchronous_commit TO off");
 
   {
     struct GNUNET_PQ_ExecuteStatement es[] = {
@@ -136,20 +119,9 @@ database_setup (struct Plugin *plugin)
                                   "ON ns098records (label)"),
       GNUNET_PQ_make_try_execute ("CREATE INDEX IF NOT EXISTS zone_label "
                                   "ON ns098records (zone_private_key,label)"),
+      sc,
       GNUNET_PQ_EXECUTE_STATEMENT_END
     };
-
-    if (GNUNET_OK !=
-        GNUNET_PQ_exec_statements (plugin->dbh,
-                                   es))
-    {
-      PQfinish (plugin->dbh);
-      plugin->dbh = NULL;
-      return GNUNET_SYSERR;
-    }
-  }
-
-  {
     struct GNUNET_PQ_PreparedStatement ps[] = {
       GNUNET_PQ_make_prepare ("store_records",
                               "INSERT INTO ns098records"
@@ -184,16 +156,13 @@ database_setup (struct Plugin *plugin)
       GNUNET_PQ_PREPARED_STATEMENT_END
     };
 
-    if (GNUNET_OK !=
-        GNUNET_PQ_prepare_statements (plugin->dbh,
-                                      ps))
-    {
-      PQfinish (plugin->dbh);
-      plugin->dbh = NULL;
-      return GNUNET_SYSERR;
-    }
+    plugin->dbh = GNUNET_PQ_connect_with_cfg (plugin->cfg,
+                                              "namestore-postgres",
+                                              es,
+                                              ps);
   }
-
+  if (NULL == plugin->dbh)
+    return GNUNET_SYSERR;
   return GNUNET_OK;
 }
 
@@ -211,7 +180,8 @@ database_setup (struct Plugin *plugin)
  */
 static int
 namestore_postgres_store_records (void *cls,
-                                  const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
+                                  const struct
+                                  GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
                                   const char *label,
                                   unsigned int rd_count,
                                   const struct GNUNET_GNSRECORD_Data *rd)
@@ -224,11 +194,12 @@ namestore_postgres_store_records (void *cls,
 
   memset (&pkey,
           0,
-          sizeof (pkey));
-  for (unsigned int i=0;i<rd_count;i++)
+          sizeof(pkey));
+  for (unsigned int i = 0; i < rd_count; i++)
     if (GNUNET_GNSRECORD_TYPE_PKEY == rd[i].record_type)
     {
-      GNUNET_break (sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey) == rd[i].data_size);
+      GNUNET_break (sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey) ==
+                    rd[i].data_size);
       GNUNET_memcpy (&pkey,
                      rd[i].data,
                      rd[i].data_size);
@@ -237,7 +208,7 @@ namestore_postgres_store_records (void *cls,
   rvalue = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
                                      UINT64_MAX);
   data_size = GNUNET_GNSRECORD_records_get_size (rd_count,
-						 rd);
+                                                 rd);
   if (data_size < 0)
   {
     GNUNET_break (0);
@@ -261,8 +232,8 @@ namestore_postgres_store_records (void *cls,
     res = GNUNET_PQ_eval_prepared_non_select (plugin->dbh,
                                               "delete_records",
                                               params);
-    if ( (GNUNET_DB_STATUS_SUCCESS_ONE_RESULT != res) &&
-         (GNUNET_DB_STATUS_SUCCESS_NO_RESULTS != res) )
+    if ((GNUNET_DB_STATUS_SUCCESS_ONE_RESULT != res) &&
+        (GNUNET_DB_STATUS_SUCCESS_NO_RESULTS != res))
     {
       GNUNET_break (0);
       return GNUNET_SYSERR;
@@ -288,11 +259,11 @@ namestore_postgres_store_records (void *cls,
     ssize_t ret;
 
     ret = GNUNET_GNSRECORD_records_serialize (rd_count,
-					      rd,
-					      data_size,
-					      data);
-    if ( (ret < 0) ||
-	 (data_size != ret) )
+                                              rd,
+                                              data_size,
+                                              data);
+    if ((ret < 0) ||
+        (data_size != ret))
     {
       GNUNET_break (0);
       return GNUNET_SYSERR;
@@ -353,7 +324,7 @@ parse_result_call_iterator (void *cls,
 
   if (NULL == pc->iter)
     return; /* no need to do more work */
-  for (unsigned int i=0;i<num_results;i++)
+  for (unsigned int i = 0; i < num_results; i++)
   {
     uint64_t serial;
     void *data;
@@ -398,7 +369,7 @@ parse_result_call_iterator (void *cls,
     }
 
     {
-      struct GNUNET_GNSRECORD_Data rd[GNUNET_NZL(record_count)];
+      struct GNUNET_GNSRECORD_Data rd[GNUNET_NZL (record_count)];
 
       GNUNET_assert (0 != serial);
       if (GNUNET_OK !=
@@ -412,7 +383,7 @@ parse_result_call_iterator (void *cls,
         return;
       }
       pc->iter (pc->iter_cls,
-		serial,
+                serial,
                 (NULL == pc->zone_key) ? &zk : pc->zone_key,
                 label,
                 record_count,
@@ -436,7 +407,8 @@ parse_result_call_iterator (void *cls,
  */
 static int
 namestore_postgres_lookup_records (void *cls,
-                                   const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
+                                   const struct
+                                   GNUNET_CRYPTO_EcdsaPrivateKey *zone,
                                    const char *label,
                                    GNUNET_NAMESTORE_RecordIterator iter,
                                    void *iter_cls)
@@ -485,7 +457,8 @@ namestore_postgres_lookup_records (void *cls,
  */
 static int
 namestore_postgres_iterate_records (void *cls,
-                                    const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
+                                    const struct
+                                    GNUNET_CRYPTO_EcdsaPrivateKey *zone,
                                     uint64_t serial,
                                     uint64_t limit,
                                     GNUNET_NAMESTORE_RecordIterator iter,
@@ -531,8 +504,8 @@ namestore_postgres_iterate_records (void *cls,
   if (res < 0)
     return GNUNET_SYSERR;
 
-  if ( (GNUNET_DB_STATUS_SUCCESS_NO_RESULTS == res) ||
-       (pc.limit > 0) )
+  if ((GNUNET_DB_STATUS_SUCCESS_NO_RESULTS == res) ||
+      (pc.limit > 0))
     return GNUNET_NO;
   return GNUNET_OK;
 }
@@ -551,9 +524,12 @@ namestore_postgres_iterate_records (void *cls,
  */
 static int
 namestore_postgres_zone_to_name (void *cls,
-                                 const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
-                                 const struct GNUNET_CRYPTO_EcdsaPublicKey *value_zone,
-                                 GNUNET_NAMESTORE_RecordIterator iter, void *iter_cls)
+                                 const struct
+                                 GNUNET_CRYPTO_EcdsaPrivateKey *zone,
+                                 const struct
+                                 GNUNET_CRYPTO_EcdsaPublicKey *value_zone,
+                                 GNUNET_NAMESTORE_RecordIterator iter,
+                                 void *iter_cls)
 {
   struct Plugin *plugin = cls;
   struct GNUNET_PQ_QueryParam params[] = {
@@ -587,7 +563,7 @@ namestore_postgres_zone_to_name (void *cls,
 static void
 database_shutdown (struct Plugin *plugin)
 {
-  PQfinish (plugin->dbh);
+  GNUNET_PQ_disconnect (plugin->dbh);
   plugin->dbh = NULL;
 }
 
@@ -607,7 +583,7 @@ libgnunet_plugin_namestore_postgres_init (void *cls)
 
   if (NULL != plugin.cfg)
     return NULL;                /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   if (GNUNET_OK != database_setup (&plugin))
   {
@@ -645,5 +621,6 @@ libgnunet_plugin_namestore_postgres_done (void *cls)
        "Postgres namestore plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_namestore_postgres.c */

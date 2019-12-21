@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file identity/identity_api_suffix_lookup.c
@@ -36,7 +36,6 @@
  */
 struct GNUNET_IDENTITY_EgoSuffixLookup
 {
-
   /**
    * Connection to service.
    */
@@ -71,7 +70,7 @@ static int
 check_identity_result_code (void *cls, const struct ResultCodeMessage *rcm)
 {
   (void) cls;
-  if (sizeof (*rcm) != htons (rcm->header.size))
+  if (sizeof(*rcm) != htons (rcm->header.size))
     GNUNET_MQ_check_zero_termination (rcm);
   return GNUNET_OK;
 }
@@ -109,7 +108,7 @@ check_identity_update (void *cls, const struct UpdateMessage *um)
   const char *str = (const char *) &um[1];
 
   (void) cls;
-  if ((size != name_len + sizeof (struct UpdateMessage)) ||
+  if ((size != name_len + sizeof(struct UpdateMessage)) ||
       ((0 != name_len) && ('\0' != str[name_len - 1])))
   {
     GNUNET_break (0);
@@ -166,10 +165,11 @@ mq_error_handler (void *cls, enum GNUNET_MQ_Error error)
  * @return NULL on error
  */
 struct GNUNET_IDENTITY_EgoSuffixLookup *
-GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *cfg,
-				      const char *suffix,
-				      GNUNET_IDENTITY_EgoSuffixCallback cb,
-				      void *cb_cls)
+GNUNET_IDENTITY_ego_lookup_by_suffix (const struct
+                                      GNUNET_CONFIGURATION_Handle *cfg,
+                                      const char *suffix,
+                                      GNUNET_IDENTITY_EgoSuffixCallback cb,
+                                      void *cb_cls)
 {
   struct GNUNET_IDENTITY_EgoSuffixLookup *el;
   struct GNUNET_MQ_Envelope *env;
@@ -182,15 +182,15 @@ GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *
   el->cb_cls = cb_cls;
   {
     struct GNUNET_MQ_MessageHandler handlers[] =
-      {GNUNET_MQ_hd_var_size (identity_result_code,
-                              GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE,
-                              struct ResultCodeMessage,
-                              el),
-       GNUNET_MQ_hd_var_size (identity_update,
-                              GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE,
-                              struct UpdateMessage,
-                              el),
-       GNUNET_MQ_handler_end ()};
+    { GNUNET_MQ_hd_var_size (identity_result_code,
+                             GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE,
+                             struct ResultCodeMessage,
+                             el),
+      GNUNET_MQ_hd_var_size (identity_update,
+                             GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE,
+                             struct UpdateMessage,
+                             el),
+      GNUNET_MQ_handler_end () };
 
     el->mq =
       GNUNET_CLIENT_connect (cfg, "identity", handlers, &mq_error_handler, el);
@@ -203,7 +203,8 @@ GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *
   }
   el->suffix = GNUNET_strdup (suffix);
   nlen = strlen (suffix) + 1;
-  env = GNUNET_MQ_msg_extra (req, nlen, GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX);
+  env = GNUNET_MQ_msg_extra (req, nlen,
+                             GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX);
   memcpy (&req[1], suffix, nlen);
   GNUNET_MQ_send (el->mq, env);
   return el;
@@ -216,7 +217,8 @@ GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *
  * @param el handle for lookup to abort
  */
 void
-GNUNET_IDENTITY_ego_lookup_by_suffix_cancel (struct GNUNET_IDENTITY_EgoSuffixLookup *el)
+GNUNET_IDENTITY_ego_lookup_by_suffix_cancel (struct
+                                             GNUNET_IDENTITY_EgoSuffixLookup *el)
 {
   GNUNET_MQ_destroy (el->mq);
   GNUNET_free (el->suffix);

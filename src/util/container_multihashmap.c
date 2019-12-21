@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/container_multihashmap.c
  * @brief hash map where the same key may be present multiple times
@@ -43,7 +43,6 @@
  */
 struct BigMapEntry
 {
-
   /**
    * Value of the entry.
    */
@@ -66,7 +65,6 @@ struct BigMapEntry
  */
 struct SmallMapEntry
 {
-
   /**
    * Value of the entry.
    */
@@ -199,14 +197,14 @@ GNUNET_CONTAINER_multihashmap_create (unsigned int len, int do_not_copy_keys)
 
   GNUNET_assert (len > 0);
   hm = GNUNET_new (struct GNUNET_CONTAINER_MultiHashMap);
-  if (len * sizeof (union MapEntry) > GNUNET_MAX_MALLOC_CHECKED)
+  if (len * sizeof(union MapEntry) > GNUNET_MAX_MALLOC_CHECKED)
   {
     size_t s;
     /* application *explicitly* requested very large map, hopefully
        it checks the return value... */
-    s = len * sizeof (union MapEntry);
-    if ((s / sizeof (union MapEntry)) != len)
-      return NULL; /* integer overflow on multiplication */
+    s = len * sizeof(union MapEntry);
+    if ((s / sizeof(union MapEntry)) != len)
+      return NULL;   /* integer overflow on multiplication */
     if (NULL == (hm->map = GNUNET_malloc_large (s)))
     {
       /* out of memory */
@@ -742,7 +740,7 @@ grow (struct GNUNET_CONTAINER_MultiHashMap *map)
     new_len = old_len; /* never use 0 */
   if (new_len == old_len)
     return; /* nothing changed */
-  new_map = GNUNET_malloc_large (new_len * sizeof (union MapEntry));
+  new_map = GNUNET_malloc_large (new_len * sizeof(union MapEntry));
   if (NULL == new_map)
     return; /* grow not possible */
   map->modification_counter++;

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/gnunet-service-rps_custommap.c
@@ -28,7 +28,7 @@
 #include "gnunet-service-rps_custommap.h"
 #include <inttypes.h>
 
-#define LOG(kind, ...) GNUNET_log_from(kind,"rps-peers",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "rps-peers", __VA_ARGS__)
 
 
 /**
@@ -87,6 +87,7 @@ CustomPeerMap_create (unsigned int len)
   return c_peer_map;
 }
 
+
 /**
  * Get the size of the custom peer map
  *
@@ -101,6 +102,7 @@ CustomPeerMap_size (const struct CustomPeerMap *c_peer_map)
                  GNUNET_CONTAINER_multipeermap_size (c_peer_map->peer_map));
   return GNUNET_CONTAINER_multipeermap_size (c_peer_map->peer_map);
 }
+
 
 /**
  * Insert peer into the custom peer map
@@ -136,17 +138,19 @@ CustomPeerMap_put (const struct CustomPeerMap *c_peer_map,
     GNUNET_CONTAINER_multipeermap_put (c_peer_map->peer_map,
                                        p,
                                        index,
-        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
+                                       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
     GNUNET_CONTAINER_multihashmap32_put (c_peer_map->hash_map,
                                          *index,
                                          p,
-        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
-    GNUNET_assert (GNUNET_CONTAINER_multihashmap32_size (c_peer_map->hash_map) ==
+                                         GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_FAST);
+    GNUNET_assert (GNUNET_CONTAINER_multihashmap32_size (
+                     c_peer_map->hash_map) ==
                    GNUNET_CONTAINER_multipeermap_size (c_peer_map->peer_map));
     return GNUNET_OK;
   }
   return GNUNET_NO;
 }
+
 
 /**
  * Check whether custom peer map contains a peer
@@ -163,6 +167,7 @@ CustomPeerMap_contains_peer (const struct CustomPeerMap *c_peer_map,
 {
   return GNUNET_CONTAINER_multipeermap_contains (c_peer_map->peer_map, peer);
 }
+
 
 /**
  * Get index of peer in custom peer map
@@ -182,6 +187,7 @@ CustomPeerMap_get_index_pointer (const struct CustomPeerMap *c_peer_map,
   index = GNUNET_CONTAINER_multipeermap_get (c_peer_map->peer_map, peer);
   return index;
 }
+
 
 /**
  * Remove peer from custom peer map
@@ -219,7 +225,7 @@ CustomPeerMap_remove_peer (const struct CustomPeerMap *c_peer_map,
   GNUNET_CONTAINER_multipeermap_remove_all (c_peer_map->peer_map,
                                             peer);
   if (*index != CustomPeerMap_size (c_peer_map))
-  { /* fill 'gap' with peer at last index */
+  {   /* fill 'gap' with peer at last index */
     last_p =
       GNUNET_CONTAINER_multihashmap32_get (c_peer_map->hash_map,
                                            CustomPeerMap_size (c_peer_map));
@@ -230,7 +236,7 @@ CustomPeerMap_remove_peer (const struct CustomPeerMap *c_peer_map,
     GNUNET_assert (CustomPeerMap_size (c_peer_map) == *last_index);
     GNUNET_CONTAINER_multihashmap32_put (c_peer_map->hash_map,
                                          *index, last_p,
-        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+                                         GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
     GNUNET_CONTAINER_multihashmap32_remove_all (c_peer_map->hash_map,
                                                 *last_index);
     *last_index = *index;
@@ -241,6 +247,7 @@ CustomPeerMap_remove_peer (const struct CustomPeerMap *c_peer_map,
   GNUNET_free (p);
   return GNUNET_OK;
 }
+
 
 /**
  * Get a peer by index
@@ -262,6 +269,7 @@ CustomPeerMap_get_peer_by_index (const struct CustomPeerMap *c_peer_map,
   }
   return NULL;
 }
+
 
 /**
  * Remove peer from custom peer map by index
@@ -300,6 +308,7 @@ CustomPeerMap_remove_peer_by_index (const struct CustomPeerMap *c_peer_map,
   return GNUNET_OK;
 }
 
+
 /**
  * Clear the custom peer map
  *
@@ -313,14 +322,18 @@ CustomPeerMap_clear (const struct CustomPeerMap *c_peer_map)
   while (0 < CustomPeerMap_size (c_peer_map))
   {
     GNUNET_assert (GNUNET_YES ==
-        GNUNET_CONTAINER_multihashmap32_contains (c_peer_map->hash_map,
-          CustomPeerMap_size (c_peer_map) -1));
+                   GNUNET_CONTAINER_multihashmap32_contains (
+                     c_peer_map->hash_map,
+                     CustomPeerMap_size (
+                       c_peer_map) - 1));
     GNUNET_assert (GNUNET_OK ==
-        CustomPeerMap_remove_peer_by_index (c_peer_map,
-                                            CustomPeerMap_size (c_peer_map) -1));
+                   CustomPeerMap_remove_peer_by_index (c_peer_map,
+                                                       CustomPeerMap_size (
+                                                         c_peer_map) - 1));
   }
   GNUNET_assert (0 == CustomPeerMap_size (c_peer_map));
 }
+
 
 /**
  * Destroy peermap.
@@ -332,8 +345,9 @@ CustomPeerMap_destroy (struct CustomPeerMap *c_peer_map)
 {
   CustomPeerMap_clear (c_peer_map);
   GNUNET_CONTAINER_multihashmap32_destroy (c_peer_map->hash_map);
-  GNUNET_CONTAINER_multipeermap_destroy   (c_peer_map->peer_map);
+  GNUNET_CONTAINER_multipeermap_destroy (c_peer_map->peer_map);
   GNUNET_free (c_peer_map);
 }
+
 
 /* end of gnunet-service-rps_custommap.c */

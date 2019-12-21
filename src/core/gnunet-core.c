@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/gnunet-core.c
@@ -90,34 +90,42 @@ monitor_cb (void *cls,
     /* should never happen, as we immediately send the key */
     state_str = _ ("fresh connection");
     break;
+
   case GNUNET_CORE_KX_STATE_KEY_SENT:
     state_str = _ ("key sent");
     break;
+
   case GNUNET_CORE_KX_STATE_KEY_RECEIVED:
     state_str = _ ("key received");
     break;
+
   case GNUNET_CORE_KX_STATE_UP:
     state_str = _ ("connection established");
     break;
+
   case GNUNET_CORE_KX_STATE_REKEY_SENT:
     state_str = _ ("rekeying");
     break;
+
   case GNUNET_CORE_KX_PEER_DISCONNECT:
     state_str = _ ("disconnected");
     break;
+
   case GNUNET_CORE_KX_ITERATION_FINISHED:
     return;
+
   case GNUNET_CORE_KX_CORE_DISCONNECT:
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s\n",
              _ ("Connection to CORE service lost (reconnecting)"));
     return;
+
   default:
     state_str = _ ("unknown state");
     break;
   }
   now_str = GNUNET_STRINGS_absolute_time_to_string (now);
-  FPRINTF (stdout,
+  fprintf (stdout,
            _ ("%24s: %-30s %4s (timeout in %6s)\n"),
            now_str,
            state_str,
@@ -146,13 +154,13 @@ run (void *cls,
   (void) cfgfile;
   if (NULL != args[0])
   {
-    FPRINTF (stderr, _ ("Invalid command line argument `%s'\n"), args[0]);
+    fprintf (stderr, _ ("Invalid command line argument `%s'\n"), args[0]);
     return;
   }
   mh = GNUNET_CORE_monitor_start (cfg, &monitor_cb, NULL);
   if (NULL == mh)
   {
-    FPRINTF (stderr, "%s", _ ("Failed to connect to CORE service!\n"));
+    fprintf (stderr, "%s", _ ("Failed to connect to CORE service!\n"));
     return;
   }
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
@@ -171,13 +179,13 @@ main (int argc, char *const *argv)
 {
   int res;
   struct GNUNET_GETOPT_CommandLineOption options[] =
-    {GNUNET_GETOPT_option_flag (
-       'm',
-       "monitor",
-       gettext_noop (
-         "provide information about all current connections (continuously)"),
-       &monitor_connections),
-     GNUNET_GETOPT_OPTION_END};
+  { GNUNET_GETOPT_option_flag (
+      'm',
+      "monitor",
+      gettext_noop (
+        "provide information about all current connections (continuously)"),
+      &monitor_connections),
+    GNUNET_GETOPT_OPTION_END };
 
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
@@ -195,5 +203,6 @@ main (int argc, char *const *argv)
     return 0;
   return 1;
 }
+
 
 /* end of gnunet-core.c */

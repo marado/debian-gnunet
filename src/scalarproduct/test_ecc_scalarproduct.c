@@ -11,13 +11,13 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
 
-*/
+ */
 /**
  * @file util/test_ecc_scalarproduct.c
  * @brief testcase for math behind ECC SP calculation
@@ -61,7 +61,8 @@ test_sp (const unsigned int *avec,
   int sp;
 
   /* determine length */
-  for (len=0;0 != avec[len];len++) ;
+  for (len = 0; 0 != avec[len]; len++)
+    ;
   if (0 == len)
     return 0;
 
@@ -74,7 +75,7 @@ test_sp (const unsigned int *avec,
                         gcry_mpi_point_t);
   ria = gcry_mpi_new (0);
   tmp = gcry_mpi_new (0);
-  for (i=0;i<len;i++)
+  for (i = 0; i < len; i++)
   {
     ri = GNUNET_CRYPTO_ecc_random_mod_n (edc);
     g[i] = GNUNET_CRYPTO_ecc_dexp_mpi (edc,
@@ -102,7 +103,7 @@ test_sp (const unsigned int *avec,
   ph = GNUNET_CRYPTO_ecc_pmul_mpi (edc,
                                    h[0],
                                    val);
-  for (i=1;i<len;i++)
+  for (i = 1; i < len; i++)
   {
     gcry_mpi_point_t m;
     gcry_mpi_point_t tmp;
@@ -159,17 +160,18 @@ main (int argc, char *argv[])
   static unsigned int v24[] = { 2, 4, 0 };
 
   GNUNET_log_setup ("test-ecc-scalarproduct",
-		    "WARNING",
-		    NULL);
+                    "WARNING",
+                    NULL);
   edc = GNUNET_CRYPTO_ecc_dlog_prepare (128, 128);
-  GNUNET_assert ( 2 == test_sp (v11, v11));
-  GNUNET_assert ( 4 == test_sp (v22, v11));
-  GNUNET_assert ( 8 == test_sp (v35, v11));
+  GNUNET_assert (2 == test_sp (v11, v11));
+  GNUNET_assert (4 == test_sp (v22, v11));
+  GNUNET_assert (8 == test_sp (v35, v11));
   GNUNET_assert (26 == test_sp (v35, v24));
   GNUNET_assert (26 == test_sp (v24, v35));
   GNUNET_assert (16 == test_sp (v22, v35));
   GNUNET_CRYPTO_ecc_dlog_release (edc);
   return 0;
 }
+
 
 /* end of test_ecc_scalarproduct.c */

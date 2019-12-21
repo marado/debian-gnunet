@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file peerinfo-tool/gnunet-peerinfo_plugins.c
@@ -64,7 +64,6 @@ struct TransportPlugin
    * for this plugin.
    */
   struct GNUNET_TRANSPORT_PluginEnvironment env;
-
 };
 
 /**
@@ -76,7 +75,6 @@ static struct TransportPlugin *plugins_head;
  * Head of DLL of all loaded plugins.
  */
 static struct TransportPlugin *plugins_tail;
-
 
 
 /**
@@ -102,11 +100,11 @@ GPI_plugins_load (const struct GNUNET_CONFIGURATION_Handle *cfg)
       GNUNET_CONFIGURATION_get_value_string (cfg, "TRANSPORT", "PLUGINS",
                                              &plugs))
     return;
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _("Starting transport plugins `%s'\n"),
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _ ("Starting transport plugins `%s'\n"),
               plugs);
   for (pos = strtok (plugs, " "); pos != NULL; pos = strtok (NULL, " "))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, _("Loading `%s' transport plugin\n"),
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, _ ("Loading `%s' transport plugin\n"),
                 pos);
     GNUNET_asprintf (&libname, "libgnunet_plugin_transport_%s", pos);
     plug = GNUNET_new (struct TransportPlugin);
@@ -126,7 +124,7 @@ GPI_plugins_load (const struct GNUNET_CONFIGURATION_Handle *cfg)
     if (plug->api == NULL)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Failed to load transport plugin for `%s'\n"),
+                  _ ("Failed to load transport plugin for `%s'\n"),
                   plug->lib_name);
       GNUNET_CONTAINER_DLL_remove (plugins_head, plugins_tail, plug);
       GNUNET_free (plug->short_name);
@@ -170,18 +168,19 @@ GPI_plugins_find (const char *name)
   char *stripped = GNUNET_strdup (name);
   char *head_stripped;
   char *sep = strchr (stripped, '_');
+
   if (NULL != sep)
     sep[0] = '\0';
 
   while (head != NULL)
   {
-  	head_stripped = GNUNET_strdup(head->short_name);
+    head_stripped = GNUNET_strdup (head->short_name);
     char *head_sep = strchr (head_stripped, '_');
     if (NULL != head_sep)
-    	head_sep[0] = '\0';
+      head_sep[0] = '\0';
     if (0 == strcmp (head_stripped, stripped))
     {
-    	GNUNET_free (head_stripped);
+      GNUNET_free (head_stripped);
       break;
     }
     GNUNET_free (head_stripped);

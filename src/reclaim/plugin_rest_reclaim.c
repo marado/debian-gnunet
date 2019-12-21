@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @author Philippe Buschmann
@@ -247,6 +247,7 @@ cleanup_handle (struct RequestHandle *handle)
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *claim_tmp;
   struct EgoEntry *ego_entry;
   struct EgoEntry *ego_tmp;
+
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Cleaning up\n");
   if (NULL != handle->resp_object)
     json_decref (handle->resp_object);
@@ -285,6 +286,7 @@ cleanup_handle (struct RequestHandle *handle)
   }
   GNUNET_free (handle);
 }
+
 
 static void
 cleanup_handle_delayed (void *cls)
@@ -341,6 +343,7 @@ collect_error_cb (void *cls)
   do_error (handle);
 }
 
+
 static void
 finished_cont (void *cls, int32_t success, const char *emsg)
 {
@@ -378,10 +381,12 @@ return_response (void *cls)
   cleanup_handle (handle);
 }
 
+
 static void
 collect_finished_cb (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   // Done
   handle->attr_it = NULL;
   handle->ticket_it = NULL;
@@ -402,26 +407,26 @@ ticket_collect (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
   char *tmp;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Adding ticket\n");
-  tmp = GNUNET_STRINGS_data_to_string_alloc (&ticket->rnd, sizeof (uint64_t));
+  tmp = GNUNET_STRINGS_data_to_string_alloc (&ticket->rnd, sizeof(uint64_t));
   json_resource = json_object ();
   GNUNET_free (tmp);
   json_array_append (handle->resp_object, json_resource);
 
   tmp =
     GNUNET_STRINGS_data_to_string_alloc (&ticket->identity,
-                                         sizeof (struct
-                                                 GNUNET_CRYPTO_EcdsaPublicKey));
+                                         sizeof(struct
+                                                GNUNET_CRYPTO_EcdsaPublicKey));
   value = json_string (tmp);
   json_object_set_new (json_resource, "issuer", value);
   GNUNET_free (tmp);
   tmp =
     GNUNET_STRINGS_data_to_string_alloc (&ticket->audience,
-                                         sizeof (struct
-                                                 GNUNET_CRYPTO_EcdsaPublicKey));
+                                         sizeof(struct
+                                                GNUNET_CRYPTO_EcdsaPublicKey));
   value = json_string (tmp);
   json_object_set_new (json_resource, "audience", value);
   GNUNET_free (tmp);
-  tmp = GNUNET_STRINGS_data_to_string_alloc (&ticket->rnd, sizeof (uint64_t));
+  tmp = GNUNET_STRINGS_data_to_string_alloc (&ticket->rnd, sizeof(uint64_t));
   value = json_string (tmp);
   json_object_set_new (json_resource, "rnd", value);
   GNUNET_free (tmp);
@@ -499,7 +504,7 @@ add_attribute_cont (struct GNUNET_REST_RequestHandle *con_handle,
   json_t *data_json;
   json_error_t err;
   struct GNUNET_JSON_Specification attrspec[] =
-    {GNUNET_RECLAIM_JSON_spec_claim (&attribute), GNUNET_JSON_spec_end ()};
+  { GNUNET_RECLAIM_JSON_spec_claim (&attribute), GNUNET_JSON_spec_end () };
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Adding an attribute for %s.\n",
@@ -596,7 +601,7 @@ attr_collect (void *cls,
   json_object_set_new (attr_obj, "name", json_string (attr->name));
   type = GNUNET_RECLAIM_ATTRIBUTE_number_to_typename (attr->type);
   json_object_set_new (attr_obj, "type", json_string (type));
-  id_str = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof (uint64_t));
+  id_str = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof(uint64_t));
   json_object_set_new (attr_obj, "id", json_string (id_str));
   json_array_append (handle->resp_object, attr_obj);
   json_decref (attr_obj);
@@ -731,8 +736,8 @@ delete_attribute_cont (struct GNUNET_REST_RequestHandle *con_handle,
   }
   priv_key = GNUNET_IDENTITY_ego_get_private_key (ego_entry->ego);
   handle->idp = GNUNET_RECLAIM_connect (cfg);
-  memset (&attr, 0, sizeof (struct GNUNET_RECLAIM_ATTRIBUTE_Claim));
-  GNUNET_STRINGS_string_to_data (id, strlen (id), &attr.id, sizeof (uint64_t));
+  memset (&attr, 0, sizeof(struct GNUNET_RECLAIM_ATTRIBUTE_Claim));
+  GNUNET_STRINGS_string_to_data (id, strlen (id), &attr.id, sizeof(uint64_t));
   attr.name = "";
   handle->idp_op = GNUNET_RECLAIM_attribute_delete (handle->idp,
                                                     priv_key,
@@ -757,7 +762,7 @@ revoke_ticket_cont (struct GNUNET_REST_RequestHandle *con_handle,
   json_t *data_json;
   json_error_t err;
   struct GNUNET_JSON_Specification tktspec[] =
-    {GNUNET_RECLAIM_JSON_spec_ticket (&ticket), GNUNET_JSON_spec_end ()};
+  { GNUNET_RECLAIM_JSON_spec_ticket (&ticket), GNUNET_JSON_spec_end () };
 
   if (0 >= handle->rest_handle->data_size)
   {
@@ -796,7 +801,7 @@ revoke_ticket_cont (struct GNUNET_REST_RequestHandle *con_handle,
     GNUNET_IDENTITY_ego_get_public_key (ego_entry->ego, &tmp_pk);
     if (0 == memcmp (&ticket->identity,
                      &tmp_pk,
-                     sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey)))
+                     sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey)))
       break;
   }
   if (NULL == ego_entry)
@@ -815,6 +820,7 @@ revoke_ticket_cont (struct GNUNET_REST_RequestHandle *con_handle,
                                                  handle);
   GNUNET_JSON_parse_free (tktspec);
 }
+
 
 static void
 consume_cont (void *cls,
@@ -848,6 +854,7 @@ consume_cont (void *cls,
   GNUNET_free (val_str);
 }
 
+
 static void
 consume_ticket_cont (struct GNUNET_REST_RequestHandle *con_handle,
                      const char *url,
@@ -862,7 +869,7 @@ consume_ticket_cont (struct GNUNET_REST_RequestHandle *con_handle,
   json_t *data_json;
   json_error_t err;
   struct GNUNET_JSON_Specification tktspec[] =
-    {GNUNET_RECLAIM_JSON_spec_ticket (&ticket), GNUNET_JSON_spec_end ()};
+  { GNUNET_RECLAIM_JSON_spec_ticket (&ticket), GNUNET_JSON_spec_end () };
 
   if (0 >= handle->rest_handle->data_size)
   {
@@ -897,7 +904,7 @@ consume_ticket_cont (struct GNUNET_REST_RequestHandle *con_handle,
     GNUNET_IDENTITY_ego_get_public_key (ego_entry->ego, &tmp_pk);
     if (0 == memcmp (&ticket->audience,
                      &tmp_pk,
-                     sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey)))
+                     sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey)))
       break;
   }
   if (NULL == ego_entry)
@@ -941,6 +948,7 @@ options_cont (struct GNUNET_REST_RequestHandle *con_handle,
   return;
 }
 
+
 /**
  * Handle rest request
  *
@@ -951,26 +959,26 @@ init_cont (struct RequestHandle *handle)
 {
   struct GNUNET_REST_RequestHandlerError err;
   static const struct GNUNET_REST_RequestHandler handlers[] =
-    {{MHD_HTTP_METHOD_GET,
+  { { MHD_HTTP_METHOD_GET,
       GNUNET_REST_API_NS_RECLAIM_ATTRIBUTES,
-      &list_attribute_cont},
-     {MHD_HTTP_METHOD_POST,
+      &list_attribute_cont },
+    { MHD_HTTP_METHOD_POST,
       GNUNET_REST_API_NS_RECLAIM_ATTRIBUTES,
-      &add_attribute_cont},
-     {MHD_HTTP_METHOD_DELETE,
+      &add_attribute_cont },
+    { MHD_HTTP_METHOD_DELETE,
       GNUNET_REST_API_NS_RECLAIM_ATTRIBUTES,
-      &delete_attribute_cont},
-     {MHD_HTTP_METHOD_GET,
+      &delete_attribute_cont },
+    { MHD_HTTP_METHOD_GET,
       GNUNET_REST_API_NS_IDENTITY_TICKETS,
-      &list_tickets_cont},
-     {MHD_HTTP_METHOD_POST,
+      &list_tickets_cont },
+    { MHD_HTTP_METHOD_POST,
       GNUNET_REST_API_NS_IDENTITY_REVOKE,
-      &revoke_ticket_cont},
-     {MHD_HTTP_METHOD_POST,
+      &revoke_ticket_cont },
+    { MHD_HTTP_METHOD_POST,
       GNUNET_REST_API_NS_IDENTITY_CONSUME,
-      &consume_ticket_cont},
-     {MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_RECLAIM, &options_cont},
-     GNUNET_REST_HANDLER_END};
+      &consume_ticket_cont },
+    { MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_RECLAIM, &options_cont },
+    GNUNET_REST_HANDLER_END };
 
   if (GNUNET_NO ==
       GNUNET_REST_handle_request (handle->rest_handle, handlers, &err, handle))
@@ -979,6 +987,7 @@ init_cont (struct RequestHandle *handle)
     GNUNET_SCHEDULER_add_now (&do_error, handle);
   }
 }
+
 
 /**
  * If listing is enabled, prints information about the egos.
@@ -1042,12 +1051,14 @@ list_ego (void *cls,
   }
 }
 
+
 static void
 rest_identity_process_request (struct GNUNET_REST_RequestHandle *rest_handle,
                                GNUNET_REST_ResultProcessor proc,
                                void *proc_cls)
 {
   struct RequestHandle *handle = GNUNET_new (struct RequestHandle);
+
   handle->response_code = 0;
   handle->timeout = GNUNET_TIME_UNIT_FOREVER_REL;
   handle->proc_cls = proc_cls;
@@ -1065,6 +1076,7 @@ rest_identity_process_request (struct GNUNET_REST_RequestHandle *rest_handle,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Connected\n");
 }
 
+
 /**
  * Entry point for the plugin.
  *
@@ -1080,7 +1092,7 @@ libgnunet_plugin_rest_reclaim_init (void *cls)
   cfg = cls;
   if (NULL != plugin.cfg)
     return NULL; /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   api = GNUNET_new (struct GNUNET_REST_Plugin);
   api->cls = &plugin;
@@ -1111,6 +1123,7 @@ libgnunet_plugin_rest_reclaim_done (void *cls)
 {
   struct GNUNET_REST_Plugin *api = cls;
   struct Plugin *plugin = api->cls;
+
   plugin->cfg = NULL;
 
   GNUNET_free_non_null (allow_methods);
@@ -1119,5 +1132,6 @@ libgnunet_plugin_rest_reclaim_done (void *cls)
               "Identity Provider REST plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_rest_reclaim.c */

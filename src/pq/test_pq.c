@@ -1,97 +1,87 @@
 /*
-  This file is part of GNUnet
-  (C) 2015, 2016 GNUnet e.V.
+   This file is part of GNUnet
+   (C) 2015, 2016, 2019 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file pq/test_pq.c
  * @brief Tests for Postgres convenience API
  * @author Christian Grothoff <christian@grothoff.org>
  */
 #include "platform.h"
-#include "gnunet_util_lib.h"
-#include "gnunet_pq_lib.h"
+#include "pq.h"
 
 
 /**
  * Setup prepared statements.
  *
- * @param db_conn connection handle to initialize
+ * @param db database handle to initialize
  * @return #GNUNET_OK on success, #GNUNET_SYSERR on failure
  */
 static int
-postgres_prepare (PGconn *db_conn)
+postgres_prepare (struct GNUNET_PQ_Context *db)
 {
-  PGresult *result;
+  struct GNUNET_PQ_PreparedStatement ps[] = {
+    GNUNET_PQ_make_prepare ("test_insert",
+                            "INSERT INTO test_pq ("
+                            " pub"
+                            ",sig"
+                            ",abs_time"
+                            ",forever"
+                            ",hash"
+                            ",vsize"
+                            ",u16"
+                            ",u32"
+                            ",u64"
+                            ") VALUES "
+                            "($1, $2, $3, $4, $5, $6,"
+                            "$7, $8, $9);",
+                            9),
+    GNUNET_PQ_make_prepare ("test_select",
+                            "SELECT"
+                            " pub"
+                            ",sig"
+                            ",abs_time"
+                            ",forever"
+                            ",hash"
+                            ",vsize"
+                            ",u16"
+                            ",u32"
+                            ",u64"
+                            " FROM test_pq"
+                            " ORDER BY abs_time DESC "
+                            " LIMIT 1;",
+                            0),
+    GNUNET_PQ_PREPARED_STATEMENT_END
+  };
 
-#define PREPARE(name, sql, ...)                                 \
-  do {                                                          \
-    result = PQprepare (db_conn, name, sql, __VA_ARGS__);       \
-    if (PGRES_COMMAND_OK != PQresultStatus (result))            \
-    {                                                           \
-      GNUNET_break (0);                                         \
-      PQclear (result); result = NULL;                          \
-      return GNUNET_SYSERR;                                     \
-    }                                                           \
-    PQclear (result); result = NULL;                            \
-  } while (0);
-
-  PREPARE ("test_insert",
-           "INSERT INTO test_pq ("
-           " pub"
-           ",sig"
-           ",abs_time"
-           ",forever"
-           ",hash"
-           ",vsize"
-           ",u16"
-           ",u32"
-           ",u64"
-           ") VALUES "
-           "($1, $2, $3, $4, $5, $6,"
-            "$7, $8, $9);",
-           9, NULL);
-  PREPARE ("test_select",
-           "SELECT"
-           " pub"
-           ",sig"
-           ",abs_time"
-           ",forever"
-           ",hash"
-	   ",vsize"
-           ",u16"
-           ",u32"
-           ",u64"
-           " FROM test_pq"
-           " ORDER BY abs_time DESC "
-           " LIMIT 1;",
-           0, NULL);
-  return GNUNET_OK;
-#undef PREPARE
+  return GNUNET_PQ_prepare_statements (db,
+                                       ps);
 }
 
 
 /**
  * Run actual test queries.
  *
+ * @param db database handle
  * @return 0 on success
  */
 static int
-run_queries (PGconn *conn)
+run_queries (struct GNUNET_PQ_Context *db)
 {
   struct GNUNET_CRYPTO_RsaPublicKey *pub;
   struct GNUNET_CRYPTO_RsaPublicKey *pub2 = NULL;
@@ -119,7 +109,7 @@ run_queries (PGconn *conn)
 
   priv = GNUNET_CRYPTO_rsa_private_key_create (1024);
   pub = GNUNET_CRYPTO_rsa_private_key_get_public (priv);
-  memset (&hmsg, 42, sizeof (hmsg));
+  memset (&hmsg, 42, sizeof(hmsg));
   sig = GNUNET_CRYPTO_rsa_sign_fdh (priv,
                                     &hmsg);
   u16 = 16;
@@ -155,14 +145,14 @@ run_queries (PGconn *conn)
       GNUNET_PQ_result_spec_end
     };
 
-    result = GNUNET_PQ_exec_prepared (conn,
-				     "test_insert",
-				     params_insert);
+    result = GNUNET_PQ_exec_prepared (db,
+                                      "test_insert",
+                                      params_insert);
     if (PGRES_COMMAND_OK != PQresultStatus (result))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  "Database failure: %s\n",
-		  PQresultErrorMessage (result));
+                  "Database failure: %s\n",
+                  PQresultErrorMessage (result));
       PQclear (result);
       GNUNET_CRYPTO_rsa_signature_free (sig);
       GNUNET_CRYPTO_rsa_private_key_free (priv);
@@ -171,11 +161,11 @@ run_queries (PGconn *conn)
     }
 
     PQclear (result);
-    result = GNUNET_PQ_exec_prepared (conn,
-				      "test_select",
-				      params_select);
+    result = GNUNET_PQ_exec_prepared (db,
+                                      "test_select",
+                                      params_select);
     if (1 !=
-	PQntuples (result))
+        PQntuples (result))
     {
       GNUNET_break (0);
       PQclear (result);
@@ -185,25 +175,25 @@ run_queries (PGconn *conn)
       return 1;
     }
     ret = GNUNET_PQ_extract_result (result,
-				   results_select,
-				   0);
+                                    results_select,
+                                    0);
     GNUNET_break (GNUNET_YES == ret);
     GNUNET_break (abs_time.abs_value_us == abs_time2.abs_value_us);
     GNUNET_break (forever.abs_value_us == forever2.abs_value_us);
     GNUNET_break (0 ==
-		  GNUNET_memcmp (&hc,
-			  &hc2));
+                  GNUNET_memcmp (&hc,
+                                 &hc2));
     GNUNET_break (0 ==
-		  GNUNET_CRYPTO_rsa_signature_cmp (sig,
-						   sig2));
+                  GNUNET_CRYPTO_rsa_signature_cmp (sig,
+                                                   sig2));
     GNUNET_break (0 ==
-		  GNUNET_CRYPTO_rsa_public_key_cmp (pub,
-						    pub2));
+                  GNUNET_CRYPTO_rsa_public_key_cmp (pub,
+                                                    pub2));
     GNUNET_break (strlen (msg) == msg2_len);
     GNUNET_break (0 ==
-		  strncmp (msg,
-			   msg2,
-			   msg2_len));
+                  strncmp (msg,
+                           msg2,
+                           msg2_len));
     GNUNET_break (16 == u162);
     GNUNET_break (32 == u322);
     GNUNET_break (64 == u642);
@@ -224,67 +214,71 @@ int
 main (int argc,
       const char *const argv[])
 {
-  PGconn *conn;
-  PGresult *result;
+  struct GNUNET_PQ_ExecuteStatement es[] = {
+    GNUNET_PQ_make_execute ("CREATE TEMPORARY TABLE IF NOT EXISTS test_pq ("
+                            " pub BYTEA NOT NULL"
+                            ",sig BYTEA NOT NULL"
+                            ",abs_time INT8 NOT NULL"
+                            ",forever INT8 NOT NULL"
+                            ",hash BYTEA NOT NULL CHECK(LENGTH(hash)=64)"
+                            ",vsize VARCHAR NOT NULL"
+                            ",u16 INT2 NOT NULL"
+                            ",u32 INT4 NOT NULL"
+                            ",u64 INT8 NOT NULL"
+                            ")"),
+    GNUNET_PQ_EXECUTE_STATEMENT_END
+  };
+  struct GNUNET_PQ_Context *db;
   int ret;
 
   GNUNET_log_setup ("test-pq",
-		    "WARNING",
-		    NULL);
-  conn = PQconnectdb ("postgres:///gnunetcheck");
-  if (CONNECTION_OK != PQstatus (conn))
+                    "WARNING",
+                    NULL);
+  db = GNUNET_PQ_connect ("postgres:///gnunetcheck",
+                          es,
+                          NULL);
+  if (CONNECTION_OK != PQstatus (db->conn))
   {
     fprintf (stderr,
-	     "Cannot run test, database connection failed: %s\n",
-	     PQerrorMessage (conn));
+             "Cannot run test, database connection failed: %s\n",
+             PQerrorMessage (db->conn));
     GNUNET_break (0);
-    PQfinish (conn);
-    return 77; /* signal test was skipped */
+    GNUNET_PQ_disconnect (db);
+    return 77;   /* signal test was skipped */
   }
-
-  result = PQexec (conn,
-		   "CREATE TEMPORARY TABLE IF NOT EXISTS test_pq ("
-		   " pub BYTEA NOT NULL"
-		   ",sig BYTEA NOT NULL"
-		   ",abs_time INT8 NOT NULL"
-		   ",forever INT8 NOT NULL"
-		   ",hash BYTEA NOT NULL CHECK(LENGTH(hash)=64)"
-		   ",vsize VARCHAR NOT NULL"
-		   ",u16 INT2 NOT NULL"
-		   ",u32 INT4 NOT NULL"
-		   ",u64 INT8 NOT NULL"
-		   ")");
-  if (PGRES_COMMAND_OK != PQresultStatus (result))
-  {
-    fprintf (stderr,
-	     "Failed to create table: %s\n",
-	     PQerrorMessage (conn));
-    PQclear (result);
-    PQfinish (conn);
-    return 1;
-  }
-  PQclear (result);
   if (GNUNET_OK !=
-      postgres_prepare (conn))
+      postgres_prepare (db))
   {
     GNUNET_break (0);
-    PQfinish (conn);
+    GNUNET_PQ_disconnect (db);
     return 1;
   }
-  ret = run_queries (conn);
-  result = PQexec (conn,
-		   "DROP TABLE test_pq");
-  if (PGRES_COMMAND_OK != PQresultStatus (result))
+  ret = run_queries (db);
+#if TEST_RESTART
+  fprintf (stderr, "Please restart Postgres database now!\n");
+  sleep (60);
+  ret = run_queries (db);
+  fprintf (stderr, "Result: %d (expect: 1 -- if you restarted the DB)\n", ret);
+  ret = run_queries (db);
+  fprintf (stderr, "Result: %d (expect: 0)\n", ret);
+#endif
   {
-    fprintf (stderr,
-	     "Failed to create table: %s\n",
-	     PQerrorMessage (conn));
-    PQclear (result);
-    PQfinish (conn);
-    return 1;
+    struct GNUNET_PQ_ExecuteStatement es[] = {
+      GNUNET_PQ_make_execute ("DROP TABLE test_pq"),
+      GNUNET_PQ_EXECUTE_STATEMENT_END
+    };
+
+    if (GNUNET_OK !=
+        GNUNET_PQ_exec_statements (db,
+                                   es))
+    {
+      fprintf (stderr,
+               "Failed to drop table\n");
+      GNUNET_PQ_disconnect (db);
+      return 1;
+    }
   }
-  PQclear (result);
-  PQfinish (conn);
+  GNUNET_PQ_disconnect (db);
   return ret;
 }
 

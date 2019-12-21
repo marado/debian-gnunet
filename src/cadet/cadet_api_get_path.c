@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/cadet_api_get_path.c
  * @brief cadet api: client implementation of cadet service
@@ -36,7 +36,6 @@
  */
 struct GNUNET_CADET_GetPath
 {
-
   /**
    * Monitor callback
    */
@@ -71,7 +70,6 @@ struct GNUNET_CADET_GetPath
    * Peer we want information about.
    */
   struct GNUNET_PeerIdentity id;
-
 };
 
 
@@ -87,7 +85,7 @@ static int
 check_get_path (void *cls,
                 const struct GNUNET_CADET_LocalInfoPath *message)
 {
-  size_t msize = sizeof (struct GNUNET_CADET_LocalInfoPath);
+  size_t msize = sizeof(struct GNUNET_CADET_LocalInfoPath);
   size_t esize;
 
   (void) cls;
@@ -97,7 +95,7 @@ check_get_path (void *cls,
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (0 != ((esize - msize) % sizeof (struct GNUNET_PeerIdentity)))
+  if (0 != ((esize - msize) % sizeof(struct GNUNET_PeerIdentity)))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -122,10 +120,10 @@ handle_get_path (void *cls,
   ppd.peer = gp->id;
   ppd.path = (const struct GNUNET_PeerIdentity *) &message[1];
   ppd.target_offset = ntohl (message->off);
-  ppd.path_length = (ntohs (message->header.size) - sizeof (*message))
-    / sizeof (struct GNUNET_PeerIdentity);
+  ppd.path_length = (ntohs (message->header.size) - sizeof(*message))
+                    / sizeof(struct GNUNET_PeerIdentity);
   gp->path_cb (gp->path_cb_cls,
-	       &ppd);
+               &ppd);
 }
 
 
@@ -137,13 +135,13 @@ handle_get_path (void *cls,
  */
 static void
 handle_get_path_end (void *cls,
-		     const struct GNUNET_MessageHeader *message)
+                     const struct GNUNET_MessageHeader *message)
 {
   struct GNUNET_CADET_GetPath *gp = cls;
 
   (void) message;
   gp->path_cb (gp->path_cb_cls,
-	       NULL);
+               NULL);
   GNUNET_CADET_get_path_cancel (gp);
 }
 
@@ -165,17 +163,17 @@ reconnect (void *cls);
  */
 static void
 error_handler (void *cls,
-	       enum GNUNET_MQ_Error error)
+               enum GNUNET_MQ_Error error)
 {
   struct GNUNET_CADET_GetPath *gp = cls;
 
   GNUNET_MQ_destroy (gp->mq);
   gp->mq = NULL;
   gp->backoff = GNUNET_TIME_randomized_backoff (gp->backoff,
-						GNUNET_TIME_UNIT_MINUTES);
+                                                GNUNET_TIME_UNIT_MINUTES);
   gp->reconnect_task = GNUNET_SCHEDULER_add_delayed (gp->backoff,
-						     &reconnect,
-						     gp);
+                                                     &reconnect,
+                                                     gp);
 }
 
 
@@ -194,9 +192,9 @@ reconnect (void *cls)
                            struct GNUNET_CADET_LocalInfoPath,
                            gp),
     GNUNET_MQ_hd_fixed_size (get_path_end,
-			     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PATH_END,
-			     struct GNUNET_MessageHeader,
-			     gp),
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PATH_END,
+                             struct GNUNET_MessageHeader,
+                             gp),
     GNUNET_MQ_handler_end ()
   };
   struct GNUNET_CADET_RequestPathInfoMessage *msg;
@@ -204,10 +202,10 @@ reconnect (void *cls)
 
   gp->reconnect_task = NULL;
   gp->mq = GNUNET_CLIENT_connect (gp->cfg,
-				  "cadet",
-				  handlers,
-				  &error_handler,
-				  gp);
+                                  "cadet",
+                                  handlers,
+                                  &error_handler,
+                                  gp);
   if (NULL == gp->mq)
     return;
   env = GNUNET_MQ_msg (msg,
@@ -229,7 +227,7 @@ reconnect (void *cls)
  */
 struct GNUNET_CADET_GetPath *
 GNUNET_CADET_get_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
-		       const struct GNUNET_PeerIdentity *id,
+                       const struct GNUNET_PeerIdentity *id,
                        GNUNET_CADET_PathCB callback,
                        void *callback_cls)
 {

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file gns/plugin_block_gns.c
@@ -69,7 +69,8 @@ block_plugin_gns_create_group (void *cls,
   guard = va_arg (va, const char *);
   if (0 == strcmp (guard,
                    "seen-set-size"))
-    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned int),
+    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned
+                                                                   int),
                                                            BLOOMFILTER_K);
   else if (0 == strcmp (guard,
                         "filter-size"))
@@ -138,32 +139,34 @@ block_plugin_gns_evaluate (void *cls,
   }
 
   /* this is a reply */
-  if (reply_block_size < sizeof (struct GNUNET_GNSRECORD_Block))
-    {
-      GNUNET_break_op (0);
-      return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
-    }
+  if (reply_block_size < sizeof(struct GNUNET_GNSRECORD_Block))
+  {
+    GNUNET_break_op (0);
+    return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
+  }
   block = reply_block;
-  if (ntohl (block->purpose.size) + sizeof (struct GNUNET_CRYPTO_EcdsaSignature) + sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey) !=
+  if (ntohl (block->purpose.size) + sizeof(struct
+                                           GNUNET_CRYPTO_EcdsaSignature)
+      + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey) !=
       reply_block_size)
-    {
-      GNUNET_break_op (0);
-      return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
-    }
+  {
+    GNUNET_break_op (0);
+    return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
+  }
   GNUNET_CRYPTO_hash (&block->derived_key,
-		      sizeof (block->derived_key),
-		      &h);
+                      sizeof(block->derived_key),
+                      &h);
   if (0 != GNUNET_memcmp (&h, query))
-    {
-      GNUNET_break_op (0);
-      return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
-    }
+  {
+    GNUNET_break_op (0);
+    return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
+  }
   if (GNUNET_OK !=
       GNUNET_GNSRECORD_block_verify (block))
-    {
-      GNUNET_break_op (0);
-      return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
-    }
+  {
+    GNUNET_break_op (0);
+    return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
+  }
   GNUNET_CRYPTO_hash (reply_block,
                       reply_block_size,
                       &chash);
@@ -197,15 +200,15 @@ block_plugin_gns_get_key (void *cls,
 
   if (type != GNUNET_BLOCK_TYPE_GNS_NAMERECORD)
     return GNUNET_SYSERR;
-  if (reply_block_size < sizeof (struct GNUNET_GNSRECORD_Block))
-    {
-      GNUNET_break_op (0);
-      return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
-    }
+  if (reply_block_size < sizeof(struct GNUNET_GNSRECORD_Block))
+  {
+    GNUNET_break_op (0);
+    return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
+  }
   block = reply_block;
   GNUNET_CRYPTO_hash (&block->derived_key,
-		      sizeof (block->derived_key),
-		      key);
+                      sizeof(block->derived_key),
+                      key);
   return GNUNET_OK;
 }
 
@@ -216,8 +219,7 @@ block_plugin_gns_get_key (void *cls,
 void *
 libgnunet_plugin_block_gns_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_GNS_NAMERECORD,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -243,5 +245,6 @@ libgnunet_plugin_block_gns_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_gns.c */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Martin Schanzenbach
@@ -110,7 +110,6 @@ typedef const char *(*GNUNET_RECLAIM_ATTRIBUTE_NumberToTypenameFunction) (
  */
 struct GNUNET_RECLAIM_ATTRIBUTE_PluginFunctions
 {
-
   /**
    * Closure for all of the callbacks.
    */

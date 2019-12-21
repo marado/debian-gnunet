@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2014, 2015, 2016 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2014, 2015, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file json/json_helper.c
  * @brief functions to generate specifciations for JSON parsing
@@ -39,6 +39,7 @@ GNUNET_JSON_spec_end ()
     .cleaner = NULL,
     .cls = NULL
   };
+
   return ret;
 }
 
@@ -105,6 +106,7 @@ GNUNET_JSON_spec_fixed (const char *name,
     .ptr_size = size,
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -150,7 +152,7 @@ parse_variable_data (void *cls,
     GNUNET_free (data);
     return GNUNET_SYSERR;
   }
-  *(void**) spec->ptr = data;
+  *(void **) spec->ptr = data;
   *spec->size_ptr = size;
   return GNUNET_OK;
 }
@@ -169,7 +171,7 @@ clean_variable_data (void *cls,
   if (0 != *spec->size_ptr)
   {
     GNUNET_free (*(void **) spec->ptr);
-    *(void**) spec->ptr = NULL;
+    *(void **) spec->ptr = NULL;
     *spec->size_ptr = 0;
   }
 }
@@ -197,6 +199,7 @@ GNUNET_JSON_spec_varsize (const char *name,
     .ptr_size = 0,
     .size_ptr = size
   };
+
   *obj = NULL;
   *size = 0;
   return ret;
@@ -248,6 +251,7 @@ GNUNET_JSON_spec_string (const char *name,
     .ptr_size = 0,
     .size_ptr = NULL
   };
+
   *strptr = NULL;
   return ret;
 }
@@ -266,7 +270,7 @@ parse_object (void *cls,
               json_t *root,
               struct GNUNET_JSON_Specification *spec)
 {
-  if (! (json_is_object (root) || json_is_array (root)) )
+  if (! (json_is_object (root) || json_is_array (root)))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -316,6 +320,7 @@ GNUNET_JSON_spec_json (const char *name,
     .ptr_size = 0,
     .size_ptr = NULL
   };
+
   *jsonp = NULL;
   return ret;
 }
@@ -343,7 +348,7 @@ parse_u8 (void *cls,
     return GNUNET_SYSERR;
   }
   val = json_integer_value (root);
-  if ( (0 > val) || (val > UINT8_MAX) )
+  if ((0 > val) || (val > UINT8_MAX))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -369,9 +374,10 @@ GNUNET_JSON_spec_uint8 (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = u8,
-    .ptr_size = sizeof (uint8_t),
+    .ptr_size = sizeof(uint8_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -398,7 +404,7 @@ parse_u16 (void *cls,
     return GNUNET_SYSERR;
   }
   val = json_integer_value (root);
-  if ( (0 > val) || (val > UINT16_MAX) )
+  if ((0 > val) || (val > UINT16_MAX))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -424,9 +430,10 @@ GNUNET_JSON_spec_uint16 (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = u16,
-    .ptr_size = sizeof (uint16_t),
+    .ptr_size = sizeof(uint16_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -453,7 +460,7 @@ parse_u32 (void *cls,
     return GNUNET_SYSERR;
   }
   val = json_integer_value (root);
-  if ( (0 > val) || (val > UINT32_MAX) )
+  if ((0 > val) || (val > UINT32_MAX))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -479,9 +486,10 @@ GNUNET_JSON_spec_uint32 (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = u32,
-    .ptr_size = sizeof (uint32_t),
+    .ptr_size = sizeof(uint32_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -529,9 +537,10 @@ GNUNET_JSON_spec_uint64 (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = u64,
-    .ptr_size = sizeof (uint64_t),
+    .ptr_size = sizeof(uint64_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -552,41 +561,42 @@ parse_abs_time (void *cls,
                 struct GNUNET_JSON_Specification *spec)
 {
   struct GNUNET_TIME_Absolute *abs = spec->ptr;
-  const char *val;
+  json_t *json_t_ms;
   unsigned long long int tval;
 
-  val = json_string_value (root);
-  if (NULL == val)
+  if (!json_is_object (root))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  if ( (0 == strcasecmp (val,
-                         "/forever/")) ||
-       (0 == strcasecmp (val,
-                         "/end of time/")) ||
-       (0 == strcasecmp (val,
-                         "/never/")) )
+  json_t_ms = json_object_get (root, "t_ms");
+  if (json_is_integer (json_t_ms))
   {
-    *abs = GNUNET_TIME_UNIT_FOREVER_ABS;
+    tval = json_integer_value (json_t_ms);
+    /* Time is in milliseconds in JSON, but in microseconds in GNUNET_TIME_Absolute */
+    abs->abs_value_us = tval * 1000LL;
+    if ((abs->abs_value_us) / 1000LL != tval)
+    {
+      /* Integer overflow */
+      GNUNET_break_op (0);
+      return GNUNET_SYSERR;
+    }
     return GNUNET_OK;
   }
-  if (1 != sscanf (val,
-                   "/Date(%llu)/",
-                   &tval))
+  if (json_is_string (json_t_ms))
   {
+    const char *val;
+    val = json_string_value (json_t_ms);
+    if ((0 == strcasecmp (val, "never")))
+    {
+      *abs = GNUNET_TIME_UNIT_FOREVER_ABS;
+      return GNUNET_OK;
+    }
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  /* Time is in seconds in JSON, but in microseconds in GNUNET_TIME_Absolute */
-  abs->abs_value_us = tval * 1000LL * 1000LL;
-  if ( (abs->abs_value_us) / 1000LL / 1000LL != tval)
-  {
-    /* Integer overflow */
-    GNUNET_break_op (0);
-    return GNUNET_SYSERR;
-  }
-  return GNUNET_OK;
+  GNUNET_break_op (0);
+  return GNUNET_SYSERR;
 }
 
 
@@ -606,9 +616,10 @@ GNUNET_JSON_spec_absolute_time (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = at,
-    .ptr_size = sizeof (uint64_t),
+    .ptr_size = sizeof(uint64_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -623,8 +634,8 @@ GNUNET_JSON_spec_absolute_time (const char *name,
  */
 static int
 parse_abs_time_nbo (void *cls,
-		    json_t *root,
-		    struct GNUNET_JSON_Specification *spec)
+                    json_t *root,
+                    struct GNUNET_JSON_Specification *spec)
 {
   struct GNUNET_TIME_AbsoluteNBO *abs = spec->ptr;
   const char *val;
@@ -637,12 +648,12 @@ parse_abs_time_nbo (void *cls,
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  if ( (0 == strcasecmp (val,
-                         "/forever/")) ||
-       (0 == strcasecmp (val,
-                         "/end of time/")) ||
-       (0 == strcasecmp (val,
-                         "/never/")) )
+  if ((0 == strcasecmp (val,
+                        "/forever/")) ||
+      (0 == strcasecmp (val,
+                        "/end of time/")) ||
+      (0 == strcasecmp (val,
+                        "/never/")))
   {
     *abs = GNUNET_TIME_absolute_hton (GNUNET_TIME_UNIT_FOREVER_ABS);
     return GNUNET_OK;
@@ -656,7 +667,7 @@ parse_abs_time_nbo (void *cls,
   }
   /* Time is in seconds in JSON, but in microseconds in GNUNET_TIME_Absolute */
   a.abs_value_us = tval * 1000LL * 1000LL;
-  if ( (a.abs_value_us) / 1000LL / 1000LL != tval)
+  if ((a.abs_value_us) / 1000LL / 1000LL != tval)
   {
     /* Integer overflow */
     GNUNET_break_op (0);
@@ -675,7 +686,7 @@ parse_abs_time_nbo (void *cls,
  */
 struct GNUNET_JSON_Specification
 GNUNET_JSON_spec_absolute_time_nbo (const char *name,
-				    struct GNUNET_TIME_AbsoluteNBO *at)
+                                    struct GNUNET_TIME_AbsoluteNBO *at)
 {
   struct GNUNET_JSON_Specification ret = {
     .parser = &parse_abs_time_nbo,
@@ -683,9 +694,10 @@ GNUNET_JSON_spec_absolute_time_nbo (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = at,
-    .ptr_size = sizeof (uint64_t),
+    .ptr_size = sizeof(uint64_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -704,37 +716,42 @@ parse_rel_time (void *cls,
                 struct GNUNET_JSON_Specification *spec)
 {
   struct GNUNET_TIME_Relative *rel = spec->ptr;
-  const char *val;
+  json_t *json_d_ms;
   unsigned long long int tval;
 
-  val = json_string_value (root);
-  if (NULL == val)
+  if (!json_is_object (root))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  if ( (0 == strcasecmp (val,
-                         "/forever/")) )
+  json_d_ms = json_object_get (root, "d_ms");
+  if (json_is_integer (json_d_ms))
   {
-    *rel = GNUNET_TIME_UNIT_FOREVER_REL;
+    tval = json_integer_value (json_d_ms);
+    /* Time is in milliseconds in JSON, but in microseconds in GNUNET_TIME_Absolute */
+    rel->rel_value_us = tval * 1000LL;
+    if ((rel->rel_value_us) / 1000LL != tval)
+    {
+      /* Integer overflow */
+      GNUNET_break_op (0);
+      return GNUNET_SYSERR;
+    }
     return GNUNET_OK;
   }
-  if (1 != sscanf (val,
-                   "/Delay(%llu)/",
-                   &tval))
+  if (json_is_string (json_d_ms))
   {
+    const char *val;
+    val = json_string_value (json_d_ms);
+    if ((0 == strcasecmp (val, "forever")))
+    {
+      *rel = GNUNET_TIME_UNIT_FOREVER_REL;
+      return GNUNET_OK;
+    }
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  /* Time is in seconds in JSON, but in microseconds in GNUNET_TIME_Relative */
-  rel->rel_value_us = tval * 1000LL * 1000LL;
-  if ( (rel->rel_value_us) / 1000LL / 1000LL != tval)
-  {
-    /* Integer overflow */
-    GNUNET_break_op (0);
-    return GNUNET_SYSERR;
-  }
-  return GNUNET_OK;
+  GNUNET_break_op (0);
+  return GNUNET_SYSERR;
 }
 
 
@@ -754,9 +771,10 @@ GNUNET_JSON_spec_relative_time (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = rt,
-    .ptr_size = sizeof (uint64_t),
+    .ptr_size = sizeof(uint64_t),
     .size_ptr = NULL
   };
+
   return ret;
 }
 
@@ -786,7 +804,7 @@ parse_rsa_public_key (void *cls,
     return GNUNET_SYSERR;
   }
   len = strlen (enc);
-  buf_len =  (len * 5) / 8;
+  buf_len = (len * 5) / 8;
   buf = GNUNET_malloc (buf_len);
   if (GNUNET_OK !=
       GNUNET_STRINGS_string_to_data (enc,
@@ -849,6 +867,7 @@ GNUNET_JSON_spec_rsa_public_key (const char *name,
     .ptr_size = 0,
     .size_ptr = NULL
   };
+
   *pk = NULL;
   return ret;
 }
@@ -942,6 +961,7 @@ GNUNET_JSON_spec_rsa_signature (const char *name,
     .ptr_size = 0,
     .size_ptr = NULL
   };
+
   *sig = NULL;
   return ret;
 }
@@ -988,9 +1008,10 @@ GNUNET_JSON_spec_boolean (const char *name,
     .cls = NULL,
     .field = name,
     .ptr = boolean,
-    .ptr_size = sizeof (int),
+    .ptr_size = sizeof(int),
     .size_ptr = NULL
   };
+
   return ret;
 }
 

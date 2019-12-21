@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file conversation/gnunet-helper-audio-record.c
  * @brief program to record audio data from the microphone
@@ -270,28 +270,29 @@ static void
 quit (int ret)
 {
   mainloop_api->quit (mainloop_api,
-		      ret);
+                      ret);
   exit (ret);
 }
 
 
 static void
 write_data (const char *ptr,
-	    size_t msg_size)
+            size_t msg_size)
 {
   ssize_t ret;
   size_t off;
+
   off = 0;
   while (off < msg_size)
   {
     ret = write (STDOUT_FILENO,
-		 &ptr[off],
-		 msg_size - off);
+                 &ptr[off],
+                 msg_size - off);
     if (0 >= ret)
     {
       if (-1 == ret)
         GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
-			     "write");
+                             "write");
       quit (2);
     }
     off += ret;
@@ -304,10 +305,12 @@ write_page (ogg_page *og)
 {
   static unsigned long long toff;
   size_t msg_size;
-  msg_size = sizeof (struct AudioMessage) + og->header_len + og->body_len;
+
+  msg_size = sizeof(struct AudioMessage) + og->header_len + og->body_len;
   audio_message->header.size = htons ((uint16_t) msg_size);
   GNUNET_memcpy (&audio_message[1], og->header, og->header_len);
-  GNUNET_memcpy (((char *) &audio_message[1]) + og->header_len, og->body, og->body_len);
+  GNUNET_memcpy (((char *) &audio_message[1]) + og->header_len, og->body,
+                 og->body_len);
 
   toff += msg_size;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -317,11 +320,11 @@ write_page (ogg_page *og)
 #ifdef DEBUG_RECORD_PURE_OGG
   if (dump_pure_ogg)
     write_data ((const char *) &audio_message[1],
-		og->header_len + og->body_len);
+                og->header_len + og->body_len);
   else
 #endif
-    write_data ((const char *) audio_message,
-		msg_size);
+  write_data ((const char *) audio_message,
+              msg_size);
 }
 
 
@@ -340,21 +343,21 @@ packetizer ()
   while (transmit_buffer_length >= transmit_buffer_index + pcm_length)
   {
     GNUNET_memcpy (pcm_buffer,
-	    &transmit_buffer[transmit_buffer_index],
-	    pcm_length);
+                   &transmit_buffer[transmit_buffer_index],
+                   pcm_length);
     transmit_buffer_index += pcm_length;
     len =
       opus_encode_float (enc, pcm_buffer, FRAME_SIZE, opus_data,
-			 MAX_PAYLOAD_BYTES);
+                         MAX_PAYLOAD_BYTES);
 
     if (len < 0)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("opus_encode_float() failed: %s. Aborting\n"),
+                  _ ("opus_encode_float() failed: %s. Aborting\n"),
                   opus_strerror (len));
       quit (5);
     }
-    if (((uint32_t)len) > UINT16_MAX - sizeof (struct AudioMessage))
+    if (((uint32_t) len) > UINT16_MAX - sizeof(struct AudioMessage))
     {
       GNUNET_break (0);
       continue;
@@ -374,9 +377,9 @@ packetizer ()
 
     while (ogg_stream_flush_fill (&os, &og, PAGE_WATERLINE))
     {
-      if ( ((unsigned long long) og.header_len) +
-	   ((unsigned long long) og.body_len) >
-	   UINT16_MAX - sizeof (struct AudioMessage))
+      if (((unsigned long long) og.header_len)
+          + ((unsigned long long) og.body_len) >
+          UINT16_MAX - sizeof(struct AudioMessage))
       {
         GNUNET_assert (0);
         continue;
@@ -390,8 +393,8 @@ packetizer ()
   {
     nbuf = pa_xmalloc (new_size);
     memmove (nbuf,
-	     &transmit_buffer[transmit_buffer_index],
-	     new_size);
+             &transmit_buffer[transmit_buffer_index],
+             new_size);
     pa_xfree (transmit_buffer);
     transmit_buffer = nbuf;
   }
@@ -409,17 +412,17 @@ packetizer ()
  * Pulseaudio callback when new data is available.
  */
 static void
-stream_read_callback (pa_stream * s,
-		      size_t length,
-		      void *userdata)
+stream_read_callback (pa_stream *s,
+                      size_t length,
+                      void *userdata)
 {
   const void *data;
 
   (void) userdata;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Got %u/%d bytes of PCM data\n",
-	      (unsigned int) length,
-	      pcm_length);
+              "Got %u/%d bytes of PCM data\n",
+              (unsigned int) length,
+              pcm_length);
 
   GNUNET_assert (NULL != s);
   GNUNET_assert (length > 0);
@@ -429,8 +432,8 @@ stream_read_callback (pa_stream * s,
   if (pa_stream_peek (s, (const void **) &data, &length) < 0)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("pa_stream_peek() failed: %s\n"),
-		pa_strerror (pa_context_errno (context)));
+                _ ("pa_stream_peek() failed: %s\n"),
+                pa_strerror (pa_context_errno (context)));
     quit (1);
     return;
   }
@@ -439,10 +442,10 @@ stream_read_callback (pa_stream * s,
   if (NULL != transmit_buffer)
   {
     transmit_buffer = pa_xrealloc (transmit_buffer,
-				   transmit_buffer_length + length);
+                                   transmit_buffer_length + length);
     GNUNET_memcpy (&transmit_buffer[transmit_buffer_length],
-	    data,
-	    length);
+                   data,
+                   length);
     transmit_buffer_length += length;
   }
   else
@@ -461,17 +464,17 @@ stream_read_callback (pa_stream * s,
  * Exit callback for SIGTERM and SIGINT
  */
 static void
-exit_signal_callback (pa_mainloop_api * m,
-		      pa_signal_event * e,
-		      int sig,
-		      void *userdata)
+exit_signal_callback (pa_mainloop_api *m,
+                      pa_signal_event *e,
+                      int sig,
+                      void *userdata)
 {
   (void) m;
   (void) e;
   (void) sig;
   (void) userdata;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      _("Got signal, exiting.\n"));
+              _ ("Got signal, exiting.\n"));
   quit (1);
 }
 
@@ -480,8 +483,8 @@ exit_signal_callback (pa_mainloop_api * m,
  * Pulseaudio stream state callback
  */
 static void
-stream_state_callback (pa_stream * s,
-		       void *userdata)
+stream_state_callback (pa_stream *s,
+                       void *userdata)
 {
   (void) userdata;
   GNUNET_assert (NULL != s);
@@ -490,6 +493,7 @@ stream_state_callback (pa_stream * s,
   case PA_STREAM_CREATING:
   case PA_STREAM_TERMINATED:
     break;
+
   case PA_STREAM_READY:
     {
       const pa_buffer_attr *a;
@@ -497,41 +501,41 @@ stream_state_callback (pa_stream * s,
       char sst[PA_SAMPLE_SPEC_SNPRINT_MAX];
 
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		  _("Stream successfully created.\n"));
+                  _ ("Stream successfully created.\n"));
 
-      if (!(a = pa_stream_get_buffer_attr (s)))
+      if (! (a = pa_stream_get_buffer_attr (s)))
       {
-	GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		    _("pa_stream_get_buffer_attr() failed: %s\n"),
-		    pa_strerror (pa_context_errno
-				 (pa_stream_get_context (s))));
-
+        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                    _ ("pa_stream_get_buffer_attr() failed: %s\n"),
+                    pa_strerror (pa_context_errno
+                                   (pa_stream_get_context (s))));
       }
       else
       {
-	GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		    _("Buffer metrics: maxlength=%u, fragsize=%u\n"),
-		    a->maxlength, a->fragsize);
+        GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                    _ ("Buffer metrics: maxlength=%u, fragsize=%u\n"),
+                    a->maxlength, a->fragsize);
       }
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		  _("Using sample spec '%s', channel map '%s'.\n"),
-		  pa_sample_spec_snprint (sst, sizeof (sst),
-					  pa_stream_get_sample_spec (s)),
-		  pa_channel_map_snprint (cmt, sizeof (cmt),
-					  pa_stream_get_channel_map (s)));
+                  _ ("Using sample spec '%s', channel map '%s'.\n"),
+                  pa_sample_spec_snprint (sst, sizeof(sst),
+                                          pa_stream_get_sample_spec (s)),
+                  pa_channel_map_snprint (cmt, sizeof(cmt),
+                                          pa_stream_get_channel_map (s)));
 
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		  _("Connected to device %s (%u, %ssuspended).\n"),
-		  pa_stream_get_device_name (s),
-		  pa_stream_get_device_index (s),
-		  pa_stream_is_suspended (s) ? "" : "not ");
+                  _ ("Connected to device %s (%u, %ssuspended).\n"),
+                  pa_stream_get_device_name (s),
+                  pa_stream_get_device_index (s),
+                  pa_stream_is_suspended (s) ? "" : "not ");
     }
     break;
+
   case PA_STREAM_FAILED:
   default:
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Stream error: %s\n"),
-		pa_strerror (pa_context_errno (pa_stream_get_context (s))));
+                _ ("Stream error: %s\n"),
+                pa_strerror (pa_context_errno (pa_stream_get_context (s))));
     quit (1);
   }
 }
@@ -541,8 +545,8 @@ stream_state_callback (pa_stream * s,
  * Pulseaudio context state callback
  */
 static void
-context_state_callback (pa_context * c,
-			void *userdata)
+context_state_callback (pa_context *c,
+                        void *userdata)
 {
   (void) userdata;
   GNUNET_assert (c);
@@ -553,46 +557,49 @@ context_state_callback (pa_context * c,
   case PA_CONTEXT_AUTHORIZING:
   case PA_CONTEXT_SETTING_NAME:
     break;
+
   case PA_CONTEXT_READY:
-  {
-    int r;
-    pa_buffer_attr na;
-
-    GNUNET_assert (!stream_in);
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		_("Connection established.\n"));
-    if (! (stream_in =
-	   pa_stream_new (c, "GNUNET_VoIP recorder", &sample_spec, NULL)))
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("pa_stream_new() failed: %s\n"),
-		  pa_strerror (pa_context_errno (c)));
-      goto fail;
-    }
-    pa_stream_set_state_callback (stream_in, &stream_state_callback, NULL);
-    pa_stream_set_read_callback (stream_in, &stream_read_callback, NULL);
-    memset (&na, 0, sizeof (na));
-    na.maxlength = UINT32_MAX;
-    na.fragsize = pcm_length;
-    if ((r = pa_stream_connect_record (stream_in, NULL, &na,
-				       PA_STREAM_ADJUST_LATENCY)) < 0)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("pa_stream_connect_record() failed: %s\n"),
-		  pa_strerror (pa_context_errno (c)));
-      goto fail;
+      int r;
+      pa_buffer_attr na;
+
+      GNUNET_assert (! stream_in);
+      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                  _ ("Connection established.\n"));
+      if (! (stream_in =
+               pa_stream_new (c, "GNUNET_VoIP recorder", &sample_spec, NULL)))
+      {
+        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                    _ ("pa_stream_new() failed: %s\n"),
+                    pa_strerror (pa_context_errno (c)));
+        goto fail;
+      }
+      pa_stream_set_state_callback (stream_in, &stream_state_callback, NULL);
+      pa_stream_set_read_callback (stream_in, &stream_read_callback, NULL);
+      memset (&na, 0, sizeof(na));
+      na.maxlength = UINT32_MAX;
+      na.fragsize = pcm_length;
+      if ((r = pa_stream_connect_record (stream_in, NULL, &na,
+                                         PA_STREAM_ADJUST_LATENCY)) < 0)
+      {
+        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                    _ ("pa_stream_connect_record() failed: %s\n"),
+                    pa_strerror (pa_context_errno (c)));
+        goto fail;
+      }
+
+      break;
     }
 
-    break;
-  }
   case PA_CONTEXT_TERMINATED:
     quit (0);
     break;
+
   case PA_CONTEXT_FAILED:
   default:
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Connection failure: %s\n"),
-		pa_strerror (pa_context_errno (c)));
+                _ ("Connection failure: %s\n"),
+                pa_strerror (pa_context_errno (c)));
     goto fail;
   }
   return;
@@ -611,16 +618,16 @@ pa_init ()
   int r;
   int i;
 
-  if (!pa_sample_spec_valid (&sample_spec))
+  if (! pa_sample_spec_valid (&sample_spec))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Wrong Spec\n"));
+                _ ("Wrong Spec\n"));
   }
   /* set up main record loop */
-  if (!(m = pa_mainloop_new ()))
+  if (! (m = pa_mainloop_new ()))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("pa_mainloop_new() failed.\n"));
+                _ ("pa_mainloop_new() failed.\n"));
   }
   mainloop_api = pa_mainloop_get_api (m);
 
@@ -632,22 +639,22 @@ pa_init ()
 
   /* connect to the main pulseaudio context */
 
-  if (!(context = pa_context_new (mainloop_api, "GNUNET VoIP")))
+  if (! (context = pa_context_new (mainloop_api, "GNUNET VoIP")))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("pa_context_new() failed.\n"));
+                _ ("pa_context_new() failed.\n"));
   }
   pa_context_set_state_callback (context, &context_state_callback, NULL);
   if (pa_context_connect (context, NULL, 0, NULL) < 0)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("pa_context_connect() failed: %s\n"),
-		pa_strerror (pa_context_errno (context)));
+                _ ("pa_context_connect() failed: %s\n"),
+                pa_strerror (pa_context_errno (context)));
   }
   if (pa_mainloop_run (m, &i) < 0)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("pa_mainloop_run() failed.\n"));
+                _ ("pa_mainloop_run() failed.\n"));
   }
 }
 
@@ -660,21 +667,22 @@ opus_init ()
 {
   int err;
 
-  pcm_length = FRAME_SIZE * CHANNELS * sizeof (float);
+  pcm_length = FRAME_SIZE * CHANNELS * sizeof(float);
   pcm_buffer = pa_xmalloc (pcm_length);
   opus_data = GNUNET_malloc (MAX_PAYLOAD_BYTES);
   enc = opus_encoder_create (SAMPLING_RATE,
-			     CHANNELS,
-			     CONV_OPUS_APP_TYPE,
-			     &err);
+                             CHANNELS,
+                             CONV_OPUS_APP_TYPE,
+                             &err);
   opus_encoder_ctl (enc,
-		    OPUS_SET_PACKET_LOSS_PERC (CONV_OPUS_PACKET_LOSS_PERCENTAGE));
+                    OPUS_SET_PACKET_LOSS_PERC (
+                      CONV_OPUS_PACKET_LOSS_PERCENTAGE));
   opus_encoder_ctl (enc,
-		    OPUS_SET_COMPLEXITY (CONV_OPUS_ENCODING_COMPLEXITY));
+                    OPUS_SET_COMPLEXITY (CONV_OPUS_ENCODING_COMPLEXITY));
   opus_encoder_ctl (enc,
-		    OPUS_SET_INBAND_FEC (CONV_OPUS_INBAND_FEC));
+                    OPUS_SET_INBAND_FEC (CONV_OPUS_INBAND_FEC));
   opus_encoder_ctl (enc,
-		    OPUS_SET_SIGNAL (CONV_OPUS_SIGNAL));
+                    OPUS_SET_SIGNAL (CONV_OPUS_SIGNAL));
 }
 
 
@@ -687,12 +695,12 @@ ogg_init ()
   size_t commentspacket_len;
 
   serialno = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_STRONG,
-				       0x7FFFFFFF);
+                                       0x7FFFFFFF);
   /*Initialize Ogg stream struct*/
   if (-1 == ogg_stream_init (&os, serialno))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("ogg_stream_init() failed.\n"));
+                _ ("ogg_stream_init() failed.\n"));
     exit (3);
   }
 
@@ -714,7 +722,7 @@ ogg_init ()
     headpacket.channel_mapping = 0; /* Mono or stereo */
 
     op.packet = (unsigned char *) &headpacket;
-    op.bytes = sizeof (headpacket);
+    op.bytes = sizeof(headpacket);
     op.b_o_s = 1;
     op.e_o_s = 0;
     op.granulepos = 0;
@@ -727,17 +735,17 @@ ogg_init ()
       write_page (&og);
     }
 
-    commentspacket_len = sizeof (*commentspacket);
+    commentspacket_len = sizeof(*commentspacket);
     opusver = opus_get_version_string ();
     vendor_length = strlen (opusver);
     commentspacket_len += vendor_length;
-    commentspacket_len += sizeof (uint32_t);
+    commentspacket_len += sizeof(uint32_t);
 
     commentspacket = (struct OpusCommentsPacket *) malloc (commentspacket_len);
     if (NULL == commentspacket)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to allocate %u bytes for second packet\n"),
+                  _ ("Failed to allocate %u bytes for second packet\n"),
                   (unsigned int) commentspacket_len);
       exit (5);
     }
@@ -746,7 +754,7 @@ ogg_init ()
     commentspacket->vendor_length = GNUNET_htole32 (vendor_length);
     GNUNET_memcpy (&commentspacket[1], opusver, vendor_length);
     *(uint32_t *) &((char *) &commentspacket[1])[vendor_length] = \
-        GNUNET_htole32 (0); /* no tags */
+      GNUNET_htole32 (0);    /* no tags */
 
     op.packet = (unsigned char *) commentspacket;
     op.bytes = commentspacket_len;
@@ -766,6 +774,7 @@ ogg_init ()
   }
 }
 
+
 /**
  * The main function for the record helper.
  *
@@ -780,11 +789,11 @@ main (int argc,
   (void) argc;
   (void) argv;
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_log_setup ("gnunet-helper-audio-record",
-				   "WARNING",
-				   NULL));
+                 GNUNET_log_setup ("gnunet-helper-audio-record",
+                                   "WARNING",
+                                   NULL));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Audio source starts\n");
+              "Audio source starts\n");
   audio_message = GNUNET_malloc (UINT16_MAX);
   audio_message->header.type = htons (GNUNET_MESSAGE_TYPE_CONVERSATION_AUDIO);
 

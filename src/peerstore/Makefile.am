@@ -10,10 +10,6 @@ libexecdir= $(pkglibdir)/libexec/
 dist_pkgcfg_DATA = \
   peerstore.conf
 
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = -fprofile-arcs -ftest-coverage
 endif
@@ -49,6 +45,7 @@ libgnunetpeerstore_la_SOURCES = \
 libgnunetpeerstore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunetpeerstore_la_LDFLAGS = \
+  $(GN_LIBINTL) \
   $(GN_LIB_LDFLAGS)
 
 if HAVE_EXPERIMENTAL

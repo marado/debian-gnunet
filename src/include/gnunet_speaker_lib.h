@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2013 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -36,7 +36,7 @@
 #ifdef __cplusplus
 extern "C"
 {
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -74,8 +74,8 @@ typedef void (*GNUNET_SPEAKER_DestroyCallback)(void *cls);
  *        opaque to the API but should be OPUS.
  */
 typedef void (*GNUNET_SPEAKER_PlayCallback)(void *cls,
-					    size_t data_size,
-					    const void *data);
+                                            size_t data_size,
+                                            const void *data);
 
 
 /**
@@ -83,7 +83,6 @@ typedef void (*GNUNET_SPEAKER_PlayCallback)(void *cls,
  */
 struct GNUNET_SPEAKER_Handle
 {
-
   /**
    * Turn on the speaker.
    */
@@ -108,7 +107,6 @@ struct GNUNET_SPEAKER_Handle
    * Closure for the callbacks.
    */
   void *cls;
-
 };
 
 
@@ -120,7 +118,8 @@ struct GNUNET_SPEAKER_Handle
  * @return NULL on error
  */
 struct GNUNET_SPEAKER_Handle *
-GNUNET_SPEAKER_create_from_hardware (const struct GNUNET_CONFIGURATION_Handle *cfg);
+GNUNET_SPEAKER_create_from_hardware (const struct
+                                     GNUNET_CONFIGURATION_Handle *cfg);
 
 
 /**
@@ -132,7 +131,7 @@ void
 GNUNET_SPEAKER_destroy (struct GNUNET_SPEAKER_Handle *speaker);
 
 
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

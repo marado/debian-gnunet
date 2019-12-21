@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -28,7 +28,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_testing_lib.h"
 
-#define LOG(kind,...)                           \
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 #define NUM_PEERS 4
@@ -100,16 +100,16 @@ run (void *cls, char *const *args, const char *cfgfile,
   char *emsg;
   struct GNUNET_PeerIdentity id;
   struct GNUNET_TESTING_SharedService ss[] = {
-    {"peerinfo", cfg, 2},
-    {NULL, NULL, 0}
+    { "peerinfo", cfg, 2 },
+    { NULL, NULL, 0 }
   };
   struct GNUNET_TESTING_Peer *peer;
   unsigned int cnt;
 
   test_ctx = GNUNET_new (struct TestingContext);
   test_ctx->system =
-      GNUNET_TESTING_system_create ("test-gnunet-testing",
-                                    "127.0.0.1", NULL, ss);
+    GNUNET_TESTING_system_create ("test-gnunet-testing",
+                                  "127.0.0.1", NULL, ss);
   emsg = NULL;
   if (NULL == test_ctx->system)
     goto end;
@@ -137,30 +137,31 @@ run (void *cls, char *const *args, const char *cfgfile,
                                 &do_shutdown, test_ctx);
   return;
 
- end:
+end:
   GNUNET_SCHEDULER_add_now (&do_shutdown, test_ctx);
   GNUNET_free_non_null (emsg);
 }
 
 
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
   char *const argv2[] = { "test_testing_sharedservices",
-    "-c", "test_testing_sharedservices.conf",
-    NULL
-  };
+                          "-c", "test_testing_sharedservices.conf",
+                          NULL };
 
   status = GNUNET_SYSERR;
   if (GNUNET_OK !=
-      GNUNET_PROGRAM_run ((sizeof (argv2) / sizeof (char *)) - 1, argv2,
+      GNUNET_PROGRAM_run ((sizeof(argv2) / sizeof(char *)) - 1, argv2,
                           "test_testing_sharedservices",
                           "test case for testing service sharing among peers started by testing",
                           options, &run, NULL))
     return 1;
   return (GNUNET_OK == status) ? 0 : 3;
 }
+
 
 /* end of test_testing_sharedservices.c */

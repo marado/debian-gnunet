@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file peerstore/peerstore_api.c
  * @brief API for peerstore
@@ -39,7 +39,6 @@
  */
 struct GNUNET_PEERSTORE_Handle
 {
-
   /**
    * Our configuration.
    */
@@ -801,19 +800,19 @@ reconnect (void *cls)
 {
   struct GNUNET_PEERSTORE_Handle *h = cls;
   struct GNUNET_MQ_MessageHandler mq_handlers[] =
-    {GNUNET_MQ_hd_fixed_size (iterate_end,
-                              GNUNET_MESSAGE_TYPE_PEERSTORE_ITERATE_END,
-                              struct GNUNET_MessageHeader,
-                              h),
-     GNUNET_MQ_hd_var_size (iterate_result,
-                            GNUNET_MESSAGE_TYPE_PEERSTORE_ITERATE_RECORD,
-                            struct StoreRecordMessage,
-                            h),
-     GNUNET_MQ_hd_var_size (watch_record,
-                            GNUNET_MESSAGE_TYPE_PEERSTORE_WATCH_RECORD,
-                            struct StoreRecordMessage,
-                            h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (iterate_end,
+                             GNUNET_MESSAGE_TYPE_PEERSTORE_ITERATE_END,
+                             struct GNUNET_MessageHeader,
+                             h),
+    GNUNET_MQ_hd_var_size (iterate_result,
+                           GNUNET_MESSAGE_TYPE_PEERSTORE_ITERATE_RECORD,
+                           struct StoreRecordMessage,
+                           h),
+    GNUNET_MQ_hd_var_size (watch_record,
+                           GNUNET_MESSAGE_TYPE_PEERSTORE_WATCH_RECORD,
+                           struct StoreRecordMessage,
+                           h),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MQ_Envelope *ev;
 
   h->reconnect_task = NULL;
@@ -918,10 +917,10 @@ GNUNET_PEERSTORE_watch (struct GNUNET_PEERSTORE_Handle *h,
   if (NULL == h->watches)
     h->watches = GNUNET_CONTAINER_multihashmap_create (5, GNUNET_NO);
   GNUNET_assert (GNUNET_OK == GNUNET_CONTAINER_multihashmap_put (
-                                h->watches,
-                                &wc->keyhash,
-                                wc,
-                                GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
+                   h->watches,
+                   &wc->keyhash,
+                   wc,
+                   GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Sending a watch request for subsystem `%s', peer `%s', key `%s'.\n",
        sub_system,
@@ -930,5 +929,6 @@ GNUNET_PEERSTORE_watch (struct GNUNET_PEERSTORE_Handle *h,
   GNUNET_MQ_send (h->mq, ev);
   return wc;
 }
+
 
 /* end of peerstore_api.c */

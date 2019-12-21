@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file namestore/namestore.h
@@ -185,7 +185,6 @@ struct LabelLookupResponseMessage
 };
 
 
-
 /**
  * Lookup a name for a zone hash
  */
@@ -248,7 +247,6 @@ struct ZoneToNameResponseMessage
    * name with length name_len
    * serialized record data with rd_count records
    */
-
 };
 
 
@@ -314,7 +312,6 @@ struct ZoneMonitorStartMessage
    * Zone key.
    */
   struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
-
 };
 
 
@@ -339,9 +336,7 @@ struct ZoneMonitorNextMessage
    * should be send again). In NBO.
    */
   uint64_t limit;
-
 };
-
 
 
 /**
@@ -358,7 +353,6 @@ struct ZoneIterationStartMessage
    * Zone key.  All zeros for "all zones".
    */
   struct GNUNET_CRYPTO_EcdsaPrivateKey zone;
-
 };
 
 
@@ -378,7 +372,6 @@ struct ZoneIterationNextMessage
    * should be send again). In NBO.
    */
   uint64_t limit;
-
 };
 
 

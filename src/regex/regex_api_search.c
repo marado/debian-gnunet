@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/regex_api_search.c
  * @brief access regex service to discover
@@ -30,7 +30,7 @@
 #include "gnunet_regex_service.h"
 #include "regex_ipc.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "regex-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "regex-api", __VA_ARGS__)
 
 
 /**
@@ -86,11 +86,11 @@ static int
 check_search_response (void *cls,
                        const struct ResultMessage *result)
 {
-  uint16_t size = ntohs (result->header.size) - sizeof (*result);
+  uint16_t size = ntohs (result->header.size) - sizeof(*result);
   uint16_t gpl = ntohs (result->get_path_length);
   uint16_t ppl = ntohs (result->put_path_length);
 
-  if (size != (gpl + ppl) * sizeof (struct GNUNET_PeerIdentity))
+  if (size != (gpl + ppl) * sizeof(struct GNUNET_PeerIdentity))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -108,7 +108,7 @@ check_search_response (void *cls,
  */
 static void
 handle_search_response (void *cls,
-			const struct ResultMessage *result)
+                        const struct ResultMessage *result)
 {
   struct GNUNET_REGEX_Search *s = cls;
   uint16_t gpl = ntohs (result->get_path_length);
@@ -178,8 +178,8 @@ search_reconnect (struct GNUNET_REGEX_Search *s)
                              slen,
                              GNUNET_MESSAGE_TYPE_REGEX_SEARCH);
   GNUNET_memcpy (&rsm[1],
-          s->string,
-          slen);
+                 s->string,
+                 slen);
   GNUNET_MQ_send (s->mq,
                   env);
 }
@@ -199,17 +199,17 @@ search_reconnect (struct GNUNET_REGEX_Search *s)
  */
 struct GNUNET_REGEX_Search *
 GNUNET_REGEX_search (const struct GNUNET_CONFIGURATION_Handle *cfg,
-		     const char *string,
+                     const char *string,
                      GNUNET_REGEX_Found callback,
                      void *callback_cls)
 {
   struct GNUNET_REGEX_Search *s;
   size_t slen = strlen (string) + 1;
 
-  if (slen + sizeof (struct RegexSearchMessage) >= GNUNET_MAX_MESSAGE_SIZE)
+  if (slen + sizeof(struct RegexSearchMessage) >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Search string `%s' is too long!\n"),
+                _ ("Search string `%s' is too long!\n"),
                 string);
     GNUNET_break (0);
     return NULL;

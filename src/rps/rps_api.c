@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/rps_api.c
@@ -33,7 +33,7 @@
 
 #include <inttypes.h>
 
-#define LOG(kind,...) GNUNET_log_from (kind, "rps-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "rps-api", __VA_ARGS__)
 
 /**
  * Handle for a request to get peers from biased stream of ids
@@ -273,7 +273,7 @@ struct cb_cls_pack
   /**
    * Handle to the service connection
    */
- struct GNUNET_CLIENT_Connection *service_conn;
+  struct GNUNET_CLIENT_Connection *service_conn;
 };
 
 
@@ -533,11 +533,12 @@ check_view_update (void *cls,
 {
   uint16_t msize = ntohs (msg->header.size);
   uint32_t num_peers = ntohl (msg->num_peers);
+
   (void) cls;
 
-  msize -= sizeof (struct GNUNET_RPS_CS_DEBUG_ViewReply);
-  if ( (msize / sizeof (struct GNUNET_PeerIdentity) != num_peers) ||
-       (msize % sizeof (struct GNUNET_PeerIdentity) != 0) )
+  msize -= sizeof(struct GNUNET_RPS_CS_DEBUG_ViewReply);
+  if ((msize / sizeof(struct GNUNET_PeerIdentity) != num_peers) ||
+      (msize % sizeof(struct GNUNET_PeerIdentity) != 0))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -621,11 +622,12 @@ check_stream_input (void *cls,
 {
   uint16_t msize = ntohs (msg->header.size);
   uint32_t num_peers = ntohl (msg->num_peers);
+
   (void) cls;
 
-  msize -= sizeof (struct GNUNET_RPS_CS_DEBUG_StreamReply);
-  if ( (msize / sizeof (struct GNUNET_PeerIdentity) != num_peers) ||
-       (msize % sizeof (struct GNUNET_PeerIdentity) != 0) )
+  msize -= sizeof(struct GNUNET_RPS_CS_DEBUG_StreamReply);
+  if ((msize / sizeof(struct GNUNET_PeerIdentity) != num_peers) ||
+      (msize % sizeof(struct GNUNET_PeerIdentity) != 0))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -664,20 +666,20 @@ handle_stream_input (void *cls,
                      const struct GNUNET_RPS_CS_DEBUG_StreamReply *msg)
 {
   struct GNUNET_RPS_Handle *h = cls;
-  //const struct GNUNET_PeerIdentity *peers;
+  // const struct GNUNET_PeerIdentity *peers;
   uint64_t num_peers;
   struct GNUNET_RPS_StreamRequestHandle *srh_iter;
   struct GNUNET_RPS_StreamRequestHandle *srh_next;
 
-  //peers = (struct GNUNET_PeerIdentity *) &msg[1];
+  // peers = (struct GNUNET_PeerIdentity *) &msg[1];
   num_peers = ntohl (msg->num_peers);
   srh_callback_num_peers = num_peers;
   GNUNET_free_non_null (srh_callback_peers);
   srh_callback_peers = GNUNET_new_array (num_peers,
-					 struct GNUNET_PeerIdentity);
+                                         struct GNUNET_PeerIdentity);
   GNUNET_memcpy (srh_callback_peers,
                  &msg[1],
-                 num_peers * sizeof (struct GNUNET_PeerIdentity));
+                 num_peers * sizeof(struct GNUNET_PeerIdentity));
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Received %" PRIu64 " peer(s) from stream input.\n",
        num_peers);
@@ -692,7 +694,7 @@ handle_stream_input (void *cls,
       GNUNET_SCHEDULER_cancel (srh_iter->callback_task);
     srh_iter->callback_task =
       GNUNET_SCHEDULER_add_now (&srh_callback_scheduled,
-				srh_iter);
+                                srh_iter);
   }
 
   if (NULL == h->stream_requests_head)
@@ -723,8 +725,10 @@ mq_error_handler (void *cls,
                   enum GNUNET_MQ_Error error)
 {
   struct GNUNET_RPS_Handle *h = cls;
-  //TODO LOG
-  LOG (GNUNET_ERROR_TYPE_WARNING, "Problem with message queue. error: %i\n\
+
+  // TODO LOG
+  LOG (GNUNET_ERROR_TYPE_WARNING,
+       "Problem with message queue. error: %i\n\
        1: READ,\n\
        2: WRITE,\n\
        4: TIMEOUT\n",
@@ -748,7 +752,7 @@ hash_from_share_val (const char *share_val,
                      struct GNUNET_HashCode *hash)
 {
   GNUNET_CRYPTO_kdf (hash,
-                     sizeof (struct GNUNET_HashCode),
+                     sizeof(struct GNUNET_HashCode),
                      "rps",
                      strlen ("rps"),
                      share_val,
@@ -775,6 +779,7 @@ nse_cb (void *cls,
         double std_dev)
 {
   struct GNUNET_RPS_Handle *h = cls;
+
   (void) timestamp;
   (void) std_dev;
 
@@ -783,14 +788,16 @@ nse_cb (void *cls,
        rh_iter = rh_iter->next)
   {
     RPS_sampler_update_with_nw_size (rh_iter->sampler,
-                                     GNUNET_NSE_log_estimate_to_n (logestimate));
+                                     GNUNET_NSE_log_estimate_to_n (
+                                       logestimate));
   }
   for (struct GNUNET_RPS_Request_Handle_Single_Info *rhs_iter = h->rhs_head;
        NULL != rhs_iter && NULL != rhs_iter->next;
        rhs_iter = rhs_iter->next)
   {
     RPS_sampler_update_with_nw_size (rhs_iter->sampler,
-                                     GNUNET_NSE_log_estimate_to_n (logestimate));
+                                     GNUNET_NSE_log_estimate_to_n (
+                                       logestimate));
   }
 }
 
@@ -841,39 +848,39 @@ GNUNET_RPS_connect (const struct GNUNET_CONFIGURATION_Handle *cfg)
   h->cfg = cfg;
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_float (cfg,
-                                           "RPS",
-                                           "DESIRED_PROBABILITY",
-                                           &h->desired_probability))
+                                            "RPS",
+                                            "DESIRED_PROBABILITY",
+                                            &h->desired_probability))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
                                "RPS", "DESIRED_PROBABILITY");
     GNUNET_free (h);
     return NULL;
   }
-  if (0 > h->desired_probability ||
-      1 < h->desired_probability)
+  if ((0 > h->desired_probability) ||
+      (1 < h->desired_probability) )
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-        "The desired probability must be in the interval [0;1]\n");
+         "The desired probability must be in the interval [0;1]\n");
     GNUNET_free (h);
     return NULL;
   }
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_float (cfg,
-                                           "RPS",
-                                           "DEFICIENCY_FACTOR",
-                                           &h->deficiency_factor))
+                                            "RPS",
+                                            "DEFICIENCY_FACTOR",
+                                            &h->deficiency_factor))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
                                "RPS", "DEFICIENCY_FACTOR");
     GNUNET_free (h);
     return NULL;
   }
-  if (0 > h->desired_probability ||
-      1 < h->desired_probability)
+  if ((0 > h->desired_probability) ||
+      (1 < h->desired_probability) )
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-        "The deficiency factor must be in the interval [0;1]\n");
+         "The deficiency factor must be in the interval [0;1]\n");
     GNUNET_free (h);
     return NULL;
   }
@@ -902,7 +909,7 @@ GNUNET_RPS_sub_start (struct GNUNET_RPS_Handle *h,
 
   ev = GNUNET_MQ_msg (msg, GNUNET_MESSAGE_TYPE_RPS_CS_SUB_START);
   hash_from_share_val (shared_value, &msg->hash);
-  msg->round_interval = GNUNET_TIME_relative_hton (// TODO read from config!
+  msg->round_interval = GNUNET_TIME_relative_hton ( // TODO read from config!
     GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30));
   GNUNET_assert (0 != msg->round_interval.rel_value_us__);
 
@@ -997,17 +1004,17 @@ GNUNET_RPS_request_peer_info (struct GNUNET_RPS_Handle *rps_handle,
   rhs = GNUNET_new (struct GNUNET_RPS_Request_Handle_Single_Info);
   rhs->rps_handle = rps_handle;
   rhs->sampler = RPS_sampler_mod_init (num_req_peers,
-                                      GNUNET_TIME_UNIT_SECONDS); // TODO remove this time-stuff
+                                       GNUNET_TIME_UNIT_SECONDS); // TODO remove this time-stuff
   RPS_sampler_set_desired_probability (rhs->sampler,
                                        rps_handle->desired_probability);
   RPS_sampler_set_deficiency_factor (rhs->sampler,
                                      rps_handle->deficiency_factor);
   rhs->sampler_rh = RPS_sampler_get_rand_peer_info (rhs->sampler,
-                                                   peer_info_ready_cb,
-                                                   rhs);
+                                                    peer_info_ready_cb,
+                                                    rhs);
   rhs->srh = GNUNET_RPS_stream_request (rps_handle,
-                                       collect_peers_info_cb,
-                                       rhs); /* cls */
+                                        collect_peers_info_cb,
+                                        rhs); /* cls */
   rhs->ready_cb = ready_cb;
   rhs->ready_cb_cls = cls;
   GNUNET_CONTAINER_DLL_insert (rps_handle->rhs_head,
@@ -1039,49 +1046,50 @@ GNUNET_RPS_seed_ids (struct GNUNET_RPS_Handle *h,
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Client wants to seed %" PRIu32 " peers:\n",
        n);
-  for (unsigned int i = 0 ; i < n ; i++)
+  for (unsigned int i = 0; i < n; i++)
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "%u. peer: %s\n",
          i,
          GNUNET_i2s (&ids[i]));
 
   /* The actual size the message occupies */
-  size_needed = sizeof (struct GNUNET_RPS_CS_SeedMessage) +
-    n * sizeof (struct GNUNET_PeerIdentity);
+  size_needed = sizeof(struct GNUNET_RPS_CS_SeedMessage)
+                + n * sizeof(struct GNUNET_PeerIdentity);
   /* The number of peers that fits in one message together with
    * the respective header */
-  num_peers_max = (GNUNET_MAX_MESSAGE_SIZE -
-      sizeof (struct GNUNET_RPS_CS_SeedMessage)) /
-    sizeof (struct GNUNET_PeerIdentity);
+  num_peers_max = (GNUNET_MAX_MESSAGE_SIZE
+                   - sizeof(struct GNUNET_RPS_CS_SeedMessage))
+                  / sizeof(struct GNUNET_PeerIdentity);
   tmp_peer_pointer = ids;
 
   while (GNUNET_MAX_MESSAGE_SIZE < size_needed)
   {
     ev = GNUNET_MQ_msg_extra (msg,
-			      num_peers_max * sizeof (struct GNUNET_PeerIdentity),
-			      GNUNET_MESSAGE_TYPE_RPS_CS_SEED);
+                              num_peers_max * sizeof(struct
+                                                     GNUNET_PeerIdentity),
+                              GNUNET_MESSAGE_TYPE_RPS_CS_SEED);
     msg->num_peers = htonl (num_peers_max);
     GNUNET_memcpy (&msg[1],
-		   tmp_peer_pointer,
-		   num_peers_max * sizeof (struct GNUNET_PeerIdentity));
+                   tmp_peer_pointer,
+                   num_peers_max * sizeof(struct GNUNET_PeerIdentity));
     GNUNET_MQ_send (h->mq,
-		    ev);
+                    ev);
     n -= num_peers_max;
-    size_needed = sizeof (struct GNUNET_RPS_CS_SeedMessage) +
-                  n * sizeof (struct GNUNET_PeerIdentity);
+    size_needed = sizeof(struct GNUNET_RPS_CS_SeedMessage)
+                  + n * sizeof(struct GNUNET_PeerIdentity);
     /* Set pointer to beginning of next block of num_peers_max peers */
     tmp_peer_pointer = &ids[num_peers_max];
   }
 
   ev = GNUNET_MQ_msg_extra (msg,
-			    n * sizeof (struct GNUNET_PeerIdentity),
+                            n * sizeof(struct GNUNET_PeerIdentity),
                             GNUNET_MESSAGE_TYPE_RPS_CS_SEED);
   msg->num_peers = htonl (n);
   GNUNET_memcpy (&msg[1],
-		 tmp_peer_pointer,
-		 n * sizeof (struct GNUNET_PeerIdentity));
+                 tmp_peer_pointer,
+                 n * sizeof(struct GNUNET_PeerIdentity));
   GNUNET_MQ_send (h->mq,
-		  ev);
+                  ev);
 }
 
 
@@ -1116,65 +1124,70 @@ GNUNET_RPS_act_malicious (struct GNUNET_RPS_Handle *h,
   unsigned int i;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       "Client turns malicious (type %" PRIu32 ") with %" PRIu32 " other peers:\n",
+       "Client turns malicious (type %" PRIu32 ") with %" PRIu32
+       " other peers:\n",
        type,
        num_peers);
-  for (i = 0 ; i < num_peers ; i++)
+  for (i = 0; i < num_peers; i++)
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "%u. peer: %s\n",
          i,
          GNUNET_i2s (&peer_ids[i]));
 
   /* The actual size the message would occupy */
-  size_needed = sizeof (struct GNUNET_RPS_CS_SeedMessage) +
-    num_peers * sizeof (struct GNUNET_PeerIdentity);
+  size_needed = sizeof(struct GNUNET_RPS_CS_SeedMessage)
+                + num_peers * sizeof(struct GNUNET_PeerIdentity);
   /* The number of peers that fit in one message together with
    * the respective header */
-  num_peers_max = (GNUNET_MAX_MESSAGE_SIZE -
-      sizeof (struct GNUNET_RPS_CS_SeedMessage)) /
-    sizeof (struct GNUNET_PeerIdentity);
+  num_peers_max = (GNUNET_MAX_MESSAGE_SIZE
+                   - sizeof(struct GNUNET_RPS_CS_SeedMessage))
+                  / sizeof(struct GNUNET_PeerIdentity);
   tmp_peer_pointer = peer_ids;
 
   while (GNUNET_MAX_MESSAGE_SIZE < size_needed)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         "Too many peers to send at once, sending %" PRIu32 " (all we can so far)\n",
+         "Too many peers to send at once, sending %" PRIu32
+         " (all we can so far)\n",
          num_peers_max);
     ev = GNUNET_MQ_msg_extra (msg,
-                              num_peers_max * sizeof (struct GNUNET_PeerIdentity),
+                              num_peers_max * sizeof(struct
+                                                     GNUNET_PeerIdentity),
                               GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS);
     msg->type = htonl (type);
     msg->num_peers = htonl (num_peers_max);
-    if ( (2 == type) ||
-         (3 == type) )
+    if ((2 == type) ||
+        (3 == type))
       msg->attacked_peer = peer_ids[num_peers];
     GNUNET_memcpy (&msg[1],
-            tmp_peer_pointer,
-            num_peers_max * sizeof (struct GNUNET_PeerIdentity));
+                   tmp_peer_pointer,
+                   num_peers_max * sizeof(struct GNUNET_PeerIdentity));
 
     GNUNET_MQ_send (h->mq, ev);
 
     num_peers -= num_peers_max;
-    size_needed = sizeof (struct GNUNET_RPS_CS_SeedMessage) +
-                  num_peers * sizeof (struct GNUNET_PeerIdentity);
+    size_needed = sizeof(struct GNUNET_RPS_CS_SeedMessage)
+                  + num_peers * sizeof(struct GNUNET_PeerIdentity);
     /* Set pointer to beginning of next block of num_peers_max peers */
     tmp_peer_pointer = &peer_ids[num_peers_max];
   }
 
   ev = GNUNET_MQ_msg_extra (msg,
-                            num_peers * sizeof (struct GNUNET_PeerIdentity),
+                            num_peers * sizeof(struct GNUNET_PeerIdentity),
                             GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS);
   msg->type = htonl (type);
   msg->num_peers = htonl (num_peers);
-  if ( (2 == type) ||
-       (3 == type) )
+  if ((2 == type) ||
+      (3 == type))
     msg->attacked_peer = *target_peer;
   GNUNET_memcpy (&msg[1],
-		 tmp_peer_pointer,
-		 num_peers * sizeof (struct GNUNET_PeerIdentity));
+                 tmp_peer_pointer,
+                 num_peers * sizeof(struct GNUNET_PeerIdentity));
 
   GNUNET_MQ_send (h->mq, ev);
 }
+
+
 #endif /* ENABLE_MALICIOUS */
 
 
@@ -1194,7 +1207,8 @@ GNUNET_RPS_request_cancel (struct GNUNET_RPS_Request_Handle *rh)
   GNUNET_assert (h == rh->srh->rps_handle);
   GNUNET_RPS_stream_cancel (rh->srh);
   rh->srh = NULL;
-  if (NULL == h->stream_requests_head) cancel_stream(h);
+  if (NULL == h->stream_requests_head)
+    cancel_stream (h);
   if (NULL != rh->sampler_rh)
   {
     RPS_sampler_request_cancel (rh->sampler_rh);
@@ -1215,7 +1229,7 @@ GNUNET_RPS_request_cancel (struct GNUNET_RPS_Request_Handle *rh)
  */
 void
 GNUNET_RPS_request_single_info_cancel (
-    struct GNUNET_RPS_Request_Handle_Single_Info *rhs)
+  struct GNUNET_RPS_Request_Handle_Single_Info *rhs)
 {
   struct GNUNET_RPS_Handle *h;
 
@@ -1225,7 +1239,8 @@ GNUNET_RPS_request_single_info_cancel (
   GNUNET_assert (h == rhs->srh->rps_handle);
   GNUNET_RPS_stream_cancel (rhs->srh);
   rhs->srh = NULL;
-  if (NULL == h->stream_requests_head) cancel_stream(h);
+  if (NULL == h->stream_requests_head)
+    cancel_stream (h);
   if (NULL != rhs->sampler_rh)
   {
     RPS_sampler_request_single_info_cancel (rhs->sampler_rh);
@@ -1252,8 +1267,9 @@ GNUNET_RPS_disconnect (struct GNUNET_RPS_Handle *h)
     struct GNUNET_RPS_StreamRequestHandle *srh_next;
 
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Still waiting for replies\n");
-    for (struct GNUNET_RPS_StreamRequestHandle *srh_iter = h->stream_requests_head;
+         "Still waiting for replies\n");
+    for (struct GNUNET_RPS_StreamRequestHandle *srh_iter =
+           h->stream_requests_head;
          NULL != srh_iter;
          srh_iter = srh_next)
     {
@@ -1291,7 +1307,7 @@ GNUNET_RPS_disconnect (struct GNUNET_RPS_Handle *h)
   if (NULL != h->view_update_cb)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Still waiting for view updates\n");
+         "Still waiting for view updates\n");
     GNUNET_RPS_view_request_cancel (h);
   }
   if (NULL != h->nse)

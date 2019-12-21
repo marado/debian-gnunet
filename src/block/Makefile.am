@@ -3,10 +3,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/gnunet
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage
 endif
@@ -50,6 +46,7 @@ libgnunetblock_la_DEPENDENCIES = \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetblock_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
+  $(GN_LIBINTL) \
   -version-info 0:0:0
 
 
@@ -63,4 +60,5 @@ libgnunetblockgroup_la_DEPENDENCIES = \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetblockgroup_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
+  $(GN_LIBINTL) \
   -version-info 0:0:0

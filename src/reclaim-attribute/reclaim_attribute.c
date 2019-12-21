@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 
 /**
  * @file reclaim-attribute/reclaim_attribute.c
@@ -239,8 +239,8 @@ GNUNET_RECLAIM_ATTRIBUTE_claim_new (const char *attr_name,
 
   GNUNET_STRINGS_utf8_tolower (attr_name, attr_name_tmp);
 
-  attr = GNUNET_malloc (sizeof (struct GNUNET_RECLAIM_ATTRIBUTE_Claim) +
-                        strlen (attr_name_tmp) + 1 + data_size);
+  attr = GNUNET_malloc (sizeof(struct GNUNET_RECLAIM_ATTRIBUTE_Claim)
+                        + strlen (attr_name_tmp) + 1 + data_size);
   attr->type = type;
   attr->data_size = data_size;
   attr->version = 0;
@@ -265,13 +265,14 @@ GNUNET_RECLAIM_ATTRIBUTE_claim_new (const char *attr_name,
  */
 void
 GNUNET_RECLAIM_ATTRIBUTE_list_add (
-                                   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *claim_list,
-                                   const char *attr_name,
-                                   uint32_t type,
-                                   const void *data,
-                                   size_t data_size)
+  struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *claim_list,
+  const char *attr_name,
+  uint32_t type,
+  const void *data,
+  size_t data_size)
 {
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *le;
+
   le = GNUNET_new (struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry);
   le->claim =
     GNUNET_RECLAIM_ATTRIBUTE_claim_new (attr_name, type, data, data_size);
@@ -289,10 +290,11 @@ GNUNET_RECLAIM_ATTRIBUTE_list_add (
  */
 size_t
 GNUNET_RECLAIM_ATTRIBUTE_list_serialize_get_size (
-                                                  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs)
+  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs)
 {
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *le;
   size_t len = 0;
+
   for (le = attrs->list_head; NULL != le; le = le->next)
     len += GNUNET_RECLAIM_ATTRIBUTE_serialize_get_size (le->claim);
   return len;
@@ -308,8 +310,8 @@ GNUNET_RECLAIM_ATTRIBUTE_list_serialize_get_size (
  */
 size_t
 GNUNET_RECLAIM_ATTRIBUTE_list_serialize (
-                                         const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
-                                         char *result)
+  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
+  char *result)
 {
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *le;
   size_t len;
@@ -343,14 +345,13 @@ GNUNET_RECLAIM_ATTRIBUTE_list_deserialize (const char *data, size_t data_size)
   size_t attr_len;
   const char *read_ptr;
 
-  if (data_size < sizeof (struct Attribute))
+  if (data_size < sizeof(struct Attribute))
     return NULL;
 
   attrs = GNUNET_new (struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList);
   read_ptr = data;
-  while (((data + data_size) - read_ptr) >= sizeof (struct Attribute))
+  while (((data + data_size) - read_ptr) >= sizeof(struct Attribute))
   {
-
     le = GNUNET_new (struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry);
     le->claim =
       GNUNET_RECLAIM_ATTRIBUTE_deserialize (read_ptr,
@@ -373,7 +374,7 @@ GNUNET_RECLAIM_ATTRIBUTE_list_deserialize (const char *data, size_t data_size)
  */
 struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *
 GNUNET_RECLAIM_ATTRIBUTE_list_dup (
-                                   const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs)
+  const struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs)
 {
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *le;
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *result_le;
@@ -405,7 +406,7 @@ GNUNET_RECLAIM_ATTRIBUTE_list_dup (
  */
 void
 GNUNET_RECLAIM_ATTRIBUTE_list_destroy (
-                                       struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs)
+  struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs)
 {
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *le;
   struct GNUNET_RECLAIM_ATTRIBUTE_ClaimListEntry *tmp_le;
@@ -429,9 +430,9 @@ GNUNET_RECLAIM_ATTRIBUTE_list_destroy (
  */
 size_t
 GNUNET_RECLAIM_ATTRIBUTE_serialize_get_size (
-                                             const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr)
+  const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr)
 {
-  return sizeof (struct Attribute) + strlen (attr->name) + attr->data_size;
+  return sizeof(struct Attribute) + strlen (attr->name) + attr->data_size;
 }
 
 
@@ -444,8 +445,8 @@ GNUNET_RECLAIM_ATTRIBUTE_serialize_get_size (
  */
 size_t
 GNUNET_RECLAIM_ATTRIBUTE_serialize (
-                                    const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr,
-                                    char *result)
+  const struct GNUNET_RECLAIM_ATTRIBUTE_Claim *attr,
+  char *result)
 {
   size_t data_len_ser;
   size_t name_len;
@@ -468,7 +469,7 @@ GNUNET_RECLAIM_ATTRIBUTE_serialize (
   GNUNET_memcpy (write_ptr, attr->data, attr->data_size);
   attr_ser->data_size = htons (data_len_ser);
 
-  return sizeof (struct Attribute) + strlen (attr->name) + attr->data_size;
+  return sizeof(struct Attribute) + strlen (attr->name) + attr->data_size;
 }
 
 
@@ -489,20 +490,20 @@ GNUNET_RECLAIM_ATTRIBUTE_deserialize (const char *data, size_t data_size)
   size_t name_len;
   char *write_ptr;
 
-  if (data_size < sizeof (struct Attribute))
+  if (data_size < sizeof(struct Attribute))
     return NULL;
 
   attr_ser = (struct Attribute *) data;
   data_len = ntohs (attr_ser->data_size);
   name_len = ntohs (attr_ser->name_len);
-  if (data_size < sizeof (struct Attribute) + data_len + name_len)
+  if (data_size < sizeof(struct Attribute) + data_len + name_len)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Buffer too small to deserialize\n");
     return NULL;
   }
-  attr = GNUNET_malloc (sizeof (struct GNUNET_RECLAIM_ATTRIBUTE_Claim) +
-                        data_len + name_len + 1);
+  attr = GNUNET_malloc (sizeof(struct GNUNET_RECLAIM_ATTRIBUTE_Claim)
+                        + data_len + name_len + 1);
   attr->type = ntohs (attr_ser->attribute_type);
   attr->version = ntohl (attr_ser->attribute_version);
   attr->id = GNUNET_ntohll (attr_ser->attribute_id);
@@ -518,5 +519,6 @@ GNUNET_RECLAIM_ATTRIBUTE_deserialize (const char *data, size_t data_size)
   attr->data = write_ptr;
   return attr;
 }
+
 
 /* end of reclaim_attribute.c */

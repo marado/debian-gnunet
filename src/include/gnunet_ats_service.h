@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2010-2015 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2015 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -70,7 +70,6 @@
  */
 struct GNUNET_ATS_Properties
 {
-
   /**
    * Delay.  Time between when the time packet is sent and the packet
    * arrives.  FOREVER if we did not measure yet.
@@ -104,7 +103,6 @@ struct GNUNET_ATS_Properties
    * This property does not change.
    */
   enum GNUNET_NetworkType scope;
-
 };
 
 
@@ -114,7 +112,6 @@ struct GNUNET_ATS_Properties
  */
 struct GNUNET_ATS_PropertiesNBO
 {
-
   /**
    * Actual traffic on this connection from this peer to the other peer.
    * Includes transport overhead.
@@ -148,9 +145,7 @@ struct GNUNET_ATS_PropertiesNBO
    * arrives.  FOREVER if we did not measure yet.
    */
   struct GNUNET_TIME_RelativeNBO delay;
-
 };
-
 
 
 /* ********************* LAN Characterization library ************************ */
@@ -177,7 +172,6 @@ GNUNET_ATS_properties_hton (struct GNUNET_ATS_PropertiesNBO *nbo,
 void
 GNUNET_ATS_properties_ntoh (struct GNUNET_ATS_Properties *hbo,
                             const struct GNUNET_ATS_PropertiesNBO *nbo);
-
 
 
 /* ********************Connection Suggestion API ***************************** */
@@ -234,7 +228,8 @@ GNUNET_ATS_connectivity_suggest (struct GNUNET_ATS_ConnectivityHandle *ch,
  * @param sh handle
  */
 void
-GNUNET_ATS_connectivity_suggest_cancel (struct GNUNET_ATS_ConnectivitySuggestHandle *sh);
+GNUNET_ATS_connectivity_suggest_cancel (struct
+                                        GNUNET_ATS_ConnectivitySuggestHandle *sh);
 
 
 /* ******************************** Scheduling API ***************************** */
@@ -269,10 +264,13 @@ struct GNUNET_ATS_Session;
 typedef void
 (*GNUNET_ATS_AddressSuggestionCallback) (void *cls,
                                          const struct GNUNET_PeerIdentity *peer,
-                                         const struct GNUNET_HELLO_Address *address,
+                                         const struct
+                                         GNUNET_HELLO_Address *address,
                                          struct GNUNET_ATS_Session *session,
-                                         struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-                                         struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in);
+                                         struct GNUNET_BANDWIDTH_Value32NBO
+                                         bandwidth_out,
+                                         struct GNUNET_BANDWIDTH_Value32NBO
+                                         bandwidth_in);
 
 
 /**
@@ -379,7 +377,6 @@ void
 GNUNET_ATS_address_destroy (struct GNUNET_ATS_AddressRecord *ar);
 
 
-
 /* ******************************** Performance API ***************************** */
 
 /**
@@ -404,11 +401,15 @@ struct GNUNET_ATS_PerformanceHandle;
  */
 typedef void
 (*GNUNET_ATS_AddressInformationCallback) (void *cls,
-                                          const struct GNUNET_HELLO_Address *address,
+                                          const struct
+                                          GNUNET_HELLO_Address *address,
                                           int address_active,
-                                          struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-                                          struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
-                                          const struct GNUNET_ATS_Properties *prop);
+                                          struct GNUNET_BANDWIDTH_Value32NBO
+                                          bandwidth_out,
+                                          struct GNUNET_BANDWIDTH_Value32NBO
+                                          bandwidth_in,
+                                          const struct
+                                          GNUNET_ATS_Properties *prop);
 
 
 /**
@@ -422,7 +423,7 @@ struct GNUNET_ATS_AddressListHandle;
  *
  * @param cfg configuration to use
  * @param addr_info_cb callback called when performance characteristics for
- * 	an address change
+ *      an address change
  * @param addr_info_cb_cls closure for @a addr_info_cb
  * @return ats performance context
  */
@@ -448,7 +449,8 @@ struct GNUNET_ATS_AddressListHandle *
 GNUNET_ATS_performance_list_addresses (struct GNUNET_ATS_PerformanceHandle *ph,
                                        const struct GNUNET_PeerIdentity *peer,
                                        int all,
-                                       GNUNET_ATS_AddressInformationCallback infocb,
+                                       GNUNET_ATS_AddressInformationCallback
+                                       infocb,
                                        void *infocb_cls);
 
 
@@ -458,7 +460,8 @@ GNUNET_ATS_performance_list_addresses (struct GNUNET_ATS_PerformanceHandle *ph,
  * @param alh the `struct GNUNET_ATS_AddressListHandle` handle to cancel
  */
 void
-GNUNET_ATS_performance_list_addresses_cancel (struct GNUNET_ATS_AddressListHandle *alh);
+GNUNET_ATS_performance_list_addresses_cancel (struct
+                                              GNUNET_ATS_AddressListHandle *alh);
 
 
 /**
@@ -509,10 +512,10 @@ struct GNUNET_ATS_ReservationContext;
  */
 struct GNUNET_ATS_ReservationContext *
 GNUNET_ATS_reserve_bandwidth (struct GNUNET_ATS_PerformanceHandle *ph,
-			      const struct GNUNET_PeerIdentity *peer,
-			      int32_t amount,
-			      GNUNET_ATS_ReservationCallback rcb,
-			      void *rcb_cls);
+                              const struct GNUNET_PeerIdentity *peer,
+                              int32_t amount,
+                              GNUNET_ATS_ReservationCallback rcb,
+                              void *rcb_cls);
 
 
 /**
@@ -527,19 +530,20 @@ GNUNET_ATS_reserve_bandwidth_cancel (struct GNUNET_ATS_ReservationContext *rc);
 /**
  * ATS preference types as array initializer
  */
-#define GNUNET_ATS_PreferenceType {GNUNET_ATS_PREFERENCE_BANDWIDTH, GNUNET_ATS_PREFERENCE_LATENCY, GNUNET_ATS_PREFERENCE_END}
+#define GNUNET_ATS_PreferenceType { GNUNET_ATS_PREFERENCE_BANDWIDTH, \
+                                    GNUNET_ATS_PREFERENCE_LATENCY, \
+                                    GNUNET_ATS_PREFERENCE_END }
 
 /**
  * ATS preference types as string array initializer
  */
-#define GNUNET_ATS_PreferenceTypeString {"BANDWIDTH", "LATENCY", "END" }
+#define GNUNET_ATS_PreferenceTypeString { "BANDWIDTH", "LATENCY", "END" }
 
 /**
  * Enum defining all known preference categories.
  */
 enum GNUNET_ATS_PreferenceKind
 {
-
   /**
    * Change the peer's bandwidth value (value per byte of bandwidth in
    * the goal function) to the given amount.  The argument is followed
@@ -561,7 +565,6 @@ enum GNUNET_ATS_PreferenceKind
    * End of preference list.
    */
   GNUNET_ATS_PREFERENCE_END = 2
-
 };
 
 
@@ -584,9 +587,11 @@ GNUNET_ATS_print_preference_type (enum GNUNET_ATS_PreferenceKind type);
  * desired changes
  */
 void
-GNUNET_ATS_performance_change_preference (struct GNUNET_ATS_PerformanceHandle *ph,
-                                          const struct GNUNET_PeerIdentity *peer,
-					  ...);
+GNUNET_ATS_performance_change_preference (struct
+                                          GNUNET_ATS_PerformanceHandle *ph,
+                                          const struct
+                                          GNUNET_PeerIdentity *peer,
+                                          ...);
 
 
 /**
@@ -608,9 +613,9 @@ GNUNET_ATS_performance_change_preference (struct GNUNET_ATS_PerformanceHandle *p
  */
 void
 GNUNET_ATS_performance_give_feedback (struct GNUNET_ATS_PerformanceHandle *ph,
-				      const struct GNUNET_PeerIdentity *peer,
-				      const struct GNUNET_TIME_Relative scope,
-				      ...);
+                                      const struct GNUNET_PeerIdentity *peer,
+                                      const struct GNUNET_TIME_Relative scope,
+                                      ...);
 
 #endif
 

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Nils Durner
@@ -38,13 +38,8 @@
 #endif
 #endif
 
-#ifdef WINDOWS
-#define BREAKPOINT asm("int $3;");
-#define GNUNET_SIGCHLD 17
-#else
 #define BREAKPOINT
 #define GNUNET_SIGCHLD SIGCHLD
-#endif
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -70,18 +65,6 @@
 
 #define VERBOSE_STATS 0
 
-#ifdef CYGWIN
-#include <sys/reent.h>
-#endif
-
-#ifdef _MSC_VER
-#ifndef FD_SETSIZE
-#define FD_SETSIZE 1024
-#endif
-#include <Winsock2.h>
-#include <ws2tcpip.h>
-#else
-#ifndef MINGW
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -100,10 +83,6 @@
 #include <sys/ioctl.h>
 #include <sys/wait.h>
 #include <grp.h>
-#else
-#include "winproc.h"
-#endif
-#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -114,20 +93,13 @@
 #include <errno.h>
 #include <signal.h>
 #include <libgen.h>
-#ifdef WINDOWS
-#include <malloc.h>             /* for alloca(), on other OSes it's in stdlib.h */
-#endif
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>             /* for mallinfo on GNU */
 #endif
-#ifndef _MSC_VER
 #include <unistd.h>             /* KLB_FIX */
-#endif
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifndef _MSC_VER
 #include <dirent.h>             /* KLB_FIX */
-#endif
 #include <fcntl.h>
 #include <math.h>
 #if HAVE_SYS_PARAM_H
@@ -143,11 +115,10 @@
 #include <time.h>
 #endif
 #endif
-
-#ifdef SOMEBSD
+#ifdef BSD
 #include <net/if.h>
 #endif
-#ifdef FREEBSD
+#if defined(BSD) && defined(__FreeBSD__) && defined(__FreeBSD_kernel__)
 #include <semaphore.h>
 #endif
 #ifdef DARWIN
@@ -155,7 +126,7 @@
 #include <semaphore.h>
 #include <net/if.h>
 #endif
-#if defined(LINUX) || defined(GNU)
+#if defined(__linux__) || defined(GNU)
 #include <net/if.h>
 #endif
 #ifdef SOLARIS
@@ -169,10 +140,6 @@
 #endif
 #if HAVE_SYS_UCRED_H
 #include <sys/ucred.h>
-#endif
-#ifdef CYGWIN
-#include <windows.h>
-#include <cygwin/if.h>
 #endif
 #if HAVE_IFADDRS_H
 #include <ifaddrs.h>
@@ -196,7 +163,12 @@
 #include <sys/endian.h>
 #endif
 
-#include "plibc.h"
+#define DIR_SEPARATOR '/'
+#define DIR_SEPARATOR_STR "/"
+#define PATH_SEPARATOR ':'
+#define PATH_SEPARATOR_STR ":"
+#define NEWLINE "\n"
+
 #include "compat.h"
 
 #include <locale.h>
@@ -205,25 +177,18 @@
 /**
  * GNU gettext support macro.
  */
-#define _(String) dgettext("gnunet",String)
+#define _(String) dgettext (PACKAGE, String)
 #define LIBEXTRACTOR_GETTEXT_DOMAIN "libextractor"
 #else
 #include "libintlemu.h"
-#define _(String) dgettext("org.gnunet.gnunet",String)
+#define _(String) dgettext ("org.gnunet.gnunet", String)
 #define LIBEXTRACTOR_GETTEXT_DOMAIN "org.gnunet.libextractor"
 #endif
 
-#ifdef CYGWIN
-#define SIOCGIFCONF     _IOW('s', 100, struct ifconf)   /* get if list */
-#define SIOCGIFFLAGS    _IOW('s', 101, struct ifreq)    /* Get if flags */
-#define SIOCGIFADDR     _IOW('s', 102, struct ifreq)    /* Get if addr */
-#endif
-
-#ifndef MINGW
 #include <sys/mman.h>
-#endif
 
-#ifdef FREEBSD
+/* FreeBSD_kernel is not defined on the now discontinued kFreeBSD  */
+#if defined(BSD) && defined(__FreeBSD__) && defined(__FreeBSD_kernel__)
 #define __BYTE_ORDER BYTE_ORDER
 #define __BIG_ENDIAN BIG_ENDIAN
 #endif
@@ -231,15 +196,16 @@
 #ifdef DARWIN
 #define __BYTE_ORDER BYTE_ORDER
 #define __BIG_ENDIAN BIG_ENDIAN
- /* not available on darwin, override configure */
+/* not available on darwin, override configure */
 #undef HAVE_STAT64
 #undef HAVE_MREMAP
 #endif
 
 
-#if !HAVE_ATOLL
+#if ! HAVE_ATOLL
 long long
 atoll (const char *nptr);
+
 #endif
 
 #if ENABLE_NLS
@@ -247,7 +213,7 @@ atoll (const char *nptr);
 #endif
 
 #ifndef SIZE_MAX
-#define SIZE_MAX ((size_t)(-1))
+#define SIZE_MAX ((size_t) (-1))
 #endif
 
 #ifndef O_LARGEFILE
@@ -263,17 +229,11 @@ atoll (const char *nptr);
 
 
 #if defined(__sparc__)
-#define MAKE_UNALIGNED(val) ({ __typeof__((val)) __tmp; memmove(&__tmp, &(val), sizeof((val))); __tmp; })
+#define MAKE_UNALIGNED(val) ({ __typeof__((val))__tmp; memmove (&__tmp, &(val), \
+                                                                sizeof((val))); \
+                               __tmp; })
 #else
 #define MAKE_UNALIGNED(val) val
-#endif
-
-#if WINDOWS
-#define FDTYPE HANDLE
-#define SOCKTYPE SOCKET
-#else
-#define FDTYPE int
-#define SOCKTYPE int
 #endif
 
 /**
@@ -293,6 +253,15 @@ atoll (const char *nptr);
 #define GNUNET_THREAD_LOCAL __thread
 #else
 #define GNUNET_THREAD_LOCAL
+#endif
+
+/**
+ * clang et al do not have such an attribute
+ */
+#if __has_attribute (__nonstring__)
+# define __nonstring                    __attribute__((__nonstring__))
+#else
+# define __nonstring
 #endif
 
 #endif

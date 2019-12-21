@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_manipulation_recv_tcp.c
  * @brief base test case for transport traffic manipulation implementation
@@ -54,7 +54,7 @@ static void
 do_free (void *cls)
 {
   struct GNUNET_TRANSPORT_TESTING_SendClosure *sc = cls;
-  
+
   GNUNET_free (sc);
 }
 
@@ -63,7 +63,7 @@ static void
 delayed_transmit (void *cls)
 {
   struct GNUNET_TRANSPORT_TESTING_SendClosure *sc = cls;
-  
+
   start_delayed = GNUNET_TIME_absolute_get ();
   GNUNET_TRANSPORT_TESTING_large_send (sc);
 }
@@ -83,25 +83,25 @@ sendtask (void *cls)
   sc->cont_cls = sc;
   if (0 == messages_recv)
   {
-    start_normal = GNUNET_TIME_absolute_get();
+    start_normal = GNUNET_TIME_absolute_get ();
   }
   if (0 < messages_recv)
   {
     memset (&prop,
-	    0,
-	    sizeof (prop));
+            0,
+            sizeof(prop));
     delay = GNUNET_TIME_UNIT_SECONDS;
     GNUNET_TRANSPORT_manipulation_set (ccc->p[1]->tmh,
-				       &ccc->p[0]->id,
-				       &prop,
-				       delay,
-				       GNUNET_TIME_UNIT_ZERO);
+                                       &ccc->p[0]->id,
+                                       &prop,
+                                       delay,
+                                       GNUNET_TIME_UNIT_ZERO);
     /* wait 1s to allow manipulation to go into effect */
     if (1 == messages_recv)
     {
       GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
-				    &delayed_transmit,
-				    sc);
+                                    &delayed_transmit,
+                                    sc);
       return;
     }
   }
@@ -127,8 +127,9 @@ notify_receive (void *cls,
                 GNUNET_i2s (sender));
     GNUNET_free (ps);
   }
-  if ( (GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE != ntohs (message->header.type)) ||
-       (GNUNET_TRANSPORT_TESTING_LARGE_MESSAGE_SIZE != ntohs (message->header.size)) )
+  if ((GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE != ntohs (message->header.type)) ||
+      (GNUNET_TRANSPORT_TESTING_LARGE_MESSAGE_SIZE != ntohs (
+         message->header.size)))
   {
     GNUNET_break (0);
     ccc->global_ret = GNUNET_SYSERR;
@@ -144,30 +145,30 @@ notify_receive (void *cls,
                 "Received non-delayed message %u after %s\n",
                 messages_recv,
                 GNUNET_STRINGS_relative_time_to_string (dur_normal,
-							GNUNET_YES));
+                                                        GNUNET_YES));
     GNUNET_SCHEDULER_add_now (&sendtask,
-			      NULL);
+                              NULL);
     messages_recv++;
     return;
   }
   /* Received manipulated message */
-  dur_delayed = GNUNET_TIME_absolute_get_duration(start_delayed);
+  dur_delayed = GNUNET_TIME_absolute_get_duration (start_delayed);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Received delayed message %u after %s\n",
-	      messages_recv,
-	      GNUNET_STRINGS_relative_time_to_string (dur_delayed,
-						      GNUNET_YES));
+              "Received delayed message %u after %s\n",
+              messages_recv,
+              GNUNET_STRINGS_relative_time_to_string (dur_delayed,
+                                                      GNUNET_YES));
   if (dur_delayed.rel_value_us < GNUNET_TIME_UNIT_SECONDS.rel_value_us)
   {
     GNUNET_break (0);
     ccc->global_ret = GNUNET_SYSERR;
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		"Delayed message was not delayed correctly: took only %s\n",
-		GNUNET_STRINGS_relative_time_to_string (dur_delayed,
-							GNUNET_YES));
+                "Delayed message was not delayed correctly: took only %s\n",
+                GNUNET_STRINGS_relative_time_to_string (dur_delayed,
+                                                        GNUNET_YES));
   }
   else
-  { 
+  {
     ccc->global_ret = GNUNET_OK;
   }
   /* shutdown */
@@ -197,5 +198,6 @@ main (int argc,
     return 1;
   return 0;
 }
+
 
 /* end of test_transport_api_manipulation_recv_tcp.c */

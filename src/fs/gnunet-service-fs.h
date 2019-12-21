@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs.h
@@ -48,7 +48,8 @@
  * automatically (since if we don't use it, clearly the
  * load must be going down).
  */
-#define DATASTORE_LOAD_AUTODECLINE GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 250)
+#define DATASTORE_LOAD_AUTODECLINE GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 250)
 
 /**
  * Only the (mandatory) query is included.
@@ -81,7 +82,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct GetMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_GET.
    */
@@ -153,7 +153,6 @@ struct MigrationStopMessage
    * How long should the block last?
    */
   struct GNUNET_TIME_RelativeNBO duration;
-
 };
 GNUNET_NETWORK_STRUCT_END
 
@@ -280,8 +279,8 @@ extern unsigned int GSF_datastore_queue_size;
  */
 void
 GSF_consider_forwarding (void *cls,
-			 struct GSF_PendingRequest *pr,
-			 enum GNUNET_BLOCK_EvaluationResult result);
+                         struct GSF_PendingRequest *pr,
+                         enum GNUNET_BLOCK_EvaluationResult result);
 
 
 /**

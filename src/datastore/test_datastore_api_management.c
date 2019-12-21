@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file datastore/test_datastore_api_management.c
  * @brief Test for the space management functions of the datastore implementation.
@@ -123,7 +123,8 @@ run_continuation (void *cls);
 
 
 static void
-check_success (void *cls, int success, struct GNUNET_TIME_Absolute min_expiration, const char *msg)
+check_success (void *cls, int success, struct GNUNET_TIME_Absolute
+               min_expiration, const char *msg)
 {
   struct CpsRunContext *crc = cls;
 
@@ -203,7 +204,7 @@ run_continuation (void *cls)
   case RP_PUT:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Executing `%s' number %u\n", "PUT",
                 crc->i);
-    GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
+    GNUNET_CRYPTO_hash (&crc->i, sizeof(int), &crc->key);
     GNUNET_DATASTORE_put (datastore,
                           0,
                           &crc->key,
@@ -227,10 +228,11 @@ run_continuation (void *cls)
       crc->i--;
     }
     break;
+
   case RP_GET:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Executing `%s' number %u\n", "GET",
                 crc->i);
-    GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
+    GNUNET_CRYPTO_hash (&crc->i, sizeof(int), &crc->key);
     GNUNET_DATASTORE_get_key (datastore,
                               0,
                               false,
@@ -241,10 +243,11 @@ run_continuation (void *cls)
                               &check_value,
                               crc);
     break;
+
   case RP_GET_FAIL:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Executing `%s' number %u\n", "GET(f)",
                 crc->i);
-    GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
+    GNUNET_CRYPTO_hash (&crc->i, sizeof(int), &crc->key);
     GNUNET_DATASTORE_get_key (datastore,
                               0,
                               false,
@@ -255,6 +258,7 @@ run_continuation (void *cls)
                               &check_nothing,
                               crc);
     break;
+
   case RP_DONE:
     GNUNET_assert (0 == crc->i);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Finished, disconnecting\n");
@@ -266,13 +270,14 @@ run_continuation (void *cls)
 
 
 static void
-run_tests (void *cls, int success, struct GNUNET_TIME_Absolute min_expiration, const char *msg)
+run_tests (void *cls, int success, struct GNUNET_TIME_Absolute min_expiration,
+           const char *msg)
 {
   struct CpsRunContext *crc = cls;
 
   if (success != GNUNET_YES)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Test 'put' operation failed with error `%s' database likely not setup, skipping test.\n",
              msg);
     GNUNET_DATASTORE_disconnect (datastore, GNUNET_YES);
@@ -304,13 +309,14 @@ run (void *cls,
                             "TEST",
                             GNUNET_BLOCK_TYPE_TEST,
                             0, 0, 0,
-                            GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_SECONDS),
+                            GNUNET_TIME_relative_to_absolute (
+                              GNUNET_TIME_UNIT_SECONDS),
                             0,
                             1,
                             &run_tests,
                             crc))
   {
-    FPRINTF (stderr, "%s",  "Test 'put' operation failed.\n");
+    fprintf (stderr, "%s", "Test 'put' operation failed.\n");
     GNUNET_free (crc);
     ok = 1;
   }
@@ -345,19 +351,19 @@ test_plugin (const char *cfg_name)
   cfg = GNUNET_CONFIGURATION_create ();
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_load (cfg,
-				 cfg_name))
+                                 cfg_name))
   {
     GNUNET_CONFIGURATION_destroy (cfg);
     fprintf (stderr,
-	     "Failed to load configuration %s\n",
-	     cfg_name);
+             "Failed to load configuration %s\n",
+             cfg_name);
     return 1;
   }
-  memset (&env, 0, sizeof (env));
+  memset (&env, 0, sizeof(env));
   env.cfg = cfg;
   env.duc = &ignore_payload_cb;
   GNUNET_snprintf (libname,
-		   sizeof (libname),
+                   sizeof(libname),
                    "libgnunet_plugin_datastore_%s",
                    plugin_name);
   api = GNUNET_PLUGIN_load (libname, &env);
@@ -365,8 +371,8 @@ test_plugin (const char *cfg_name)
   {
     GNUNET_CONFIGURATION_destroy (cfg);
     fprintf (stderr,
-	     "Failed to load plugin `%s'\n",
-	     libname);
+             "Failed to load plugin `%s'\n",
+             libname);
     return 77;
   }
   GNUNET_PLUGIN_unload (libname, api);
@@ -383,19 +389,20 @@ main (int argc, char *argv[])
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
-		   sizeof (cfg_name),
+                   sizeof(cfg_name),
                    "test_datastore_api_data_%s.conf",
-		   plugin_name);
+                   plugin_name);
   ret = test_plugin (cfg_name);
   if (0 != ret)
     return ret;
   if (0 !=
       GNUNET_TESTING_peer_run ("test-gnunet-datastore-management",
-			       cfg_name,
-			       &run,
-			       NULL))
+                               cfg_name,
+                               &run,
+                               NULL))
     return 1;
   return ok;
 }
+
 
 /* end of test_datastore_api_management.c */

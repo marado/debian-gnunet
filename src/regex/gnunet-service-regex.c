@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file regex/gnunet-service-regex.c
@@ -35,7 +35,6 @@
  */
 struct ClientEntry
 {
-
   /**
    * Queue for transmissions to @e client.
    */
@@ -65,7 +64,6 @@ struct ClientEntry
    * Task for re-announcing.
    */
   struct GNUNET_SCHEDULER_Task *refresh_task;
-
 };
 
 
@@ -116,8 +114,8 @@ reannounce (void *cls)
 
   REGEX_INTERNAL_reannounce (ce->ah);
   ce->refresh_task = GNUNET_SCHEDULER_add_delayed (ce->frequency,
-						   &reannounce,
-						   ce);
+                                                   &reannounce,
+                                                   ce);
 }
 
 
@@ -153,7 +151,7 @@ check_announce (void *cls,
  */
 static void
 handle_announce (void *cls,
-		 const struct AnnounceMessage *am)
+                 const struct AnnounceMessage *am)
 {
   struct ClientEntry *ce = cls;
   const char *regex;
@@ -161,18 +159,18 @@ handle_announce (void *cls,
   regex = (const char *) &am[1];
   ce->frequency = GNUNET_TIME_relative_ntoh (am->refresh_delay);
   ce->refresh_task = GNUNET_SCHEDULER_add_delayed (ce->frequency,
-						   &reannounce,
-						   ce);
+                                                   &reannounce,
+                                                   ce);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Starting to announce regex `%s' every %s\n",
-	      regex,
-	      GNUNET_STRINGS_relative_time_to_string (ce->frequency,
-						      GNUNET_NO));
+              "Starting to announce regex `%s' every %s\n",
+              regex,
+              GNUNET_STRINGS_relative_time_to_string (ce->frequency,
+                                                      GNUNET_NO));
   ce->ah = REGEX_INTERNAL_announce (dht,
-				    my_private_key,
-				    regex,
-				    ntohs (am->compression),
-				    stats);
+                                    my_private_key,
+                                    regex,
+                                    ntohs (am->compression),
+                                    stats);
   if (NULL == ce->ah)
   {
     GNUNET_break (0);
@@ -197,11 +195,11 @@ handle_announce (void *cls,
  */
 static void
 handle_search_result (void *cls,
-		      const struct GNUNET_PeerIdentity *id,
-		      const struct GNUNET_PeerIdentity *get_path,
-		      unsigned int get_path_length,
-		      const struct GNUNET_PeerIdentity *put_path,
-		      unsigned int put_path_length)
+                      const struct GNUNET_PeerIdentity *id,
+                      const struct GNUNET_PeerIdentity *get_path,
+                      unsigned int get_path_length,
+                      const struct GNUNET_PeerIdentity *put_path,
+                      unsigned int put_path_length)
 {
   struct ClientEntry *ce = cls;
   struct GNUNET_MQ_Envelope *env;
@@ -209,15 +207,17 @@ handle_search_result (void *cls,
   struct GNUNET_PeerIdentity *gp;
   uint16_t size;
 
-  if ( (get_path_length >= 65536) ||
-       (put_path_length >= 65536) ||
-       ( (get_path_length + put_path_length) * sizeof (struct GNUNET_PeerIdentity))
-       + sizeof (struct ResultMessage) >= GNUNET_MAX_MESSAGE_SIZE)
+  if ((get_path_length >= 65536) ||
+      (put_path_length >= 65536) ||
+      ( ((get_path_length + put_path_length) * sizeof(struct
+                                                      GNUNET_PeerIdentity))
+        + sizeof(struct ResultMessage) >= GNUNET_MAX_MESSAGE_SIZE) )
   {
     GNUNET_break (0);
     return;
   }
-  size = (get_path_length + put_path_length) * sizeof (struct GNUNET_PeerIdentity);
+  size = (get_path_length + put_path_length) * sizeof(struct
+                                                      GNUNET_PeerIdentity);
   env = GNUNET_MQ_msg_extra (result,
                              size,
                              GNUNET_MESSAGE_TYPE_REGEX_RESULT);
@@ -227,10 +227,10 @@ handle_search_result (void *cls,
   gp = &result->id;
   GNUNET_memcpy (&gp[1],
                  get_path,
-                 get_path_length * sizeof (struct GNUNET_PeerIdentity));
+                 get_path_length * sizeof(struct GNUNET_PeerIdentity));
   GNUNET_memcpy (&gp[1 + get_path_length],
                  put_path,
-                 put_path_length * sizeof (struct GNUNET_PeerIdentity));
+                 put_path_length * sizeof(struct GNUNET_PeerIdentity));
   GNUNET_MQ_send (ce->mq,
                   env);
 }
@@ -250,7 +250,7 @@ check_search (void *cls,
   const char *string;
   uint16_t size;
 
-  size = ntohs (sm->header.size) - sizeof (*sm);
+  size = ntohs (sm->header.size) - sizeof(*sm);
   string = (const char *) &sm[1];
   if ('\0' != string[size - 1])
   {
@@ -275,15 +275,15 @@ check_search (void *cls,
  */
 static void
 handle_search (void *cls,
-	       const struct RegexSearchMessage *sm)
+               const struct RegexSearchMessage *sm)
 {
   struct ClientEntry *ce = cls;
   const char *string;
 
   string = (const char *) &sm[1];
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Starting to search for `%s'\n",
-	      string);
+              "Starting to search for `%s'\n",
+              string);
   ce->sh = REGEX_INTERNAL_search (dht,
                                   string,
                                   &handle_search_result,
@@ -326,7 +326,7 @@ run (void *cls,
     return;
   }
   GNUNET_SCHEDULER_add_shutdown (&cleanup_task,
-				 NULL);
+                                 NULL);
   stats = GNUNET_STATISTICS_create ("regex", cfg);
 }
 
@@ -341,8 +341,8 @@ run (void *cls,
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *c,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct ClientEntry *ce;
 
@@ -362,8 +362,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *c,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
 {
   struct ClientEntry *ce = internal_cls;
 
@@ -390,21 +390,21 @@ client_disconnect_cb (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("regex",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (announce,
-                        GNUNET_MESSAGE_TYPE_REGEX_ANNOUNCE,
-                        struct AnnounceMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (search,
-                        GNUNET_MESSAGE_TYPE_REGEX_SEARCH,
-                        struct RegexSearchMessage,
-                        NULL),
- GNUNET_MQ_handler_end ());
+  ("regex",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (announce,
+                         GNUNET_MESSAGE_TYPE_REGEX_ANNOUNCE,
+                         struct AnnounceMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (search,
+                         GNUNET_MESSAGE_TYPE_REGEX_SEARCH,
+                         struct RegexSearchMessage,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-regex.c */

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -131,9 +131,9 @@ GNUNET_STATISTICS_watch (struct GNUNET_STATISTICS_Handle *handle,
  */
 int
 GNUNET_STATISTICS_watch_cancel (struct GNUNET_STATISTICS_Handle *handle,
-				const char *subsystem,
+                                const char *subsystem,
                                 const char *name,
-				GNUNET_STATISTICS_Iterator proc,
+                                GNUNET_STATISTICS_Iterator proc,
                                 void *proc_cls);
 
 
@@ -216,7 +216,6 @@ GNUNET_STATISTICS_update (struct GNUNET_STATISTICS_Handle *handle,
                           const char *name,
                           int64_t delta,
                           int make_persistent);
-
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/container_multipeermap.c
  * @brief hash map where the same key may be present multiple times
@@ -42,7 +42,6 @@
  */
 struct BigMapEntry
 {
-
   /**
    * Value of the entry.
    */
@@ -65,7 +64,6 @@ struct BigMapEntry
  */
 struct SmallMapEntry
 {
-
   /**
    * Value of the entry.
    */
@@ -198,7 +196,7 @@ GNUNET_CONTAINER_multipeermap_create (unsigned int len, int do_not_copy_keys)
 
   GNUNET_assert (len > 0);
   map = GNUNET_new (struct GNUNET_CONTAINER_MultiPeerMap);
-  map->map = GNUNET_malloc_large (len * sizeof (union MapEntry));
+  map->map = GNUNET_malloc_large (len * sizeof(union MapEntry));
   if (NULL == map->map)
   {
     GNUNET_free (map);
@@ -272,7 +270,7 @@ idx_of (const struct GNUNET_CONTAINER_MultiPeerMap *map,
   unsigned int kx;
 
   GNUNET_assert (NULL != map);
-  GNUNET_memcpy (&kx, key, sizeof (kx));
+  GNUNET_memcpy (&kx, key, sizeof(kx));
   return kx % map->map_length;
 }
 
@@ -675,7 +673,7 @@ grow (struct GNUNET_CONTAINER_MultiPeerMap *map)
     new_len = old_len; /* never use 0 */
   if (new_len == old_len)
     return; /* nothing changed */
-  new_map = GNUNET_malloc_large (new_len * sizeof (union MapEntry));
+  new_map = GNUNET_malloc_large (new_len * sizeof(union MapEntry));
   if (NULL == new_map)
     return; /* grow not possible */
   map->modification_counter++;

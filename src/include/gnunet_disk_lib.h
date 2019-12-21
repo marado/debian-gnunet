@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  *
@@ -61,35 +61,10 @@ enum GNUNET_FILE_Type
  */
 struct GNUNET_DISK_FileHandle
 {
-
-#if WINDOWS
   /**
-   * File handle under W32.
-   */
-  HANDLE h;
-
-  /**
-   * Type
-   */
-  enum GNUNET_FILE_Type type;
-
-  /**
-   * Structure for overlapped reading (for pipes)
-   */
-  OVERLAPPED *oOverlapRead;
-
-  /**
-   * Structure for overlapped writing (for pipes)
-   */
-  OVERLAPPED *oOverlapWrite;
-#else
-
-  /**
-   * File handle on other OSes.
+   * File handle on Unix-like systems.
    */
   int fd;
-
-#endif
 };
 
 
@@ -115,7 +90,6 @@ extern "C"
  */
 enum GNUNET_DISK_OpenFlags
 {
-
   /**
    * Open the file for reading
    */
@@ -413,7 +387,7 @@ GNUNET_DISK_file_open (const char *fn,
  */
 int
 GNUNET_DISK_file_handle_size (struct GNUNET_DISK_FileHandle *fh,
-			      off_t *size);
+                              off_t *size);
 
 
 /**
@@ -506,19 +480,6 @@ const struct GNUNET_DISK_FileHandle *
 GNUNET_DISK_pipe_handle (const struct GNUNET_DISK_PipeHandle *p,
                          enum GNUNET_DISK_PipeEnd n);
 
-
-#if WINDOWS
-/**
- * Get a GNUnet file handle from a W32 handle (W32-only).
- * Do not call on non-W32 platforms (returns NULL).
- *
- * @param handle native handle
- * @return GNUnet file handle corresponding to the W32 handle
- */
-struct GNUNET_DISK_FileHandle *
-GNUNET_DISK_get_handle_from_w32_handle (HANDLE osfh);
-#endif
-
 /**
  * Update POSIX permissions mask of a file on disk.  If both argumets
  * are #GNUNET_NO, the file is made world-read-write-executable (777).
@@ -579,8 +540,8 @@ GNUNET_DISK_file_read (const struct GNUNET_DISK_FileHandle *h,
  * @return the number of bytes read on success, #GNUNET_SYSERR on failure
  */
 ssize_t
-GNUNET_DISK_file_read_non_blocking (const struct GNUNET_DISK_FileHandle * h,
-				    void *result,
+GNUNET_DISK_file_read_non_blocking (const struct GNUNET_DISK_FileHandle *h,
+                                    void *result,
                                     size_t len);
 
 
@@ -622,8 +583,8 @@ GNUNET_DISK_file_write (const struct GNUNET_DISK_FileHandle *h,
  */
 ssize_t
 GNUNET_DISK_file_write_blocking (const struct GNUNET_DISK_FileHandle *h,
-				 const void *buffer,
-				 size_t n);
+                                 const void *buffer,
+                                 size_t n);
 
 
 /**
@@ -775,7 +736,7 @@ GNUNET_DISK_filename_canonicalize (char *fn);
  */
 int
 GNUNET_DISK_file_change_owner (const char *filename,
-			       const char *user);
+                               const char *user);
 
 
 /**
@@ -796,7 +757,7 @@ void *
 GNUNET_DISK_file_map (const struct GNUNET_DISK_FileHandle *h,
                       struct GNUNET_DISK_MapHandle **m,
                       enum GNUNET_DISK_MapType access,
-		      size_t len);
+                      size_t len);
 
 
 /**

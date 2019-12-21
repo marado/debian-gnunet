@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/gnunet-service-rps_sampler.h
@@ -79,7 +79,7 @@ RPS_sampler_init (size_t init_size,
  * @param sampler the sampler to update.
  * @param id the PeerID that is put in the sampler
  */
-  void
+void
 RPS_sampler_update (struct RPS_Sampler *sampler,
                     const struct GNUNET_PeerIdentity *id);
 
@@ -99,7 +99,7 @@ RPS_sampler_update (struct RPS_Sampler *sampler,
  * @param sampler the sampler to reinitialise a sampler in.
  * @param id the id of the samplers to update.
  */
-  void
+void
 RPS_sampler_reinitialise_by_value (struct RPS_Sampler *sampler,
                                    const struct GNUNET_PeerIdentity *id);
 
@@ -141,7 +141,7 @@ RPS_sampler_request_cancel (struct RPS_SamplerRequestHandle *req_handle);
  *
  * @return the number of occurrences of id.
  */
-  uint32_t
+uint32_t
 RPS_sampler_count_id (struct RPS_Sampler *sampler,
                       const struct GNUNET_PeerIdentity *id);
 
@@ -151,7 +151,7 @@ RPS_sampler_count_id (struct RPS_Sampler *sampler,
  *
  * @param sampler the sampler to destroy.
  */
-  void
+void
 RPS_sampler_destroy (struct RPS_Sampler *sampler);
 
 #endif

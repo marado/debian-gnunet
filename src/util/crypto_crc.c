@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -20,7 +20,7 @@
      For the actual CRC-32 code:
      Copyright abandoned; this code is in the public domain.
      Provided to GNUnet by peter@horizon.com
-*/
+ */
 
 /**
  * @file util/crypto_crc.c
@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "gnunet_crypto_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-crc", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-crypto-crc", __VA_ARGS__)
 
 /* Avoid wasting space on 8-byte longs. */
 #if UINT_MAX >= 0xffffffff
@@ -44,7 +44,7 @@ typedef unsigned long GNUNET_uLong;
 #define Z_NULL  0
 
 
-#define POLYNOMIAL (GNUNET_uLong)0xedb88320
+#define POLYNOMIAL (GNUNET_uLong) 0xedb88320
 static GNUNET_uLong crc_table[256];
 
 /*
@@ -71,6 +71,7 @@ crc_init ()
       crc_table[i + j] = crc_table[j] ^ h;
   }
 }
+
 
 /*
  * This computes the standard preset and inverted CRC, as used
@@ -124,10 +125,11 @@ uint32_t
 GNUNET_CRYPTO_crc16_step (uint32_t sum, const void *buf, size_t len)
 {
   const uint16_t *hdr = buf;
+
   for (; len >= 2; len -= 2)
     sum += *(hdr++);
   if (len == 1)
-    sum += (*hdr) & ntohs(0xFF00);
+    sum += (*hdr) & ntohs (0xFF00);
   return sum;
 }
 

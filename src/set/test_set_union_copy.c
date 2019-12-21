@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/test_set_union_copy.c
@@ -256,8 +256,9 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
-  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5),
-				     &timeout_fail,
+  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                       GNUNET_TIME_UNIT_SECONDS, 5),
+                                     &timeout_fail,
                                      NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
                                  NULL);

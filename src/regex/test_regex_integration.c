@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/test_regex_integration.c
  * @brief base test case for regex integration with VPN;
@@ -35,7 +35,8 @@
 /**
  * How long until we really give up on a particular testcase portion?
  */
-#define TOTAL_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 600)
+#define TOTAL_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                     600)
 
 /**
  * How long until we give up on any particular operation (and retry)?
@@ -75,7 +76,7 @@ end (void *cls)
 static void
 end_badly ()
 {
-  FPRINTF (stderr, "%s",  "Testcase failed (timeout).\n");
+  fprintf (stderr, "%s", "Testcase failed (timeout).\n");
   end (NULL);
   ok = 1;
 }
@@ -93,11 +94,11 @@ end_badly ()
  */
 static void
 found_cb (void *cls,
-	  const struct GNUNET_PeerIdentity *id,
-	  const struct GNUNET_PeerIdentity *get_path,
-	  unsigned int get_path_length,
-	  const struct GNUNET_PeerIdentity *put_path,
-	  unsigned int put_path_length)
+          const struct GNUNET_PeerIdentity *id,
+          const struct GNUNET_PeerIdentity *get_path,
+          unsigned int get_path_length,
+          const struct GNUNET_PeerIdentity *put_path,
+          unsigned int put_path_length)
 {
   const char *str = cls;
   static int found;
@@ -109,11 +110,11 @@ found_cb (void *cls,
     found |= 4;
   if (0 == strcmp (str, "6"))
     found |= 2;
-  if ((4|2) == found)
+  if ((4 | 2) == found)
   {
     GNUNET_SCHEDULER_cancel (die_task);
     die_task =
-    GNUNET_SCHEDULER_add_now (&end, NULL);
+      GNUNET_SCHEDULER_add_now (&end, NULL);
   }
 }
 
@@ -136,7 +137,7 @@ run (void *cls,
 
   die_task =
     GNUNET_SCHEDULER_add_delayed (TOTAL_TIMEOUT,
-				  &end_badly, NULL);
+                                  &end_badly, NULL);
   GNUNET_assert (1 ==
                  inet_pton (AF_INET,
                             "127.0.0.1",
@@ -173,13 +174,15 @@ run (void *cls,
   GNUNET_free (p6r);
   a4 = GNUNET_REGEX_announce (cfg,
                               p4,
-                              GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                                             5),
-			     1);
+                              GNUNET_TIME_relative_multiply (
+                                GNUNET_TIME_UNIT_SECONDS,
+                                5),
+                              1);
   a6 = GNUNET_REGEX_announce (cfg,
                               p6,
-                              GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                                             5),
+                              GNUNET_TIME_relative_multiply (
+                                GNUNET_TIME_UNIT_SECONDS,
+                                5),
                               1);
   GNUNET_free (p4);
   GNUNET_free (p6);
@@ -199,10 +202,11 @@ int
 main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-regex-integration",
-				    "test_regex_api_data.conf",
-				    &run, NULL))
+                                    "test_regex_api_data.conf",
+                                    &run, NULL))
     return 1;
   return ok;
 }
+
 
 /* end of test_regex_integration.c */

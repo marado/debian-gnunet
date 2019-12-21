@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file peerinfo/peerinfo_api_notify.c
@@ -29,14 +29,13 @@
 #include "gnunet_protocols.h"
 #include "peerinfo.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "peerinfo-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "peerinfo-api", __VA_ARGS__)
 
 /**
  * Context for the info handler.
  */
 struct GNUNET_PEERINFO_NotifyContext
 {
-
   /**
    * Our connection to the PEERINFO service.
    */
@@ -121,9 +120,9 @@ static int
 check_notification (void *cls,
                     const struct InfoMessage *im)
 {
-  uint16_t ms = ntohs (im->header.size) - sizeof (*im);
+  uint16_t ms = ntohs (im->header.size) - sizeof(*im);
 
-  if (ms >= sizeof (struct GNUNET_MessageHeader))
+  if (ms >= sizeof(struct GNUNET_MessageHeader))
   {
     const struct GNUNET_HELLO_Message *hello;
 
@@ -156,7 +155,7 @@ handle_notification (void *cls,
 {
   struct GNUNET_PEERINFO_NotifyContext *nc = cls;
   const struct GNUNET_HELLO_Message *hello;
-  uint16_t ms = ntohs (im->header.size) - sizeof (struct InfoMessage);
+  uint16_t ms = ntohs (im->header.size) - sizeof(struct InfoMessage);
 
   if (0 == ms)
     return;
@@ -287,5 +286,6 @@ GNUNET_PEERINFO_notify_cancel (struct GNUNET_PEERINFO_NotifyContext *nc)
   }
   GNUNET_free (nc);
 }
+
 
 /* end of peerinfo_api_notify.c */

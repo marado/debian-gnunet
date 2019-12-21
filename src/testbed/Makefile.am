@@ -1,10 +1,6 @@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -63,6 +59,8 @@ gnunet_testbed_profiler_SOURCES = \
 gnunet_testbed_profiler_LDADD = $(XLIB) \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
+gnunet_testbed_profiler_LDFLAGS = \
+ $(GN_LIBINTL)
 
 gnunet_helper_testbed_SOURCES = \
   gnunet-helper-testbed.c

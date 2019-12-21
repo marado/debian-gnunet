@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_reliability.c
  * @brief base test case for transport implementations
@@ -48,7 +48,8 @@
 /**
  * Testcase timeout
  */
-#define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 450 * FACTOR)
+#define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 450 \
+                                               * FACTOR)
 
 /**
  * If we are in an "xhdr" test, the factor by which we divide
@@ -88,13 +89,13 @@ get_size (unsigned int iter)
   size_t ret;
 
   ret = (iter * iter * iter);
-#ifndef LINUX
+#ifndef __linux__
   /* FreeBSD/OSX etc. Unix DGRAMs do not work
    * with large messages */
   if (0 == strcmp ("unix", ccc->test_plugin))
-    ret = sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage) + (ret % 1024);
+    ret = sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage) + (ret % 1024);
 #endif
-  ret = sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage) + (ret % 60000);
+  ret = sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage) + (ret % 60000);
   return ret;
 }
 
@@ -129,12 +130,12 @@ set_bit (unsigned int bitIdx)
   size_t arraySlot;
   unsigned int targetBit;
 
-  if (bitIdx >= sizeof (bitmap) * 8)
+  if (bitIdx >= sizeof(bitmap) * 8)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "tried to set bit %u of %u(!?!?)\n",
                 bitIdx,
-                (unsigned int) sizeof (bitmap) * 8);
+                (unsigned int) sizeof(bitmap) * 8);
     return GNUNET_SYSERR;
   }
   arraySlot = bitIdx / 8;
@@ -160,7 +161,7 @@ get_bit (const char *map,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "get bit %u of %u(!?!?)\n",
                 bit,
-                (unsigned int) sizeof (bitmap) * 8);
+                (unsigned int) sizeof(bitmap) * 8);
     return 0;
   }
   return ((map)[bit >> 3] & (1 << (bit & 7))) > 0;
@@ -178,8 +179,8 @@ custom_shutdown (void *cls)
   delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
   if (0 == delta)
     delta = 1;
-  rate = (1000LL* 1000ll * total_bytes) / (1024 * delta);
-  FPRINTF (stderr,
+  rate = (1000LL * 1000ll * total_bytes) / (1024 * delta);
+  fprintf (stderr,
            "\nThroughput was %llu KiBytes/s\n",
            rate);
   {
@@ -240,12 +241,12 @@ notify_receive (void *cls,
   }
 
   memset (cbuf,
-	  ntohl (hdr->num),
-	  s - sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage));
+          ntohl (hdr->num),
+          s - sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage));
   if (0 !=
       memcmp (cbuf,
-	      &hdr[1],
-	      s - sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage)))
+              &hdr[1],
+              s - sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Expected message %u with bits %u, but body did not match\n",
@@ -267,14 +268,14 @@ notify_receive (void *cls,
   n++;
   if (GNUNET_SYSERR == set_bit (ntohl (hdr->num)))
   {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  "Message id %u is bigger than maxmimum number of messages %u expected\n",
-                  (uint32_t) ntohl (hdr->num),
-                  TOTAL_MSGS / xhdr);
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Message id %u is bigger than maxmimum number of messages %u expected\n",
+                (uint32_t) ntohl (hdr->num),
+                TOTAL_MSGS / xhdr);
   }
   if (0 == (n % (TOTAL_MSGS / xhdr / 100)))
   {
-    FPRINTF (stderr, "%s",  ".");
+    fprintf (stderr, "%s", ".");
   }
   if (n == TOTAL_MSGS / xhdr)
   {

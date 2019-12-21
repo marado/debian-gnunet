@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file block/block.c
@@ -79,13 +79,13 @@ struct GNUNET_BLOCK_Context
  */
 void
 GNUNET_BLOCK_mingle_hash (const struct GNUNET_HashCode *in,
-			  uint32_t mingle_number,
+                          uint32_t mingle_number,
                           struct GNUNET_HashCode *hc)
 {
   struct GNUNET_HashCode m;
 
   GNUNET_CRYPTO_hash (&mingle_number,
-                      sizeof (uint32_t),
+                      sizeof(uint32_t),
                       &m);
   GNUNET_CRYPTO_hash_xor (&m,
                           in,
@@ -102,15 +102,15 @@ GNUNET_BLOCK_mingle_hash (const struct GNUNET_HashCode *in,
  */
 static void
 add_plugin (void *cls,
-	    const char *library_name,
-	    void *lib_ret)
+            const char *library_name,
+            void *lib_ret)
 {
   struct GNUNET_BLOCK_Context *ctx = cls;
   struct GNUNET_BLOCK_PluginFunctions *api = lib_ret;
   struct Plugin *plugin;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Loading block plugin `%s'\n",
+              "Loading block plugin `%s'\n",
               library_name);
   plugin = GNUNET_new (struct Plugin);
   plugin->api = api;
@@ -119,7 +119,6 @@ add_plugin (void *cls,
                        ctx->num_plugins,
                        plugin);
 }
-
 
 
 /**
@@ -255,7 +254,7 @@ GNUNET_BLOCK_group_merge (struct GNUNET_BLOCK_Group *bg1,
  */
 static struct GNUNET_BLOCK_PluginFunctions *
 find_plugin (struct GNUNET_BLOCK_Context *ctx,
-	     enum GNUNET_BLOCK_Type type)
+             enum GNUNET_BLOCK_Type type)
 {
   struct Plugin *plugin;
   unsigned int j;

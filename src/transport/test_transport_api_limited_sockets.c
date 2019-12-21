@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_limited_sockets.c
  * @brief base test case for transport implementations
@@ -44,7 +44,7 @@ static struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext *ccc;
 
 
 static void
-notify_receive (void *cls, 
+notify_receive (void *cls,
                 struct GNUNET_TRANSPORT_TESTING_PeerContext *receiver,
                 const struct GNUNET_PeerIdentity *sender,
                 const struct GNUNET_TRANSPORT_TESTING_TestMessage *message)
@@ -52,11 +52,11 @@ notify_receive (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received message of type %d from peer %s!\n",
               ntohs (message->header.type),
-	      GNUNET_i2s (sender));
-  if ( (GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE ==
-	ntohs (message->header.type)) &&
-       (sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage) ==
-	ntohs (message->header.size)) )
+              GNUNET_i2s (sender));
+  if ((GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE ==
+       ntohs (message->header.type)) &&
+      (sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage) ==
+       ntohs (message->header.size)))
   {
     ccc->global_ret = GNUNET_OK;
   }
@@ -90,16 +90,16 @@ main (int argc, char *argv[])
 
   sc.ccc = &my_ccc;
   res = getrlimit (RLIMIT_NOFILE,
-		   &r_file_old);
+                   &r_file_old);
   r_file_new.rlim_cur = MAX_FILES;
   r_file_new.rlim_max = r_file_old.rlim_max;
   res = setrlimit (RLIMIT_NOFILE,
-		   &r_file_new);
+                   &r_file_new);
   if (0 != res)
   {
     fprintf (stderr,
-	     "Setting limit failed: %s\n",
-	     strerror (errno));
+             "Setting limit failed: %s\n",
+             strerror (errno));
     return 77;
   }
 
@@ -113,6 +113,7 @@ main (int argc, char *argv[])
   return 0;
 }
 
+
 #else
 /* cannot setrlimit */
 
@@ -121,9 +122,10 @@ int
 main (int argc, char *argv[])
 {
   fprintf (stderr,
-	   "Cannot run test on this system\n");
+           "Cannot run test on this system\n");
   return 77;
 }
+
 
 #endif
 

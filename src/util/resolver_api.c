@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/resolver_api.c
@@ -29,9 +29,11 @@
 #include "gnunet_resolver_service.h"
 #include "resolver.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-resolver-api", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-resolver-api", __VA_ARGS__)
 
-#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util-resolver-api", syscall)
+#define LOG_STRERROR(kind, syscall) GNUNET_log_from_strerror (kind, \
+                                                              "util-resolver-api", \
+                                                              syscall)
 
 /**
  * Maximum supported length for a hostname
@@ -99,7 +101,6 @@ static struct GNUNET_SCHEDULER_Task *s_task;
  */
 struct GNUNET_RESOLVER_RequestHandle
 {
-
   /**
    * Next entry in DLL of requests.
    */
@@ -194,19 +195,19 @@ check_config ()
 
   if (GNUNET_OK ==
       GNUNET_CONFIGURATION_have_value (resolver_cfg,
-				       "resolver",
-				       "UNIXPATH"))
+                                       "resolver",
+                                       "UNIXPATH"))
     return GNUNET_OK;
-  memset (&v4, 0, sizeof (v4));
+  memset (&v4, 0, sizeof(v4));
   v4.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
   v4.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v4.sin_len = sizeof (v4);
+  v4.sin_len = sizeof(v4);
 #endif
-  memset (&v6, 0, sizeof (v6));
+  memset (&v6, 0, sizeof(v6));
   v6.sin6_family = AF_INET6;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v6.sin6_len = sizeof (v6);
+  v6.sin6_len = sizeof(v6);
 #endif
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_string (resolver_cfg,
@@ -215,13 +216,14 @@ check_config ()
                                              &hostname))
   {
     LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Missing `%s' for `%s' in configuration, DNS resolution will be unavailable.\n"),
+         _ (
+           "Missing `%s' for `%s' in configuration, DNS resolution will be unavailable.\n"),
          "HOSTNAME",
          "resolver");
     return GNUNET_SYSERR;
   }
-  if ( (1 == inet_pton (AF_INET, hostname, &v4)) ||
-       (1 == inet_pton (AF_INET6, hostname, &v6)) )
+  if ((1 == inet_pton (AF_INET, hostname, &v4)) ||
+      (1 == inet_pton (AF_INET6, hostname, &v6)))
   {
     GNUNET_free (hostname);
     return GNUNET_OK;
@@ -230,13 +232,14 @@ check_config ()
        NULL != loopback[i];
        i++)
     if (0 == strcasecmp (loopback[i],
-			 hostname))
+                         hostname))
     {
       GNUNET_free (hostname);
       return GNUNET_OK;
     }
   LOG (GNUNET_ERROR_TYPE_INFO,
-       _("Missing `%s' or numeric IP address for `%s' of `%s' in configuration, DNS resolution will be unavailable.\n"),
+       _ (
+         "Missing `%s' or numeric IP address for `%s' of `%s' in configuration, DNS resolution will be unavailable.\n"),
        "localhost",
        "HOSTNAME",
        "resolver");
@@ -271,8 +274,8 @@ GNUNET_RESOLVER_disconnect ()
   {
     GNUNET_assert (GNUNET_SYSERR == rh->was_transmitted);
     GNUNET_CONTAINER_DLL_remove (req_head,
-				 req_tail,
-				 rh);
+                                 req_tail,
+                                 rh);
     GNUNET_free (rh);
   }
   if (NULL != mq)
@@ -327,8 +330,8 @@ check_disconnect ()
   if (NULL != s_task)
     return;
   s_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MILLISECONDS,
-					 &shutdown_task,
-					 NULL);
+                                         &shutdown_task,
+                                         NULL);
 }
 
 
@@ -342,7 +345,7 @@ check_disconnect ()
  */
 static char *
 no_resolve (int af,
-	    const void *ip,
+            const void *ip,
             socklen_t ip_len)
 {
   char buf[INET6_ADDRSTRLEN];
@@ -350,33 +353,35 @@ no_resolve (int af,
   switch (af)
   {
   case AF_INET:
-    if (ip_len != sizeof (struct in_addr))
+    if (ip_len != sizeof(struct in_addr))
       return NULL;
     if (NULL ==
         inet_ntop (AF_INET,
-		   ip,
-		   buf,
-		   sizeof (buf)))
+                   ip,
+                   buf,
+                   sizeof(buf)))
     {
       LOG_STRERROR (GNUNET_ERROR_TYPE_WARNING,
                     "inet_ntop");
       return NULL;
     }
     break;
+
   case AF_INET6:
-    if (ip_len != sizeof (struct in6_addr))
+    if (ip_len != sizeof(struct in6_addr))
       return NULL;
     if (NULL ==
         inet_ntop (AF_INET6,
-		   ip,
-		   buf,
-		   sizeof (buf)))
+                   ip,
+                   buf,
+                   sizeof(buf)))
     {
       LOG_STRERROR (GNUNET_ERROR_TYPE_WARNING,
                     "inet_ntop");
       return NULL;
     }
     break;
+
   default:
     GNUNET_break (0);
     return NULL;
@@ -449,8 +454,8 @@ process_requests ()
   msg->af = htonl (rh->af);
   msg->client_id = rh->id;
   GNUNET_memcpy (&msg[1],
-		 &rh[1],
-		 rh->data_len);
+                 &rh[1],
+                 rh->data_len);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Transmitting DNS resolution request (ID %u) to DNS service\n",
        rh->id);
@@ -512,7 +517,7 @@ handle_response (void *cls,
     return;
   }
   size = ntohs (msg->header.size);
-  if (size == sizeof (struct GNUNET_RESOLVER_ResponseMessage))
+  if (size == sizeof(struct GNUNET_RESOLVER_ResponseMessage))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Received empty response from DNS service\n");
@@ -536,11 +541,11 @@ handle_response (void *cls,
           rh->name_callback (rh->cls,
                              NULL);
       }
-      if ( (NULL != rh->addr_callback) &&
-           (GNUNET_SYSERR != rh->was_transmitted) )
-          rh->addr_callback (rh->cls,
-                             NULL,
-                             0);
+      if ((NULL != rh->addr_callback) &&
+          (GNUNET_SYSERR != rh->was_transmitted))
+        rh->addr_callback (rh->cls,
+                           NULL,
+                           0);
     }
     rh->was_transmitted = GNUNET_NO;
     GNUNET_RESOLVER_request_cancel (rh);
@@ -553,7 +558,8 @@ handle_response (void *cls,
     const char *hostname;
 
     hostname = (const char *) &msg[1];
-    if (hostname[size - sizeof (struct GNUNET_RESOLVER_ResponseMessage) - 1] != '\0')
+    if (hostname[size - sizeof(struct GNUNET_RESOLVER_ResponseMessage) - 1] !=
+        '\0')
     {
       GNUNET_break (0);
       if (GNUNET_SYSERR != rh->was_transmitted)
@@ -587,27 +593,27 @@ handle_response (void *cls,
     size_t ip_len;
 
     ip = &msg[1];
-    ip_len = size - sizeof (struct GNUNET_RESOLVER_ResponseMessage);
-    if (ip_len == sizeof (struct in_addr))
+    ip_len = size - sizeof(struct GNUNET_RESOLVER_ResponseMessage);
+    if (ip_len == sizeof(struct in_addr))
     {
-      memset (&v4, 0, sizeof (v4));
+      memset (&v4, 0, sizeof(v4));
       v4.sin_family = AF_INET;
       v4.sin_addr = *(struct in_addr*) ip;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-      v4.sin_len = sizeof (v4);
+      v4.sin_len = sizeof(v4);
 #endif
-      salen = sizeof (v4);
+      salen = sizeof(v4);
       sa = (const struct sockaddr *) &v4;
     }
-    else if (ip_len == sizeof (struct in6_addr))
+    else if (ip_len == sizeof(struct in6_addr))
     {
-      memset (&v6, 0, sizeof (v6));
+      memset (&v6, 0, sizeof(v6));
       v6.sin6_family = AF_INET6;
       v6.sin6_addr = *(struct in6_addr*) ip;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-      v6.sin6_len = sizeof (v6);
+      v6.sin6_len = sizeof(v6);
 #endif
-      salen = sizeof (v6);
+      salen = sizeof(v6);
       sa = (const struct sockaddr *) &v6;
     }
     else
@@ -650,36 +656,36 @@ numeric_resolution (void *cls)
   const char *hostname;
 
   rh->task = NULL;
-  memset (&v4, 0, sizeof (v4));
+  memset (&v4, 0, sizeof(v4));
   v4.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v4.sin_len = sizeof (v4);
+  v4.sin_len = sizeof(v4);
 #endif
-  memset (&v6, 0, sizeof (v6));
+  memset (&v6, 0, sizeof(v6));
   v6.sin6_family = AF_INET6;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v6.sin6_len = sizeof (v6);
+  v6.sin6_len = sizeof(v6);
 #endif
   hostname = (const char *) &rh[1];
-  if ( ( (rh->af == AF_UNSPEC) ||
-	 (rh->af == AF_INET) ) &&
-       (1 == inet_pton (AF_INET,
-			hostname,
-			&v4.sin_addr)) )
+  if (((rh->af == AF_UNSPEC) ||
+       (rh->af == AF_INET)) &&
+      (1 == inet_pton (AF_INET,
+                       hostname,
+                       &v4.sin_addr)))
   {
     rh->addr_callback (rh->cls,
                        (const struct sockaddr *) &v4,
-                       sizeof (v4));
-    if ( (rh->af == AF_UNSPEC) &&
-         (GNUNET_SYSERR != rh->was_transmitted) &&
-	 (1 == inet_pton (AF_INET6,
-			  hostname,
-			  &v6.sin6_addr)) )
+                       sizeof(v4));
+    if ((rh->af == AF_UNSPEC) &&
+        (GNUNET_SYSERR != rh->was_transmitted) &&
+        (1 == inet_pton (AF_INET6,
+                         hostname,
+                         &v6.sin6_addr)))
     {
       /* this can happen on some systems IF "hostname" is "localhost" */
       rh->addr_callback (rh->cls,
                          (const struct sockaddr *) &v6,
-                         sizeof (v6));
+                         sizeof(v6));
     }
     if (GNUNET_SYSERR != rh->was_transmitted)
       rh->addr_callback (rh->cls,
@@ -688,15 +694,15 @@ numeric_resolution (void *cls)
     GNUNET_free (rh);
     return;
   }
-  if ( ( (rh->af == AF_UNSPEC) ||
-         (rh->af == AF_INET6) ) &&
-       (1 == inet_pton (AF_INET6,
-			hostname,
-			&v6.sin6_addr) ) )
+  if (((rh->af == AF_UNSPEC) ||
+       (rh->af == AF_INET6)) &&
+      (1 == inet_pton (AF_INET6,
+                       hostname,
+                       &v6.sin6_addr)))
   {
     rh->addr_callback (rh->cls,
                        (const struct sockaddr *) &v6,
-                       sizeof (v6));
+                       sizeof(v6));
     if (GNUNET_SYSERR != rh->was_transmitted)
       rh->addr_callback (rh->cls,
                          NULL,
@@ -725,16 +731,16 @@ loopback_resolution (void *cls)
   struct sockaddr_in6 v6;
 
   rh->task = NULL;
-  memset (&v4, 0, sizeof (v4));
+  memset (&v4, 0, sizeof(v4));
   v4.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
   v4.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v4.sin_len = sizeof (v4);
+  v4.sin_len = sizeof(v4);
 #endif
-  memset (&v6, 0, sizeof (v6));
+  memset (&v6, 0, sizeof(v6));
   v6.sin6_family = AF_INET6;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v6.sin6_len = sizeof (v6);
+  v6.sin6_len = sizeof(v6);
 #endif
   v6.sin6_addr = in6addr_loopback;
   switch (rh->af)
@@ -742,22 +748,25 @@ loopback_resolution (void *cls)
   case AF_INET:
     rh->addr_callback (rh->cls,
                        (const struct sockaddr *) &v4,
-                       sizeof (v4));
+                       sizeof(v4));
     break;
+
   case AF_INET6:
     rh->addr_callback (rh->cls,
                        (const struct sockaddr *) &v6,
-                       sizeof (v6));
+                       sizeof(v6));
     break;
+
   case AF_UNSPEC:
     rh->addr_callback (rh->cls,
                        (const struct sockaddr *) &v6,
-                       sizeof (v6));
+                       sizeof(v6));
     rh->addr_callback (rh->cls,
                        (const struct sockaddr *) &v4,
-                       sizeof (v4));
+                       sizeof(v4));
 
     break;
+
   default:
     GNUNET_break (0);
     break;
@@ -803,7 +812,7 @@ reconnect_task (void *cls)
   if (NULL == mq)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Failed to connect, will try again later\n");
+         "Failed to connect, will try again later\n");
     reconnect ();
     return;
   }
@@ -829,18 +838,21 @@ reconnect ()
     case GNUNET_NO:
       /* nothing more to do */
       break;
+
     case GNUNET_YES:
       /* disconnected, transmit again! */
       rh->was_transmitted = GNUNET_NO;
       break;
+
     case GNUNET_SYSERR:
       /* request was cancelled, remove entirely */
       GNUNET_CONTAINER_DLL_remove (req_head,
-				   req_tail,
-				   rh);
+                                   req_tail,
+                                   rh);
       GNUNET_free (rh);
       check_disconnect ();
       break;
+
     default:
       GNUNET_assert (0);
       break;
@@ -872,7 +884,7 @@ handle_lookup_timeout (void *cls)
   if (GNUNET_NO == rh->direction)
   {
     LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Timeout trying to resolve hostname `%s'.\n"),
+         _ ("Timeout trying to resolve hostname `%s'.\n"),
          (const char *) &rh[1]);
     if (NULL != rh->addr_callback)
       rh->addr_callback (rh->cls,
@@ -881,11 +893,11 @@ handle_lookup_timeout (void *cls)
   }
   else
   {
-#if !defined(GNUNET_CULL_LOGGING)
+#if ! defined(GNUNET_CULL_LOGGING)
     char buf[INET6_ADDRSTRLEN];
 
     LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Timeout trying to resolve IP address `%s'.\n"),
+         _ ("Timeout trying to resolve IP address `%s'.\n"),
          inet_ntop (rh->af,
                     (const void *) &rh[1],
                     buf,
@@ -936,7 +948,7 @@ GNUNET_RESOLVER_ip_get (const char *hostname,
   struct in6_addr v6;
 
   slen = strlen (hostname) + 1;
-  if (slen + sizeof (struct GNUNET_RESOLVER_GetMessage) >=
+  if (slen + sizeof(struct GNUNET_RESOLVER_GetMessage) >=
       GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
@@ -945,28 +957,28 @@ GNUNET_RESOLVER_ip_get (const char *hostname,
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Trying to resolve hostname `%s'.\n",
        hostname);
-  rh = GNUNET_malloc (sizeof (struct GNUNET_RESOLVER_RequestHandle) + slen);
+  rh = GNUNET_malloc (sizeof(struct GNUNET_RESOLVER_RequestHandle) + slen);
   rh->af = af;
   rh->id = ++last_request_id;
   rh->addr_callback = callback;
   rh->cls = callback_cls;
   GNUNET_memcpy (&rh[1],
-		 hostname,
-		 slen);
+                 hostname,
+                 slen);
   rh->data_len = slen;
   rh->timeout = GNUNET_TIME_relative_to_absolute (timeout);
   rh->direction = GNUNET_NO;
   /* first, check if this is a numeric address */
-  if ( ( (1 == inet_pton (AF_INET,
-			  hostname,
-			  &v4)) &&
-	 ( (af == AF_INET) ||
-	   (af == AF_UNSPEC) ) ) ||
-       ( (1 == inet_pton (AF_INET6,
-			  hostname,
-			  &v6)) &&
-	 ( (af == AF_INET6) ||
-	   (af == AF_UNSPEC)) ) )
+  if (((1 == inet_pton (AF_INET,
+                        hostname,
+                        &v4)) &&
+       ((af == AF_INET) ||
+        (af == AF_UNSPEC))) ||
+      ((1 == inet_pton (AF_INET6,
+                        hostname,
+                        &v6)) &&
+       ((af == AF_INET6) ||
+        (af == AF_UNSPEC))))
   {
     rh->task = GNUNET_SCHEDULER_add_now (&numeric_resolution,
                                          rh);
@@ -1070,35 +1082,37 @@ GNUNET_RESOLVER_hostname_get (const struct sockaddr *sa,
   if (GNUNET_OK != check_config ())
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Resolver not configured correctly.\n"));
+         _ ("Resolver not configured correctly.\n"));
     return NULL;
   }
 
   switch (sa->sa_family)
   {
   case AF_INET:
-    GNUNET_assert (salen == sizeof (struct sockaddr_in));
-    ip_len = sizeof (struct in_addr);
-    ip = &((const struct sockaddr_in*)sa)->sin_addr;
+    GNUNET_assert (salen == sizeof(struct sockaddr_in));
+    ip_len = sizeof(struct in_addr);
+    ip = &((const struct sockaddr_in*) sa)->sin_addr;
     break;
+
   case AF_INET6:
-    GNUNET_assert (salen == sizeof (struct sockaddr_in6));
-    ip_len = sizeof (struct in6_addr);
-    ip = &((const struct sockaddr_in6*)sa)->sin6_addr;
+    GNUNET_assert (salen == sizeof(struct sockaddr_in6));
+    ip_len = sizeof(struct in6_addr);
+    ip = &((const struct sockaddr_in6*) sa)->sin6_addr;
     break;
+
   default:
     GNUNET_break (0);
     return NULL;
   }
-  rh = GNUNET_malloc (sizeof (struct GNUNET_RESOLVER_RequestHandle) + salen);
+  rh = GNUNET_malloc (sizeof(struct GNUNET_RESOLVER_RequestHandle) + salen);
   rh->name_callback = callback;
   rh->cls = cls;
   rh->af = sa->sa_family;
   rh->id = ++last_request_id;
   rh->timeout = GNUNET_TIME_relative_to_absolute (timeout);
   GNUNET_memcpy (&rh[1],
-		 ip,
-		 ip_len);
+                 ip,
+                 ip_len);
   rh->data_len = ip_len;
   rh->direction = GNUNET_YES;
   rh->received_response = GNUNET_NO;
@@ -1136,7 +1150,7 @@ GNUNET_RESOLVER_local_fqdn_get ()
   char hostname[GNUNET_OS_get_hostname_max_length () + 1];
 
   if (0 != gethostname (hostname,
-			sizeof (hostname) - 1))
+                        sizeof(hostname) - 1))
   {
     LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
                   "gethostname");
@@ -1152,12 +1166,12 @@ GNUNET_RESOLVER_local_fqdn_get ()
     char *rval;
 
     if (0 != (ret = getaddrinfo (hostname,
-				 NULL,
-				 NULL,
-				 &ai)))
+                                 NULL,
+                                 NULL,
+                                 &ai)))
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
-           _("Could not resolve our FQDN: %s\n"),
+           _ ("Could not resolve our FQDN: %s\n"),
            gai_strerror (ret));
       return NULL;
     }
@@ -1173,17 +1187,17 @@ GNUNET_RESOLVER_local_fqdn_get ()
     struct hostent *host;
 
     host = gethostbyname2 (hostname,
-			   AF_INET);
+                           AF_INET);
     if (NULL == host)
       host = gethostbyname2 (hostname,
-			     AF_INET6);
+                             AF_INET6);
     if (NULL == host)
-      {
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Could not resolve our FQDN: %s\n"),
-             hstrerror (h_errno));
-        return NULL;
-      }
+    {
+      LOG (GNUNET_ERROR_TYPE_ERROR,
+           _ ("Could not resolve our FQDN: %s\n"),
+           hstrerror (h_errno));
+      return NULL;
+    }
     return GNUNET_strdup (host->h_name);
   }
 #elif HAVE_GETHOSTBYNAME
@@ -1192,12 +1206,12 @@ GNUNET_RESOLVER_local_fqdn_get ()
 
     host = gethostbyname (hostname);
     if (NULL == host)
-      {
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Could not resolve our FQDN: %s\n"),
-             hstrerror (h_errno));
-        return NULL;
-      }
+    {
+      LOG (GNUNET_ERROR_TYPE_ERROR,
+           _ ("Could not resolve our FQDN: %s\n"),
+           hstrerror (h_errno));
+      return NULL;
+    }
     return GNUNET_strdup (host->h_name);
   }
 #else
@@ -1224,7 +1238,7 @@ GNUNET_RESOLVER_hostname_resolve (int af,
 {
   char hostname[GNUNET_OS_get_hostname_max_length () + 1];
 
-  if (0 != gethostname (hostname, sizeof (hostname) - 1))
+  if (0 != gethostname (hostname, sizeof(hostname) - 1))
   {
     LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR | GNUNET_ERROR_TYPE_BULK,
                   "gethostname");
@@ -1254,8 +1268,8 @@ GNUNET_RESOLVER_request_cancel (struct GNUNET_RESOLVER_RequestHandle *rh)
 {
   if (GNUNET_NO == rh->direction)
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Asked to cancel request to resolve hostname `%s'.\n",
-	 (const char *) &rh[1]);
+         "Asked to cancel request to resolve hostname `%s'.\n",
+         (const char *) &rh[1]);
   if (NULL != rh->task)
   {
     GNUNET_SCHEDULER_cancel (rh->task);

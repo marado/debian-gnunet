@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  * @author Christophe Genevey
@@ -44,7 +44,6 @@ extern "C"
 #endif
 
 
-
 /**
  * Information we pass to #GNUNET_MY_exec_prepared() to
  * initialize the arguments of the prepared statement.
@@ -62,7 +61,7 @@ struct GNUNET_MY_QueryParam;
  */
 typedef int
 (*GNUNET_MY_QueryConverter)(void *cls,
-			    const struct GNUNET_MY_QueryParam *qp,
+                            const struct GNUNET_MY_QueryParam *qp,
                             MYSQL_BIND *qbind);
 
 
@@ -74,7 +73,7 @@ typedef int
  */
 typedef void
 (*GNUNET_MY_QueryCleanup)(void *cls,
-                           MYSQL_BIND *qbind);
+                          MYSQL_BIND *qbind);
 /**
  * Information we pass to #GNUNET_MY_exec_prepared() to
  * initialize the arguments of the prepared statement.
@@ -83,13 +82,12 @@ typedef void
 
 struct GNUNET_MY_QueryParam
 {
-
   /**
    * Function to call for the type conversion.
    */
   GNUNET_MY_QueryConverter conv;
 
-   /**
+  /**
    * Function to call for cleaning up the query. Can be NULL.
    */
   GNUNET_MY_QueryCleanup cleaner;
@@ -113,7 +111,6 @@ struct GNUNET_MY_QueryParam
    * Information to pass to @e conv.  Size of @a data.
    */
   unsigned long data_len;
-
 };
 
 /**
@@ -133,7 +130,7 @@ struct GNUNET_MY_QueryParam
  */
 struct GNUNET_MY_QueryParam
 GNUNET_MY_query_param_fixed_size (const void *ptr,
-				  size_t ptr_size);
+                                  size_t ptr_size);
 
 
 /**
@@ -196,7 +193,6 @@ typedef void
  */
 struct GNUNET_MY_ResultSpec
 {
-
   /**
    * Function to call to initialize the MYSQL_BIND array.
    */
@@ -207,7 +203,7 @@ struct GNUNET_MY_ResultSpec
    */
   GNUNET_MY_ResultConverter post_conv;
 
-    /**
+  /**
    * Function to call for cleaning up the result. Can be NULL.
    */
   GNUNET_MY_ResultCleanup cleaner;
@@ -250,7 +246,6 @@ struct GNUNET_MY_ResultSpec
    * Memory for MySQL to notify us about NULL values.
    */
   my_bool is_null;
-
 };
 
 
@@ -260,7 +255,6 @@ struct GNUNET_MY_ResultSpec
  * @return array last entry for the result specification to use
  */
 #define GNUNET_MY_result_spec_end { NULL, NULL, NULL, 0, NULL, 0, 0 }
-
 
 
 /**
@@ -275,82 +269,86 @@ GNUNET_MY_result_spec_fixed_size (void *ptr,
                                   size_t ptr_size);
 
 /**
-  * Generate query parameter for a string
-  *
-  *@param ptr pointer to the string query parameter to pass
-  */
+ * Generate query parameter for a string
+ *
+ *@param ptr pointer to the string query parameter to pass
+ */
 struct GNUNET_MY_QueryParam
 GNUNET_MY_query_param_string (const char *ptr);
 
 /**
-  * Generate fixed-size query parameter with size determined
-  * by variable type.
-  *
-  * @param x pointer to the query parameter to pass
-  */
-#define GNUNET_MY_query_param_auto_from_type(x) GNUNET_MY_query_param_fixed_size ((x), sizeof (*(x)))
+ * Generate fixed-size query parameter with size determined
+ * by variable type.
+ *
+ * @param x pointer to the query parameter to pass
+ */
+#define GNUNET_MY_query_param_auto_from_type( \
+    x) GNUNET_MY_query_param_fixed_size ((x), sizeof(*(x)))
 
 /**
-  * Generate query parameter for an RSA public key. The
-  * database must contain a BLOB type in the respective position.
-  *
-  * @param x the query parameter to pass
-  * @return array entry for the query parameters to use
-  */
+ * Generate query parameter for an RSA public key. The
+ * database must contain a BLOB type in the respective position.
+ *
+ * @param x the query parameter to pass
+ * @return array entry for the query parameters to use
+ */
 struct GNUNET_MY_QueryParam
-GNUNET_MY_query_param_rsa_public_key (const struct GNUNET_CRYPTO_RsaPublicKey *x);
+GNUNET_MY_query_param_rsa_public_key (const struct
+                                      GNUNET_CRYPTO_RsaPublicKey *x);
 
 /**
-  * Generate query parameter for an RSA signature. The
-  * database must contain a BLOB type in the respective position
-  *
-  *@param x the query parameter to pass
-  *@return array entry for the query parameters to use
-  */
+ * Generate query parameter for an RSA signature. The
+ * database must contain a BLOB type in the respective position
+ *
+ *@param x the query parameter to pass
+ *@return array entry for the query parameters to use
+ */
 struct GNUNET_MY_QueryParam
-GNUNET_MY_query_param_rsa_signature (const struct GNUNET_CRYPTO_RsaSignature *x);
+GNUNET_MY_query_param_rsa_signature (const struct
+                                     GNUNET_CRYPTO_RsaSignature *x);
 
 /**
-  * Generate query parameter for an absolute time value.
-  * The database must store a 64-bit integer.
-  *
-  *@param x pointer to the query parameter to pass
-  *@return array entry for the query parameters to use
-  */
+ * Generate query parameter for an absolute time value.
+ * The database must store a 64-bit integer.
+ *
+ *@param x pointer to the query parameter to pass
+ *@return array entry for the query parameters to use
+ */
 struct GNUNET_MY_QueryParam
 GNUNET_MY_query_param_absolute_time (const struct GNUNET_TIME_Absolute *x);
 
 
 /**
-  * Generate query parameter for an absolute time value.
-  * The database must store a 64-bit integer.
-  *
-  *@param x pointer to the query parameter to pass
-  */
+ * Generate query parameter for an absolute time value.
+ * The database must store a 64-bit integer.
+ *
+ *@param x pointer to the query parameter to pass
+ */
 struct GNUNET_MY_QueryParam
-GNUNET_MY_query_param_absolute_time_nbo (const struct GNUNET_TIME_AbsoluteNBO *x);
+GNUNET_MY_query_param_absolute_time_nbo (const struct
+                                         GNUNET_TIME_AbsoluteNBO *x);
 
 /**
-  * Generate query parameter for an uint16_t in host byte order.
-  *
-  * @param x pointer to the query parameter to pass
-  */
+ * Generate query parameter for an uint16_t in host byte order.
+ *
+ * @param x pointer to the query parameter to pass
+ */
 struct GNUNET_MY_QueryParam
 GNUNET_MY_query_param_uint16 (const uint16_t *x);
 
 /**
-  * Generate query parameter for an uint32_t in host byte order
-  *
-  *@param x pointer to the query parameter to pass
-  */
+ * Generate query parameter for an uint32_t in host byte order
+ *
+ *@param x pointer to the query parameter to pass
+ */
 struct GNUNET_MY_QueryParam
 GNUNET_MY_query_param_uint32 (const uint32_t *x);
 
 /**
-  * Generate query parameter for an uint64_t in host byte order
-  *
-  *@param x pointer to the query parameter to pass
-  */
+ * Generate query parameter for an uint64_t in host byte order
+ *
+ *@param x pointer to the query parameter to pass
+ */
 struct GNUNET_MY_QueryParam
 GNUNET_MY_query_param_uint64 (const uint64_t *x);
 
@@ -361,7 +359,8 @@ GNUNET_MY_query_param_uint64 (const uint64_t *x);
  * @spec dst point to where to store the result, type fits expected result size
  * @return array entry for the result specification to use
  */
-#define GNUNET_MY_result_spec_auto_from_type(dst) GNUNET_MY_result_spec_fixed_size ((dst), sizeof (*(dst)))
+#define GNUNET_MY_result_spec_auto_from_type( \
+    dst) GNUNET_MY_result_spec_fixed_size ((dst), sizeof(*(dst)))
 
 
 /**
@@ -396,57 +395,57 @@ struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_rsa_signature (struct GNUNET_CRYPTO_RsaSignature **sig);
 
 /**
-  * 0- terminated string exprected.
-  *
-  * @param[out] dst where to store the result, allocated
-  * @return array entry for the result specification to use
-  */
+ * 0- terminated string exprected.
+ *
+ * @param[out] dst where to store the result, allocated
+ * @return array entry for the result specification to use
+ */
 struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_string (char **dst);
 
 /**
-  * Absolute time expected
-  *
-  * @param name name of the field in the table
-  * @param[out] at where to store the result
-  * @return array entry for the result specification to use
-  */
+ * Absolute time expected
+ *
+ * @param name name of the field in the table
+ * @param[out] at where to store the result
+ * @return array entry for the result specification to use
+ */
 struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_absolute_time (struct GNUNET_TIME_Absolute *at);
 
 /**
-  * Absolute time in network byte order expected
-  *
-  * @param[out] at where to store the result
-  * @return array entry for the result specification to use
-  */
+ * Absolute time in network byte order expected
+ *
+ * @param[out] at where to store the result
+ * @return array entry for the result specification to use
+ */
 struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_absolute_time_nbo (struct GNUNET_TIME_AbsoluteNBO *at);
 
 /**
-  * uint16_t expected
-  *
-  * @param[out] u16 where to store the result
-  * @return array entry for the result specification to use
-  */
+ * uint16_t expected
+ *
+ * @param[out] u16 where to store the result
+ * @return array entry for the result specification to use
+ */
 struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_uint16 (uint16_t *u16);
 
 /**
-  * uint32_t expected
-  *
-  * @param[out] u32 where to store the result
-  * @return array entry for the result specification to use
-  */
+ * uint32_t expected
+ *
+ * @param[out] u32 where to store the result
+ * @return array entry for the result specification to use
+ */
 struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_uint32 (uint32_t *u32);
 
 /**
-  * uint64_t expected.
-  *
-  * @param[out] u64 where to store the result
-  * @return array entry for the result specification to use
-  */
+ * uint64_t expected.
+ *
+ * @param[out] u64 where to store the result
+ * @return array entry for the result specification to use
+ */
 struct GNUNET_MY_ResultSpec
 GNUNET_MY_result_spec_uint64 (uint64_t *u64);
 

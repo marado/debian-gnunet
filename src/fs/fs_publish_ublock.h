@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_publish_ublock.h
@@ -45,10 +45,10 @@
  */
 void
 GNUNET_FS_ublock_decrypt_ (const void *input,
-			   size_t input_len,
-			   const struct GNUNET_CRYPTO_EcdsaPublicKey *ns,
-			   const char *label,
-			   void *output);
+                           size_t input_len,
+                           const struct GNUNET_CRYPTO_EcdsaPublicKey *ns,
+                           const char *label,
+                           void *output);
 
 
 /**
@@ -65,7 +65,7 @@ struct GNUNET_FS_PublishUblockContext;
  * @param emsg error message, NULL on success
  */
 typedef void (*GNUNET_FS_UBlockContinuation) (void *cls,
-					      const char *emsg);
+                                              const char *emsg);
 
 
 /**
@@ -86,15 +86,15 @@ typedef void (*GNUNET_FS_UBlockContinuation) (void *cls,
  */
 struct GNUNET_FS_PublishUblockContext *
 GNUNET_FS_publish_ublock_ (struct GNUNET_FS_Handle *h,
-			   struct GNUNET_DATASTORE_Handle *dsh,
-			   const char *label,
-			   const char *ulabel,
-			   const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
-			   const struct GNUNET_CONTAINER_MetaData *meta,
-			   const struct GNUNET_FS_Uri *uri,
-			   const struct GNUNET_FS_BlockOptions *bo,
-			   enum GNUNET_FS_PublishOptions options,
-			   GNUNET_FS_UBlockContinuation cont, void *cont_cls);
+                           struct GNUNET_DATASTORE_Handle *dsh,
+                           const char *label,
+                           const char *ulabel,
+                           const struct GNUNET_CRYPTO_EcdsaPrivateKey *ns,
+                           const struct GNUNET_CONTAINER_MetaData *meta,
+                           const struct GNUNET_FS_Uri *uri,
+                           const struct GNUNET_FS_BlockOptions *bo,
+                           enum GNUNET_FS_PublishOptions options,
+                           GNUNET_FS_UBlockContinuation cont, void *cont_cls);
 
 
 /**

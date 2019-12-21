@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file consensus/test_consensus_api.c
@@ -44,6 +44,7 @@ conclude_done (void *cls)
   GNUNET_SCHEDULER_shutdown ();
 }
 
+
 static void
 on_new_element (void *cls,
                 const struct GNUNET_SET_Element *element)
@@ -51,11 +52,13 @@ on_new_element (void *cls,
   elements_received++;
 }
 
+
 static void
 insert_done (void *cls, int success)
 {
   /* make sure cb is only called once */
   static int called = GNUNET_NO;
+
   GNUNET_assert (GNUNET_NO == called);
   called = GNUNET_YES;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "insert done\n");
@@ -86,8 +89,8 @@ run (void *cls,
 {
   char *str = "foo";
 
-  struct GNUNET_SET_Element el1 = {4, 0, "foo"};
-  struct GNUNET_SET_Element el2 = {5, 0, "quux"};
+  struct GNUNET_SET_Element el1 = { 4, 0, "foo" };
+  struct GNUNET_SET_Element el2 = { 5, 0, "quux" };
 
   GNUNET_log_setup ("test_consensus_api",
                     "INFO",
@@ -96,9 +99,11 @@ run (void *cls,
 
   GNUNET_CRYPTO_hash (str, strlen (str), &session_id);
   consensus = GNUNET_CONSENSUS_create (cfg, 0, NULL, &session_id,
-      GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_SECONDS),
-      GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES),
-      on_new_element, &consensus);
+                                       GNUNET_TIME_relative_to_absolute (
+                                         GNUNET_TIME_UNIT_SECONDS),
+                                       GNUNET_TIME_relative_to_absolute (
+                                         GNUNET_TIME_UNIT_MINUTES),
+                                       on_new_element, &consensus);
   GNUNET_assert (consensus != NULL);
 
   GNUNET_CONSENSUS_insert (consensus, &el1, NULL, &consensus);
@@ -110,6 +115,6 @@ int
 main (int argc, char **argv)
 {
   return GNUNET_TESTING_peer_run ("test_consensus_api",
-				  "test_consensus.conf",
-				  &run, NULL);
+                                  "test_consensus.conf",
+                                  &run, NULL);
 }

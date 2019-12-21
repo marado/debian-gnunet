@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/program.c
@@ -148,6 +148,7 @@ GNUNET_PROGRAM_run2 (int argc,
                      int run_without_scheduler)
 {
   struct CommandContext cc;
+
 #if ENABLE_NLS
   char *path;
 #endif
@@ -161,12 +162,13 @@ GNUNET_PROGRAM_run2 (int argc,
   unsigned long long skew_variance;
   long long clock_offset;
   struct GNUNET_CONFIGURATION_Handle *cfg;
+  const struct GNUNET_OS_ProjectData *pd = GNUNET_OS_project_data_get ();
   struct GNUNET_GETOPT_CommandLineOption defoptions[] =
-    {GNUNET_GETOPT_option_cfgfile (&cc.cfgfile),
-     GNUNET_GETOPT_option_help (binaryHelp),
-     GNUNET_GETOPT_option_loglevel (&loglev),
-     GNUNET_GETOPT_option_logfile (&logfile),
-     GNUNET_GETOPT_option_version (PACKAGE_VERSION " " VCS_VERSION)};
+  { GNUNET_GETOPT_option_cfgfile (&cc.cfgfile),
+    GNUNET_GETOPT_option_help (binaryHelp),
+    GNUNET_GETOPT_option_loglevel (&loglev),
+    GNUNET_GETOPT_option_logfile (&logfile),
+    GNUNET_GETOPT_option_version (pd->version) };
   struct GNUNET_GETOPT_CommandLineOption *allopts;
   const char *gargs;
   char *lpfx;
@@ -192,37 +194,42 @@ GNUNET_PROGRAM_run2 (int argc,
     argv = (char *const *) gargv;
     argc = gargc - 1;
   }
-  memset (&cc, 0, sizeof (cc));
+  memset (&cc, 0, sizeof(cc));
   loglev = NULL;
   cc.task = task;
   cc.task_cls = task_cls;
   cc.cfg = cfg = GNUNET_CONFIGURATION_create ();
   /* prepare */
 #if ENABLE_NLS
-  setlocale (LC_ALL, "");
-  path = GNUNET_OS_installation_get_path (GNUNET_OS_IPK_LOCALEDIR);
-  if (NULL != path)
+  if (NULL != pd->gettext_domain)
   {
-    BINDTEXTDOMAIN ("GNUnet", path);
-    GNUNET_free (path);
+    setlocale (LC_ALL, "");
+    path = (NULL == pd->gettext_path)
+           ? GNUNET_OS_installation_get_path (GNUNET_OS_IPK_LOCALEDIR)
+           : GNUNET_strdup (pd->gettext_path);
+    if (NULL != path)
+    {
+      bindtextdomain (pd->gettext_domain, path);
+      GNUNET_free (path);
+    }
+    textdomain (pd->gettext_domain);
   }
-  textdomain ("GNUnet");
 #endif
   cnt = 0;
   while (NULL != options[cnt].name)
     cnt++;
   allopts =
-    GNUNET_malloc ((cnt + 1) * sizeof (struct GNUNET_GETOPT_CommandLineOption) +
-                   sizeof (defoptions));
-  GNUNET_memcpy (allopts, defoptions, sizeof (defoptions));
-  GNUNET_memcpy (&allopts[sizeof (defoptions) /
-                          sizeof (struct GNUNET_GETOPT_CommandLineOption)],
+    GNUNET_malloc ((cnt + 1) * sizeof(struct GNUNET_GETOPT_CommandLineOption)
+                   + sizeof(defoptions));
+  GNUNET_memcpy (allopts, defoptions, sizeof(defoptions));
+  GNUNET_memcpy (&allopts[sizeof(defoptions)
+                          / sizeof(struct GNUNET_GETOPT_CommandLineOption)],
                  options,
-                 (cnt + 1) * sizeof (struct GNUNET_GETOPT_CommandLineOption));
-  cnt += sizeof (defoptions) / sizeof (struct GNUNET_GETOPT_CommandLineOption);
+                 (cnt + 1) * sizeof(struct GNUNET_GETOPT_CommandLineOption));
+  cnt += sizeof(defoptions) / sizeof(struct GNUNET_GETOPT_CommandLineOption);
   qsort (allopts,
          cnt,
-         sizeof (struct GNUNET_GETOPT_CommandLineOption),
+         sizeof(struct GNUNET_GETOPT_CommandLineOption),
          &cmd_sorter);
   loglev = NULL;
   xdg = getenv ("XDG_CONFIG_HOME");
@@ -231,9 +238,9 @@ GNUNET_PROGRAM_run2 (int argc,
                      "%s%s%s",
                      xdg,
                      DIR_SEPARATOR_STR,
-                     GNUNET_OS_project_data_get ()->config_file);
+                     pd->config_file);
   else
-    cfg_fn = GNUNET_strdup (GNUNET_OS_project_data_get ()->user_config_file);
+    cfg_fn = GNUNET_strdup (pd->user_config_file);
   lpfx = GNUNET_strdup (binaryName);
   if (NULL != (spc = strstr (lpfx, " ")))
     *spc = '\0';
@@ -294,10 +301,10 @@ GNUNET_PROGRAM_run2 (int argc,
   }
   GNUNET_free (allopts);
   GNUNET_free (lpfx);
-  if (GNUNET_OK == GNUNET_CONFIGURATION_get_value_number (cc.cfg,
-                                                          "testing",
-                                                          "skew_offset",
-                                                          &skew_offset) &&
+  if ((GNUNET_OK == GNUNET_CONFIGURATION_get_value_number (cc.cfg,
+                                                           "testing",
+                                                           "skew_offset",
+                                                           &skew_offset)) &&
       (GNUNET_OK == GNUNET_CONFIGURATION_get_value_number (cc.cfg,
                                                            "testing",
                                                            "skew_variance",
@@ -311,8 +318,7 @@ GNUNET_PROGRAM_run2 (int argc,
      specified in the configuration, remember the command-line option
      in "cfg".  This is typically really only having an effect if we
      are running code in src/arm/, as obviously the rest of the code
-     has little business with ARM-specific options. */
-  if (GNUNET_YES != GNUNET_CONFIGURATION_have_value (cfg, "arm", "CONFIG"))
+     has little business with ARM-specific options. */if (GNUNET_YES != GNUNET_CONFIGURATION_have_value (cfg, "arm", "CONFIG"))
   {
     if (NULL != cc.cfgfile)
       GNUNET_CONFIGURATION_set_value_string (cfg, "arm", "CONFIG", cc.cfgfile);

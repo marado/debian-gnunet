@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/test_ats_lib.h
  * @brief test ATS library with a generic interpreter for running ATS tests
@@ -123,7 +123,6 @@ enum CommandCode
    * Wait for a bit.
    */
   CMD_SLEEP
-
 };
 
 
@@ -198,7 +197,6 @@ struct CommandAwaitAddressSuggestion
    * use NULL for "any" available address.
    */
   const char *add_label;
-
 };
 
 
@@ -211,7 +209,6 @@ struct CommandAwaitDisconnectSuggestion
    * For which peer do we expect the disconnect?
    */
   unsigned int pid;
-
 };
 
 
@@ -264,7 +261,6 @@ struct CommandAwaitAddressInformation
    * the properties from the @e add_label.
    */
   const char *update_label;
-
 };
 
 
@@ -282,7 +278,6 @@ struct CommandUpdateAddress
    * Performance properties to supply.
    */
   struct GNUNET_ATS_Properties properties;
-
 };
 
 
@@ -291,7 +286,7 @@ struct CommandUpdateAddress
  */
 struct CommandAddSession
 {
- /**
+  /**
    * Label of the addresses's add operation.
    */
   const char *add_label;
@@ -300,7 +295,6 @@ struct CommandAddSession
    * Session to supply.
    */
   unsigned int session;
-
 };
 
 
@@ -309,11 +303,10 @@ struct CommandAddSession
  */
 struct CommandDelSession
 {
- /**
+  /**
    * Label of the addresses's add operation.
    */
   const char *add_session_label;
-
 };
 
 
@@ -328,7 +321,6 @@ struct CommandChangePreference
   unsigned int pid;
 
   /* FIXME: preference details! */
-
 };
 
 
@@ -403,7 +395,6 @@ struct CommandListAddresses
    * #GNUNET_ATS_performance_list_addresses().
    */
   struct GNUNET_ATS_AddressListHandle *alh;
-
 };
 
 
@@ -435,7 +426,6 @@ struct CommandReserveBandwidth
    * #GNUNET_ATS_reserve_bandwidth().
    */
   struct GNUNET_ATS_ReservationContext *rc;
-
 };
 
 
@@ -469,8 +459,8 @@ struct Command
   /**
    * Additional arguments to commands, if any.
    */
-  union {
-
+  union
+  {
     struct CommandAddAddress add_address;
 
     struct CommandDelAddress del_address;
@@ -500,9 +490,7 @@ struct Command
     struct CommandReserveBandwidth reserve_bandwidth;
 
     struct CommandSleep sleep;
-
   } details;
-
 };
 
 

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/benchmark.c
@@ -73,20 +73,22 @@ write_benchmark_data (struct BenchmarkData *bd)
                    (unsigned long long) tid);
 
   fh = GNUNET_DISK_file_open (s,
-                              (GNUNET_DISK_OPEN_WRITE |
-                               GNUNET_DISK_OPEN_TRUNCATE |
-                               GNUNET_DISK_OPEN_CREATE),
-                              (GNUNET_DISK_PERM_USER_READ |
-                               GNUNET_DISK_PERM_USER_WRITE));
+                              (GNUNET_DISK_OPEN_WRITE
+                               | GNUNET_DISK_OPEN_TRUNCATE
+                               | GNUNET_DISK_OPEN_CREATE),
+                              (GNUNET_DISK_PERM_USER_READ
+                               | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_assert (NULL != fh);
   GNUNET_free (s);
 
 #define WRITE_BENCHMARK_OP(opname) do { \
-  GNUNET_asprintf (&s, "op " #opname " count %llu time_us %llu\n", \
-                   (unsigned long long) bd->opname##_count, \
-                   (unsigned long long) bd->opname##_time.rel_value_us); \
-  GNUNET_assert (GNUNET_SYSERR != GNUNET_DISK_file_write_blocking (fh, s, strlen (s))); \
-  GNUNET_free (s); \
+    GNUNET_asprintf (&s, "op " #opname " count %llu time_us %llu\n", \
+                     (unsigned long long) bd->opname ## _count, \
+                     (unsigned long long) bd->opname ## _time.rel_value_us); \
+    GNUNET_assert (GNUNET_SYSERR != GNUNET_DISK_file_write_blocking (fh, s, \
+                                                                     strlen ( \
+                                                                       s))); \
+    GNUNET_free (s); \
 } while (0)
 
   WRITE_BENCHMARK_OP (ecc_ecdh);
@@ -126,18 +128,19 @@ write_benchmark_data (struct BenchmarkData *bd)
                    (unsigned long long) tid);
 
   fh = GNUNET_DISK_file_open (s,
-                              (GNUNET_DISK_OPEN_WRITE |
-                               GNUNET_DISK_OPEN_TRUNCATE |
-                               GNUNET_DISK_OPEN_CREATE),
-                              (GNUNET_DISK_PERM_USER_READ |
-                               GNUNET_DISK_PERM_USER_WRITE));
+                              (GNUNET_DISK_OPEN_WRITE
+                               | GNUNET_DISK_OPEN_TRUNCATE
+                               | GNUNET_DISK_OPEN_CREATE),
+                              (GNUNET_DISK_PERM_USER_READ
+                               | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_assert (NULL != fh);
   GNUNET_free (s);
 
   for (unsigned int i = 0; i < bd->urd_len; i++)
   {
     struct UrlRequestData *urd = &bd->urd[i];
-    GNUNET_asprintf (&s, "url %s status %u count %llu time_us %llu time_us_max %llu bytes_sent %llu bytes_received %llu\n",
+    GNUNET_asprintf (&s,
+                     "url %s status %u count %llu time_us %llu time_us_max %llu bytes_sent %llu bytes_received %llu\n",
                      urd->request_url,
                      urd->status,
                      (unsigned long long) urd->count,
@@ -145,7 +148,9 @@ write_benchmark_data (struct BenchmarkData *bd)
                      (unsigned long long) urd->time_max.rel_value_us,
                      (unsigned long long) urd->bytes_sent,
                      (unsigned long long) urd->bytes_received);
-    GNUNET_assert (GNUNET_SYSERR != GNUNET_DISK_file_write_blocking (fh, s, strlen (s)));
+    GNUNET_assert (GNUNET_SYSERR != GNUNET_DISK_file_write_blocking (fh, s,
+                                                                     strlen (
+                                                                       s)));
     GNUNET_free (s);
   }
 
@@ -180,7 +185,7 @@ thread_destructor (void *cls)
   // main thread will be handled by atexit
   if (getpid () == (pid_t) syscall (SYS_gettid))
     return;
-  
+
   GNUNET_assert (NULL != bd);
   write_benchmark_data (bd);
 }
@@ -264,8 +269,8 @@ get_url_benchmark_data (char *url, unsigned int status)
 
   for (unsigned int i = 0; i < bd->urd_len; i++)
   {
-    if ( (0 == strcmp (trunc, bd->urd[i].request_url)) &&
-         (bd->urd[i].status == status) )
+    if ((0 == strcmp (trunc, bd->urd[i].request_url)) &&
+        (bd->urd[i].status == status))
       return &bd->urd[i];
   }
 
@@ -278,7 +283,8 @@ get_url_benchmark_data (char *url, unsigned int status)
     if (bd->urd_len == bd->urd_capacity)
     {
       bd->urd_capacity = 2 * (bd->urd_capacity + 1);
-      bd->urd = GNUNET_realloc (bd->urd, bd->urd_capacity * sizeof (struct UrlRequestData));
+      bd->urd = GNUNET_realloc (bd->urd, bd->urd_capacity * sizeof(struct
+                                                                   UrlRequestData));
     }
 
     bd->urd[bd->urd_len++] = urd;

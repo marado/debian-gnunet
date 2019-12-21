@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file set/set.h
  * @brief messages used for the set api
@@ -72,7 +72,6 @@ struct GNUNET_SET_ListenMessage
    * application id
    */
   struct GNUNET_HashCode app_id;
-
 };
 
 
@@ -144,7 +143,6 @@ struct GNUNET_SET_RejectMessage
    * ID of the incoming request we want to reject.
    */
   uint32_t accept_reject_id GNUNET_PACKED;
-
 };
 
 

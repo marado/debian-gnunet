@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2010-2016, 2018, 2019 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2016, 2018, 2019 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -364,7 +364,6 @@ struct TransportBackchannelEncapsulationMessage
  */
 struct EphemeralConfirmationPS
 {
-
   /**
    * Purpose is #GNUNET_SIGNATURE_PURPOSE_TRANSPORT_EPHEMERAL
    */
@@ -405,7 +404,6 @@ struct EphemeralConfirmationPS
  */
 struct TransportDVBoxPayloadP
 {
-
   /**
    * Sender's peer identity.
    */
@@ -810,7 +808,6 @@ struct TransportDVBoxMessage
  */
 struct TransportValidationChallengeMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_CHALLENGE
    */
@@ -840,7 +837,6 @@ struct TransportValidationChallengeMessage
  */
 struct TransportValidationPS
 {
-
   /**
    * Purpose is #GNUNET_SIGNATURE_PURPOSE_TRANSPORT_CHALLENGE
    */
@@ -865,7 +861,6 @@ struct TransportValidationPS
  */
 struct TransportValidationResponseMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_RESPONSE
    */
@@ -1035,7 +1030,6 @@ enum RouteMessageOptions
  */
 struct LearnLaunchEntry
 {
-
   /**
    * Kept (also) in a DLL sorted by launch time.
    */
@@ -1151,7 +1145,6 @@ struct VirtualLink;
  */
 struct CommunicatorMessageContext
 {
-
   /**
    * Kept in a DLL of `struct VirtualLink` if waiting for CORE
    * flow control to unchoke.
@@ -1187,7 +1180,6 @@ struct CommunicatorMessageContext
  */
 struct CoreSentContext
 {
-
   /**
    * Kept in a DLL to clear @e vl in case @e vl is lost.
    */
@@ -1427,7 +1419,6 @@ struct VirtualLink
  */
 struct PendingAcknowledgement
 {
-
   /**
    * If @e pm is non-NULL, this is the DLL in which this acknowledgement
    * is kept in relation to its pending message.
@@ -1522,7 +1513,6 @@ struct PendingAcknowledgement
  */
 struct DistanceVectorHop
 {
-
   /**
    * Kept in a MDLL, sorted by @e timeout.
    */
@@ -1605,7 +1595,6 @@ struct DistanceVectorHop
  */
 struct DistanceVector
 {
-
   /**
    * To which peer is this a route?
    */
@@ -1671,7 +1660,6 @@ struct DistanceVector
  */
 struct QueueEntry
 {
-
   /**
    * Kept as a DLL.
    */
@@ -1834,7 +1822,6 @@ struct Queue
  */
 struct ReassemblyContext
 {
-
   /**
    * Original message ID for of the message that all the fragments
    * belong to.
@@ -1894,7 +1881,6 @@ struct ReassemblyContext
  */
 struct Neighbour
 {
-
   /**
    * Which peer is this about?
    */
@@ -1979,7 +1965,6 @@ struct Neighbour
  */
 struct IncomingRequest
 {
-
   /**
    * Kept in a DLL.
    */
@@ -2007,7 +1992,6 @@ struct IncomingRequest
  */
 struct PeerRequest
 {
-
   /**
    * Which peer is this about?
    */
@@ -2042,7 +2026,6 @@ struct PeerRequest
  */
 enum PendingMessageType
 {
-
   /**
    * Ordinary message received from the CORE service.
    */
@@ -2062,7 +2045,6 @@ enum PendingMessageType
    * Pending message created during #forward_dv_box().
    */
   PMT_DV_BOX = 3
-
 };
 
 
@@ -2294,7 +2276,6 @@ struct AcknowledgementCummulator
  */
 struct AddressListEntry
 {
-
   /**
    * Kept in a DLL.
    */
@@ -2348,7 +2329,6 @@ struct AddressListEntry
  */
 struct TransportClient
 {
-
   /**
    * Kept in a DLL.
    */
@@ -2376,13 +2356,11 @@ struct TransportClient
 
   union
   {
-
     /**
      * Information for @e type #CT_CORE.
      */
     struct
     {
-
       /**
        * Head of list of messages pending for this client, sorted by
        * transmission time ("next_attempt" + possibly internal prioritization).
@@ -2393,7 +2371,6 @@ struct TransportClient
        * Tail of list of messages pending for this client.
        */
       struct PendingMessage *pending_msg_tail;
-
     } core;
 
     /**
@@ -2401,7 +2378,6 @@ struct TransportClient
      */
     struct
     {
-
       /**
        * Peer identity to monitor the addresses of.
        * Zero to monitor all neighbours.  Valid if
@@ -2413,7 +2389,6 @@ struct TransportClient
        * Is this a one-shot monitor?
        */
       int one_shot;
-
     } monitor;
 
 
@@ -2461,7 +2436,6 @@ struct TransportClient
        * Characteristics of this communicator.
        */
       enum GNUNET_TRANSPORT_CommunicatorCharacteristics cc;
-
     } communicator;
 
     /**
@@ -2469,15 +2443,12 @@ struct TransportClient
      */
     struct
     {
-
       /**
        * Map of requests for peers the given client application would like to
        * see connections for.  Maps from PIDs to `struct PeerRequest`.
        */
       struct GNUNET_CONTAINER_MultiPeerMap *requests;
-
     } application;
-
   } details;
 };
 
@@ -2488,7 +2459,6 @@ struct TransportClient
  */
 struct ValidationState
 {
-
   /**
    * For which peer is @a address to be validated (or possibly valid)?
    * Serves as key in the #validation_map.
@@ -3320,7 +3290,7 @@ reassembly_cleanup_task (void *cls)
   while (NULL != (rc = GNUNET_CONTAINER_heap_peek (n->reassembly_heap)))
   {
     if (0 == GNUNET_TIME_absolute_get_remaining (rc->reassembly_timeout)
-               .rel_value_us)
+        .rel_value_us)
     {
       free_reassembly_context (rc);
       continue;
@@ -3574,8 +3544,8 @@ free_queue (struct Queue *queue)
 {
   struct Neighbour *neighbour = queue->neighbour;
   struct TransportClient *tc = queue->tc;
-  struct MonitorEvent me = {.cs = GNUNET_TRANSPORT_CS_DOWN,
-                            .rtt = GNUNET_TIME_UNIT_FOREVER_REL};
+  struct MonitorEvent me = { .cs = GNUNET_TRANSPORT_CS_DOWN,
+                             .rtt = GNUNET_TIME_UNIT_FOREVER_REL };
   struct QueueEntry *qe;
   int maxxed;
   struct PendingAcknowledgement *pa;
@@ -3724,32 +3694,36 @@ client_disconnect_cb (void *cls,
   {
   case CT_NONE:
     break;
-  case CT_CORE: {
-    struct PendingMessage *pm;
 
-    while (NULL != (pm = tc->details.core.pending_msg_head))
-    {
-      GNUNET_CONTAINER_MDLL_remove (client,
-                                    tc->details.core.pending_msg_head,
-                                    tc->details.core.pending_msg_tail,
-                                    pm);
-      pm->client = NULL;
+  case CT_CORE: {
+      struct PendingMessage *pm;
+
+      while (NULL != (pm = tc->details.core.pending_msg_head))
+      {
+        GNUNET_CONTAINER_MDLL_remove (client,
+                                      tc->details.core.pending_msg_head,
+                                      tc->details.core.pending_msg_tail,
+                                      pm);
+        pm->client = NULL;
+      }
     }
-  }
-  break;
+    break;
+
   case CT_MONITOR:
     break;
-  case CT_COMMUNICATOR: {
-    struct Queue *q;
-    struct AddressListEntry *ale;
 
-    while (NULL != (q = tc->details.communicator.queue_head))
-      free_queue (q);
-    while (NULL != (ale = tc->details.communicator.addr_head))
-      free_address_list_entry (ale);
-    GNUNET_free (tc->details.communicator.address_prefix);
-  }
-  break;
+  case CT_COMMUNICATOR: {
+      struct Queue *q;
+      struct AddressListEntry *ale;
+
+      while (NULL != (q = tc->details.communicator.queue_head))
+        free_queue (q);
+      while (NULL != (ale = tc->details.communicator.addr_head))
+        free_address_list_entry (ale);
+      GNUNET_free (tc->details.communicator.address_prefix);
+    }
+    break;
+
   case CT_APPLICATION:
     GNUNET_CONTAINER_multipeermap_iterate (tc->details.application.requests,
                                            &stop_peer_request,
@@ -3844,8 +3818,8 @@ check_client_send (void *cls, const struct OutboundMessage *obm)
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  size = ntohs (obm->header.size) - sizeof (struct OutboundMessage);
-  if (size < sizeof (struct GNUNET_MessageHeader))
+  size = ntohs (obm->header.size) - sizeof(struct OutboundMessage);
+  if (size < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -3918,8 +3892,8 @@ pick_random_dv_hops (const struct DistanceVector *dv,
   {
     if ((0 == (options & RMO_UNCONFIRMED_ALLOWED)) &&
         (GNUNET_TIME_absolute_get_remaining (pos->path_valid_until)
-           .rel_value_us == 0))
-      continue; /* pos unconfirmed and confirmed required */
+         .rel_value_us == 0))
+      continue;   /* pos unconfirmed and confirmed required */
     num_dv += MAX_DV_HOPS_ALLOWED - pos->distance;
     dv_count++;
   }
@@ -3958,8 +3932,8 @@ pick_random_dv_hops (const struct DistanceVector *dv,
 
     if ((0 == (options & RMO_UNCONFIRMED_ALLOWED)) &&
         (GNUNET_TIME_absolute_get_remaining (pos->path_valid_until)
-           .rel_value_us == 0))
-      continue; /* pos unconfirmed and confirmed required */
+         .rel_value_us == 0))
+      continue;   /* pos unconfirmed and confirmed required */
     for (unsigned int i = 0; i < hops_array_length; i++)
       if ((num_dv <= choices[i]) && (num_dv + delta > choices[i]))
         hops_array[dv_count++] = pos;
@@ -3989,7 +3963,7 @@ check_communicator_available (
     return GNUNET_SYSERR;
   }
   tc->type = CT_COMMUNICATOR;
-  size = ntohs (cam->header.size) - sizeof (*cam);
+  size = ntohs (cam->header.size) - sizeof(*cam);
   if (0 == size)
     return GNUNET_OK; /* receive-only communicator */
   GNUNET_MQ_check_zero_termination (cam);
@@ -4082,12 +4056,12 @@ handle_communicator_available (
   struct TransportClient *tc = cls;
   uint16_t size;
 
-  size = ntohs (cam->header.size) - sizeof (*cam);
+  size = ntohs (cam->header.size) - sizeof(*cam);
   if (0 == size)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Receive-only communicator connected\n");
-    return; /* receive-only communicator */
+    return;   /* receive-only communicator */
   }
   tc->details.communicator.address_prefix =
     GNUNET_strdup ((const char *) &cam[1]);
@@ -4118,7 +4092,7 @@ check_communicator_backchannel (
   uint16_t isize;
 
   (void) cls;
-  msize = ntohs (cb->header.size) - sizeof (*cb);
+  msize = ntohs (cb->header.size) - sizeof(*cb);
   inbox = (const struct GNUNET_MessageHeader *) &cb[1];
   isize = ntohs (inbox->size);
   if (isize >= msize)
@@ -4160,7 +4134,7 @@ update_ephemeral (struct DistanceVector *dv)
                  GNUNET_CRYPTO_ecdhe_key_create2 (&dv->private_key));
   GNUNET_CRYPTO_ecdhe_key_get_public (&dv->private_key, &dv->ephemeral_key);
   ec.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_EPHEMERAL);
-  ec.purpose.size = htonl (sizeof (ec));
+  ec.purpose.size = htonl (sizeof(ec));
   ec.target = dv->target;
   ec.ephemeral_key = dv->ephemeral_key;
   GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_eddsa_sign (GST_my_private_key,
@@ -4326,7 +4300,6 @@ struct DVKeyState
    */
   struct
   {
-
     /**
      * Key used for HMAC calculations (via #GNUNET_CRYPTO_hmac()).
      */
@@ -4341,7 +4314,6 @@ struct DVKeyState
      * Counter value to use during setup.
      */
     char aes_ctr[128 / 8];
-
   } material;
 };
 
@@ -4362,13 +4334,13 @@ dv_setup_key_state_from_km (const struct GNUNET_HashCode *km,
   /* must match #dh_key_derive_eph_pub */
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CRYPTO_kdf (&key->material,
-                                    sizeof (key->material),
+                                    sizeof(key->material),
                                     "transport-backchannel-key",
                                     strlen ("transport-backchannel-key"),
                                     &km,
-                                    sizeof (km),
+                                    sizeof(km),
                                     iv,
-                                    sizeof (*iv)));
+                                    sizeof(*iv)));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Deriving backchannel key based on KM %s and IV %s\n",
               GNUNET_h2s (km),
@@ -4379,10 +4351,10 @@ dv_setup_key_state_from_km (const struct GNUNET_HashCode *km,
                     0 /* flags */);
   gcry_cipher_setkey (key->cipher,
                       &key->material.aes_key,
-                      sizeof (key->material.aes_key));
+                      sizeof(key->material.aes_key));
   gcry_cipher_setctr (key->cipher,
                       &key->material.aes_ctr,
-                      sizeof (key->material.aes_ctr));
+                      sizeof(key->material.aes_ctr));
 }
 
 
@@ -4499,7 +4471,7 @@ static void
 dv_key_clean (struct DVKeyState *key)
 {
   gcry_cipher_close (key->cipher);
-  GNUNET_CRYPTO_zero_keys (&key->material, sizeof (key->material));
+  GNUNET_CRYPTO_zero_keys (&key->material, sizeof(key->material));
 }
 
 
@@ -4543,7 +4515,7 @@ encapsulate_for_dv (struct DistanceVector *dv,
   struct TransportDVBoxMessage box_hdr;
   struct TransportDVBoxPayloadP payload_hdr;
   uint16_t enc_body_size = ntohs (hdr->size);
-  char enc[sizeof (struct TransportDVBoxPayloadP) + enc_body_size] GNUNET_ALIGN;
+  char enc[sizeof(struct TransportDVBoxPayloadP) + enc_body_size] GNUNET_ALIGN;
   struct TransportDVBoxPayloadP *enc_payload_hdr =
     (struct TransportDVBoxPayloadP *) enc;
   struct DVKeyState key;
@@ -4557,16 +4529,16 @@ encapsulate_for_dv (struct DistanceVector *dv,
   payload_hdr.sender_sig = dv->sender_sig;
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE,
                               &box_hdr.iv,
-                              sizeof (box_hdr.iv));
+                              sizeof(box_hdr.iv));
   dh_key_derive_eph_pid (&dv->private_key, &dv->target, &box_hdr.iv, &key);
   payload_hdr.sender = GST_my_identity;
   payload_hdr.monotonic_time = GNUNET_TIME_absolute_hton (dv->monotime);
-  dv_encrypt (&key, &payload_hdr, enc_payload_hdr, sizeof (payload_hdr));
+  dv_encrypt (&key, &payload_hdr, enc_payload_hdr, sizeof(payload_hdr));
   dv_encrypt (&key,
               hdr,
-              &enc[sizeof (struct TransportDVBoxPayloadP)],
+              &enc[sizeof(struct TransportDVBoxPayloadP)],
               enc_body_size);
-  dv_hmac (&key, &box_hdr.hmac, enc, sizeof (enc));
+  dv_hmac (&key, &box_hdr.hmac, enc, sizeof(enc));
   dv_key_clean (&key);
   rtt = GNUNET_TIME_UNIT_FOREVER_REL;
   /* For each selected path, take the pre-computed header and body
@@ -4575,19 +4547,19 @@ encapsulate_for_dv (struct DistanceVector *dv,
   {
     struct DistanceVectorHop *dvh = dvhs[i];
     unsigned int num_hops = dvh->distance + 1;
-    char buf[sizeof (struct TransportDVBoxMessage) +
-             sizeof (struct GNUNET_PeerIdentity) * num_hops +
-             sizeof (struct TransportDVBoxPayloadP) +
-             enc_body_size] GNUNET_ALIGN;
+    char buf[sizeof(struct TransportDVBoxMessage)
+             + sizeof(struct GNUNET_PeerIdentity) * num_hops
+             + sizeof(struct TransportDVBoxPayloadP)
+             + enc_body_size] GNUNET_ALIGN;
     struct GNUNET_PeerIdentity *dhops;
 
-    box_hdr.header.size = htons (sizeof (buf));
+    box_hdr.header.size = htons (sizeof(buf));
     box_hdr.num_hops = htons (num_hops);
-    memcpy (buf, &box_hdr, sizeof (box_hdr));
-    dhops = (struct GNUNET_PeerIdentity *) &buf[sizeof (box_hdr)];
+    memcpy (buf, &box_hdr, sizeof(box_hdr));
+    dhops = (struct GNUNET_PeerIdentity *) &buf[sizeof(box_hdr)];
     memcpy (dhops,
             dvh->path,
-            dvh->distance * sizeof (struct GNUNET_PeerIdentity));
+            dvh->distance * sizeof(struct GNUNET_PeerIdentity));
     dhops[dvh->distance] = dv->target;
     if (GNUNET_EXTRA_LOGGING > 0)
     {
@@ -4612,7 +4584,7 @@ encapsulate_for_dv (struct DistanceVector *dv,
       GNUNET_free (path);
     }
     rtt = GNUNET_TIME_relative_min (rtt, dvh->pd.aged_rtt);
-    memcpy (&dhops[num_hops], enc, sizeof (enc));
+    memcpy (&dhops[num_hops], enc, sizeof(enc));
     use (use_cls,
          dvh->next_hop,
          (const struct GNUNET_MessageHeader *) buf,
@@ -4762,8 +4734,7 @@ consider_sending_fc (void *cls)
      then. See vl->last_fc_rtt! NOTE: to do this properly, we also
      need an estimate for the bandwidth-delay-product for the entire
      VL, as that determines "significantly". We have the delay, but
-     the bandwidth statistics need to be added for the VL!*/
-  (void) duration;
+     the bandwidth statistics need to be added for the VL!*/(void) duration;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sending FC seq %u to %s with new window %llu\n",
@@ -4773,7 +4744,7 @@ consider_sending_fc (void *cls)
   monotime = GNUNET_TIME_absolute_get_monotonic (GST_cfg);
   vl->last_fc_transmission = monotime;
   fc.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_FLOW_CONTROL);
-  fc.header.size = htons (sizeof (fc));
+  fc.header.size = htons (sizeof(fc));
   fc.seq = htonl (vl->fc_seq_gen++);
   fc.inbound_window_size = GNUNET_htonll (vl->incoming_fc_window_size);
   fc.outbound_sent = GNUNET_htonll (vl->outbound_fc_window_size_used);
@@ -4832,7 +4803,7 @@ check_vl_transmission (struct VirtualLink *vl)
        pm = pm->next_vl)
   {
     if (NULL != pm->qe)
-      continue; /* not eligible, is in a queue! */
+      continue;   /* not eligible, is in a queue! */
     if (pm->bytes_msg + vl->outbound_fc_window_size_used >
         vl->outbound_fc_window_size)
     {
@@ -4840,10 +4811,10 @@ check_vl_transmission (struct VirtualLink *vl)
                   "Stalled transmision on VL %s due to flow control: %llu < %llu\n",
                   GNUNET_i2s (&vl->target),
                   (unsigned long long) vl->outbound_fc_window_size,
-                  (unsigned long long) (pm->bytes_msg +
-                                        vl->outbound_fc_window_size_used));
+                  (unsigned long long) (pm->bytes_msg
+                                        + vl->outbound_fc_window_size_used));
       consider_sending_fc (vl);
-      return; /* We have a message, but flow control says "nope" */
+      return;     /* We have a message, but flow control says "nope" */
     }
     elig = GNUNET_YES;
     break;
@@ -4872,7 +4843,7 @@ check_vl_transmission (struct VirtualLink *vl)
       struct Neighbour *nh = pos->next_hop;
 
       if (pos->path_valid_until.abs_value_us <= now.abs_value_us)
-        continue; /* skip this one: path not validated */
+        continue;     /* skip this one: path not validated */
       for (struct Queue *queue = nh->queue_head; NULL != queue;
            queue = queue->next_neighbour)
         if ((GNUNET_YES == queue->idle) &&
@@ -4919,7 +4890,7 @@ handle_client_send (void *cls, const struct OutboundMessage *obm)
     return;
   }
 
-  pm = GNUNET_malloc (sizeof (struct PendingMessage) + bytes_msg);
+  pm = GNUNET_malloc (sizeof(struct PendingMessage) + bytes_msg);
   pm->logging_uuid = logging_uuid_gen++;
   pm->prefs = pp;
   pm->client = tc;
@@ -4963,13 +4934,14 @@ handle_communicator_backchannel (
   uint16_t isize = ntohs (inbox->size);
   const char *is = ((const char *) &cb[1]) + isize;
   char
-    mbuf[isize +
-         sizeof (struct TransportBackchannelEncapsulationMessage)] GNUNET_ALIGN;
+    mbuf[isize
+         + sizeof(struct
+                  TransportBackchannelEncapsulationMessage)] GNUNET_ALIGN;
   struct TransportBackchannelEncapsulationMessage *be =
     (struct TransportBackchannelEncapsulationMessage *) mbuf;
 
   /* 0-termination of 'is' was checked already in
-     #check_communicator_backchannel() */
+   #check_communicator_backchannel() */
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Preparing backchannel transmission to %s:%s of type %u\n",
               GNUNET_i2s (&cb->pid),
@@ -4978,10 +4950,10 @@ handle_communicator_backchannel (
   /* encapsulate and encrypt message */
   be->header.type =
     htons (GNUNET_MESSAGE_TYPE_TRANSPORT_BACKCHANNEL_ENCAPSULATION);
-  be->header.size = htons (sizeof (mbuf));
+  be->header.size = htons (sizeof(mbuf));
   memcpy (&be[1], inbox, isize);
-  memcpy (&mbuf[sizeof (struct TransportBackchannelEncapsulationMessage) +
-                isize],
+  memcpy (&mbuf[sizeof(struct TransportBackchannelEncapsulationMessage)
+                + isize],
           is,
           strlen (is) + 1);
   route_control_message_without_fc (&cb->pid, &be->header, RMO_DV_ALLOWED);
@@ -5116,8 +5088,8 @@ handle_add_address (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Communicator added address `%s'!\n",
               (const char *) &aam[1]);
-  slen = ntohs (aam->header.size) - sizeof (*aam);
-  ale = GNUNET_malloc (sizeof (struct AddressListEntry) + slen);
+  slen = ntohs (aam->header.size) - sizeof(*aam);
+  ale = GNUNET_malloc (sizeof(struct AddressListEntry) + slen);
   ale->tc = tc;
   ale->address = (const char *) &ale[1];
   ale->expiration = GNUNET_TIME_relative_ntoh (aam->expiration);
@@ -5226,8 +5198,8 @@ handle_raw_message (void *cls, const struct GNUNET_MessageHeader *mh)
   uint16_t size = ntohs (mh->size);
   int have_core;
 
-  if ((size > UINT16_MAX - sizeof (struct InboundMessage)) ||
-      (size < sizeof (struct GNUNET_MessageHeader)))
+  if ((size > UINT16_MAX - sizeof(struct InboundMessage)) ||
+      (size < sizeof(struct GNUNET_MessageHeader)))
   {
     struct GNUNET_SERVICE_Client *client = cmc->tc->client;
 
@@ -5245,8 +5217,7 @@ handle_raw_message (void *cls, const struct GNUNET_MessageHeader *mh)
        we pass this on, CORE would be confused (link down, messages
        arrive).  We should investigate more if this happens often,
        or in a persistent manner, and possibly do "something" about
-       it. Thus logging as error for now. */
-    GNUNET_break_op (0);
+       it. Thus logging as error for now. */GNUNET_break_op (0);
     GNUNET_STATISTICS_update (GST_stats,
                               "# CORE messages droped (virtual link still down)",
                               1,
@@ -5336,7 +5307,7 @@ static int
 check_fragment_box (void *cls, const struct TransportFragmentBoxMessage *fb)
 {
   uint16_t size = ntohs (fb->header.size);
-  uint16_t bsize = size - sizeof (*fb);
+  uint16_t bsize = size - sizeof(*fb);
 
   (void) cls;
   if (0 == bsize)
@@ -5386,9 +5357,9 @@ static void
 transmit_cummulative_ack_cb (void *cls)
 {
   struct AcknowledgementCummulator *ac = cls;
-  char buf[sizeof (struct TransportReliabilityAckMessage) +
-           ac->ack_counter *
-             sizeof (struct TransportCummulativeAckPayloadP)] GNUNET_ALIGN;
+  char buf[sizeof(struct TransportReliabilityAckMessage)
+           + ac->ack_counter
+           * sizeof(struct TransportCummulativeAckPayloadP)] GNUNET_ALIGN;
   struct TransportReliabilityAckMessage *ack =
     (struct TransportReliabilityAckMessage *) buf;
   struct TransportCummulativeAckPayloadP *ap;
@@ -5401,8 +5372,8 @@ transmit_cummulative_ack_cb (void *cls)
   GNUNET_assert (0 < ac->ack_counter);
   ack->header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_ACK);
   ack->header.size =
-    htons (sizeof (*ack) +
-           ac->ack_counter * sizeof (struct TransportCummulativeAckPayloadP));
+    htons (sizeof(*ack)
+           + ac->ack_counter * sizeof(struct TransportCummulativeAckPayloadP));
   ack->ack_counter = htonl (ac->ack_counter++);
   ap = (struct TransportCummulativeAckPayloadP *) &ack[1];
   for (unsigned int i = 0; i < ac->ack_counter; i++)
@@ -5565,8 +5536,8 @@ handle_fragment_box (void *cls, const struct TransportFragmentBoxMessage *fb)
                                                        &fc);
   if (NULL == (rc = fc.rc))
   {
-    rc = GNUNET_malloc (sizeof (*rc) + msize + /* reassembly payload buffer */
-                        (msize + 7) / 8 * sizeof (uint8_t) /* bitfield */);
+    rc = GNUNET_malloc (sizeof(*rc) + msize    /* reassembly payload buffer */
+                        + (msize + 7) / 8 * sizeof(uint8_t) /* bitfield */);
     rc->msg_uuid = fb->msg_uuid;
     rc->neighbour = n;
     rc->msg_size = msize;
@@ -5610,7 +5581,7 @@ handle_fragment_box (void *cls, const struct TransportFragmentBoxMessage *fb)
   }
 
   /* reassemble */
-  fsize = ntohs (fb->header.size) - sizeof (*fb);
+  fsize = ntohs (fb->header.size) - sizeof(*fb);
   if (0 == fsize)
   {
     GNUNET_break (0);
@@ -5715,15 +5686,15 @@ handle_reliability_box (void *cls,
               (unsigned int) ntohs (inbox->type));
   rtt = GNUNET_TIME_UNIT_SECONDS; /* FIXME: should base this on "RTT", but we
                                      do not really have an RTT for the
-                                     *incoming* queue (should we have
+                                   * incoming* queue (should we have
                                      the sender add it to the rb message?) */
   cummulative_ack (
     &cmc->im.sender,
     &rb->ack_uuid,
     (0 == ntohl (rb->ack_countdown))
-      ? GNUNET_TIME_UNIT_ZERO_ABS
-      : GNUNET_TIME_relative_to_absolute (
-          GNUNET_TIME_relative_divide (rtt, 8 /* FIXME: magic constant */)));
+    ? GNUNET_TIME_UNIT_ZERO_ABS
+    : GNUNET_TIME_relative_to_absolute (
+      GNUNET_TIME_relative_divide (rtt, 8 /* FIXME: magic constant */)));
   /* continue with inner message */
   /* FIXME: check that inbox is NOT a DV Box, fragment or another
      reliability box (not allowed!) */
@@ -5836,6 +5807,7 @@ completed_pending_message (struct PendingMessage *pm)
     /* Full message sent, we are done */
     client_send_response (pm);
     return;
+
   case PMT_FRAGMENT_BOX:
     /* Fragment sent over reliabile channel */
     free_fragment_tree (pm);
@@ -5857,6 +5829,7 @@ completed_pending_message (struct PendingMessage *pm)
         (pos->frag_off == pos->bytes_msg))
       client_send_response (pos);
     return;
+
   case PMT_DV_BOX:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Completed transmission of message %llu (DV Box)\n",
@@ -5909,15 +5882,15 @@ check_reliability_ack (void *cls,
   unsigned int n_acks;
 
   (void) cls;
-  n_acks = (ntohs (ra->header.size) - sizeof (*ra)) /
-           sizeof (struct TransportCummulativeAckPayloadP);
+  n_acks = (ntohs (ra->header.size) - sizeof(*ra))
+           / sizeof(struct TransportCummulativeAckPayloadP);
   if (0 == n_acks)
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  if ((ntohs (ra->header.size) - sizeof (*ra)) !=
-      n_acks * sizeof (struct TransportCummulativeAckPayloadP))
+  if ((ntohs (ra->header.size) - sizeof(*ra)) !=
+      n_acks * sizeof(struct TransportCummulativeAckPayloadP))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -5942,8 +5915,8 @@ handle_reliability_ack (void *cls,
   unsigned int n_acks;
   uint32_t ack_counter;
 
-  n_acks = (ntohs (ra->header.size) - sizeof (*ra)) /
-           sizeof (struct TransportCummulativeAckPayloadP);
+  n_acks = (ntohs (ra->header.size) - sizeof(*ra))
+           / sizeof(struct TransportCummulativeAckPayloadP);
   ack = (const struct TransportCummulativeAckPayloadP *) &ra[1];
   for (unsigned int i = 0; i < n_acks; i++)
   {
@@ -5970,7 +5943,7 @@ handle_reliability_ack (void *cls,
   }
 
   ack_counter = htonl (ra->ack_counter);
-  (void) ack_counter; /* silence compiler warning for now */
+  (void) ack_counter;  /* silence compiler warning for now */
   // FIXME-OPTIMIZE: track ACK losses based on ack_counter somewhere!
   // (DV and/or Neighbour?)
   finish_cmc_handling (cmc);
@@ -5989,7 +5962,7 @@ check_backchannel_encapsulation (
   void *cls,
   const struct TransportBackchannelEncapsulationMessage *be)
 {
-  uint16_t size = ntohs (be->header.size) - sizeof (*be);
+  uint16_t size = ntohs (be->header.size) - sizeof(*be);
   const struct GNUNET_MessageHeader *inbox =
     (const struct GNUNET_MessageHeader *) &be[1];
   const char *is;
@@ -6277,7 +6250,7 @@ learn_dv_path (const struct GNUNET_PeerIdentity *path,
         if (last_timeout.rel_value_us <
             GNUNET_TIME_relative_subtract (DV_PATH_VALIDITY_TIMEOUT,
                                            DV_PATH_DISCOVERY_FREQUENCY)
-              .rel_value_us)
+            .rel_value_us)
         {
           /* Some peer send DV learn messages too often, we are learning
              the same path faster than it would be useful; do not forward! */
@@ -6306,14 +6279,14 @@ learn_dv_path (const struct GNUNET_PeerIdentity *path,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Discovered new DV path to %s\n",
               GNUNET_i2s (&dv->target));
-  hop = GNUNET_malloc (sizeof (struct DistanceVectorHop) +
-                       sizeof (struct GNUNET_PeerIdentity) * (path_len - 2));
+  hop = GNUNET_malloc (sizeof(struct DistanceVectorHop)
+                       + sizeof(struct GNUNET_PeerIdentity) * (path_len - 2));
   hop->next_hop = next_hop;
   hop->dv = dv;
   hop->path = (const struct GNUNET_PeerIdentity *) &hop[1];
   memcpy (&hop[1],
           &path[2],
-          sizeof (struct GNUNET_PeerIdentity) * (path_len - 2));
+          sizeof(struct GNUNET_PeerIdentity) * (path_len - 2));
   hop->timeout = GNUNET_TIME_relative_to_absolute (DV_PATH_VALIDITY_TIMEOUT);
   hop->path_valid_until = path_valid_until;
   hop->distance = path_len - 2;
@@ -6344,7 +6317,7 @@ check_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
   const struct DVPathEntryP *hops = (const struct DVPathEntryP *) &dvl[1];
 
   (void) cls;
-  if (size != sizeof (*dvl) + num_hops * sizeof (struct DVPathEntryP))
+  if (size != sizeof(*dvl) + num_hops * sizeof(struct DVPathEntryP))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -6391,8 +6364,8 @@ forward_dv_learn (const struct GNUNET_PeerIdentity *next_hop,
                   struct GNUNET_TIME_Absolute in_time)
 {
   struct DVPathEntryP *dhops;
-  char buf[sizeof (struct TransportDVLearnMessage) +
-           (nhops + 1) * sizeof (struct DVPathEntryP)] GNUNET_ALIGN;
+  char buf[sizeof(struct TransportDVLearnMessage)
+           + (nhops + 1) * sizeof(struct DVPathEntryP)] GNUNET_ALIGN;
   struct TransportDVLearnMessage *fwd = (struct TransportDVLearnMessage *) buf;
   struct GNUNET_TIME_Relative nnd;
 
@@ -6403,8 +6376,8 @@ forward_dv_learn (const struct GNUNET_PeerIdentity *next_hop,
               GNUNET_i2s2 (next_hop));
   GNUNET_assert (nhops < MAX_DV_HOPS_ALLOWED);
   fwd->header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_DV_LEARN);
-  fwd->header.size = htons (sizeof (struct TransportDVLearnMessage) +
-                            (nhops + 1) * sizeof (struct DVPathEntryP));
+  fwd->header.size = htons (sizeof(struct TransportDVLearnMessage)
+                            + (nhops + 1) * sizeof(struct DVPathEntryP));
   fwd->num_hops = htons (nhops + 1);
   fwd->bidirectional = htons (bi_history);
   nnd = GNUNET_TIME_relative_add (GNUNET_TIME_absolute_get_duration (in_time),
@@ -6415,15 +6388,15 @@ forward_dv_learn (const struct GNUNET_PeerIdentity *next_hop,
   fwd->initiator = msg->initiator;
   fwd->challenge = msg->challenge;
   dhops = (struct DVPathEntryP *) &fwd[1];
-  GNUNET_memcpy (dhops, hops, sizeof (struct DVPathEntryP) * nhops);
+  GNUNET_memcpy (dhops, hops, sizeof(struct DVPathEntryP) * nhops);
   dhops[nhops].hop = GST_my_identity;
   {
-    struct DvHopPS dhp = {.purpose.purpose =
-                            htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_HOP),
-                          .purpose.size = htonl (sizeof (dhp)),
-                          .pred = dhops[nhops - 1].hop,
-                          .succ = *next_hop,
-                          .challenge = msg->challenge};
+    struct DvHopPS dhp = { .purpose.purpose =
+                             htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_HOP),
+                           .purpose.size = htonl (sizeof(dhp)),
+                           .pred = dhops[nhops - 1].hop,
+                           .succ = *next_hop,
+                           .challenge = msg->challenge };
 
     GNUNET_assert (GNUNET_OK ==
                    GNUNET_CRYPTO_eddsa_sign (GST_my_private_key,
@@ -6452,11 +6425,11 @@ validate_dv_initiator_signature (
   const struct ChallengeNonceP *challenge,
   const struct GNUNET_CRYPTO_EddsaSignature *init_sig)
 {
-  struct DvInitPS ip = {.purpose.purpose = htonl (
-                          GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_INITIATOR),
-                        .purpose.size = htonl (sizeof (ip)),
-                        .monotonic_time = sender_monotonic_time,
-                        .challenge = *challenge};
+  struct DvInitPS ip = { .purpose.purpose = htonl (
+                           GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_INITIATOR),
+                         .purpose.size = htonl (sizeof(ip)),
+                         .monotonic_time = sender_monotonic_time,
+                         .challenge = *challenge };
 
   if (
     GNUNET_OK !=
@@ -6539,7 +6512,8 @@ dv_neighbour_selection (void *cls,
     return GNUNET_YES; /* skip initiator */
   for (unsigned int i = 0; i < nsc->nhops; i++)
     if (0 == GNUNET_memcmp (pid, &nsc->hops[i].hop))
-      return GNUNET_YES; /* skip peers on path */
+      return GNUNET_YES;
+  /* skip peers on path */
   nsc->num_eligible++;
   return GNUNET_YES;
 }
@@ -6567,7 +6541,8 @@ dv_neighbour_transmission (void *cls,
     return GNUNET_YES; /* skip initiator */
   for (unsigned int i = 0; i < nsc->nhops; i++)
     if (0 == GNUNET_memcmp (pid, &nsc->hops[i].hop))
-      return GNUNET_YES; /* skip peers on path */
+      return GNUNET_YES;
+  /* skip peers on path */
   for (unsigned int i = 0; i < nsc->num_selections; i++)
   {
     if (nsc->selections[i] == nsc->num_eligible)
@@ -6644,7 +6619,7 @@ calculate_fork_degree (unsigned int hops_taken,
   if (hops_taken >= 64)
   {
     GNUNET_break (0);
-    return 0; /* precaution given bitshift below */
+    return 0;   /* precaution given bitshift below */
   }
   for (unsigned int i = 1; i < hops_taken; i++)
   {
@@ -6709,7 +6684,7 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
   struct GNUNET_TIME_Absolute in_time;
   struct Neighbour *n;
 
-  nhops = ntohs (dvl->bidirectional); /* 0 = sender is initiator */
+  nhops = ntohs (dvl->bidirectional);  /* 0 = sender is initiator */
   bi_history = ntohs (dvl->bidirectional);
   hops = (const struct DVPathEntryP *) &dvl[1];
   if (0 == nhops)
@@ -6774,7 +6749,7 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
                                 &dvl->initiator,
                                 GNUNET_PEERSTORE_TRANSPORT_DVLEARN_MONOTIME,
                                 &dvl->monotonic_time,
-                                sizeof (dvl->monotonic_time),
+                                sizeof(dvl->monotonic_time),
                                 GNUNET_TIME_UNIT_FOREVER_ABS,
                                 GNUNET_PEERSTORE_STOREOPTION_REPLACE,
                                 &neighbour_store_dvmono_cb,
@@ -6785,13 +6760,13 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
      If signature verification load too high, implement random drop strategy */
   for (unsigned int i = 0; i < nhops; i++)
   {
-    struct DvHopPS dhp = {.purpose.purpose =
-                            htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_HOP),
-                          .purpose.size = htonl (sizeof (dhp)),
-                          .pred = (0 == i) ? dvl->initiator : hops[i - 1].hop,
-                          .succ = (nhops == i + 1) ? GST_my_identity
-                                                   : hops[i + 1].hop,
-                          .challenge = dvl->challenge};
+    struct DvHopPS dhp = { .purpose.purpose =
+                             htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_HOP),
+                           .purpose.size = htonl (sizeof(dhp)),
+                           .pred = (0 == i) ? dvl->initiator : hops[i - 1].hop,
+                           .succ = (nhops == i + 1) ? GST_my_identity
+                                   : hops[i + 1].hop,
+                           .challenge = dvl->challenge };
 
     if (GNUNET_OK !=
         GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_HOP,
@@ -6844,7 +6819,7 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
 
     // Need also something to lookup initiation time
     // to compute RTT! -> add RTT argument here?
-    latency = GNUNET_TIME_UNIT_FOREVER_REL; // FIXME: initialize properly
+    latency = GNUNET_TIME_UNIT_FOREVER_REL;   // FIXME: initialize properly
     // (based on dvl->challenge, we can identify time of origin!)
 
     network_latency = GNUNET_TIME_relative_subtract (latency, host_latency_sum);
@@ -6879,13 +6854,13 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
     struct GNUNET_PeerIdentity path[nhops + 2];
 
     path[0] = GST_my_identity;
-    path[1] = hops[nhops - 1].hop; /* direct neighbour == predecessor! */
+    path[1] = hops[nhops - 1].hop;   /* direct neighbour == predecessor! */
     for (unsigned int i = 0; i < nhops; i++)
     {
       int iret;
 
       if (0 == (bi_history & (1 << i)))
-        break; /* i-th hop not bi-directional, stop learning! */
+        break;     /* i-th hop not bi-directional, stop learning! */
       if (i == nhops - 1)
       {
         path[i + 2] = dvl->initiator;
@@ -6973,7 +6948,7 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
                                            &dv_neighbour_selection,
                                            &nsc);
     if (0 == nsc.num_eligible)
-      return; /* done here, cannot forward to anyone else */
+      return;   /* done here, cannot forward to anyone else */
     nsc.num_selections = calculate_fork_degree (nhops, n_cnt, nsc.num_eligible);
     nsc.num_selections =
       GNUNET_MIN (MAX_DV_DISCOVERY_SELECTION, nsc.num_selections);
@@ -6983,8 +6958,8 @@ handle_dv_learn (void *cls, const struct TransportDVLearnMessage *dvl)
     for (unsigned int i = 0; i < nsc.num_selections; i++)
       nsc.selections[i] =
         (nsc.num_selections == n_cnt)
-          ? i /* all were selected, avoid collisions by chance */
-          : GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, n_cnt);
+        ? i   /* all were selected, avoid collisions by chance */
+        : GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, n_cnt);
     nsc.num_eligible = 0;
     GNUNET_CONTAINER_multipeermap_iterate (neighbours,
                                            &dv_neighbour_transmission,
@@ -7009,8 +6984,8 @@ check_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
     (const struct GNUNET_PeerIdentity *) &dvb[1];
 
   (void) cls;
-  if (size < sizeof (*dvb) + num_hops * sizeof (struct GNUNET_PeerIdentity) +
-               sizeof (struct GNUNET_MessageHeader))
+  if (size < sizeof(*dvb) + num_hops * sizeof(struct GNUNET_PeerIdentity)
+      + sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -7054,9 +7029,9 @@ forward_dv_box (struct Neighbour *next_hop,
   struct GNUNET_PeerIdentity *dhops;
 
   GNUNET_assert (NULL != vl);
-  msg_size = sizeof (struct TransportDVBoxMessage) +
-             num_hops * sizeof (struct GNUNET_PeerIdentity) + enc_payload_size;
-  pm = GNUNET_malloc (sizeof (struct PendingMessage) + msg_size);
+  msg_size = sizeof(struct TransportDVBoxMessage)
+             + num_hops * sizeof(struct GNUNET_PeerIdentity) + enc_payload_size;
+  pm = GNUNET_malloc (sizeof(struct PendingMessage) + msg_size);
   pm->pmt = PMT_DV_BOX;
   pm->vl = vl;
   pm->timeout = GNUNET_TIME_relative_to_absolute (DV_FORWARD_TIMEOUT);
@@ -7064,10 +7039,10 @@ forward_dv_box (struct Neighbour *next_hop,
   pm->prefs = GNUNET_MQ_PRIO_BACKGROUND;
   pm->bytes_msg = msg_size;
   buf = (char *) &pm[1];
-  memcpy (buf, hdr, sizeof (*hdr));
+  memcpy (buf, hdr, sizeof(*hdr));
   dhops =
-    (struct GNUNET_PeerIdentity *) &buf[sizeof (struct TransportDVBoxMessage)];
-  memcpy (dhops, hops, num_hops * sizeof (struct GNUNET_PeerIdentity));
+    (struct GNUNET_PeerIdentity *) &buf[sizeof(struct TransportDVBoxMessage)];
+  memcpy (dhops, hops, num_hops * sizeof(struct GNUNET_PeerIdentity));
   memcpy (&dhops[num_hops], enc_payload, enc_payload_size);
   GNUNET_CONTAINER_MDLL_insert (vl,
                                 vl->pending_msg_head,
@@ -7191,7 +7166,7 @@ backtalker_monotime_cb (void *cls,
     b->cmc = NULL;
     return;
   }
-  if (sizeof (*mtbe) != record->value_size)
+  if (sizeof(*mtbe) != record->value_size)
   {
     GNUNET_break (0);
     return;
@@ -7266,7 +7241,7 @@ update_backtalker_monotime (struct Backtalker *b)
                             &b->pid,
                             GNUNET_PEERSTORE_TRANSPORT_BACKCHANNEL_MONOTIME,
                             &mtbe,
-                            sizeof (mtbe),
+                            sizeof(mtbe),
                             GNUNET_TIME_UNIT_FOREVER_ABS,
                             GNUNET_PEERSTORE_STOREOPTION_REPLACE,
                             &backtalker_monotime_store_cb,
@@ -7285,13 +7260,13 @@ static void
 handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
 {
   struct CommunicatorMessageContext *cmc = cls;
-  uint16_t size = ntohs (dvb->header.size) - sizeof (*dvb);
+  uint16_t size = ntohs (dvb->header.size) - sizeof(*dvb);
   uint16_t num_hops = ntohs (dvb->num_hops);
   const struct GNUNET_PeerIdentity *hops =
     (const struct GNUNET_PeerIdentity *) &dvb[1];
   const char *enc_payload = (const char *) &hops[num_hops];
   uint16_t enc_payload_size =
-    size - (num_hops * sizeof (struct GNUNET_PeerIdentity));
+    size - (num_hops * sizeof(struct GNUNET_PeerIdentity));
   struct DVKeyState key;
   struct GNUNET_HashCode hmac;
   const char *hdr;
@@ -7340,8 +7315,8 @@ handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
       forward_dv_box (n,
                       dvb,
                       ntohs (dvb->total_hops) + 1,
-                      num_hops - i - 1, /* number of hops left */
-                      &hops[i + 1], /* remaining hops */
+                      num_hops - i - 1,    /* number of hops left */
+                      &hops[i + 1],    /* remaining hops */
                       enc_payload,
                       enc_payload_size);
       GNUNET_STATISTICS_update (GST_stats,
@@ -7372,7 +7347,7 @@ handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
 
   dh_key_derive_eph_pub (&dvb->ephemeral_key, &dvb->iv, &key);
   hdr = (const char *) &dvb[1];
-  hdr_len = ntohs (dvb->header.size) - sizeof (*dvb);
+  hdr_len = ntohs (dvb->header.size) - sizeof(*dvb);
   dv_hmac (&key, &hmac, hdr, hdr_len);
   if (0 != GNUNET_memcmp (&hmac, &dvb->hmac))
   {
@@ -7386,16 +7361,16 @@ handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
     struct Backtalker *b;
     struct GNUNET_TIME_Absolute monotime;
     struct TransportDVBoxPayloadP ppay;
-    char body[hdr_len - sizeof (ppay)] GNUNET_ALIGN;
+    char body[hdr_len - sizeof(ppay)] GNUNET_ALIGN;
     const struct GNUNET_MessageHeader *mh =
       (const struct GNUNET_MessageHeader *) body;
 
     GNUNET_assert (hdr_len >=
-                   sizeof (ppay) + sizeof (struct GNUNET_MessageHeader));
-    dv_decrypt (&key, &ppay, hdr, sizeof (ppay));
-    dv_decrypt (&key, &body, &hdr[sizeof (ppay)], hdr_len - sizeof (ppay));
+                   sizeof(ppay) + sizeof(struct GNUNET_MessageHeader));
+    dv_decrypt (&key, &ppay, hdr, sizeof(ppay));
+    dv_decrypt (&key, &body, &hdr[sizeof(ppay)], hdr_len - sizeof(ppay));
     dv_key_clean (&key);
-    if (ntohs (mh->size) != sizeof (body))
+    if (ntohs (mh->size) != sizeof(body))
     {
       GNUNET_break_op (0);
       finish_cmc_handling (cmc);
@@ -7408,10 +7383,12 @@ handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
       GNUNET_break_op (0);
       finish_cmc_handling (cmc);
       return;
+
     case GNUNET_MESSAGE_TYPE_TRANSPORT_DV_LEARN:
       GNUNET_break_op (0);
       finish_cmc_handling (cmc);
       return;
+
     default:
       /* permitted, continue */
       break;
@@ -7438,15 +7415,16 @@ handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
       struct EphemeralConfirmationPS ec;
 
       ec.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_EPHEMERAL);
-      ec.purpose.size = htonl (sizeof (ec));
+      ec.purpose.size = htonl (sizeof(ec));
       ec.target = GST_my_identity;
       ec.ephemeral_key = dvb->ephemeral_key;
       if (
         GNUNET_OK !=
-        GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_EPHEMERAL,
-                                    &ec.purpose,
-                                    &ppay.sender_sig,
-                                    &ppay.sender.public_key))
+        GNUNET_CRYPTO_eddsa_verify (
+          GNUNET_SIGNATURE_PURPOSE_TRANSPORT_EPHEMERAL,
+          &ec.purpose,
+          &ppay.sender_sig,
+          &ppay.sender.public_key))
       {
         /* Signature invalid, disard! */
         GNUNET_break_op (0);
@@ -7475,10 +7453,10 @@ handle_dv_box (void *cls, const struct TransportDVBoxMessage *dvb)
     }
     /* setup data structure to cache signature AND check
        monotonic time with PEERSTORE before forwarding backchannel payload */
-    b = GNUNET_malloc (sizeof (struct Backtalker) + sizeof (body));
+    b = GNUNET_malloc (sizeof(struct Backtalker) + sizeof(body));
     b->pid = ppay.sender;
-    b->body_size = sizeof (body);
-    memcpy (&b[1], body, sizeof (body));
+    b->body_size = sizeof(body);
+    memcpy (&b[1], body, sizeof(body));
     GNUNET_assert (GNUNET_YES ==
                    GNUNET_CONTAINER_multipeermap_put (
                      backtalkers,
@@ -7623,7 +7601,7 @@ start_address_validation (const struct GNUNET_PeerIdentity *pid,
 {
   struct GNUNET_TIME_Absolute now;
   struct ValidationState *vs;
-  struct CheckKnownAddressContext ckac = {.address = address, .vs = NULL};
+  struct CheckKnownAddressContext ckac = { .address = address, .vs = NULL };
 
   (void) GNUNET_CONTAINER_multipeermap_get_multiple (validation_map,
                                                      pid,
@@ -7638,8 +7616,9 @@ start_address_validation (const struct GNUNET_PeerIdentity *pid,
       /* reduce backoff as we got a fresh advertisement */
       vs->challenge_backoff =
         GNUNET_TIME_relative_min (FAST_VALIDATION_CHALLENGE_FREQ,
-                                  GNUNET_TIME_relative_divide (vs->challenge_backoff,
-                                                               2));
+                                  GNUNET_TIME_relative_divide (
+                                    vs->challenge_backoff,
+                                    2));
       update_next_challenge_time (vs,
                                   GNUNET_TIME_relative_to_absolute (
                                     vs->challenge_backoff));
@@ -7655,7 +7634,7 @@ start_address_validation (const struct GNUNET_PeerIdentity *pid,
   vs->validation_rtt = GNUNET_TIME_UNIT_FOREVER_REL;
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE,
                               &vs->challenge,
-                              sizeof (vs->challenge));
+                              sizeof(vs->challenge));
   vs->address = GNUNET_strdup (address);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Starting address validation `%s' of peer %s using challenge %s\n",
@@ -7742,7 +7721,7 @@ handle_validation_challenge (
      we will always give a window size of zero. */
   tvr.header.type =
     htons (GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_RESPONSE);
-  tvr.header.size = htons (sizeof (tvr));
+  tvr.header.size = htons (sizeof(tvr));
   tvr.reserved = htonl (0);
   tvr.challenge = tvc->challenge;
   tvr.origin_time = tvc->sender_time;
@@ -7750,10 +7729,10 @@ handle_validation_challenge (
   {
     /* create signature */
     struct TransportValidationPS tvp =
-      {.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_CHALLENGE),
-       .purpose.size = htonl (sizeof (tvp)),
-       .validity_duration = validity_duration,
-       .challenge = tvc->challenge};
+    { .purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_CHALLENGE),
+      .purpose.size = htonl (sizeof(tvp)),
+      .validity_duration = validity_duration,
+      .challenge = tvc->challenge };
 
     GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_eddsa_sign (GST_my_private_key,
                                                           &tvp.purpose,
@@ -7781,7 +7760,8 @@ handle_validation_challenge (
      we could use */
   for (ir = ir_head; NULL != ir; ir = ir->next)
     if (0 == GNUNET_memcmp (&ir->pid, &sender))
-      return; /* we are already trying */
+      return;
+  /* we are already trying */
   ir = GNUNET_new (struct IncomingRequest);
   ir->pid = sender;
   GNUNET_CONTAINER_DLL_insert (ir_head, ir_tail, ir);
@@ -7902,8 +7882,8 @@ handle_validation_response (
 {
   struct CommunicatorMessageContext *cmc = cls;
   struct ValidationState *vs;
-  struct CheckKnownChallengeContext ckac = {.challenge = &tvr->challenge,
-                                            .vs = NULL};
+  struct CheckKnownChallengeContext ckac = { .challenge = &tvr->challenge,
+                                             .vs = NULL };
   struct GNUNET_TIME_Absolute origin_time;
   struct Queue *q;
   struct Neighbour *n;
@@ -7942,10 +7922,10 @@ handle_validation_response (
   {
     /* check signature */
     struct TransportValidationPS tvp =
-      {.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_CHALLENGE),
-       .purpose.size = htonl (sizeof (tvp)),
-       .validity_duration = tvr->validity_duration,
-       .challenge = tvr->challenge};
+    { .purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_TRANSPORT_CHALLENGE),
+      .purpose.size = htonl (sizeof(tvp)),
+      .validity_duration = tvr->validity_duration,
+      .challenge = tvr->challenge };
 
     if (
       GNUNET_OK !=
@@ -7974,7 +7954,7 @@ handle_validation_response (
   vs->challenge_backoff = GNUNET_TIME_UNIT_ZERO;
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE,
                               &vs->challenge,
-                              sizeof (vs->challenge));
+                              sizeof(vs->challenge));
   vs->first_challenge_use = GNUNET_TIME_absolute_subtract (
     vs->validated_until,
     GNUNET_TIME_relative_multiply (vs->validation_rtt,
@@ -8136,8 +8116,8 @@ handle_flow_control (void *cls, const struct TransportFlowControlMessage *fc)
   wnd = GNUNET_ntohll (fc->outbound_window_size);
   if ((wnd < vl->incoming_fc_window_size) ||
       (vl->last_outbound_window_size_received != wnd) ||
-      (0 == GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, UINT32_MAX) %
-              FC_NO_CHANGE_REPLY_PROBABILITY))
+      (0 == GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, UINT32_MAX)
+       % FC_NO_CHANGE_REPLY_PROBABILITY))
   {
     /* Consider re-sending our FC message, as clearly the
        other peer's idea of the window is not up-to-date */
@@ -8173,45 +8153,45 @@ demultiplex_with_cmc (struct CommunicatorMessageContext *cmc,
                       const struct GNUNET_MessageHeader *msg)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (fragment_box,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT,
-                            struct TransportFragmentBoxMessage,
-                            &cmc),
-     GNUNET_MQ_hd_var_size (reliability_box,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_BOX,
-                            struct TransportReliabilityBoxMessage,
-                            &cmc),
-     GNUNET_MQ_hd_var_size (reliability_ack,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_ACK,
-                            struct TransportReliabilityAckMessage,
-                            &cmc),
-     GNUNET_MQ_hd_var_size (backchannel_encapsulation,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_BACKCHANNEL_ENCAPSULATION,
-                            struct TransportBackchannelEncapsulationMessage,
-                            &cmc),
-     GNUNET_MQ_hd_var_size (dv_learn,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_DV_LEARN,
-                            struct TransportDVLearnMessage,
-                            &cmc),
-     GNUNET_MQ_hd_var_size (dv_box,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_DV_BOX,
-                            struct TransportDVBoxMessage,
-                            &cmc),
-     GNUNET_MQ_hd_fixed_size (
-       validation_challenge,
-       GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_CHALLENGE,
-       struct TransportValidationChallengeMessage,
-       &cmc),
-     GNUNET_MQ_hd_fixed_size (flow_control,
-                              GNUNET_MESSAGE_TYPE_TRANSPORT_FLOW_CONTROL,
-                              struct TransportFlowControlMessage,
-                              &cmc),
-     GNUNET_MQ_hd_fixed_size (
-       validation_response,
-       GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_RESPONSE,
-       struct TransportValidationResponseMessage,
-       &cmc),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (fragment_box,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT,
+                           struct TransportFragmentBoxMessage,
+                           &cmc),
+    GNUNET_MQ_hd_var_size (reliability_box,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_BOX,
+                           struct TransportReliabilityBoxMessage,
+                           &cmc),
+    GNUNET_MQ_hd_var_size (reliability_ack,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_ACK,
+                           struct TransportReliabilityAckMessage,
+                           &cmc),
+    GNUNET_MQ_hd_var_size (backchannel_encapsulation,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_BACKCHANNEL_ENCAPSULATION,
+                           struct TransportBackchannelEncapsulationMessage,
+                           &cmc),
+    GNUNET_MQ_hd_var_size (dv_learn,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_DV_LEARN,
+                           struct TransportDVLearnMessage,
+                           &cmc),
+    GNUNET_MQ_hd_var_size (dv_box,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_DV_BOX,
+                           struct TransportDVBoxMessage,
+                           &cmc),
+    GNUNET_MQ_hd_fixed_size (
+      validation_challenge,
+      GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_CHALLENGE,
+      struct TransportValidationChallengeMessage,
+      &cmc),
+    GNUNET_MQ_hd_fixed_size (flow_control,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_FLOW_CONTROL,
+                             struct TransportFlowControlMessage,
+                             &cmc),
+    GNUNET_MQ_hd_fixed_size (
+      validation_response,
+      GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_RESPONSE,
+      struct TransportValidationResponseMessage,
+      &cmc),
+    GNUNET_MQ_handler_end () };
   int ret;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -8294,12 +8274,13 @@ prepare_pending_acknowledgement (struct Queue *queue,
   {
     GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE,
                                 &pa->ack_uuid,
-                                sizeof (pa->ack_uuid));
-  } while (GNUNET_YES != GNUNET_CONTAINER_multiuuidmap_put (
-                           pending_acks,
-                           &pa->ack_uuid.value,
-                           pa,
-                           GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
+                                sizeof(pa->ack_uuid));
+  }
+  while (GNUNET_YES != GNUNET_CONTAINER_multiuuidmap_put (
+           pending_acks,
+           &pa->ack_uuid.value,
+           pa,
+           GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   GNUNET_CONTAINER_MDLL_insert (queue, queue->pa_head, queue->pa_tail, pa);
   GNUNET_CONTAINER_MDLL_insert (pm, pm->pa_head, pm->pa_tail, pa);
   if (NULL != dvh)
@@ -8335,8 +8316,8 @@ fragment_message (struct Queue *queue,
   uint16_t mtu;
 
   mtu = (0 == queue->mtu)
-          ? UINT16_MAX - sizeof (struct GNUNET_TRANSPORT_SendMessageTo)
-          : queue->mtu;
+        ? UINT16_MAX - sizeof(struct GNUNET_TRANSPORT_SendMessageTo)
+        : queue->mtu;
   set_pending_message_uuid (pm);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Fragmenting message %llu <%llu> to %s for MTU %u\n",
@@ -8347,7 +8328,7 @@ fragment_message (struct Queue *queue,
   pa = prepare_pending_acknowledgement (queue, dvh, pm);
 
   /* This invariant is established in #handle_add_queue_message() */
-  GNUNET_assert (mtu > sizeof (struct TransportFragmentBoxMessage));
+  GNUNET_assert (mtu > sizeof(struct TransportFragmentBoxMessage));
 
   /* select fragment for transmission, descending the tree if it has
      been expanded until we are at a leaf or at a fragment that is small
@@ -8357,7 +8338,7 @@ fragment_message (struct Queue *queue,
   while (((ff->bytes_msg > mtu) || (pm == ff)) &&
          (ff->frag_off == ff->bytes_msg) && (NULL != ff->head_frag))
   {
-    ff = ff->head_frag; /* descent into fragmented fragments */
+    ff = ff->head_frag;   /* descent into fragmented fragments */
   }
 
   if (((ff->bytes_msg > mtu) || (pm == ff)) && (pm->frag_off < pm->bytes_msg))
@@ -8379,31 +8360,31 @@ fragment_message (struct Queue *queue,
       const struct TransportFragmentBoxMessage *tfbo;
 
       tfbo = (const struct TransportFragmentBoxMessage *) orig;
-      orig += sizeof (struct TransportFragmentBoxMessage);
-      msize -= sizeof (struct TransportFragmentBoxMessage);
+      orig += sizeof(struct TransportFragmentBoxMessage);
+      msize -= sizeof(struct TransportFragmentBoxMessage);
       xoff = ntohs (tfbo->frag_off);
     }
-    fragmax = mtu - sizeof (struct TransportFragmentBoxMessage);
+    fragmax = mtu - sizeof(struct TransportFragmentBoxMessage);
     fragsize = GNUNET_MIN (msize - ff->frag_off, fragmax);
     frag =
-      GNUNET_malloc (sizeof (struct PendingMessage) +
-                     sizeof (struct TransportFragmentBoxMessage) + fragsize);
+      GNUNET_malloc (sizeof(struct PendingMessage)
+                     + sizeof(struct TransportFragmentBoxMessage) + fragsize);
     frag->logging_uuid = logging_uuid_gen++;
     frag->vl = pm->vl;
     frag->frag_parent = ff;
     frag->timeout = pm->timeout;
-    frag->bytes_msg = sizeof (struct TransportFragmentBoxMessage) + fragsize;
+    frag->bytes_msg = sizeof(struct TransportFragmentBoxMessage) + fragsize;
     frag->pmt = PMT_FRAGMENT_BOX;
     msg = (char *) &frag[1];
     tfb.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_FRAGMENT);
     tfb.header.size =
-      htons (sizeof (struct TransportFragmentBoxMessage) + fragsize);
+      htons (sizeof(struct TransportFragmentBoxMessage) + fragsize);
     tfb.ack_uuid = pa->ack_uuid;
     tfb.msg_uuid = pm->msg_uuid;
     tfb.frag_off = htons (ff->frag_off + xoff);
     tfb.msg_size = htons (pm->bytes_msg);
-    memcpy (msg, &tfb, sizeof (tfb));
-    memcpy (&msg[sizeof (tfb)], &orig[ff->frag_off], fragsize);
+    memcpy (msg, &tfb, sizeof(tfb));
+    memcpy (&msg[sizeof(tfb)], &orig[ff->frag_off], fragsize);
     GNUNET_CONTAINER_MDLL_insert (frag, ff->head_frag, ff->tail_frag, frag);
     ff->frag_off += fragsize;
     ff = frag;
@@ -8450,7 +8431,7 @@ reliability_box_message (struct Queue *queue,
   if (NULL != pm->bpm)
     return pm->bpm; /* already computed earlier: do nothing */
   GNUNET_assert (NULL == pm->head_frag);
-  if (pm->bytes_msg + sizeof (rbox) > UINT16_MAX)
+  if (pm->bytes_msg + sizeof(rbox) > UINT16_MAX)
   {
     /* failed hard */
     GNUNET_break (0);
@@ -8464,24 +8445,24 @@ reliability_box_message (struct Queue *queue,
               queue->address);
   pa = prepare_pending_acknowledgement (queue, dvh, pm);
 
-  bpm = GNUNET_malloc (sizeof (struct PendingMessage) + sizeof (rbox) +
-                       pm->bytes_msg);
+  bpm = GNUNET_malloc (sizeof(struct PendingMessage) + sizeof(rbox)
+                       + pm->bytes_msg);
   bpm->logging_uuid = logging_uuid_gen++;
   bpm->vl = pm->vl;
   bpm->frag_parent = pm;
   GNUNET_CONTAINER_MDLL_insert (frag, pm->head_frag, pm->tail_frag, bpm);
   bpm->timeout = pm->timeout;
   bpm->pmt = PMT_RELIABILITY_BOX;
-  bpm->bytes_msg = pm->bytes_msg + sizeof (rbox);
+  bpm->bytes_msg = pm->bytes_msg + sizeof(rbox);
   set_pending_message_uuid (bpm);
   rbox.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_RELIABILITY_BOX);
-  rbox.header.size = htons (sizeof (rbox) + pm->bytes_msg);
-  rbox.ack_countdown = htonl (0); // FIXME: implement ACK countdown support
+  rbox.header.size = htons (sizeof(rbox) + pm->bytes_msg);
+  rbox.ack_countdown = htonl (0);  // FIXME: implement ACK countdown support
 
   rbox.ack_uuid = pa->ack_uuid;
   msg = (char *) &bpm[1];
-  memcpy (msg, &rbox, sizeof (rbox));
-  memcpy (&msg[sizeof (rbox)], &pm[1], pm->bytes_msg);
+  memcpy (msg, &rbox, sizeof(rbox));
+  memcpy (&msg[sizeof(rbox)], &pm[1], pm->bytes_msg);
   pm->bpm = bpm;
   return bpm;
 }
@@ -8612,21 +8593,23 @@ select_best_pending_from_link (struct PendingMessageScoreContext *sc,
     int relb;
 
     if ((NULL != dvh) && (PMT_DV_BOX == pos->pmt))
-      continue; /* DV messages must not be DV-routed to next hop! */
+      continue;   /* DV messages must not be DV-routed to next hop! */
     if (pos->next_attempt.abs_value_us > now.abs_value_us)
-      break; /* too early for all messages, they are sorted by next_attempt */
+      break;   /* too early for all messages, they are sorted by next_attempt */
     if (NULL != pos->qe)
-      continue; /* not eligible */
+      continue;   /* not eligible */
     sc->consideration_counter++;
     /* determine if we have to fragment, if so add fragmentation
        overhead! */
     frag = GNUNET_NO;
-    if ( ( (0 != queue->mtu) &&
-           (pos->bytes_msg + real_overhead > queue->mtu) ) ||
-         (pos->bytes_msg > UINT16_MAX - sizeof (struct GNUNET_TRANSPORT_SendMessageTo)) ||
-         (NULL != pos->head_frag /* fragments already exist, should
-                                    respect that even if MTU is 0 for
-                                    this queue */) )
+    if (((0 != queue->mtu) &&
+         (pos->bytes_msg + real_overhead > queue->mtu)) ||
+        (pos->bytes_msg > UINT16_MAX - sizeof(struct
+                                              GNUNET_TRANSPORT_SendMessageTo))
+        ||
+        (NULL != pos->head_frag /* fragments already exist, should
+                                     respect that even if MTU is 0 for
+                                     this queue */))
     {
       frag = GNUNET_YES;
       if (GNUNET_TRANSPORT_CC_RELIABLE == queue->tc->details.communicator.cc)
@@ -8634,7 +8617,7 @@ select_best_pending_from_link (struct PendingMessageScoreContext *sc,
         /* FIXME-FRAG-REL-UUID: we could use an optimized, shorter fragmentation
            header without the ACK UUID when using a *reliable* channel! */
       }
-      real_overhead = overhead + sizeof (struct TransportFragmentBoxMessage);
+      real_overhead = overhead + sizeof(struct TransportFragmentBoxMessage);
     }
     /* determine if we have to reliability-box, if so add reliability box
        overhead */
@@ -8644,7 +8627,7 @@ select_best_pending_from_link (struct PendingMessageScoreContext *sc,
         (GNUNET_TRANSPORT_CC_RELIABLE != queue->tc->details.communicator.cc))
     {
       relb = GNUNET_YES;
-      real_overhead += sizeof (struct TransportReliabilityBoxMessage);
+      real_overhead += sizeof(struct TransportReliabilityBoxMessage);
     }
 
     /* Finally, compare to existing 'best' in sc to see if this 'pos' pending
@@ -8658,27 +8641,26 @@ select_best_pending_from_link (struct PendingMessageScoreContext *sc,
          given message fits _this_ queue, and do not consider how well other
          queues might suit the message. Taking other queues into consideration
          may further improve the result, but could also be expensive
-         in terms of CPU time.  */
-      long long sc_score = sc->frag * 40 + sc->relb * 20 + sc->real_overhead;
+         in terms of CPU time.  */long long sc_score = sc->frag * 40 + sc->relb * 20 + sc->real_overhead;
       long long pm_score = frag * 40 + relb * 20 + real_overhead;
       long long time_delta =
-        (sc->best->next_attempt.abs_value_us - pos->next_attempt.abs_value_us) /
-        1000LL;
+        (sc->best->next_attempt.abs_value_us - pos->next_attempt.abs_value_us)
+        / 1000LL;
 
       /* "time_delta" considers which message has been 'ready' for transmission
          for longer, if a message has a preference for low latency, increase
          the weight of the time_delta by 10x if it is favorable for that message */
       if ((0 != (pos->prefs & GNUNET_MQ_PREF_LOW_LATENCY)) &&
           (0 != (sc->best->prefs & GNUNET_MQ_PREF_LOW_LATENCY)))
-        time_delta *= 10; /* increase weight (always, both are low latency) */
+        time_delta *= 10;     /* increase weight (always, both are low latency) */
       else if ((0 != (pos->prefs & GNUNET_MQ_PREF_LOW_LATENCY)) &&
                (time_delta > 0))
         time_delta *=
-          10; /* increase weight, favors 'pos', which is low latency */
+          10;     /* increase weight, favors 'pos', which is low latency */
       else if ((0 != (sc->best->prefs & GNUNET_MQ_PREF_LOW_LATENCY)) &&
                (time_delta < 0))
         time_delta *=
-          10; /* increase weight, favors 'sc->best', which is low latency */
+          10;     /* increase weight, favors 'sc->best', which is low latency */
       if (0 != queue->mtu)
       {
         /* Grant bonus if we are bellow MTU, larger bonus the closer we will
@@ -8689,7 +8671,7 @@ select_best_pending_from_link (struct PendingMessageScoreContext *sc,
           pm_score -= queue->mtu - (real_overhead + pos->bytes_msg);
       }
       if (sc_score + time_delta > pm_score)
-        continue; /* sc_score larger, keep sc->best */
+        continue;     /* sc_score larger, keep sc->best */
     }
     sc->best = pos;
     sc->dvh = dvh;
@@ -8721,7 +8703,7 @@ extract_box_cb (void *cls,
   uint16_t bsize = ntohs (hdr->size);
 
   GNUNET_assert (NULL == pm->bpm);
-  bpm = GNUNET_malloc (sizeof (struct PendingMessage) + bsize);
+  bpm = GNUNET_malloc (sizeof(struct PendingMessage) + bsize);
   bpm->logging_uuid = logging_uuid_gen++;
   bpm->pmt = PMT_DV_BOX;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -8767,7 +8749,7 @@ transmit_on_queue (void *cls)
     queue->idle = GNUNET_YES;
     return;
   }
-  memset (&sc, 0, sizeof (sc));
+  memset (&sc, 0, sizeof(sc));
   select_best_pending_from_link (&sc, queue, n->vl, NULL, 0);
   if (NULL == sc.best)
   {
@@ -8779,10 +8761,10 @@ transmit_on_queue (void *cls)
                                      queue,
                                      dvh->dv->vl,
                                      dvh,
-                                     sizeof (struct GNUNET_PeerIdentity) *
-                                         (1 + dvh->distance) +
-                                       sizeof (struct TransportDVBoxMessage) +
-                                       sizeof (struct TransportDVBoxPayloadP));
+                                     sizeof(struct GNUNET_PeerIdentity)
+                                     * (1 + dvh->distance)
+                                     + sizeof(struct TransportDVBoxMessage)
+                                     + sizeof(struct TransportDVBoxPayloadP));
     }
   }
   if (NULL == sc.best)
@@ -8863,8 +8845,7 @@ transmit_on_queue (void *cls)
      via DV (and thus the ultimate target of the pending message is for
      a different virtual link than the one of the queue), then we need
      to use up not only the window of the direct link but also the
-     flow control window for the DV link! */
-  pm->vl->outbound_fc_window_size_used += pm->bytes_msg;
+     flow control window for the DV link! */pm->vl->outbound_fc_window_size_used += pm->bytes_msg;
 
   if (pm->vl != queue->neighbour->vl)
   {
@@ -8903,8 +8884,7 @@ transmit_on_queue (void *cls)
 
        OPTIMIZE: Note that in the future this heuristic should likely
        be improved further (measure RTT stability, consider message
-       urgency and size when delaying ACKs, etc.) */
-    update_pm_next_attempt (pm,
+       urgency and size when delaying ACKs, etc.) */update_pm_next_attempt (pm,
                             GNUNET_TIME_relative_to_absolute (
                               GNUNET_TIME_relative_multiply (queue->pd.aged_rtt,
                                                              4)));
@@ -9075,10 +9055,10 @@ notify_client_queues (void *cls,
   for (struct Queue *q = neighbour->queue_head; NULL != q;
        q = q->next_neighbour)
   {
-    struct MonitorEvent me = {.rtt = q->pd.aged_rtt,
-                              .cs = q->cs,
-                              .num_msg_pending = q->num_msg_pending,
-                              .num_bytes_pending = q->num_bytes_pending};
+    struct MonitorEvent me = { .rtt = q->pd.aged_rtt,
+                               .cs = q->cs,
+                               .num_msg_pending = q->num_msg_pending,
+                               .num_bytes_pending = q->num_bytes_pending };
 
     notify_monitor (tc, pid, q->address, q->nt, &me);
   }
@@ -9158,7 +9138,7 @@ suggest_to_connect (const struct GNUNET_PeerIdentity *pid, const char *address)
   prefix = GNUNET_HELLO_address_to_prefix (address);
   if (NULL == prefix)
   {
-    GNUNET_break (0); /* We got an invalid address!? */
+    GNUNET_break (0);  /* We got an invalid address!? */
     return;
   }
   tc = lookup_communicator (prefix);
@@ -9207,7 +9187,7 @@ validation_transmit_on_queue (struct Queue *q, struct ValidationState *vs)
   vs->last_challenge_use = GNUNET_TIME_absolute_get_monotonic (GST_cfg);
   tvc.header.type =
     htons (GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_VALIDATION_CHALLENGE);
-  tvc.header.size = htons (sizeof (tvc));
+  tvc.header.size = htons (sizeof(tvc));
   tvc.reserved = htonl (0);
   tvc.challenge = vs->challenge;
   tvc.sender_time = GNUNET_TIME_absolute_hton (vs->last_challenge_use);
@@ -9215,7 +9195,7 @@ validation_transmit_on_queue (struct Queue *q, struct ValidationState *vs)
               "Sending address validation challenge %s to %s\n",
               GNUNET_sh2s (&tvc.challenge.value),
               GNUNET_i2s (&q->neighbour->pid));
-  queue_send_msg (q, NULL, &tvc, sizeof (tvc));
+  queue_send_msg (q, NULL, &tvc, sizeof(tvc));
 }
 
 
@@ -9245,8 +9225,8 @@ validation_start_cb (void *cls)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Address validation task not scheduled anymore, nothing to do\n");
-    return; /* woopsie, no more addresses known, should only
-               happen if we're really a lonely peer */
+    return;   /* woopsie, no more addresses known, should only
+                 happen if we're really a lonely peer */
   }
   q = find_queue (&vs->pid, vs->address);
   if (NULL == q)
@@ -9394,7 +9374,7 @@ start_dv_learn (void *cls)
   lle = GNUNET_new (struct LearnLaunchEntry);
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE,
                               &lle->challenge,
-                              sizeof (lle->challenge));
+                              sizeof(lle->challenge));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Starting launch DV learn with challenge %s\n",
               GNUNET_sh2s (&lle->challenge.value));
@@ -9406,18 +9386,18 @@ start_dv_learn (void *cls)
                   lle,
                   GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   dvl.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_DV_LEARN);
-  dvl.header.size = htons (sizeof (dvl));
+  dvl.header.size = htons (sizeof(dvl));
   dvl.num_hops = htons (0);
   dvl.bidirectional = htons (0);
   dvl.non_network_delay = GNUNET_TIME_relative_hton (GNUNET_TIME_UNIT_ZERO);
   dvl.monotonic_time =
     GNUNET_TIME_absolute_hton (GNUNET_TIME_absolute_get_monotonic (GST_cfg));
   {
-    struct DvInitPS dvip = {.purpose.purpose = htonl (
-                              GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_INITIATOR),
-                            .purpose.size = htonl (sizeof (dvip)),
-                            .monotonic_time = dvl.monotonic_time,
-                            .challenge = lle->challenge};
+    struct DvInitPS dvip = { .purpose.purpose = htonl (
+                               GNUNET_SIGNATURE_PURPOSE_TRANSPORT_DV_INITIATOR),
+                             .purpose.size = htonl (sizeof(dvip)),
+                             .monotonic_time = dvl.monotonic_time,
+                             .challenge = lle->challenge };
 
     GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_eddsa_sign (GST_my_private_key,
                                                           &dvip.purpose,
@@ -9438,7 +9418,7 @@ start_dv_learn (void *cls)
   /* Do this as close to transmission time as possible! */
   lle->launch_time = GNUNET_TIME_absolute_get ();
 
-  queue_send_msg (qqc.q, NULL, &dvl, sizeof (dvl));
+  queue_send_msg (qqc.q, NULL, &dvl, sizeof(dvl));
   /* reschedule this job, randomizing the time it runs (but no
      actual backoff!) */
   dvlearn_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_randomize (
@@ -9502,7 +9482,7 @@ neighbour_dv_monotime_cb (void *cls,
     n->dv_monotime_available = GNUNET_YES;
     return;
   }
-  if (sizeof (*mtbe) != record->value_size)
+  if (sizeof(*mtbe) != record->value_size)
   {
     GNUNET_break (0);
     return;
@@ -9530,7 +9510,7 @@ handle_add_queue_message (void *cls,
   const char *addr;
   uint16_t addr_len;
 
-  if (ntohl (aqm->mtu) <= sizeof (struct TransportFragmentBoxMessage))
+  if (ntohl (aqm->mtu) <= sizeof(struct TransportFragmentBoxMessage))
   {
     /* MTU so small as to be useless for transmissions,
        required for #fragment_message()! */
@@ -9557,14 +9537,14 @@ handle_add_queue_message (void *cls,
                                 &neighbour_dv_monotime_cb,
                                 neighbour);
   }
-  addr_len = ntohs (aqm->header.size) - sizeof (*aqm);
+  addr_len = ntohs (aqm->header.size) - sizeof(*aqm);
   addr = (const char *) &aqm[1];
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "New queue %s to %s available with QID %llu\n",
               addr,
               GNUNET_i2s (&aqm->receiver),
               (unsigned long long) aqm->qid);
-  queue = GNUNET_malloc (sizeof (struct Queue) + addr_len);
+  queue = GNUNET_malloc (sizeof(struct Queue) + addr_len);
   queue->tc = tc;
   queue->address = (const char *) &queue[1];
   queue->pd.aged_rtt = GNUNET_TIME_UNIT_FOREVER_REL;
@@ -9577,7 +9557,7 @@ handle_add_queue_message (void *cls,
   memcpy (&queue[1], addr, addr_len);
   /* notify monitors about new queue */
   {
-    struct MonitorEvent me = {.rtt = queue->pd.aged_rtt, .cs = queue->cs};
+    struct MonitorEvent me = { .rtt = queue->pd.aged_rtt, .cs = queue->cs };
 
     notify_monitors (&neighbour->pid, queue->address, queue->nt, &me);
   }
@@ -9591,10 +9571,10 @@ handle_add_queue_message (void *cls,
                                 queue);
   /* check if valdiations are waiting for the queue */
   (void)
-    GNUNET_CONTAINER_multipeermap_get_multiple (validation_map,
-                                                &aqm->receiver,
-                                                &check_validation_request_pending,
-                                                queue);
+  GNUNET_CONTAINER_multipeermap_get_multiple (validation_map,
+                                              &aqm->receiver,
+                                              &check_validation_request_pending,
+                                              queue);
   /* look for traffic for this queue */
   schedule_transmit_on_queue (queue, GNUNET_SCHEDULER_PRIORITY_DEFAULT);
   /* might be our first queue, try launching DV learning */
@@ -9766,10 +9746,10 @@ handle_suggest (void *cls, const struct ExpressPreferenceMessage *msg)
   pr->bw = msg->bw;
   pr->pk = (enum GNUNET_MQ_PriorityPreferences) ntohl (msg->pk);
   if (GNUNET_YES != GNUNET_CONTAINER_multipeermap_put (
-                      tc->details.application.requests,
-                      &pr->pid,
-                      pr,
-                      GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
+        tc->details.application.requests,
+        &pr->pid,
+        pr,
+        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
   {
     GNUNET_break (0);
     GNUNET_free (pr);
@@ -9839,7 +9819,7 @@ free_neighbour_cb (void *cls,
 
   (void) cls;
   (void) pid;
-  GNUNET_break (0); // should this ever happen?
+  GNUNET_break (0);  // should this ever happen?
   free_neighbour (neighbour);
 
   return GNUNET_OK;
@@ -9943,6 +9923,7 @@ static void
 do_shutdown (void *cls)
 {
   struct LearnLaunchEntry *lle;
+
   (void) cls;
 
   GNUNET_CONTAINER_multipeermap_iterate (neighbours, &free_neighbour_cb, NULL);

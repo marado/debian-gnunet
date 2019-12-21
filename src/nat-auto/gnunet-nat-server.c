@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/nat/gnunet-nat-server.c
@@ -75,32 +75,32 @@ try_anat (uint32_t dst_ipv4,
               "Asking for connection reversal with %x and code %u\n",
               (unsigned int) dst_ipv4,
               (unsigned int) dport);
-  memset (&lsa, 0, sizeof (lsa));
+  memset (&lsa, 0, sizeof(lsa));
   lsa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  lsa.sin_len = sizeof (sa);
+  lsa.sin_len = sizeof(sa);
 #endif
   lsa.sin_addr.s_addr = 0;
   lsa.sin_port = htons (dport);
-  memset (&rsa, 0, sizeof (rsa));
+  memset (&rsa, 0, sizeof(rsa));
   rsa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  rsa.sin_len = sizeof (sa);
+  rsa.sin_len = sizeof(sa);
 #endif
   rsa.sin_addr.s_addr = dst_ipv4;
   rsa.sin_port = htons (dport);
-  sa_len = sizeof (lsa);
+  sa_len = sizeof(lsa);
   sa = (const struct sockaddr *) &lsa;
   h = GNUNET_NAT_register (cfg,
-			   "none",
+                           "none",
                            is_tcp ? IPPROTO_TCP : IPPROTO_UDP,
                            1,
-			   &sa,
-			   &sa_len,
+                           &sa,
+                           &sa_len,
                            NULL, NULL, NULL);
   GNUNET_NAT_request_reversal (h,
-			       &lsa,
-			       &rsa);
+                               &lsa,
+                               &rsa);
   GNUNET_NAT_unregister (h);
 }
 
@@ -139,7 +139,7 @@ tcp_send (void *cls)
       (GNUNET_NETWORK_fdset_isset (tc->write_ready, ctx->s)))
   {
     if (-1 ==
-        GNUNET_NETWORK_socket_send (ctx->s, &ctx->data, sizeof (ctx->data)))
+        GNUNET_NETWORK_socket_send (ctx->s, &ctx->data, sizeof(ctx->data)))
     {
       GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG, "send");
     }
@@ -176,22 +176,22 @@ try_send_tcp (uint32_t dst_ipv4,
                          "socket");
     return;
   }
-  memset (&sa, 0, sizeof (sa));
+  memset (&sa, 0, sizeof(sa));
   sa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  sa.sin_len = sizeof (sa);
+  sa.sin_len = sizeof(sa);
 #endif
   sa.sin_addr.s_addr = dst_ipv4;
   sa.sin_port = htons (dport);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sending TCP message to `%s'\n",
               GNUNET_a2s ((struct sockaddr *) &sa,
-                          sizeof (sa)));
-  if ( (GNUNET_OK !=
-        GNUNET_NETWORK_socket_connect (s,
-                                       (const struct sockaddr *) &sa,
-                                       sizeof (sa))) &&
-       (errno != EINPROGRESS) )
+                          sizeof(sa)));
+  if ((GNUNET_OK !=
+       GNUNET_NETWORK_socket_connect (s,
+                                      (const struct sockaddr *) &sa,
+                                      sizeof(sa))) &&
+      (errno != EINPROGRESS))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
                          "connect");
@@ -233,23 +233,23 @@ try_send_udp (uint32_t dst_ipv4,
                          "socket");
     return;
   }
-  memset (&sa, 0, sizeof (sa));
+  memset (&sa, 0, sizeof(sa));
   sa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  sa.sin_len = sizeof (sa);
+  sa.sin_len = sizeof(sa);
 #endif
   sa.sin_addr.s_addr = dst_ipv4;
   sa.sin_port = htons (dport);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sending UDP packet to `%s'\n",
               GNUNET_a2s ((struct sockaddr *) &sa,
-                          sizeof (sa)));
+                          sizeof(sa)));
   if (-1 ==
       GNUNET_NETWORK_socket_sendto (s,
                                     &data,
-                                    sizeof (data),
+                                    sizeof(data),
                                     (const struct sockaddr *) &sa,
-                                    sizeof (sa)))
+                                    sizeof(sa)))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
                          "sendto");
   GNUNET_NETWORK_socket_close (s);
@@ -320,7 +320,6 @@ force_timeout (void *cls)
 }
 
 
-
 /**
  * Callback called when a client connects to the service.
  *
@@ -331,8 +330,8 @@ force_timeout (void *cls)
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *c,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct ClientData *cd;
 
@@ -354,8 +353,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *c,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
 {
   struct ClientData *cd = internal_cls;
 
@@ -369,20 +368,20 @@ client_disconnect_cb (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("nat-server",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_fixed_size (test,
-			  GNUNET_MESSAGE_TYPE_NAT_TEST,
-			  struct GNUNET_NAT_AUTO_TestMessage,
-			  NULL),
- GNUNET_MQ_handler_end ());
+  ("nat-server",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_fixed_size (test,
+                           GNUNET_MESSAGE_TYPE_NAT_TEST,
+                           struct GNUNET_NAT_AUTO_TestMessage,
+                           NULL),
+  GNUNET_MQ_handler_end ());
 
 
-#if defined(LINUX) && defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 #include <malloc.h>
 
 /**
@@ -395,9 +394,9 @@ GNUNET_ARM_memory_init ()
   mallopt (M_TOP_PAD, 1 * 1024);
   malloc_trim (0);
 }
+
+
 #endif
-
-
 
 
 /* end of gnunet-nat-server.c */

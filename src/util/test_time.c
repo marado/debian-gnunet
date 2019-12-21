@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_time.c
  * @brief testcase for time.c
@@ -60,14 +60,15 @@ main (int argc, char *argv[])
   GNUNET_log_skip (0, GNUNET_NO);
   GNUNET_assert (rel.rel_value_us == GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us);
   /*check zero */
-  rel.rel_value_us = (UINT64_MAX) - 1024;
+  rel.rel_value_us = (UINT64_MAX) -1024;
   GNUNET_assert (GNUNET_TIME_UNIT_ZERO.rel_value_us ==
                  GNUNET_TIME_relative_multiply (rel, 0).rel_value_us);
 
   /* test infinity-check for relative to absolute */
   GNUNET_log_skip (1, GNUNET_NO);
   last = GNUNET_TIME_relative_to_absolute (rel);
-  GNUNET_assert (last.abs_value_us == GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us);
+  GNUNET_assert (last.abs_value_us ==
+                 GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us);
   GNUNET_log_skip (0, GNUNET_YES);
 
   /* check relative to absolute */
@@ -79,11 +80,12 @@ main (int argc, char *argv[])
   GNUNET_assert (GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us ==
                  GNUNET_TIME_relative_to_absolute (rel).abs_value_us);
   /* check overflow for r2a */
-  rel.rel_value_us = (UINT64_MAX) - 1024;
+  rel.rel_value_us = (UINT64_MAX) -1024;
   GNUNET_log_skip (1, GNUNET_NO);
   last = GNUNET_TIME_relative_to_absolute (rel);
   GNUNET_log_skip (0, GNUNET_NO);
-  GNUNET_assert (last.abs_value_us == GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us);
+  GNUNET_assert (last.abs_value_us ==
+                 GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us);
 
   /* check overflow for relative add */
   GNUNET_log_skip (1, GNUNET_NO);
@@ -102,12 +104,15 @@ main (int argc, char *argv[])
 
   /* check relation check in get_duration */
   future.abs_value_us = now.abs_value_us + 1000000;
-  GNUNET_assert (GNUNET_TIME_absolute_get_difference (now, future).rel_value_us ==
+  GNUNET_assert (GNUNET_TIME_absolute_get_difference (now,
+                                                      future).rel_value_us ==
                  1000000);
-  GNUNET_assert (GNUNET_TIME_absolute_get_difference (future, now).rel_value_us ==
+  GNUNET_assert (GNUNET_TIME_absolute_get_difference (future,
+                                                      now).rel_value_us ==
                  0);
 
-  GNUNET_assert (GNUNET_TIME_absolute_get_difference (zero, forever).rel_value_us
+  GNUNET_assert (GNUNET_TIME_absolute_get_difference (zero,
+                                                      forever).rel_value_us
                  == forever.abs_value_us);
 
   past.abs_value_us = now.abs_value_us - 1000000;
@@ -130,9 +135,11 @@ main (int argc, char *argv[])
 
   /* check endianess */
   reln = GNUNET_TIME_relative_hton (rel);
-  GNUNET_assert (rel.rel_value_us == GNUNET_TIME_relative_ntoh (reln).rel_value_us);
+  GNUNET_assert (rel.rel_value_us == GNUNET_TIME_relative_ntoh (
+                   reln).rel_value_us);
   nown = GNUNET_TIME_absolute_hton (now);
-  GNUNET_assert (now.abs_value_us == GNUNET_TIME_absolute_ntoh (nown).abs_value_us);
+  GNUNET_assert (now.abs_value_us == GNUNET_TIME_absolute_ntoh (
+                   nown).abs_value_us);
 
   /* check absolute addition */
   future = GNUNET_TIME_absolute_add (now, GNUNET_TIME_UNIT_SECONDS);
@@ -141,7 +148,7 @@ main (int argc, char *argv[])
   future = GNUNET_TIME_absolute_add (forever, GNUNET_TIME_UNIT_ZERO);
   GNUNET_assert (future.abs_value_us == forever.abs_value_us);
 
-  rel.rel_value_us = (UINT64_MAX) - 1024;
+  rel.rel_value_us = (UINT64_MAX) -1024;
   now.abs_value_us = rel.rel_value_us;
   future = GNUNET_TIME_absolute_add (now, rel);
   GNUNET_assert (future.abs_value_us == forever.abs_value_us);
@@ -152,14 +159,16 @@ main (int argc, char *argv[])
 
   GNUNET_assert (forever.abs_value_us ==
                  GNUNET_TIME_absolute_subtract (forever,
-                                                GNUNET_TIME_UNIT_MINUTES).abs_value_us);
+                                                GNUNET_TIME_UNIT_MINUTES).
+                 abs_value_us);
   /*check absolute subtract */
   now.abs_value_us = 50000;
   rel.rel_value_us = 100000;
   GNUNET_assert (GNUNET_TIME_UNIT_ZERO_ABS.abs_value_us ==
                  (GNUNET_TIME_absolute_subtract (now, rel)).abs_value_us);
   rel.rel_value_us = 10000;
-  GNUNET_assert (40000 == (GNUNET_TIME_absolute_subtract (now, rel)).abs_value_us);
+  GNUNET_assert (40000 == (GNUNET_TIME_absolute_subtract (now,
+                                                          rel)).abs_value_us);
 
   /*check relative divide */
   GNUNET_assert (GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us ==
@@ -181,7 +190,8 @@ main (int argc, char *argv[])
   forever = GNUNET_TIME_UNIT_FOREVER_ABS;
   forever.abs_value_us = forever.abs_value_us - 1024;
   GNUNET_assert (GNUNET_TIME_UNIT_ZERO_ABS.abs_value_us ==
-                 GNUNET_TIME_calculate_eta (forever, 50000, 100000).rel_value_us);
+                 GNUNET_TIME_calculate_eta (forever, 50000,
+                                            100000).rel_value_us);
   /* check zero */
   GNUNET_log_skip (1, GNUNET_NO);
   GNUNET_assert (GNUNET_TIME_UNIT_ZERO.rel_value_us ==
@@ -225,7 +235,7 @@ main (int argc, char *argv[])
   /*check  GNUNET_TIME_absolute_max */
   GNUNET_assert (now.abs_value_us ==
                  GNUNET_TIME_absolute_max (now, last).abs_value_us);
-  for (unsigned int i=0;i<30;i++)
+  for (unsigned int i = 0; i < 30; i++)
   {
     struct GNUNET_CONFIGURATION_Handle *cfg;
 
@@ -235,9 +245,9 @@ main (int argc, char *argv[])
     GNUNET_assert (now.abs_value_us > last.abs_value_us);
     (void) GNUNET_TIME_absolute_get_monotonic (NULL);
     GNUNET_CONFIGURATION_set_value_string (cfg,
-					   "util",
-					   "MONOTONIC_TIME_FILENAME",
-					   "monotonic-time.dat");
+                                           "util",
+                                           "MONOTONIC_TIME_FILENAME",
+                                           "monotonic-time.dat");
     last = GNUNET_TIME_absolute_get_monotonic (cfg);
     now = GNUNET_TIME_absolute_get_monotonic (cfg);
     (void) GNUNET_TIME_absolute_get_monotonic (NULL);
@@ -245,8 +255,8 @@ main (int argc, char *argv[])
     GNUNET_CONFIGURATION_destroy (cfg);
   }
   GNUNET_break (GNUNET_OK ==
-		GNUNET_DISK_directory_remove ("monotonic-time.dat"));
-  
+                GNUNET_DISK_directory_remove ("monotonic-time.dat"));
+
   return 0;
 }
 

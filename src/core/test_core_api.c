@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file core/test_core_api.c
  * @brief testcase for core_api.c
@@ -153,7 +153,7 @@ connect_notify (void *cls,
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_MessageHeader *msg;
 
-  if (0 == memcmp (&pc->id, peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (&pc->id, peer, sizeof(struct GNUNET_PeerIdentity)))
     return (void *) peer;
   GNUNET_assert (pc->connect_status == 0);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -168,8 +168,8 @@ connect_notify (void *cls,
     env = GNUNET_MQ_msg (msg, MTYPE);
     /* enable corking for this test */
     GNUNET_MQ_env_set_options (env,
-                               GNUNET_MQ_PRIO_BEST_EFFORT |
-                                 GNUNET_MQ_PREF_CORK_ALLOWED);
+                               GNUNET_MQ_PRIO_BEST_EFFORT
+                               | GNUNET_MQ_PREF_CORK_ALLOWED);
     /* now actually transmit message */
     GNUNET_assert (ok == 4);
     OKPP;
@@ -186,7 +186,7 @@ disconnect_notify (void *cls,
 {
   struct PeerContext *pc = cls;
 
-  if (0 == memcmp (&pc->id, peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (&pc->id, peer, sizeof(struct GNUNET_PeerIdentity)))
     return;
   pc->connect_status = 0;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -215,8 +215,8 @@ init_notify (void *cls, const struct GNUNET_PeerIdentity *my_identity)
 {
   struct PeerContext *p = cls;
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (test, MTYPE, struct GNUNET_MessageHeader, NULL),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (test, MTYPE, struct GNUNET_MessageHeader, NULL),
+    GNUNET_MQ_handler_end () };
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Core connection to `%s' established\n",
@@ -279,8 +279,8 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (test, MTYPE, struct GNUNET_MessageHeader, NULL),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (test, MTYPE, struct GNUNET_MessageHeader, NULL),
+    GNUNET_MQ_handler_end () };
 
   GNUNET_assert (ok == 1);
   OKPP;
@@ -318,11 +318,14 @@ stop_arm (struct PeerContext *p)
 int
 main (int argc, char *argv1[])
 {
-  char *const argv[] = {"test-core-api", "-c", "test_core_api_data.conf", NULL};
-  struct GNUNET_GETOPT_CommandLineOption options[] = {GNUNET_GETOPT_OPTION_END};
+  char *const argv[] = { "test-core-api", "-c", "test_core_api_data.conf",
+                         NULL };
+  struct GNUNET_GETOPT_CommandLineOption options[] =
+  { GNUNET_GETOPT_OPTION_END };
+
   ok = 1;
   GNUNET_log_setup ("test-core-api", "WARNING", NULL);
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
                       argv,
                       "test-core-api",
                       "nohelp",
@@ -336,5 +339,6 @@ main (int argc, char *argv1[])
 
   return ok;
 }
+
 
 /* end of test_core_api.c */

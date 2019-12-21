@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -80,7 +80,7 @@ typedef void (*GNUNET_NSE_Callback) (void *cls,
  * @param loge logarithmic estimate
  * @return absolute number of peers in the network (estimated)
  */
-#define GNUNET_NSE_log_estimate_to_n(loge) pow(2.0, (loge))
+#define GNUNET_NSE_log_estimate_to_n(loge) pow (2.0, (loge))
 
 
 /**

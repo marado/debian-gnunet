@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_peer.c
  * @brief testcase for peer.c
@@ -41,7 +41,7 @@ generatePeerIdList ()
   for (unsigned int i = 0; i < NUMBER_OF_PEERS; i++)
   {
     gcry_randomize (&pidArr[i],
-                    sizeof (struct GNUNET_PeerIdentity),
+                    sizeof(struct GNUNET_PeerIdentity),
                     GCRY_STRONG_RANDOM);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Peer %u: %s\n",
@@ -65,7 +65,8 @@ check ()
     pid = GNUNET_PEER_intern (&pidArr[i]);
     if (pid != (i + 1))
     {
-      FPRINTF (stderr, "%s",  "Unexpected Peer ID returned by intern function\n");
+      fprintf (stderr, "%s",
+               "Unexpected Peer ID returned by intern function\n");
       return 1;
     }
   }
@@ -76,7 +77,8 @@ check ()
     pid = GNUNET_PEER_intern (&pidArr[i]);
     if (pid != (i + 1))
     {
-      FPRINTF (stderr, "%s",  "Unexpected Peer ID returned by intern function\n");
+      fprintf (stderr, "%s",
+               "Unexpected Peer ID returned by intern function\n");
       return 1;
     }
   }
@@ -102,8 +104,7 @@ check ()
    * Attempt to convert pid = 0 (which is reserved)
    * into a peer identity object, the peer identity memory
    * is expected to be set to zero
-   */
-  GNUNET_log_skip (1, GNUNET_YES);
+   */GNUNET_log_skip (1, GNUNET_YES);
   GNUNET_PEER_resolve (0, &res);
   GNUNET_assert (0 ==
                  GNUNET_is_zero (&res));
@@ -134,5 +135,6 @@ main ()
   }
   return 0;
 }
+
 
 /* end of test_peer.c */

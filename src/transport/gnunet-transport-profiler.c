@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2011-2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2011-2016 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -195,7 +195,7 @@ shutdown_task (void *cls)
   }
 
   if (verbosity > 0)
-    FPRINTF (stdout, "\n");
+    fprintf (stdout, "\n");
 
   /* Output format:
    * All time values in ms
@@ -213,10 +213,10 @@ shutdown_task (void *cls)
     while (NULL != (icur = inext))
     {
       inext = icur->next;
-      icur->rate = ((benchmark_count * benchmark_size) / 1024) /
-                   ((float) icur->dur.rel_value_us / (1000 * 1000));
+      icur->rate = ((benchmark_count * benchmark_size) / 1024)
+                   / ((float) icur->dur.rel_value_us / (1000 * 1000));
       if (verbosity > 0)
-        FPRINTF (stdout,
+        fprintf (stdout,
                  _ ("%llu B in %llu ms == %.2f KB/s!\n"),
                  ((long long unsigned int) benchmark_count * benchmark_size),
                  ((long long unsigned int) icur->dur.rel_value_us / 1000),
@@ -227,7 +227,7 @@ shutdown_task (void *cls)
       iterations++;
     }
     if (0 == iterations)
-      iterations = 1; /* avoid division by zero */
+      iterations = 1;   /* avoid division by zero */
     /* Calculate average rate */
     avg_rate /= iterations;
     /* Calculate average duration */
@@ -240,8 +240,8 @@ shutdown_task (void *cls)
     {
       inext = icur->next;
       stddev_rate += ((icur->rate - avg_rate) * (icur->rate - avg_rate));
-      stddev_duration += (((icur->dur.rel_value_us / 1000) - avg_duration) *
-                          ((icur->dur.rel_value_us / 1000) - avg_duration));
+      stddev_duration += (((icur->dur.rel_value_us / 1000) - avg_duration)
+                          * ((icur->dur.rel_value_us / 1000) - avg_duration));
     }
     /* Calculate standard deviation rate */
     stddev_rate = stddev_rate / iterations;
@@ -252,7 +252,7 @@ shutdown_task (void *cls)
     stddev_duration = sqrtf (stddev_duration);
 
     /* Output */
-    FPRINTF (stdout,
+    fprintf (stdout,
              "%u;%u;%llu;%llu;%.2f;%.2f",
              benchmark_count,
              benchmark_size,
@@ -267,7 +267,7 @@ shutdown_task (void *cls)
       inext = icur->next;
       GNUNET_CONTAINER_DLL_remove (ihead, itail, icur);
 
-      FPRINTF (stdout,
+      fprintf (stdout,
                ";%llu;%.2f",
                (long long unsigned int) (icur->dur.rel_value_us / 1000),
                icur->rate);
@@ -279,14 +279,14 @@ shutdown_task (void *cls)
   if (benchmark_receive)
   {
     duration = GNUNET_TIME_absolute_get_duration (start_time);
-    FPRINTF (stdout,
+    fprintf (stdout,
              "Received %llu bytes/s (%llu bytes in %s)\n",
              1000LL * 1000LL * traffic_received / (1 + duration.rel_value_us),
              traffic_received,
              GNUNET_STRINGS_relative_time_to_string (duration, GNUNET_YES));
   }
 #endif
-  FPRINTF (stdout, "\n");
+  fprintf (stdout, "\n");
 }
 
 
@@ -314,7 +314,7 @@ send_msg (void *cls)
   if (NULL == mq)
     return;
   env = GNUNET_MQ_msg_extra (m, benchmark_size, GNUNET_MESSAGE_TYPE_DUMMY);
-  memset (&m[1], 52, benchmark_size - sizeof (struct GNUNET_MessageHeader));
+  memset (&m[1], 52, benchmark_size - sizeof(struct GNUNET_MessageHeader));
 
   if (itail->msgs_sent < benchmark_count)
   {
@@ -326,7 +326,7 @@ send_msg (void *cls)
   }
   GNUNET_MQ_send (mq, env);
   if ((verbosity > 0) && (0 == itail->msgs_sent % 10))
-    FPRINTF (stdout, ".");
+    fprintf (stdout, ".");
 }
 
 
@@ -343,7 +343,7 @@ iteration_start ()
   GNUNET_CONTAINER_DLL_insert_tail (ihead, itail, icur);
   icur->start = GNUNET_TIME_absolute_get ();
   if (verbosity > 0)
-    FPRINTF (
+    fprintf (
       stdout,
       "\nStarting benchmark, starting to send %u messages in %u byte blocks\n",
       benchmark_count,
@@ -383,14 +383,14 @@ notify_connect (void *cls,
                 const struct GNUNET_PeerIdentity *peer,
                 struct GNUNET_MQ_Handle *m)
 {
-  if (0 != memcmp (&pid, peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 != memcmp (&pid, peer, sizeof(struct GNUNET_PeerIdentity)))
   {
-    FPRINTF (stdout, "Connected to different peer `%s'\n", GNUNET_i2s (&pid));
+    fprintf (stdout, "Connected to different peer `%s'\n", GNUNET_i2s (&pid));
     return NULL;
   }
 
   if (verbosity > 0)
-    FPRINTF (stdout, "Successfully connected to `%s'\n", GNUNET_i2s (&pid));
+    fprintf (stdout, "Successfully connected to `%s'\n", GNUNET_i2s (&pid));
   mq = m;
   iteration_start ();
   return NULL;
@@ -410,12 +410,12 @@ notify_disconnect (void *cls,
                    const struct GNUNET_PeerIdentity *peer,
                    void *internal_cls)
 {
-  if (0 != memcmp (&pid, peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 != memcmp (&pid, peer, sizeof(struct GNUNET_PeerIdentity)))
     return;
   mq = NULL;
   if (GNUNET_YES == benchmark_running)
   {
-    FPRINTF (stdout,
+    fprintf (stdout,
              "Disconnected from peer `%s' while benchmarking\n",
              GNUNET_i2s (&pid));
     return;
@@ -449,7 +449,7 @@ handle_dummy (void *cls, const struct GNUNET_MessageHeader *message)
   if (! benchmark_receive)
     return;
   if (verbosity > 0)
-    FPRINTF (stdout,
+    fprintf (stdout,
              "Received %u bytes\n",
              (unsigned int) ntohs (message->size));
 }
@@ -458,10 +458,10 @@ handle_dummy (void *cls, const struct GNUNET_MessageHeader *message)
 static int
 blacklist_cb (void *cls, const struct GNUNET_PeerIdentity *peer)
 {
-  if (0 != memcmp (&pid, peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 != memcmp (&pid, peer, sizeof(struct GNUNET_PeerIdentity)))
   {
     if (verbosity > 0)
-      FPRINTF (stdout, "Denying connection to `%s'\n", GNUNET_i2s (peer));
+      fprintf (stdout, "Denying connection to `%s'\n", GNUNET_i2s (peer));
     return GNUNET_SYSERR;
   }
   return GNUNET_OK;
@@ -483,37 +483,37 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *mycfg)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (dummy,
-                            GNUNET_MESSAGE_TYPE_DUMMY,
-                            struct GNUNET_MessageHeader,
-                            NULL),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (dummy,
+                           GNUNET_MESSAGE_TYPE_DUMMY,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+    GNUNET_MQ_handler_end () };
 
   cfg = (struct GNUNET_CONFIGURATION_Handle *) mycfg;
 
   ret = 1;
   if (GNUNET_MAX_MESSAGE_SIZE <= benchmark_size)
   {
-    FPRINTF (stderr, "Message size too big!\n");
+    fprintf (stderr, "Message size too big!\n");
     return;
   }
 
   if (NULL == cpid)
   {
-    FPRINTF (stderr, "No peer identity given\n");
+    fprintf (stderr, "No peer identity given\n");
     return;
   }
   if (GNUNET_OK != GNUNET_CRYPTO_eddsa_public_key_from_string (cpid,
                                                                strlen (cpid),
                                                                &pid.public_key))
   {
-    FPRINTF (stderr, "Failed to parse peer identity `%s'\n", cpid);
+    fprintf (stderr, "Failed to parse peer identity `%s'\n", cpid);
     return;
   }
   if (1 == benchmark_send)
   {
     if (verbosity > 0)
-      FPRINTF (stderr,
+      fprintf (stderr,
                "Trying to send %u messages with size %u to peer `%s'\n",
                benchmark_count,
                benchmark_size,
@@ -521,20 +521,20 @@ run (void *cls,
   }
   else if (1 == benchmark_receive)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Trying to receive messages from peer `%s'\n",
              GNUNET_i2s (&pid));
   }
   else
   {
-    FPRINTF (stderr, "No operation given\n");
+    fprintf (stderr, "No operation given\n");
     return;
   }
 
   ats = GNUNET_ATS_connectivity_init (cfg);
   if (NULL == ats)
   {
-    FPRINTF (stderr, "Failed to connect to ATS service\n");
+    fprintf (stderr, "Failed to connect to ATS service\n");
     ret = 1;
     return;
   }
@@ -548,7 +548,7 @@ run (void *cls,
                                           NULL);
   if (NULL == handle)
   {
-    FPRINTF (stderr, "Failed to connect to transport service\n");
+    fprintf (stderr, "Failed to connect to transport service\n");
     GNUNET_ATS_connectivity_done (ats);
     ats = NULL;
     ret = 1;
@@ -565,13 +565,13 @@ int
 main (int argc, char *const *argv)
 {
   int res;
+
   benchmark_count = DEFAULT_MESSAGE_COUNT;
   benchmark_size = DEFAULT_MESSAGE_SIZE;
   benchmark_iterations = DEFAULT_ITERATION_COUNT;
   benchmark_running = GNUNET_NO;
 
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_flag ('s',
                                "send",
                                gettext_noop ("send data to peer"),
@@ -601,7 +601,8 @@ main (int argc, char *const *argv)
                                  gettext_noop ("peer identity"),
                                  &cpid),
     GNUNET_GETOPT_option_verbose (&verbosity),
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
 
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
@@ -619,5 +620,6 @@ main (int argc, char *const *argv)
     return ret;
   return 1;
 }
+
 
 /* end of gnunet-transport-profiler.c */
