@@ -1,4 +1,3 @@
-
 /*
      This file is part of GNUnet.
      Copyright (C) 2001-2017 GNUnet e.V.
@@ -12,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet_tunnels.h
@@ -79,7 +78,6 @@ enum CadetTunnelEState
    * Handshake completed: session key available.
    */
   CADET_TUNNEL_KEY_OK
-
 };
 
 
@@ -125,7 +123,8 @@ GCT_destroy_tunnel_now (struct CadetTunnel *t);
  */
 int
 GCT_add_inbound_connection (struct CadetTunnel *t,
-                            const struct GNUNET_CADET_ConnectionTunnelIdentifier *cid,
+                            const struct
+                            GNUNET_CADET_ConnectionTunnelIdentifier *cid,
                             struct CadetPeerPath *path);
 
 
@@ -209,7 +208,8 @@ GCT_send_channel_destroy (struct CadetTunnel *t,
  */
 typedef void
 (*GCT_SendContinuation)(void *cls,
-                        const struct GNUNET_CADET_ConnectionTunnelIdentifier *cid);
+                        const struct
+                        GNUNET_CADET_ConnectionTunnelIdentifier *cid);
 
 
 /**
@@ -340,7 +340,8 @@ GCT_handle_kx (struct CadetTConnection *ct,
  */
 void
 GCT_handle_kx_auth (struct CadetTConnection *ct,
-                    const struct GNUNET_CADET_TunnelKeyExchangeAuthMessage *msg);
+                    const struct
+                    GNUNET_CADET_TunnelKeyExchangeAuthMessage *msg);
 
 
 /**

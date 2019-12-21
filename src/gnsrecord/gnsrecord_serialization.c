@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file gnsrecord/gnsrecord_serialization.c
@@ -35,7 +35,7 @@
 #include "gnunet_tun_lib.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "gnsrecord",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "gnsrecord", __VA_ARGS__)
 
 /**
  * Set to 1 to check that all records are well-formed (can be converted
@@ -51,7 +51,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct NetworkRecord
 {
-
   /**
    * Expiration time for the DNS record; relative or absolute depends
    * on @e flags, network byte order.
@@ -72,7 +71,6 @@ struct NetworkRecord
    * Flags for the record, network byte order.
    */
   uint32_t flags GNUNET_PACKED;
-
 };
 
 GNUNET_NETWORK_STRUCT_END
@@ -88,15 +86,15 @@ GNUNET_NETWORK_STRUCT_END
  */
 ssize_t
 GNUNET_GNSRECORD_records_get_size (unsigned int rd_count,
-				   const struct GNUNET_GNSRECORD_Data *rd)
+                                   const struct GNUNET_GNSRECORD_Data *rd)
 {
   size_t ret;
 
   if (0 == rd_count)
     return 0;
-  
-  ret = sizeof (struct NetworkRecord) * rd_count;
-  for (unsigned int i=0;i<rd_count;i++)
+
+  ret = sizeof(struct NetworkRecord) * rd_count;
+  for (unsigned int i = 0; i < rd_count; i++)
   {
     if ((ret + rd[i].data_size) < ret)
     {
@@ -125,15 +123,14 @@ GNUNET_GNSRECORD_records_get_size (unsigned int rd_count,
     GNUNET_break (0);
     return -1;
   }
-  //Do not pad PKEY
+  // Do not pad PKEY
   if (GNUNET_GNSRECORD_TYPE_PKEY == rd->record_type)
     return ret;
   /**
    * Efficiently round up to the next
    * power of 2 for padding
    * https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-   */
-  ret--;
+   */ret--;
   ret |= ret >> 1;
   ret |= ret >> 2;
   ret |= ret >> 4;
@@ -163,7 +160,7 @@ GNUNET_GNSRECORD_records_serialize (unsigned int rd_count,
   size_t off;
 
   off = 0;
-  for (unsigned int i=0;i<rd_count;i++)
+  for (unsigned int i = 0; i < rd_count; i++)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Serializing record %u with flags %d and expiration time %llu\n",
@@ -174,18 +171,18 @@ GNUNET_GNSRECORD_records_serialize (unsigned int rd_count,
     rec.data_size = htonl ((uint32_t) rd[i].data_size);
     rec.record_type = htonl (rd[i].record_type);
     rec.flags = htonl (rd[i].flags);
-    if ( (off + sizeof (rec) > dest_size) ||
-         (off + sizeof (rec) < off) )
+    if ((off + sizeof(rec) > dest_size) ||
+        (off + sizeof(rec) < off))
     {
       GNUNET_break (0);
       return -1;
     }
     GNUNET_memcpy (&dest[off],
                    &rec,
-                   sizeof (rec));
-    off += sizeof (rec);
-    if ( (off + rd[i].data_size > dest_size) ||
-         (off + rd[i].data_size < off) )
+                   sizeof(rec));
+    off += sizeof(rec);
+    if ((off + rd[i].data_size > dest_size) ||
+        (off + rd[i].data_size < off))
     {
       GNUNET_break (0);
       return -1;
@@ -212,7 +209,7 @@ GNUNET_GNSRECORD_records_serialize (unsigned int rd_count,
   }
   memset (&dest[off],
           0,
-          dest_size-off);
+          dest_size - off);
   return dest_size;
 }
 
@@ -236,24 +233,24 @@ GNUNET_GNSRECORD_records_deserialize (size_t len,
   size_t off;
 
   off = 0;
-  for (unsigned int i=0;i<rd_count;i++)
+  for (unsigned int i = 0; i < rd_count; i++)
   {
-    if ( (off + sizeof (rec) > len) ||
-         (off + sizeof (rec) < off) )
+    if ((off + sizeof(rec) > len) ||
+        (off + sizeof(rec) < off))
     {
       GNUNET_break_op (0);
       return GNUNET_SYSERR;
     }
     GNUNET_memcpy (&rec,
                    &src[off],
-                   sizeof (rec));
+                   sizeof(rec));
     dest[i].expiration_time = GNUNET_ntohll (rec.expiration_time);
     dest[i].data_size = ntohl ((uint32_t) rec.data_size);
     dest[i].record_type = ntohl (rec.record_type);
     dest[i].flags = ntohl (rec.flags);
-    off += sizeof (rec);
-    if ( (off + dest[i].data_size > len) ||
-         (off + dest[i].data_size < off) )
+    off += sizeof(rec);
+    if ((off + dest[i].data_size > len) ||
+        (off + dest[i].data_size < off))
     {
       GNUNET_break_op (0);
       return GNUNET_SYSERR;

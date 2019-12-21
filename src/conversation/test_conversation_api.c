@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file conversation/test_conversation_api.c
  * @brief testcase for conversation_api.c
@@ -80,7 +80,7 @@ phone_send (void *cls)
 
   (void) cls;
   GNUNET_assert (NULL != phone_rdc);
-  GNUNET_snprintf (buf, sizeof (buf), "phone-%u", i++);
+  GNUNET_snprintf (buf, sizeof(buf), "phone-%u", i++);
   phone_rdc (phone_rdc_cls, strlen (buf) + 1, buf);
   phone_task = GNUNET_SCHEDULER_add_delayed (FREQ, &phone_send, NULL);
 }
@@ -94,7 +94,7 @@ call_send (void *cls)
 
   (void) cls;
   GNUNET_assert (NULL != call_rdc);
-  GNUNET_snprintf (buf, sizeof (buf), "call-%u", i++);
+  GNUNET_snprintf (buf, sizeof(buf), "call-%u", i++);
   call_rdc (call_rdc_cls, strlen (buf) + 1, buf);
   call_task = GNUNET_SCHEDULER_add_delayed (FREQ, &call_send, NULL);
 }
@@ -128,9 +128,9 @@ play (void *cls, size_t data_size, const void *data)
   char buf[32];
 
   if (0 == strcmp (origin, "phone"))
-    GNUNET_snprintf (buf, sizeof (buf), "call-%u", call_i++);
+    GNUNET_snprintf (buf, sizeof(buf), "call-%u", call_i++);
   else
-    GNUNET_snprintf (buf, sizeof (buf), "phone-%u", phone_i++);
+    GNUNET_snprintf (buf, sizeof(buf), "phone-%u", phone_i++);
   if ((data_size != strlen (buf) + 1) || (0 != strncmp (buf, data, data_size)))
   {
     fprintf (stderr,
@@ -161,18 +161,18 @@ destroy_speaker (void *cls)
 }
 
 
-static struct GNUNET_SPEAKER_Handle call_speaker = {&enable_speaker,
-                                                    &play,
-                                                    &disable_speaker,
-                                                    &destroy_speaker,
-                                                    "caller"};
-
-
-static struct GNUNET_SPEAKER_Handle phone_speaker = {&enable_speaker,
+static struct GNUNET_SPEAKER_Handle call_speaker = { &enable_speaker,
                                                      &play,
                                                      &disable_speaker,
                                                      &destroy_speaker,
-                                                     "phone"};
+                                                     "caller" };
+
+
+static struct GNUNET_SPEAKER_Handle phone_speaker = { &enable_speaker,
+                                                      &play,
+                                                      &disable_speaker,
+                                                      &destroy_speaker,
+                                                      "phone" };
 
 
 static int
@@ -231,16 +231,16 @@ destroy_mic (void *cls)
 }
 
 
-static struct GNUNET_MICROPHONE_Handle call_mic = {&enable_mic,
-                                                   &disable_mic,
-                                                   &destroy_mic,
-                                                   "caller"};
-
-
-static struct GNUNET_MICROPHONE_Handle phone_mic = {&enable_mic,
+static struct GNUNET_MICROPHONE_Handle call_mic = { &enable_mic,
                                                     &disable_mic,
                                                     &destroy_mic,
-                                                    "phone"};
+                                                    "caller" };
+
+
+static struct GNUNET_MICROPHONE_Handle phone_mic = { &enable_mic,
+                                                     &disable_mic,
+                                                     &destroy_mic,
+                                                     "phone" };
 
 
 /**
@@ -324,6 +324,7 @@ phone_event_handler (void *cls,
                                         &phone_mic);
     expect = GNUNET_CONVERSATION_EC_PHONE_HUNG_UP;
     break;
+
   case GNUNET_CONVERSATION_EC_PHONE_HUNG_UP:
     GNUNET_break (caller == active_caller);
     active_caller = NULL;
@@ -331,6 +332,7 @@ phone_event_handler (void *cls,
       ok = 0;
     GNUNET_SCHEDULER_shutdown ();
     break;
+
   default:
     fprintf (stderr, "Unexpected phone code: %d\n", code);
     break;
@@ -351,9 +353,11 @@ call_event_handler (void *cls, enum GNUNET_CONVERSATION_CallEventCode code)
   case GNUNET_CONVERSATION_EC_CALL_RINGING:
     expect = GNUNET_CONVERSATION_EC_CALL_PICKED_UP;
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_PICKED_UP:
     expect = -1;
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_GNS_FAIL:
   case GNUNET_CONVERSATION_EC_CALL_HUNG_UP:
     call = NULL;
@@ -361,12 +365,14 @@ call_event_handler (void *cls, enum GNUNET_CONVERSATION_CallEventCode code)
     GNUNET_break (0);
     fprintf (stderr, "Unexpected call code: %d\n", code);
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_SUSPENDED:
   case GNUNET_CONVERSATION_EC_CALL_RESUMED:
     GNUNET_break (0);
     fprintf (stderr, "Unexpected call code: %d\n", code);
     ok = 2;
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_ERROR:
     GNUNET_break (0);
     fprintf (stderr, "Unexpected call code: %d\n", code);
@@ -424,7 +430,7 @@ identity_cb (void *cls,
     phone =
       GNUNET_CONVERSATION_phone_create (cfg, ego, &phone_event_handler, NULL);
     GNUNET_assert (NULL != phone);
-    memset (&rd, 0, sizeof (rd));
+    memset (&rd, 0, sizeof(rd));
     GNUNET_CONVERSATION_phone_get_record (phone, &rd);
     GNUNET_assert (rd.record_type == GNUNET_GNSRECORD_TYPE_PHONE);
     rd.expiration_time = UINT64_MAX;
@@ -494,5 +500,6 @@ main (int argc, char *argv[])
     return 1;
   return ok;
 }
+
 
 /* end of test_conversation_api.c */

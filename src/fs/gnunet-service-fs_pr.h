@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_pr.h
@@ -34,7 +34,6 @@
  */
 enum GSF_PendingRequestOptions
 {
-
   /**
    * No special options (P2P-default).
    */
@@ -69,7 +68,8 @@ enum GSF_PendingRequestOptions
    * Option mask for typical local requests.
    */
   GSF_PRO_LOCAL_REQUEST =
-      (GSF_PRO_BLOOMFILTER_FULL_REFRESH | GSF_PRO_PRIORITY_UNLIMITED | GSF_PRO_REQUEST_NEVER_EXPIRES)
+    (GSF_PRO_BLOOMFILTER_FULL_REFRESH | GSF_PRO_PRIORITY_UNLIMITED
+     | GSF_PRO_REQUEST_NEVER_EXPIRES)
 };
 
 
@@ -80,7 +80,6 @@ enum GSF_PendingRequestOptions
  */
 struct GSF_PendingRequestData
 {
-
   /**
    * Primary query hash for this request.
    */
@@ -163,7 +162,6 @@ struct GSF_PendingRequestData
    * we still constructing it?
    */
   int has_started;
-
 };
 
 
@@ -191,7 +189,8 @@ typedef void
                                    struct GSF_PendingRequest *pr,
                                    uint32_t reply_anonymity_level,
                                    struct GNUNET_TIME_Absolute expiration,
-                                   struct GNUNET_TIME_Absolute last_transmission,
+                                   struct GNUNET_TIME_Absolute
+                                   last_transmission,
                                    enum GNUNET_BLOCK_Type type,
                                    const void *data,
                                    size_t data_len);
@@ -345,7 +344,7 @@ GSF_iterate_pending_requests_ (GSF_PendingRequestIterator it,
  */
 void
 handle_p2p_put (void *cls,
-		const struct PutMessage *put);
+                const struct PutMessage *put);
 
 
 /**
@@ -403,7 +402,6 @@ GSF_local_lookup_ (struct GSF_PendingRequest *pr,
 int
 GSF_pending_request_test_target_ (struct GSF_PendingRequest *pr,
                                   const struct GNUNET_PeerIdentity *target);
-
 
 
 /**

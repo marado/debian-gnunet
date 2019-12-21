@@ -156,9 +156,9 @@ am__DEPENDENCIES_1 =
 libgnunet_plugin_rest_identity_la_DEPENDENCIES = libgnunetidentity.la \
 	$(top_builddir)/src/rest/libgnunetrest.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunet_plugin_rest_identity_la_OBJECTS =  \
-	plugin_rest_identity.lo
+	libgnunet_plugin_rest_identity_la-plugin_rest_identity.lo
 libgnunet_plugin_rest_identity_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_identity_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -167,7 +167,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 libgnunet_plugin_rest_identity_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(CCLD) $(libgnunet_plugin_rest_identity_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_identity_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_identity_la_rpath =  \
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
@@ -225,7 +225,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-identity.Po \
 	./$(DEPDIR)/identity_api.Plo \
 	./$(DEPDIR)/identity_api_lookup.Plo \
 	./$(DEPDIR)/identity_api_suffix_lookup.Plo \
-	./$(DEPDIR)/plugin_rest_identity.Plo \
+	./$(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Plo \
 	./$(DEPDIR)/test_identity.Po \
 	./$(DEPDIR)/test_identity_defaults.Po
 am__mv = mv -f
@@ -465,20 +465,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -486,6 +483,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -511,6 +509,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -548,11 +547,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -596,6 +599,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -615,6 +621,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -625,7 +632,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -690,7 +696,6 @@ top_srcdir = @top_srcdir@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/gnunet
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@plugin_LTLIBRARIES = libgnunet_plugin_rest_identity.la
@@ -708,11 +713,12 @@ libgnunet_plugin_rest_identity_la_LIBADD = \
   libgnunetidentity.la \
   $(top_builddir)/src/rest/libgnunetrest.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 
 libgnunet_plugin_rest_identity_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_identity_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunetidentity_la_SOURCES = \
   identity_api.c \
   identity_api_lookup.c \
@@ -724,7 +730,7 @@ libgnunetidentity_la_LIBADD = \
   $(GN_LIBINTL) $(XLIB)
 
 libgnunetidentity_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 1:0:0
 
 gnunet_service_identity_SOURCES = \
@@ -1011,7 +1017,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/identity_api.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/identity_api_lookup.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/identity_api_suffix_lookup.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_identity.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_identity.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_identity_defaults.Po@am__quote@ # am--include-marker
 
@@ -1041,6 +1047,13 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libgnunet_plugin_rest_identity_la-plugin_rest_identity.lo: plugin_rest_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_identity_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_identity_la-plugin_rest_identity.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Tpo -c -o libgnunet_plugin_rest_identity_la-plugin_rest_identity.lo `test -f 'plugin_rest_identity.c' || echo '$(srcdir)/'`plugin_rest_identity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Tpo $(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_identity.c' object='libgnunet_plugin_rest_identity_la-plugin_rest_identity.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_identity_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_identity_la-plugin_rest_identity.lo `test -f 'plugin_rest_identity.c' || echo '$(srcdir)/'`plugin_rest_identity.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1380,7 +1393,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/identity_api.Plo
 	-rm -f ./$(DEPDIR)/identity_api_lookup.Plo
 	-rm -f ./$(DEPDIR)/identity_api_suffix_lookup.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_identity.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Plo
 	-rm -f ./$(DEPDIR)/test_identity.Po
 	-rm -f ./$(DEPDIR)/test_identity_defaults.Po
 	-rm -f Makefile
@@ -1434,7 +1447,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/identity_api.Plo
 	-rm -f ./$(DEPDIR)/identity_api_lookup.Plo
 	-rm -f ./$(DEPDIR)/identity_api_suffix_lookup.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_identity.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_identity_la-plugin_rest_identity.Plo
 	-rm -f ./$(DEPDIR)/test_identity.Po
 	-rm -f ./$(DEPDIR)/test_identity_defaults.Po
 	-rm -f Makefile

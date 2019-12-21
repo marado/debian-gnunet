@@ -3,19 +3,32 @@ SUBDIRS = .
 
 plugindir = $(libdir)/gnunet
 
-if MINGW
-  WINFLAGS = -no-undefined -Wl,--export-all-symbols
-endif
-
 AM_CPPFLAGS = \
   $(GNUNET_CPPFLAGS) \
   -I$(top_srcdir)/src/include \
   -I$(top_srcdir)
 
+
+if BUILD_CONVERSATION
 lib_LTLIBRARIES = \
  libgnunetmicrophone.la \
  libgnunetspeaker.la \
  libgnunetconversation.la
+
+bin_PROGRAMS = \
+ gnunet-conversation-test \
+ gnunet-conversation
+
+libexec_PROGRAMS = \
+  gnunet-service-conversation
+
+check_PROGRAMS = \
+ test_conversation_api \
+ test_conversation_api_reject \
+ test_conversation_api_twocalls
+
+pkgcfg_DATA = conversation.conf
+endif
 
 pkgcfgdir= $(pkgdatadir)/config.d/
 
@@ -39,7 +52,7 @@ libgnunetmicrophone_la_SOURCES = \
 libgnunetmicrophone_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetmicrophone_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 libgnunetspeaker_la_SOURCES = \
@@ -47,7 +60,7 @@ libgnunetspeaker_la_SOURCES = \
 libgnunetspeaker_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetspeaker_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 
@@ -63,21 +76,9 @@ libgnunetconversation_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunetconversation_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
-
-bin_PROGRAMS = \
- gnunet-conversation-test \
- gnunet-conversation
-
-libexec_PROGRAMS = \
-  gnunet-service-conversation
-
-check_PROGRAMS = \
- test_conversation_api \
- test_conversation_api_reject \
- test_conversation_api_twocalls
 
 if BUILD_PULSE_HELPERS
 AUDIO_HELPER_RECD=gnunet-helper-audio-record
@@ -97,9 +98,11 @@ endif
 endif
 endif
 
+if BUILD_CONVERSATION
 libexec_PROGRAMS += \
   $(AUDIO_HELPER_RECD) \
   $(AUDIO_HELPER_PLAY)
+endif
 
 AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 if ENABLE_TEST_RUN
@@ -113,8 +116,8 @@ gnunet_helper_audio_record_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lpulse  -lopus -logg \
   $(INTLLIBS)
-gnunet_helper_audio_record_LDFLAGS = \
-  $(WINFLAGS)
+#gnunet_helper_audio_record_LDFLAGS = \
+#  
 
 gnunet_helper_audio_playback_SOURCES = \
   gnunet-helper-audio-playback.c
@@ -122,8 +125,8 @@ gnunet_helper_audio_playback_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lpulse -lopus -logg \
   $(INTLLIBS)
-gnunet_helper_audio_playback_LDFLAGS = \
-  $(WINFLAGS)
+#gnunet_helper_audio_playback_LDFLAGS = \
+#  
 else
 if BUILD_GST_HELPERS
 gnunet_helper_audio_record_SOURCES = \
@@ -133,7 +136,7 @@ gnunet_helper_audio_record_LDADD = \
   $(GST_LIBS) \
   $(INTLLIBS)
 gnunet_helper_audio_record_LDFLAGS = \
-  $(WINFLAGS) $(GST_LDFLAGS)
+   $(GST_LDFLAGS)
 gnunet_helper_audio_record_CFLAGS = \
  $(GST_CFLAGS)
 
@@ -144,7 +147,7 @@ gnunet_helper_audio_playback_LDADD = \
   $(GST_LIBS) \
   $(INTLLIBS)
 gnunet_helper_audio_playback_LDFLAGS = \
-  $(WINFLAGS) $(GST_LDFLAGS)
+   $(GST_LDFLAGS)
 gnunet_helper_audio_playback_CFLAGS = \
  $(GST_CFLAGS) -DIS_SPEAKER
 else
@@ -156,7 +159,7 @@ gnunet_helper_audio_record_LDADD = \
   $(GST_LIBS) \
   $(INTLLIBS)
 gnunet_helper_audio_record_LDFLAGS = \
-  $(WINFLAGS) $(GST_LDFLAGS)
+   $(GST_LDFLAGS)
 gnunet_helper_audio_record_CFLAGS = \
  $(GST_CFLAGS) -DIS_MIC
 
@@ -167,7 +170,7 @@ gnunet_helper_audio_playback_LDADD = \
   $(GST_LIBS) \
   $(INTLLIBS)
 gnunet_helper_audio_playback_LDFLAGS = \
-  $(WINFLAGS) $(GST_LDFLAGS)
+   $(GST_LDFLAGS)
 gnunet_helper_audio_playback_CFLAGS = \
  $(GST_CFLAGS) -DIS_SPEAKER
 endif
@@ -183,8 +186,8 @@ gnunet_service_conversation_LDADD = \
   $(top_builddir)/src/cadet/libgnunetcadet.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(INTLLIBS)
-gnunet_service_conversation_LDFLAGS = \
-  $(WINFLAGS)
+#gnunet_service_conversation_LDFLAGS = \
+#  
 
 gnunet_conversation_SOURCES = \
   gnunet-conversation.c
@@ -198,8 +201,8 @@ gnunet_conversation_LDADD = \
   $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(INTLLIBS)
-gnunet_conversation_LDFLAGS = \
- $(WINFLAGS)
+#gnunet_conversation_LDFLAGS = \
+# 
 
 gnunet_conversation_test_SOURCES = \
   gnunet-conversation-test.c
@@ -208,8 +211,8 @@ gnunet_conversation_test_LDADD = \
   libgnunetspeaker.la \
   $(top_builddir)/src/util/libgnunetutil.la  \
   $(INTLLIBS)
-gnunet_conversation_test_LDFLAGS = \
- $(WINFLAGS)
+#gnunet_conversation_test_LDFLAGS = \
+# 
 
 
 test_conversation_api_SOURCES = \
@@ -224,7 +227,7 @@ test_conversation_api_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la
 test_conversation_api_LDFLAGS = \
- $(WINFLAGS) -export-dynamic
+  -export-dynamic
 
 test_conversation_api_twocalls_SOURCES = \
  test_conversation_api_twocalls.c
@@ -238,7 +241,7 @@ test_conversation_api_twocalls_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la
 test_conversation_api_twocalls_LDFLAGS = \
- $(WINFLAGS) -export-dynamic
+  -export-dynamic
 
 test_conversation_api_reject_SOURCES = \
  test_conversation_api_reject.c
@@ -252,9 +255,8 @@ test_conversation_api_reject_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   $(top_builddir)/src/util/libgnunetutil.la
 test_conversation_api_reject_LDFLAGS = \
- $(WINFLAGS) -export-dynamic
+  -export-dynamic
 
 
- pkgcfg_DATA = conversation.conf
 
 EXTRA_DIST = test_conversation.conf

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/plugin_transport_http_server.c
@@ -35,23 +35,28 @@
 #include <regex.h>
 
 
-
 #if BUILD_HTTPS
 #define PLUGIN_NAME "https_server"
-#define LIBGNUNET_PLUGIN_TRANSPORT_INIT libgnunet_plugin_transport_https_server_init
-#define LIBGNUNET_PLUGIN_TRANSPORT_DONE libgnunet_plugin_transport_https_server_done
+#define LIBGNUNET_PLUGIN_TRANSPORT_INIT \
+  libgnunet_plugin_transport_https_server_init
+#define LIBGNUNET_PLUGIN_TRANSPORT_DONE \
+  libgnunet_plugin_transport_https_server_done
 #else
 #define PLUGIN_NAME "http_server"
-#define LIBGNUNET_PLUGIN_TRANSPORT_INIT libgnunet_plugin_transport_http_server_init
-#define LIBGNUNET_PLUGIN_TRANSPORT_DONE libgnunet_plugin_transport_http_server_done
+#define LIBGNUNET_PLUGIN_TRANSPORT_INIT \
+  libgnunet_plugin_transport_http_server_init
+#define LIBGNUNET_PLUGIN_TRANSPORT_DONE \
+  libgnunet_plugin_transport_http_server_done
 #endif
 
-#define HTTP_ERROR_RESPONSE "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD><BODY><H1>Not Found</H1>The requested URL was not found on this server.<P><HR><ADDRESS></ADDRESS></BODY></HTML>"
+#define HTTP_ERROR_RESPONSE \
+  "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\"><HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD><BODY><H1>Not Found</H1>The requested URL was not found on this server.<P><HR><ADDRESS></ADDRESS></BODY></HTML>"
 #define _RECEIVE 0
 #define _SEND 1
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "transport-" PLUGIN_NAME,__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "transport-" PLUGIN_NAME, \
+                                        __VA_ARGS__)
 
 
 /**
@@ -96,7 +101,6 @@ struct ServerRequest
    * Currently suspended
    */
   bool suspended;
-
 };
 
 
@@ -181,7 +185,6 @@ struct HTTP_Message
  */
 struct GNUNET_ATS_Session
 {
-
   /**
    * To whom are we talking to (set to our identity
    * if we are still waiting for the welcome message)
@@ -237,12 +240,12 @@ struct GNUNET_ATS_Session
   /**
    * Session timeout task
    */
-  struct GNUNET_SCHEDULER_Task * timeout_task;
+  struct GNUNET_SCHEDULER_Task *timeout_task;
 
   /**
    * Task to resume MHD handling when receiving is allowed again
    */
-  struct GNUNET_SCHEDULER_Task * recv_wakeup_task;
+  struct GNUNET_SCHEDULER_Task *recv_wakeup_task;
 
   /**
    * Number of bytes waiting for transmission to this peer.
@@ -268,7 +271,6 @@ struct GNUNET_ATS_Session
    * #GNUNET_YES if this session is known to the service.
    */
   int known_to_service;
-
 };
 
 
@@ -457,7 +459,6 @@ struct HTTP_Server_Plugin
    * Regex for parsing URLs. FIXME: this seems overkill.
    */
   regex_t url_regex;
-
 };
 
 
@@ -478,7 +479,7 @@ notify_session_monitor (struct HTTP_Server_Plugin *plugin,
 
   if (NULL == plugin->sic)
     return;
-  memset (&info, 0, sizeof (info));
+  memset (&info, 0, sizeof(info));
   info.state = state;
   info.is_inbound = GNUNET_YES;
   info.num_msg_pending = session->msgs_in_queue;
@@ -595,8 +596,8 @@ server_delete_session (struct GNUNET_ATS_Session *s)
       MHD_resume_connection (s->server_send->mhd_conn);
     }
     server_reschedule (plugin,
-		       s->server_send->mhd_daemon,
-		       GNUNET_YES);
+                       s->server_send->mhd_daemon,
+                       GNUNET_YES);
   }
 
   if (NULL != s->server_recv)
@@ -609,8 +610,8 @@ server_delete_session (struct GNUNET_ATS_Session *s)
                                MHD_CONNECTION_OPTION_TIMEOUT,
                                1 /* 0 = no timeout, so this is MIN */);
     server_reschedule (plugin,
-		       s->server_recv->mhd_daemon,
-		       GNUNET_YES);
+                       s->server_recv->mhd_daemon,
+                       GNUNET_YES);
   }
   notify_session_monitor (plugin,
                           s,
@@ -680,8 +681,9 @@ server_session_timeout (void *cls)
   GNUNET_log (TIMEOUT_LOG,
               "Session %p was idle for %s, disconnecting\n",
               s,
-	      GNUNET_STRINGS_relative_time_to_string (HTTP_SERVER_SESSION_TIMEOUT,
-						      GNUNET_YES));
+              GNUNET_STRINGS_relative_time_to_string (
+                HTTP_SERVER_SESSION_TIMEOUT,
+                GNUNET_YES));
   server_delete_session (s);
 }
 
@@ -694,8 +696,9 @@ server_session_timeout (void *cls)
 static void
 server_reschedule_session_timeout (struct GNUNET_ATS_Session *s)
 {
- GNUNET_assert (NULL != s->timeout_task);
-  s->timeout = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
+  GNUNET_assert (NULL != s->timeout_task);
+  s->timeout = GNUNET_TIME_relative_to_absolute (
+    GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
 }
 
 
@@ -749,7 +752,7 @@ http_server_plugin_send (void *cls,
        GNUNET_i2s (&session->target));
 
   /* create new message and schedule */
-  bytes_sent = sizeof (struct HTTP_Message) + msgbuf_size;
+  bytes_sent = sizeof(struct HTTP_Message) + msgbuf_size;
   msg = GNUNET_malloc (bytes_sent);
   msg->next = NULL;
   msg->size = msgbuf_size;
@@ -758,8 +761,8 @@ http_server_plugin_send (void *cls,
   msg->transmit_cont = cont;
   msg->transmit_cont_cls = cont_cls;
   GNUNET_memcpy (msg->buf,
-          msgbuf,
-          msgbuf_size);
+                 msgbuf,
+                 msgbuf_size);
   GNUNET_CONTAINER_DLL_insert_tail (session->msg_head,
                                     session->msg_tail,
                                     msg);
@@ -800,8 +803,8 @@ http_server_plugin_send (void *cls,
  */
 static int
 destroy_session_shutdown_cb (void *cls,
-			     const struct GNUNET_PeerIdentity *peer,
-			     void *value)
+                             const struct GNUNET_PeerIdentity *peer,
+                             void *value)
 {
   struct GNUNET_ATS_Session *s = value;
   struct ServerRequest *sc_send;
@@ -886,24 +889,25 @@ http_server_plugin_address_suggested (void *cls,
   const struct HttpAddress *haddr = addr;
 
   if ((NULL != plugin->ext_addr) &&
-      GNUNET_YES == (http_common_cmp_addresses (addr, addrlen,
-                                                plugin->ext_addr->address,
-                                                plugin->ext_addr->address_length)))
+      (GNUNET_YES == (http_common_cmp_addresses (addr, addrlen,
+                                                 plugin->ext_addr->address,
+                                                 plugin->ext_addr->
+                                                 address_length))) )
   {
     /* Checking HTTP_OPTIONS_VERIFY_CERTIFICATE option for external hostname */
     if ((ntohl (haddr->options) & HTTP_OPTIONS_VERIFY_CERTIFICATE) !=
         (plugin->options & HTTP_OPTIONS_VERIFY_CERTIFICATE))
-      return GNUNET_NO; /* VERIFY option not set as required! */
+      return GNUNET_NO;   /* VERIFY option not set as required! */
     return GNUNET_OK;
   }
-  next  = plugin->addr_head;
+  next = plugin->addr_head;
   while (NULL != (pos = next))
   {
     next = pos->next;
-    if (GNUNET_YES == (http_common_cmp_addresses(addr,
-                                                 addrlen,
-                                                 pos->address,
-                                                 pos->addrlen)))
+    if (GNUNET_YES == (http_common_cmp_addresses (addr,
+                                                  addrlen,
+                                                  pos->address,
+                                                  pos->addrlen)))
       return GNUNET_OK;
   }
   return GNUNET_NO;
@@ -978,7 +982,7 @@ server_schedule (struct HTTP_Server_Plugin *plugin,
                  struct MHD_Daemon *daemon_handle,
                  int now)
 {
-  struct GNUNET_SCHEDULER_Task * ret;
+  struct GNUNET_SCHEDULER_Task *ret;
   fd_set rs;
   fd_set ws;
   fd_set es;
@@ -1042,9 +1046,9 @@ server_schedule (struct HTTP_Server_Plugin *plugin,
          tv);
 #endif
     ret =
-        GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-                                     tv, wrs, wws,
-                                     &server_v4_run, plugin);
+      GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+                                   tv, wrs, wws,
+                                   &server_v4_run, plugin);
   }
   if (daemon_handle == plugin->server_v6)
   {
@@ -1058,9 +1062,9 @@ server_schedule (struct HTTP_Server_Plugin *plugin,
          "Scheduling IPv6 server task in %llu ms\n", tv);
 #endif
     ret =
-        GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-                                     tv, wrs, wws,
-                                     &server_v6_run, plugin);
+      GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+                                   tv, wrs, wws,
+                                   &server_v6_run, plugin);
   }
   GNUNET_NETWORK_fdset_destroy (wrs);
   GNUNET_NETWORK_fdset_destroy (wws);
@@ -1084,7 +1088,7 @@ server_reschedule (struct HTTP_Server_Plugin *plugin,
   if ((server == plugin->server_v4) && (plugin->server_v4 != NULL))
   {
     if (GNUNET_YES == plugin->server_v4_immediately)
-      return; /* No rescheduling, server will run asap */
+      return;   /* No rescheduling, server will run asap */
 
     if (GNUNET_YES == now)
       plugin->server_v4_immediately = GNUNET_YES;
@@ -1100,7 +1104,7 @@ server_reschedule (struct HTTP_Server_Plugin *plugin,
   if ((server == plugin->server_v6) && (plugin->server_v6 != NULL))
   {
     if (GNUNET_YES == plugin->server_v6_immediately)
-      return; /* No rescheduling, server will run asap */
+      return;   /* No rescheduling, server will run asap */
 
     if (GNUNET_YES == now)
       plugin->server_v6_immediately = GNUNET_YES;
@@ -1141,7 +1145,8 @@ http_server_query_keepalive_factor (void *cls)
  */
 static void
 http_server_plugin_update_session_timeout (void *cls,
-                                           const struct GNUNET_PeerIdentity *peer,
+                                           const struct
+                                           GNUNET_PeerIdentity *peer,
                                            struct GNUNET_ATS_Session *session)
 {
   server_reschedule_session_timeout (session);
@@ -1157,8 +1162,8 @@ http_server_plugin_update_session_timeout (void *cls,
  */
 static void
 server_mhd_connection_timeout (struct HTTP_Server_Plugin *plugin,
-			       struct GNUNET_ATS_Session *s,
-			       unsigned int to)
+                               struct GNUNET_ATS_Session *s,
+                               unsigned int to)
 {
   /* Setting timeouts for other connections */
   if (NULL != s->server_recv)
@@ -1167,8 +1172,8 @@ server_mhd_connection_timeout (struct HTTP_Server_Plugin *plugin,
          "Setting timeout for %p to %u sec.\n",
          s->server_recv, to);
     MHD_set_connection_option (s->server_recv->mhd_conn,
-			       MHD_CONNECTION_OPTION_TIMEOUT,
-			       to);
+                               MHD_CONNECTION_OPTION_TIMEOUT,
+                               to);
     server_reschedule (plugin, s->server_recv->mhd_daemon, GNUNET_NO);
   }
   if (NULL != s->server_send)
@@ -1177,8 +1182,8 @@ server_mhd_connection_timeout (struct HTTP_Server_Plugin *plugin,
          "Setting timeout for %p to %u sec.\n",
          s->server_send, to);
     MHD_set_connection_option (s->server_send->mhd_conn,
-			       MHD_CONNECTION_OPTION_TIMEOUT,
-			       to);
+                               MHD_CONNECTION_OPTION_TIMEOUT,
+                               to);
     server_reschedule (plugin, s->server_send->mhd_daemon, GNUNET_NO);
   }
 }
@@ -1196,10 +1201,10 @@ server_mhd_connection_timeout (struct HTTP_Server_Plugin *plugin,
  */
 static int
 server_parse_url (struct HTTP_Server_Plugin *plugin,
-		  const char *url,
-		  struct GNUNET_PeerIdentity *target,
-		  uint32_t *tag,
-		  uint32_t *options)
+                  const char *url,
+                  struct GNUNET_PeerIdentity *target,
+                  uint32_t *tag,
+                  uint32_t *options)
 {
   regmatch_t matches[4];
   const char *tag_start;
@@ -1219,7 +1224,7 @@ server_parse_url (struct HTTP_Server_Plugin *plugin,
     return GNUNET_SYSERR;
   }
 
-  if (regexec(&plugin->url_regex, url, 4, matches, 0))
+  if (regexec (&plugin->url_regex, url, 4, matches, 0))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "URL `%s' did not match regex\n", url);
@@ -1255,7 +1260,7 @@ server_parse_url (struct HTTP_Server_Plugin *plugin,
          "URL tag > UINT32_MAX\n");
     return GNUNET_SYSERR;
   }
-  (*tag) = (uint32_t)rc;
+  (*tag) = (uint32_t) rc;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Found tag `%u' in url\n",
        *tag);
@@ -1271,8 +1276,8 @@ server_parse_url (struct HTTP_Server_Plugin *plugin,
   }
   if (GNUNET_OK !=
       GNUNET_CRYPTO_eddsa_public_key_from_string (target_start,
-						     hash_length,
-						     &target->public_key))
+                                                  hash_length,
+                                                  &target->public_key))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "URL target conversion failed\n");
@@ -1438,21 +1443,23 @@ server_lookup_connection (struct HTTP_Server_Plugin *plugin,
     case (AF_INET):
       addr = http_common_address_from_socket (plugin->protocol,
                                               conn_info->client_addr,
-                                              sizeof (struct sockaddr_in));
+                                              sizeof(struct sockaddr_in));
       addr_len = http_common_address_get_size (addr);
       scope = plugin->env->get_address_type (plugin->env->cls,
                                              conn_info->client_addr,
-                                             sizeof (struct sockaddr_in));
+                                             sizeof(struct sockaddr_in));
       break;
+
     case (AF_INET6):
       addr = http_common_address_from_socket (plugin->protocol,
                                               conn_info->client_addr,
-                                              sizeof (struct sockaddr_in6));
+                                              sizeof(struct sockaddr_in6));
       addr_len = http_common_address_get_size (addr);
       scope = plugin->env->get_address_type (plugin->env->cls,
                                              conn_info->client_addr,
-                                             sizeof (struct sockaddr_in6));
+                                             sizeof(struct sockaddr_in6));
       break;
+
     default:
       /* external host name */
       return NULL;
@@ -1491,8 +1498,8 @@ server_lookup_connection (struct HTTP_Server_Plugin *plugin,
     GNUNET_free_non_null (addr);
   }
 
-  if ( (_RECEIVE == direction) &&
-       (NULL != s->server_recv) )
+  if ((_RECEIVE == direction) &&
+      (NULL != s->server_recv))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Duplicate PUT request from `%s' tag %u, dismissing new request\n",
@@ -1529,7 +1536,7 @@ server_lookup_connection (struct HTTP_Server_Plugin *plugin,
 
   if ((GNUNET_NO == s->known_to_service) &&
       (NULL != s->server_send) &&
-      (NULL != s->server_recv) )
+      (NULL != s->server_recv))
   {
     s->known_to_service = GNUNET_YES;
     notify_session_monitor (plugin,
@@ -1618,7 +1625,7 @@ server_send_callback (void *cls,
                      s->plugin->protocol);
     GNUNET_STATISTICS_update (s->plugin->env->stats,
                               stat_txt,
-                              - bytes_read,
+                              -bytes_read,
                               GNUNET_NO);
     GNUNET_free (stat_txt);
     GNUNET_asprintf (&stat_txt,
@@ -1682,8 +1689,8 @@ server_receive_mst_cb (void *cls,
                    plugin->protocol);
   GNUNET_STATISTICS_update (plugin->env->stats,
                             stat_txt,
-			    ntohs (message->size),
-			    GNUNET_NO);
+                            ntohs (message->size),
+                            GNUNET_NO);
   GNUNET_free (stat_txt);
   s->next_receive = GNUNET_TIME_relative_to_absolute (delay);
   if (delay.rel_value_us > 0)
@@ -1709,7 +1716,7 @@ server_receive_mst_cb (void *cls,
  * @param response response object to modify
  */
 static void
-add_cors_headers(struct MHD_Response *response)
+add_cors_headers (struct MHD_Response *response)
 {
   MHD_add_response_header (response,
                            "Access-Control-Allow-Origin",
@@ -1753,7 +1760,8 @@ server_access_cb (void *cls,
   int res = MHD_YES;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Access from connection %p (%u of %u) for `%s' `%s' url `%s' with upload data size %u\n"),
+       _ (
+         "Access from connection %p (%u of %u) for `%s' `%s' url `%s' with upload data size %u\n"),
        sc,
        plugin->cur_request,
        plugin->max_request,
@@ -1767,8 +1775,8 @@ server_access_cb (void *cls,
     if (0 == strcmp (MHD_HTTP_METHOD_OPTIONS, method))
     {
       response = MHD_create_response_from_buffer (0, NULL,
-          MHD_RESPMEM_PERSISTENT);
-      add_cors_headers(response);
+                                                  MHD_RESPMEM_PERSISTENT);
+      add_cors_headers (response);
       res = MHD_queue_response (mhd_connection, MHD_HTTP_OK, response);
       MHD_destroy_response (response);
       return res;
@@ -1787,9 +1795,9 @@ server_access_cb (void *cls,
                                                   HTTP_ERROR_RESPONSE,
                                                   MHD_RESPMEM_PERSISTENT);
       MHD_add_response_header (response,
-			       MHD_HTTP_HEADER_CONTENT_TYPE,
-			       "text/html");
-      add_cors_headers(response);
+                               MHD_HTTP_HEADER_CONTENT_TYPE,
+                               "text/html");
+      add_cors_headers (response);
       res = MHD_queue_response (mhd_connection, MHD_HTTP_NOT_FOUND, response);
       MHD_destroy_response (response);
       return res;
@@ -1803,7 +1811,7 @@ server_access_cb (void *cls,
     response = MHD_create_response_from_buffer (strlen ("Thank you!"),
                                                 "Thank you!",
                                                 MHD_RESPMEM_PERSISTENT);
-    add_cors_headers(response);
+    add_cors_headers (response);
     MHD_queue_response (mhd_connection, MHD_HTTP_OK, response);
     MHD_destroy_response (response);
     return MHD_YES;
@@ -1812,8 +1820,9 @@ server_access_cb (void *cls,
   if (sc->direction == _SEND)
   {
     response = MHD_create_response_from_callback (MHD_SIZE_UNKNOWN, 32 * 1024,
-        &server_send_callback, sc, NULL);
-    add_cors_headers(response);
+                                                  &server_send_callback, sc,
+                                                  NULL);
+    add_cors_headers (response);
     MHD_queue_response (mhd_connection, MHD_HTTP_OK, response);
     MHD_destroy_response (response);
     return MHD_YES;
@@ -1848,7 +1857,7 @@ server_access_cb (void *cls,
       response = MHD_create_response_from_buffer (strlen ("Thank you!"),
                                                   "Thank you!",
                                                   MHD_RESPMEM_PERSISTENT);
-      add_cors_headers(response);
+      add_cors_headers (response);
       MHD_queue_response (mhd_connection, MHD_HTTP_OK, response);
       MHD_destroy_response (response);
       return MHD_YES;
@@ -1882,7 +1891,8 @@ server_access_cb (void *cls,
                                 *upload_data_size,
                                 GNUNET_NO, GNUNET_NO);
         server_mhd_connection_timeout (plugin, s,
-                                       GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT.rel_value_us / 1000LL
+                                       GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT.
+                                       rel_value_us / 1000LL
                                        / 1000LL);
         (*upload_data_size) = 0;
       }
@@ -1890,19 +1900,19 @@ server_access_cb (void *cls,
       {
         /* delay processing */
         GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		    "Session %p / Connection %p: no inbound bandwidth available! Next read was delayed by %s\n",
-		    s,
-		    sc,
-		    GNUNET_STRINGS_relative_time_to_string (delay,
-							    GNUNET_YES));
-        GNUNET_assert(s->server_recv->mhd_conn == mhd_connection);
+                    "Session %p / Connection %p: no inbound bandwidth available! Next read was delayed by %s\n",
+                    s,
+                    sc,
+                    GNUNET_STRINGS_relative_time_to_string (delay,
+                                                            GNUNET_YES));
+        GNUNET_assert (s->server_recv->mhd_conn == mhd_connection);
         MHD_suspend_connection (s->server_recv->mhd_conn);
         s->server_recv->suspended = true;
         if (NULL == s->recv_wakeup_task)
           s->recv_wakeup_task
-	    = GNUNET_SCHEDULER_add_delayed (delay,
-					    &server_wake_up,
-					    s);
+            = GNUNET_SCHEDULER_add_delayed (delay,
+                                            &server_wake_up,
+                                            s);
       }
       return MHD_YES;
     }
@@ -1949,8 +1959,9 @@ server_disconnect_cb (void *cls,
            GNUNET_i2s (&sc->session->target),
            sc->session->server_send,
            http_common_plugin_address_to_string (plugin->protocol,
-               sc->session->address->address,
-               sc->session->address->address_length));
+                                                 sc->session->address->address,
+                                                 sc->session->address->
+                                                 address_length));
 
       sc->session->server_send = NULL;
     }
@@ -1961,8 +1972,9 @@ server_disconnect_cb (void *cls,
            GNUNET_i2s (&sc->session->target),
            sc->session->server_recv,
            http_common_plugin_address_to_string (plugin->protocol,
-               sc->session->address->address,
-               sc->session->address->address_length));
+                                                 sc->session->address->address,
+                                                 sc->session->address->
+                                                 address_length));
       sc->session->server_recv = NULL;
       if (NULL != sc->session->msg_tk)
       {
@@ -2025,7 +2037,7 @@ server_accept_cb (void *cls,
   if (plugin->cur_request <= plugin->max_request)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-         _("Accepting connection (%u of %u) from `%s'\n"),
+         _ ("Accepting connection (%u of %u) from `%s'\n"),
          plugin->cur_request, plugin->max_request,
          GNUNET_a2s (addr, addr_len));
     return MHD_YES;
@@ -2033,7 +2045,8 @@ server_accept_cb (void *cls,
   else
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-         _("Server reached maximum number connections (%u), rejecting new connection\n"),
+         _ (
+           "Server reached maximum number connections (%u), rejecting new connection\n"),
          plugin->max_request);
     return MHD_NO;
   }
@@ -2056,7 +2069,7 @@ server_log (void *arg,
   char text[1024];
 
   vsnprintf (text,
-             sizeof (text),
+             sizeof(text),
              fmt,
              ap);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -2080,12 +2093,12 @@ server_load_file (const char *file)
   char *text = NULL;
 
   if (GNUNET_OK != GNUNET_DISK_file_size (file,
-      &fsize, GNUNET_NO, GNUNET_YES))
+                                          &fsize, GNUNET_NO, GNUNET_YES))
     return NULL;
   text = GNUNET_malloc (fsize + 1);
   gn_file =
-      GNUNET_DISK_file_open (file, GNUNET_DISK_OPEN_READ,
-                             GNUNET_DISK_PERM_USER_READ);
+    GNUNET_DISK_file_open (file, GNUNET_DISK_OPEN_READ,
+                           GNUNET_DISK_PERM_USER_READ);
   if (NULL == gn_file)
   {
     GNUNET_free (text);
@@ -2101,6 +2114,8 @@ server_load_file (const char *file)
   GNUNET_DISK_file_close (gn_file);
   return text;
 }
+
+
 #endif
 
 
@@ -2173,17 +2188,18 @@ server_load_certificate (struct HTTP_Server_Plugin *plugin)
                 "No usable TLS certificate found, creating certificate\n");
     errno = 0;
     cert_creation =
-        GNUNET_OS_start_process (GNUNET_NO, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-                                 NULL, NULL, NULL,
-                                 "gnunet-transport-certificate-creation",
-                                 "gnunet-transport-certificate-creation",
-                                 key_file,
-                                 cert_file,
-                                 NULL);
+      GNUNET_OS_start_process (GNUNET_NO, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                               NULL, NULL, NULL,
+                               "gnunet-transport-certificate-creation",
+                               "gnunet-transport-certificate-creation",
+                               key_file,
+                               cert_file,
+                               NULL);
     if (NULL == cert_creation)
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
-           _("Could not create a new TLS certificate, program `gnunet-transport-certificate-creation' could not be started!\n"));
+           _ (
+             "Could not create a new TLS certificate, program `gnunet-transport-certificate-creation' could not be started!\n"));
       GNUNET_free (key_file);
       GNUNET_free (cert_file);
 
@@ -2206,7 +2222,8 @@ server_load_certificate (struct HTTP_Server_Plugin *plugin)
   if ((plugin->key == NULL) || (plugin->cert == NULL))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("No usable TLS certificate found and creating one at `%s/%s' failed!\n"),
+         _ (
+           "No usable TLS certificate found and creating one at `%s/%s' failed!\n"),
          key_file, cert_file);
     GNUNET_free (key_file);
     GNUNET_free (cert_file);
@@ -2226,6 +2243,8 @@ server_load_certificate (struct HTTP_Server_Plugin *plugin)
               "TLS certificate loaded\n");
   return res;
 }
+
+
 #endif
 
 
@@ -2259,57 +2278,57 @@ run_mhd_start_daemon (struct HTTP_Server_Plugin *plugin,
 #endif
   server = MHD_start_daemon (
 #if VERBOSE_SERVER
-                             MHD_USE_DEBUG |
+    MHD_USE_DEBUG |
 #endif
 #if BUILD_HTTPS
-                             MHD_USE_SSL |
+    MHD_USE_SSL |
 #endif
-                             MHD_USE_SUSPEND_RESUME |
-                             v6,
-                             plugin->port,
-                             &server_accept_cb, plugin,
-                             &server_access_cb, plugin,
-                             MHD_OPTION_SOCK_ADDR,
-                             addr,
-                             MHD_OPTION_CONNECTION_LIMIT,
-                             (unsigned int) plugin->max_request,
+    MHD_USE_SUSPEND_RESUME
+    | v6,
+    plugin->port,
+    &server_accept_cb, plugin,
+    &server_access_cb, plugin,
+    MHD_OPTION_SOCK_ADDR,
+    addr,
+    MHD_OPTION_CONNECTION_LIMIT,
+    (unsigned int) plugin->max_request,
 #if BUILD_HTTPS
-                             MHD_OPTION_HTTPS_PRIORITIES,
-                             plugin->crypto_init,
-                             MHD_OPTION_HTTPS_MEM_KEY,
-                             plugin->key,
-                             MHD_OPTION_HTTPS_MEM_CERT,
-                             plugin->cert,
+    MHD_OPTION_HTTPS_PRIORITIES,
+    plugin->crypto_init,
+    MHD_OPTION_HTTPS_MEM_KEY,
+    plugin->key,
+    MHD_OPTION_HTTPS_MEM_CERT,
+    plugin->cert,
 #endif
-                             MHD_OPTION_CONNECTION_TIMEOUT,
-                             timeout,
-                             MHD_OPTION_CONNECTION_MEMORY_LIMIT,
-                             (size_t) (2 *
-                                       GNUNET_MAX_MESSAGE_SIZE),
-                             MHD_OPTION_NOTIFY_COMPLETED,
-                             &server_disconnect_cb, plugin,
-                             MHD_OPTION_NOTIFY_CONNECTION,
-                             &server_connection_cb, plugin,
-                             MHD_OPTION_EXTERNAL_LOGGER,
-                             &server_log, NULL,
-                             MHD_OPTION_END);
+    MHD_OPTION_CONNECTION_TIMEOUT,
+    timeout,
+    MHD_OPTION_CONNECTION_MEMORY_LIMIT,
+    (size_t) (2
+              * GNUNET_MAX_MESSAGE_SIZE),
+    MHD_OPTION_NOTIFY_COMPLETED,
+    &server_disconnect_cb, plugin,
+    MHD_OPTION_NOTIFY_CONNECTION,
+    &server_connection_cb, plugin,
+    MHD_OPTION_EXTERNAL_LOGGER,
+    &server_log, NULL,
+    MHD_OPTION_END);
 #ifdef TCP_STEALTH
-  if ( (NULL != server) &&
-       (0 != (plugin->options & HTTP_OPTIONS_TCP_STEALTH)) )
+  if ((NULL != server) &&
+      (0 != (plugin->options & HTTP_OPTIONS_TCP_STEALTH)))
   {
     const union MHD_DaemonInfo *di;
 
     di = MHD_get_daemon_info (server,
                               MHD_DAEMON_INFO_LISTEN_FD,
                               NULL);
-    if ( (0 != setsockopt ((int) di->listen_fd,
-                           IPPROTO_TCP,
-                           TCP_STEALTH,
-                           plugin->env->my_identity,
-                           sizeof (struct GNUNET_PeerIdentity))) )
+    if ((0 != setsockopt ((int) di->listen_fd,
+                          IPPROTO_TCP,
+                          TCP_STEALTH,
+                          plugin->env->my_identity,
+                          sizeof(struct GNUNET_PeerIdentity))))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("TCP_STEALTH not supported on this platform.\n"));
+                  _ ("TCP_STEALTH not supported on this platform.\n"));
       MHD_stop_daemon (server);
       server = NULL;
     }
@@ -2335,11 +2354,11 @@ server_start (struct HTTP_Server_Plugin *plugin)
   if (GNUNET_SYSERR == server_load_certificate (plugin))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Could not load or create server certificate! Loading plugin failed!\n"));
+         _ (
+           "Could not load or create server certificate! Loading plugin failed!\n"));
     return GNUNET_SYSERR;
   }
 #endif
-
 
 
   plugin->server_v4 = NULL;
@@ -2347,7 +2366,8 @@ server_start (struct HTTP_Server_Plugin *plugin)
   {
     plugin->server_v4
       = run_mhd_start_daemon (plugin,
-                              (const struct sockaddr_in *) plugin->server_addr_v4,
+                              (const struct
+                               sockaddr_in *) plugin->server_addr_v4,
                               MHD_NO_FLAG);
 
     if (NULL == plugin->server_v4)
@@ -2369,7 +2389,8 @@ server_start (struct HTTP_Server_Plugin *plugin)
   {
     plugin->server_v6
       = run_mhd_start_daemon (plugin,
-                              (const struct sockaddr_in *) plugin->server_addr_v6,
+                              (const struct
+                               sockaddr_in *) plugin->server_addr_v6,
                               MHD_USE_IPv6);
     if (NULL == plugin->server_v6)
     {
@@ -2386,8 +2407,8 @@ server_start (struct HTTP_Server_Plugin *plugin)
     }
   }
   msg = "No";
-  if ( (NULL == plugin->server_v6) &&
-       (NULL == plugin->server_v4) )
+  if ((NULL == plugin->server_v6) &&
+      (NULL == plugin->server_v4))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
          "%s %s server component started on port %u\n",
@@ -2452,10 +2473,14 @@ server_add_address (void *cls,
   /* modify our published address list */
 #if BUILD_HTTPS
   address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-      "https_client", w->address, w->addrlen, GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                           "https_client", w->address,
+                                           w->addrlen,
+                                           GNUNET_HELLO_ADDRESS_INFO_NONE);
 #else
   address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-      "http_client", w->address, w->addrlen, GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                           "http_client", w->address,
+                                           w->addrlen,
+                                           GNUNET_HELLO_ADDRESS_INFO_NONE);
 #endif
 
   plugin->env->notify_address (plugin->env->cls,
@@ -2483,7 +2508,7 @@ server_remove_address (void *cls,
   struct GNUNET_HELLO_Address *address;
   struct HttpAddressWrapper *w = plugin->addr_head;
   size_t saddr_len;
-  void * saddr;
+  void *saddr;
 
   saddr = http_common_address_from_socket (plugin->protocol,
                                            addr,
@@ -2518,17 +2543,20 @@ server_remove_address (void *cls,
   /* modify our published address list */
 #if BUILD_HTTPS
   address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-      "https_client", w->address, w->addrlen, GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                           "https_client", w->address,
+                                           w->addrlen,
+                                           GNUNET_HELLO_ADDRESS_INFO_NONE);
 #else
   address = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-      "http_client", w->address, w->addrlen, GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                           "http_client", w->address,
+                                           w->addrlen,
+                                           GNUNET_HELLO_ADDRESS_INFO_NONE);
 #endif
   plugin->env->notify_address (plugin->env->cls, add_remove, address);
   GNUNET_HELLO_address_free (address);
   GNUNET_free (w->address);
   GNUNET_free (w);
 }
-
 
 
 /**
@@ -2545,9 +2573,9 @@ server_remove_address (void *cls,
  */
 static void
 server_nat_port_map_callback (void *cls,
-			      void **app_ctx,
+                              void **app_ctx,
                               int add_remove,
-			      enum GNUNET_NAT_AddressClass ac,
+                              enum GNUNET_NAT_AddressClass ac,
                               const struct sockaddr *addr,
                               socklen_t addrlen)
 {
@@ -2569,7 +2597,7 @@ server_nat_port_map_callback (void *cls,
     if ((NULL != plugin->server_addr_v4) &&
         (0 != memcmp (&plugin->server_addr_v4->sin_addr,
                       &s4->sin_addr,
-		      sizeof (struct in_addr))))
+                      sizeof(struct in_addr))))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
            "Skipping address `%s' (not bindto address)\n",
@@ -2586,7 +2614,7 @@ server_nat_port_map_callback (void *cls,
 
     if ((NULL != plugin->server_addr_v6) &&
         (0 != memcmp (&plugin->server_addr_v6->sin6_addr,
-                      &s6->sin6_addr, sizeof (struct in6_addr))))
+                      &s6->sin6_addr, sizeof(struct in6_addr))))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
            "Skipping address `%s' (not bindto address)\n",
@@ -2600,6 +2628,7 @@ server_nat_port_map_callback (void *cls,
   case GNUNET_YES:
     server_add_address (cls, add_remove, addr, addrlen);
     break;
+
   case GNUNET_NO:
     server_remove_address (cls, add_remove, addr, addrlen);
     break;
@@ -2622,7 +2651,7 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
                       const char *service_name,
                       const struct GNUNET_CONFIGURATION_Handle *cfg,
                       struct sockaddr ***addrs,
-                      socklen_t ** addr_lens)
+                      socklen_t **addr_lens)
 {
   int disablev6;
   unsigned long long port;
@@ -2640,7 +2669,7 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
   *addrs = NULL;
   *addr_lens = NULL;
 
-  disablev6 = !plugin->use_ipv6;
+  disablev6 = ! plugin->use_ipv6;
 
   port = 0;
   if (GNUNET_CONFIGURATION_have_value (cfg, service_name, "PORT"))
@@ -2651,7 +2680,8 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
     if (port > 65535)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Require valid port number for service in configuration!\n"));
+                  _ (
+                    "Require valid port number for service in configuration!\n"));
       return GNUNET_SYSERR;
     }
   }
@@ -2659,7 +2689,7 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
   {
     LOG (GNUNET_ERROR_TYPE_INFO,
          "Starting in listen only mode\n");
-    return -1; /* listen only */
+    return -1;   /* listen only */
   }
 
 
@@ -2678,14 +2708,14 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Resolving `%s' since that is where `%s' will bind to.\n",
          hostname, service_name);
-    memset (&hints, 0, sizeof (struct addrinfo));
+    memset (&hints, 0, sizeof(struct addrinfo));
     if (disablev6)
       hints.ai_family = AF_INET;
     if ((0 != (ret = getaddrinfo (hostname, NULL, &hints, &res))) ||
         (NULL == res))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Failed to resolve `%s': %s\n"),
+                  _ ("Failed to resolve `%s': %s\n"),
                   hostname,
                   gai_strerror (ret));
       GNUNET_free (hostname);
@@ -2703,15 +2733,15 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
     if (0 == i)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Failed to find %saddress for `%s'.\n"),
+                  _ ("Failed to find %saddress for `%s'.\n"),
                   disablev6 ? "IPv4 " : "", hostname);
       freeaddrinfo (res);
       GNUNET_free (hostname);
       return GNUNET_SYSERR;
     }
     resi = i;
-    saddrs = GNUNET_malloc ((resi + 1) * sizeof (struct sockaddr *));
-    saddrlens = GNUNET_malloc ((resi + 1) * sizeof (socklen_t));
+    saddrs = GNUNET_malloc ((resi + 1) * sizeof(struct sockaddr *));
+    saddrlens = GNUNET_malloc ((resi + 1) * sizeof(socklen_t));
     i = 0;
     next = res;
     while (NULL != (pos = next))
@@ -2729,7 +2759,7 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
                        pos->ai_addrlen));
       if (pos->ai_family == AF_INET)
       {
-        GNUNET_assert (pos->ai_addrlen == sizeof (struct sockaddr_in));
+        GNUNET_assert (pos->ai_addrlen == sizeof(struct sockaddr_in));
         saddrlens[i] = pos->ai_addrlen;
         saddrs[i] = GNUNET_malloc (saddrlens[i]);
         GNUNET_memcpy (saddrs[i], pos->ai_addr, saddrlens[i]);
@@ -2738,7 +2768,7 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
       else
       {
         GNUNET_assert (pos->ai_family == AF_INET6);
-        GNUNET_assert (pos->ai_addrlen == sizeof (struct sockaddr_in6));
+        GNUNET_assert (pos->ai_addrlen == sizeof(struct sockaddr_in6));
         saddrlens[i] = pos->ai_addrlen;
         saddrs[i] = GNUNET_malloc (saddrlens[i]);
         GNUNET_memcpy (saddrs[i], pos->ai_addr, saddrlens[i]);
@@ -2758,10 +2788,10 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
       /* V4-only */
       resi = 1;
       i = 0;
-      saddrs = GNUNET_malloc ((resi + 1) * sizeof (struct sockaddr *));
-      saddrlens = GNUNET_malloc ((resi + 1) * sizeof (socklen_t));
+      saddrs = GNUNET_malloc ((resi + 1) * sizeof(struct sockaddr *));
+      saddrlens = GNUNET_malloc ((resi + 1) * sizeof(socklen_t));
 
-      saddrlens[i] = sizeof (struct sockaddr_in);
+      saddrlens[i] = sizeof(struct sockaddr_in);
       saddrs[i] = GNUNET_malloc (saddrlens[i]);
 #if HAVE_SOCKADDR_IN_SIN_LEN
       ((struct sockaddr_in *) saddrs[i])->sin_len = saddrlens[i];
@@ -2773,10 +2803,10 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
     {
       /* dual stack */
       resi = 2;
-      saddrs = GNUNET_malloc ((resi + 1) * sizeof (struct sockaddr *));
-      saddrlens = GNUNET_malloc ((resi + 1) * sizeof (socklen_t));
+      saddrs = GNUNET_malloc ((resi + 1) * sizeof(struct sockaddr *));
+      saddrlens = GNUNET_malloc ((resi + 1) * sizeof(socklen_t));
       i = 0;
-      saddrlens[i] = sizeof (struct sockaddr_in6);
+      saddrlens[i] = sizeof(struct sockaddr_in6);
       saddrs[i] = GNUNET_malloc (saddrlens[i]);
 #if HAVE_SOCKADDR_IN_SIN_LEN
       ((struct sockaddr_in6 *) saddrs[i])->sin6_len = saddrlens[0];
@@ -2784,7 +2814,7 @@ server_get_addresses (struct HTTP_Server_Plugin *plugin,
       ((struct sockaddr_in6 *) saddrs[i])->sin6_family = AF_INET6;
       ((struct sockaddr_in6 *) saddrs[i])->sin6_port = htons (port);
       i++;
-      saddrlens[i] = sizeof (struct sockaddr_in);
+      saddrlens[i] = sizeof(struct sockaddr_in);
       saddrs[i] = GNUNET_malloc (saddrlens[i]);
 #if HAVE_SOCKADDR_IN_SIN_LEN
       ((struct sockaddr_in *) saddrs[i])->sin_len = saddrlens[1];
@@ -2816,7 +2846,7 @@ server_start_report_addresses (struct HTTP_Server_Plugin *plugin)
                               plugin->env->cfg,
                               &addrs, &addrlens);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Found %u addresses to report to NAT service\n"),
+       _ ("Found %u addresses to report to NAT service\n"),
        res);
 
   if (GNUNET_SYSERR == res)
@@ -2827,14 +2857,14 @@ server_start_report_addresses (struct HTTP_Server_Plugin *plugin)
 
   plugin->nat
     = GNUNET_NAT_register (plugin->env->cfg,
-			   "transport-http_server",
-			   IPPROTO_TCP,
+                           plugin->name,
+                           IPPROTO_TCP,
                            (unsigned int) res,
                            (const struct sockaddr **) addrs,
-			   addrlens,
+                           addrlens,
                            &server_nat_port_map_callback,
-			   NULL,
-			   plugin);
+                           NULL,
+                           plugin);
   while (res > 0)
   {
     res--;
@@ -2889,26 +2919,26 @@ server_check_ipv6_support (struct HTTP_Server_Plugin *plugin)
 
   /* Probe IPv6 support */
   desc = GNUNET_NETWORK_socket_create (PF_INET6,
-				       SOCK_STREAM,
-				       0);
+                                       SOCK_STREAM,
+                                       0);
   if (NULL == desc)
   {
-    if ( (errno == ENOBUFS) ||
-	 (errno == ENOMEM) ||
-	 (errno == ENFILE) ||
-	 (errno == EACCES) )
+    if ((errno == ENOBUFS) ||
+        (errno == ENOMEM) ||
+        (errno == ENFILE) ||
+        (errno == EACCES))
     {
       GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
-			   "socket");
+                           "socket");
     }
     LOG (GNUNET_ERROR_TYPE_WARNING,
-         _("Disabling IPv6 since it is not supported on this system!\n"));
+         _ ("Disabling IPv6 since it is not supported on this system!\n"));
     res = GNUNET_NO;
   }
   else
   {
     GNUNET_break (GNUNET_OK ==
-		  GNUNET_NETWORK_socket_close (desc));
+                  GNUNET_NETWORK_socket_close (desc));
     desc = NULL;
     res = GNUNET_YES;
   }
@@ -2935,14 +2965,14 @@ server_notify_external_hostname (void *cls)
 
   plugin->notify_ext_task = NULL;
   GNUNET_asprintf (&url,
-		   "%s://%s",
-		   plugin->protocol,
-		   plugin->external_hostname);
+                   "%s://%s",
+                   plugin->protocol,
+                   plugin->external_hostname);
   urlen = strlen (url) + 1;
-  ext_addr = GNUNET_malloc (sizeof (struct HttpAddress) + urlen);
+  ext_addr = GNUNET_malloc (sizeof(struct HttpAddress) + urlen);
   ext_addr->options = htonl (plugin->options);
   ext_addr->urlen = htonl (urlen);
-  ext_addr_len = sizeof (struct HttpAddress) + urlen;
+  ext_addr_len = sizeof(struct HttpAddress) + urlen;
   GNUNET_memcpy (&ext_addr[1], url, urlen);
   GNUNET_free (url);
 
@@ -2957,24 +2987,24 @@ server_notify_external_hostname (void *cls)
          plugin->external_hostname);
   plugin->ext_addr
     = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-				     "https_client",
-				     ext_addr,
-				     ext_addr_len,
-				     GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                     "https_client",
+                                     ext_addr,
+                                     ext_addr_len,
+                                     GNUNET_HELLO_ADDRESS_INFO_NONE);
   plugin->env->notify_address (plugin->env->cls,
-			       GNUNET_YES,
-			       plugin->ext_addr);
+                               GNUNET_YES,
+                               plugin->ext_addr);
   GNUNET_free (ext_addr);
 #else
   plugin->ext_addr
     = GNUNET_HELLO_address_allocate (plugin->env->my_identity,
-				     "http_client",
-				     ext_addr,
-				     ext_addr_len,
-				     GNUNET_HELLO_ADDRESS_INFO_NONE);
+                                     "http_client",
+                                     ext_addr,
+                                     ext_addr_len,
+                                     GNUNET_HELLO_ADDRESS_INFO_NONE);
   plugin->env->notify_address (plugin->env->cls,
-			       GNUNET_YES,
-			       plugin->ext_addr);
+                               GNUNET_YES,
+                               plugin->ext_addr);
   GNUNET_free (ext_addr);
 #endif
 }
@@ -2998,38 +3028,38 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
 
   /* Use IPv4? */
   if (GNUNET_CONFIGURATION_have_value
-      (plugin->env->cfg, plugin->name, "USE_IPv4"))
+        (plugin->env->cfg, plugin->name, "USE_IPv4"))
   {
     plugin->use_ipv4 =
-        GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
-                                              plugin->name,
-                                              "USE_IPv4");
+      GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
+                                            plugin->name,
+                                            "USE_IPv4");
   }
   else
     plugin->use_ipv4 = GNUNET_YES;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("IPv4 support is %s\n"),
+       _ ("IPv4 support is %s\n"),
        (plugin->use_ipv4 == GNUNET_YES) ? "enabled" : "disabled");
 
   /* Use IPv6? */
   if (GNUNET_CONFIGURATION_have_value
-      (plugin->env->cfg, plugin->name, "USE_IPv6"))
+        (plugin->env->cfg, plugin->name, "USE_IPv6"))
   {
     plugin->use_ipv6 =
-        GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
-                                              plugin->name,
-                                              "USE_IPv6");
+      GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
+                                            plugin->name,
+                                            "USE_IPv6");
   }
   else
     plugin->use_ipv6 = GNUNET_YES;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("IPv6 support is %s\n"),
+       _ ("IPv6 support is %s\n"),
        (plugin->use_ipv6 == GNUNET_YES) ? "enabled" : "disabled");
 
   if ((plugin->use_ipv4 == GNUNET_NO) && (plugin->use_ipv6 == GNUNET_NO))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Neither IPv4 nor IPv6 are enabled! Fix in configuration\n"));
+         _ ("Neither IPv4 nor IPv6 are enabled! Fix in configuration\n"));
     return GNUNET_SYSERR;
   }
 
@@ -3040,32 +3070,32 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
                                               "PORT", &port)) || (port > 65535))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Port is required! Fix in configuration\n"));
+         _ ("Port is required! Fix in configuration\n"));
     return GNUNET_SYSERR;
   }
   plugin->port = port;
 
   LOG (GNUNET_ERROR_TYPE_INFO,
-       _("Using port %u\n"), plugin->port);
+       _ ("Using port %u\n"), plugin->port);
 
-  if ( (plugin->use_ipv4 == GNUNET_YES) &&
-       (GNUNET_YES ==
-	GNUNET_CONFIGURATION_get_value_string (plugin->env->cfg,
-					       plugin->name,
-					       "BINDTO",
-					       &bind4_address)))
+  if ((plugin->use_ipv4 == GNUNET_YES) &&
+      (GNUNET_YES ==
+       GNUNET_CONFIGURATION_get_value_string (plugin->env->cfg,
+                                              plugin->name,
+                                              "BINDTO",
+                                              &bind4_address)))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Binding %s plugin to specific IPv4 address: `%s'\n",
          plugin->protocol,
-	 bind4_address);
+         bind4_address);
     plugin->server_addr_v4 = GNUNET_new (struct sockaddr_in);
     if (1 != inet_pton (AF_INET,
-			bind4_address,
+                        bind4_address,
                         &plugin->server_addr_v4->sin_addr))
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
-           _("Specific IPv4 address `%s' in configuration file is invalid!\n"),
+           _ ("Specific IPv4 address `%s' in configuration file is invalid!\n"),
            bind4_address);
       GNUNET_free (bind4_address);
       GNUNET_free (plugin->server_addr_v4);
@@ -3088,7 +3118,7 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
        GNUNET_CONFIGURATION_get_value_string (plugin->env->cfg,
                                               plugin->name,
                                               "BINDTO6",
-					      &bind6_address)))
+                                              &bind6_address)))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Binding %s plugin to specific IPv6 address: `%s'\n",
@@ -3096,11 +3126,11 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
     plugin->server_addr_v6 = GNUNET_new (struct sockaddr_in6);
     if (1 !=
         inet_pton (AF_INET6,
-		   bind6_address,
-		   &plugin->server_addr_v6->sin6_addr))
+                   bind6_address,
+                   &plugin->server_addr_v6->sin6_addr))
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
-           _("Specific IPv6 address `%s' in configuration file is invalid!\n"),
+           _ ("Specific IPv6 address `%s' in configuration file is invalid!\n"),
            bind6_address);
       GNUNET_free (bind6_address);
       GNUNET_free (plugin->server_addr_v6);
@@ -3122,19 +3152,19 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
 #if BUILD_HTTPS
   plugin->verify_external_hostname
     = GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
-					    plugin->name,
-					    "VERIFY_EXTERNAL_HOSTNAME");
+                                            plugin->name,
+                                            "VERIFY_EXTERNAL_HOSTNAME");
   if (GNUNET_SYSERR == plugin->verify_external_hostname)
-  	plugin->verify_external_hostname = GNUNET_NO;
+    plugin->verify_external_hostname = GNUNET_NO;
   if (GNUNET_YES == plugin->verify_external_hostname)
-  	plugin->options |= HTTP_OPTIONS_VERIFY_CERTIFICATE;
+    plugin->options |= HTTP_OPTIONS_VERIFY_CERTIFICATE;
 #endif
   external_hostname_use_port
     = GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
-					    plugin->name,
-					    "EXTERNAL_HOSTNAME_USE_PORT");
+                                            plugin->name,
+                                            "EXTERNAL_HOSTNAME_USE_PORT");
   if (GNUNET_SYSERR == external_hostname_use_port)
-  	external_hostname_use_port = GNUNET_NO;
+    external_hostname_use_port = GNUNET_NO;
 
 
   if (GNUNET_YES ==
@@ -3147,14 +3177,14 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
     char *pos = NULL;
     char *pos_url = NULL;
 
-    if (NULL != strstr(eh_tmp, "://"))
-      tmp = &strstr(eh_tmp, "://")[3];
+    if (NULL != strstr (eh_tmp, "://"))
+      tmp = &strstr (eh_tmp, "://")[3];
     else
       tmp = eh_tmp;
 
     if (GNUNET_YES == external_hostname_use_port)
     {
-      if ( (strlen (tmp) > 1) && (NULL != (pos = strchr(tmp, '/'))) )
+      if ((strlen (tmp) > 1) && (NULL != (pos = strchr (tmp, '/'))))
       {
         pos_url = pos + 1;
         pos[0] = '\0';
@@ -3175,16 +3205,17 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
     GNUNET_free (eh_tmp);
 
     LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Using external hostname `%s'\n"),
+         _ ("Using external hostname `%s'\n"),
          plugin->external_hostname);
-    plugin->notify_ext_task = GNUNET_SCHEDULER_add_now (&server_notify_external_hostname,
-                                                        plugin);
+    plugin->notify_ext_task = GNUNET_SCHEDULER_add_now (
+      &server_notify_external_hostname,
+      plugin);
 
     /* Use only configured external hostname */
     if (GNUNET_CONFIGURATION_have_value
-        (plugin->env->cfg,
-         plugin->name,
-         "EXTERNAL_HOSTNAME_ONLY"))
+          (plugin->env->cfg,
+          plugin->name,
+          "EXTERNAL_HOSTNAME_ONLY"))
     {
       plugin->external_only =
         GNUNET_CONFIGURATION_get_value_yesno (plugin->env->cfg,
@@ -3196,7 +3227,7 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
 
     if (GNUNET_YES == plugin->external_only)
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-           _("Notifying transport only about hostname `%s'\n"),
+           _ ("Notifying transport only about hostname `%s'\n"),
            plugin->external_hostname);
   }
   else
@@ -3213,7 +3244,7 @@ server_configure_plugin (struct HTTP_Server_Plugin *plugin)
   plugin->max_request = max_connections;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Maximum number of connections is %u\n"),
+       _ ("Maximum number of connections is %u\n"),
        plugin->max_request);
 
   plugin->peer_id_length = strlen (GNUNET_i2s_full (plugin->env->my_identity));
@@ -3242,7 +3273,7 @@ LIBGNUNET_PLUGIN_TRANSPORT_DONE (void *cls)
   }
   plugin->in_shutdown = GNUNET_YES;
   LOG (GNUNET_ERROR_TYPE_INFO,
-       _("Shutting down plugin `%s'\n"),
+       _ ("Shutting down plugin `%s'\n"),
        plugin->name);
 
   if (NULL != plugin->notify_ext_task)
@@ -3263,9 +3294,9 @@ LIBGNUNET_PLUGIN_TRANSPORT_DONE (void *cls)
                                  GNUNET_NO,
                                  plugin->ext_addr);
 #else
-  plugin->env->notify_address (plugin->env->cls,
-                               GNUNET_NO,
-                               plugin->ext_addr);
+    plugin->env->notify_address (plugin->env->cls,
+                                 GNUNET_NO,
+                                 plugin->ext_addr);
 #endif
     GNUNET_HELLO_address_free (plugin->ext_addr);
     plugin->ext_addr = NULL;
@@ -3312,7 +3343,7 @@ LIBGNUNET_PLUGIN_TRANSPORT_DONE (void *cls)
   regfree (&plugin->url_regex);
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Shutdown for plugin `%s' complete\n"),
+       _ ("Shutdown for plugin `%s' complete\n"),
        plugin->name);
 
   GNUNET_free (plugin);
@@ -3367,7 +3398,8 @@ http_server_plugin_get_network (void *cls,
  */
 static enum GNUNET_NetworkType
 http_server_plugin_get_network_for_address (void *cls,
-                                            const struct GNUNET_HELLO_Address *address)
+                                            const struct
+                                            GNUNET_HELLO_Address *address)
 {
   struct HTTP_Server_Plugin *plugin = cls;
 
@@ -3527,7 +3559,7 @@ LIBGNUNET_PLUGIN_TRANSPORT_INIT (void *cls)
     plugin->options |= HTTP_OPTIONS_TCP_STEALTH;
 #else
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("TCP_STEALTH not supported on this platform.\n"));
+                _ ("TCP_STEALTH not supported on this platform.\n"));
     LIBGNUNET_PLUGIN_TRANSPORT_DONE (api);
     return NULL;
 #endif
@@ -3535,11 +3567,11 @@ LIBGNUNET_PLUGIN_TRANSPORT_INIT (void *cls)
 
   /* Compile URL regex */
   if (regcomp (&plugin->url_regex,
-	       URL_REGEX,
-	       REG_EXTENDED))
+               URL_REGEX,
+               REG_EXTENDED))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-	 _("Unable to compile URL regex\n"));
+         _ ("Unable to compile URL regex\n"));
     LIBGNUNET_PLUGIN_TRANSPORT_DONE (api);
     return NULL;
   }
@@ -3566,5 +3598,6 @@ LIBGNUNET_PLUGIN_TRANSPORT_INIT (void *cls)
   }
   return api;
 }
+
 
 /* end of plugin_transport_http_server.c */

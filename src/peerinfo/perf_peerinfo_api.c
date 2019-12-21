@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file peerinfo/perf_peerinfo_api.c
@@ -97,8 +97,8 @@ address_generator (void *cls, size_t max, void *buf)
   address.address = caddress;
   address.transport_name = "peerinfotest";
   ret =
-      GNUNET_HELLO_add_address (&address,
-                                GNUNET_TIME_relative_to_absolute
+    GNUNET_HELLO_add_address (&address,
+                              GNUNET_TIME_relative_to_absolute
                                 (GNUNET_TIME_UNIT_HOURS), buf, max);
   GNUNET_free (caddress);
   *agc = 0;
@@ -111,7 +111,7 @@ add_peer (size_t i)
 {
   struct GNUNET_HELLO_Message *h2;
 
-  memset (&pid, i, sizeof (pid));
+  memset (&pid, i, sizeof(pid));
   h2 = GNUNET_HELLO_create (&pid.public_key,
                             &address_generator,
                             &i,
@@ -135,7 +135,7 @@ process (void *cls,
     return;
   }
   numpeers++;
-  if (0 && (NULL != hello) )
+  if (0 && (NULL != hello))
     GNUNET_HELLO_iterate_addresses (hello,
                                     GNUNET_NO,
                                     &check_it,
@@ -159,8 +159,9 @@ run (void *cls,
                                      &process,
                                      &ic[i]);
   }
-  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                                                    5),
+  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                       GNUNET_TIME_UNIT_SECONDS,
+                                       5),
                                      &do_timeout,
                                      NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
@@ -173,19 +174,20 @@ main (int argc,
       char *argv[])
 {
   if (0 != GNUNET_TESTING_service_run ("perf-gnunet-peerinfo",
-				       "peerinfo",
-				       "test_peerinfo_api_data.conf",
-				       &run, NULL))
+                                       "peerinfo",
+                                       "test_peerinfo_api_data.conf",
+                                       &run, NULL))
     return 1;
-  FPRINTF (stderr,
+  fprintf (stderr,
            "Received %u/%u calls before timeout\n",
            numpeers,
-	   NUM_REQUESTS * NUM_REQUESTS / 2);
+           NUM_REQUESTS * NUM_REQUESTS / 2);
   GAUGER ("PEERINFO",
           "Peerinfo lookups",
           numpeers / 5,
           "peers/s");
   return 0;
 }
+
 
 /* end of perf_peerinfo_api.c */

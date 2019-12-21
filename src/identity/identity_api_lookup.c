@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file identity/identity_api_lookup.c
@@ -36,7 +36,6 @@
  */
 struct GNUNET_IDENTITY_EgoLookup
 {
-
   /**
    * Connection to service.
    */
@@ -70,7 +69,7 @@ struct GNUNET_IDENTITY_EgoLookup
 static int
 check_identity_result_code (void *cls, const struct ResultCodeMessage *rcm)
 {
-  if (sizeof (*rcm) != htons (rcm->header.size))
+  if (sizeof(*rcm) != htons (rcm->header.size))
     GNUNET_MQ_check_zero_termination (rcm);
   return GNUNET_OK;
 }
@@ -106,7 +105,7 @@ check_identity_update (void *cls, const struct UpdateMessage *um)
   uint16_t name_len = ntohs (um->name_len);
   const char *str = (const char *) &um[1];
 
-  if ((size != name_len + sizeof (struct UpdateMessage)) ||
+  if ((size != name_len + sizeof(struct UpdateMessage)) ||
       ((0 != name_len) && ('\0' != str[name_len - 1])))
   {
     GNUNET_break (0);
@@ -134,7 +133,7 @@ handle_identity_update (void *cls, const struct UpdateMessage *um)
 
   GNUNET_break (GNUNET_YES != ntohs (um->end_of_list));
   GNUNET_CRYPTO_ecdsa_key_get_public (&um->private_key, &pub);
-  GNUNET_CRYPTO_hash (&pub, sizeof (pub), &id);
+  GNUNET_CRYPTO_hash (&pub, sizeof(pub), &id);
   ego.pk = (struct GNUNET_CRYPTO_EcdsaPrivateKey *) &um->private_key;
   ego.name = (char *) str;
   ego.id = id;
@@ -186,15 +185,15 @@ GNUNET_IDENTITY_ego_lookup (const struct GNUNET_CONFIGURATION_Handle *cfg,
   el->cb_cls = cb_cls;
   {
     struct GNUNET_MQ_MessageHandler handlers[] =
-      {GNUNET_MQ_hd_var_size (identity_result_code,
-                              GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE,
-                              struct ResultCodeMessage,
-                              el),
-       GNUNET_MQ_hd_var_size (identity_update,
-                              GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE,
-                              struct UpdateMessage,
-                              el),
-       GNUNET_MQ_handler_end ()};
+    { GNUNET_MQ_hd_var_size (identity_result_code,
+                             GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE,
+                             struct ResultCodeMessage,
+                             el),
+      GNUNET_MQ_hd_var_size (identity_update,
+                             GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE,
+                             struct UpdateMessage,
+                             el),
+      GNUNET_MQ_handler_end () };
 
     el->mq =
       GNUNET_CLIENT_connect (cfg, "identity", handlers, &mq_error_handler, el);

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/test_communicator_unix.c
@@ -33,52 +33,58 @@
 #include <inttypes.h>
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "test_transport_communicator_unix", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, \
+                                        "test_transport_communicator_unix", \
+                                        __VA_ARGS__)
 
 #define NUM_PEERS 2
 
 static struct GNUNET_PeerIdentity peer_id[NUM_PEERS];
 
-static struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_hs[NUM_PEERS];
+static struct
+GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_hs[NUM_PEERS];
 
-//static char *addresses[NUM_PEERS];
+// static char *addresses[NUM_PEERS];
 
 
 #define PAYLOAD_SIZE 256
 
-//static char payload[PAYLOAD_SIZE] = "TEST PAYLOAD";
-//static char payload[] = "TEST PAYLOAD";
+// static char payload[PAYLOAD_SIZE] = "TEST PAYLOAD";
+// static char payload[] = "TEST PAYLOAD";
 static uint32_t payload = 42;
 
 
 static void
 communicator_available_cb (void *cls,
-                           struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
+                           struct
+                           GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                           *tc_h,
                            enum GNUNET_TRANSPORT_CommunicatorCharacteristics cc,
                            char *address_prefix)
 {
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Communicator available. (cc: %u, prefix: %s)\n",
-      cc,
-      address_prefix);
+       "Communicator available. (cc: %u, prefix: %s)\n",
+       cc,
+       address_prefix);
 }
 
 
 static void
 add_address_cb (void *cls,
-                struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
+                struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *
+                tc_h,
                 const char *address,
                 struct GNUNET_TIME_Relative expiration,
                 uint32_t aid,
                 enum GNUNET_NetworkType nt)
 {
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "New address. (addr: %s, expir: %" PRIu32 ", ID: %" PRIu32 ", nt: %u\n",
-      address,
-      expiration.rel_value_us,
-      aid,
-      nt);
-  //addresses[1] = GNUNET_strdup (address);
+       "New address. (addr: %s, expir: %" PRIu32 ", ID: %" PRIu32 ", nt: %u\n",
+       address,
+       expiration.rel_value_us,
+       aid,
+       nt);
+  // addresses[1] = GNUNET_strdup (address);
   GNUNET_TRANSPORT_TESTING_transport_communicator_open_queue (tc_hs[0],
                                                               &peer_id[1],
                                                               address);
@@ -98,15 +104,17 @@ add_address_cb (void *cls,
  */
 static void
 queue_create_reply_cb (void *cls,
-                       struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
+                       struct
+                       GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *
+                       tc_h,
                        int will_try)
 {
   if (GNUNET_YES == will_try)
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Queue will be established!\n");
+         "Queue will be established!\n");
   else
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Queue won't be established (bougus address?)!\n");
+         "Queue won't be established (bougus address?)!\n");
 }
 
 
@@ -124,13 +132,14 @@ queue_create_reply_cb (void *cls,
 static void
 add_queue_cb (void *cls,
               struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-              struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *tc_queue)
+              struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *
+              tc_queue)
 {
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Got Queue!\n");
+       "Got Queue!\n");
   GNUNET_TRANSPORT_TESTING_transport_communicator_send (tc_queue,
                                                         &payload,
-                                                        sizeof (payload));
+                                                        sizeof(payload));
 }
 
 
@@ -145,8 +154,9 @@ add_queue_cb (void *cls,
  */
 void
 incoming_message_cb (void *cls,
-    struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-    const struct GNUNET_MessageHeader *msg)
+                     struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                     *tc_h,
+                     const struct GNUNET_MessageHeader *msg)
 {
 }
 
@@ -162,26 +172,27 @@ run (void *cls)
   struct GNUNET_CONFIGURATION_Handle *cfg = cls;
 
   tc_hs[0] = GNUNET_TRANSPORT_TESTING_transport_communicator_service_start (
-      "transport",
-      "gnunet-communicator-unix",
-      "test_communicator_1.conf",
-      &communicator_available_cb,
-      NULL,
-      &queue_create_reply_cb,
-      &add_queue_cb,
-      NULL,
-      NULL); /* cls */
+    "transport",
+    "gnunet-communicator-unix",
+    "test_communicator_1.conf",
+    &communicator_available_cb,
+    NULL,
+    &queue_create_reply_cb,
+    &add_queue_cb,
+    NULL,
+    NULL);   /* cls */
   tc_hs[1] = GNUNET_TRANSPORT_TESTING_transport_communicator_service_start (
-      "transport",
-      "gnunet-communicator-unix",
-      "test_communicator_2.conf",
-      &communicator_available_cb,
-      &add_address_cb,
-      NULL,
-      &add_queue_cb,
-      NULL,
-      NULL); /* cls */
+    "transport",
+    "gnunet-communicator-unix",
+    "test_communicator_2.conf",
+    &communicator_available_cb,
+    &add_address_cb,
+    NULL,
+    &add_queue_cb,
+    NULL,
+    NULL);   /* cls */
 }
+
 
 int
 main (int argc,
@@ -218,19 +229,20 @@ main (int argc,
                      DIR_SEPARATOR_STR,
                      GNUNET_OS_project_data_get ()->config_file);
   else
-    cfg_filename = GNUNET_strdup (GNUNET_OS_project_data_get ()->user_config_file);
+    cfg_filename = GNUNET_strdup (
+      GNUNET_OS_project_data_get ()->user_config_file);
   cfg = GNUNET_CONFIGURATION_create ();
   if (NULL != opt_cfg_filename)
   {
-    if ( (GNUNET_YES !=
-          GNUNET_DISK_file_test (opt_cfg_filename)) ||
-       (GNUNET_SYSERR ==
-          GNUNET_CONFIGURATION_load (cfg,
-                                     opt_cfg_filename)) )
+    if ((GNUNET_YES !=
+         GNUNET_DISK_file_test (opt_cfg_filename)) ||
+        (GNUNET_SYSERR ==
+         GNUNET_CONFIGURATION_load (cfg,
+                                    opt_cfg_filename)))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Malformed configuration file `%s', exit ...\n"),
-                    opt_cfg_filename);
+                  _ ("Malformed configuration file `%s', exit ...\n"),
+                  opt_cfg_filename);
       return GNUNET_SYSERR;
     }
   }
@@ -244,7 +256,7 @@ main (int argc,
                                      cfg_filename))
       {
         GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    _("Malformed configuration file `%s', exit ...\n"),
+                    _ ("Malformed configuration file `%s', exit ...\n"),
                     cfg_filename);
         return GNUNET_SYSERR;
       }
@@ -256,7 +268,7 @@ main (int argc,
                                      NULL))
       {
         GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    _("Malformed configuration, exit ...\n"));
+                    _ ("Malformed configuration, exit ...\n"));
         return GNUNET_SYSERR;
       }
     }
@@ -264,4 +276,3 @@ main (int argc,
   GNUNET_SCHEDULER_run (&run,
                         cfg);
 }
-

@@ -1,6 +1,6 @@
 #!/bin/sh
 # This file is in the public domain.
-trap "gnunet-arm -e -c test_gns_lookup.conf" SIGINT
+trap "gnunet-arm -e -c test_gns_lookup.conf" INT
 
 LOCATION=$(which gnunet-config)
 if [ -z $LOCATION ]
@@ -85,7 +85,7 @@ else
   ret=1
 fi
 
-if [ "$RES_IP6" = "$TEST_IP6" ]
+if echo "$RES_IP6" | grep "$TEST_IP6" > /dev/null
 then
   echo "PASS: Resolved $TEST_DOMAIN to $RES_IP6."
 else

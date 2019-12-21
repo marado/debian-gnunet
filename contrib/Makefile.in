@@ -14,6 +14,10 @@
 
 @SET_MAKE@
 
+# This file has to be copied into the directory one level above.
+# This also means (obviously): this file is excluded from including
+# itself.
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -204,9 +208,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(tap32dir)" \
-	"$(DESTDIR)$(tap64dir)"
-DATA = $(dist_pkgdata_DATA) $(tap32_DATA) $(tap64_DATA)
+am__installdirs = "$(DESTDIR)$(pkgdatadir)"
+DATA = $(dist_pkgdata_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -411,7 +414,7 @@ TEST_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 TEST_LOG_COMPILE = $(TEST_LOG_COMPILER) $(AM_TEST_LOG_FLAGS) \
 	$(TEST_LOG_FLAGS)
 DIST_SUBDIRS = $(SUBDIRS)
-am__DIST_COMMON = $(srcdir)/Makefile.in \
+am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.inc \
 	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/test-driver
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -444,20 +447,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -465,6 +465,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -490,6 +491,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -527,11 +529,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -575,6 +581,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -594,6 +603,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -604,7 +614,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -668,9 +677,49 @@ top_srcdir = @top_srcdir@
 
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include -I$(top_builddir)/src/include
-tap32dir = $(pkgdatadir)/openvpn-tap32/tapw32/
-tap64dir = $(pkgdatadir)/openvpn-tap32/tapw64/
 SUBDIRS = scripts hellos services
+BUILDCOMMON_SHLIB_FILES = \
+    build-common/sh/bin.sh/python.sh \
+    build-common/sh/lib.sh/existence.sh \
+    build-common/sh/lib.sh/existence_python.sh \
+    build-common/sh/lib.sh/msg.sh \
+    build-common/sh/lib.sh/progname.sh \
+    build-common/sh/lib.sh/version_gnunet.sh \
+    build-common/LICENSE
+
+BUILDCOMMON_CONF_FILES = \
+    build-common/conf/.dir-locals.el \
+    build-common/conf/.prettierrc \
+    build-common/conf/.style.yapf \
+    build-common/conf/.vscode/settings.json \
+    build-common/conf/.vscode/tasks.json \
+    build-common/conf/.yarnrc \
+    build-common/conf/uncrustify-mode.el \
+    build-common/conf/uncrustify.cfg \
+    build-common/conf/uncrustify.el \
+    build-common/conf/uncrustify.sh \
+    build-common/conf/uncrustify_precommit
+
+BUILDCOMMON_BUILD_FILES = \
+    build-common/bootstrap.template \
+    build-common/configure \
+    build-common/configure.py.template \
+    build-common/talerbuildconfig.py \
+    build-common/testconfigure.py
+
+BUILDCOMMON_DOC_FILES = \
+    build-common/README
+
+BUILDCOMMON_SCRIPT_FILES = \
+    build-common/coverage.sh
+
+BUILD_COMMON_FILES = \
+    $(BUILDCOMMON_SHLIB_FILES) \
+    $(BUILDCOMMON_CONF_FILES) \
+    $(BUILDCOMMON_BUILD_FILES) \
+    $(BUILDCOMMON_DOC_FILES) \
+    $(BUILDCOMMON_SCRIPT_FILES)
+
 dist_pkgdata_DATA = \
  gns/gns-bcd.html \
  gns/gns-bcd.tex \
@@ -678,42 +727,48 @@ dist_pkgdata_DATA = \
  gns/gns-form-fields.xml \
  gns/gns-form.xslt \
  branding/logo/gnunet-logo.pdf \
+ branding/logo/gnunet-logo.png \
  branding/logo/gnunet-logo-color.png \
- testing_hostkeys.ecc
-
-@MINGW_TRUE@tap32_DATA = \
-@MINGW_TRUE@ 3rdparty/Windows/openvpn-tap32/tapw32/tap0901.sys \
-@MINGW_TRUE@ 3rdparty/Windows/openvpn-tap32/tapw32/tap0901.cat \
-@MINGW_TRUE@ 3rdparty/Windows/openvpn-tap32/tapw32/OemWin2k.inf
-
-@MINGW_TRUE@tap64_DATA = \
-@MINGW_TRUE@ 3rdparty/Windows/openvpn-tap32/tapw64/tap0901.sys \
-@MINGW_TRUE@ 3rdparty/Windows/openvpn-tap32/tapw64/tap0901.cat \
-@MINGW_TRUE@ 3rdparty/Windows/openvpn-tap32/tapw64/OemWin2k.inf
+ testing_hostkeys.ecc \
+ $(BUILDCOMMON_SHLIB_FILES)
 
 INITD_FILES = \
  services/openrc/gnunet.initd \
  services/systemd/gnunet.service
 
+PACKAGES_FILES = \
+    packages/guix/guix-env-py2.scm \
+    packages/guix/guix-env-gillmann.scm \
+    packages/guix/notest-guix-env.scm \
+    packages/homebrew/gnunet.rb \
+    packages/nix/gnunet-dev.nix \
+    packages/nix/default.nix \
+    packages/alpine/gnunet-gtk/APKBUILD \
+    packages/alpine/gnunet/APKBUILD \
+    packages/alpine/gnunet/gnunet-system-services.initd \
+    packages/alpine/gnunet/gnunet-system.conf \
+    packages/alpine/gnunet/gnunet-user-services.initd \
+    packages/alpine/gnunet/gnunet-user.conf \
+    packages/alpine/gnunet/gnunet.post-install \
+    packages/alpine/gnunet/gnunet.pre-deinstall \
+    packages/alpine/gnunet/gnunet.pre-install \
+    packages/alpine/gnunet/gnunet.xsession \
+    packages/alpine/gnurl/APKBUILD
+
 EXTRA_DIST = \
  conf/colorit/colorit.conf \
+ conf/.style.yapf \
  conf/editors/eclipse/gnunet_codingstyle.xml \
  conf/gnunet/no_forcestart.conf \
  conf/gnunet/no_autostart_above_core.conf \
+ conf/gnunet/gnunet-system.conf \
+ conf/gnunet/gnunet-user.conf \
  conf/nss/nssswitch.conf \
  conf/wireshark/wireshark.lua \
- packages/nix/default.nix \
- packages/nix/gnunet-dev.nix \
- 3rdparty/Windows/openvpn-tap32/tapw32/tap0901.sys \
- 3rdparty/Windows/openvpn-tap32/tapw32/tap0901.cat \
- 3rdparty/Windows/openvpn-tap32/tapw32/OemWin2k.inf \
- 3rdparty/Windows/openvpn-tap32/tapw64/tap0901.sys \
- 3rdparty/Windows/openvpn-tap32/tapw64/tap0901.cat \
- 3rdparty/Windows/openvpn-tap32/tapw64/OemWin2k.inf \
- 3rdparty/Windows/openvpn-tap32/INSTALL \
- 3rdparty/Windows/openvpn-tap32/tap32-signed-i386-2.1.zip \
- 3rdparty/Windows/openvpn-tap32/tap32-source-2.1.zip \
- $(INITD_FILES)
+ $(PACKAGES_FILES) \
+ $(INITD_FILES) \
+ Makefile.inc \
+ $(BUILD_COMMON_FILES)
 
 @ENABLE_TEST_RUN_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
@@ -733,7 +788,7 @@ all: all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .log .o .obj .test .test$(EXEEXT) .trs
-$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
+$(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(srcdir)/Makefile.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -753,6 +808,7 @@ Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	    echo ' cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles)'; \
 	    cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__maybe_remake_depfiles);; \
 	esac;
+$(srcdir)/Makefile.inc $(am__empty):
 
 $(top_builddir)/config.status: $(top_srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
@@ -851,48 +907,6 @@ uninstall-dist_pkgdataDATA:
 	@list='$(dist_pkgdata_DATA)'; test -n "$(pkgdatadir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(pkgdatadir)'; $(am__uninstall_files_from_dir)
-install-tap32DATA: $(tap32_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(tap32_DATA)'; test -n "$(tap32dir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(tap32dir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(tap32dir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(tap32dir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(tap32dir)" || exit $$?; \
-	done
-
-uninstall-tap32DATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(tap32_DATA)'; test -n "$(tap32dir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(tap32dir)'; $(am__uninstall_files_from_dir)
-install-tap64DATA: $(tap64_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(tap64_DATA)'; test -n "$(tap64dir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(tap64dir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(tap64dir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(tap64dir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(tap64dir)" || exit $$?; \
-	done
-
-uninstall-tap64DATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(tap64_DATA)'; test -n "$(tap64dir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(tap64dir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -1221,7 +1235,7 @@ check: check-recursive
 all-am: Makefile $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(pkgdatadir)" "$(DESTDIR)$(tap32dir)" "$(DESTDIR)$(tap64dir)"; do \
+	for dir in "$(DESTDIR)$(pkgdatadir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1280,8 +1294,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_pkgdataDATA install-tap32DATA \
-	install-tap64DATA
+install-data-am: install-dist_pkgdataDATA
 
 install-dvi: install-dvi-recursive
 
@@ -1327,8 +1340,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-dist_pkgdataDATA uninstall-tap32DATA \
-	uninstall-tap64DATA
+uninstall-am: uninstall-dist_pkgdataDATA
 
 .MAKE: $(am__recursive_targets) check-am install-am install-strip
 
@@ -1342,13 +1354,11 @@ uninstall-am: uninstall-dist_pkgdataDATA uninstall-tap32DATA \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-tap32DATA install-tap64DATA installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	recheck tags tags-am uninstall uninstall-am \
-	uninstall-dist_pkgdataDATA uninstall-tap32DATA \
-	uninstall-tap64DATA
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
+	uninstall uninstall-am uninstall-dist_pkgdataDATA
 
 .PRECIOUS: Makefile
 

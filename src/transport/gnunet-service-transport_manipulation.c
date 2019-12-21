@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2010-2013 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2013 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -259,7 +259,7 @@ send_delayed (void *cls)
                        dqe->timeout,
                        dqe->cont,
                        dqe->cont_cls);
-  GNUNET_free(dqe);
+  GNUNET_free (dqe);
 }
 
 
@@ -287,8 +287,8 @@ GST_manipulation_send (const struct GNUNET_PeerIdentity *target,
   struct GNUNET_TIME_Relative delay;
 
   if (NULL != (tmp =
-               GNUNET_CONTAINER_multipeermap_get (peers,
-                                                  target)))
+                 GNUNET_CONTAINER_multipeermap_get (peers,
+                                                    target)))
     delay = tmp->delay_out;
   else
     delay = delay_out;
@@ -302,7 +302,7 @@ GST_manipulation_send (const struct GNUNET_PeerIdentity *target,
                          cont, cont_cls);
     return;
   }
-  dqe = GNUNET_malloc (sizeof (struct DelayQueueEntry) + msg_size);
+  dqe = GNUNET_malloc (sizeof(struct DelayQueueEntry) + msg_size);
   dqe->id = *target;
   dqe->tmp = tmp;
   dqe->sent_at = GNUNET_TIME_relative_to_absolute (delay);
@@ -312,8 +312,8 @@ GST_manipulation_send (const struct GNUNET_PeerIdentity *target,
   dqe->msg_size = msg_size;
   dqe->timeout = timeout;
   GNUNET_memcpy (dqe->msg,
-          msg,
-          msg_size);
+                 msg,
+                 msg_size);
   if (NULL == tmp)
   {
     GNUNET_CONTAINER_DLL_insert_tail (generic_dqe_head,
@@ -416,12 +416,12 @@ GST_manipulation_init ()
 {
   struct GNUNET_TIME_Relative delay;
 
-  if ( (GNUNET_OK ==
-        GNUNET_CONFIGURATION_get_value_time (GST_cfg,
-                                             "transport",
-                                             "MANIPULATE_DELAY_IN",
-                                             &delay)) &&
-       (delay.rel_value_us > 0) )
+  if ((GNUNET_OK ==
+       GNUNET_CONFIGURATION_get_value_time (GST_cfg,
+                                            "transport",
+                                            "MANIPULATE_DELAY_IN",
+                                            &delay)) &&
+      (delay.rel_value_us > 0))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Delaying inbound traffic for %s\n",
@@ -429,12 +429,12 @@ GST_manipulation_init ()
                                                         GNUNET_YES));
     delay_in = delay;
   }
-  if ( (GNUNET_OK ==
-        GNUNET_CONFIGURATION_get_value_time (GST_cfg,
-                                             "transport",
-                                             "MANIPULATE_DELAY_OUT",
-                                             &delay)) &&
-       (delay.rel_value_us > 0) )
+  if ((GNUNET_OK ==
+       GNUNET_CONFIGURATION_get_value_time (GST_cfg,
+                                            "transport",
+                                            "MANIPULATE_DELAY_OUT",
+                                            &delay)) &&
+      (delay.rel_value_us > 0))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Delaying outbound traffic for %s\n",
@@ -473,7 +473,7 @@ GST_manipulation_peer_disconnect (const struct GNUNET_PeerIdentity *peer)
                    GNUNET_SYSERR,
                    dqe->msg_size,
                    0);
-      GNUNET_free(dqe);
+      GNUNET_free (dqe);
     }
   }
   next = generic_dqe_head;
@@ -481,8 +481,8 @@ GST_manipulation_peer_disconnect (const struct GNUNET_PeerIdentity *peer)
   {
     next = dqe->next;
     if (0 == memcmp (peer,
-		     &dqe->id,
-		     sizeof (dqe->id)))
+                     &dqe->id,
+                     sizeof(dqe->id)))
     {
       GNUNET_CONTAINER_DLL_remove (generic_dqe_head,
                                    generic_dqe_tail,
@@ -492,7 +492,7 @@ GST_manipulation_peer_disconnect (const struct GNUNET_PeerIdentity *peer)
                    GNUNET_SYSERR,
                    dqe->msg_size,
                    0);
-      GNUNET_free(dqe);
+      GNUNET_free (dqe);
     }
   }
   if (NULL != generic_send_delay_task)
@@ -581,5 +581,6 @@ GST_manipulation_stop ()
     generic_send_delay_task = NULL;
   }
 }
+
 
 /* end of file gnunet-service-transport_manipulation.c */

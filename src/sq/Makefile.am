@@ -1,10 +1,6 @@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage
 endif
@@ -22,6 +18,7 @@ libgnunetsq_la_SOURCES = \
 libgnunetsq_la_LIBADD = -lsqlite3 \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetsq_la_LDFLAGS = \
+ $(GN_LIBINTL) \
  $(GN_LIB_LDFLAGS) \
   -version-info 0:0:0
 

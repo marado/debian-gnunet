@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -29,39 +29,18 @@
 #include <gauger.h>
 
 
-
-/**
- * Calculate the 'proof-of-work' hash (an expensive hash).
- *
- * @param buf data to hash
- * @param buf_len number of bytes in 'buf'
- * @param result where to write the resulting hash
- */
-static void
-pow_hash (const void *buf,
-	  size_t buf_len,
-	  struct GNUNET_HashCode *result)
-{
-  GNUNET_break (0 ==
-		gcry_kdf_derive (buf, buf_len,
-				 GCRY_KDF_SCRYPT,
-				 1 /* subalgo */,
-				 "gnunet-proof-of-work", strlen ("gnunet-proof-of-work"),
-				 2 /* iterations; keep cost of individual op small */,
-				 sizeof (struct GNUNET_HashCode), result));
-}
-
-
 static void
 perfHash ()
 {
   struct GNUNET_HashCode hc;
-  unsigned int i;
   char buf[64];
 
-  memset (buf, 1,  sizeof (buf));
-  for (i = 0; i < 1024; i++)
-    pow_hash (buf, sizeof (buf), &hc);
+  memset (buf, 1, sizeof(buf));
+  for (unsigned int i = 0; i < 1024; i++)
+    GNUNET_CRYPTO_pow_hash ("gnunet-proof-of-work",
+                            buf,
+                            sizeof(buf),
+                            &hc);
 }
 
 
@@ -73,13 +52,15 @@ main (int argc, char *argv[])
   start = GNUNET_TIME_absolute_get ();
   perfHash ();
   printf ("Hash perf took %s\n",
-          GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (start),
-						  GNUNET_YES));
+          GNUNET_STRINGS_relative_time_to_string (
+            GNUNET_TIME_absolute_get_duration (start),
+            GNUNET_YES));
   GAUGER ("NSE", "Proof-of-work hashing",
-          1024.0 / (1.0 +
-		  GNUNET_TIME_absolute_get_duration
-		  (start).rel_value_us / 1000.0), "hashes/ms");
+          1024.0 / (1.0
+                    + GNUNET_TIME_absolute_get_duration
+                      (start).rel_value_us / 1000.0), "hashes/ms");
   return 0;
 }
+
 
 /* end of perf_kdf.c */

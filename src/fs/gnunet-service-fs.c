@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs.c
@@ -59,13 +59,13 @@
  * time interval, remaining cover traffic counters are
  * decremented by 1/16th.
  */
-#define COVER_AGE_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5)
+#define COVER_AGE_FREQUENCY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 5)
 
 /**
  * Collect an instane number of statistics?  May cause excessive IPC.
  */
 #define INSANE_STATISTICS GNUNET_NO
-
 
 
 /**
@@ -74,7 +74,6 @@
  */
 struct ClientRequest
 {
-
   /**
    * This is a doubly-linked list.
    */
@@ -98,8 +97,7 @@ struct ClientRequest
   /**
    * Task scheduled to destroy the request.
    */
-  struct GNUNET_SCHEDULER_Task * kill_task;
-
+  struct GNUNET_SCHEDULER_Task *kill_task;
 };
 
 
@@ -137,7 +135,6 @@ struct ClientResponse
  */
 struct IndexStartContext
 {
-
   /**
    * This is a doubly linked list.
    */
@@ -167,7 +164,6 @@ struct IndexStartContext
    * Hash of the contents of the file.
    */
   struct GNUNET_HashCode file_id;
-
 };
 
 
@@ -176,7 +172,6 @@ struct IndexStartContext
  */
 struct GSF_LocalClient
 {
-
   /**
    * ID of the client.
    */
@@ -218,7 +213,6 @@ struct GSF_LocalClient
    * Tail of linked list of responses.
    */
   struct ClientResponse *res_tail;
-
 };
 
 
@@ -326,7 +320,7 @@ static struct GNUNET_CRYPTO_EddsaPrivateKey *pk;
 /**
  * ID of our task that we use to age the cover counters.
  */
-static struct GNUNET_SCHEDULER_Task * cover_age_task;
+static struct GNUNET_SCHEDULER_Task *cover_age_task;
 
 /**
  * Datastore 'GET' load tracking.
@@ -433,7 +427,7 @@ client_response_handler (void *cls,
   }
   GNUNET_STATISTICS_update (GSF_stats,
                             gettext_noop
-                            ("# replies received for local clients"), 1,
+                              ("# replies received for local clients"), 1,
                             GNUNET_NO);
   GNUNET_assert (pr == cr->pr);
   lc = cr->lc;
@@ -456,8 +450,8 @@ client_response_handler (void *cls,
   if (GNUNET_BLOCK_EVALUATION_OK_LAST != eval)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Evaluation %d - keeping query alive\n",
-		(int) eval);
+                "Evaluation %d - keeping query alive\n",
+                (int) eval);
     return;
   }
   if (NULL == cr->kill_task)
@@ -509,9 +503,6 @@ client_disconnect_cb (void *cls,
 }
 
 
-
-
-
 /**
  * Task that periodically ages our cover traffic statistics.
  *
@@ -523,9 +514,9 @@ age_cover_counters (void *cls)
   GSF_cover_content_count = (GSF_cover_content_count * 15) / 16;
   GSF_cover_query_count = (GSF_cover_query_count * 15) / 16;
   cover_age_task =
-      GNUNET_SCHEDULER_add_delayed (COVER_AGE_FREQUENCY,
-				    &age_cover_counters,
-                                    NULL);
+    GNUNET_SCHEDULER_add_delayed (COVER_AGE_FREQUENCY,
+                                  &age_cover_counters,
+                                  NULL);
 }
 
 
@@ -582,11 +573,11 @@ GSF_test_get_load_too_high_ (uint32_t priority)
  */
 static void
 update_latencies (void *cls,
-		  const struct GNUNET_HELLO_Address *address,
-		  int active,
-		  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-		  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
-		  const struct GNUNET_ATS_Properties *prop)
+                  const struct GNUNET_HELLO_Address *address,
+                  int active,
+                  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
+                  struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in,
+                  const struct GNUNET_ATS_Properties *prop)
 {
   if (NULL == address)
   {
@@ -599,8 +590,8 @@ update_latencies (void *cls,
   GSF_update_peer_latency_ (&address->peer,
                             prop->delay);
   GSF_avg_latency.rel_value_us =
-    (GSF_avg_latency.rel_value_us * 31 +
-     GNUNET_MIN (5000, prop->delay.rel_value_us)) / 32;
+    (GSF_avg_latency.rel_value_us * 31
+     + GNUNET_MIN (5000, prop->delay.rel_value_us)) / 32;
   GNUNET_STATISTICS_set (GSF_stats,
                          gettext_noop ("# running average P2P latency (ms)"),
                          GSF_avg_latency.rel_value_us / 1000LL,
@@ -618,7 +609,7 @@ update_latencies (void *cls,
  */
 static int
 check_p2p_put (void *cls,
-	       const struct PutMessage *put)
+               const struct PutMessage *put)
 {
   enum GNUNET_BLOCK_Type type;
 
@@ -660,7 +651,7 @@ consider_request_for_forwarding (void *cls,
     return;
   }
   GSF_plan_add_ (cp,
-		 pr);
+                 pr);
 }
 
 
@@ -676,8 +667,8 @@ consider_request_for_forwarding (void *cls,
  */
 void
 GSF_consider_forwarding (void *cls,
-			 struct GSF_PendingRequest *pr,
-			 enum GNUNET_BLOCK_EvaluationResult result)
+                         struct GSF_PendingRequest *pr,
+                         enum GNUNET_BLOCK_EvaluationResult result)
 {
   if (GNUNET_BLOCK_EVALUATION_OK_LAST == result)
     return;                     /* we're done... */
@@ -699,7 +690,7 @@ GSF_consider_forwarding (void *cls,
  */
 static int
 check_p2p_get (void *cls,
-	       const struct GetMessage *gm)
+               const struct GetMessage *gm)
 {
   size_t msize;
   unsigned int bm;
@@ -715,12 +706,14 @@ check_p2p_get (void *cls,
       bits++;
     bm >>= 1;
   }
-  if (msize < sizeof (struct GetMessage) + bits * sizeof (struct GNUNET_PeerIdentity))
+  if (msize < sizeof(struct GetMessage) + bits * sizeof(struct
+                                                        GNUNET_PeerIdentity))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
-  bfsize = msize - sizeof (struct GetMessage) - bits * sizeof (struct GNUNET_PeerIdentity);
+  bfsize = msize - sizeof(struct GetMessage) - bits * sizeof(struct
+                                                             GNUNET_PeerIdentity);
   /* bfsize must be power of 2, check! */
   if (0 != ((bfsize - 1) & bfsize))
   {
@@ -756,7 +749,7 @@ start_p2p_processing (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Finished database lookup for local request `%s' with result %d\n",
               GNUNET_h2s (&prd->query),
-	      result);
+              result);
   if (0 == prd->anonymity_level)
   {
     switch (prd->type)
@@ -765,15 +758,17 @@ start_p2p_processing (void *cls,
     case GNUNET_BLOCK_TYPE_FS_IBLOCK:
       /* the above block types MAY be available via 'cadet' */
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		  "Considering cadet-based download for block\n");
+                  "Considering cadet-based download for block\n");
       GSF_cadet_lookup_ (pr);
       break;
+
     case GNUNET_BLOCK_TYPE_FS_UBLOCK:
       /* the above block types are in the DHT */
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		  "Considering DHT-based search for block\n");
+                  "Considering DHT-based search for block\n");
       GSF_dht_lookup_ (pr);
       break;
+
     default:
       GNUNET_break (0);
       break;
@@ -799,8 +794,8 @@ check_client_start_search (void *cls,
 {
   uint16_t msize;
 
-  msize = ntohs (sm->header.size) - sizeof (struct SearchMessage);
-  if (0 != msize % sizeof (struct GNUNET_HashCode))
+  msize = ntohs (sm->header.size) - sizeof(struct SearchMessage);
+  if (0 != msize % sizeof(struct GNUNET_HashCode))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -836,8 +831,8 @@ handle_client_start_search (void *cls,
                             gettext_noop ("# client searches received"),
                             1,
                             GNUNET_NO);
-  msize = ntohs (sm->header.size) - sizeof (struct SearchMessage);
-  sc = msize / sizeof (struct GNUNET_HashCode);
+  msize = ntohs (sm->header.size) - sizeof(struct SearchMessage);
+  sc = msize / sizeof(struct GNUNET_HashCode);
   type = ntohl (sm->type);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received request for `%s' of type %u from local client\n",
@@ -853,12 +848,12 @@ handle_client_start_search (void *cls,
     {
       prd = GSF_pending_request_get_data_ (cr->pr);
       /* only unify with queries that hae not yet started local processing
-	 (SEARCH_MESSAGE_OPTION_CONTINUED was always set) and that have a
-	 matching query and type */
+         (SEARCH_MESSAGE_OPTION_CONTINUED was always set) and that have a
+         matching query and type */
       if ((GNUNET_YES != prd->has_started) &&
-	  (0 != memcmp (&prd->query,
+          (0 != memcmp (&prd->query,
                         &sm->query,
-                        sizeof (struct GNUNET_HashCode))) &&
+                        sizeof(struct GNUNET_HashCode))) &&
           (prd->type == type))
         break;
       cr = cr->next;
@@ -872,7 +867,8 @@ handle_client_start_search (void *cls,
                                  (const struct GNUNET_HashCode *) &sm[1],
                                  sc);
     GNUNET_STATISTICS_update (GSF_stats,
-                              gettext_noop ("# client searches updated (merged content seen list)"),
+                              gettext_noop (
+                                "# client searches updated (merged content seen list)"),
                               1,
                               GNUNET_NO);
   }
@@ -891,19 +887,21 @@ handle_client_start_search (void *cls,
     if (0 != (SEARCH_MESSAGE_OPTION_LOOPBACK_ONLY & ntohl (sm->options)))
       options |= GSF_PRO_LOCAL_ONLY;
     cr->pr = GSF_pending_request_create_ (options, type,
-					  &sm->query,
+                                          &sm->query,
                                           (0 !=
                                            memcmp (&sm->target,
                                                    &all_zeros,
-                                                   sizeof (struct GNUNET_PeerIdentity)))
+                                                   sizeof(struct
+                                                          GNUNET_PeerIdentity)))
                                           ? &sm->target : NULL, NULL, 0,
-                                          0 /* bf */ ,
+                                          0 /* bf */,
                                           ntohl (sm->anonymity_level),
-                                          0 /* priority */ ,
-                                          0 /* ttl */ ,
-                                          0 /* sender PID */ ,
-                                          0 /* origin PID */ ,
-                                          (const struct GNUNET_HashCode *) &sm[1], sc,
+                                          0 /* priority */,
+                                          0 /* ttl */,
+                                          0 /* sender PID */,
+                                          0 /* origin PID */,
+                                          (const struct
+                                           GNUNET_HashCode *) &sm[1], sc,
                                           &client_response_handler,
                                           cr);
   }
@@ -942,11 +940,13 @@ handle_client_loc_sign (void *cls,
   base.data.chk.file_length = GNUNET_ntohll (msg->file_length);
   loc = GNUNET_FS_uri_loc_create (&base,
                                   pk,
-                                  GNUNET_TIME_absolute_ntoh (msg->expiration_time));
+                                  GNUNET_TIME_absolute_ntoh (
+                                    msg->expiration_time));
   env = GNUNET_MQ_msg (resp,
                        GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGNATURE);
   resp->purpose = htonl (GNUNET_SIGNATURE_PURPOSE_PEER_PLACEMENT);
-  resp->expiration_time = GNUNET_TIME_absolute_hton (loc->data.loc.expirationTime);
+  resp->expiration_time = GNUNET_TIME_absolute_hton (
+    loc->data.loc.expirationTime);
   resp->signature = loc->data.loc.contentSignature;
   resp->peer = loc->data.loc.peer;
   GNUNET_FS_uri_destroy (loc);
@@ -1031,13 +1031,14 @@ hash_for_index_val (void *cls,
                                lc->isc_tail,
                                isc);
   isc->fhc = NULL;
-  if ( (NULL == res) ||
-       (0 != memcmp (res,
-                     &isc->file_id,
-                     sizeof (struct GNUNET_HashCode))))
+  if ((NULL == res) ||
+      (0 != memcmp (res,
+                    &isc->file_id,
+                    sizeof(struct GNUNET_HashCode))))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Hash mismatch trying to index file `%s' which does not have hash `%s'\n"),
+                _ (
+                  "Hash mismatch trying to index file `%s' which does not have hash `%s'\n"),
                 isc->filename,
                 GNUNET_h2s (&isc->file_id));
     env = GNUNET_MQ_msg (msg,
@@ -1083,13 +1084,13 @@ handle_client_index_start (void *cls,
   isc->lc = lc;
   mydev = 0;
   myino = 0;
-  if ( ( (dev != 0) ||
-         (ino != 0) ) &&
-       (GNUNET_OK == GNUNET_DISK_file_get_identifiers (fn,
-                                                       &mydev,
-                                                       &myino)) &&
-       (dev == mydev) &&
-       (ino == myino) )
+  if (((dev != 0) ||
+       (ino != 0)) &&
+      (GNUNET_OK == GNUNET_DISK_file_get_identifiers (fn,
+                                                      &mydev,
+                                                      &myino)) &&
+      (dev == mydev) &&
+      (ino == myino))
   {
     /* fast validation OK! */
     signal_index_ok (isc);
@@ -1225,7 +1226,7 @@ peer_init_handler (void *cls,
                    const struct GNUNET_PeerIdentity *my_identity)
 {
   if (0 != GNUNET_memcmp (&GSF_my_id,
-                                            my_identity))
+                          my_identity))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Peer identity mismatch, refusing to start!\n");
@@ -1266,9 +1267,9 @@ main_init (const struct GNUNET_CONFIGURATION_Handle *c)
   /* this option is really only for testcases that need to disable
      _anonymous_ file-sharing for some reason */
   anon_p2p_off = (GNUNET_YES ==
-		  GNUNET_CONFIGURATION_get_value_yesno (GSF_cfg,
-							"fs",
-							"DISABLE_ANON_TRANSFER"));
+                  GNUNET_CONFIGURATION_get_value_yesno (GSF_cfg,
+                                                        "fs",
+                                                        "DISABLE_ANON_TRANSFER"));
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (GSF_cfg,
@@ -1277,7 +1278,8 @@ main_init (const struct GNUNET_CONFIGURATION_Handle *c)
                                                &keyfile))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("FS service is lacking HOSTKEY configuration setting.  Exiting.\n"));
+                _ (
+                  "FS service is lacking HOSTKEY configuration setting.  Exiting.\n"));
     GNUNET_SCHEDULER_shutdown ();
     return GNUNET_SYSERR;
   }
@@ -1292,28 +1294,28 @@ main_init (const struct GNUNET_CONFIGURATION_Handle *c)
               GNUNET_i2s (&GSF_my_id));
   GSF_core
     = GNUNET_CORE_connect (GSF_cfg,
-			   NULL,
+                           NULL,
                            &peer_init_handler,
                            &GSF_peer_connect_handler,
                            &GSF_peer_disconnect_handler,
-			   (GNUNET_YES == anon_p2p_off)
-			   ? no_p2p_handlers
-			   : p2p_handlers);
+                           (GNUNET_YES == anon_p2p_off)
+                           ? no_p2p_handlers
+                           : p2p_handlers);
   if (NULL == GSF_core)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to connect to `%s' service.\n"),
-		"core");
+                _ ("Failed to connect to `%s' service.\n"),
+                "core");
     return GNUNET_SYSERR;
   }
   cover_age_task =
-      GNUNET_SCHEDULER_add_delayed (COVER_AGE_FREQUENCY,
-				    &age_cover_counters,
-                                    NULL);
+    GNUNET_SCHEDULER_add_delayed (COVER_AGE_FREQUENCY,
+                                  &age_cover_counters,
+                                  NULL);
   datastore_get_load = GNUNET_LOAD_value_init (DATASTORE_LOAD_AUTODECLINE);
   GSF_cadet_start_server ();
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   return GNUNET_OK;
 }
 
@@ -1340,13 +1342,13 @@ run (void *cls,
                                            &dqs))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_INFO,
-			       "fs",
+                               "fs",
                                "DATASTORE_QUEUE_SIZE");
     dqs = 32;
   }
   GSF_datastore_queue_size = (unsigned int) dqs;
   GSF_enable_randomized_delays =
-      GNUNET_CONFIGURATION_get_value_yesno (cfg, "fs", "DELAY");
+    GNUNET_CONFIGURATION_get_value_yesno (cfg, "fs", "DELAY");
   GSF_dsh = GNUNET_DATASTORE_connect (cfg);
   if (NULL == GSF_dsh)
   {
@@ -1367,9 +1369,9 @@ run (void *cls,
                                          NULL);
   GSF_push_init_ ();
   GSF_put_init_ ();
-  if ( (GNUNET_OK != GNUNET_FS_indexing_init (cfg,
-                                              GSF_dsh)) ||
-       (GNUNET_OK != main_init (cfg)) )
+  if ((GNUNET_OK != GNUNET_FS_indexing_init (cfg,
+                                             GSF_dsh)) ||
+      (GNUNET_OK != main_init (cfg)))
   {
     GNUNET_SCHEDULER_shutdown ();
     shutdown_task (NULL);
@@ -1382,33 +1384,33 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("fs",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (client_index_start,
-                        GNUNET_MESSAGE_TYPE_FS_INDEX_START,
-                        struct IndexStartMessage,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (client_index_list_get,
-			  GNUNET_MESSAGE_TYPE_FS_INDEX_LIST_GET,
-			  struct GNUNET_MessageHeader,
-			  NULL),
- GNUNET_MQ_hd_fixed_size (client_unindex,
-			  GNUNET_MESSAGE_TYPE_FS_UNINDEX,
-			  struct UnindexMessage,
-			  NULL),
- GNUNET_MQ_hd_var_size (client_start_search,
-                        GNUNET_MESSAGE_TYPE_FS_START_SEARCH,
-                        struct SearchMessage,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (client_loc_sign,
-			  GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGN,
-			  struct RequestLocSignatureMessage,
-			  NULL),
- GNUNET_MQ_handler_end ());
+  ("fs",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (client_index_start,
+                         GNUNET_MESSAGE_TYPE_FS_INDEX_START,
+                         struct IndexStartMessage,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (client_index_list_get,
+                           GNUNET_MESSAGE_TYPE_FS_INDEX_LIST_GET,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (client_unindex,
+                           GNUNET_MESSAGE_TYPE_FS_UNINDEX,
+                           struct UnindexMessage,
+                           NULL),
+  GNUNET_MQ_hd_var_size (client_start_search,
+                         GNUNET_MESSAGE_TYPE_FS_START_SEARCH,
+                         struct SearchMessage,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (client_loc_sign,
+                           GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGN,
+                           struct RequestLocSignatureMessage,
+                           NULL),
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-fs.c */

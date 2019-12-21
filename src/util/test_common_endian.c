@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_common_endian.c
  * @brief testcase for common_endian.c
@@ -24,7 +24,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define CHECK(n) if (n != GNUNET_htonll(GNUNET_ntohll(n))) return 1;
+#define CHECK(n) if (n != GNUNET_htonll (GNUNET_ntohll (n))) return 1;
 
 int
 main (int argc, char *argv[])
@@ -34,9 +34,10 @@ main (int argc, char *argv[])
   CHECK (0x12345678);
   CHECK (123456789012345LL);
   if ((0x1234567890ABCDEFLL != GNUNET_htonll (0xEFCDAB9078563412LL)) &&
-      42 != htonl (42))
+      (42 != htonl (42)) )
     return 1;
   return 0;
 }
+
 
 /* end of test_common_endian.c */

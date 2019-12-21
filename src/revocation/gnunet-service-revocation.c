@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2013, 2014, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2013, 2014, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -55,7 +55,6 @@
  */
 struct PeerEntry
 {
-
   /**
    * Queue for sending messages to this peer.
    */
@@ -75,7 +74,6 @@ struct PeerEntry
    * Handle to active set union operation (over revocation sets).
    */
   struct GNUNET_SET_OperationHandle *so;
-
 };
 
 
@@ -144,7 +142,7 @@ static struct GNUNET_HashCode revocation_set_union_app_id;
  * @return a pointer to the new PeerEntry
  */
 static struct PeerEntry *
-new_peer_entry(const struct GNUNET_PeerIdentity *peer)
+new_peer_entry (const struct GNUNET_PeerIdentity *peer)
 {
   struct PeerEntry *peer_entry;
 
@@ -171,19 +169,19 @@ verify_revoke_message (const struct RevokeMessage *rm)
 {
   if (GNUNET_YES !=
       GNUNET_REVOCATION_check_pow (&rm->public_key,
-				   rm->proof_of_work,
-				   (unsigned int) revocation_work_required))
+                                   rm->proof_of_work,
+                                   (unsigned int) revocation_work_required))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Proof of work invalid!\n");
+                "Proof of work invalid!\n");
     GNUNET_break_op (0);
     return GNUNET_NO;
   }
   if (GNUNET_OK !=
       GNUNET_CRYPTO_ecdsa_verify (GNUNET_SIGNATURE_PURPOSE_REVOCATION,
-				&rm->purpose,
-				&rm->signature,
-				&rm->public_key))
+                                  &rm->purpose,
+                                  &rm->signature,
+                                  &rm->public_key))
   {
     GNUNET_break_op (0);
     return GNUNET_NO;
@@ -202,8 +200,8 @@ verify_revoke_message (const struct RevokeMessage *rm)
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *client,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *client,
+                   struct GNUNET_MQ_Handle *mq)
 {
   return client;
 }
@@ -218,8 +216,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *client,
-		      void *app_cls)
+                      struct GNUNET_SERVICE_Client *client,
+                      void *app_cls)
 {
   GNUNET_assert (client == app_cls);
 }
@@ -242,20 +240,20 @@ handle_query_message (void *cls,
   int res;
 
   GNUNET_CRYPTO_hash (&qm->key,
-                      sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
+                      sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey),
                       &hc);
   res = GNUNET_CONTAINER_multihashmap_contains (revocation_map,
                                                 &hc);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               (GNUNET_NO == res)
-	      ? "Received revocation check for valid key `%s' from client\n"
+              ? "Received revocation check for valid key `%s' from client\n"
               : "Received revocation check for revoked key `%s' from client\n",
               GNUNET_h2s (&hc));
   env = GNUNET_MQ_msg (qrm,
-		       GNUNET_MESSAGE_TYPE_REVOCATION_QUERY_RESPONSE);
+                       GNUNET_MESSAGE_TYPE_REVOCATION_QUERY_RESPONSE);
   qrm->is_valid = htonl ((GNUNET_YES == res) ? GNUNET_NO : GNUNET_YES);
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client),
-		  env);
+                  env);
   GNUNET_SERVICE_client_continue (client);
 }
 
@@ -280,8 +278,8 @@ do_flood (void *cls,
 
   if (NULL == pe->mq)
     return GNUNET_OK; /* peer connected to us via SET,
-			 but we have no direct CORE
-			 connection for flooding */
+                         but we have no direct CORE
+                         connection for flooding */
   e = GNUNET_MQ_msg (cp,
                      GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE);
   *cp = *rm;
@@ -311,7 +309,7 @@ publicize_rm (const struct RevokeMessage *rm)
   struct GNUNET_SET_Element e;
 
   GNUNET_CRYPTO_hash (&rm->public_key,
-                      sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
+                      sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey),
                       &hc);
   if (GNUNET_YES ==
       GNUNET_CONTAINER_multihashmap_contains (revocation_map,
@@ -328,10 +326,10 @@ publicize_rm (const struct RevokeMessage *rm)
     return GNUNET_SYSERR;
   }
   /* write to disk */
-  if (sizeof (struct RevokeMessage) !=
+  if (sizeof(struct RevokeMessage) !=
       GNUNET_DISK_file_write (revocation_db,
                               rm,
-                              sizeof (struct RevokeMessage)))
+                              sizeof(struct RevokeMessage)))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
                          "write");
@@ -371,7 +369,7 @@ publicize_rm (const struct RevokeMessage *rm)
   }
   /* flood to neighbours */
   GNUNET_CONTAINER_multipeermap_iterate (peers,
-					 &do_flood,
+                                         &do_flood,
                                          cp);
   return GNUNET_OK;
 }
@@ -393,7 +391,7 @@ handle_revoke_message (void *cls,
   int ret;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Received REVOKE message from client\n");
+              "Received REVOKE message from client\n");
   if (GNUNET_SYSERR == (ret = publicize_rm (rm)))
   {
     GNUNET_break_op (0);
@@ -401,10 +399,10 @@ handle_revoke_message (void *cls,
     return;
   }
   env = GNUNET_MQ_msg (rrm,
-		       GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE_RESPONSE);
+                       GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE_RESPONSE);
   rrm->is_valid = htonl ((GNUNET_OK == ret) ? GNUNET_NO : GNUNET_YES);
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client),
-		  env);
+                  env);
   GNUNET_SERVICE_client_continue (client);
 }
 
@@ -417,12 +415,12 @@ handle_revoke_message (void *cls,
  */
 static void
 handle_p2p_revoke (void *cls,
-		   const struct RevokeMessage *rm)
+                   const struct RevokeMessage *rm)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Received REVOKE message\n");
+              "Received REVOKE message\n");
   GNUNET_break_op (GNUNET_SYSERR !=
-		   publicize_rm (rm));
+                   publicize_rm (rm));
 }
 
 
@@ -448,7 +446,7 @@ add_revocation (void *cls,
   switch (status)
   {
   case GNUNET_SET_STATUS_OK:
-    if (element->size != sizeof (struct RevokeMessage))
+    if (element->size != sizeof(struct RevokeMessage))
     {
       GNUNET_break_op (0);
       return;
@@ -456,21 +454,24 @@ add_revocation (void *cls,
     if (GNUNET_BLOCK_TYPE_REVOCATION != element->element_type)
     {
       GNUNET_STATISTICS_update (stats,
-                                gettext_noop ("# unsupported revocations received via set union"),
+                                gettext_noop (
+                                  "# unsupported revocations received via set union"),
                                 1,
                                 GNUNET_NO);
       return;
     }
     rm = element->data;
     (void) handle_p2p_revoke (NULL,
-			      rm);
+                              rm);
     GNUNET_STATISTICS_update (stats,
-                              gettext_noop ("# revocation messages received via set union"),
+                              gettext_noop (
+                                "# revocation messages received via set union"),
                               1, GNUNET_NO);
     break;
+
   case GNUNET_SET_STATUS_FAILURE:
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Error computing revocation set union with %s\n"),
+                _ ("Error computing revocation set union with %s\n"),
                 GNUNET_i2s (&peer_entry->id));
     peer_entry->so = NULL;
     GNUNET_STATISTICS_update (stats,
@@ -478,19 +479,23 @@ add_revocation (void *cls,
                               1,
                               GNUNET_NO);
     break;
+
   case GNUNET_SET_STATUS_HALF_DONE:
     break;
+
   case GNUNET_SET_STATUS_DONE:
     peer_entry->so = NULL;
     GNUNET_STATISTICS_update (stats,
-                              gettext_noop ("# revocation set unions completed"),
+                              gettext_noop (
+                                "# revocation set unions completed"),
                               1,
                               GNUNET_NO);
     break;
+
   default:
     GNUNET_break (0);
     break;
- }
+  }
 }
 
 
@@ -514,7 +519,7 @@ transmit_task_cb (void *cls)
                                        &revocation_set_union_app_id,
                                        NULL,
                                        GNUNET_SET_RESULT_ADDED,
-                                       (struct GNUNET_SET_Option[]) {{ 0 }},
+                                       (struct GNUNET_SET_Option[]) { { 0 } },
                                        &add_revocation,
                                        peer_entry);
   if (GNUNET_OK !=
@@ -522,7 +527,7 @@ transmit_task_cb (void *cls)
                          revocation_set))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("SET service crashed, terminating revocation service\n"));
+                _ ("SET service crashed, terminating revocation service\n"));
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -538,15 +543,15 @@ transmit_task_cb (void *cls)
  */
 static void *
 handle_core_connect (void *cls,
-		     const struct GNUNET_PeerIdentity *peer,
-		     struct GNUNET_MQ_Handle *mq)
+                     const struct GNUNET_PeerIdentity *peer,
+                     struct GNUNET_MQ_Handle *mq)
 {
   struct PeerEntry *peer_entry;
   struct GNUNET_HashCode my_hash;
   struct GNUNET_HashCode peer_hash;
 
   if (0 == GNUNET_memcmp (peer,
-                   &my_identity))
+                          &my_identity))
   {
     return NULL;
   }
@@ -564,7 +569,7 @@ handle_core_connect (void *cls,
   {
     /* This can happen if "core"'s notification is a tad late
        and CADET+SET were faster and already produced a
-       #handle_revocation_union_request() for us to deal
+     #handle_revocation_union_request() for us to deal
        with.  This should be rare, but isn't impossible. */
     peer_entry->mq = mq;
     return peer_entry;
@@ -572,10 +577,10 @@ handle_core_connect (void *cls,
   peer_entry = new_peer_entry (peer);
   peer_entry->mq = mq;
   GNUNET_CRYPTO_hash (&my_identity,
-                      sizeof (my_identity),
+                      sizeof(my_identity),
                       &my_hash);
   GNUNET_CRYPTO_hash (peer,
-                      sizeof (*peer),
+                      sizeof(*peer),
                       &peer_hash);
   if (0 < GNUNET_CRYPTO_hash_cmp (&my_hash,
                                   &peer_hash))
@@ -602,17 +607,17 @@ handle_core_connect (void *cls,
  */
 static void
 handle_core_disconnect (void *cls,
-			const struct GNUNET_PeerIdentity *peer,
-			void *internal_cls)
+                        const struct GNUNET_PeerIdentity *peer,
+                        void *internal_cls)
 {
   struct PeerEntry *peer_entry = internal_cls;
 
   if (0 == GNUNET_memcmp (peer,
-                   &my_identity))
+                          &my_identity))
     return;
   GNUNET_assert (NULL != peer_entry);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Peer `%s' disconnected from us\n",
+              "Peer `%s' disconnected from us\n",
               GNUNET_i2s (peer));
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multipeermap_remove (peers,
@@ -712,7 +717,7 @@ core_init (void *cls,
   if (NULL == identity)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		"Connection to core FAILED!\n");
+                "Connection to core FAILED!\n");
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -764,7 +769,7 @@ handle_revocation_union_request (void *cls,
   }
   peer_entry->so = GNUNET_SET_accept (request,
                                       GNUNET_SET_RESULT_ADDED,
-                                      (struct GNUNET_SET_Option[]) {{ 0 }},
+                                      (struct GNUNET_SET_Option[]) { { 0 } },
                                       &add_revocation,
                                       peer_entry);
   if (GNUNET_OK !=
@@ -819,32 +824,32 @@ run (void *cls,
   }
   cfg = c;
   revocation_map = GNUNET_CONTAINER_multihashmap_create (16,
-							 GNUNET_NO);
+                                                         GNUNET_NO);
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_number (cfg,
-					     "REVOCATION",
-					     "WORKBITS",
-					     &revocation_work_required))
+                                             "REVOCATION",
+                                             "WORKBITS",
+                                             &revocation_work_required))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "REVOCATION",
-			       "WORKBITS");
+                               "REVOCATION",
+                               "WORKBITS");
     GNUNET_SCHEDULER_shutdown ();
     GNUNET_free (fn);
     return;
   }
-  if (revocation_work_required >= sizeof (struct GNUNET_HashCode) * 8)
+  if (revocation_work_required >= sizeof(struct GNUNET_HashCode) * 8)
   {
     GNUNET_log_config_invalid (GNUNET_ERROR_TYPE_ERROR,
-			       "REVOCATION",
-			       "WORKBITS",
-			       _("Value is too large.\n"));
+                               "REVOCATION",
+                               "WORKBITS",
+                               _ ("Value is too large.\n"));
     GNUNET_SCHEDULER_shutdown ();
     GNUNET_free (fn);
     return;
   }
   revocation_set = GNUNET_SET_create (cfg,
-				      GNUNET_SET_OPERATION_UNION);
+                                      GNUNET_SET_OPERATION_UNION);
   revocation_union_listen_handle
     = GNUNET_SET_listen (cfg,
                          GNUNET_SET_OPERATION_UNION,
@@ -852,17 +857,18 @@ run (void *cls,
                          &handle_revocation_union_request,
                          NULL);
   revocation_db = GNUNET_DISK_file_open (fn,
-                                         GNUNET_DISK_OPEN_READWRITE |
-                                         GNUNET_DISK_OPEN_CREATE,
-                                         GNUNET_DISK_PERM_USER_READ | GNUNET_DISK_PERM_USER_WRITE |
-                                         GNUNET_DISK_PERM_GROUP_READ |
-                                         GNUNET_DISK_PERM_OTHER_READ);
+                                         GNUNET_DISK_OPEN_READWRITE
+                                         | GNUNET_DISK_OPEN_CREATE,
+                                         GNUNET_DISK_PERM_USER_READ
+                                         | GNUNET_DISK_PERM_USER_WRITE
+                                         | GNUNET_DISK_PERM_GROUP_READ
+                                         | GNUNET_DISK_PERM_OTHER_READ);
   if (NULL == revocation_db)
   {
     GNUNET_log_config_invalid (GNUNET_ERROR_TYPE_ERROR,
-			       "REVOCATION",
-			       "DATABASE",
-                               _("Could not open revocation database file!"));
+                               "REVOCATION",
+                               "DATABASE",
+                               _ ("Could not open revocation database file!"));
     GNUNET_SCHEDULER_shutdown ();
     GNUNET_free (fn);
     return;
@@ -870,13 +876,13 @@ run (void *cls,
   if (GNUNET_OK !=
       GNUNET_DISK_file_size (fn, &left, GNUNET_YES, GNUNET_YES))
     left = 0;
-  while (left > sizeof (struct RevokeMessage))
+  while (left > sizeof(struct RevokeMessage))
   {
     rm = GNUNET_new (struct RevokeMessage);
-    if (sizeof (struct RevokeMessage) !=
+    if (sizeof(struct RevokeMessage) !=
         GNUNET_DISK_file_read (revocation_db,
                                rm,
-                               sizeof (struct RevokeMessage)))
+                               sizeof(struct RevokeMessage)))
     {
       GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
                                 "read",
@@ -888,7 +894,7 @@ run (void *cls,
     }
     GNUNET_break (0 == ntohl (rm->reserved));
     GNUNET_CRYPTO_hash (&rm->public_key,
-                        sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
+                        sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey),
                         &hc);
     GNUNET_break (GNUNET_OK ==
                   GNUNET_CONTAINER_multihashmap_put (revocation_map,
@@ -899,23 +905,23 @@ run (void *cls,
   GNUNET_free (fn);
 
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   peers = GNUNET_CONTAINER_multipeermap_create (128,
                                                 GNUNET_YES);
   /* Connect to core service and register core handlers */
-  core_api = GNUNET_CORE_connect (cfg,   /* Main configuration */
-				  NULL,       /* Closure passed to functions */
-				  &core_init,    /* Call core_init once connected */
-				  &handle_core_connect,  /* Handle connects */
-				  &handle_core_disconnect,       /* Handle disconnects */
-				  core_handlers);        /* Register these handlers */
+  core_api = GNUNET_CORE_connect (cfg,    /* Main configuration */
+                                  NULL,       /* Closure passed to functions */
+                                  &core_init,    /* Call core_init once connected */
+                                  &handle_core_connect,  /* Handle connects */
+                                  &handle_core_disconnect,       /* Handle disconnects */
+                                  core_handlers);        /* Register these handlers */
   if (NULL == core_api)
   {
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
   stats = GNUNET_STATISTICS_create ("revocation",
-				    cfg);
+                                    cfg);
 }
 
 
@@ -923,24 +929,24 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("revocation",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_fixed_size (query_message,
-			  GNUNET_MESSAGE_TYPE_REVOCATION_QUERY,
-			  struct QueryMessage,
-			  NULL),
- GNUNET_MQ_hd_fixed_size (revoke_message,
-			  GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE,
-			  struct RevokeMessage,
-			  NULL),
- GNUNET_MQ_handler_end ());
+  ("revocation",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_fixed_size (query_message,
+                           GNUNET_MESSAGE_TYPE_REVOCATION_QUERY,
+                           struct QueryMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (revoke_message,
+                           GNUNET_MESSAGE_TYPE_REVOCATION_REVOKE,
+                           struct RevokeMessage,
+                           NULL),
+  GNUNET_MQ_handler_end ());
 
 
-#if defined(LINUX) && defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 #include <malloc.h>
 
 /**
@@ -953,6 +959,7 @@ GNUNET_REVOCATION_memory_init ()
   mallopt (M_TOP_PAD, 1 * 1024);
   malloc_trim (0);
 }
+
 
 #endif
 

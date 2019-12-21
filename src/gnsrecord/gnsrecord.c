@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file gnsrecord/gnsrecord.c
@@ -32,7 +32,7 @@
 #include "gnunet_gnsrecord_plugin.h"
 #include "gnunet_tun_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "gnsrecord",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "gnsrecord", __VA_ARGS__)
 
 
 /**
@@ -77,14 +77,14 @@ static int once;
  */
 static void
 add_plugin (void *cls,
-	    const char *library_name,
-	    void *lib_ret)
+            const char *library_name,
+            void *lib_ret)
 {
   struct GNUNET_GNSRECORD_PluginFunctions *api = lib_ret;
   struct Plugin *plugin;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Loading block plugin `%s'\n",
+              "Loading block plugin `%s'\n",
               library_name);
   plugin = GNUNET_new (struct Plugin);
   plugin->api = api;
@@ -141,8 +141,8 @@ GNSRECORD_fini ()
  */
 char *
 GNUNET_GNSRECORD_value_to_string (uint32_t type,
-				  const void *data,
-				  size_t data_size)
+                                  const void *data,
+                                  size_t data_size)
 {
   struct Plugin *plugin;
   char *ret;
@@ -173,9 +173,9 @@ GNUNET_GNSRECORD_value_to_string (uint32_t type,
  */
 int
 GNUNET_GNSRECORD_string_to_value (uint32_t type,
-				  const char *s,
-				  void **data,
-				  size_t *data_size)
+                                  const char *s,
+                                  void **data,
+                                  size_t *data_size)
 {
   struct Plugin *plugin;
 
@@ -231,7 +231,7 @@ const char *
 GNUNET_GNSRECORD_number_to_typename (uint32_t type)
 {
   struct Plugin *plugin;
-  const char * ret;
+  const char *ret;
 
   if (GNUNET_GNSRECORD_TYPE_ANY == type)
     return "ANY";
@@ -245,5 +245,6 @@ GNUNET_GNSRECORD_number_to_typename (uint32_t type)
   }
   return NULL;
 }
+
 
 /* end of gnsrecord.c */

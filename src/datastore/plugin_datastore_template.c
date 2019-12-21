@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file datastore/plugin_datastore_template.c
@@ -118,7 +118,6 @@ template_plugin_get_key (void *cls,
 }
 
 
-
 /**
  * Get a random item for replication.  Returns a single, not expired,
  * random item from those with the highest replication counters.  The
@@ -193,8 +192,8 @@ template_plugin_drop (void *cls)
  */
 static void
 template_get_keys (void *cls,
-		   PluginKeyProcessor proc,
-		   void *proc_cls)
+                   PluginKeyProcessor proc,
+                   void *proc_cls)
 {
   proc (proc_cls, NULL, 0);
 }
@@ -250,7 +249,7 @@ libgnunet_plugin_datastore_template_init (void *cls)
   api->get_keys = &template_get_keys;
   api->remove_key = &template_plugin_remove_key;
   GNUNET_log_from (GNUNET_ERROR_TYPE_INFO, "template",
-                   _("Template database running\n"));
+                   _ ("Template database running\n"));
   return api;
 }
 
@@ -270,5 +269,6 @@ libgnunet_plugin_datastore_template_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_datastore_template.c */

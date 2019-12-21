@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-service-testbed_barriers.c
@@ -50,7 +50,7 @@
 /**
  * Logging shorthand
  */
-#define LOG(kind,...)                                           \
+#define LOG(kind, ...)                                           \
   GNUNET_log_from (kind, "testbed-barriers", __VA_ARGS__)
 
 
@@ -84,7 +84,6 @@ struct ClientCtx
    * The client handle
    */
   struct GNUNET_SERVICE_Client *client;
-
 };
 
 
@@ -204,7 +203,6 @@ struct Barrier
    * Quorum percentage to be reached
    */
   uint8_t quorum;
-
 };
 
 
@@ -287,8 +285,8 @@ send_client_status_msg (struct GNUNET_SERVICE_Client *client,
   size_t name_len;
   size_t err_len;
 
-  GNUNET_assert ( (NULL == emsg) ||
-                  (GNUNET_TESTBED_BARRIERSTATUS_ERROR == status) );
+  GNUNET_assert ((NULL == emsg) ||
+                 (GNUNET_TESTBED_BARRIERSTATUS_ERROR == status));
   name_len = strlen (name) + 1;
   err_len = ((NULL == emsg) ? 0 : (strlen (emsg) + 1));
   env = GNUNET_MQ_msg_extra (msg,
@@ -334,7 +332,7 @@ send_barrier_status_msg (struct Barrier *barrier,
  */
 static int
 check_barrier_wait (void *cls,
-                     const struct GNUNET_TESTBED_BarrierWait *msg)
+                    const struct GNUNET_TESTBED_BarrierWait *msg)
 {
   return GNUNET_OK; /* always well-formed */
 }
@@ -369,7 +367,7 @@ handle_barrier_wait (void *cls,
     GNUNET_SERVICE_client_drop (client_ctx->client);
     return;
   }
-  name_len = msize - sizeof (struct GNUNET_TESTBED_BarrierWait);
+  name_len = msize - sizeof(struct GNUNET_TESTBED_BarrierWait);
   name = GNUNET_malloc (name_len + 1);
   name[name_len] = '\0';
   GNUNET_memcpy (name,
@@ -398,8 +396,8 @@ handle_barrier_wait (void *cls,
                                     barrier->tail,
                                     client_ctx);
   barrier->nreached++;
-  if ( (barrier->num_wbarriers_reached == barrier->num_wbarriers) &&
-       (LOCAL_QUORUM_REACHED (barrier)) )
+  if ((barrier->num_wbarriers_reached == barrier->num_wbarriers) &&
+      (LOCAL_QUORUM_REACHED (barrier)))
   {
     barrier->status = GNUNET_TESTBED_BARRIERSTATUS_CROSSED;
     send_barrier_status_msg (barrier,
@@ -520,7 +518,8 @@ GST_barriers_destroy ()
   GNUNET_assert (NULL != barrier_map);
   GNUNET_assert (GNUNET_SYSERR !=
                  GNUNET_CONTAINER_multihashmap_iterate (barrier_map,
-                                                        &barrier_destroy_iterator,
+                                                        &
+                                                        barrier_destroy_iterator,
                                                         NULL));
   GNUNET_CONTAINER_multihashmap_destroy (barrier_map);
   GNUNET_assert (NULL != ctx);
@@ -565,6 +564,7 @@ wbarrier_status_cb (void *cls,
     barrier->status = GNUNET_TESTBED_BARRIERSTATUS_ERROR;
     send_barrier_status_msg (barrier, emsg);
     return;
+
   case GNUNET_TESTBED_BARRIERSTATUS_CROSSED:
     if (GNUNET_TESTBED_BARRIERSTATUS_INITIALISED != barrier->status)
     {
@@ -579,6 +579,7 @@ wbarrier_status_cb (void *cls,
       send_barrier_status_msg (barrier, NULL);
     }
     return;
+
   case GNUNET_TESTBED_BARRIERSTATUS_INITIALISED:
     if (0 != barrier->status)
     {
@@ -613,7 +614,6 @@ fwd_tout_barrier_init (void *cls)
                            "Timedout while propagating barrier initialisation\n");
   remove_barrier (barrier);
 }
-
 
 
 /**
@@ -669,7 +669,7 @@ handle_barrier_init (void *cls,
     return;
   }
   msize = ntohs (msg->header.size);
-  name_len = (size_t) msize - sizeof (struct GNUNET_TESTBED_BarrierInit);
+  name_len = (size_t) msize - sizeof(struct GNUNET_TESTBED_BarrierInit);
   name = GNUNET_malloc (name_len + 1);
   GNUNET_memcpy (name, msg->name, name_len);
   GNUNET_CRYPTO_hash (name, name_len, &hash);
@@ -705,7 +705,7 @@ handle_barrier_init (void *cls,
       continue;
     if (NULL == slave->controller)
     {
-      GNUNET_break (0);/* May happen when we are connecting to the controller */
+      GNUNET_break (0);   /* May happen when we are connecting to the controller */
       continue;
     }
     wrapper = GNUNET_new (struct WBarrier);
@@ -725,11 +725,14 @@ handle_barrier_init (void *cls,
   if (NULL == barrier->whead)   /* No further propagation */
   {
     barrier->status = GNUNET_TESTBED_BARRIERSTATUS_INITIALISED;
-    LOG_DEBUG ("Sending GNUNET_TESTBED_BARRIERSTATUS_INITIALISED for barrier `%s'\n",
-               barrier->name);
+    LOG_DEBUG (
+      "Sending GNUNET_TESTBED_BARRIERSTATUS_INITIALISED for barrier `%s'\n",
+      barrier->name);
     send_barrier_status_msg (barrier, NULL);
-  }else
-    barrier->tout_task = GNUNET_SCHEDULER_add_delayed (MESSAGE_SEND_TIMEOUT (30),
+  }
+  else
+    barrier->tout_task = GNUNET_SCHEDULER_add_delayed (MESSAGE_SEND_TIMEOUT (
+                                                         30),
                                                        &fwd_tout_barrier_init,
                                                        barrier);
 }
@@ -785,7 +788,7 @@ handle_barrier_cancel (void *cls,
     return;
   }
   msize = ntohs (msg->header.size);
-  name_len = msize - sizeof (struct GNUNET_TESTBED_BarrierCancel);
+  name_len = msize - sizeof(struct GNUNET_TESTBED_BarrierCancel);
   name = GNUNET_malloc (name_len + 1);
   GNUNET_memcpy (name,
                  msg->name,
@@ -828,7 +831,7 @@ check_barrier_status (void *cls,
   const char *name;
   enum GNUNET_TESTBED_BarrierStatus status;
 
-  msize = ntohs (msg->header.size) - sizeof (*msg);
+  msize = ntohs (msg->header.size) - sizeof(*msg);
   status = ntohs (msg->status);
   if (GNUNET_TESTBED_BARRIERSTATUS_CROSSED != status)
   {
@@ -901,7 +904,8 @@ handle_barrier_status (void *cls,
     return;
   }
   GNUNET_SERVICE_client_continue (client);
-  for(client_ctx = barrier->head; NULL != client_ctx; client_ctx = client_ctx->next) /* Notify peers */
+  for (client_ctx = barrier->head; NULL != client_ctx; client_ctx =
+         client_ctx->next)                                                            /* Notify peers */
   {
     env = GNUNET_MQ_msg_copy (&msg->header);
     GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client_ctx->client),
@@ -917,5 +921,6 @@ handle_barrier_status (void *cls,
                                    GNUNET_copy_message (&msg->header));
   }
 }
+
 
 /* end of gnunet-service-testbed_barriers.c */

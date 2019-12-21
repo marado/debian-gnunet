@@ -11,7 +11,7 @@
  *  WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Affero General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -66,27 +66,29 @@ c2i (char c, int size)
 {
   switch (size)
   {
-    case 2:
-    case 8:
+  case 2:
+  case 8:
+    return c - '0';
+    break;
+
+  case 16:
+    if ((c >= '0') && (c <= '9') )
       return c - '0';
-      break;
-    case 16:
-      if (c >= '0' && c <= '9')
-        return c - '0';
-      else if (c >= 'A' && c <= 'F')
-        return c - 'A' + 10;
-      else if (c >= 'a' && c <= 'f')
-        return c - 'a' + 10;
-      else
-      {
-        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    "Cannot convert char %c in base %u\n",
-                    c, size);
-        GNUNET_assert (0);
-      }
-      break;
-    default:
+    else if ((c >= 'A') && (c <= 'F') )
+      return c - 'A' + 10;
+    else if ((c >= 'a') && (c <= 'f') )
+      return c - 'a' + 10;
+    else
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  "Cannot convert char %c in base %u\n",
+                  c, size);
       GNUNET_assert (0);
+    }
+    break;
+
+  default:
+    GNUNET_assert (0);
   }
 }
 
@@ -117,7 +119,7 @@ debugctx (struct RegexCombineCtx *ctx, int level)
   if (NULL != ctx->s)
   {
     space (level - 1);
-    fprintf (stderr, "%u:'%s'\n", c2i(ctx->s[0], ctx->size), ctx->s);
+    fprintf (stderr, "%u:'%s'\n", c2i (ctx->s[0], ctx->size), ctx->s);
   }
   else
     fprintf (stderr, "ROOT (base %u)\n", ctx->size);
@@ -129,7 +131,7 @@ debugctx (struct RegexCombineCtx *ctx, int level)
       debugctx (ctx->children[i], level + 1);
     }
   }
-  fflush(stderr);
+  fflush (stderr);
 #endif
 }
 
@@ -142,7 +144,7 @@ debugctx (struct RegexCombineCtx *ctx, int level)
  */
 static void
 regex_add (struct RegexCombineCtx *ctx,
-	   const char *regex);
+           const char *regex);
 
 
 /**
@@ -167,7 +169,7 @@ new_regex_ctx (unsigned int alphabet_size)
 
 static void
 move_children (struct RegexCombineCtx *dst,
-	       const struct RegexCombineCtx *src)
+               const struct RegexCombineCtx *src)
 {
   size_t array_size;
 
@@ -213,7 +215,7 @@ regex_combine (struct RegexCombineCtx *ctx)
                 p->s, ctx->s);
     s = regex_combine (p);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "  total '%s'\n", s);
-    if (strlen(s) == 0)
+    if (strlen (s) == 0)
     {
       opt = GNUNET_YES;
     }
@@ -224,7 +226,8 @@ regex_combine (struct RegexCombineCtx *ctx)
       regex = tmp;
     }
     GNUNET_free_non_null (s);
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "  so far '%s' for inner %s\n", regex, ctx->s);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "  so far '%s' for inner %s\n", regex,
+                ctx->s);
   }
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "opt: %d, innner: '%s'\n", opt, regex);
@@ -321,6 +324,7 @@ get_longest_prefix (struct RegexCombineCtx *ctx, const char *regex)
   return best;
 }
 
+
 static void
 regex_add_multiple (struct RegexCombineCtx *ctx,
                     const char *regex,
@@ -344,7 +348,7 @@ regex_add_multiple (struct RegexCombineCtx *ctx,
   count = 0;
   for (i = 1UL; i < l; i++)
   {
-    if (regex[i] != '|' && regex[i] != ')')
+    if ((regex[i] != '|') && (regex[i] != ')') )
     {
       count++;
     }
@@ -358,19 +362,20 @@ regex_add_multiple (struct RegexCombineCtx *ctx,
   tmp[1] = '\0';
   for (i = 1UL; i < l; i++)
   {
-    if (regex[i] != '|' && regex[i] != ')')
+    if ((regex[i] != '|') && (regex[i] != ')') )
     {
       tmp[0] = regex[i];
-      newctx = new_regex_ctx(ctx->size);
+      newctx = new_regex_ctx (ctx->size);
       newctx->s = GNUNET_strdup (tmp);
       if (children != NULL)
         GNUNET_memcpy (newctx->children,
                        children,
-                       sizeof (*children) * ctx->size);
-      ctx->children[c2i(tmp[0], ctx->size)] = newctx;
+                       sizeof(*children) * ctx->size);
+      ctx->children[c2i (tmp[0], ctx->size)] = newctx;
     }
   }
 }
+
 
 /**
  * Add a single regex to a context, splitting the exisiting state.
@@ -420,7 +425,7 @@ regex_split (struct RegexCombineCtx *ctx,
   newctx = new_regex_ctx (ctx->size);
   newctx->s = suffix;
   move_children (newctx, ctx);
-  idx = c2i(suffix[0], ctx->size);
+  idx = c2i (suffix[0], ctx->size);
   ctx->children[idx] = newctx;
 }
 
@@ -478,8 +483,8 @@ regex_add (struct RegexCombineCtx *ctx, const char *regex)
   }
 
   /* There is no prefix match, add new */
-  idx = c2i(regex[0], ctx->size);
-  if (NULL == ctx->children[idx] && NULL != ctx->s)
+  idx = c2i (regex[0], ctx->size);
+  if ((NULL == ctx->children[idx]) && (NULL != ctx->s))
   {
     /* this was the end before, add empty string */
     newctx = new_regex_ctx (ctx->size);
@@ -489,7 +494,7 @@ regex_add (struct RegexCombineCtx *ctx, const char *regex)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, " no match\n");
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, " new state %s\n", regex);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, " under %s\n", ctx->s);
-  newctx = new_regex_ctx(ctx->size);
+  newctx = new_regex_ctx (ctx->size);
   newctx->s = GNUNET_strdup (regex);
   ctx->children[idx] = newctx;
 }
@@ -512,7 +517,7 @@ regex_ctx_destroy (struct RegexCombineCtx *ctx)
   {
     regex_ctx_destroy (ctx->children[i]);
   }
-  GNUNET_free_non_null (ctx->s); /* 's' on root node is null */
+  GNUNET_free_non_null (ctx->s);  /* 's' on root node is null */
   GNUNET_free (ctx->children);
   GNUNET_free (ctx);
 }
@@ -533,7 +538,7 @@ regex_ctx_destroy (struct RegexCombineCtx *ctx)
  * @return A string with a single regex that matches any of the original regexes
  */
 char *
-REGEX_TEST_combine (char * const regexes[], unsigned int alphabet_size)
+REGEX_TEST_combine (char *const regexes[], unsigned int alphabet_size)
 {
   unsigned int i;
   char *combined;
@@ -603,7 +608,7 @@ REGEX_TEST_read_from_file (const char *filename)
   buffer = GNUNET_malloc (size + 1);
   GNUNET_DISK_file_read (f, buffer, size);
   GNUNET_DISK_file_close (f);
-  regexes = GNUNET_malloc (sizeof (char *));
+  regexes = GNUNET_malloc (sizeof(char *));
   nr = 1;
   offset = 0;
   regex = NULL;
@@ -625,7 +630,8 @@ REGEX_TEST_read_from_file (const char *filename)
     regexes[nr - 2] = regex;
     regexes[nr - 1] = NULL;
     regex = NULL;
-  } while (offset < size);
+  }
+  while (offset < size);
   GNUNET_free_non_null (regex);
   GNUNET_free (buffer);
 
@@ -647,5 +653,6 @@ REGEX_TEST_free_from_file (char **regexes)
     GNUNET_free (regexes[i]);
   GNUNET_free (regexes);
 }
+
 
 /* end of regex_test_lib.c */

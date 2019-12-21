@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_lookup_shadow_filter.c
  * @brief testcase for namestore_api.c: store a record with short expiration
@@ -44,9 +44,9 @@ static struct GNUNET_NAMESTORE_Handle *nsh;
 
 static struct GNUNET_NAMECACHE_Handle *nch;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
-static struct GNUNET_SCHEDULER_Task * delayed_lookup_task;
+static struct GNUNET_SCHEDULER_Task *delayed_lookup_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -208,16 +208,17 @@ rd_decrypt_cb (void *cls,
     }
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "Block was decrypted successfully with former shadow record \n");
-    GNUNET_SCHEDULER_add_now (&end, NULL );
+    GNUNET_SCHEDULER_add_now (&end, NULL);
   }
 }
 
 
 static void
 name_lookup_active_proc (void *cls,
-                  const struct GNUNET_GNSRECORD_Block *block)
+                         const struct GNUNET_GNSRECORD_Block *block)
 {
   struct GNUNET_GNSRECORD_Data *expected_rd = cls;
+
   GNUNET_assert (NULL != expected_rd);
 
   ncqe = NULL;
@@ -231,17 +232,20 @@ name_lookup_active_proc (void *cls,
   if (NULL == block)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore returned no block\n"));
+                _ ("Namestore returned no block\n"));
     if (endbadly_task != NULL)
       GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task =  GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Namestore returned block, decrypting \n");
-  GNUNET_assert (GNUNET_OK == GNUNET_GNSRECORD_block_decrypt(block,
-  		&pubkey, TEST_NAME, &rd_decrypt_cb, expected_rd));
+              "Namestore returned block, decrypting \n");
+  GNUNET_assert (GNUNET_OK == GNUNET_GNSRECORD_block_decrypt (block,
+                                                              &pubkey,
+                                                              TEST_NAME,
+                                                              &rd_decrypt_cb,
+                                                              expected_rd));
 }
 
 
@@ -252,7 +256,8 @@ name_lookup_shadow (void *cls)
               "Performing lookup for shadow record \n");
   delayed_lookup_task = NULL;
   ncqe_shadow = GNUNET_NAMECACHE_lookup_block (nch, &derived_hash,
-      &name_lookup_active_proc, &records[1]);
+                                               &name_lookup_active_proc,
+                                               &records[1]);
 }
 
 
@@ -262,19 +267,19 @@ put_cont (void *cls, int32_t success, const char *emsg)
   nsqe = NULL;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store added record for `%s': %s\n",
-	      TEST_NAME,
-	      (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
+              "Name store added record for `%s': %s\n",
+              TEST_NAME,
+              (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
 
   /* Create derived hash */
   GNUNET_CRYPTO_ecdsa_key_get_public (privkey, &pubkey);
   GNUNET_GNSRECORD_query_from_public_key (&pubkey, TEST_NAME, &derived_hash);
 
-  if (0 == GNUNET_TIME_absolute_get_remaining(record_expiration).rel_value_us )
+  if (0 == GNUNET_TIME_absolute_get_remaining (record_expiration).rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Test to too long to store records, cannot run test!\n");
-    GNUNET_SCHEDULER_add_now (&end, NULL );
+    GNUNET_SCHEDULER_add_now (&end, NULL);
     return;
   }
   /* Lookup active record now */
@@ -283,7 +288,8 @@ put_cont (void *cls, int32_t success, const char *emsg)
   ncqe = GNUNET_NAMECACHE_lookup_block (nch, &derived_hash,
                                         &name_lookup_active_proc, &records[0]);
 
-  delayed_lookup_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (EXPIRATION, 2), &name_lookup_shadow, NULL);
+  delayed_lookup_task = GNUNET_SCHEDULER_add_delayed (
+    GNUNET_TIME_relative_multiply (EXPIRATION, 2), &name_lookup_shadow, NULL);
 }
 
 
@@ -293,14 +299,14 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
+                                                &endbadly,
                                                 NULL);
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
   GNUNET_CRYPTO_ecdsa_key_get_public (privkey,
                                       &pubkey);
 
-  record_expiration = GNUNET_TIME_absolute_add (GNUNET_TIME_absolute_get(),
+  record_expiration = GNUNET_TIME_absolute_add (GNUNET_TIME_absolute_get (),
                                                 EXPIRATION);
   records[0].expiration_time = record_expiration.abs_value_us;
   records[0].record_type = TEST_RECORD_TYPE;
@@ -309,23 +315,25 @@ run (void *cls,
   records[0].flags = GNUNET_GNSRECORD_RF_NONE;
   memset ((char *) records[0].data, TEST_RECORD_DATA, TEST_RECORD_DATALEN);
 
-  records[1].expiration_time = GNUNET_TIME_absolute_get().abs_value_us + 1000000000;
+  records[1].expiration_time = GNUNET_TIME_absolute_get ().abs_value_us
+                               + 1000000000;
   records[1].record_type = TEST_RECORD_TYPE;
   records[1].data_size = TEST_RECORD_DATALEN;
   records[1].data = GNUNET_malloc (TEST_RECORD_DATALEN);
   records[1].flags = GNUNET_GNSRECORD_RF_SHADOW_RECORD;
-  memset ((char *) records[1].data, TEST_SHADOW_RECORD_DATA, TEST_RECORD_DATALEN);
+  memset ((char *) records[1].data, TEST_SHADOW_RECORD_DATA,
+          TEST_RECORD_DATALEN);
 
   nsh = GNUNET_NAMESTORE_connect (cfg);
   nch = GNUNET_NAMECACHE_connect (cfg);
   GNUNET_break (NULL != nsh);
   GNUNET_break (NULL != nch);
   nsqe = GNUNET_NAMESTORE_records_store (nsh, privkey, TEST_NAME,
-				      2, records, &put_cont, NULL);
+                                         2, records, &put_cont, NULL);
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore cannot store no block\n"));
+                _ ("Namestore cannot store no block\n"));
   }
 
   GNUNET_free ((void *) records[0].data);

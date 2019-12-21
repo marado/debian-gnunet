@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file set/set_api.c
  * @brief api for the set service
@@ -30,7 +30,7 @@
 #include "set.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "set-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "set-api", __VA_ARGS__)
 
 struct SetCopyRequest
 {
@@ -185,11 +185,10 @@ struct GNUNET_SET_OperationHandle
  */
 struct GNUNET_SET_ListenHandle
 {
-
   /**
    * Message queue for the client.
    */
-  struct GNUNET_MQ_Handle* mq;
+  struct GNUNET_MQ_Handle*mq;
 
   /**
    * Configuration handle for the listener, stored
@@ -269,8 +268,8 @@ handle_copy_lazy (void *cls,
   // We pass none as operation here, since it doesn't matter when
   // cloning.
   new_set = create_internal (set->cfg,
-			     GNUNET_SET_OPERATION_NONE,
-			     &msg->cookie);
+                             GNUNET_SET_OPERATION_NONE,
+                             &msg->cookie);
   req->cb (req->cls, new_set);
   GNUNET_free (req);
 }
@@ -285,7 +284,7 @@ handle_copy_lazy (void *cls,
  */
 static int
 check_iter_element (void *cls,
-		    const struct GNUNET_SET_IterResponseMessage *msg)
+                    const struct GNUNET_SET_IterResponseMessage *msg)
 {
   /* minimum size was already checked, everything else is OK! */
   return GNUNET_OK;
@@ -320,7 +319,7 @@ handle_iter_element (void *cls,
   }
   if (NULL != iter)
   {
-    element.size = msize - sizeof (struct GNUNET_SET_IterResponseMessage);
+    element.size = msize - sizeof(struct GNUNET_SET_IterResponseMessage);
     element.element_type = ntohs (msg->element_type);
     element.data = &msg[1];
     iter (set->iterator_cls,
@@ -378,7 +377,7 @@ handle_iter_done (void *cls,
  */
 static int
 check_result (void *cls,
-	      const struct GNUNET_SET_ResultMessage *msg)
+              const struct GNUNET_SET_ResultMessage *msg)
 {
   /* minimum size was already checked, everything else is OK! */
   return GNUNET_OK;
@@ -420,16 +419,18 @@ handle_result (void *cls,
 
   switch (result_status)
   {
-    case GNUNET_SET_STATUS_OK:
-    case GNUNET_SET_STATUS_ADD_LOCAL:
-    case GNUNET_SET_STATUS_ADD_REMOTE:
-      goto do_element;
-    case GNUNET_SET_STATUS_FAILURE:
-    case GNUNET_SET_STATUS_DONE:
-      goto do_final;
-    case GNUNET_SET_STATUS_HALF_DONE:
-      /* not used anymore */
-      GNUNET_assert (0);
+  case GNUNET_SET_STATUS_OK:
+  case GNUNET_SET_STATUS_ADD_LOCAL:
+  case GNUNET_SET_STATUS_ADD_REMOTE:
+    goto do_element;
+
+  case GNUNET_SET_STATUS_FAILURE:
+  case GNUNET_SET_STATUS_DONE:
+    goto do_final;
+
+  case GNUNET_SET_STATUS_HALF_DONE:
+    /* not used anymore */
+    GNUNET_assert (0);
   }
 
 do_final:
@@ -466,7 +467,7 @@ do_element:
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Treating result as element\n");
   e.data = &msg[1];
-  e.size = ntohs (msg->header.size) - sizeof (struct GNUNET_SET_ResultMessage);
+  e.size = ntohs (msg->header.size) - sizeof(struct GNUNET_SET_ResultMessage);
   e.element_type = ntohs (msg->element_type);
   if (NULL != oh->result_cb)
     oh->result_cb (oh->result_cls,
@@ -497,8 +498,8 @@ set_operation_destroy (struct GNUNET_SET_OperationHandle *oh)
                                  oh);
     h_assoc = GNUNET_MQ_assoc_remove (set->mq,
                                       oh->request_id);
-    GNUNET_assert ( (NULL == h_assoc) ||
-		    (h_assoc == oh) );
+    GNUNET_assert ((NULL == h_assoc) ||
+                   (h_assoc == oh));
   }
   GNUNET_free (oh);
 }
@@ -527,9 +528,9 @@ GNUNET_SET_operation_cancel (struct GNUNET_SET_OperationHandle *oh)
     GNUNET_MQ_send (set->mq, mqm);
   }
   set_operation_destroy (oh);
-  if ( (NULL != set) &&
-       (GNUNET_YES == set->destroy_requested) &&
-       (NULL == set->ops_head) )
+  if ((NULL != set) &&
+      (GNUNET_YES == set->destroy_requested) &&
+      (NULL == set->ops_head))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Destroying set after operation cancel\n");
@@ -557,8 +558,8 @@ handle_client_set_error (void *cls,
        error);
   while (NULL != set->ops_head)
   {
-    if ( (NULL != set->ops_head->result_cb) &&
-	 (GNUNET_NO == set->destroy_requested) )
+    if ((NULL != set->ops_head->result_cb) &&
+        (GNUNET_NO == set->destroy_requested))
       set->ops_head->result_cb (set->ops_head->result_cls,
                                 NULL,
                                 0,
@@ -659,8 +660,8 @@ GNUNET_SET_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
   struct GNUNET_SET_Handle *set;
 
   set = create_internal (cfg,
-                          op,
-                          NULL);
+                         op,
+                         NULL);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Creating set %p for operation %d\n",
        set,
@@ -774,9 +775,9 @@ GNUNET_SET_destroy (struct GNUNET_SET_Handle *set)
      not supported; we should expand the API to allow
      clients to explicitly cancel the iteration! */
   GNUNET_assert (NULL != set);
-  if ( (NULL != set->ops_head) ||
-       (NULL != set->iterator) ||
-       (GNUNET_SYSERR == set->destroy_requested) )
+  if ((NULL != set->ops_head) ||
+      (NULL != set->iterator) ||
+      (GNUNET_SYSERR == set->destroy_requested))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Set operations are pending, delaying set destruction\n");
@@ -838,19 +839,22 @@ GNUNET_SET_prepare (const struct GNUNET_PeerIdentity *other_peer,
   {
     switch (opt->type)
     {
-      case GNUNET_SET_OPTION_BYZANTINE:
-        msg->byzantine = GNUNET_YES;
-        msg->byzantine_lower_bound = opt->v.num;
-        break;
-      case GNUNET_SET_OPTION_FORCE_FULL:
-        msg->force_full = GNUNET_YES;
-        break;
-      case GNUNET_SET_OPTION_FORCE_DELTA:
-        msg->force_delta = GNUNET_YES;
-        break;
-      default:
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             "Option with type %d not recognized\n", (int) opt->type);
+    case GNUNET_SET_OPTION_BYZANTINE:
+      msg->byzantine = GNUNET_YES;
+      msg->byzantine_lower_bound = opt->v.num;
+      break;
+
+    case GNUNET_SET_OPTION_FORCE_FULL:
+      msg->force_full = GNUNET_YES;
+      break;
+
+    case GNUNET_SET_OPTION_FORCE_DELTA:
+      msg->force_delta = GNUNET_YES;
+      break;
+
+    default:
+      LOG (GNUNET_ERROR_TYPE_ERROR,
+           "Option with type %d not recognized\n", (int) opt->type);
     }
   }
   oh->conclude_mqm = mqm;
@@ -878,11 +882,11 @@ listen_connect (void *cls);
  */
 static int
 check_request (void *cls,
-	       const struct GNUNET_SET_RequestMessage *msg)
+               const struct GNUNET_SET_RequestMessage *msg)
 {
   const struct GNUNET_MessageHeader *context_msg;
 
-  if (ntohs (msg->header.size) == sizeof (*msg))
+  if (ntohs (msg->header.size) == sizeof(*msg))
     return GNUNET_OK; /* no context message is OK */
   context_msg = GNUNET_MQ_extract_nested_mh (msg);
   if (NULL == context_msg)
@@ -956,7 +960,7 @@ handle_client_listener_error (void *cls,
   lh->mq = NULL;
   lh->reconnect_task = GNUNET_SCHEDULER_add_delayed (lh->reconnect_backoff,
                                                      &listen_connect,
-						     lh);
+                                                     lh);
   lh->reconnect_backoff = GNUNET_TIME_STD_BACKOFF (lh->reconnect_backoff);
 }
 
@@ -1220,7 +1224,7 @@ GNUNET_SET_element_dup (const struct GNUNET_SET_Element *element)
 {
   struct GNUNET_SET_Element *copy;
 
-  copy = GNUNET_malloc (element->size + sizeof (struct GNUNET_SET_Element));
+  copy = GNUNET_malloc (element->size + sizeof(struct GNUNET_SET_Element));
   copy->size = element->size;
   copy->element_type = element->element_type;
   copy->data = &copy[1];
@@ -1240,16 +1244,18 @@ GNUNET_SET_element_dup (const struct GNUNET_SET_Element *element)
  */
 void
 GNUNET_SET_element_hash (const struct GNUNET_SET_Element *element,
-			 struct GNUNET_HashCode *ret_hash)
+                         struct GNUNET_HashCode *ret_hash)
 {
   struct GNUNET_HashContext *ctx = GNUNET_CRYPTO_hash_context_start ();
 
   /* It's not guaranteed that the element data is always after the element header,
      so we need to hash the chunks separately. */
-  GNUNET_CRYPTO_hash_context_read (ctx, &element->size, sizeof (uint16_t));
-  GNUNET_CRYPTO_hash_context_read (ctx, &element->element_type, sizeof (uint16_t));
+  GNUNET_CRYPTO_hash_context_read (ctx, &element->size, sizeof(uint16_t));
+  GNUNET_CRYPTO_hash_context_read (ctx, &element->element_type,
+                                   sizeof(uint16_t));
   GNUNET_CRYPTO_hash_context_read (ctx, element->data, element->size);
   GNUNET_CRYPTO_hash_context_finish (ctx, ret_hash);
 }
+
 
 /* end of set_api.c */

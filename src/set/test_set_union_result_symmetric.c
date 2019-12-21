@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/test_set_union_result_smmetric
@@ -82,43 +82,47 @@ result_cb_set1 (void *cls,
 {
   switch (status)
   {
-    case GNUNET_SET_STATUS_ADD_LOCAL:
-      count_set1++;
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "set 1: got element\n");
-      break;
-    case GNUNET_SET_STATUS_FAILURE:
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "set 1: failure\n");
-      oh1 = NULL;
-      ret = 1;
+  case GNUNET_SET_STATUS_ADD_LOCAL:
+    count_set1++;
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "set 1: got element\n");
+    break;
+
+  case GNUNET_SET_STATUS_FAILURE:
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "set 1: failure\n");
+    oh1 = NULL;
+    ret = 1;
+    if (NULL != timeout_task)
+    {
+      GNUNET_SCHEDULER_cancel (timeout_task);
+      timeout_task = NULL;
+    }
+    GNUNET_SCHEDULER_shutdown ();
+    break;
+
+  case GNUNET_SET_STATUS_DONE:
+    oh1 = NULL;
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "set 1: done\n");
+    GNUNET_SET_destroy (set1);
+    set1 = NULL;
+    if (NULL == set2)
+    {
       if (NULL != timeout_task)
       {
         GNUNET_SCHEDULER_cancel (timeout_task);
         timeout_task = NULL;
       }
       GNUNET_SCHEDULER_shutdown ();
-      break;
-    case GNUNET_SET_STATUS_DONE:
-      oh1 = NULL;
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "set 1: done\n");
-      GNUNET_SET_destroy (set1);
-      set1 = NULL;
-      if (NULL == set2)
-      {
-        if (NULL != timeout_task)
-        {
-          GNUNET_SCHEDULER_cancel (timeout_task);
-          timeout_task = NULL;
-        }
-        GNUNET_SCHEDULER_shutdown ();
-      }
-      break;
-    case GNUNET_SET_STATUS_ADD_REMOTE:
-      break;
-    default:
-      GNUNET_assert (0);
+    }
+    break;
+
+  case GNUNET_SET_STATUS_ADD_REMOTE:
+    break;
+
+  default:
+    GNUNET_assert (0);
   }
 }
 
@@ -131,43 +135,47 @@ result_cb_set2 (void *cls,
 {
   switch (status)
   {
-    case GNUNET_SET_STATUS_ADD_LOCAL:
-      count_set2++;
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "set 2: got element\n");
-      break;
-    case GNUNET_SET_STATUS_FAILURE:
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "set 2: failure\n");
-      oh2 = NULL;
-      ret = 1;
+  case GNUNET_SET_STATUS_ADD_LOCAL:
+    count_set2++;
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "set 2: got element\n");
+    break;
+
+  case GNUNET_SET_STATUS_FAILURE:
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "set 2: failure\n");
+    oh2 = NULL;
+    ret = 1;
+    if (NULL != timeout_task)
+    {
+      GNUNET_SCHEDULER_cancel (timeout_task);
+      timeout_task = NULL;
+    }
+    GNUNET_SCHEDULER_shutdown ();
+    break;
+
+  case GNUNET_SET_STATUS_DONE:
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "set 2: done\n");
+    oh2 = NULL;
+    GNUNET_SET_destroy (set2);
+    set2 = NULL;
+    if (NULL == set1)
+    {
       if (NULL != timeout_task)
       {
         GNUNET_SCHEDULER_cancel (timeout_task);
         timeout_task = NULL;
       }
       GNUNET_SCHEDULER_shutdown ();
-      break;
-    case GNUNET_SET_STATUS_DONE:
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "set 2: done\n");
-      oh2 = NULL;
-      GNUNET_SET_destroy (set2);
-      set2 = NULL;
-      if (NULL == set1)
-      {
-        if (NULL != timeout_task)
-        {
-          GNUNET_SCHEDULER_cancel (timeout_task);
-          timeout_task = NULL;
-        }
-        GNUNET_SCHEDULER_shutdown ();
-      }
-      break;
-    case GNUNET_SET_STATUS_ADD_REMOTE:
-      break;
-    default:
-      GNUNET_assert (0);
+    }
+    break;
+
+  case GNUNET_SET_STATUS_ADD_REMOTE:
+    break;
+
+  default:
+    GNUNET_assert (0);
   }
 }
 
@@ -238,19 +246,19 @@ init_set2 (void *cls)
   }
   element.element_type = 0;
   element.data = "hello";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set2,
                           &element,
                           NULL,
                           NULL);
   element.data = "quux";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set2,
                           &element,
                           NULL,
                           NULL);
   element.data = "baz";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set2,
                           &element,
                           &start, NULL);
@@ -272,13 +280,13 @@ init_set1 (void)
   }
   element.element_type = 0;
   element.data = "hello";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set1,
                           &element,
                           NULL,
                           NULL);
   element.data = "bar";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set1,
                           &element,
                           &init_set2,
@@ -315,13 +323,13 @@ test_iter ()
   iter_set = GNUNET_SET_create (config, GNUNET_SET_OPERATION_UNION);
   element.element_type = 0;
   element.data = "hello";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (iter_set, &element, NULL, NULL);
   element.data = "bar";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (iter_set, &element, NULL, NULL);
   element.data = "quux";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (iter_set, &element, NULL, NULL);
 
   GNUNET_SET_iterate (iter_set,
@@ -400,7 +408,8 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
-  timeout_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5),
+  timeout_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                                 GNUNET_TIME_UNIT_SECONDS, 5),
                                                &timeout_fail,
                                                NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,

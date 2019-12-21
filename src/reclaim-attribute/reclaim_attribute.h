@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @file reclaim-attribute/reclaim_attribute.h
@@ -58,7 +58,7 @@ struct Attribute
    */
   uint32_t data_size;
 
-  //followed by data_size Attribute value data
+  // followed by data_size Attribute value data
 };
 
 #endif

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@
 /**
  * Generic logging shortcut
  */
-#define LOG(kind,...)				\
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 /**
@@ -112,19 +112,18 @@ static struct GNUNET_TESTBED_Operation *common_operation;
 /**
  * Abort task identifier
  */
-static struct GNUNET_SCHEDULER_Task * abort_task;
+static struct GNUNET_SCHEDULER_Task *abort_task;
 
 /**
  * Delayed connect job identifier
  */
-static struct GNUNET_SCHEDULER_Task * delayed_connect_task;
+static struct GNUNET_SCHEDULER_Task *delayed_connect_task;
 
 /**
  * Different stages in testing
  */
 enum Stage
 {
-
   /**
    * Initial stage
    */
@@ -171,15 +170,15 @@ static enum Stage result;
  * shortcut to exit during failure
  */
 #define FAIL_TEST(cond) do {                                    \
-    if (!(cond)) {                                              \
-      GNUNET_break(0);                                          \
+    if (! (cond)) {                                              \
+      GNUNET_break (0);                                          \
       if (NULL != abort_task)               \
         GNUNET_SCHEDULER_cancel (abort_task);                   \
       abort_task = NULL;                    \
       GNUNET_SCHEDULER_add_now (do_shutdown, NULL);             \
       return;                                                   \
     }                                                          \
-  } while (0)
+} while (0)
 
 
 /**
@@ -242,8 +241,8 @@ do_delayed_connect (void *cls)
   delayed_connect_task = NULL;
   FAIL_TEST (NULL == common_operation);
   common_operation =
-      GNUNET_TESTBED_overlay_connect (NULL, &op_comp_cb, NULL, peer1.peer,
-                                      peer2.peer);
+    GNUNET_TESTBED_overlay_connect (NULL, &op_comp_cb, NULL, peer1.peer,
+                                    peer2.peer);
 }
 
 
@@ -266,11 +265,13 @@ op_comp_cb (void *cls, struct GNUNET_TESTBED_Operation *op, const char *emsg)
     FAIL_TEST (NULL == peer2.operation);
     FAIL_TEST (NULL != common_operation);
     break;
+
   case PEERS_CONNECTED:
     FAIL_TEST (NULL == peer1.operation);
     FAIL_TEST (NULL == peer2.operation);
     FAIL_TEST (NULL != common_operation);
     break;
+
   default:
     FAIL_TEST (0);
   }
@@ -314,6 +315,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
     }
     break;
+
   case GNUNET_TESTBED_ET_PEER_START:
     FAIL_TEST (INIT == result);
     FAIL_TEST (event->details.peer_start.host == host);
@@ -335,10 +337,11 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
     {
       result = PEERS_STARTED;
       common_operation =
-          GNUNET_TESTBED_overlay_connect (NULL, &op_comp_cb, NULL, peer1.peer,
-                                          peer2.peer);
+        GNUNET_TESTBED_overlay_connect (NULL, &op_comp_cb, NULL, peer1.peer,
+                                        peer2.peer);
     }
     break;
+
   case GNUNET_TESTBED_ET_PEER_STOP:
     FAIL_TEST (PEERS_CONNECTED_2 == result);
     if (event->details.peer_stop.peer == peer1.peer)
@@ -358,6 +361,7 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
     if ((GNUNET_NO == peer1.is_running) && (GNUNET_NO == peer2.is_running))
       result = PEERS_STOPPED;
     break;
+
   case GNUNET_TESTBED_ET_CONNECT:
     switch (result)
     {
@@ -372,9 +376,10 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       result = PEERS_CONNECTED;
       LOG (GNUNET_ERROR_TYPE_DEBUG, "Peers connected\n");
       delayed_connect_task =
-          GNUNET_SCHEDULER_add_delayed (TIME_REL_SECS (3), &do_delayed_connect,
-                                        NULL);
+        GNUNET_SCHEDULER_add_delayed (TIME_REL_SECS (3), &do_delayed_connect,
+                                      NULL);
       break;
+
     case PEERS_CONNECTED:
       FAIL_TEST (NULL == peer1.operation);
       FAIL_TEST (NULL == peer2.operation);
@@ -386,13 +391,16 @@ controller_cb (void *cls, const struct GNUNET_TESTBED_EventInformation *event)
       peer1.operation = GNUNET_TESTBED_peer_stop (NULL, peer1.peer, NULL, NULL);
       peer2.operation = GNUNET_TESTBED_peer_stop (NULL, peer2.peer, NULL, NULL);
       break;
+
     default:
       FAIL_TEST (0);
     }
     break;
+
   default:
     FAIL_TEST (0);
-  };
+  }
+  ;
 }
 
 
@@ -431,11 +439,11 @@ registration_comp (void *cls, const char *emsg)
   FAIL_TEST (cls == neighbour);
   reg_handle = NULL;
   peer1.operation =
-      GNUNET_TESTBED_peer_create (controller, host, cfg, &peer_create_cb,
-                                  &peer1);
+    GNUNET_TESTBED_peer_create (controller, host, cfg, &peer_create_cb,
+                                &peer1);
   peer2.operation =
-      GNUNET_TESTBED_peer_create (controller, host, cfg, &peer_create_cb,
-                                  &peer2);
+    GNUNET_TESTBED_peer_create (controller, host, cfg, &peer_create_cb,
+                                &peer2);
   FAIL_TEST (NULL != peer1.operation);
   FAIL_TEST (NULL != peer2.operation);
 }
@@ -451,7 +459,8 @@ registration_comp (void *cls, const char *emsg)
  *          GNUNET_TESTBED_controller_stop() shouldn't be called in this case
  */
 static void
-status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg_, int status)
+status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg_, int
+           status)
 {
   uint64_t event_mask;
 
@@ -466,17 +475,16 @@ status_cb (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg_, int status
   event_mask |= (1L << GNUNET_TESTBED_ET_CONNECT);
   event_mask |= (1L << GNUNET_TESTBED_ET_OPERATION_FINISHED);
   controller =
-      GNUNET_TESTBED_controller_connect (host, event_mask, &controller_cb,
-                                         NULL);
+    GNUNET_TESTBED_controller_connect (host, event_mask, &controller_cb,
+                                       NULL);
   FAIL_TEST (NULL != controller);
   neighbour = GNUNET_TESTBED_host_create ("localhost", NULL, cfg, 0);
   FAIL_TEST (NULL != neighbour);
   reg_handle =
-      GNUNET_TESTBED_register_host (controller, neighbour, &registration_comp,
-                                    neighbour);
+    GNUNET_TESTBED_register_host (controller, neighbour, &registration_comp,
+                                  neighbour);
   FAIL_TEST (NULL != reg_handle);
 }
-
 
 
 /**
@@ -497,9 +505,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   cp = GNUNET_TESTBED_controller_start ("127.0.0.1", host, status_cb,
                                         NULL);
   abort_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES, 3), &do_abort,
-                                    NULL);
+                                  NULL);
 }
 
 
@@ -512,20 +520,21 @@ main (int argc, char **argv)
   int ret;
 
   char *const argv2[] = { "test_testbed_api_2peers_1controller",
-    "-c", "test_testbed_api.conf",
-    NULL
-  };
+                          "-c", "test_testbed_api.conf",
+                          NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
+
   result = INIT;
   ret =
-      GNUNET_PROGRAM_run ((sizeof (argv2) / sizeof (char *)) - 1, argv2,
-                          "test_testbed_api_2peers_1controller", "nohelp",
-                          options, &run, NULL);
+    GNUNET_PROGRAM_run ((sizeof(argv2) / sizeof(char *)) - 1, argv2,
+                        "test_testbed_api_2peers_1controller", "nohelp",
+                        options, &run, NULL);
   if ((GNUNET_OK != ret) || (SUCCESS != result))
     return 1;
   return 0;
 }
+
 
 /* end of test_testbed_api_2peers_1controller.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file peerinfo/test_peerinfo_shipped_hellos.c
@@ -46,7 +46,7 @@ addr_cb (void *cls,
 {
   unsigned int *addr = cls;
 
-  (*addr) ++;
+  (*addr)++;
   return GNUNET_OK;
 }
 
@@ -133,11 +133,12 @@ main (int argc,
 {
   global_ret = 3;
   if (0 != GNUNET_TESTING_service_run ("test_peerinfo_shipped_hellos",
-				       "peerinfo",
-				       "test_peerinfo_api_data.conf",
-				       &run, NULL))
+                                       "peerinfo",
+                                       "test_peerinfo_api_data.conf",
+                                       &run, NULL))
     return 1;
   return global_ret;
 }
+
 
 /* end of test_peerinfo_shipped_hellos.c */

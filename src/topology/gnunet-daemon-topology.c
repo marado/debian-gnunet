@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file topology/gnunet-daemon-topology.c
@@ -308,9 +308,9 @@ attempt_connect (struct Peer *pos)
   if ((friend_count < minimum_friend_count) || (GNUNET_YES == friends_only))
   {
     if (pos->is_friend)
-      strength += 10; /* urgently needed */
+      strength += 10;   /* urgently needed */
     else
-      strength = 0; /* disallowed */
+      strength = 0;   /* disallowed */
   }
   if (pos->is_friend)
     strength *= 2; /* friends always count more */
@@ -388,12 +388,11 @@ setup_filter (struct Peer *peer)
    * of the data structure and would only really become
    * "useless" once a HELLO has been passed on to ~100
    * other peers, which is likely more than enough in
-   * any case; hence 64, 5 as bloomfilter parameters. */
-  peer->filter = GNUNET_CONTAINER_bloomfilter_init (NULL, 64, 5);
+   * any case; hence 64, 5 as bloomfilter parameters. */peer->filter = GNUNET_CONTAINER_bloomfilter_init (NULL, 64, 5);
   peer->filter_expiration =
     GNUNET_TIME_relative_to_absolute (HELLO_ADVERTISEMENT_MIN_REPEAT_FREQUENCY);
   /* never send a peer its own HELLO */
-  GNUNET_CRYPTO_hash (&peer->pid, sizeof (struct GNUNET_PeerIdentity), &hc);
+  GNUNET_CRYPTO_hash (&peer->pid, sizeof(struct GNUNET_PeerIdentity), &hc);
   GNUNET_CONTAINER_bloomfilter_add (peer->filter, &hc);
 }
 
@@ -403,7 +402,6 @@ setup_filter (struct Peer *peer)
  */
 struct FindAdvHelloContext
 {
-
   /**
    * Peer we want to advertise to.
    */
@@ -458,7 +456,7 @@ find_advertisable_hello (void *cls,
   if (hs > fah->max_size)
     return GNUNET_YES;
   GNUNET_CRYPTO_hash (&fah->peer->pid,
-                      sizeof (struct GNUNET_PeerIdentity),
+                      sizeof(struct GNUNET_PeerIdentity),
                       &hc);
   if (GNUNET_NO == GNUNET_CONTAINER_bloomfilter_test (pos->filter, &hc))
     fah->result = pos;
@@ -506,7 +504,7 @@ schedule_next_hello (void *cls)
   GNUNET_MQ_send (pl->mq, env);
 
   /* avoid sending this one again soon */
-  GNUNET_CRYPTO_hash (&pl->pid, sizeof (struct GNUNET_PeerIdentity), &hc);
+  GNUNET_CRYPTO_hash (&pl->pid, sizeof(struct GNUNET_PeerIdentity), &hc);
   GNUNET_CONTAINER_bloomfilter_add (fah.result->filter, &hc);
 
   GNUNET_STATISTICS_update (stats,
@@ -749,7 +747,7 @@ consider_for_advertising (const struct GNUNET_HELLO_Message *hello)
   {
     dt = GNUNET_HELLO_equals (peer->hello, hello, GNUNET_TIME_absolute_get ());
     if (dt.abs_value_us == GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us)
-      return; /* nothing new here */
+      return;   /* nothing new here */
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Found HELLO from peer `%s' for advertising\n",
@@ -1052,11 +1050,11 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *c)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (hello,
-                            GNUNET_MESSAGE_TYPE_HELLO,
-                            struct GNUNET_HELLO_Message,
-                            NULL),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (hello,
+                           GNUNET_MESSAGE_TYPE_HELLO,
+                           struct GNUNET_HELLO_Message,
+                           NULL),
+    GNUNET_MQ_handler_end () };
   unsigned long long opt;
 
   cfg = c;
@@ -1116,7 +1114,8 @@ int
 main (int argc, char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
   int ret;
 
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
@@ -1129,25 +1128,28 @@ main (int argc, char *const *argv)
                                           options,
                                           &run,
                                           NULL))
-          ? 0
-          : 1;
+        ? 0
+        : 1;
   GNUNET_free ((void *) argv);
   return ret;
 }
 
 
-#if defined(LINUX) && defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 #include <malloc.h>
 
 /**
  * MINIMIZE heap size (way below 128k) since this process doesn't need much.
  */
-void __attribute__ ((constructor)) GNUNET_ARM_memory_init ()
+void __attribute__ ((constructor))
+GNUNET_ARM_memory_init ()
 {
   mallopt (M_TRIM_THRESHOLD, 4 * 1024);
   mallopt (M_TOP_PAD, 1 * 1024);
   malloc_trim (0);
 }
+
+
 #endif
 
 /* end of gnunet-daemon-topology.c */

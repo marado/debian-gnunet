@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api_manipulation.c
@@ -32,7 +32,7 @@
 #include "gnunet_transport_service.h"
 #include "transport.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "transport-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "transport-api", __VA_ARGS__)
 
 
 /**
@@ -41,7 +41,6 @@
  */
 struct GNUNET_TRANSPORT_ManipulationHandle
 {
-
   /**
    * My client connection to the transport service.
    */
@@ -76,7 +75,8 @@ struct GNUNET_TRANSPORT_ManipulationHandle
  * @param h transport service to reconnect
  */
 static void
-disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_ManipulationHandle *h);
+disconnect_and_schedule_reconnect (struct
+                                   GNUNET_TRANSPORT_ManipulationHandle *h);
 
 
 /**
@@ -142,7 +142,8 @@ reconnect (void *cls)
  * @param h transport service to reconnect
  */
 static void
-disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_ManipulationHandle *h)
+disconnect_and_schedule_reconnect (struct
+                                   GNUNET_TRANSPORT_ManipulationHandle *h)
 {
   GNUNET_assert (NULL == h->reconnect_task);
   if (NULL != h->mq)
@@ -151,9 +152,9 @@ disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_ManipulationHandle *h
     h->mq = NULL;
   }
   h->reconnect_task =
-      GNUNET_SCHEDULER_add_delayed (h->reconnect_delay,
-                                    &reconnect,
-                                    h);
+    GNUNET_SCHEDULER_add_delayed (h->reconnect_delay,
+                                  &reconnect,
+                                  h);
   h->reconnect_delay = GNUNET_TIME_STD_BACKOFF (h->reconnect_delay);
 }
 
@@ -171,11 +172,12 @@ disconnect_and_schedule_reconnect (struct GNUNET_TRANSPORT_ManipulationHandle *h
  * with one message delay.
  */
 void
-GNUNET_TRANSPORT_manipulation_set (struct GNUNET_TRANSPORT_ManipulationHandle *handle,
-				   const struct GNUNET_PeerIdentity *peer,
-				   const struct GNUNET_ATS_Properties *prop,
-				   struct GNUNET_TIME_Relative delay_in,
-				   struct GNUNET_TIME_Relative delay_out)
+GNUNET_TRANSPORT_manipulation_set (struct
+                                   GNUNET_TRANSPORT_ManipulationHandle *handle,
+                                   const struct GNUNET_PeerIdentity *peer,
+                                   const struct GNUNET_ATS_Properties *prop,
+                                   struct GNUNET_TIME_Relative delay_in,
+                                   struct GNUNET_TIME_Relative delay_out)
 {
   struct GNUNET_MQ_Envelope *env;
   struct TrafficMetricMessage *msg;
@@ -203,7 +205,8 @@ GNUNET_TRANSPORT_manipulation_set (struct GNUNET_TRANSPORT_ManipulationHandle *h
  * @return NULL on error
  */
 struct GNUNET_TRANSPORT_ManipulationHandle *
-GNUNET_TRANSPORT_manipulation_connect (const struct GNUNET_CONFIGURATION_Handle *cfg)
+GNUNET_TRANSPORT_manipulation_connect (const struct
+                                       GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_TRANSPORT_ManipulationHandle *h;
 
@@ -227,7 +230,9 @@ GNUNET_TRANSPORT_manipulation_connect (const struct GNUNET_CONFIGURATION_Handle 
  * @param handle handle to the service as returned from #GNUNET_TRANSPORT_manipulation_connect()
  */
 void
-GNUNET_TRANSPORT_manipulation_disconnect (struct GNUNET_TRANSPORT_ManipulationHandle *handle)
+GNUNET_TRANSPORT_manipulation_disconnect (struct
+                                          GNUNET_TRANSPORT_ManipulationHandle *
+                                          handle)
 {
   if (NULL == handle->reconnect_task)
     disconnect_and_schedule_reconnect (handle);

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -133,8 +133,8 @@ GNUNET_BIO_read_meta_data (struct GNUNET_BIO_ReadHandle *h, const char *what,
  * @param h hande to open file
  * @param f address of float to read
  */
-#define GNUNET_BIO_read_float(h, f) (GNUNET_BIO_read_fn (h, __FILE__, __LINE__, f, sizeof(float)))
-
+#define GNUNET_BIO_read_float(h, f) (GNUNET_BIO_read_fn (h, __FILE__, __LINE__, \
+                                                         f, sizeof(float)))
 
 
 /**
@@ -143,7 +143,8 @@ GNUNET_BIO_read_meta_data (struct GNUNET_BIO_ReadHandle *h, const char *what,
  * @param h hande to open file
  * @param f address of double to read
  */
-#define GNUNET_BIO_read_double(h, f) (GNUNET_BIO_read_fn (h, __FILE__, __LINE__, f, sizeof(double)))
+#define GNUNET_BIO_read_double(h, f) (GNUNET_BIO_read_fn (h, __FILE__, __LINE__, \
+                                                          f, sizeof(double)))
 
 
 /**
@@ -157,7 +158,7 @@ GNUNET_BIO_read_meta_data (struct GNUNET_BIO_ReadHandle *h, const char *what,
  */
 int
 GNUNET_BIO_read_int32__ (struct GNUNET_BIO_ReadHandle *h, const char *file,
-                         int line, int32_t * i);
+                         int line, int32_t *i);
 
 
 /**
@@ -166,7 +167,9 @@ GNUNET_BIO_read_int32__ (struct GNUNET_BIO_ReadHandle *h, const char *file,
  * @param h hande to open file
  * @param i address of 32-bit integer to read
  */
-#define GNUNET_BIO_read_int32(h, i) GNUNET_BIO_read_int32__ (h, __FILE__, __LINE__, (int32_t*) i)
+#define GNUNET_BIO_read_int32(h, i) GNUNET_BIO_read_int32__ (h, __FILE__, \
+                                                             __LINE__, \
+                                                             (int32_t *) i)
 
 
 /**
@@ -180,7 +183,7 @@ GNUNET_BIO_read_int32__ (struct GNUNET_BIO_ReadHandle *h, const char *file,
  */
 int
 GNUNET_BIO_read_int64__ (struct GNUNET_BIO_ReadHandle *h, const char *file,
-                         int line, int64_t * i);
+                         int line, int64_t *i);
 
 
 /**
@@ -189,7 +192,9 @@ GNUNET_BIO_read_int64__ (struct GNUNET_BIO_ReadHandle *h, const char *file,
  * @param h hande to open file
  * @param i address of 64-bit integer to read
  */
-#define GNUNET_BIO_read_int64(h, i) GNUNET_BIO_read_int64__ (h, __FILE__, __LINE__, (int64_t*) i)
+#define GNUNET_BIO_read_int64(h, i) GNUNET_BIO_read_int64__ (h, __FILE__, \
+                                                             __LINE__, \
+                                                             (int64_t *) i)
 
 
 /**
@@ -264,7 +269,6 @@ GNUNET_BIO_write_meta_data (struct GNUNET_BIO_WriteHandle *h,
                             const struct GNUNET_CONTAINER_MetaData *m);
 
 
-
 /**
  * Write a float.
  *
@@ -272,7 +276,6 @@ GNUNET_BIO_write_meta_data (struct GNUNET_BIO_WriteHandle *h,
  * @param f float to write (must be a variable)
  */
 #define GNUNET_BIO_write_float(h, f) GNUNET_BIO_write (h, &f, sizeof(float))
-
 
 
 /**

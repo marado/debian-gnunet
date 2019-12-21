@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/gnunet-set-ibf-profiler.c
@@ -54,6 +54,7 @@ register_hashcode (struct GNUNET_HashCode *hash)
 {
   struct GNUNET_HashCode replicated;
   struct IBF_Key key;
+
   key = ibf_key_from_hashcode (hash);
   ibf_hashcode_from_key (key, &replicated);
   (void) GNUNET_CONTAINER_multihashmap_put (
@@ -93,6 +94,7 @@ static int
 remove_iterator (void *cls, const struct GNUNET_HashCode *key, void *value)
 {
   struct GNUNET_CONTAINER_MultiHashMap *hashmap = cls;
+
   /* if remove fails, there just was a collision with another key */
   (void) GNUNET_CONTAINER_multihashmap_remove (hashmap, value, NULL);
   return GNUNET_YES;
@@ -124,8 +126,8 @@ run (void *cls,
 
   key_to_hashcode =
     GNUNET_CONTAINER_multihashmap_create (((asize + bsize + csize == 0)
-                                             ? 1
-                                             : (asize + bsize + csize)),
+                                           ? 1
+                                           : (asize + bsize + csize)),
                                           GNUNET_NO);
 
   printf ("hash-num=%u, size=%u, #(A-B)=%u, #(B-A)=%u, #(A&B)=%u\n",
@@ -223,8 +225,8 @@ run (void *cls,
     if (GNUNET_SYSERR == res)
     {
       printf ("decode failed, %u/%u elements left\n",
-              GNUNET_CONTAINER_multihashmap_size (set_a) +
-                GNUNET_CONTAINER_multihashmap_size (set_b),
+              GNUNET_CONTAINER_multihashmap_size (set_a)
+              + GNUNET_CONTAINER_multihashmap_size (set_b),
               asize + bsize);
       return;
     }
@@ -250,8 +252,8 @@ run (void *cls,
       iter_hashcodes (ibf_key, remove_iterator, set_b);
   }
   printf ("cyclic IBF, %u/%u elements left\n",
-          GNUNET_CONTAINER_multihashmap_size (set_a) +
-            GNUNET_CONTAINER_multihashmap_size (set_b),
+          GNUNET_CONTAINER_multihashmap_size (set_a)
+          + GNUNET_CONTAINER_multihashmap_size (set_b),
           asize + bsize);
 }
 
@@ -260,7 +262,6 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_uint ('A',
                                "asize",
                                NULL,
@@ -292,7 +293,8 @@ main (int argc, char **argv)
                                gettext_noop ("ibf size"),
                                &ibf_size),
 
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
 
   GNUNET_PROGRAM_run2 (argc,
                        argv,

@@ -1,0 +1,78 @@
+# Contributor: xrs <xrs@mail36.net>
+# Maintainer: xrs <xrs@mail36.net>
+pkgname=gnurl
+pkgver=7.66.0
+pkgrel=0
+pkgdesc="curl with only HTTP/HTTPS support and GnuTLS"
+url="https://gnunet.org/en/gnurl.html"
+arch="all"
+license="MIT"
+#depends="ca-certificates gnutls libidn2 zlib"
+depends="ca-certificates"
+depends_dev="gnutls-dev libidn2-dev zlib-dev"
+makedepends="$depends_dev autoconf automake libtool perl pkgconf python3"
+subpackages="$pkgname-dbg $pkgname-dev $pkgname-doc libgnurl"
+source="https://ftp.gnu.org/gnu/gnunet/gnurl-$pkgver.tar.gz"
+
+prepare() {
+	default_prepare
+	autoreconf -vfi
+}
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
+		--prefix=/usr \
+		--disable-static \
+		--enable-ipv6 \
+		--with-gnutls \
+		--with-libidn2 \
+		--without-libpsl \
+		--without-libssh2 \
+		--without-libmetalink \
+		--without-winidn \
+		--without-librtmp \
+		--without-nghttp2 \
+		--without-nss \
+		--without-cyassl \
+		--without-polarssl \
+		--without-ssl \
+		--without-winssl \
+		--without-darwinssl \
+		--disable-sspi \
+		--disable-ntlm-wb \
+		--disable-ldap \
+		--disable-rtsp \
+		--disable-dict \
+		--disable-telnet \
+		--disable-tftp \
+		--disable-pop3 \
+		--disable-imap \
+		--disable-smtp \
+		--disable-gopher \
+		--disable-file \
+		--disable-ftp \
+		--disable-smb \
+		--disable-ares
+	make
+}
+
+check() {
+	make -C tests nonflaky-test
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+libgnurl() {
+	pkgdesc="curl library with only HTTP/HTTPS support and GnuTLS"
+
+	mkdir -p "$subpkgdir"/usr
+	mv "$pkgdir"/usr/lib "$subpkgdir"/usr
+}
+
+
+sha512sums="ab7305433b204ce68d139898efa1a74351a73c5e5bde121bb5ce1aa76f31cd07b699c18988a78f756262f9d7566b323651012ed0790bce15ed3e77aeba2c6dd9  gnurl-7.66.0.tar.gz"

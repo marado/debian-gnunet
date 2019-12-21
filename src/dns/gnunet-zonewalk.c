@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/dns/gnunet-zoneimport.c
@@ -159,8 +159,9 @@ process_record (struct Request *req,
              inet_ntop (AF_INET,
                         rec->data.raw.data,
                         buf,
-                        sizeof (buf)));
+                        sizeof(buf)));
     break;
+
   case GNUNET_DNSPARSER_TYPE_AAAA:
     fprintf (stdout,
              "%s AAAA %s\n",
@@ -168,20 +169,23 @@ process_record (struct Request *req,
              inet_ntop (AF_INET6,
                         rec->data.raw.data,
                         buf,
-                        sizeof (buf)));
+                        sizeof(buf)));
     break;
+
   case GNUNET_DNSPARSER_TYPE_NS:
     fprintf (stdout,
              "%s NS %s\n",
              req->hostname,
              rec->data.hostname);
     break;
+
   case GNUNET_DNSPARSER_TYPE_CNAME:
     fprintf (stdout,
              "%s CNAME %s\n",
              req->hostname,
              rec->data.hostname);
     break;
+
   case GNUNET_DNSPARSER_TYPE_MX:
     fprintf (stdout,
              "%s MX %u %s\n",
@@ -189,6 +193,7 @@ process_record (struct Request *req,
              (unsigned int) rec->data.mx->preference,
              rec->data.mx->mxhost);
     break;
+
   case GNUNET_DNSPARSER_TYPE_SOA:
     fprintf (stdout,
              "%s SOA %s %s %u %u %u %u %u\n",
@@ -201,6 +206,7 @@ process_record (struct Request *req,
              (unsigned int) rec->data.soa->expire,
              (unsigned int) rec->data.soa->minimum_ttl);
     break;
+
   case GNUNET_DNSPARSER_TYPE_SRV:
     fprintf (stdout,
              "%s SRV %s %u %u %u\n",
@@ -210,12 +216,14 @@ process_record (struct Request *req,
              rec->data.srv->weight,
              rec->data.srv->port);
     break;
+
   case GNUNET_DNSPARSER_TYPE_PTR:
     fprintf (stdout,
              "%s PTR %s\n",
              req->hostname,
              rec->data.hostname);
     break;
+
   case GNUNET_DNSPARSER_TYPE_TXT:
     fprintf (stdout,
              "%s TXT %.*s\n",
@@ -223,6 +231,7 @@ process_record (struct Request *req,
              (int) rec->data.raw.data_len,
              (char *) rec->data.raw.data);
     break;
+
   case GNUNET_DNSPARSER_TYPE_DNAME:
     fprintf (stdout,
              "%s DNAME %s\n",
@@ -230,7 +239,7 @@ process_record (struct Request *req,
              rec->data.hostname);
     break;
 
-    /* obscure records */
+  /* obscure records */
   case GNUNET_DNSPARSER_TYPE_AFSDB:
   case GNUNET_DNSPARSER_TYPE_NAPTR:
   case GNUNET_DNSPARSER_TYPE_APL:
@@ -243,7 +252,7 @@ process_record (struct Request *req,
   case GNUNET_DNSPARSER_TYPE_URI:
   case GNUNET_DNSPARSER_TYPE_TA:
 
-    /* DNSSEC */
+  /* DNSSEC */
   case GNUNET_DNSPARSER_TYPE_DS:
   case GNUNET_DNSPARSER_TYPE_RRSIG:
   case GNUNET_DNSPARSER_TYPE_NSEC:
@@ -253,14 +262,14 @@ process_record (struct Request *req,
   case GNUNET_DNSPARSER_TYPE_CDS:
   case GNUNET_DNSPARSER_TYPE_CDNSKEY:
 
-    /* DNSSEC payload */
+  /* DNSSEC payload */
   case GNUNET_DNSPARSER_TYPE_CERT:
   case GNUNET_DNSPARSER_TYPE_SSHFP:
   case GNUNET_DNSPARSER_TYPE_IPSECKEY:
   case GNUNET_DNSPARSER_TYPE_TLSA:
   case GNUNET_DNSPARSER_TYPE_OPENPGPKEY:
 
-    /* obsolete records */
+  /* obsolete records */
   case GNUNET_DNSPARSER_TYPE_SIG:
   case GNUNET_DNSPARSER_TYPE_KEY:
   case GNUNET_DNSPARSER_TYPE_KX:
@@ -277,6 +286,7 @@ process_record (struct Request *req,
       GNUNET_free (base32);
     }
     break;
+
   default:
     fprintf (stderr,
              "Unsupported type %u\n",
@@ -353,21 +363,21 @@ process_result (void *cls,
                                       req);
     return;
   }
-  for (unsigned int i=0;i<p->num_answers;i++)
+  for (unsigned int i = 0; i < p->num_answers; i++)
   {
     struct GNUNET_DNSPARSER_Record *rs = &p->answers[i];
 
     process_record (req,
                     rs);
   }
-  for (unsigned int i=0;i<p->num_authority_records;i++)
+  for (unsigned int i = 0; i < p->num_authority_records; i++)
   {
     struct GNUNET_DNSPARSER_Record *rs = &p->authority_records[i];
 
     process_record (req,
                     rs);
   }
-  for (unsigned int i=0;i<p->num_additional_records;i++)
+  for (unsigned int i = 0; i < p->num_additional_records; i++)
   {
     struct GNUNET_DNSPARSER_Record *rs = &p->additional_records[i];
 
@@ -400,9 +410,9 @@ submit_req (struct Request *req)
     return GNUNET_NO; /* already submitted */
   gettimeofday (&now,
                 NULL);
-  if ( ( ( (now.tv_sec - last_request.tv_sec) == 0) &&
-         ( (now.tv_usec - last_request.tv_usec) < TIME_THRESH) ) ||
-       (pending >= THRESH) )
+  if ((((now.tv_sec - last_request.tv_sec) == 0) &&
+       ((now.tv_usec - last_request.tv_usec) < TIME_THRESH)) ||
+      (pending >= THRESH))
     return GNUNET_SYSERR;
   GNUNET_assert (NULL == req->rs);
   req->rs = GNUNET_DNSSTUB_resolve (ctx,
@@ -426,7 +436,7 @@ submit_req (struct Request *req)
  * @param cls NULL
  */
 static void
-process_queue(void *cls)
+process_queue (void *cls)
 {
   (void) cls;
   t = NULL;
@@ -439,8 +449,8 @@ process_queue(void *cls)
   }
   if (NULL != req_head)
     t = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MILLISECONDS,
-                                  &process_queue,
-                                  NULL);
+                                      &process_queue,
+                                      NULL);
   else
     GNUNET_SCHEDULER_shutdown ();
 }
@@ -512,19 +522,19 @@ queue (const char *hostname)
 
   memset (&p,
           0,
-          sizeof (p));
+          sizeof(p));
   p.num_queries = 1;
   p.queries = &q;
   p.id = (uint16_t) GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_NONCE,
                                               UINT16_MAX);
   ret = GNUNET_DNSPARSER_pack (&p,
-			       UINT16_MAX,
-			       &raw,
-			       &raw_size);
+                               UINT16_MAX,
+                               &raw,
+                               &raw_size);
   if (GNUNET_OK != ret)
   {
     if (GNUNET_NO == ret)
-      GNUNET_free (raw); 
+      GNUNET_free (raw);
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Failed to pack query for hostname `%s'\n",
                 hostname);
@@ -580,11 +590,11 @@ main (int argc,
 
   while (NULL !=
          fgets (hn,
-                sizeof (hn),
+                sizeof(hn),
                 stdin))
   {
-    if (strlen(hn) > 0)
-      hn[strlen(hn)-1] = '\0'; /* eat newline */
+    if (strlen (hn) > 0)
+      hn[strlen (hn) - 1] = '\0';  /* eat newline */
     queue (hn);
   }
   GNUNET_SCHEDULER_run (&run,

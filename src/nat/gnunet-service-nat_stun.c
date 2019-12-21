@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * This code provides some support for doing STUN transactions.  We
  * receive the simplest possible packet as the STUN server and try
@@ -40,11 +40,11 @@
 #include "gnunet_util_lib.h"
 #include "nat_stun.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "stun", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "stun", __VA_ARGS__)
 
 
 /**
- * Context for #stun_get_mapped(). 
+ * Context for #stun_get_mapped().
  * Used to store state across processing attributes.
  */
 struct StunState
@@ -67,7 +67,7 @@ struct StunState
 static int
 stun_get_mapped (struct StunState *st,
                  const struct stun_attr *attr,
-		 uint32_t magic,
+                 uint32_t magic,
                  struct sockaddr_in *arg)
 {
   const struct stun_addr *returned_addr;
@@ -77,29 +77,32 @@ stun_get_mapped (struct StunState *st,
   switch (type)
   {
   case STUN_MAPPED_ADDRESS:
-    if ( (st->attr == STUN_XOR_MAPPED_ADDRESS) ||
-	 (st->attr == STUN_MS_XOR_MAPPED_ADDRESS) )
+    if ((st->attr == STUN_XOR_MAPPED_ADDRESS) ||
+        (st->attr == STUN_MS_XOR_MAPPED_ADDRESS))
       return GNUNET_NO;
     magic = 0;
     break;
+
   case STUN_MS_XOR_MAPPED_ADDRESS:
     if (st->attr == STUN_XOR_MAPPED_ADDRESS)
       return GNUNET_NO;
     break;
+
   case STUN_XOR_MAPPED_ADDRESS:
     break;
+
   default:
     return GNUNET_NO;
-  }  
-  
-  if (ntohs (attr->len) < sizeof (struct stun_addr))
+  }
+
+  if (ntohs (attr->len) < sizeof(struct stun_addr))
     return GNUNET_NO;
-  returned_addr = (const struct stun_addr *)(attr + 1);
+  returned_addr = (const struct stun_addr *) (attr + 1);
   if (AF_INET != returned_addr->family)
     return GNUNET_NO;
   st->attr = type;
   sa->sin_family = AF_INET;
-  sa->sin_port = returned_addr->port ^ htons (ntohl(magic) >> 16);
+  sa->sin_port = returned_addr->port ^ htons (ntohl (magic) >> 16);
   sa->sin_addr.s_addr = returned_addr->addr ^ magic;
   return GNUNET_OK;
 }
@@ -120,8 +123,8 @@ stun_get_mapped (struct StunState *st,
  */
 int
 GNUNET_NAT_stun_handle_packet_ (const void *data,
-				size_t len,
-				struct sockaddr_in *arg)
+                                size_t len,
+                                struct sockaddr_in *arg)
 {
   const struct stun_header *hdr;
   const struct stun_attr *attr;
@@ -174,18 +177,18 @@ GNUNET_NAT_stun_handle_packet_ (const void *data,
 
   while (len > 0)
   {
-    if (len < sizeof (struct stun_attr))
+    if (len < sizeof(struct stun_attr))
     {
       LOG (GNUNET_ERROR_TYPE_INFO,
            "Attribute too short (got %d, expecting %d)\n",
            (int) len,
-           (int) sizeof (struct stun_attr));
+           (int) sizeof(struct stun_attr));
       break;
     }
     attr = (const struct stun_attr *) data;
 
     /* compute total attribute length */
-    advertised_message_size = ntohs (attr->len) + sizeof (struct stun_attr);
+    advertised_message_size = ntohs (attr->len) + sizeof(struct stun_attr);
 
     /* Check if we still have space in our buffer */
     if (advertised_message_size > len)
@@ -197,15 +200,16 @@ GNUNET_NAT_stun_handle_packet_ (const void *data,
       break;
     }
     if (GNUNET_OK ==
-	stun_get_mapped (&st,
-			 attr,
-			 hdr->magic,
-			 arg))
+        stun_get_mapped (&st,
+                         attr,
+                         hdr->magic,
+                         arg))
       ret = GNUNET_OK;
     data += advertised_message_size;
     len -= advertised_message_size;
   }
   return ret;
 }
+
 
 /* end of gnunet-service-nat_stun.c */

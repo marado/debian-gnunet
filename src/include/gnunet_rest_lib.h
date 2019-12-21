@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@
 #include "gnunet_util_lib.h"
 #include <microhttpd.h>
 
-#define GNUNET_REST_HANDLER_END {NULL, NULL, NULL}
+#define GNUNET_REST_HANDLER_END { NULL, NULL, NULL }
 
 struct GNUNET_REST_RequestHandle
 {
@@ -72,7 +72,7 @@ struct GNUNET_REST_RequestHandle
 struct GNUNET_REST_RequestHandlerError
 {
   int error_code;
-  char* error_text;
+  char*error_text;
 };
 
 struct GNUNET_REST_RequestHandler
@@ -93,7 +93,6 @@ struct GNUNET_REST_RequestHandler
   void (*proc) (struct GNUNET_REST_RequestHandle *handle,
                 const char *url,
                 void *cls);
-
 };
 
 
@@ -124,7 +123,7 @@ GNUNET_REST_namespace_match (const char *url, const char *namespace);
  * @param data result
  * @return MHD response
  */
- struct MHD_Response*
+struct MHD_Response*
 GNUNET_REST_create_response (const char *data);
 
 

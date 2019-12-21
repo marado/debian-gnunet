@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_program.c
  * @brief tests for program.c
@@ -65,42 +65,42 @@ main (int argc, char *argv[])
   };
   struct GNUNET_GETOPT_CommandLineOption options1[] = {
     GNUNET_GETOPT_option_flag ('n',
-                                  "name",
-                                  "description",
-                                  &setme1),
+                               "name",
+                               "description",
+                               &setme1),
     GNUNET_GETOPT_OPTION_END
   };
   struct GNUNET_GETOPT_CommandLineOption options2[] = {
     GNUNET_GETOPT_option_flag ('n',
-                                  "name",
-                                  "description",
-                                  &setme1),
+                               "name",
+                               "description",
+                               &setme1),
     GNUNET_GETOPT_option_flag ('N',
-                                  "number",
-                                  "description",
-                                  &setme2),
+                               "number",
+                               "description",
+                               &setme2),
     GNUNET_GETOPT_OPTION_END
   };
   struct GNUNET_GETOPT_CommandLineOption options3[] = {
     GNUNET_GETOPT_option_flag ('N',
-                                  "number",
-                                  "description",
-                                  &setme1),
+                               "number",
+                               "description",
+                               &setme1),
     GNUNET_GETOPT_option_flag ('n',
-                                  "name",
-                                  "description",
-                                  &setme2),
+                               "name",
+                               "description",
+                               &setme2),
     GNUNET_GETOPT_OPTION_END
   };
   struct GNUNET_GETOPT_CommandLineOption options4[] = {
     GNUNET_GETOPT_option_flag ('n',
-                                  "name",
-                                  "description",
-                                  &setme1),
+                               "name",
+                               "description",
+                               &setme1),
     GNUNET_GETOPT_option_flag ('n',
-                                  "name",
-                                  "description",
-                                  &setme2),
+                               "name",
+                               "description",
+                               &setme2),
     GNUNET_GETOPT_OPTION_END
   };
 
@@ -133,5 +133,6 @@ main (int argc, char *argv[])
 
   return ok;
 }
+
 
 /* end of test_program.c */

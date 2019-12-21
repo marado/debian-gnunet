@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file src/tun/regex.c
  * @brief functions to convert IP networks to regexes
@@ -98,6 +98,7 @@ nibble_to_regex (uint8_t value,
   {
   case 0:
     return GNUNET_strdup (DOT);
+
   case 8:
     GNUNET_asprintf (&ret,
                      "(%X|%X|%X|%X|%X|%X|%X|%X)",
@@ -110,6 +111,7 @@ nibble_to_regex (uint8_t value,
                      value + 6,
                      value + 7);
     return ret;
+
   case 12:
     GNUNET_asprintf (&ret,
                      "(%X|%X|%X|%X)",
@@ -118,20 +120,23 @@ nibble_to_regex (uint8_t value,
                      value + 2,
                      value + 3);
     return ret;
+
   case 14:
     GNUNET_asprintf (&ret,
                      "(%X|%X)",
                      value,
                      value + 1);
     return ret;
+
   case 15:
     GNUNET_asprintf (&ret,
                      "%X",
                      value);
     return ret;
+
   default:
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Bad mask: %d\n"),
+                _ ("Bad mask: %d\n"),
                 mask);
     GNUNET_break (0);
     return NULL;
@@ -162,10 +167,10 @@ num_to_regex (uint16_t value,
   c = nibble_to_regex (v[1] >> 4, m[1] >> 4);
   d = nibble_to_regex (v[1] & 15, m[1] & 15);
   ret = NULL;
-  if ( (NULL != a) &&
-       (NULL != b) &&
-       (NULL != c) &&
-       (NULL != d) )
+  if ((NULL != a) &&
+      (NULL != b) &&
+      (NULL != c) &&
+      (NULL != d))
     GNUNET_asprintf (&ret,
                      "%s%s%s%s",
                      a, b, c, d);
@@ -193,21 +198,24 @@ needs_parens (const char *arg)
 
   op = 0;
   len = strlen (arg);
-  for (off=0;off<len;off++)
+  for (off = 0; off < len; off++)
   {
     switch (arg[off])
     {
     case '(':
       op++;
       break;
+
     case ')':
       GNUNET_assert (op > 0);
       op--;
       break;
+
     case '|':
       if (0 == op)
         return GNUNET_YES;
       break;
+
     default:
       break;
     }
@@ -237,10 +245,10 @@ compute_policy (unsigned int start,
   char middlel[33]; /* 16 * 2 + 0-terminator */
   char middleh[33]; /* 16 * 2 + 0-terminator */
   char after[36]; /* 16 * 2 + 3 dots + 0-terminator */
-  char beforep[36+2]; /* 16 * 2 + 3 dots + 0-terminator + ()*/
-  char middlehp[33+2]; /* 16 * 2 + 0-terminator + () */
-  char middlelp[33+2]; /* 16 * 2 + 0-terminator + () */
-  char afterp[36+2]; /* 16 * 2 + 3 dots + 0-terminator + () */
+  char beforep[36 + 2]; /* 16 * 2 + 3 dots + 0-terminator + ()*/
+  char middlehp[33 + 2]; /* 16 * 2 + 0-terminator + () */
+  char middlelp[33 + 2]; /* 16 * 2 + 0-terminator + () */
+  char afterp[36 + 2]; /* 16 * 2 + 3 dots + 0-terminator + () */
   char dots[5 * strlen (DOT)];
   char buf[3];
   char *middle;
@@ -263,10 +271,10 @@ compute_policy (unsigned int start,
   middlel[0] = '\0';
   middleh[0] = '\0';
   after[0] = '\0';
-  for (i=start;i<=end;i+=step)
+  for (i = start; i <= end; i += step)
   {
     GNUNET_snprintf (buf,
-                     sizeof (buf),
+                     sizeof(buf),
                      "%X|",
                      (i - start) / step);
     if (i / step < start_port / step)
@@ -279,43 +287,43 @@ compute_policy (unsigned int start,
       strcat (middleh, buf);
   }
   if (strlen (before) > 0)
-    before[strlen (before)-1] = '\0';
+    before[strlen (before) - 1] = '\0';
   if (strlen (middlel) > 0)
-    middlel[strlen (middlel)-1] = '\0';
+    middlel[strlen (middlel) - 1] = '\0';
   if (strlen (middleh) > 0)
-    middleh[strlen (middleh)-1] = '\0';
+    middleh[strlen (middleh) - 1] = '\0';
   if (strlen (after) > 0)
-    after[strlen (after)-1] = '\0';
+    after[strlen (after) - 1] = '\0';
   if (needs_parens (before))
     GNUNET_snprintf (beforep,
-                     sizeof (beforep),
+                     sizeof(beforep),
                      "(%s)",
                      before);
   else
     strcpy (beforep, before);
   if (needs_parens (middlel))
     GNUNET_snprintf (middlelp,
-                     sizeof (middlelp),
+                     sizeof(middlelp),
                      "(%s)",
                      middlel);
   else
     strcpy (middlelp, middlel);
   if (needs_parens (middleh))
     GNUNET_snprintf (middlehp,
-                     sizeof (middlehp),
+                     sizeof(middlehp),
                      "(%s)",
                      middleh);
   else
     strcpy (middlehp, middleh);
   if (needs_parens (after))
     GNUNET_snprintf (afterp,
-                     sizeof (afterp),
+                     sizeof(afterp),
                      "(%s)",
                      after);
   else
     strcpy (afterp, after);
   dots[0] = '\0';
-  for (xstep=step/16;xstep>0;xstep/=16)
+  for (xstep = step / 16; xstep > 0; xstep /= 16)
     strcat (dots, DOT);
   if (step >= 16)
   {
@@ -356,10 +364,10 @@ compute_policy (unsigned int start,
   else
     rechp = GNUNET_strdup (rech);
 
-  if ( (strlen (middleh) > 0) &&
-       (strlen (rech) > 0) &&
-       (strlen (middlel) > 0) &&
-       (strlen (recl) > 0) )
+  if ((strlen (middleh) > 0) &&
+      (strlen (rech) > 0) &&
+      (strlen (middlel) > 0) &&
+      (strlen (recl) > 0))
   {
     GNUNET_asprintf (&middle,
                      "%s%s|%s%s",
@@ -368,16 +376,16 @@ compute_policy (unsigned int start,
                      middleh,
                      rechp);
   }
-  else if ( (strlen (middleh) > 0) &&
-            (strlen (rech) > 0) )
+  else if ((strlen (middleh) > 0) &&
+           (strlen (rech) > 0))
   {
     GNUNET_asprintf (&middle,
                      "%s%s",
                      middleh,
                      rechp);
   }
-  else if ( (strlen (middlel) > 0) &&
-            (strlen (recl) > 0) )
+  else if ((strlen (middlel) > 0) &&
+           (strlen (recl) > 0))
   {
     GNUNET_asprintf (&middle,
                      "%s%s",
@@ -388,8 +396,8 @@ compute_policy (unsigned int start,
   {
     middle = GNUNET_strdup ("");
   }
-  if ( (strlen(before) > 0) &&
-       (strlen(after) > 0) )
+  if ((strlen (before) > 0) &&
+      (strlen (after) > 0))
   {
     if (strlen (dots) > 0)
     {
@@ -517,13 +525,13 @@ port_to_regex (const struct GNUNET_STRINGS_PortPolicy *pp)
   unsigned int i;
   unsigned int cnt;
 
-  if ( (0 == pp->start_port) ||
-       ( (1 == pp->start_port) &&
-         (0xFFFF == pp->end_port) &&
-         (GNUNET_NO == pp->negate_portrange)) )
+  if ((0 == pp->start_port) ||
+      ((1 == pp->start_port) &&
+       (0xFFFF == pp->end_port) &&
+       (GNUNET_NO == pp->negate_portrange)))
     return GNUNET_strdup (DOT DOT DOT DOT);
-  if ( (pp->start_port == pp->end_port) &&
-       (GNUNET_NO == pp->negate_portrange))
+  if ((pp->start_port == pp->end_port) &&
+      (GNUNET_NO == pp->negate_portrange))
   {
     GNUNET_asprintf (&ret,
                      "%04X",
@@ -542,9 +550,9 @@ port_to_regex (const struct GNUNET_STRINGS_PortPolicy *pp)
     cnt = pp->end_port - pp->start_port + 1;
     reg = GNUNET_malloc (cnt * 5 + 1);
     pos = reg;
-    for (i=1;i<=0xFFFF;i++)
+    for (i = 1; i <= 0xFFFF; i++)
     {
-      if ( (i >= pp->start_port) && (i <= pp->end_port) )
+      if ((i >= pp->start_port) && (i <= pp->end_port))
       {
         if (pos == reg)
         {
@@ -594,7 +602,7 @@ address_to_regex (const void *addr,
 
   ret = NULL;
   GNUNET_assert (1 != (len % 2));
-  for (i=0;i<len / 2;i++)
+  for (i = 0; i < len / 2; i++)
   {
     reg = num_to_regex (a[i], m[i]);
     if (NULL == reg)
@@ -635,7 +643,7 @@ ipv4_to_regex (const struct GNUNET_STRINGS_IPv4NetworkPolicy *v4)
 
   reg = address_to_regex (&v4->network,
                           &v4->netmask,
-                          sizeof (struct in_addr));
+                          sizeof(struct in_addr));
   if (NULL == reg)
     return NULL;
   pp = port_to_regex (&v4->pp);
@@ -668,7 +676,7 @@ ipv6_to_regex (const struct GNUNET_STRINGS_IPv6NetworkPolicy *v6)
 
   reg = address_to_regex (&v6->network,
                           &v6->netmask,
-                          sizeof (struct in6_addr));
+                          sizeof(struct in6_addr));
   if (NULL == reg)
     return NULL;
   pp = port_to_regex (&v6->pp);
@@ -708,7 +716,7 @@ GNUNET_TUN_ipv4policy2regex (const char *policy)
   if (NULL == np)
     return NULL;
   reg = NULL;
-  for (i=0; (0 == i) || (0 != np[i].network.s_addr); i++)
+  for (i = 0; (0 == i) || (0 != np[i].network.s_addr); i++)
   {
     line = ipv4_to_regex (&np[i]);
     if (NULL == line)
@@ -761,8 +769,10 @@ GNUNET_TUN_ipv6policy2regex (const char *policy)
   if (NULL == np)
     return NULL;
   reg = NULL;
-  memset (&zero, 0, sizeof (struct in6_addr));
-  for (i=0; (0 == i) || (0 != memcmp (&zero, &np[i].network, sizeof (struct in6_addr))); i++)
+  memset (&zero, 0, sizeof(struct in6_addr));
+  for (i = 0; (0 == i) || (0 != memcmp (&zero, &np[i].network, sizeof(struct
+                                                                      in6_addr)));
+       i++)
   {
     line = ipv6_to_regex (&np[i]);
     if (NULL == line)
@@ -784,7 +794,7 @@ GNUNET_TUN_ipv6policy2regex (const char *policy)
       GNUNET_free (line);
       reg = tmp;
     }
-    if (0 == memcmp (&zero, &np[i].network, sizeof (struct in6_addr)))
+    if (0 == memcmp (&zero, &np[i].network, sizeof(struct in6_addr)))
       break;
   }
   GNUNET_free (np);
@@ -829,7 +839,7 @@ GNUNET_TUN_compute_service_cadet_port (const struct GNUNET_HashCode *desc,
   *cadet_port = *desc;
   GNUNET_memcpy (cadet_port,
                  &be_port,
-                 sizeof (uint16_t));
+                 sizeof(uint16_t));
 }
 
 

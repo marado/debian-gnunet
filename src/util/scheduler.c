@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -28,9 +28,11 @@
 // DEBUG
 #include <inttypes.h>
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-scheduler", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-scheduler", __VA_ARGS__)
 
-#define LOG_STRERROR(kind,syscall) GNUNET_log_from_strerror (kind, "util-scheduler", syscall)
+#define LOG_STRERROR(kind, syscall) GNUNET_log_from_strerror (kind, \
+                                                              "util-scheduler", \
+                                                              syscall)
 
 
 #if HAVE_EXECINFO_H
@@ -109,7 +111,6 @@ struct GNUNET_SCHEDULER_Handle
   struct GNUNET_SIGNAL_Context *shc_gterm;
 #endif
 
-#ifndef MINGW
   /**
    * context of the SIGQUIT handler
    */
@@ -124,7 +125,6 @@ struct GNUNET_SCHEDULER_Handle
    * context of hte SIGPIPE handler
    */
   struct GNUNET_SIGNAL_Context *shc_pipe;
-#endif
 };
 
 
@@ -245,7 +245,6 @@ struct GNUNET_SCHEDULER_Task
    * Asynchronous scope of the task that scheduled this scope,
    */
   struct GNUNET_AsyncScopeSave scope;
-
 };
 
 
@@ -363,12 +362,14 @@ static struct GNUNET_SCHEDULER_Task *active_task;
 /**
  * Head of list of tasks ready to run right now, grouped by importance.
  */
-static struct GNUNET_SCHEDULER_Task *ready_head[GNUNET_SCHEDULER_PRIORITY_COUNT];
+static struct
+GNUNET_SCHEDULER_Task *ready_head[GNUNET_SCHEDULER_PRIORITY_COUNT];
 
 /**
  * Tail of list of tasks ready to run right now, grouped by importance.
  */
-static struct GNUNET_SCHEDULER_Task *ready_tail[GNUNET_SCHEDULER_PRIORITY_COUNT];
+static struct
+GNUNET_SCHEDULER_Task *ready_tail[GNUNET_SCHEDULER_PRIORITY_COUNT];
 
 /**
  * Task for installing parent control handlers (it might happen that the
@@ -486,7 +487,8 @@ get_timeout ()
     {
       return now;
     }
-    else if ((pos->timeout.abs_value_us != GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us) &&
+    else if ((pos->timeout.abs_value_us !=
+              GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us) &&
              (timeout.abs_value_us > pos->timeout.abs_value_us))
     {
       timeout = pos->timeout;
@@ -559,10 +561,10 @@ dump_backtrace (struct GNUNET_SCHEDULER_Task *t)
 #if EXECINFO
   for (unsigned int i = 0; i < t->num_backtrace_strings; i++)
     LOG (GNUNET_ERROR_TYPE_WARNING,
-	 "Task %p trace %u: %s\n",
-	 t,
-	 i,
-	 t->backtrace_strings[i]);
+         "Task %p trace %u: %s\n",
+         t,
+         i,
+         t->backtrace_strings[i]);
 #else
   (void) t;
 #endif
@@ -591,7 +593,8 @@ destroy_task (struct GNUNET_SCHEDULER_Task *t)
       const struct GNUNET_DISK_FileHandle *fh = t->fds[i].fh;
       if (fd)
       {
-        GNUNET_NETWORK_socket_free_memory_only_ ((struct GNUNET_NETWORK_Handle *) fd);
+        GNUNET_NETWORK_socket_free_memory_only_ ((struct
+                                                  GNUNET_NETWORK_Handle *) fd);
       }
       if (fh)
       {
@@ -626,13 +629,11 @@ static pid_t my_pid;
 /**
  * Signal handler called for SIGPIPE.
  */
-#ifndef MINGW
 static void
 sighandler_pipe ()
 {
   return;
 }
-#endif
 
 
 ///**
@@ -643,14 +644,14 @@ sighandler_pipe ()
 // *
 // * @param ms how many ms to wait
 // */
-//static void
-//short_wait (unsigned int ms)
-//{
+// static void
+// short_wait (unsigned int ms)
+// {
 //  struct GNUNET_TIME_Relative timeout;
 //
 //  timeout = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, ms);
 //  (void) GNUNET_NETWORK_socket_select (NULL, NULL, NULL, timeout);
-//}
+// }
 
 
 /**
@@ -666,8 +667,8 @@ sighandler_shutdown ()
     _exit (1);                   /* we have fork'ed since the signal handler was created,
                                   * ignore the signal, see https://gnunet.org/vfork discussion */
   GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle
-                          (shutdown_pipe_handle, GNUNET_DISK_PIPE_END_WRITE),
-                          &c, sizeof (c));
+                            (shutdown_pipe_handle, GNUNET_DISK_PIPE_END_WRITE),
+                          &c, sizeof(c));
   errno = old_errno;
 }
 
@@ -718,9 +719,9 @@ GNUNET_SCHEDULER_run (GNUNET_SCHEDULER_TaskCallback task,
 {
   struct GNUNET_SCHEDULER_Handle *sh;
   struct GNUNET_SCHEDULER_Driver *driver;
-  struct DriverContext context = {.scheduled_head = NULL,
-                                  .scheduled_tail = NULL,
-                                  .timeout = GNUNET_TIME_absolute_get ()};
+  struct DriverContext context = { .scheduled_head = NULL,
+                                   .scheduled_tail = NULL,
+                                   .timeout = GNUNET_TIME_absolute_get () };
 
   driver = GNUNET_SCHEDULER_driver_select ();
   driver->cls = &context;
@@ -824,7 +825,7 @@ init_fd_info (struct GNUNET_SCHEDULER_Task *t,
       GNUNET_assert (NULL != *read_fh);
       fdi->fh = *read_fh;
       fdi->et = GNUNET_SCHEDULER_ET_IN;
-      fdi->sock = (*read_fh)->fd; // FIXME: does not work under WIN32
+      fdi->sock = (*read_fh)->fd;     // FIXME: does not work under WIN32
       t->read_fd = fdi->sock;
       t->write_fd = -1;
     }
@@ -834,7 +835,7 @@ init_fd_info (struct GNUNET_SCHEDULER_Task *t,
       GNUNET_assert (NULL != *write_fh);
       fdi->fh = *write_fh;
       fdi->et = GNUNET_SCHEDULER_ET_OUT;
-      fdi->sock = (*write_fh)->fd; // FIXME: does not work under WIN32
+      fdi->sock = (*write_fh)->fd;     // FIXME: does not work under WIN32
       t->read_fd = -1;
       t->write_fd = fdi->sock;
     }
@@ -867,7 +868,7 @@ init_fd_info (struct GNUNET_SCHEDULER_Task *t,
       fdi->fh = read_fh[i];
       GNUNET_assert (NULL != fdi->fh);
       fdi->et = GNUNET_SCHEDULER_ET_IN;
-      fdi->sock = (read_fh[i])->fd; // FIXME: does not work under WIN32
+      fdi->sock = (read_fh[i])->fd;     // FIXME: does not work under WIN32
       ++fdi;
     }
     for (i = 0; i != write_fh_len; ++i)
@@ -875,7 +876,7 @@ init_fd_info (struct GNUNET_SCHEDULER_Task *t,
       fdi->fh = write_fh[i];
       GNUNET_assert (NULL != fdi->fh);
       fdi->et = GNUNET_SCHEDULER_ET_OUT;
-      fdi->sock = (write_fh[i])->fd; // FIXME: does not work under WIN32
+      fdi->sock = (write_fh[i])->fd;     // FIXME: does not work under WIN32
       ++fdi;
     }
   }
@@ -905,8 +906,8 @@ driver_add_multiple (struct GNUNET_SCHEDULER_Task *t)
   {
     fdi = &t->fds[i];
     success = scheduler_driver->add (scheduler_driver->cls,
-				     t,
-				     fdi) && success;
+                                     t,
+                                     fdi) && success;
     fdi->et = GNUNET_SCHEDULER_ET_NONE;
   }
   if (GNUNET_YES != success)
@@ -938,7 +939,7 @@ shutdown_pipe_cb (void *cls)
                                 GNUNET_DISK_PIPE_END_READ);
   GNUNET_assert (! GNUNET_DISK_handle_invalid (pr));
   /* consume the signal */
-  GNUNET_DISK_file_read (pr, &c, sizeof (c));
+  GNUNET_DISK_file_read (pr, &c, sizeof(c));
   /* mark all active tasks as ready due to shutdown */
   GNUNET_SCHEDULER_shutdown ();
   shutdown_pipe_task =
@@ -1036,8 +1037,8 @@ init_backtrace (struct GNUNET_SCHEDULER_Task *t)
   t->num_backtrace_strings
     = backtrace (backtrace_array, MAX_TRACE_DEPTH);
   t->backtrace_strings =
-      backtrace_symbols (backtrace_array,
-       t->num_backtrace_strings);
+    backtrace_symbols (backtrace_array,
+                       t->num_backtrace_strings);
   dump_backtrace (t);
 #else
   (void) t;
@@ -1056,10 +1057,13 @@ init_backtrace (struct GNUNET_SCHEDULER_Task *t)
  * @param priority priority to use for the task
  */
 void
-GNUNET_SCHEDULER_add_with_reason_and_priority (GNUNET_SCHEDULER_TaskCallback task,
+GNUNET_SCHEDULER_add_with_reason_and_priority (GNUNET_SCHEDULER_TaskCallback
+                                               task,
                                                void *task_cls,
-                                               enum GNUNET_SCHEDULER_Reason reason,
-                                               enum GNUNET_SCHEDULER_Priority priority)
+                                               enum GNUNET_SCHEDULER_Reason
+                                               reason,
+                                               enum GNUNET_SCHEDULER_Priority
+                                               priority)
 {
   struct GNUNET_SCHEDULER_Task *t;
 
@@ -1123,8 +1127,8 @@ GNUNET_SCHEDULER_add_at_with_priority (struct GNUNET_TIME_Absolute at,
   t->lifeness = current_lifeness;
   /* try tail first (optimization in case we are
    * appending to a long list of tasks with timeouts) */
-  if ( (NULL == pending_timeout_head) ||
-       (at.abs_value_us < pending_timeout_head->timeout.abs_value_us) )
+  if ((NULL == pending_timeout_head) ||
+      (at.abs_value_us < pending_timeout_head->timeout.abs_value_us))
   {
     GNUNET_CONTAINER_DLL_insert (pending_timeout_head,
                                  pending_timeout_tail,
@@ -1134,15 +1138,16 @@ GNUNET_SCHEDULER_add_at_with_priority (struct GNUNET_TIME_Absolute at,
   {
     /* first move from heuristic start backwards to before start time */
     prev = pending_timeout_last;
-    while ( (NULL != prev) &&
-            (prev->timeout.abs_value_us > t->timeout.abs_value_us) )
+    while ((NULL != prev) &&
+           (prev->timeout.abs_value_us > t->timeout.abs_value_us))
       prev = prev->prev;
     /* now, move from heuristic start (or head of list) forward to insertion point */
     if (NULL == prev)
       pos = pending_timeout_head;
     else
       pos = prev->next;
-    while ((NULL != pos) && (pos->timeout.abs_value_us <= t->timeout.abs_value_us))
+    while ((NULL != pos) && (pos->timeout.abs_value_us <=
+                             t->timeout.abs_value_us))
     {
       prev = pos;
       pos = pos->next;
@@ -1176,14 +1181,16 @@ GNUNET_SCHEDULER_add_at_with_priority (struct GNUNET_TIME_Absolute at,
  */
 struct GNUNET_SCHEDULER_Task *
 GNUNET_SCHEDULER_add_delayed_with_priority (struct GNUNET_TIME_Relative delay,
-                                            enum GNUNET_SCHEDULER_Priority priority,
+                                            enum GNUNET_SCHEDULER_Priority
+                                            priority,
                                             GNUNET_SCHEDULER_TaskCallback task,
                                             void *task_cls)
 {
-  return GNUNET_SCHEDULER_add_at_with_priority (GNUNET_TIME_relative_to_absolute (delay),
-                                                priority,
-                                                task,
-                                                task_cls);
+  return GNUNET_SCHEDULER_add_at_with_priority (
+    GNUNET_TIME_relative_to_absolute (delay),
+    priority,
+    task,
+    task_cls);
 }
 
 
@@ -1248,9 +1255,9 @@ GNUNET_SCHEDULER_add_delayed (struct GNUNET_TIME_Relative delay,
                               void *task_cls)
 {
   return GNUNET_SCHEDULER_add_delayed_with_priority (delay,
-                 GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-                 task,
-                 task_cls);
+                                                     GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+                                                     task,
+                                                     task_cls);
 }
 
 
@@ -1373,6 +1380,8 @@ check_fd (struct GNUNET_SCHEDULER_Task *t, int raw_fd)
     }
   }
 }
+
+
 #endif
 
 
@@ -1401,7 +1410,6 @@ check_fd (struct GNUNET_SCHEDULER_Task *t, int raw_fd)
  * @return unique task identifier for the job
  *         only valid until @a task is started!
  */
-#ifndef MINGW
 static struct GNUNET_SCHEDULER_Task *
 add_without_sets (struct GNUNET_TIME_Relative delay,
                   enum GNUNET_SCHEDULER_Priority priority,
@@ -1440,7 +1448,8 @@ add_without_sets (struct GNUNET_TIME_Relative delay,
   t->start_time = GNUNET_TIME_absolute_get ();
 #endif
   t->timeout = GNUNET_TIME_relative_to_absolute (delay);
-  t->priority = check_priority ((priority == GNUNET_SCHEDULER_PRIORITY_KEEP) ? current_priority : priority);
+  t->priority = check_priority ((priority == GNUNET_SCHEDULER_PRIORITY_KEEP) ?
+                                current_priority : priority);
   t->lifeness = current_lifeness;
   GNUNET_CONTAINER_DLL_insert (pending_head,
                                pending_tail,
@@ -1451,7 +1460,6 @@ add_without_sets (struct GNUNET_TIME_Relative delay,
   init_backtrace (t);
   return t;
 }
-#endif
 
 
 /**
@@ -1481,8 +1489,8 @@ GNUNET_SCHEDULER_add_read_net (struct GNUNET_TIME_Relative delay,
                                void *task_cls)
 {
   return GNUNET_SCHEDULER_add_read_net_with_priority (delay,
-                  GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-                  rfd, task, task_cls);
+                                                      GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+                                                      rfd, task, task_cls);
 }
 
 
@@ -1510,9 +1518,10 @@ GNUNET_SCHEDULER_add_read_net (struct GNUNET_TIME_Relative delay,
  */
 struct GNUNET_SCHEDULER_Task *
 GNUNET_SCHEDULER_add_read_net_with_priority (struct GNUNET_TIME_Relative delay,
-               enum GNUNET_SCHEDULER_Priority priority,
-               struct GNUNET_NETWORK_Handle *rfd,
-               GNUNET_SCHEDULER_TaskCallback task,
+                                             enum GNUNET_SCHEDULER_Priority
+                                             priority,
+                                             struct GNUNET_NETWORK_Handle *rfd,
+                                             GNUNET_SCHEDULER_TaskCallback task,
                                              void *task_cls)
 {
   return GNUNET_SCHEDULER_add_net_with_priority (delay, priority,
@@ -1557,6 +1566,7 @@ GNUNET_SCHEDULER_add_write_net (struct GNUNET_TIME_Relative delay,
                                                  task, task_cls);
 }
 
+
 /**
  * Schedule a new task to be run with a specified delay or when the
  * specified file descriptor is ready.  The delay can be
@@ -1581,32 +1591,16 @@ GNUNET_SCHEDULER_add_write_net (struct GNUNET_TIME_Relative delay,
  *         only valid until "task" is started!
  */
 struct GNUNET_SCHEDULER_Task *
-GNUNET_SCHEDULER_add_net_with_priority  (struct GNUNET_TIME_Relative delay,
-                                         enum GNUNET_SCHEDULER_Priority priority,
-                                         struct GNUNET_NETWORK_Handle *fd,
-                                         int on_read,
-                                         int on_write,
-                                         GNUNET_SCHEDULER_TaskCallback task,
-                                         void *task_cls)
+GNUNET_SCHEDULER_add_net_with_priority (struct GNUNET_TIME_Relative delay,
+                                        enum GNUNET_SCHEDULER_Priority priority,
+                                        struct GNUNET_NETWORK_Handle *fd,
+                                        int on_read,
+                                        int on_write,
+                                        GNUNET_SCHEDULER_TaskCallback task,
+                                        void *task_cls)
 {
   /* scheduler must be running */
   GNUNET_assert (NULL != scheduler_driver);
-
-#if MINGW
-  struct GNUNET_NETWORK_FDSet *s;
-  struct GNUNET_SCHEDULER_Task * ret;
-
-  GNUNET_assert (NULL != fd);
-  s = GNUNET_NETWORK_fdset_create ();
-  GNUNET_NETWORK_fdset_set (s, fd);
-  ret = GNUNET_SCHEDULER_add_select (
-      priority, delay,
-      on_read  ? s : NULL,
-      on_write ? s : NULL,
-      task, task_cls);
-  GNUNET_NETWORK_fdset_destroy (s);
-  return ret;
-#else
   GNUNET_assert (on_read || on_write);
   GNUNET_assert (GNUNET_NETWORK_get_fd (fd) >= 0);
   return add_without_sets (delay, priority,
@@ -1615,7 +1609,6 @@ GNUNET_SCHEDULER_add_net_with_priority  (struct GNUNET_TIME_Relative delay,
                            NULL,
                            NULL,
                            task, task_cls);
-#endif
 }
 
 
@@ -1642,12 +1635,13 @@ GNUNET_SCHEDULER_add_net_with_priority  (struct GNUNET_TIME_Relative delay,
 struct GNUNET_SCHEDULER_Task *
 GNUNET_SCHEDULER_add_read_file (struct GNUNET_TIME_Relative delay,
                                 const struct GNUNET_DISK_FileHandle *rfd,
-                                GNUNET_SCHEDULER_TaskCallback task, void *task_cls)
+                                GNUNET_SCHEDULER_TaskCallback task,
+                                void *task_cls)
 {
   return GNUNET_SCHEDULER_add_file_with_priority (
-      delay, GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-      rfd, GNUNET_YES, GNUNET_NO,
-      task, task_cls);
+    delay, GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+    rfd, GNUNET_YES, GNUNET_NO,
+    task, task_cls);
 }
 
 
@@ -1674,12 +1668,13 @@ GNUNET_SCHEDULER_add_read_file (struct GNUNET_TIME_Relative delay,
 struct GNUNET_SCHEDULER_Task *
 GNUNET_SCHEDULER_add_write_file (struct GNUNET_TIME_Relative delay,
                                  const struct GNUNET_DISK_FileHandle *wfd,
-                                 GNUNET_SCHEDULER_TaskCallback task, void *task_cls)
+                                 GNUNET_SCHEDULER_TaskCallback task,
+                                 void *task_cls)
 {
   return GNUNET_SCHEDULER_add_file_with_priority (
-      delay, GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-      wfd, GNUNET_NO, GNUNET_YES,
-      task, task_cls);
+    delay, GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+    wfd, GNUNET_NO, GNUNET_YES,
+    task, task_cls);
 }
 
 
@@ -1708,29 +1703,16 @@ GNUNET_SCHEDULER_add_write_file (struct GNUNET_TIME_Relative delay,
  */
 struct GNUNET_SCHEDULER_Task *
 GNUNET_SCHEDULER_add_file_with_priority (struct GNUNET_TIME_Relative delay,
-                                         enum GNUNET_SCHEDULER_Priority priority,
-                                         const struct GNUNET_DISK_FileHandle *fd,
+                                         enum GNUNET_SCHEDULER_Priority
+                                         priority,
+                                         const struct
+                                         GNUNET_DISK_FileHandle *fd,
                                          int on_read, int on_write,
-                                         GNUNET_SCHEDULER_TaskCallback task, void *task_cls)
+                                         GNUNET_SCHEDULER_TaskCallback task,
+                                         void *task_cls)
 {
   /* scheduler must be running */
   GNUNET_assert (NULL != scheduler_driver);
-
-#if MINGW
-  struct GNUNET_NETWORK_FDSet *s;
-  struct GNUNET_SCHEDULER_Task * ret;
-
-  GNUNET_assert (NULL != fd);
-  s = GNUNET_NETWORK_fdset_create ();
-  GNUNET_NETWORK_fdset_handle_set (s, fd);
-  ret = GNUNET_SCHEDULER_add_select (
-      priority, delay,
-      on_read  ? s : NULL,
-      on_write ? s : NULL,
-      task, task_cls);
-  GNUNET_NETWORK_fdset_destroy (s);
-  return ret;
-#else
   GNUNET_assert (on_read || on_write);
   GNUNET_assert (fd->fd >= 0);
   return add_without_sets (delay, priority,
@@ -1739,7 +1721,6 @@ GNUNET_SCHEDULER_add_file_with_priority (struct GNUNET_TIME_Relative delay,
                            on_read ? fd : NULL,
                            on_write ? fd : NULL,
                            task, task_cls);
-#endif
 }
 
 
@@ -1879,8 +1860,7 @@ GNUNET_SCHEDULER_add_select (enum GNUNET_SCHEDULER_Priority prio,
    * this case gracefully because some libraries such as libmicrohttpd
    * only provide a hint what the maximum FD number in an FD set might be
    * and not the exact FD number (see e.g. gnunet-rest-service.c)
-   */
-  int no_fds_extracted = (0 == read_nhandles_len) &&
+   */int no_fds_extracted = (0 == read_nhandles_len) &&
                          (0 == read_fhandles_len) &&
                          (0 == write_nhandles_len) &&
                          (0 == write_fhandles_len);
@@ -1914,16 +1894,16 @@ GNUNET_SCHEDULER_add_select (enum GNUNET_SCHEDULER_Priority prio,
 #endif
   t->timeout = GNUNET_TIME_relative_to_absolute (delay);
   t->priority =
-      check_priority ((prio ==
-                       GNUNET_SCHEDULER_PRIORITY_KEEP) ? current_priority :
-                      prio);
+    check_priority ((prio ==
+                     GNUNET_SCHEDULER_PRIORITY_KEEP) ? current_priority :
+                    prio);
   t->lifeness = current_lifeness;
   GNUNET_CONTAINER_DLL_insert (pending_head,
                                pending_tail,
                                t);
   driver_add_multiple (t);
   max_priority_added = GNUNET_MAX (max_priority_added,
-           t->priority);
+                                   t->priority);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Adding task %p\n",
        t);
@@ -1950,11 +1930,11 @@ GNUNET_SCHEDULER_task_ready (struct GNUNET_SCHEDULER_Task *task,
   enum GNUNET_SCHEDULER_Reason reason;
 
   reason = task->reason;
-  if ( (0 == (reason & GNUNET_SCHEDULER_REASON_READ_READY)) &&
-       (0 != (GNUNET_SCHEDULER_ET_IN & fdi->et)) )
+  if ((0 == (reason & GNUNET_SCHEDULER_REASON_READ_READY)) &&
+      (0 != (GNUNET_SCHEDULER_ET_IN & fdi->et)))
     reason |= GNUNET_SCHEDULER_REASON_READ_READY;
-  if ( (0 == (reason & GNUNET_SCHEDULER_REASON_WRITE_READY)) &&
-       (0 != (GNUNET_SCHEDULER_ET_OUT & fdi->et)) )
+  if ((0 == (reason & GNUNET_SCHEDULER_REASON_WRITE_READY)) &&
+      (0 != (GNUNET_SCHEDULER_ET_OUT & fdi->et)))
     reason |= GNUNET_SCHEDULER_REASON_WRITE_READY;
   reason |= GNUNET_SCHEDULER_REASON_PREREQ_DONE;
   task->reason = reason;
@@ -2041,13 +2021,12 @@ GNUNET_SCHEDULER_do_work (struct GNUNET_SCHEDULER_Handle *sh)
        * - the system time was changed while the driver was waiting for
        *   the timeout
        * - an external event loop called GNUnet API functions outside of
-       *   the callbacks called in GNUNET_SCHEDULER_do_work and thus 
+       *   the callbacks called in GNUNET_SCHEDULER_do_work and thus
        *   wasn't notified about the new timeout
        *
        * It might also mean we are busy-waiting because of a programming
        * error in the external event loop.
-       */
-      LOG (GNUNET_ERROR_TYPE_DEBUG,
+       */LOG (GNUNET_ERROR_TYPE_DEBUG,
            "GNUNET_SCHEDULER_do_work did not find any ready "
            "tasks and timeout has not been reached yet.\n");
     }
@@ -2080,8 +2059,8 @@ GNUNET_SCHEDULER_do_work (struct GNUNET_SCHEDULER_Handle *sh)
     while (NULL != (pos = ready_head[p]))
     {
       GNUNET_CONTAINER_DLL_remove (ready_head[p],
-           ready_tail[p],
-           pos);
+                                   ready_tail[p],
+                                   pos);
       ready_count--;
       current_priority = pos->priority;
       current_lifeness = pos->lifeness;
@@ -2093,8 +2072,9 @@ GNUNET_SCHEDULER_do_work (struct GNUNET_SCHEDULER_Handle *sh)
         LOG (GNUNET_ERROR_TYPE_DEBUG,
              "Task %p took %s to be scheduled\n",
              pos,
-             GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (pos->start_time),
-                                                     GNUNET_YES));
+             GNUNET_STRINGS_relative_time_to_string (
+               GNUNET_TIME_absolute_get_duration (pos->start_time),
+               GNUNET_YES));
       }
 #endif
       tc.reason = pos->reason;
@@ -2138,7 +2118,7 @@ GNUNET_SCHEDULER_do_work (struct GNUNET_SCHEDULER_Handle *sh)
         if (GNUNET_OK != del_result)
         {
           LOG (GNUNET_ERROR_TYPE_ERROR,
-             "driver could not delete task %p\n", pos);
+               "driver could not delete task %p\n", pos);
           GNUNET_assert (0);
         }
       }
@@ -2223,14 +2203,12 @@ GNUNET_SCHEDULER_driver_init (const struct GNUNET_SCHEDULER_Driver *driver)
   sh->shc_gterm = GNUNET_SIGNAL_handler_install (GNUNET_TERM_SIG,
                                                  &sighandler_shutdown);
 #endif
-#ifndef MINGW
   sh->shc_pipe = GNUNET_SIGNAL_handler_install (SIGPIPE,
                                                 &sighandler_pipe);
   sh->shc_quit = GNUNET_SIGNAL_handler_install (SIGQUIT,
                                                 &sighandler_shutdown);
   sh->shc_hup = GNUNET_SIGNAL_handler_install (SIGHUP,
                                                &sighandler_shutdown);
-#endif
 
   /* Setup initial tasks */
   current_priority = GNUNET_SCHEDULER_PRIORITY_DEFAULT;
@@ -2287,11 +2265,9 @@ GNUNET_SCHEDULER_driver_done (struct GNUNET_SCHEDULER_Handle *sh)
 #if (SIGTERM != GNUNET_TERM_SIG)
   GNUNET_SIGNAL_handler_uninstall (sh->shc_gterm);
 #endif
-#ifndef MINGW
   GNUNET_SIGNAL_handler_uninstall (sh->shc_pipe);
   GNUNET_SIGNAL_handler_uninstall (sh->shc_quit);
   GNUNET_SIGNAL_handler_uninstall (sh->shc_hup);
-#endif
   GNUNET_DISK_pipe_close (shutdown_pipe_handle);
   shutdown_pipe_handle = NULL;
   scheduler_driver = NULL;
@@ -2310,8 +2286,9 @@ select_loop (struct GNUNET_SCHEDULER_Handle *sh,
   GNUNET_assert (NULL != context);
   rs = GNUNET_NETWORK_fdset_create ();
   ws = GNUNET_NETWORK_fdset_create ();
-  while ( (NULL != context->scheduled_head) ||
-          (GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us != context->timeout.abs_value_us) )
+  while ((NULL != context->scheduled_head) ||
+         (GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us !=
+          context->timeout.abs_value_us))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "select timeout = %s\n",
@@ -2357,12 +2334,11 @@ select_loop (struct GNUNET_SCHEDULER_Handle *sh,
 
       LOG_STRERROR (GNUNET_ERROR_TYPE_ERROR,
                     "select");
-#ifndef MINGW
 #if USE_LSOF
       char lsof[512];
 
       snprintf (lsof,
-                sizeof (lsof),
+                sizeof(lsof),
                 "lsof -p %d",
                 getpid ());
       (void) close (1);
@@ -2370,7 +2346,6 @@ select_loop (struct GNUNET_SCHEDULER_Handle *sh,
       if (0 != system (lsof))
         LOG_STRERROR (GNUNET_ERROR_TYPE_WARNING,
                       "system");
-#endif
 #endif
 #if DEBUG_FDS
       for (struct Scheduled *s = context->scheduled_head;
@@ -2380,8 +2355,8 @@ select_loop (struct GNUNET_SCHEDULER_Handle *sh,
         int flags = fcntl (s->fdi->sock,
                            F_GETFD);
 
-        if ( (flags == -1) &&
-             (EBADF == errno) )
+        if ((flags == -1) &&
+            (EBADF == errno))
         {
           LOG (GNUNET_ERROR_TYPE_ERROR,
                "Got invalid file descriptor %d!\n",
@@ -2405,18 +2380,18 @@ select_loop (struct GNUNET_SCHEDULER_Handle *sh,
       {
         int is_ready = GNUNET_NO;
 
-        if (0 != (GNUNET_SCHEDULER_ET_IN & pos->et) &&
-            GNUNET_YES ==
-            GNUNET_NETWORK_fdset_test_native (rs,
-                                              pos->fdi->sock))
+        if ((0 != (GNUNET_SCHEDULER_ET_IN & pos->et)) &&
+            (GNUNET_YES ==
+             GNUNET_NETWORK_fdset_test_native (rs,
+                                               pos->fdi->sock)) )
         {
           pos->fdi->et |= GNUNET_SCHEDULER_ET_IN;
           is_ready = GNUNET_YES;
         }
-        if (0 != (GNUNET_SCHEDULER_ET_OUT & pos->et) &&
-            GNUNET_YES ==
-            GNUNET_NETWORK_fdset_test_native (ws,
-                                              pos->fdi->sock))
+        if ((0 != (GNUNET_SCHEDULER_ET_OUT & pos->et)) &&
+            (GNUNET_YES ==
+             GNUNET_NETWORK_fdset_test_native (ws,
+                                               pos->fdi->sock)) )
         {
           pos->fdi->et |= GNUNET_SCHEDULER_ET_OUT;
           is_ready = GNUNET_YES;
@@ -2446,13 +2421,14 @@ select_add (void *cls,
             struct GNUNET_SCHEDULER_FdInfo *fdi)
 {
   struct DriverContext *context = cls;
+
   GNUNET_assert (NULL != context);
   GNUNET_assert (NULL != task);
   GNUNET_assert (NULL != fdi);
   GNUNET_assert (0 != (GNUNET_SCHEDULER_ET_IN & fdi->et) ||
                  0 != (GNUNET_SCHEDULER_ET_OUT & fdi->et));
 
-  if (!((NULL != fdi->fd) ^ (NULL != fdi->fh)) || (fdi->sock < 0))
+  if (! ((NULL != fdi->fd) ^ (NULL != fdi->fh)) || (fdi->sock < 0))
   {
     /* exactly one out of {fd, hf} must be != NULL and the OS handle must be valid */
     return GNUNET_SYSERR;
@@ -2520,6 +2496,7 @@ struct GNUNET_SCHEDULER_Driver *
 GNUNET_SCHEDULER_driver_select ()
 {
   struct GNUNET_SCHEDULER_Driver *select_driver;
+
   select_driver = GNUNET_new (struct GNUNET_SCHEDULER_Driver);
 
   select_driver->add = &select_add;

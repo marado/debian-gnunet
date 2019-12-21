@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2010-2013 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2013 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -40,52 +40,61 @@ get_preference (struct PreferenceGenerator *pg)
   double pref_value;
 
   /* Calculate the current preference value */
-  switch (pg->type) {
-    case GNUNET_ATS_TEST_TG_CONSTANT:
-      pref_value = pg->base_value;
-      break;
-    case GNUNET_ATS_TEST_TG_LINEAR:
-      time_delta = GNUNET_TIME_absolute_get_duration(pg->time_start);
-      /* Calculate point of time in the current period */
-      time_delta.rel_value_us = time_delta.rel_value_us %
-          pg->duration_period.rel_value_us;
-      delta_value = ((double) time_delta.rel_value_us  /
-          pg->duration_period.rel_value_us) * (pg->max_value - pg->base_value);
-      if ((pg->max_value < pg->base_value) &&
-          ((pg->max_value - pg->base_value) > pg->base_value))
-      {
-        /* This will cause an underflow */
-        GNUNET_break (0);
-      }
-      pref_value = pg->base_value + delta_value;
-      break;
-    case GNUNET_ATS_TEST_TG_RANDOM:
-      delta_value =  (double) GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-          10000 * (pg->max_value - pg->base_value)) / 10000;
-      pref_value = pg->base_value + delta_value;
-      break;
-    case GNUNET_ATS_TEST_TG_SINUS:
-      time_delta = GNUNET_TIME_absolute_get_duration(pg->time_start);
-      /* Calculate point of time in the current period */
-      time_delta.rel_value_us = time_delta.rel_value_us %
-          pg->duration_period.rel_value_us;
-      if ((pg->max_value - pg->base_value) > pg->base_value)
-      {
-        /* This will cause an underflow for second half of sinus period,
-         * will be detected in general when experiments are loaded */
-        GNUNET_break (0);
-      }
-      delta_value = (pg->max_value - pg->base_value) *
-          sin ( (2 * M_PI) / ((double) pg->duration_period.rel_value_us) *
-              time_delta.rel_value_us);
-      pref_value = pg->base_value + delta_value;
-      break;
-    default:
-      pref_value = 0.0;
-      break;
+  switch (pg->type)
+  {
+  case GNUNET_ATS_TEST_TG_CONSTANT:
+    pref_value = pg->base_value;
+    break;
+
+  case GNUNET_ATS_TEST_TG_LINEAR:
+    time_delta = GNUNET_TIME_absolute_get_duration (pg->time_start);
+    /* Calculate point of time in the current period */
+    time_delta.rel_value_us = time_delta.rel_value_us
+                              % pg->duration_period.rel_value_us;
+    delta_value = ((double) time_delta.rel_value_us
+                   / pg->duration_period.rel_value_us) * (pg->max_value
+                                                          - pg->base_value);
+    if ((pg->max_value < pg->base_value) &&
+        ((pg->max_value - pg->base_value) > pg->base_value))
+    {
+      /* This will cause an underflow */
+      GNUNET_break (0);
+    }
+    pref_value = pg->base_value + delta_value;
+    break;
+
+  case GNUNET_ATS_TEST_TG_RANDOM:
+    delta_value = (double) GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                                                     10000 * (pg->max_value
+                                                              - pg->base_value))
+                  / 10000;
+    pref_value = pg->base_value + delta_value;
+    break;
+
+  case GNUNET_ATS_TEST_TG_SINUS:
+    time_delta = GNUNET_TIME_absolute_get_duration (pg->time_start);
+    /* Calculate point of time in the current period */
+    time_delta.rel_value_us = time_delta.rel_value_us
+                              % pg->duration_period.rel_value_us;
+    if ((pg->max_value - pg->base_value) > pg->base_value)
+    {
+      /* This will cause an underflow for second half of sinus period,
+       * will be detected in general when experiments are loaded */
+      GNUNET_break (0);
+    }
+    delta_value = (pg->max_value - pg->base_value)
+                  * sin ((2 * M_PI)
+                         / ((double) pg->duration_period.rel_value_us)
+                         * time_delta.rel_value_us);
+    pref_value = pg->base_value + delta_value;
+    break;
+
+  default:
+    pref_value = 0.0;
+    break;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Current preference value is %f\n",
-      pref_value);
+              pref_value);
   return pref_value;
 }
 
@@ -95,35 +104,38 @@ set_pref_task (void *cls)
 {
   struct BenchmarkPartner *p = cls;
   double pref_value;
+
   p->pg->set_task = NULL;
 
   pref_value = get_preference (p->pg);
 
-  GNUNET_log(GNUNET_ERROR_TYPE_INFO,
-      "Setting preference for master [%u] and slave [%u] for %s to %f\n",
-      p->me->no, p->dest->no,
-      GNUNET_ATS_print_preference_type (p->pg->kind), pref_value);
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+              "Setting preference for master [%u] and slave [%u] for %s to %f\n",
+              p->me->no, p->dest->no,
+              GNUNET_ATS_print_preference_type (p->pg->kind), pref_value);
 
-  GNUNET_ATS_performance_change_preference(p->me->ats_perf_handle,
-                                           &p->dest->id,
-                                           p->pg->kind,
-                                           pref_value,
-                                           GNUNET_ATS_PREFERENCE_END);
+  GNUNET_ATS_performance_change_preference (p->me->ats_perf_handle,
+                                            &p->dest->id,
+                                            p->pg->kind,
+                                            pref_value,
+                                            GNUNET_ATS_PREFERENCE_END);
 
-  switch (p->pg->kind) {
-    case GNUNET_ATS_PREFERENCE_BANDWIDTH:
-      p->pref_bandwidth = pref_value;
-      break;
-    case GNUNET_ATS_PREFERENCE_LATENCY:
-      p->pref_delay = pref_value;
-      break;
-    default:
-      break;
+  switch (p->pg->kind)
+  {
+  case GNUNET_ATS_PREFERENCE_BANDWIDTH:
+    p->pref_bandwidth = pref_value;
+    break;
+
+  case GNUNET_ATS_PREFERENCE_LATENCY:
+    p->pref_delay = pref_value;
+    break;
+
+  default:
+    break;
   }
 
   p->pg->set_task = GNUNET_SCHEDULER_add_delayed (p->pg->frequency,
-      set_pref_task, p);
-
+                                                  set_pref_task, p);
 }
 
 
@@ -148,7 +160,8 @@ GNUNET_ATS_TEST_generate_preferences_start (struct BenchmarkPeer *src,
                                             unsigned int base_value,
                                             unsigned int value_rate,
                                             struct GNUNET_TIME_Relative period,
-                                            struct GNUNET_TIME_Relative frequency,
+                                            struct GNUNET_TIME_Relative
+                                            frequency,
                                             enum GNUNET_ATS_PreferenceKind kind)
 {
   struct PreferenceGenerator *pg;
@@ -169,39 +182,44 @@ GNUNET_ATS_TEST_generate_preferences_start (struct BenchmarkPeer *src,
   pg->max_value = value_rate;
   pg->duration_period = period;
   pg->frequency = frequency;
-  pg->time_start = GNUNET_TIME_absolute_get();
+  pg->time_start = GNUNET_TIME_absolute_get ();
 
-  switch (type) {
-    case GNUNET_ATS_TEST_TG_CONSTANT:
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                  "Setting up constant preference generator master[%u] `%s' and slave [%u] `%s' max %u Bips\n",
-                  dest->me->no, GNUNET_i2s (&dest->me->id),
-                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
-                  base_value);
-      break;
-    case GNUNET_ATS_TEST_TG_LINEAR:
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                  "Setting up linear preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bips\n",
-                  dest->me->no, GNUNET_i2s (&dest->me->id),
-                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
-                  base_value, value_rate);
-      break;
-    case GNUNET_ATS_TEST_TG_SINUS:
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                  "Setting up sinus preference generator master[%u] `%s' and slave [%u] `%s' baserate %u Bips, amplitude %u Bps\n",
-                  dest->me->no, GNUNET_i2s (&dest->me->id),
-                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
-                  base_value, value_rate);
-      break;
-    case GNUNET_ATS_TEST_TG_RANDOM:
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                  "Setting up random preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bps\n",
-                  dest->me->no, GNUNET_i2s (&dest->me->id),
-                  dest->dest->no, GNUNET_i2s (&dest->dest->id),
-                  base_value, value_rate);
-      break;
-    default:
-      break;
+  switch (type)
+  {
+  case GNUNET_ATS_TEST_TG_CONSTANT:
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Setting up constant preference generator master[%u] `%s' and slave [%u] `%s' max %u Bips\n",
+                dest->me->no, GNUNET_i2s (&dest->me->id),
+                dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                base_value);
+    break;
+
+  case GNUNET_ATS_TEST_TG_LINEAR:
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Setting up linear preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bips\n",
+                dest->me->no, GNUNET_i2s (&dest->me->id),
+                dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                base_value, value_rate);
+    break;
+
+  case GNUNET_ATS_TEST_TG_SINUS:
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Setting up sinus preference generator master[%u] `%s' and slave [%u] `%s' baserate %u Bips, amplitude %u Bps\n",
+                dest->me->no, GNUNET_i2s (&dest->me->id),
+                dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                base_value, value_rate);
+    break;
+
+  case GNUNET_ATS_TEST_TG_RANDOM:
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Setting up random preference generator master[%u] `%s' and slave [%u] `%s' min %u Bips max %u Bps\n",
+                dest->me->no, GNUNET_i2s (&dest->me->id),
+                dest->dest->no, GNUNET_i2s (&dest->dest->id),
+                base_value, value_rate);
+    break;
+
+  default:
+    break;
   }
 
   dest->pg = pg;
@@ -234,12 +252,14 @@ GNUNET_ATS_TEST_generate_preferences_stop_all ()
 {
   struct PreferenceGenerator *cur;
   struct PreferenceGenerator *next;
+
   next = pg_head;
   for (cur = next; NULL != cur; cur = next)
   {
-      next = cur->next;
-      GNUNET_ATS_TEST_generate_preferences_stop(cur);
+    next = cur->next;
+    GNUNET_ATS_TEST_generate_preferences_stop (cur);
   }
 }
+
 
 /* end of file ats-testing-preferences.c */

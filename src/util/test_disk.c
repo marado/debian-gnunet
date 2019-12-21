@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_disk.c
@@ -37,43 +37,43 @@ testReadWrite ()
 
   if (strlen (TESTSTRING) !=
       GNUNET_DISK_fn_write (".testfile", TESTSTRING, strlen (TESTSTRING),
-                            GNUNET_DISK_PERM_USER_READ |
-                            GNUNET_DISK_PERM_USER_WRITE))
+                            GNUNET_DISK_PERM_USER_READ
+                            | GNUNET_DISK_PERM_USER_WRITE))
     return 1;
   if (GNUNET_OK != GNUNET_DISK_file_test (".testfile"))
     return 1;
-  ret = GNUNET_DISK_fn_read (".testfile", tmp, sizeof (tmp) - 1);
+  ret = GNUNET_DISK_fn_read (".testfile", tmp, sizeof(tmp) - 1);
   if (ret < 0)
   {
-    FPRINTF (stderr, "Error reading file `%s' in testReadWrite\n", ".testfile");
+    fprintf (stderr, "Error reading file `%s' in testReadWrite\n", ".testfile");
     return 1;
   }
   tmp[ret] = '\0';
   if (0 != memcmp (tmp, TESTSTRING, strlen (TESTSTRING) + 1))
   {
-    FPRINTF (stderr, "Error in testReadWrite: *%s* != *%s* for file %s\n", tmp,
+    fprintf (stderr, "Error in testReadWrite: *%s* != *%s* for file %s\n", tmp,
              TESTSTRING, ".testfile");
     return 1;
   }
   GNUNET_DISK_file_copy (".testfile", ".testfile2");
-  memset (tmp, 0, sizeof (tmp));
-  ret = GNUNET_DISK_fn_read (".testfile2", tmp, sizeof (tmp) - 1);
+  memset (tmp, 0, sizeof(tmp));
+  ret = GNUNET_DISK_fn_read (".testfile2", tmp, sizeof(tmp) - 1);
   if (ret < 0)
   {
-    FPRINTF (stderr, "Error reading file `%s' in testReadWrite\n",
+    fprintf (stderr, "Error reading file `%s' in testReadWrite\n",
              ".testfile2");
     return 1;
   }
   tmp[ret] = '\0';
   if (0 != memcmp (tmp, TESTSTRING, strlen (TESTSTRING) + 1))
   {
-    FPRINTF (stderr, "Error in testReadWrite: *%s* != *%s* for file %s\n", tmp,
+    fprintf (stderr, "Error in testReadWrite: *%s* != *%s* for file %s\n", tmp,
              TESTSTRING, ".testfile2");
     return 1;
   }
 
-  GNUNET_break (0 == UNLINK (".testfile"));
-  GNUNET_break (0 == UNLINK (".testfile2"));
+  GNUNET_break (0 == unlink (".testfile"));
+  GNUNET_break (0 == unlink (".testfile2"));
   if (GNUNET_NO != GNUNET_DISK_file_test (".testfile"))
     return 1;
 
@@ -88,21 +88,23 @@ testOpenClose ()
   uint64_t size;
 
   fh = GNUNET_DISK_file_open (".testfile",
-                              GNUNET_DISK_OPEN_READWRITE |
-                              GNUNET_DISK_OPEN_CREATE,
-                              GNUNET_DISK_PERM_USER_READ |
-                              GNUNET_DISK_PERM_USER_WRITE);
+                              GNUNET_DISK_OPEN_READWRITE
+                              | GNUNET_DISK_OPEN_CREATE,
+                              GNUNET_DISK_PERM_USER_READ
+                              | GNUNET_DISK_PERM_USER_WRITE);
   GNUNET_assert (GNUNET_NO == GNUNET_DISK_handle_invalid (fh));
   GNUNET_break (5 == GNUNET_DISK_file_write (fh, "Hello", 5));
   GNUNET_DISK_file_close (fh);
   GNUNET_break (GNUNET_OK ==
-                GNUNET_DISK_file_size (".testfile", &size, GNUNET_NO, GNUNET_YES));
+                GNUNET_DISK_file_size (".testfile", &size, GNUNET_NO,
+                                       GNUNET_YES));
   if (size != 5)
     return 1;
-  GNUNET_break (0 == UNLINK (".testfile"));
+  GNUNET_break (0 == unlink (".testfile"));
 
   return 0;
 }
+
 
 static int ok;
 
@@ -149,10 +151,10 @@ testDirScan ()
 
 static int
 iter_callback (void *cls,
-	       const char *filename)
+               const char *filename)
 {
   int *i = cls;
-  
+
   (*i)++;
   return GNUNET_OK;
 }
@@ -180,7 +182,7 @@ testDirIter ()
     return 1;
   }
   GNUNET_DISK_directory_scan ("test",
-			      &iter_callback,
+                              &iter_callback,
                               &i);
   if (GNUNET_OK != GNUNET_DISK_directory_remove ("test"))
   {
@@ -215,11 +217,9 @@ testCanonicalize ()
 static int
 testChangeOwner ()
 {
-#ifndef WINDOWS
   GNUNET_log_skip (1, GNUNET_NO);
   if (GNUNET_OK == GNUNET_DISK_file_change_owner ("/dev/null", "unknownuser"))
     return 1;
-#endif
   return 0;
 }
 
@@ -281,9 +281,9 @@ main (int argc, char *argv[])
   failureCount += testDirMani ();
   if (0 != failureCount)
   {
-    FPRINTF (stderr,
-	     "\n%u TESTS FAILED!\n",
-	     failureCount);
+    fprintf (stderr,
+             "\n%u TESTS FAILED!\n",
+             failureCount);
     return -1;
   }
   return 0;

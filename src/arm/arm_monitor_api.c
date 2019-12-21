@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file arm/arm_monitor_api.c
@@ -39,7 +39,6 @@
  */
 struct GNUNET_ARM_MonitorHandle
 {
-
   /**
    * Our control connection to the ARM service.
    */
@@ -63,7 +62,7 @@ struct GNUNET_ARM_MonitorHandle
   /**
    * Callback to invoke on status updates.
    */
-  GNUNET_ARM_ServiceStatusCallback service_status;
+  GNUNET_ARM_ServiceMonitorCallback service_status;
 
   /**
    * Closure for @e service_status.
@@ -132,7 +131,7 @@ static int
 check_monitor_notify (void *cls, const struct GNUNET_ARM_StatusMessage *msg)
 {
   size_t sl =
-    ntohs (msg->header.size) - sizeof (struct GNUNET_ARM_StatusMessage);
+    ntohs (msg->header.size) - sizeof(struct GNUNET_ARM_StatusMessage);
   const char *name = (const char *) &msg[1];
 
   (void) cls;
@@ -155,9 +154,9 @@ static void
 handle_monitor_notify (void *cls, const struct GNUNET_ARM_StatusMessage *res)
 {
   struct GNUNET_ARM_MonitorHandle *h = cls;
-  enum GNUNET_ARM_ServiceStatus status;
+  enum GNUNET_ARM_ServiceMonitorStatus status;
 
-  status = (enum GNUNET_ARM_ServiceStatus) ntohl (res->status);
+  status = (enum GNUNET_ARM_ServiceMonitorStatus) ntohl (res->status);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Received notification from ARM for service `%s' with status %d\n",
        (const char *) &res[1],
@@ -195,11 +194,11 @@ static int
 reconnect_arm_monitor (struct GNUNET_ARM_MonitorHandle *h)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (monitor_notify,
-                            GNUNET_MESSAGE_TYPE_ARM_STATUS,
-                            struct GNUNET_ARM_StatusMessage,
-                            h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (monitor_notify,
+                           GNUNET_MESSAGE_TYPE_ARM_STATUS,
+                           struct GNUNET_ARM_StatusMessage,
+                           h),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MessageHeader *msg;
   struct GNUNET_MQ_Envelope *env;
 
@@ -232,7 +231,7 @@ reconnect_arm_monitor (struct GNUNET_ARM_MonitorHandle *h)
  */
 struct GNUNET_ARM_MonitorHandle *
 GNUNET_ARM_monitor_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
-                          GNUNET_ARM_ServiceStatusCallback cont,
+                          GNUNET_ARM_ServiceMonitorCallback cont,
                           void *cont_cls)
 {
   struct GNUNET_ARM_MonitorHandle *h;

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  *
@@ -137,8 +137,8 @@ GNUNET_FRAGMENT_process_ack (struct GNUNET_FRAGMENT_Context *fc,
  */
 void
 GNUNET_FRAGMENT_context_destroy (struct GNUNET_FRAGMENT_Context *fc,
-				 struct GNUNET_TIME_Relative *msg_delay,
-				 struct GNUNET_TIME_Relative *ack_delay);
+                                 struct GNUNET_TIME_Relative *msg_delay,
+                                 struct GNUNET_TIME_Relative *ack_delay);
 
 
 /**
@@ -216,7 +216,6 @@ GNUNET_DEFRAGMENT_context_destroy (struct GNUNET_DEFRAGMENT_Context *dc);
 int
 GNUNET_DEFRAGMENT_process_fragment (struct GNUNET_DEFRAGMENT_Context *dc,
                                     const struct GNUNET_MessageHeader *msg);
-
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

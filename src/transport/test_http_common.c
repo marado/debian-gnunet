@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_http_common.c
  * @brief base test case for common http functionality
@@ -56,7 +56,7 @@ check (struct SplittedHTTPAddress *addr,
   }
   else if ((NULL != addr->protocol) && (NULL != protocol))
   {
-    if (0 != strcmp(addr->protocol, protocol))
+    if (0 != strcmp (addr->protocol, protocol))
     {
       GNUNET_break (0);
       return GNUNET_NO;
@@ -71,7 +71,7 @@ check (struct SplittedHTTPAddress *addr,
   }
   else if ((NULL != addr->host) && (NULL != host))
   {
-    if (0 != strcmp(addr->host, host))
+    if (0 != strcmp (addr->host, host))
     {
       GNUNET_break (0);
       return GNUNET_NO;
@@ -86,7 +86,7 @@ check (struct SplittedHTTPAddress *addr,
   }
   else if ((NULL != addr->path) && (NULL != path))
   {
-    if (0 != strcmp(addr->path, path))
+    if (0 != strcmp (addr->path, path))
     {
       GNUNET_break (0);
       return GNUNET_NO;
@@ -117,7 +117,7 @@ check_pass (const char *src,
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (GNUNET_OK != check(spa, protocol, host, port, path))
+  if (GNUNET_OK != check (spa, protocol, host, port, path))
   {
     clean (spa);
     GNUNET_break (0);
@@ -131,7 +131,7 @@ check_pass (const char *src,
 static int
 check_fail (const char *src)
 {
-  struct SplittedHTTPAddress * spa;
+  struct SplittedHTTPAddress *spa;
 
   spa = http_split_address (src);
   if (NULL != spa)
@@ -147,47 +147,55 @@ check_fail (const char *src)
 static void
 test_pass_hostname ()
 {
-  check_pass("http://test.local", "http", "test.local", HTTP_DEFAULT_PORT, "");
-  check_pass("http://test.local/", "http", "test.local", HTTP_DEFAULT_PORT, "/");
-  check_pass("http://test.local/path", "http", "test.local", HTTP_DEFAULT_PORT, "/path");
-  check_pass("http://test.local/path/", "http", "test.local", HTTP_DEFAULT_PORT, "/path/");
-  check_pass("http://test.local/path/more", "http", "test.local", HTTP_DEFAULT_PORT, "/path/more");
-  check_pass("http://test.local:81", "http", "test.local", 81, "");
-  check_pass("http://test.local:81/", "http", "test.local", 81, "/");
-  check_pass("http://test.local:81/path", "http", "test.local", 81, "/path");
-  check_pass("http://test.local:81/path/", "http", "test.local", 81, "/path/");
-  check_pass("http://test.local:81/path/more", "http", "test.local", 81, "/path/more");
-
+  check_pass ("http://test.local", "http", "test.local", HTTP_DEFAULT_PORT, "");
+  check_pass ("http://test.local/", "http", "test.local", HTTP_DEFAULT_PORT,
+              "/");
+  check_pass ("http://test.local/path", "http", "test.local", HTTP_DEFAULT_PORT,
+              "/path");
+  check_pass ("http://test.local/path/", "http", "test.local",
+              HTTP_DEFAULT_PORT, "/path/");
+  check_pass ("http://test.local/path/more", "http", "test.local",
+              HTTP_DEFAULT_PORT, "/path/more");
+  check_pass ("http://test.local:81", "http", "test.local", 81, "");
+  check_pass ("http://test.local:81/", "http", "test.local", 81, "/");
+  check_pass ("http://test.local:81/path", "http", "test.local", 81, "/path");
+  check_pass ("http://test.local:81/path/", "http", "test.local", 81, "/path/");
+  check_pass ("http://test.local:81/path/more", "http", "test.local", 81,
+              "/path/more");
 }
 
 
 static void
 test_pass_ipv4 ()
 {
-  check_pass("http://127.0.0.1", "http", "127.0.0.1", HTTP_DEFAULT_PORT, "");
-  check_pass("http://127.0.0.1/", "http", "127.0.0.1", HTTP_DEFAULT_PORT, "/");
-  check_pass("http://127.0.0.1/path", "http", "127.0.0.1", HTTP_DEFAULT_PORT, "/path");
-  check_pass("http://127.0.0.1/path/", "http", "127.0.0.1", HTTP_DEFAULT_PORT, "/path/");
-  check_pass("http://127.0.0.1:81", "http", "127.0.0.1", 81, "");
-  check_pass("http://127.0.0.1:81/", "http", "127.0.0.1", 81, "/");
-  check_pass("http://127.0.0.1:81/path", "http", "127.0.0.1", 81, "/path");
-  check_pass("http://127.0.0.1:81/path/", "http", "127.0.0.1", 81, "/path/");
-  check_pass("http://127.0.0.1:81/path/more", "http", "127.0.0.1", 81, "/path/more");
+  check_pass ("http://127.0.0.1", "http", "127.0.0.1", HTTP_DEFAULT_PORT, "");
+  check_pass ("http://127.0.0.1/", "http", "127.0.0.1", HTTP_DEFAULT_PORT, "/");
+  check_pass ("http://127.0.0.1/path", "http", "127.0.0.1", HTTP_DEFAULT_PORT,
+              "/path");
+  check_pass ("http://127.0.0.1/path/", "http", "127.0.0.1", HTTP_DEFAULT_PORT,
+              "/path/");
+  check_pass ("http://127.0.0.1:81", "http", "127.0.0.1", 81, "");
+  check_pass ("http://127.0.0.1:81/", "http", "127.0.0.1", 81, "/");
+  check_pass ("http://127.0.0.1:81/path", "http", "127.0.0.1", 81, "/path");
+  check_pass ("http://127.0.0.1:81/path/", "http", "127.0.0.1", 81, "/path/");
+  check_pass ("http://127.0.0.1:81/path/more", "http", "127.0.0.1", 81,
+              "/path/more");
 }
 
 
 static void
 test_fail_ipv6 ()
 {
-  check_pass("http://[::1]", "http", "[::1]", HTTP_DEFAULT_PORT, "");
-  check_pass("http://[::1]/", "http", "[::1]", HTTP_DEFAULT_PORT, "/");
-  check_pass("http://[::1]/path", "http", "[::1]", HTTP_DEFAULT_PORT, "/path");
-  check_pass("http://[::1]/path/", "http", "[::1]", HTTP_DEFAULT_PORT, "/path/");
-  check_pass("http://[::1]:81", "http", "[::1]", 81, "");
-  check_pass("http://[::1]:81/", "http", "[::1]", 81, "/");
-  check_pass("http://[::1]:81/path", "http", "[::1]", 81, "/path");
-  check_pass("http://[::1]:81/path/", "http", "[::1]", 81, "/path/");
-  check_pass("http://[::1]:81/path/more", "http", "[::1]", 81, "/path/more");
+  check_pass ("http://[::1]", "http", "[::1]", HTTP_DEFAULT_PORT, "");
+  check_pass ("http://[::1]/", "http", "[::1]", HTTP_DEFAULT_PORT, "/");
+  check_pass ("http://[::1]/path", "http", "[::1]", HTTP_DEFAULT_PORT, "/path");
+  check_pass ("http://[::1]/path/", "http", "[::1]", HTTP_DEFAULT_PORT,
+              "/path/");
+  check_pass ("http://[::1]:81", "http", "[::1]", 81, "");
+  check_pass ("http://[::1]:81/", "http", "[::1]", 81, "/");
+  check_pass ("http://[::1]:81/path", "http", "[::1]", 81, "/path");
+  check_pass ("http://[::1]:81/path/", "http", "[::1]", 81, "/path/");
+  check_pass ("http://[::1]:81/path/more", "http", "[::1]", 81, "/path/more");
 }
 
 
@@ -221,7 +229,7 @@ int
 main (int argc, char *argv[])
 {
   int ret = 0;
-  struct SplittedHTTPAddress * spa;
+  struct SplittedHTTPAddress *spa;
 
   GNUNET_log_setup ("test", "DEBUG", NULL);
   spa = http_split_address ("");
@@ -253,5 +261,6 @@ main (int argc, char *argv[])
 
   return ret;
 }
+
 
 /* end of test_http_common.c */

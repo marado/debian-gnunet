@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file datacache/plugin_datacache_template.c
@@ -62,8 +62,8 @@ template_plugin_put (void *cls,
                      const char *data,
                      enum GNUNET_BLOCK_Type type,
                      struct GNUNET_TIME_Absolute discard_time,
-		     unsigned int path_info_len,
-		     const struct GNUNET_PeerIdentity *path_info)
+                     unsigned int path_info_len,
+                     const struct GNUNET_PeerIdentity *path_info)
 {
   GNUNET_break (0);
   return -1;
@@ -124,7 +124,6 @@ template_plugin_get_random (void *cls,
   GNUNET_break (0);
   return 0;
 }
-
 
 
 /**

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_gnunet_service_fs_migration.c
@@ -42,7 +42,8 @@
 /**
  * How long do we give the peers for content migration?
  */
-#define MIGRATION_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 90)
+#define MIGRATION_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                       90)
 
 #define SEED 42
 
@@ -72,7 +73,8 @@ do_stop (void *cls)
   GNUNET_SCHEDULER_shutdown ();
   if (0 ==
       GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
-                                                                    TIMEOUT)).rel_value_us)
+                                                                    TIMEOUT)).
+      rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Timeout during download, shutting down with error\n");
@@ -84,9 +86,9 @@ do_stop (void *cls)
     if (del.rel_value_us == 0)
       del.rel_value_us = 1;
     fancy =
-        GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-                                        1000000LL / del.rel_value_us);
-    FPRINTF (stdout,
+      GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE)
+                                      * 1000000LL / del.rel_value_us);
+    fprintf (stdout,
              "Download speed was %s/s\n",
              fancy);
     GNUNET_free (fancy);
@@ -98,7 +100,7 @@ do_stop (void *cls)
 
 static void
 do_download (void *cls,
-	     const char *emsg)
+             const char *emsg)
 {
   struct DownloadContext *dc = cls;
   struct GNUNET_FS_Uri *uri = dc->uri;
@@ -146,8 +148,8 @@ stop_source_peer (void *cls)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Stopping source peer\n");
   op = GNUNET_TESTBED_peer_stop (NULL,
-				 daemons[1],
-				 &do_download, dc);
+                                 daemons[1],
+                                 &do_download, dc);
   GNUNET_assert (NULL != op);
 }
 
@@ -155,7 +157,7 @@ stop_source_peer (void *cls)
 static void
 do_wait (void *cls,
          const struct GNUNET_FS_Uri *uri,
-	 const char *fn)
+         const char *fn)
 {
   struct DownloadContext *dc;
 
@@ -174,29 +176,29 @@ do_wait (void *cls,
   if (NULL != fn)
     dc->fn = GNUNET_strdup (fn);
   (void) GNUNET_SCHEDULER_add_delayed (MIGRATION_DELAY,
-				       &stop_source_peer,
-				       dc);
+                                       &stop_source_peer,
+                                       dc);
 }
 
 
 static void
 do_publish (void *cls,
             struct GNUNET_TESTBED_RunHandle *h,
-	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int num_peers,
+            struct GNUNET_TESTBED_Peer **peers,
             unsigned int links_succeeded,
             unsigned int links_failed)
 {
   unsigned int i;
 
   GNUNET_assert (2 == num_peers);
-  for (i=0;i<num_peers;i++)
+  for (i = 0; i < num_peers; i++)
     daemons[i] = peers[i];
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Publishing %llu bytes\n",
               (unsigned long long) FILESIZE);
   GNUNET_FS_TEST_publish (daemons[1], TIMEOUT, 1, GNUNET_NO,
-			  FILESIZE, SEED,
+                          FILESIZE, SEED,
                           VERBOSE, &do_wait, NULL);
 }
 
@@ -214,5 +216,6 @@ main (int argc,
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-service-fs-migration/");
   return ok;
 }
+
 
 /* end of test_gnunet_service_fs_migration.c */

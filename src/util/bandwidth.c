@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/bandwidth.c
@@ -110,8 +110,8 @@ GNUNET_BANDWIDTH_value_get_available_until (
   b = ntohl (bps.value__);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Bandwidth has %llu bytes available until deadline in %s\n",
-       (unsigned long long) ((b * deadline.rel_value_us + 500000LL) /
-                             1000000LL),
+       (unsigned long long) ((b * deadline.rel_value_us + 500000LL)
+                             / 1000000LL),
        GNUNET_STRINGS_relative_time_to_string (deadline, GNUNET_YES));
   return (b * deadline.rel_value_us + 500000LL) / 1000000LL;
 }
@@ -187,9 +187,9 @@ update_excess (struct GNUNET_BANDWIDTH_Tracker *av)
   now = GNUNET_TIME_absolute_get ();
   delta_time = now.abs_value_us - av->last_update__.abs_value_us;
   delta_avail =
-    (delta_time * ((unsigned long long) av->available_bytes_per_s__) +
-     500000LL) /
-    1000000LL;
+    (delta_time * ((unsigned long long) av->available_bytes_per_s__)
+     + 500000LL)
+    / 1000000LL;
   current_consumption = av->consumption_since_last_update__ - delta_avail;
   if (current_consumption > av->consumption_since_last_update__)
   {
@@ -352,9 +352,9 @@ update_tracker (struct GNUNET_BANDWIDTH_Tracker *av)
   now = GNUNET_TIME_absolute_get ();
   delta_time = now.abs_value_us - av->last_update__.abs_value_us;
   delta_avail =
-    (delta_time * ((unsigned long long) av->available_bytes_per_s__) +
-     500000LL) /
-    1000000LL;
+    (delta_time * ((unsigned long long) av->available_bytes_per_s__)
+     + 500000LL)
+    / 1000000LL;
   av->consumption_since_last_update__ -= delta_avail;
   av->last_update__ = now;
   if (av->consumption_since_last_update__ < 0)
@@ -476,8 +476,8 @@ GNUNET_BANDWIDTH_tracker_get_delay (struct GNUNET_BANDWIDTH_Tracker *av,
          (unsigned int) size);
     return GNUNET_TIME_UNIT_ZERO;
   }
-  ret.rel_value_us = (1000LL * 1000LL * bytes_needed) /
-                     (unsigned long long) av->available_bytes_per_s__;
+  ret.rel_value_us = (1000LL * 1000LL * bytes_needed)
+                     / (unsigned long long) av->available_bytes_per_s__;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Tracker %p delay for %u bytes is %s\n",
        av,

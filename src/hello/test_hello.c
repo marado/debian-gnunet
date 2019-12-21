@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file hello/test_hello.c
  * @brief test for hello.c
@@ -44,11 +44,11 @@ my_addr_gen (void *cls,
   struct GNUNET_HELLO_Address address;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "DEBUG: my_addr_gen called with i = %d\n",
+              "DEBUG: my_addr_gen called with i = %d\n",
               *i);
   if (0 == *i)
     return GNUNET_SYSERR;
-  memset (&address.peer, 0, sizeof (struct GNUNET_PeerIdentity));
+  memset (&address.peer, 0, sizeof(struct GNUNET_PeerIdentity));
   address.address = "address_information";
   address.transport_name = "test";
   address.address_length = *i;
@@ -109,8 +109,8 @@ remove_some (void *cls,
   unsigned int *i = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "DEBUG: remove_some called with i = %d and addrlen = %u\n",
-           *i,
+              "DEBUG: remove_some called with i = %d and addrlen = %u\n",
+              *i,
               (unsigned int) address->address_length);
   GNUNET_assert (address->address_length > 0);
   if (*i & (1 << (address->address_length - 1)))
@@ -138,9 +138,9 @@ main (int argc,
                     "DEBUG",
                     NULL);
   startup_time = GNUNET_TIME_absolute_get ();
-  memset (&publicKey, 42, sizeof (publicKey));
+  memset (&publicKey, 42, sizeof(publicKey));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Testing HELLO creation (without addresses)...\n");
+              "Testing HELLO creation (without addresses)...\n");
   i = 0;
   msg1 = GNUNET_HELLO_create (&publicKey,
                               &my_addr_gen,
@@ -150,14 +150,14 @@ main (int argc,
   GNUNET_assert (0 < GNUNET_HELLO_size (msg1));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Testing address iteration (empty set)...\n");
+              "Testing address iteration (empty set)...\n");
   GNUNET_assert (NULL ==
                  GNUNET_HELLO_iterate_addresses (msg1,
                                                  GNUNET_NO,
                                                  &check_addr,
                                                  &i));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing HELLO creation (with one address)...\n");
+              "Testing HELLO creation (with one address)...\n");
   i = 1;
   msg2 = GNUNET_HELLO_create (&publicKey,
                               &my_addr_gen,
@@ -167,7 +167,7 @@ main (int argc,
   GNUNET_assert (GNUNET_HELLO_size (msg1) < GNUNET_HELLO_size (msg2));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing address iteration (one address)...\n");
+              "Testing address iteration (one address)...\n");
   i = 1;
   GNUNET_assert (NULL ==
                  GNUNET_HELLO_iterate_addresses (msg2,
@@ -177,14 +177,14 @@ main (int argc,
   GNUNET_assert (i == 0);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing get_key from HELLO...\n");
+              "Testing get_key from HELLO...\n");
   GNUNET_assert (GNUNET_OK == GNUNET_HELLO_get_id (msg2, &pid));
   GNUNET_assert (0 == GNUNET_memcmp (&publicKey,
-                              &pid.public_key));
+                                     &pid.public_key));
   GNUNET_free (msg1);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing HELLO creation (with two addresses)...\n");
+              "Testing HELLO creation (with two addresses)...\n");
   i = 2;
   msg3 = GNUNET_HELLO_create (&publicKey,
                               &my_addr_gen,
@@ -194,7 +194,7 @@ main (int argc,
   GNUNET_assert (GNUNET_HELLO_size (msg2) < GNUNET_HELLO_size (msg3));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing address iteration (two addresses)...\n");
+              "Testing address iteration (two addresses)...\n");
   i = 3;
   GNUNET_assert (NULL ==
                  GNUNET_HELLO_iterate_addresses (msg3,
@@ -204,7 +204,7 @@ main (int argc,
   GNUNET_assert (i == 0);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing HELLO merge...\n");
+              "Testing HELLO merge...\n");
   msg1 = GNUNET_HELLO_merge (msg2, msg3);
   GNUNET_assert (GNUNET_HELLO_size (msg1) == GNUNET_HELLO_size (msg3));
 
@@ -218,7 +218,7 @@ main (int argc,
   GNUNET_free (msg1);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing address iteration to copy HELLO...\n");
+              "Testing address iteration to copy HELLO...\n");
   i = 2;
   msg1 = GNUNET_HELLO_iterate_addresses (msg3,
                                          GNUNET_YES,
@@ -236,7 +236,7 @@ main (int argc,
   GNUNET_free (msg1);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	   "Testing delta address iteration...\n");
+              "Testing delta address iteration...\n");
   i = 2;
   GNUNET_HELLO_iterate_new_addresses (msg3,
                                       msg2,
@@ -248,5 +248,6 @@ main (int argc,
   GNUNET_free (msg3);
   return 0;                     /* testcase passed */
 }
+
 
 /* end of test_hello.c */

@@ -73,7 +73,6 @@ extern "C" {
  */
 enum GNUNET_PEERSTORE_StoreOption
 {
-
   /**
    * Possibly store multiple values under given key.
    */
@@ -84,7 +83,6 @@ enum GNUNET_PEERSTORE_StoreOption
    * storing the given value.
    */
   GNUNET_PEERSTORE_STOREOPTION_REPLACE = 1
-
 };
 
 /**
@@ -102,7 +100,6 @@ struct GNUNET_PEERSTORE_StoreContext;
  */
 struct GNUNET_PEERSTORE_Record
 {
-
   /**
    * Responsible sub system string
    */

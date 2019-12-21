@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/transport_api_address_to_string.c
  * @author Christian Grothoff
@@ -49,7 +49,6 @@ struct GNUNET_TRANSPORT_AddressToStringContext
    * Connection to the service.
    */
   struct GNUNET_MQ_Handle *mq;
-
 };
 
 
@@ -64,7 +63,7 @@ static int
 check_reply (void *cls,
              const struct AddressToStringResultMessage *atsm)
 {
-  uint16_t size = ntohs (atsm->header.size) - sizeof (*atsm);
+  uint16_t size = ntohs (atsm->header.size) - sizeof(*atsm);
   const char *address;
   int result;
   uint32_t addr_len;
@@ -83,8 +82,8 @@ check_reply (void *cls,
     return GNUNET_OK;
   }
   address = (const char *) &atsm[1];
-  if ( (addr_len > size) ||
-       (address[addr_len -1] != '\0') )
+  if ((addr_len > size) ||
+      (address[addr_len - 1] != '\0'))
   {
     /* invalid reply */
     GNUNET_break (0);
@@ -105,7 +104,7 @@ handle_reply (void *cls,
               const struct AddressToStringResultMessage *atsm)
 {
   struct GNUNET_TRANSPORT_AddressToStringContext *alucb = cls;
-  uint16_t size = ntohs (atsm->header.size) - sizeof (*atsm);
+  uint16_t size = ntohs (atsm->header.size) - sizeof(*atsm);
   const char *address;
   int result;
 
@@ -175,11 +174,13 @@ mq_error_handler (void *cls,
  * @return handle to cancel the operation, NULL on error
  */
 struct GNUNET_TRANSPORT_AddressToStringContext *
-GNUNET_TRANSPORT_address_to_string (const struct GNUNET_CONFIGURATION_Handle *cfg,
+GNUNET_TRANSPORT_address_to_string (const struct
+                                    GNUNET_CONFIGURATION_Handle *cfg,
                                     const struct GNUNET_HELLO_Address *address,
                                     int numeric,
                                     struct GNUNET_TIME_Relative timeout,
-                                    GNUNET_TRANSPORT_AddressToStringCallback aluc,
+                                    GNUNET_TRANSPORT_AddressToStringCallback
+                                    aluc,
                                     void *aluc_cls)
 {
   struct GNUNET_TRANSPORT_AddressToStringContext *alc
@@ -199,10 +200,10 @@ GNUNET_TRANSPORT_address_to_string (const struct GNUNET_CONFIGURATION_Handle *cf
 
   alen = address->address_length;
   slen = strlen (address->transport_name) + 1;
-  if ( (alen + slen >= GNUNET_MAX_MESSAGE_SIZE
-        - sizeof (struct AddressLookupMessage)) ||
-       (alen >= GNUNET_MAX_MESSAGE_SIZE) ||
-       (slen >= GNUNET_MAX_MESSAGE_SIZE) )
+  if ((alen + slen >= GNUNET_MAX_MESSAGE_SIZE
+       - sizeof(struct AddressLookupMessage)) ||
+      (alen >= GNUNET_MAX_MESSAGE_SIZE) ||
+      (slen >= GNUNET_MAX_MESSAGE_SIZE))
   {
     GNUNET_break (0);
     GNUNET_free (alc);
@@ -234,11 +235,11 @@ GNUNET_TRANSPORT_address_to_string (const struct GNUNET_CONFIGURATION_Handle *cf
   msg->timeout = GNUNET_TIME_relative_hton (timeout);
   addrbuf = (char *) &msg[1];
   GNUNET_memcpy (addrbuf,
-          address->address,
-          alen);
+                 address->address,
+                 alen);
   GNUNET_memcpy (&addrbuf[alen],
-          address->transport_name,
-          slen);
+                 address->transport_name,
+                 slen);
   GNUNET_MQ_send (alc->mq,
                   env);
   return alc;
@@ -251,7 +252,9 @@ GNUNET_TRANSPORT_address_to_string (const struct GNUNET_CONFIGURATION_Handle *cf
  * @param alc the context handle
  */
 void
-GNUNET_TRANSPORT_address_to_string_cancel (struct GNUNET_TRANSPORT_AddressToStringContext *alc)
+GNUNET_TRANSPORT_address_to_string_cancel (struct
+                                           GNUNET_TRANSPORT_AddressToStringContext
+                                           *alc)
 {
   GNUNET_MQ_destroy (alc->mq);
   GNUNET_free (alc);

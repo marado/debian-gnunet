@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -35,7 +35,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct GNUNET_TESTBED_InitMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_INIT
    */
@@ -64,7 +63,6 @@ struct GNUNET_TESTBED_InitMessage
  */
 struct GNUNET_TESTBED_AddHostMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_ADD_HOST
    */
@@ -105,7 +103,6 @@ struct GNUNET_TESTBED_AddHostMessage
   /* followed by gzip compressed configuration to start or connect to a
      controller on this host.  While starting the controller this configuration
      is used as a template */
-
 };
 
 
@@ -116,7 +113,6 @@ struct GNUNET_TESTBED_AddHostMessage
  */
 struct GNUNET_TESTBED_HostConfirmedMessage
 {
-
   /**
    * Type is GNUNET_MESSAGE_TYPE_TESTBED_ADD_HOST_SUCCESS
    */
@@ -129,7 +125,6 @@ struct GNUNET_TESTBED_HostConfirmedMessage
 
   /* followed by the 0-terminated error message (on failure)
    * (typical errors include host-id already in use) */
-
 };
 
 
@@ -140,7 +135,6 @@ struct GNUNET_TESTBED_HostConfirmedMessage
  */
 struct GNUNET_TESTBED_ControllerLinkRequest
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS
    */
@@ -166,7 +160,6 @@ struct GNUNET_TESTBED_ControllerLinkRequest
    * the slave host (and thus responsible for starting it?). 0 if not
    */
   uint8_t is_subordinate;
-
 };
 
 
@@ -175,7 +168,6 @@ struct GNUNET_TESTBED_ControllerLinkRequest
  */
 struct GNUNET_TESTBED_ControllerLinkResponse
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS_RESULT
    */
@@ -202,7 +194,6 @@ struct GNUNET_TESTBED_ControllerLinkResponse
    * running at the delegate host */
 
   /* In case of failure, here comes the error message (without \0 termination)*/
-
 };
 
 
@@ -212,7 +203,6 @@ struct GNUNET_TESTBED_ControllerLinkResponse
  */
 struct GNUNET_TESTBED_PeerCreateMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER
    */
@@ -239,8 +229,7 @@ struct GNUNET_TESTBED_PeerCreateMessage
   uint16_t config_size GNUNET_PACKED;
 
   /* followed by serialized peer configuration;
-   * gzip'ed configuration file in INI format */
-
+  * gzip'ed configuration file in INI format */
 };
 
 
@@ -250,7 +239,6 @@ struct GNUNET_TESTBED_PeerCreateMessage
  */
 struct GNUNET_TESTBED_PeerReconfigureMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER
    */
@@ -272,8 +260,7 @@ struct GNUNET_TESTBED_PeerReconfigureMessage
   uint16_t config_size GNUNET_PACKED;
 
   /* followed by serialized peer configuration;
-   * gzip'ed configuration file in INI format */
-
+  * gzip'ed configuration file in INI format */
 };
 
 
@@ -283,7 +270,6 @@ struct GNUNET_TESTBED_PeerReconfigureMessage
  */
 struct GNUNET_TESTBED_PeerStartMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_START_PEER
    */
@@ -298,7 +284,6 @@ struct GNUNET_TESTBED_PeerStartMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -308,7 +293,6 @@ struct GNUNET_TESTBED_PeerStartMessage
  */
 struct GNUNET_TESTBED_PeerStopMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER
    */
@@ -323,7 +307,6 @@ struct GNUNET_TESTBED_PeerStopMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -333,7 +316,6 @@ struct GNUNET_TESTBED_PeerStopMessage
  */
 struct GNUNET_TESTBED_PeerDestroyMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER
    */
@@ -348,7 +330,6 @@ struct GNUNET_TESTBED_PeerDestroyMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -358,7 +339,6 @@ struct GNUNET_TESTBED_PeerDestroyMessage
  */
 struct GNUNET_TESTBED_ConfigureUnderlayLinkMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_CONFIGURE_UNDERLAY_LINK
    */
@@ -385,7 +365,6 @@ struct GNUNET_TESTBED_ConfigureUnderlayLinkMessage
   uint64_t operation_id GNUNET_PACKED;
 
   /* followed by option-dependent variable-size values */
-
 };
 
 
@@ -395,7 +374,6 @@ struct GNUNET_TESTBED_ConfigureUnderlayLinkMessage
  */
 struct GNUNET_TESTBED_OverlayConnectMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT
    */
@@ -420,7 +398,6 @@ struct GNUNET_TESTBED_OverlayConnectMessage
    * The ID of the host which runs peer2
    */
   uint32_t peer2_host_id GNUNET_PACKED;
-
 };
 
 
@@ -456,7 +433,6 @@ struct GNUNET_TESTBED_RemoteOverlayConnectMessage
   struct GNUNET_MessageHeader hello[0];
   // FIXME: we usually do not use this gcc-hack as some
   // compilers / tools really get messed up by it...
-
 };
 
 
@@ -465,7 +441,6 @@ struct GNUNET_TESTBED_RemoteOverlayConnectMessage
  */
 struct GNUNET_TESTBED_PeerEventMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_PEER_EVENT
    */
@@ -491,7 +466,6 @@ struct GNUNET_TESTBED_PeerEventMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -500,7 +474,6 @@ struct GNUNET_TESTBED_PeerEventMessage
  */
 struct GNUNET_TESTBED_ConnectionEventMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_PEER_CONNECT_EVENT
    */
@@ -526,7 +499,6 @@ struct GNUNET_TESTBED_ConnectionEventMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -535,7 +507,6 @@ struct GNUNET_TESTBED_ConnectionEventMessage
  */
 struct GNUNET_TESTBED_OperationFailureEventMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_OPERATION_FAIL_EVENT
    */
@@ -553,7 +524,6 @@ struct GNUNET_TESTBED_OperationFailureEventMessage
   uint64_t operation_id GNUNET_PACKED;
 
   /* followed by 0-terminated error message */
-
 };
 
 
@@ -562,7 +532,6 @@ struct GNUNET_TESTBED_OperationFailureEventMessage
  */
 struct GNUNET_TESTBED_PeerCreateSuccessEventMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER_SUCCESS
    */
@@ -577,7 +546,6 @@ struct GNUNET_TESTBED_PeerCreateSuccessEventMessage
    * Operation ID of the operation that created this event.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -588,7 +556,6 @@ struct GNUNET_TESTBED_PeerCreateSuccessEventMessage
  */
 struct GNUNET_TESTBED_GenericOperationSuccessEventMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_GENERIC_OPERATION_SUCCESS
    */
@@ -604,7 +571,6 @@ struct GNUNET_TESTBED_GenericOperationSuccessEventMessage
    * Operation ID of the operation that created this event.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -614,7 +580,6 @@ struct GNUNET_TESTBED_GenericOperationSuccessEventMessage
  */
 struct GNUNET_TESTBED_PeerGetConfigurationMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_INFORMATION
    */
@@ -629,7 +594,6 @@ struct GNUNET_TESTBED_PeerGetConfigurationMessage
    * Operation ID that is used to identify this operation.
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -638,7 +602,6 @@ struct GNUNET_TESTBED_PeerGetConfigurationMessage
  */
 struct GNUNET_TESTBED_PeerConfigurationInformationMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TESTBED_PEER_INFORMATION
    */
@@ -665,7 +628,6 @@ struct GNUNET_TESTBED_PeerConfigurationInformationMessage
   uint16_t config_size GNUNET_PACKED;
 
   /* followed by gzip-compressed configuration of the peer */
-
 };
 
 
@@ -688,7 +650,6 @@ struct GNUNET_TESTBED_SlaveGetConfigurationMessage
    * Operation ID
    */
   uint64_t operation_id GNUNET_PACKED;
-
 };
 
 
@@ -718,7 +679,6 @@ struct GNUNET_TESTBED_SlaveConfiguration
   uint16_t config_size GNUNET_PACKED;
 
   /* followed by gzip-compressed configuration of the peer */
-
 };
 
 
@@ -801,7 +761,6 @@ struct GNUNET_TESTBED_UnderlayLinkModelMsg
    * sequence of four integers of type uint32_t: peer_id, latency, loss and
    * bandwidth.
    */
-
 };
 
 

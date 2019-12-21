@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file set/gnunet-service-set.h
  * @brief common components for the implementation the different set operations
@@ -86,7 +86,7 @@ typedef struct SetState *
  */
 typedef void
 (*SetAddRemoveImpl) (struct SetState *state,
-                  struct ElementEntry *ee);
+                     struct ElementEntry *ee);
 
 
 /**
@@ -154,7 +154,6 @@ typedef void
 (*OpChannelDeathImpl) (struct Operation *op);
 
 
-
 /**
  * Dispatch table for a specific set operation.  Every set operation
  * has to implement the callback in this struct.
@@ -205,7 +204,6 @@ struct SetVT
    * Callback called in case the CADET channel died.
    */
   OpChannelDeathImpl channel_death;
-
 };
 
 
@@ -306,7 +304,6 @@ struct ClientState
    * Message queue.
    */
   struct GNUNET_MQ_Handle *mq;
-
 };
 
 
@@ -315,7 +312,6 @@ struct ClientState
  */
 struct Operation
 {
-
   /**
    * Kept in a DLL of the listener, if @e listener is non-NULL.
    */
@@ -427,7 +423,6 @@ struct Operation
    * was created.
    */
   unsigned int generation_created;
-
 };
 
 
@@ -437,7 +432,6 @@ struct Operation
  */
 struct SetContent
 {
-
   /**
    * Maps `struct GNUNET_HashCode *` to `struct ElementEntry *`.
    */
@@ -522,7 +516,6 @@ struct PendingMutation
  */
 struct Set
 {
-
   /**
    * Sets are held in a doubly linked list (in `sets_head` and `sets_tail`).
    */
@@ -606,7 +599,6 @@ struct Set
    * can distinguish iterations.
    */
   uint16_t iteration_id;
-
 };
 
 

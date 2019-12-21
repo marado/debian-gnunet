@@ -10,11 +10,6 @@ libexecdir= $(pkglibdir)/libexec/
 pkgcfg_DATA = \
    namestore.conf
 
-
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIBS = -lgcov
@@ -143,9 +138,10 @@ libgnunet_plugin_rest_namestore_la_LIBADD = \
   $(top_builddir)/src/json/libgnunetjson.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 libgnunet_plugin_rest_namestore_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
+libgnunet_plugin_rest_namestore_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 
 
 libgnunetnamestore_la_SOURCES = \
@@ -158,7 +154,7 @@ libgnunetnamestore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunetnamestore_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:1:0
 
 
@@ -185,12 +181,13 @@ gnunet_namestore_LDADD = \
 
 gnunet_namestore_fcfsd_SOURCES = \
  gnunet-namestore-fcfsd.c
-gnunet_namestore_fcfsd_LDADD = -lmicrohttpd \
+gnunet_namestore_fcfsd_LDADD = $(MHD_LIBS) \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/identity/libgnunetidentity.la \
   libgnunetnamestore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
+gnunet_namestore_fcfsd_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 
 
 gnunet_service_namestore_SOURCES = \
@@ -683,6 +680,13 @@ check_SCRIPTS = \
   test_namestore_put.sh \
   test_namestore_lookup.sh \
   test_namestore_delete.sh
+
+if HAVE_MHD
+if HAVE_JSON
+check_SCRIPTS += \
+  test_plugin_rest_namestore.sh
+endif
+endif
 
 EXTRA_DIST = \
   test_common.c \

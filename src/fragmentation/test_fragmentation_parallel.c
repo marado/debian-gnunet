@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fragmentation/test_fragmentation.c
  * @brief test for fragmentation.c
@@ -90,15 +90,15 @@ proc_msgs (void *cls, const struct GNUNET_MessageHeader *hdr)
   const char *buf;
 
 #if DETAILS
-  FPRINTF (stderr, "%s",  "!");        /* message complete, good! */
+  fprintf (stderr, "%s", "!");          /* message complete, good! */
 #endif
   buf = (const char *) hdr;
-  for (i = sizeof (struct GNUNET_MessageHeader); i < ntohs (hdr->size); i++)
+  for (i = sizeof(struct GNUNET_MessageHeader); i < ntohs (hdr->size); i++)
     GNUNET_assert (buf[i] == (char) i);
   total++;
 #if ! DETAILS
   if (0 == (total % (NUM_MSGS / 100)))
-    FPRINTF (stderr, "%s",  ".");
+    fprintf (stderr, "%s", ".");
 #endif
   /* tolerate 10% loss, i.e. due to duplicate fragment IDs */
   if ((total >= NUM_MSGS - (NUM_MSGS / 10)) && (ret != 0))
@@ -131,7 +131,7 @@ proc_acks (void *cls, uint32_t msg_id, const struct GNUNET_MessageHeader *hdr)
     if (ret == GNUNET_OK)
     {
 #if DETAILS
-      FPRINTF (stderr, "%s",  "@");    /* good ACK */
+      fprintf (stderr, "%s", "@");     /* good ACK */
 #endif
       GNUNET_FRAGMENT_context_destroy (frags[i], NULL, NULL);
       frags[i] = NULL;
@@ -141,14 +141,14 @@ proc_acks (void *cls, uint32_t msg_id, const struct GNUNET_MessageHeader *hdr)
     if (ret == GNUNET_NO)
     {
 #if DETAILS
-      FPRINTF (stderr, "%s",  "@");    /* good ACK */
+      fprintf (stderr, "%s", "@");     /* good ACK */
 #endif
       acks++;
       return;
     }
   }
 #if DETAILS
-  FPRINTF (stderr, "%s",  "_");        /* BAD: ack that nobody feels responsible for... */
+  fprintf (stderr, "%s", "_");          /* BAD: ack that nobody feels responsible for... */
 #endif
 }
 
@@ -170,21 +170,21 @@ proc_frac (void *cls, const struct GNUNET_MessageHeader *hdr)
   }
   if (NULL == defrag)
   {
-    FPRINTF (stderr, "%s",  "E");      /* Error: frag after shutdown!? */
+    fprintf (stderr, "%s", "E");       /* Error: frag after shutdown!? */
     return;
   }
   ret = GNUNET_DEFRAGMENT_process_fragment (defrag, hdr);
   if (ret == GNUNET_NO)
   {
 #if DETAILS
-    FPRINTF (stderr, "%s",  "?");      /* duplicate fragment */
+    fprintf (stderr, "%s", "?");       /* duplicate fragment */
 #endif
     dups++;
   }
   else if (ret == GNUNET_OK)
   {
 #if DETAILS
-    FPRINTF (stderr, "%s",  ".");      /* good fragment */
+    fprintf (stderr, "%s", ".");       /* good fragment */
 #endif
     fragc++;
   }
@@ -202,21 +202,21 @@ run (void *cls, char *const *args, const char *cfgfile,
   struct GNUNET_MessageHeader *msg;
   char buf[MTU + 32 * 1024];
 
-  defrag = GNUNET_DEFRAGMENT_context_create (NULL, MTU, NUM_MSGS        /* enough space for all */
+  defrag = GNUNET_DEFRAGMENT_context_create (NULL, MTU, NUM_MSGS         /* enough space for all */
                                              , NULL, &proc_msgs, &proc_acks);
-  for (i = 0; i < sizeof (buf); i++)
+  for (i = 0; i < sizeof(buf); i++)
     buf[i] = (char) i;
   msg = (struct GNUNET_MessageHeader *) buf;
   for (i = 0; i < NUM_MSGS; i++)
   {
     msg->type = htons ((uint16_t) i);
     msg->size =
-        htons (sizeof (struct GNUNET_MessageHeader) + (17 * i) % (32 * 1024));
-    frags[i] = GNUNET_FRAGMENT_context_create (NULL /* no stats */ ,
+      htons (sizeof(struct GNUNET_MessageHeader) + (17 * i) % (32 * 1024));
+    frags[i] = GNUNET_FRAGMENT_context_create (NULL /* no stats */,
                                                MTU, &trackers[i],
                                                GNUNET_TIME_UNIT_MILLISECONDS,
                                                GNUNET_TIME_UNIT_SECONDS,
-					       msg,
+                                               msg,
                                                &proc_frac, &frags[i]);
   }
 }
@@ -247,7 +247,7 @@ main (int argc, char *argv[])
                                    100);
   GNUNET_PROGRAM_run (5, argv_prog, "test-fragmentation", "nohelp", options,
                       &run, NULL);
-  FPRINTF (stderr,
+  fprintf (stderr,
            "\nHad %u good fragments, %u duplicate fragments, %u acks and %u simulated drops of acks\n",
            fragc, dups, acks, ack_drops);
   return ret;

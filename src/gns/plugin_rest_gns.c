@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Philippe Buschmann
  * @file gns/plugin_rest_gns.c
@@ -75,7 +75,6 @@ struct Plugin
  */
 struct RequestHandle
 {
-
   /**
    * Connection to GNS
    */
@@ -146,6 +145,7 @@ static void
 cleanup_handle (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Cleaning up\n");
 
   if (NULL != handle->gns_lookup)
@@ -211,6 +211,7 @@ static void
 do_timeout (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   handle->timeout_task = NULL;
   handle->response_code = MHD_HTTP_REQUEST_TIMEOUT;
   do_error (handle);
@@ -339,7 +340,7 @@ options_cont (struct GNUNET_REST_RequestHandle *con_handle,
   struct MHD_Response *resp;
   struct RequestHandle *handle = cls;
 
-  //independent of path return all options
+  // independent of path return all options
   resp = GNUNET_REST_create_response (NULL);
   MHD_add_response_header (resp, "Access-Control-Allow-Methods", allow_methods);
   handle->proc (handle->proc_cls, resp, MHD_HTTP_OK);
@@ -358,9 +359,9 @@ init_cont (struct RequestHandle *handle)
 {
   struct GNUNET_REST_RequestHandlerError err;
   static const struct GNUNET_REST_RequestHandler handlers[] =
-    {{MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_GNS, &get_gns_cont},
-     {MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_GNS, &options_cont},
-     GNUNET_REST_HANDLER_END};
+  { { MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_GNS, &get_gns_cont },
+    { MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_GNS, &options_cont },
+    GNUNET_REST_HANDLER_END };
 
   if (GNUNET_NO ==
       GNUNET_REST_handle_request (handle->rest_handle, handlers, &err, handle))
@@ -425,7 +426,7 @@ libgnunet_plugin_rest_gns_init (void *cls)
   cfg = cls;
   if (NULL != plugin.cfg)
     return NULL; /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   api = GNUNET_new (struct GNUNET_REST_Plugin);
   api->cls = &plugin;
@@ -455,6 +456,7 @@ libgnunet_plugin_rest_gns_done (void *cls)
 {
   struct GNUNET_REST_Plugin *api = cls;
   struct Plugin *plugin = api->cls;
+
   plugin->cfg = NULL;
 
   GNUNET_free_non_null (allow_methods);
@@ -463,5 +465,5 @@ libgnunet_plugin_rest_gns_done (void *cls)
   return NULL;
 }
 
-/* end of plugin_rest_gns.c */
 
+/* end of plugin_rest_gns.c */

@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  (C) 2015, 2016, 2017 GNUnet e.V.
+   This file is part of GNUnet
+   (C) 2015, 2016, 2017 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file sq/test_sq.c
  * @brief Tests for sqlite3 convenience API
@@ -90,7 +90,7 @@ run_queries (sqlite3 *dbh)
 
   priv = GNUNET_CRYPTO_rsa_private_key_create (1024);
   pub = GNUNET_CRYPTO_rsa_private_key_get_public (priv);
-  memset (&hmsg, 42, sizeof (hmsg));
+  memset (&hmsg, 42, sizeof(hmsg));
   sig = GNUNET_CRYPTO_rsa_sign_fdh (priv,
                                     &hmsg);
   u16 = 16;
@@ -192,19 +192,19 @@ run_queries (sqlite3 *dbh)
     GNUNET_break (abs_time.abs_value_us == abs_time2.abs_value_us);
     GNUNET_break (forever.abs_value_us == forever2.abs_value_us);
     GNUNET_break (0 ==
-		  GNUNET_memcmp (&hc,
-			  &hc2));
+                  GNUNET_memcmp (&hc,
+                                 &hc2));
     GNUNET_break (0 ==
-		  GNUNET_CRYPTO_rsa_signature_cmp (sig,
-						   sig2));
+                  GNUNET_CRYPTO_rsa_signature_cmp (sig,
+                                                   sig2));
     GNUNET_break (0 ==
-		  GNUNET_CRYPTO_rsa_public_key_cmp (pub,
-						    pub2));
+                  GNUNET_CRYPTO_rsa_public_key_cmp (pub,
+                                                    pub2));
     GNUNET_break (strlen (msg) == msg2_len);
     GNUNET_break (0 ==
-		  strncmp (msg,
-			   msg2,
-			   msg2_len));
+                  strncmp (msg,
+                           msg2,
+                           msg2_len));
     GNUNET_break (16 == u162);
     GNUNET_break (32 == u322);
     GNUNET_break (64 == u642);
@@ -220,23 +220,23 @@ run_queries (sqlite3 *dbh)
 
 
 int
-main(int argc,
-     const char *const argv[])
+main (int argc,
+      const char *const argv[])
 {
   sqlite3 *dbh;
   int ret;
 
   GNUNET_log_setup ("test-sq",
-		    "WARNING",
-		    NULL);
+                    "WARNING",
+                    NULL);
   if (SQLITE_OK !=
       sqlite3_open ("test.db",
                     &dbh))
   {
     fprintf (stderr,
-	     "Cannot run test, sqlite3 initialization failed\n");
+             "Cannot run test, sqlite3 initialization failed\n");
     GNUNET_break (0);
-    return 77; /* Signal test was skipped... */
+    return 77;   /* Signal test was skipped... */
   }
 
   if (SQLITE_OK !=
@@ -255,7 +255,7 @@ main(int argc,
                     NULL, NULL, NULL))
   {
     fprintf (stderr,
-	     "Failed to create table\n");
+             "Failed to create table\n");
     GNUNET_break (SQLITE_OK ==
                   sqlite3_close (dbh));
     if (0 != unlink ("test.db"))
@@ -272,7 +272,7 @@ main(int argc,
                     NULL, NULL, NULL))
   {
     fprintf (stderr,
-	     "Failed to drop table\n");
+             "Failed to drop table\n");
     ret = 1;
   }
   GNUNET_break (SQLITE_OK ==

@@ -93,11 +93,10 @@ target_triplet = @target@
 
 # documentation on / off switch (affects all of the documentation)
 @DOCUMENTATION_TRUE@am__append_1 = doc
-@HAVE_EXPERIMENTAL_TRUE@am__append_2 = lint
 
 # only manpages, needs "doc" subdir
-@INCLUDE_MANPAGES_TRUE@am__append_3 = doc
-@TALER_ONLY_FALSE@am__append_4 = contrib
+@INCLUDE_MANPAGES_TRUE@am__append_2 = doc
+@TALER_ONLY_FALSE@am__append_3 = contrib
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -214,7 +213,7 @@ am__define_uniq_tagged_files = \
 ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
-DIST_SUBDIRS = m4 src po pkgconfig doc lint contrib
+DIST_SUBDIRS = m4 bin src po pkgconfig doc contrib
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/gnunet_config.h.in \
 	$(top_srcdir)/build-aux/compile \
 	$(top_srcdir)/build-aux/config.guess \
@@ -274,20 +273,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -295,6 +291,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -320,6 +317,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -357,11 +355,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -405,6 +407,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -424,6 +429,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -434,7 +440,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -498,13 +503,13 @@ top_srcdir = @top_srcdir@
 
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
-@DOCUMENTATION_ONLY_FALSE@SUBDIRS = m4 src po pkgconfig \
+@DOCUMENTATION_ONLY_FALSE@SUBDIRS = m4 bin src po pkgconfig \
 @DOCUMENTATION_ONLY_FALSE@	$(am__append_1) $(am__append_2) \
-@DOCUMENTATION_ONLY_FALSE@	$(am__append_3) $(am__append_4)
+@DOCUMENTATION_ONLY_FALSE@	$(am__append_3)
 
 # only documentation (ALL of the documentation)
-@DOCUMENTATION_ONLY_TRUE@SUBDIRS = doc $(am__append_1) $(am__append_2) \
-@DOCUMENTATION_ONLY_TRUE@	$(am__append_3) $(am__append_4)
+@DOCUMENTATION_ONLY_TRUE@SUBDIRS = bin doc $(am__append_1) \
+@DOCUMENTATION_ONLY_TRUE@	$(am__append_2) $(am__append_3)
 EXTRA_DIST = \
  ABOUT-NLS \
  config.rpath \
@@ -515,6 +520,10 @@ gnunetincludedir = $(includedir)/gnunet
 gnunetinclude_HEADERS = gnunet_config.h
 doc_DATA = COPYING README
 ACLOCAL_AMFLAGS = -I m4
+@HAVE_UNCRUSTIFY_BINARY_FALSE@MCRUSTIFY = echo "crustify: skipped"
+@HAVE_UNCRUSTIFY_BINARY_TRUE@MCRUSTIFY = find $(top_srcdir) -type f -name '*.c' -or -name '*.h' -print0 | xargs -0 uncrustify -c $(top_srcdir)/uncrustify.cfg -q --replace --no-backup 2>&1 || true
+@HAVE_YAPF_BINARY_FALSE@MYAPF = echo "yapf: skipped"
+@HAVE_YAPF_BINARY_TRUE@MYAPF = find $(top_srcdir) -type f -name '*.py' -or -name '*.py.in' -print0 | xargs -0 $(YAPF_BINARY) -i 2>&1 || true
 all: gnunet_config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1046,6 +1055,28 @@ uninstall-am: uninstall-docDATA uninstall-gnunetincludeHEADERS
 
 .PRECIOUS: Makefile
 
+
+pretty:
+	$(MCRUSTIFY)
+	$(MYAPF)
+
+lint: check-bashisms check-texinfo check-man check-python
+
+check-bashisms:
+@HAVE_CHECKBASHISMS_TRUE@	printf "If checkbashisms.pl is in PATH, run checkbashism on all .sh files.\n"
+@HAVE_CHECKBASHISMS_TRUE@	find '.' -type f ! -path '*/.*' ! -path '*/_*' -name '*.sh' -print0 | xargs -0 checkbashisms.pl -f 2>&1 | tee $(srcdir)/bashism.log || true
+@HAVE_CHECKBASHISMS_FALSE@	printf "No checkbashisms in PATH, skipped"
+
+check-man:
+	printf "Running lint-man.sh in doc/man.\n"
+	@cd $(top_srcdir)/doc/man ; ../../contrib/scripts/lint/lint-man.sh || true
+
+check-python:
+	printf "Running flake8 and 2to3 if detected.\n"
+	$(top_srcdir)/contrib/scripts/lint/lint-python.sh || true
+
+@HAVE_AWK_TRUE@check-texinfo:
+@HAVE_AWK_TRUE@	@cd $(top_srcdir); find . -type f ! -path '*/.*' -name '*.texi' -print0 | xargs -0 ./contrib/scripts/check-texinfo.awk > $(srcdir)/texinfo_lint.log || true
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

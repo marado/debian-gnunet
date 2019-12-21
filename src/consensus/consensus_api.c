@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file consensus/consensus_api.c
@@ -31,7 +31,7 @@
 #include "consensus.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "consensus-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "consensus-api", __VA_ARGS__)
 
 
 /**
@@ -128,7 +128,8 @@ handle_new_element (void *cls,
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "received new element\n");
   element.element_type = msg->element_type;
-  element.size = ntohs (msg->header.size) - sizeof (struct GNUNET_CONSENSUS_ElementMessage);
+  element.size = ntohs (msg->header.size) - sizeof(struct
+                                                   GNUNET_CONSENSUS_ElementMessage);
   element.data = &msg[1];
   consensus->new_element_cb (consensus->new_element_cls,
                              &element);
@@ -144,7 +145,7 @@ handle_new_element (void *cls,
  */
 static void
 handle_conclude_done (void *cls,
-		      const struct GNUNET_MessageHeader *msg)
+                      const struct GNUNET_MessageHeader *msg)
 {
   struct GNUNET_CONSENSUS_Handle *consensus = cls;
   GNUNET_CONSENSUS_ConcludeCallback cc;
@@ -194,8 +195,8 @@ mq_error_handler (void *cls,
  */
 struct GNUNET_CONSENSUS_Handle *
 GNUNET_CONSENSUS_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			 unsigned int num_peers,
-			 const struct GNUNET_PeerIdentity *peers,
+                         unsigned int num_peers,
+                         const struct GNUNET_PeerIdentity *peers,
                          const struct GNUNET_HashCode *session_id,
                          struct GNUNET_TIME_Absolute start,
                          struct GNUNET_TIME_Absolute deadline,
@@ -233,16 +234,16 @@ GNUNET_CONSENSUS_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
     return NULL;
   }
   ev = GNUNET_MQ_msg_extra (join_msg,
-                            (num_peers * sizeof (struct GNUNET_PeerIdentity)),
+                            (num_peers * sizeof(struct GNUNET_PeerIdentity)),
                             GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_JOIN);
 
   join_msg->session_id = consensus->session_id;
   join_msg->start = GNUNET_TIME_absolute_hton (start);
   join_msg->deadline = GNUNET_TIME_absolute_hton (deadline);
   join_msg->num_peers = htonl (num_peers);
-  GNUNET_memcpy(&join_msg[1],
-	 peers,
-	 num_peers * sizeof (struct GNUNET_PeerIdentity));
+  GNUNET_memcpy (&join_msg[1],
+                 peers,
+                 num_peers * sizeof(struct GNUNET_PeerIdentity));
 
   GNUNET_MQ_send (consensus->mq, ev);
   return consensus;
@@ -253,9 +254,11 @@ static void
 idc_adapter (void *cls)
 {
   struct InsertDoneInfo *i = cls;
+
   i->idc (i->cls, GNUNET_OK);
   GNUNET_free (i);
 }
+
 
 /**
  * Insert an element in the set being reconsiled.  Must not be called after
@@ -269,9 +272,9 @@ idc_adapter (void *cls)
  */
 void
 GNUNET_CONSENSUS_insert (struct GNUNET_CONSENSUS_Handle *consensus,
-			 const struct GNUNET_SET_Element *element,
-			 GNUNET_CONSENSUS_InsertDoneCallback idc,
-			 void *idc_cls)
+                         const struct GNUNET_SET_Element *element,
+                         GNUNET_CONSENSUS_InsertDoneCallback idc,
+                         void *idc_cls)
 {
   struct GNUNET_CONSENSUS_ElementMessage *element_msg;
   struct GNUNET_MQ_Envelope *ev;
@@ -309,8 +312,8 @@ GNUNET_CONSENSUS_insert (struct GNUNET_CONSENSUS_Handle *consensus,
  */
 void
 GNUNET_CONSENSUS_conclude (struct GNUNET_CONSENSUS_Handle *consensus,
-			   GNUNET_CONSENSUS_ConcludeCallback conclude,
-			   void *conclude_cls)
+                           GNUNET_CONSENSUS_ConcludeCallback conclude,
+                           void *conclude_cls)
 {
   struct GNUNET_MQ_Envelope *ev;
 
@@ -341,5 +344,6 @@ GNUNET_CONSENSUS_destroy (struct GNUNET_CONSENSUS_Handle *consensus)
   }
   GNUNET_free (consensus);
 }
+
 
 /* end of consensus_api.c */

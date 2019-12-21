@@ -11,13 +11,13 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
 
-*/
+ */
 /**
  * @file util/test_crypto_ecdh_eddsa.c
  * @brief testcase for ECC DH key exchange with EdDSA private keys.
@@ -30,7 +30,7 @@
 
 
 static int
-test_ecdh()
+test_ecdh ()
 {
   struct GNUNET_CRYPTO_EddsaPrivateKey *priv_dsa;
   struct GNUNET_CRYPTO_EcdhePrivateKey *priv_ecdh;
@@ -42,7 +42,7 @@ test_ecdh()
   priv_dsa = GNUNET_CRYPTO_eddsa_key_create ();
   GNUNET_CRYPTO_eddsa_key_get_public (priv_dsa,
                                       &id1);
-  for (unsigned int j=0;j<4;j++)
+  for (unsigned int j = 0; j < 4; j++)
   {
     fprintf (stderr, ",");
     priv_ecdh = GNUNET_CRYPTO_ecdhe_key_create ();
@@ -61,7 +61,7 @@ test_ecdh()
     /* Check that both DH results are equal. */
     GNUNET_assert (0 == memcmp (&dh[0],
                                 &dh[1],
-                                sizeof (struct GNUNET_HashCode)));
+                                sizeof(struct GNUNET_HashCode)));
     GNUNET_free (priv_ecdh);
   }
   GNUNET_free (priv_dsa);
@@ -74,19 +74,20 @@ main (int argc, char *argv[])
 {
   if (! gcry_check_version ("1.6.0"))
   {
-    FPRINTF (stderr,
-             _("libgcrypt has not the expected version (version %s is required).\n"),
+    fprintf (stderr,
+             _ (
+               "libgcrypt has not the expected version (version %s is required).\n"),
              "1.6.0");
     return 0;
   }
   if (getenv ("GNUNET_GCRYPT_DEBUG"))
     gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1u, 0);
   GNUNET_log_setup ("test-crypto-ecdh-eddsa", "WARNING", NULL);
-  for (unsigned int i=0;i<4;i++)
+  for (unsigned int i = 0; i < 4; i++)
   {
     fprintf (stderr,
              ".");
-    if (0 != test_ecdh())
+    if (0 != test_ecdh ())
       return 1;
   }
   return 0;

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_manipulation_cfg.c
  * @brief base test case for transport traffic manipulation implementation
@@ -40,7 +40,7 @@
 
 #define TEST_MESSAGE_SIZE 2600
 
-#define TEST_RESPONSE_MESSAGE_TYPE 
+#define TEST_RESPONSE_MESSAGE_TYPE
 
 /**
  * Test delay, in microseconds.
@@ -59,15 +59,15 @@ static void
 sendtask_response_task (void *cls)
 {
   int ret;
-  
-  start_response = GNUNET_TIME_absolute_get();
+
+  start_response = GNUNET_TIME_absolute_get ();
   ret = GNUNET_TRANSPORT_TESTING_send (ccc->p[1],
-				       ccc->p[0],
-				       GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE2,
-				       TEST_MESSAGE_SIZE,
-				       1,
-				       NULL,
-				       NULL);
+                                       ccc->p[0],
+                                       GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE2,
+                                       TEST_MESSAGE_SIZE,
+                                       1,
+                                       NULL,
+                                       NULL);
   if (GNUNET_NO == ret)
   {
     GNUNET_break (0);
@@ -99,10 +99,11 @@ notify_receive (void *cls,
     GNUNET_free (ps);
   }
 
-  switch (ntohs (message->header.type)) {
+  switch (ntohs (message->header.type))
+  {
   case GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE:
     duration = GNUNET_TIME_absolute_get_difference (start_request,
-						    GNUNET_TIME_absolute_get());
+                                                    GNUNET_TIME_absolute_get ());
     if (duration.rel_value_us >= TEST_DELAY)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -121,11 +122,12 @@ notify_receive (void *cls,
     }
     /* Send response */
     GNUNET_SCHEDULER_add_now (&sendtask_response_task,
-			      NULL);
+                              NULL);
     return;
+
   case GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE2:
-    duration = GNUNET_TIME_absolute_get_difference(start_response,
-                                                   GNUNET_TIME_absolute_get());
+    duration = GNUNET_TIME_absolute_get_difference (start_response,
+                                                    GNUNET_TIME_absolute_get ());
     if (duration.rel_value_us >= TEST_DELAY)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -144,6 +146,7 @@ notify_receive (void *cls,
     }
     GNUNET_SCHEDULER_shutdown ();
     break;
+
   default:
     GNUNET_break (0);
     break;

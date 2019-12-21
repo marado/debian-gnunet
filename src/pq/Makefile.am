@@ -1,10 +1,6 @@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include $(POSTGRESQL_CPPFLAGS)
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage
 endif
@@ -15,6 +11,7 @@ endif
 
 libgnunetpq_la_SOURCES = \
   pq.c \
+  pq.h \
   pq_connect.c \
   pq_eval.c \
   pq_exec.c \
@@ -26,7 +23,7 @@ libgnunetpq_la_LIBADD = -lpq \
 libgnunetpq_la_LDFLAGS = \
  $(POSTGRESQL_LDFLAGS) \
  $(GN_LIB_LDFLAGS) \
-  -version-info 0:0:0
+  -version-info 1:0:0
 
 if ENABLE_TEST_RUN
 TESTS = \

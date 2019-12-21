@@ -6,28 +6,28 @@
    Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97
      Free Software Foundation, Inc.
 
-NOTE: The canonical source of this file is maintained with the GNU C Library.
-Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   NOTE: The canonical source of this file is maintained with the GNU C Library.
+   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
-This program is free software; you can redistribute it and/or modify it
-under the terms of the GNU General Public License as published by the
-Free Software Foundation; either version 3, or (at your option) any
-later version.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 3, or (at your option) any
+   later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-USA.
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
+   USA.
 
 
-This code was heavily modified for GNUnet.
-Copyright (C) 2006, 2017 Christian Grothoff
-*/
+   This code was heavily modified for GNUnet.
+   Copyright (C) 2006, 2017 Christian Grothoff
+ */
 
 /**
  * @file util/getopt.c
@@ -52,12 +52,6 @@ Copyright (C) 2006, 2017 Christian Grothoff
 #define LOG_STRERROR(kind, syscall) \
   GNUNET_log_from_strerror (kind, "util-getopt", syscall)
 
-#if defined(WIN32) && ! defined(__CYGWIN32__)
-/* It's not Unix, really.  See?  Capital letters.  */
-#include <windows.h>
-#define getpid() GetCurrentProcessId ()
-#endif
-
 #ifndef _
 /* This is for other GNU distributions with internationalized messages.
    When compiling libc, the _ macro is predefined.  */
@@ -75,7 +69,7 @@ Copyright (C) 2006, 2017 Christian Grothoff
    zero.
 
    The field `has_arg' is:
-   no_argument  	(or 0) if the option does not take an argument,
+   no_argument          (or 0) if the option does not take an argument,
    required_argument  (or 1) if the option requires an argument,
    optional_argument   (or 2) if the option takes an optional argument.
 
@@ -209,6 +203,7 @@ my_index (const char *str, int chr)
   return 0;
 }
 
+
 /* If using GCC, we can safely declare strlen this way.
    If not using GCC, it is ok not to declare it.  */
 #ifdef __GNUC__
@@ -219,6 +214,7 @@ my_index (const char *str, int chr)
    and has done so at least since version 2.4.5. -- rms.  */
 extern int
 strlen (const char *);
+
 #endif /* not __STDC__ */
 #endif /* __GNUC__ */
 
@@ -247,6 +243,7 @@ static int last_nonopt;
 #if defined(__STDC__) && __STDC__
 static void
 exchange (char **);
+
 #endif
 
 static void
@@ -306,11 +303,13 @@ exchange (char **argv)
   last_nonopt = GNoptind;
 }
 
+
 /* Initialize the internal data when the first call is made.  */
 
 #if defined(__STDC__) && __STDC__
 static const char *
 _getopt_initialize (int, char *const *, const char *);
+
 #endif
 static const char *
 _getopt_initialize (int argc, char *const *argv, const char *optstring)
@@ -344,6 +343,7 @@ _getopt_initialize (int argc, char *const *argv, const char *optstring)
 
   return optstring;
 }
+
 
 /* Scan elements of ARGV (whose length is ARGC) for option characters
    given in OPTSTRING.
@@ -414,10 +414,10 @@ GN_getopt_internal (int argc,
 
   GNoptarg = NULL;
 
-  if (GNoptind == 0 || ! __getopt_initialized)
+  if ((GNoptind == 0) || ! __getopt_initialized)
   {
     if (GNoptind == 0)
-      GNoptind = 1; /* Don't scan ARGV[0], the program name.  */
+      GNoptind = 1;   /* Don't scan ARGV[0], the program name.  */
     optstring = _getopt_initialize (argc, argv, optstring);
     __getopt_initialized = 1;
   }
@@ -428,12 +428,12 @@ GN_getopt_internal (int argc,
    * is only used when the used in the GNU libc.  */
 #define NONOPTION_P (argv[GNoptind][0] != '-' || argv[GNoptind][1] == '\0')
 
-  if (nextchar == NULL || *nextchar == '\0')
+  if ((nextchar == NULL) || (*nextchar == '\0'))
   {
     /* Advance to the next ARGV-element.  */
 
     /* Give FIRST_NONOPT & LAST_NONOPT rational values if GNoptind has been
-     * moved back by the user (who may also have changed the arguments).  */
+    * moved back by the user (who may also have changed the arguments).  */
     if (last_nonopt > GNoptind)
       last_nonopt = GNoptind;
     if (first_nonopt > GNoptind)
@@ -444,7 +444,7 @@ GN_getopt_internal (int argc,
       /* If we have just processed some options following some non-options,
        * exchange them so that the options come first.  */
 
-      if (first_nonopt != last_nonopt && last_nonopt != GNoptind)
+      if ((first_nonopt != last_nonopt) && (last_nonopt != GNoptind) )
         exchange ((char **) argv);
       else if (last_nonopt != GNoptind)
         first_nonopt = GNoptind;
@@ -461,11 +461,11 @@ GN_getopt_internal (int argc,
      * Skip it like a null option,
      * then exchange with previous non-options as if it were an option,
      * then skip everything else like a non-option.  */
-    if (GNoptind != argc && ! strcmp (argv[GNoptind], "--"))
+    if ((GNoptind != argc) && ! strcmp (argv[GNoptind], "--"))
     {
       GNoptind++;
 
-      if (first_nonopt != last_nonopt && last_nonopt != GNoptind)
+      if ((first_nonopt != last_nonopt) && (last_nonopt != GNoptind) )
         exchange ((char **) argv);
       else if (first_nonopt == last_nonopt)
         first_nonopt = GNoptind;
@@ -517,10 +517,8 @@ GN_getopt_internal (int argc,
    * the ARGV-element is "-fu", do consider that an abbreviation of
    * the long option, just like "--fu", and not "-f" with arg "u".
    *
-   * This distinction seems to be the most useful approach.  */
-
-  if (longopts != NULL &&
-      (argv[GNoptind][1] == '-' ||
+   * This distinction seems to be the most useful approach.  */if ((longopts != NULL) &&
+      ((argv[GNoptind][1] == '-') ||
        (long_only &&
         (argv[GNoptind][2] || ! my_index (optstring, argv[GNoptind][1])))))
   {
@@ -563,7 +561,7 @@ GN_getopt_internal (int argc,
     if (ambig && ! exact)
     {
       if (GNopterr)
-        FPRINTF (stderr,
+        fprintf (stderr,
                  _ ("%s: option `%s' is ambiguous\n"),
                  argv[0],
                  argv[GNoptind]);
@@ -588,13 +586,13 @@ GN_getopt_internal (int argc,
           {
             if (argv[GNoptind - 1][1] == '-')
               /* --option */
-              FPRINTF (stderr,
+              fprintf (stderr,
                        _ ("%s: option `--%s' does not allow an argument\n"),
                        argv[0],
                        pfound->name);
             else
               /* +option or -option */
-              FPRINTF (stderr,
+              fprintf (stderr,
                        _ ("%s: option `%c%s' does not allow an argument\n"),
                        argv[0],
                        argv[GNoptind - 1][0],
@@ -614,7 +612,7 @@ GN_getopt_internal (int argc,
         {
           if (GNopterr)
           {
-            FPRINTF (stderr,
+            fprintf (stderr,
                      _ ("%s: option `%s' requires an argument\n"),
                      argv[0],
                      argv[GNoptind - 1]);
@@ -638,20 +636,20 @@ GN_getopt_internal (int argc,
      * or the option starts with '--' or is not a valid short
      * option, then it's an error.
      * Otherwise interpret it as a short option.  */
-    if (! long_only || argv[GNoptind][1] == '-' ||
-        my_index (optstring, *nextchar) == NULL)
+    if (! long_only || (argv[GNoptind][1] == '-') ||
+        (my_index (optstring, *nextchar) == NULL) )
     {
       if (GNopterr)
       {
         if (argv[GNoptind][1] == '-')
           /* --option */
-          FPRINTF (stderr,
+          fprintf (stderr,
                    _ ("%s: unrecognized option `--%s'\n"),
                    argv[0],
                    nextchar);
         else
           /* +option or -option */
-          FPRINTF (stderr,
+          fprintf (stderr,
                    _ ("%s: unrecognized option `%c%s'\n"),
                    argv[0],
                    argv[GNoptind][0],
@@ -673,20 +671,20 @@ GN_getopt_internal (int argc,
     if (*nextchar == '\0')
       ++GNoptind;
 
-    if (temp == NULL || c == ':')
+    if ((temp == NULL) || (c == ':'))
     {
       if (GNopterr)
       {
         if (posixly_correct)
           /* 1003.2 specifies the format of this message.  */
-          FPRINTF (stderr, _ ("%s: illegal option -- %c\n"), argv[0], c);
+          fprintf (stderr, _ ("%s: illegal option -- %c\n"), argv[0], c);
         else
-          FPRINTF (stderr, _ ("%s: invalid option -- %c\n"), argv[0], c);
+          fprintf (stderr, _ ("%s: invalid option -- %c\n"), argv[0], c);
       }
       return '?';
     }
     /* Convenience. Treat POSIX -W foo same as long option --foo */
-    if (temp[0] == 'W' && temp[1] == ';')
+    if ((temp[0] == 'W') && (temp[1] == ';'))
     {
       char *nameend;
       const struct GNoption *p;
@@ -709,7 +707,7 @@ GN_getopt_internal (int argc,
         if (GNopterr)
         {
           /* 1003.2 specifies the format of this message.  */
-          FPRINTF (stderr,
+          fprintf (stderr,
                    _ ("%s: option requires an argument -- %c\n"),
                    argv[0],
                    c);
@@ -759,7 +757,7 @@ GN_getopt_internal (int argc,
       if (ambig && ! exact)
       {
         if (GNopterr)
-          FPRINTF (stderr,
+          fprintf (stderr,
                    _ ("%s: option `-W %s' is ambiguous\n"),
                    argv[0],
                    argv[GNoptind]);
@@ -779,7 +777,7 @@ GN_getopt_internal (int argc,
           else
           {
             if (GNopterr)
-              FPRINTF (stderr,
+              fprintf (stderr,
                        _ ("%s: option `-W %s' does not allow an argument\n"),
                        argv[0],
                        pfound->name);
@@ -795,7 +793,7 @@ GN_getopt_internal (int argc,
           else
           {
             if (GNopterr)
-              FPRINTF (stderr,
+              fprintf (stderr,
                        _ ("%s: option `%s' requires an argument\n"),
                        argv[0],
                        argv[GNoptind - 1]);
@@ -814,7 +812,7 @@ GN_getopt_internal (int argc,
         return pfound->val;
       }
       nextchar = NULL;
-      return 'W'; /* Let the application handle it.   */
+      return 'W';   /* Let the application handle it.   */
     }
     if (temp[1] == ':')
     {
@@ -845,7 +843,7 @@ GN_getopt_internal (int argc,
           if (GNopterr)
           {
             /* 1003.2 specifies the format of this message.  */
-            FPRINTF (stderr,
+            fprintf (stderr,
                      _ ("%s: option requires an argument -- %c\n"),
                      argv[0],
                      c);
@@ -876,6 +874,7 @@ GNgetopt_long (int argc,
 {
   return GN_getopt_internal (argc, argv, options, long_options, opt_index, 0);
 }
+
 
 /* ******************** now the GNUnet specific modifications... ********************* */
 
@@ -947,7 +946,7 @@ GNUNET_GETOPT_run (const char *binaryOptions,
 
     c = GNgetopt_long (argc, argv, shorts, long_options, &option_index);
     if (c == GNUNET_SYSERR)
-      break; /* No more flags to process */
+      break;   /* No more flags to process */
 
     /* Check which of our program's options was given by the user */
     for (i = 0; i < count; i++)
@@ -972,7 +971,7 @@ GNUNET_GETOPT_run (const char *binaryOptions,
     }
     if (i == count)
     {
-      FPRINTF (stderr, _ ("Use %s to get a list of options.\n"), "--help");
+      fprintf (stderr, _ ("Use %s to get a list of options.\n"), "--help");
       cont = GNUNET_SYSERR;
     }
   }
@@ -983,7 +982,7 @@ GNUNET_GETOPT_run (const char *binaryOptions,
      is the only option that was provided */
   if ((NULL != have_exclusive) && (optmatch > 1))
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              _ ("Option `%s' can't be used with other options.\n"),
              have_exclusive);
     cont = GNUNET_SYSERR;
@@ -995,7 +994,7 @@ GNUNET_GETOPT_run (const char *binaryOptions,
     {
       if ((0 == seen[count]) && (allOptions[count].option_mandatory))
       {
-        FPRINTF (stderr,
+        fprintf (stderr,
                  _ ("Missing mandatory option `%s'.\n"),
                  allOptions[count].name);
         cont = GNUNET_SYSERR;
@@ -1013,5 +1012,6 @@ GNUNET_GETOPT_run (const char *binaryOptions,
     return cont;
   return GNoptind;
 }
+
 
 /* end of getopt.c */

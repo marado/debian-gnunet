@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api2_monitor.c
@@ -206,15 +206,15 @@ static void
 reconnect (struct GNUNET_TRANSPORT_MonitorContext *mc)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (monitor_data,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_DATA,
-                            struct GNUNET_TRANSPORT_MonitorData,
-                            mc),
-     GNUNET_MQ_hd_fixed_size (monitor_end,
-                              GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_END,
-                              struct GNUNET_MessageHeader,
-                              mc),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (monitor_data,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_DATA,
+                           struct GNUNET_TRANSPORT_MonitorData,
+                           mc),
+    GNUNET_MQ_hd_fixed_size (monitor_end,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_END,
+                             struct GNUNET_MessageHeader,
+                             mc),
+    GNUNET_MQ_handler_end () };
 
   mc->mq =
     GNUNET_CLIENT_connect (mc->cfg, "transport", handlers, &error_handler, mc);
@@ -287,5 +287,6 @@ GNUNET_TRANSPORT_monitor_cancel (struct GNUNET_TRANSPORT_MonitorContext *mc)
   disconnect (mc);
   GNUNET_free (mc);
 }
+
 
 /* end of transport_api2_monitor.c */

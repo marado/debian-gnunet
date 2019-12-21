@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/test_ats_lib.c
  * @brief test ATS library with a generic interpreter for running ATS tests
@@ -144,7 +144,6 @@ static unsigned int off;
  * Commands for the current test.
  */
 static struct Command *test_commands;
-
 
 
 /**
@@ -363,10 +362,10 @@ make_peer (uint32_t pid,
 {
   memset (pk,
           (int) pid,
-          sizeof (struct GNUNET_PeerIdentity));
+          sizeof(struct GNUNET_PeerIdentity));
   GNUNET_memcpy (pk,
-          &pid,
-          sizeof (uint32_t));
+                 &pid,
+                 sizeof(uint32_t));
 }
 
 
@@ -392,7 +391,7 @@ make_address (uint32_t pid,
   return GNUNET_HELLO_address_allocate (&pk,
                                         "test",
                                         &nbo,
-                                        sizeof (nbo),
+                                        sizeof(nbo),
                                         addr_flags);
 }
 
@@ -445,10 +444,10 @@ find_command (enum CommandCode code,
 
   if (NULL == label)
     return NULL;
-  for (i=off-1;i>=0;i--)
-    if ( (code == test_commands[i].code) &&
-         (0 == strcmp (test_commands[i].label,
-                       label)) )
+  for (i = off - 1; i >= 0; i--)
+    if ((code == test_commands[i].code) &&
+        (0 == strcmp (test_commands[i].label,
+                      label)))
       return &test_commands[i];
   GNUNET_break (0);
   return NULL;
@@ -484,8 +483,8 @@ info_cb (void *cls,
   {
     cmd->alh = NULL;
     /* we are done with the iteration, continue to execute */
-    if ( (cmd->calls < cmd->min_calls) &&
-         (cmd->active_calls < cmd->min_active_calls) )
+    if ((cmd->calls < cmd->min_calls) &&
+        (cmd->active_calls < cmd->min_active_calls))
     {
       GNUNET_SCHEDULER_shutdown ();
       return;
@@ -500,14 +499,16 @@ info_cb (void *cls,
     cmd->active_calls++;
     cmd->calls++;
     break;
+
   case GNUNET_NO:
     cmd->calls++;
     break;
+
   case GNUNET_SYSERR:
     return;
   }
-  if ( (cmd->calls > cmd->max_calls) &&
-       (cmd->active_calls < cmd->max_active_calls) )
+  if ((cmd->calls > cmd->max_calls) &&
+      (cmd->active_calls < cmd->max_active_calls))
   {
     GNUNET_break (0);
     GNUNET_ATS_performance_list_addresses_cancel (cmd->alh);
@@ -541,7 +542,7 @@ reservation_cb (void *cls,
   make_peer (cmd->details.reserve_bandwidth.pid,
              &pid);
   GNUNET_assert (0 == GNUNET_memcmp (peer,
-                              &pid));
+                                     &pid));
   switch (cmd->details.reserve_bandwidth.expected_result)
   {
   case GNUNET_OK:
@@ -558,13 +559,15 @@ reservation_cb (void *cls,
       return;
     }
     break;
+
   case GNUNET_NO:
-    GNUNET_break ( (0 != amount) ||
-                   (0 != res_delay.rel_value_us) );
+    GNUNET_break ((0 != amount) ||
+                  (0 != res_delay.rel_value_us));
     break;
+
   case GNUNET_SYSERR:
-    if ( (amount != 0) ||
-         (0 == res_delay.rel_value_us) )
+    if ((amount != 0) ||
+        (0 == res_delay.rel_value_us))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                   "Unexpectedly reserved %d bytes with delay %s!\n",
@@ -608,6 +611,7 @@ interpreter (void *cls)
       ret = 0;
       GNUNET_SCHEDULER_shutdown ();
       return;
+
     case CMD_ADD_ADDRESS:
       {
         struct GNUNET_HELLO_Address *addr;
@@ -638,6 +642,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_DEL_ADDRESS:
       {
         struct Command *add;
@@ -650,6 +655,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_AWAIT_ADDRESS_SUGGESTION:
       {
         struct GNUNET_PeerIdentity pid;
@@ -664,7 +670,7 @@ interpreter (void *cls)
         if (NULL == asd)
           return;
         if (GNUNET_NO == asd->active)
-          return; /* last suggestion was to disconnect, wait longer */
+          return;   /* last suggestion was to disconnect, wait longer */
         done = GNUNET_YES;
         if (NULL != cmd->details.await_address_suggestion.add_label)
         {
@@ -674,11 +680,11 @@ interpreter (void *cls)
           addr = make_address (add->details.add_address.pid,
                                add->details.add_address.addr_num,
                                add->details.add_address.addr_flags);
-          if ( (asd->session ==
-                make_session (add->details.add_address.session)) &&
-               (0 ==
-                GNUNET_HELLO_address_cmp (addr,
-                                          asd->address)) )
+          if ((asd->session ==
+               make_session (add->details.add_address.session)) &&
+              (0 ==
+               GNUNET_HELLO_address_cmp (addr,
+                                         asd->address)))
             done = GNUNET_YES;
           GNUNET_free (addr);
         }
@@ -687,6 +693,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_AWAIT_DISCONNECT_SUGGESTION:
       {
         struct GNUNET_PeerIdentity pid;
@@ -696,13 +703,14 @@ interpreter (void *cls)
                    &pid);
         asd = find_address_suggestion (&pid);
         if (NULL == asd)
-          return; /* odd, no suggestion at all yet!? */
+          return;   /* odd, no suggestion at all yet!? */
         if (GNUNET_YES == asd->active)
-          return; /* last suggestion was to activate, wait longer */
+          return;   /* last suggestion was to activate, wait longer */
         /* last suggestion was to deactivate, condition satisfied! */
         off++;
         break;
       }
+
     case CMD_REQUEST_CONNECTION_START:
       {
         struct GNUNET_PeerIdentity pid;
@@ -716,17 +724,20 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_REQUEST_CONNECTION_STOP:
       {
         struct Command *start;
 
         start = find_command (CMD_REQUEST_CONNECTION_START,
                               cmd->details.request_connection_stop.connect_label);
-        GNUNET_ATS_connectivity_suggest_cancel (start->details.request_connection_start.csh);
+        GNUNET_ATS_connectivity_suggest_cancel (
+          start->details.request_connection_start.csh);
         start->details.request_connection_start.csh = NULL;
         off++;
         break;
       }
+
     case CMD_AWAIT_ADDRESS_INFORMATION:
       {
         struct AddressInformationData *aid;
@@ -738,7 +749,8 @@ interpreter (void *cls)
         add = find_command (CMD_ADD_ADDRESS,
                             cmd->details.await_address_information.add_label);
         update = find_command (CMD_UPDATE_ADDRESS,
-                               cmd->details.await_address_information.update_label);
+                               cmd->details.await_address_information.
+                               update_label);
         addr = make_address (add->details.add_address.pid,
                              add->details.add_address.addr_num,
                              add->details.add_address.addr_flags);
@@ -748,18 +760,19 @@ interpreter (void *cls)
           cmp = &add->details.add_address.properties;
         else
           cmp = &update->details.update_address.properties;
-        if ( (NULL != aid) &&
-             (cmp->delay.rel_value_us == aid->properties.delay.rel_value_us) &&
-             (cmp->utilization_out == aid->properties.utilization_out) &&
-             (cmp->utilization_in == aid->properties.utilization_in) &&
-             (cmp->distance == aid->properties.distance) &&
-             (cmp->scope == aid->properties.scope) )
+        if ((NULL != aid) &&
+            (cmp->delay.rel_value_us == aid->properties.delay.rel_value_us) &&
+            (cmp->utilization_out == aid->properties.utilization_out) &&
+            (cmp->utilization_in == aid->properties.utilization_in) &&
+            (cmp->distance == aid->properties.distance) &&
+            (cmp->scope == aid->properties.scope))
         {
           off++;
           break;
         }
         return;
       }
+
     case CMD_UPDATE_ADDRESS:
       {
         struct Command *add;
@@ -772,6 +785,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_ADD_SESSION:
       {
         struct Command *add;
@@ -786,6 +800,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_DEL_SESSION:
       {
         struct Command *add_address;
@@ -803,6 +818,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_CHANGE_PREFERENCE:
       {
         struct GNUNET_PeerIdentity pid;
@@ -815,6 +831,7 @@ interpreter (void *cls)
         off++;
         break;
       }
+
     case CMD_PROVIDE_FEEDBACK:
       {
         struct GNUNET_PeerIdentity pid;
@@ -823,11 +840,13 @@ interpreter (void *cls)
                    &pid);
         GNUNET_ATS_performance_give_feedback (perf_ats,
                                               &pid,
-                                              cmd->details.provide_feedback.scope,
+                                              cmd->details.provide_feedback.
+                                              scope,
                                               GNUNET_ATS_PREFERENCE_END);
         off++;
         break;
       }
+
     case CMD_LIST_ADDRESSES:
       {
         struct GNUNET_PeerIdentity pid;
@@ -837,11 +856,13 @@ interpreter (void *cls)
         cmd->details.list_addresses.alh
           = GNUNET_ATS_performance_list_addresses (perf_ats,
                                                    &pid,
-                                                   cmd->details.list_addresses.all,
+                                                   cmd->details.list_addresses.
+                                                   all,
                                                    &info_cb,
                                                    cmd);
         return;
       }
+
     case CMD_RESERVE_BANDWIDTH:
       {
         struct GNUNET_PeerIdentity pid;
@@ -856,14 +877,15 @@ interpreter (void *cls)
                                           cmd);
         return;
       }
+
     case CMD_SLEEP:
       off++;
       interpreter_task = GNUNET_SCHEDULER_add_delayed (cmd->details.sleep.delay,
                                                        &interpreter,
                                                        NULL);
       return;
-    } /* end switch */
-  } /* end while(1) */
+    }     /* end switch */
+  }   /* end while(1) */
 }
 
 
@@ -921,8 +943,8 @@ address_suggest_cb (void *cls,
                                                       asd,
                                                       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   }
-  if ( (0 == ntohl (bandwidth_out.value__)) &&
-       (0 == ntohl (bandwidth_in.value__)) )
+  if ((0 == ntohl (bandwidth_out.value__)) &&
+      (0 == ntohl (bandwidth_in.value__)))
     asd->active = GNUNET_NO;
   else
     asd->active = GNUNET_YES;
@@ -1080,5 +1102,6 @@ TEST_ATS_run (int argc,
   GNUNET_free (config_file);
   return ret;
 }
+
 
 /* end of test_ats_lib.c */

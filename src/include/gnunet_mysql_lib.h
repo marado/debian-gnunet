@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  *
@@ -66,7 +66,7 @@ struct GNUNET_MYSQL_StatementHandle;
 typedef int
 (*GNUNET_MYSQL_DataProcessor) (void *cls,
                                unsigned int num_values,
-                               MYSQL_BIND * values);
+                               MYSQL_BIND *values);
 
 
 /**
@@ -78,7 +78,7 @@ typedef int
  */
 struct GNUNET_MYSQL_Context *
 GNUNET_MYSQL_context_create (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			     const char *section);
+                             const char *section);
 
 
 /**
@@ -123,7 +123,7 @@ GNUNET_MYSQL_statement_get_stmt (struct GNUNET_MYSQL_StatementHandle *sh);
  */
 struct GNUNET_MYSQL_StatementHandle *
 GNUNET_MYSQL_statement_prepare (struct GNUNET_MYSQL_Context *mc,
-				const char *query);
+                                const char *query);
 
 
 /**
@@ -136,7 +136,7 @@ GNUNET_MYSQL_statement_prepare (struct GNUNET_MYSQL_Context *mc,
  */
 int
 GNUNET_MYSQL_statement_run (struct GNUNET_MYSQL_Context *mc,
-			    const char *sql);
+                            const char *sql);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

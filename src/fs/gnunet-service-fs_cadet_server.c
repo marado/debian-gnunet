@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_cadet_server.c
@@ -103,18 +103,17 @@ struct CadetClient
   /**
    * Task that is scheduled to asynchronously terminate the connection.
    */
-  struct GNUNET_SCHEDULER_Task * terminate_task;
+  struct GNUNET_SCHEDULER_Task *terminate_task;
 
   /**
    * Task that is scheduled to terminate idle connections.
    */
-  struct GNUNET_SCHEDULER_Task * timeout_task;
+  struct GNUNET_SCHEDULER_Task *timeout_task;
 
   /**
    * Size of the last write that was initiated.
    */
   size_t reply_size;
-
 };
 
 
@@ -144,7 +143,6 @@ static unsigned int sc_count;
 static unsigned long long sc_count_max;
 
 
-
 /**
  * Task run to asynchronously terminate the cadet due to timeout.
  *
@@ -160,8 +158,8 @@ timeout_cadet_task (void *cls)
   tun = sc->channel;
   sc->channel = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Timeout for inactive cadet client %p\n",
-	      sc);
+              "Timeout for inactive cadet client %p\n",
+              sc);
   GNUNET_CADET_channel_destroy (tun);
 }
 
@@ -177,8 +175,8 @@ refresh_timeout_task (struct CadetClient *sc)
   if (NULL != sc->timeout_task)
     GNUNET_SCHEDULER_cancel (sc->timeout_task);
   sc->timeout_task = GNUNET_SCHEDULER_add_delayed (IDLE_TIMEOUT,
-						   &timeout_cadet_task,
-						   sc);
+                                                   &timeout_cadet_task,
+                                                   sc);
 }
 
 
@@ -198,13 +196,13 @@ continue_writing (void *cls)
   if (0 != GNUNET_MQ_get_length (mq))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Write pending, waiting for it to complete\n");
+                "Write pending, waiting for it to complete\n");
     return;
   }
   refresh_timeout_task (sc);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Finished processing cadet request from client %p, ready to receive the next one\n",
-	      sc);
+              "Finished processing cadet request from client %p, ready to receive the next one\n",
+              sc);
   GNUNET_CADET_receive_done (sc->channel);
 }
 
@@ -237,7 +235,7 @@ handle_datastore_reply (void *cls,
                         uint64_t uid)
 {
   struct CadetClient *sc = cls;
-  size_t msize = size + sizeof (struct CadetReplyMessage);
+  size_t msize = size + sizeof(struct CadetReplyMessage);
   struct GNUNET_MQ_Envelope *env;
   struct CadetReplyMessage *srm;
 
@@ -249,8 +247,7 @@ handle_datastore_reply (void *cls,
        answers should be queried; OTOH, this is not a
        hard error as we might have had the answer in the
        past and the user might have unindexed it. Hence
-       we log at level "INFO" for now. */
-    if (NULL == key)
+       we log at level "INFO" for now. */if (NULL == key)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                   "Have no answer and the query was NULL\n");
@@ -258,11 +255,12 @@ handle_datastore_reply (void *cls,
     else
     {
       GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		  "Have no answer for query `%s'\n",
-		  GNUNET_h2s (key));
+                  "Have no answer for query `%s'\n",
+                  GNUNET_h2s (key));
     }
     GNUNET_STATISTICS_update (GSF_stats,
-                              gettext_noop ("# queries received via CADET not answered"),
+                              gettext_noop (
+                                "# queries received via CADET not answered"),
                               1,
                               GNUNET_NO);
     continue_writing (sc);
@@ -271,23 +269,23 @@ handle_datastore_reply (void *cls,
   if (GNUNET_BLOCK_TYPE_FS_ONDEMAND == type)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Performing on-demand encoding for query %s\n",
-		GNUNET_h2s (key));
+                "Performing on-demand encoding for query %s\n",
+                GNUNET_h2s (key));
     if (GNUNET_OK !=
-	GNUNET_FS_handle_on_demand_block (key,
-                                    size,
-                                    data,
-                                    type,
-                                    priority,
-                                    anonymity,
-                                    replication,
-                                    expiration,
-                                    uid,
-                                    &handle_datastore_reply,
-                                    sc))
+        GNUNET_FS_handle_on_demand_block (key,
+                                          size,
+                                          data,
+                                          type,
+                                          priority,
+                                          anonymity,
+                                          replication,
+                                          expiration,
+                                          uid,
+                                          &handle_datastore_reply,
+                                          sc))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		  "On-demand encoding request failed\n");
+                  "On-demand encoding request failed\n");
       continue_writing (sc);
     }
     return;
@@ -300,11 +298,11 @@ handle_datastore_reply (void *cls,
   }
   GNUNET_break (GNUNET_BLOCK_TYPE_ANY != type);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Starting transmission of %u byte reply of type %d for query `%s' via cadet to %p\n",
-	      (unsigned int) size,
+              "Starting transmission of %u byte reply of type %d for query `%s' via cadet to %p\n",
+              (unsigned int) size,
               (unsigned int) type,
-	      GNUNET_h2s (key),
-	      sc);
+              GNUNET_h2s (key),
+              sc);
   env = GNUNET_MQ_msg_extra (srm,
                              size,
                              GNUNET_MESSAGE_TYPE_FS_CADET_REPLY);
@@ -317,9 +315,9 @@ handle_datastore_reply (void *cls,
                          &continue_writing,
                          sc);
   GNUNET_STATISTICS_update (GSF_stats,
-			    gettext_noop ("# Blocks transferred via cadet"),
+                            gettext_noop ("# Blocks transferred via cadet"),
                             1,
-			    GNUNET_NO);
+                            GNUNET_NO);
   GNUNET_MQ_send (GNUNET_CADET_get_mq (sc->channel),
                   env);
 }
@@ -339,13 +337,13 @@ handle_request (void *cls,
   struct CadetClient *sc = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Received query for `%s' via cadet from client %p\n",
-	      GNUNET_h2s (&sqm->query),
-	      sc);
+              "Received query for `%s' via cadet from client %p\n",
+              GNUNET_h2s (&sqm->query),
+              sc);
   GNUNET_STATISTICS_update (GSF_stats,
-			    gettext_noop ("# queries received via cadet"),
+                            gettext_noop ("# queries received via cadet"),
                             1,
-			    GNUNET_NO);
+                            GNUNET_NO);
   refresh_timeout_task (sc);
   sc->qe = GNUNET_DATASTORE_get_key (GSF_dsh,
                                      0 /* next_uid */,
@@ -359,7 +357,7 @@ handle_request (void *cls,
   if (NULL == sc->qe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Queueing request with datastore failed (queue full?)\n");
+                "Queueing request with datastore failed (queue full?)\n");
     continue_writing (sc);
   }
 }
@@ -385,27 +383,28 @@ connect_cb (void *cls,
   if (sc_count >= sc_count_max)
   {
     GNUNET_STATISTICS_update (GSF_stats,
-			      gettext_noop ("# cadet client connections rejected"),
+                              gettext_noop (
+                                "# cadet client connections rejected"),
                               1,
-			      GNUNET_NO);
+                              GNUNET_NO);
     GNUNET_CADET_channel_destroy (channel);
     return NULL;
   }
   GNUNET_STATISTICS_update (GSF_stats,
-			    gettext_noop ("# cadet connections active"),
+                            gettext_noop ("# cadet connections active"),
                             1,
-			    GNUNET_NO);
+                            GNUNET_NO);
   sc = GNUNET_new (struct CadetClient);
   sc->channel = channel;
   GNUNET_CONTAINER_DLL_insert (sc_head,
-			       sc_tail,
-			       sc);
+                               sc_tail,
+                               sc);
   sc_count++;
   refresh_timeout_task (sc);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Accepting inbound cadet connection from `%s' as client %p\n",
-	      GNUNET_i2s (initiator),
-	      sc);
+              "Accepting inbound cadet connection from `%s' as client %p\n",
+              GNUNET_i2s (initiator),
+              sc);
   return sc;
 }
 
@@ -429,11 +428,11 @@ disconnect_cb (void *cls,
     return;
   sc->channel = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Terminating cadet connection with client %p\n",
-	      sc);
+              "Terminating cadet connection with client %p\n",
+              sc);
   GNUNET_STATISTICS_update (GSF_stats,
-			    gettext_noop ("# cadet connections active"), -1,
-			    GNUNET_NO);
+                            gettext_noop ("# cadet connections active"), -1,
+                            GNUNET_NO);
   if (NULL != sc->terminate_task)
     GNUNET_SCHEDULER_cancel (sc->terminate_task);
   if (NULL != sc->timeout_task)
@@ -443,13 +442,13 @@ disconnect_cb (void *cls,
   while (NULL != (wqi = sc->wqi_head))
   {
     GNUNET_CONTAINER_DLL_remove (sc->wqi_head,
-				 sc->wqi_tail,
-				 wqi);
+                                 sc->wqi_tail,
+                                 wqi);
     GNUNET_free (wqi);
   }
   GNUNET_CONTAINER_DLL_remove (sc_head,
-			       sc_tail,
-			       sc);
+                               sc_tail,
+                               sc);
   sc_count--;
   GNUNET_free (sc);
 }
@@ -495,13 +494,13 @@ GSF_cadet_start_server ()
 
   if (GNUNET_YES !=
       GNUNET_CONFIGURATION_get_value_number (GSF_cfg,
-					     "fs",
-					     "MAX_CADET_CLIENTS",
-					     &sc_count_max))
+                                             "fs",
+                                             "MAX_CADET_CLIENTS",
+                                             &sc_count_max))
     return;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Initializing cadet FS server with a limit of %llu connections\n",
-	      sc_count_max);
+              "Initializing cadet FS server with a limit of %llu connections\n",
+              sc_count_max);
   cadet_map = GNUNET_CONTAINER_multipeermap_create (16, GNUNET_YES);
   cadet_handle = GNUNET_CADET_connect (GSF_cfg);
   GNUNET_assert (NULL != cadet_handle);
@@ -525,8 +524,8 @@ void
 GSF_cadet_stop_server ()
 {
   GNUNET_CONTAINER_multipeermap_iterate (cadet_map,
-					 &GSF_cadet_release_clients,
-					 NULL);
+                                         &GSF_cadet_release_clients,
+                                         NULL);
   GNUNET_CONTAINER_multipeermap_destroy (cadet_map);
   cadet_map = NULL;
   if (NULL != cadet_port)
@@ -542,5 +541,6 @@ GSF_cadet_stop_server ()
   GNUNET_assert (NULL == sc_head);
   GNUNET_assert (0 == sc_count);
 }
+
 
 /* end of gnunet-service-fs_cadet.c */

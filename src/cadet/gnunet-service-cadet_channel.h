@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet_channel.h
@@ -44,7 +44,7 @@ struct CadetChannel;
 
 
 /**
- * Hash the @a port and @a initiator and @a listener to 
+ * Hash the @a port and @a initiator and @a listener to
  * calculate the "challenge" @a h_port we send to the other
  * peer on #GNUNET_MESSAGE_TYPE_CADET_CHANNEL_OPEN.
  *
@@ -54,8 +54,8 @@ struct CadetChannel;
  */
 void
 GCCH_hash_port (struct GNUNET_HashCode *h_port,
-		const struct GNUNET_HashCode *port,
-		const struct GNUNET_PeerIdentity *listener);
+                const struct GNUNET_HashCode *port,
+                const struct GNUNET_PeerIdentity *listener);
 
 
 /**
@@ -121,7 +121,7 @@ GCCH_channel_local_new (struct CadetClient *owner,
 void
 GCCH_bind (struct CadetChannel *ch,
            struct CadetClient *c,
-	   const struct GNUNET_HashCode *port);
+           const struct GNUNET_HashCode *port);
 
 
 /**
@@ -179,8 +179,8 @@ GCCH_channel_incoming_new (struct CadetTunnel *t,
  */
 void
 GCCH_handle_duplicate_open (struct CadetChannel *ch,
-                            const struct GNUNET_CADET_ConnectionTunnelIdentifier *cti);
-
+                            const struct
+                            GNUNET_CADET_ConnectionTunnelIdentifier *cti);
 
 
 /**
@@ -192,8 +192,10 @@ GCCH_handle_duplicate_open (struct CadetChannel *ch,
  */
 void
 GCCH_handle_channel_plaintext_data (struct CadetChannel *ch,
-                                    const struct GNUNET_CADET_ConnectionTunnelIdentifier *cti,
-                                    const struct GNUNET_CADET_ChannelAppDataMessage *msg);
+                                    const struct
+                                    GNUNET_CADET_ConnectionTunnelIdentifier *cti,
+                                    const struct
+                                    GNUNET_CADET_ChannelAppDataMessage *msg);
 
 
 /**
@@ -206,8 +208,11 @@ GCCH_handle_channel_plaintext_data (struct CadetChannel *ch,
  */
 void
 GCCH_handle_channel_plaintext_data_ack (struct CadetChannel *ch,
-                                        const struct GNUNET_CADET_ConnectionTunnelIdentifier *cti,
-                                        const struct GNUNET_CADET_ChannelDataAckMessage *ack);
+                                        const struct
+                                        GNUNET_CADET_ConnectionTunnelIdentifier
+                                        *cti,
+                                        const struct
+                                        GNUNET_CADET_ChannelDataAckMessage *ack);
 
 
 /**
@@ -221,8 +226,9 @@ GCCH_handle_channel_plaintext_data_ack (struct CadetChannel *ch,
  */
 void
 GCCH_handle_channel_open_ack (struct CadetChannel *ch,
-                              const struct GNUNET_CADET_ConnectionTunnelIdentifier *cti,
-			      const struct GNUNET_HashCode *port);
+                              const struct
+                              GNUNET_CADET_ConnectionTunnelIdentifier *cti,
+                              const struct GNUNET_HashCode *port);
 
 
 /**
@@ -243,7 +249,8 @@ GCCH_handle_channel_open_ack (struct CadetChannel *ch,
  */
 void
 GCCH_handle_remote_destroy (struct CadetChannel *ch,
-                            const struct GNUNET_CADET_ConnectionTunnelIdentifier *cti);
+                            const struct
+                            GNUNET_CADET_ConnectionTunnelIdentifier *cti);
 
 
 /**

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file zonemaster/gnunet-service-zonemaster-monitor.c
@@ -30,7 +30,10 @@
 #include "gnunet_statistics_service.h"
 
 
-#define LOG_STRERROR_FILE(kind,syscall,filename) GNUNET_log_from_strerror_file (kind, "util", syscall, filename)
+#define LOG_STRERROR_FILE(kind, syscall, \
+                          filename) GNUNET_log_from_strerror_file (kind, "util", \
+                                                                   syscall, \
+                                                                   filename)
 
 
 /**
@@ -213,13 +216,13 @@ convert_records_for_export (const struct GNUNET_GNSRECORD_Data *rd,
 
   rd_public_count = 0;
   now = GNUNET_TIME_absolute_get ();
-  for (unsigned int i=0;i<rd_count;i++)
+  for (unsigned int i = 0; i < rd_count; i++)
   {
     if (0 != (rd[i].flags & GNUNET_GNSRECORD_RF_PRIVATE))
       continue;
-    if ( (0 == (rd[i].flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION)) &&
-         (rd[i].expiration_time < now.abs_value_us) )
-      continue;  /* record already expired, skip it */
+    if ((0 == (rd[i].flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION)) &&
+        (rd[i].expiration_time < now.abs_value_us))
+      continue;   /* record already expired, skip it */
     rd_public[rd_public_count++] = rd[i];
   }
   return rd_public_count;
@@ -266,11 +269,11 @@ perform_dht_put (const struct GNUNET_CRYPTO_EcdsaPrivateKey *key,
   if (NULL == block)
   {
     GNUNET_break (0);
-    return NULL; /* whoops */
+    return NULL;   /* whoops */
   }
   block_size = ntohl (block->purpose.size)
-    + sizeof (struct GNUNET_CRYPTO_EcdsaSignature)
-    + sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey);
+               + sizeof(struct GNUNET_CRYPTO_EcdsaSignature)
+               + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey);
   GNUNET_GNSRECORD_query_from_private_key (key,
                                            label,
                                            &query);
@@ -338,7 +341,7 @@ handle_monitor_event (void *cls,
   {
     GNUNET_NAMESTORE_zone_monitor_next (zmon,
                                         1);
-    return; /* nothing to do */
+    return;   /* nothing to do */
   }
   ma = GNUNET_new (struct DhtPutActivity);
   ma->start_date = GNUNET_TIME_absolute_get ();
@@ -356,8 +359,8 @@ handle_monitor_event (void *cls,
     return;
   }
   GNUNET_CONTAINER_DLL_insert_tail (ma_head,
-				    ma_tail,
-				    ma);
+                                    ma_tail,
+                                    ma);
   ma_queue_length++;
   if (ma_queue_length > DHT_QUEUE_LIMIT)
   {
@@ -369,8 +372,9 @@ handle_monitor_event (void *cls,
     ma_queue_length--;
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 "DHT PUT unconfirmed after %s, aborting PUT\n",
-                GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (ma->start_date),
-                                                        GNUNET_YES));
+                GNUNET_STRINGS_relative_time_to_string (
+                  GNUNET_TIME_absolute_get_duration (ma->start_date),
+                  GNUNET_YES));
     GNUNET_free (ma);
   }
 }
@@ -413,7 +417,7 @@ run (void *cls,
   if (NULL == namestore_handle)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to connect to the namestore!\n"));
+                _ ("Failed to connect to the namestore!\n"));
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -422,7 +426,7 @@ run (void *cls,
                                                      "CACHE_KEYS");
   if (GNUNET_OK ==
       GNUNET_CONFIGURATION_get_value_number (c,
-					     "zonemaster",
+                                             "zonemaster",
                                              "MAX_PARALLEL_BACKGROUND_QUERIES",
                                              &max_parallel_bg_queries))
   {
@@ -437,9 +441,9 @@ run (void *cls,
   if (NULL == dht_handle)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Could not connect to DHT!\n"));
+                _ ("Could not connect to DHT!\n"));
     GNUNET_SCHEDULER_add_now (&shutdown_task,
-			      NULL);
+                              NULL);
     return;
   }
 
@@ -459,7 +463,7 @@ run (void *cls,
                                       NAMESTORE_QUEUE_LIMIT - 1);
   GNUNET_break (NULL != zmon);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
 }
 
 
@@ -467,13 +471,13 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("zonemaster-monitor",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- NULL,
- NULL,
- NULL,
- GNUNET_MQ_handler_end());
+  ("zonemaster-monitor",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  NULL,
+  NULL,
+  NULL,
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-zonemaster-monitor.c */

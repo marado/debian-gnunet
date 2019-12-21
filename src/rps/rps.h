@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@
 GNUNET_NETWORK_STRUCT_BEGIN
 
 /***********************************************************************
- * P2P Messages
+* P2P Messages
 ***********************************************************************/
 
 /**
@@ -56,9 +56,8 @@ struct GNUNET_RPS_P2P_PullReplyMessage
 };
 
 
-
 /***********************************************************************
- * Client-Service Messages
+* Client-Service Messages
 ***********************************************************************/
 
 /**
@@ -200,7 +199,7 @@ struct GNUNET_RPS_CS_DEBUG_ViewReply
    */
   uint64_t num_peers GNUNET_PACKED;
 };
-  /* Followed by num_peers * GNUNET_PeerIdentity */
+/* Followed by num_peers * GNUNET_PeerIdentity */
 
 /**
  * Message from client to service indicating that
@@ -237,7 +236,7 @@ struct GNUNET_RPS_CS_DEBUG_StreamReply
 GNUNET_NETWORK_STRUCT_END
 
 /***********************************************************************
- * Defines from old gnunet-service-rps_peers.h
+* Defines from old gnunet-service-rps_peers.h
 ***********************************************************************/
 
 /**
@@ -315,7 +314,7 @@ enum Peers_ChannelRole
  * @param cls closure
  * @param peer peer to execute function on
  */
-typedef void (* PeerOp) (void *cls, const struct GNUNET_PeerIdentity *peer);
+typedef void (*PeerOp) (void *cls, const struct GNUNET_PeerIdentity *peer);
 
 /**
  * @brief Iterator over valid peers.
@@ -335,4 +334,3 @@ typedef int
  * Handle to the statistics service.
  */
 extern struct GNUNET_STATISTICS_Handle *stats;
-

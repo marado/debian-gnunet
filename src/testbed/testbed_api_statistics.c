@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -34,7 +34,7 @@
 /**
  * Generic logging shorthand
  */
-#define LOG(kind,...)                           \
+#define LOG(kind, ...)                           \
   GNUNET_log_from (kind, "testbed-api-statistics", __VA_ARGS__)
 
 /**
@@ -94,7 +94,7 @@ struct GetStatsContext
   /**
    * The task for calling the continuation callback
    */
-  struct GNUNET_SCHEDULER_Task * call_completion_task_id;
+  struct GNUNET_SCHEDULER_Task *call_completion_task_id;
 
   /**
    * The number of peers present in the peers array.  This number also
@@ -106,7 +106,6 @@ struct GetStatsContext
    * How many peers' statistics have we iterated through
    */
   unsigned int num_completed;
-
 };
 
 
@@ -128,7 +127,7 @@ struct PeerGetStatsContext
   /**
    * Task to mark the statistics service connect operation as done
    */
-  struct GNUNET_SCHEDULER_Task * op_done_task_id;
+  struct GNUNET_SCHEDULER_Task *op_done_task_id;
 
   /**
    * The index of this peer in the peers array of GetStatsContext
@@ -207,7 +206,7 @@ iteration_completion_cb (void *cls, int success)
   {
     LOG_DEBUG ("Scheduling to call iteration completion callback\n");
     sc->call_completion_task_id =
-        GNUNET_SCHEDULER_add_now (&call_completion_task, sc);
+      GNUNET_SCHEDULER_add_now (&call_completion_task, sc);
   }
 }
 
@@ -265,10 +264,10 @@ service_connect_comp (void *cls,
   LOG_DEBUG ("Retrieving statistics of peer %u\n",
              peer_sc->peer_index);
   peer_sc->get_handle =
-      GNUNET_STATISTICS_get (h, peer_sc->sc->subsystem,
-                             peer_sc->sc->name,
-                             &iteration_completion_cb,
-                             iterator_cb, peer_sc);
+    GNUNET_STATISTICS_get (h, peer_sc->sc->subsystem,
+                           peer_sc->sc->name,
+                           &iteration_completion_cb,
+                           iterator_cb, peer_sc);
 }
 
 
@@ -330,8 +329,8 @@ opstart_get_stats (void *cls)
   unsigned int peer;
 
   LOG_DEBUG ("Starting get_statistics operation\n");
-  sc->ops = GNUNET_malloc (sc->num_peers *
-                           sizeof (struct GNUNET_TESTBED_Operation *));
+  sc->ops = GNUNET_malloc (sc->num_peers
+                           * sizeof(struct GNUNET_TESTBED_Operation *));
   for (peer = 0; peer < sc->num_peers; peer++)
   {
     if (NULL == sc->peers[peer])
@@ -343,12 +342,12 @@ opstart_get_stats (void *cls)
     peer_sc->sc = sc;
     peer_sc->peer_index = peer;
     sc->ops[peer] =
-        GNUNET_TESTBED_service_connect (sc, sc->peers[peer], "statistics",
-                                        &service_connect_comp,
-                                        peer_sc,
-                                        &statistics_ca,
-                                        &statistics_da,
-                                        peer_sc);
+      GNUNET_TESTBED_service_connect (sc, sc->peers[peer], "statistics",
+                                      &service_connect_comp,
+                                      peer_sc,
+                                      &statistics_ca,
+                                      &statistics_da,
+                                      peer_sc);
   }
 }
 
@@ -415,7 +414,7 @@ GNUNET_TESTBED_get_statistics (unsigned int num_peers,
   GNUNET_assert (NULL != cont);
   if (NULL == no_wait_queue)
     no_wait_queue = GNUNET_TESTBED_operation_queue_create_
-        (OPERATION_QUEUE_TYPE_FIXED, UINT_MAX);
+                      (OPERATION_QUEUE_TYPE_FIXED, UINT_MAX);
   sc = GNUNET_new (struct GetStatsContext);
   sc->peers = peers;
   sc->subsystem = (NULL == subsystem) ? NULL : GNUNET_strdup (subsystem);
@@ -425,8 +424,8 @@ GNUNET_TESTBED_get_statistics (unsigned int num_peers,
   sc->cb_cls = cls;
   sc->num_peers = num_peers;
   sc->main_op =
-      GNUNET_TESTBED_operation_create_ (sc, &opstart_get_stats,
-                                        &oprelease_get_stats);
+    GNUNET_TESTBED_operation_create_ (sc, &opstart_get_stats,
+                                      &oprelease_get_stats);
   GNUNET_TESTBED_operation_queue_insert_ (no_wait_queue, sc->main_op);
   GNUNET_TESTBED_operation_begin_wait_ (sc->main_op);
   return sc->main_op;

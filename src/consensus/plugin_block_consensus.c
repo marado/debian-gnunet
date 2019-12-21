@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file consensus/plugin_block_consensus.c
@@ -58,13 +58,13 @@ block_plugin_consensus_evaluate (void *cls,
                                  const void *reply_block,
                                  size_t reply_block_size)
 {
-  if (reply_block_size < sizeof (struct ConsensusElement))
+  if (reply_block_size < sizeof(struct ConsensusElement))
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
 
   const struct ConsensusElement *ce = reply_block;
 
-  if ( (0 != ce->marker) ||
-       (0 == ce->payload_type ) )
+  if ((0 != ce->marker) ||
+      (0 == ce->payload_type))
     return GNUNET_BLOCK_EVALUATION_OK_MORE;
 
   return GNUNET_BLOCK_evaluate (ctx,
@@ -75,7 +75,8 @@ block_plugin_consensus_evaluate (void *cls,
                                 xquery,
                                 xquery_size,
                                 &ce[1],
-                                reply_block_size - sizeof (struct ConsensusElement));
+                                reply_block_size - sizeof(struct
+                                                          ConsensusElement));
 }
 
 
@@ -92,10 +93,10 @@ block_plugin_consensus_evaluate (void *cls,
  */
 static int
 block_plugin_consensus_get_key (void *cls,
-                               enum GNUNET_BLOCK_Type type,
-                               const void *block,
-                               size_t block_size,
-			       struct GNUNET_HashCode *key)
+                                enum GNUNET_BLOCK_Type type,
+                                const void *block,
+                                size_t block_size,
+                                struct GNUNET_HashCode *key)
 {
   return GNUNET_SYSERR;
 }
@@ -107,8 +108,7 @@ block_plugin_consensus_get_key (void *cls,
 void *
 libgnunet_plugin_block_consensus_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -133,5 +133,6 @@ libgnunet_plugin_block_consensus_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_consensus.c */

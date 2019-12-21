@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2013 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-service-testbed_cache.c
@@ -31,7 +31,7 @@
 #ifdef LOG
 #undef LOG
 #endif
-#define LOG(kind,...)                                   \
+#define LOG(kind, ...)                                   \
   GNUNET_log_from (kind, "testbed-cache", __VA_ARGS__)
 
 
@@ -190,7 +190,8 @@ GST_cache_clear ()
 {
   if (NULL != cache)
   {
-    GNUNET_CONTAINER_multihashmap32_iterate (cache, &cache_clear_iterator, NULL);
+    GNUNET_CONTAINER_multihashmap32_iterate (cache, &cache_clear_iterator,
+                                             NULL);
     GNUNET_assert (0 == GNUNET_CONTAINER_multihashmap32_size (cache));
     GNUNET_CONTAINER_multihashmap32_destroy (cache);
     cache = NULL;
@@ -263,5 +264,6 @@ GST_cache_add_hello (const unsigned int peer_id,
   GNUNET_free_non_null (entry->hello);
   entry->hello = GNUNET_copy_message (hello);
 }
+
 
 /* end of gnunet-service-testbed_hc.c */

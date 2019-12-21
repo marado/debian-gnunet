@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file dht/test_dht_monitor.c
  * @brief Test for the dht monitoring API; checks that we receive "some" monitor events
@@ -36,7 +36,8 @@
 /**
  * How often do we run the PUTs?
  */
-#define PUT_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 10)
+#define PUT_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                     10)
 
 
 /**
@@ -58,7 +59,6 @@ struct GetOperation
    * Handle for the operation.
    */
   struct GNUNET_DHT_GetHandle *get;
-
 };
 
 
@@ -95,7 +95,7 @@ static struct GNUNET_SCHEDULER_Task *timeout_task;
 /**
  * Task to do DHT_puts
  */
-static struct GNUNET_SCHEDULER_Task * put_task;
+static struct GNUNET_SCHEDULER_Task *put_task;
 
 static struct GNUNET_DHT_MonitorHandle **monitors;
 
@@ -118,17 +118,17 @@ shutdown_task (void *cls)
 
   ok = (monitor_counter > NUM_PEERS) ? 0 : 2;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      "Received %u monitor events\n",
-	      monitor_counter);
+              "Received %u monitor events\n",
+              monitor_counter);
   while (NULL != (get_op = get_tail))
   {
     GNUNET_DHT_get_stop (get_op->get);
     GNUNET_CONTAINER_DLL_remove (get_head,
-				 get_tail,
-				 get_op);
+                                 get_tail,
+                                 get_op);
     GNUNET_free (get_op);
   }
-  for (i=0;i<NUM_PEERS;i++)
+  for (i = 0; i < NUM_PEERS; i++)
     GNUNET_DHT_monitor_stop (monitors[i]);
   GNUNET_free (monitors);
   GNUNET_SCHEDULER_cancel (put_task);
@@ -173,34 +173,34 @@ timeout_task_cb (void *cls)
  */
 static void
 dht_get_handler (void *cls, struct GNUNET_TIME_Absolute exp,
-		 const struct GNUNET_HashCode * key,
-		 const struct GNUNET_PeerIdentity *get_path,
-		 unsigned int get_path_length,
-		 const struct GNUNET_PeerIdentity *put_path,
-		 unsigned int put_path_length,
+                 const struct GNUNET_HashCode *key,
+                 const struct GNUNET_PeerIdentity *get_path,
+                 unsigned int get_path_length,
+                 const struct GNUNET_PeerIdentity *put_path,
+                 unsigned int put_path_length,
                  enum GNUNET_BLOCK_Type type,
-		 size_t size, const void *data)
+                 size_t size, const void *data)
 {
   struct GetOperation *get_op = cls;
   struct GNUNET_HashCode want;
 
-  if (sizeof (struct GNUNET_HashCode) != size)
+  if (sizeof(struct GNUNET_HashCode) != size)
   {
     GNUNET_break (0);
     return;
   }
-  GNUNET_CRYPTO_hash (key, sizeof (*key), &want);
-  if (0 != memcmp (&want, data, sizeof (want)))
+  GNUNET_CRYPTO_hash (key, sizeof(*key), &want);
+  if (0 != memcmp (&want, data, sizeof(want)))
   {
     GNUNET_break (0);
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Get successful\n");
+              "Get successful\n");
   GNUNET_DHT_get_stop (get_op->get);
   GNUNET_CONTAINER_DLL_remove (get_head,
-			       get_tail,
-			       get_op);
+                               get_tail,
+                               get_op);
   GNUNET_free (get_op);
   if (NULL != get_head)
     return;
@@ -223,21 +223,21 @@ do_puts (void *cls)
   struct GNUNET_HashCode value;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Putting values into DHT\n");
+              "Putting values into DHT\n");
   for (unsigned int i = 0; i < NUM_PEERS; i++)
   {
-    GNUNET_CRYPTO_hash (&i, sizeof (i), &key);
-    GNUNET_CRYPTO_hash (&key, sizeof (key), &value);
+    GNUNET_CRYPTO_hash (&i, sizeof(i), &key);
+    GNUNET_CRYPTO_hash (&key, sizeof(key), &value);
     GNUNET_DHT_put (hs[i], &key, 10U,
-                    GNUNET_DHT_RO_RECORD_ROUTE |
-                    GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                    GNUNET_DHT_RO_RECORD_ROUTE
+                    | GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
                     GNUNET_BLOCK_TYPE_TEST,
-		    sizeof (value), &value,
-		    GNUNET_TIME_UNIT_FOREVER_ABS,
-		    NULL, NULL);
+                    sizeof(value), &value,
+                    GNUNET_TIME_UNIT_FOREVER_ABS,
+                    NULL, NULL);
   }
   put_task = GNUNET_SCHEDULER_add_delayed (PUT_FREQUENCY,
-					   &do_puts, hs);
+                                           &do_puts, hs);
 }
 
 
@@ -262,7 +262,7 @@ monitor_get_cb (void *cls,
                 uint32_t desired_replication_level,
                 unsigned int path_length,
                 const struct GNUNET_PeerIdentity *path,
-                const struct GNUNET_HashCode * key)
+                const struct GNUNET_HashCode *key)
 {
   unsigned int i;
 
@@ -270,7 +270,7 @@ monitor_get_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "%u got a GET message for key %s\n",
               i,
-	      GNUNET_h2s (key));
+              GNUNET_h2s (key));
   monitor_counter++;
 }
 
@@ -300,7 +300,7 @@ monitor_put_cb (void *cls,
                 unsigned int path_length,
                 const struct GNUNET_PeerIdentity *path,
                 struct GNUNET_TIME_Absolute exp,
-                const struct GNUNET_HashCode * key,
+                const struct GNUNET_HashCode *key,
                 const void *data,
                 size_t size)
 {
@@ -310,7 +310,7 @@ monitor_put_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "%u got a PUT message for key %s with %u bytes\n",
               i,
-	      GNUNET_h2s (key),
+              GNUNET_h2s (key),
               (unsigned int) size);
   monitor_counter++;
 }
@@ -339,7 +339,7 @@ monitor_res_cb (void *cls,
                 const struct GNUNET_PeerIdentity *put_path,
                 unsigned int put_path_length,
                 struct GNUNET_TIME_Absolute exp,
-                const struct GNUNET_HashCode * key,
+                const struct GNUNET_HashCode *key,
                 const void *data,
                 size_t size)
 {
@@ -349,7 +349,7 @@ monitor_res_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "%u got a REPLY message for key %s with %u bytes\n",
               i,
-	      GNUNET_h2s (key),
+              GNUNET_h2s (key),
               (unsigned int) size);
   monitor_counter++;
 }
@@ -382,36 +382,36 @@ run (void *cls,
                                struct GNUNET_DHT_MonitorHandle *);
   for (i = 0; i < num_peers; i++)
     monitors[i] = GNUNET_DHT_monitor_start (dhts[i],
-					    GNUNET_BLOCK_TYPE_ANY,
-					    NULL,
-					    &monitor_get_cb,
-					    &monitor_res_cb,
-					    &monitor_put_cb,
-					    (void *)(long)i);
+                                            GNUNET_BLOCK_TYPE_ANY,
+                                            NULL,
+                                            &monitor_get_cb,
+                                            &monitor_res_cb,
+                                            &monitor_put_cb,
+                                            (void *) (long) i);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Peers setup, starting test\n");
+              "Peers setup, starting test\n");
   put_task = GNUNET_SCHEDULER_add_now (&do_puts, dhts);
-  for (i=0;i<num_peers;i++)
+  for (i = 0; i < num_peers; i++)
   {
-    GNUNET_CRYPTO_hash (&i, sizeof (i), &key);
-    for (j=0;j<num_peers;j++)
+    GNUNET_CRYPTO_hash (&i, sizeof(i), &key);
+    for (j = 0; j < num_peers; j++)
     {
       get_op = GNUNET_new (struct GetOperation);
       GNUNET_CONTAINER_DLL_insert (get_head,
-				   get_tail,
-				   get_op);
+                                   get_tail,
+                                   get_op);
       get_op->get = GNUNET_DHT_get_start (dhts[j],
-					  GNUNET_BLOCK_TYPE_TEST, /* type */
-					  &key,      /*key to search */
-					  4U,     /* replication level */
-					  GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
-					  NULL,        /* xquery */
-					  0,      /* xquery bits */
-					  &dht_get_handler, get_op);
+                                          GNUNET_BLOCK_TYPE_TEST,    /* type */
+                                          &key,      /*key to search */
+                                          4U,     /* replication level */
+                                          GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                                          NULL,        /* xquery */
+                                          0,      /* xquery bits */
+                                          &dht_get_handler, get_op);
     }
   }
   timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-					       &timeout_task_cb,
+                                               &timeout_task_cb,
                                                NULL);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
                                  ctx);
@@ -425,9 +425,9 @@ int
 main (int xargc, char *xargv[])
 {
   GNUNET_DHT_TEST_run ("test-dht-monitor",
-		       "test_dht_monitor.conf",
-		       NUM_PEERS,
-		       &run, NULL);
+                       "test_dht_monitor.conf",
+                       NUM_PEERS,
+                       &run, NULL);
   return ok;
 }
 

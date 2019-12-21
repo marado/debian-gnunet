@@ -8,10 +8,6 @@ libexecdir= $(pkglibdir)/libexec/
 pkgcfg_DATA = \
   core.conf
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -28,7 +24,7 @@ libgnunetcore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
 libgnunetcore_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:1:0
 
 
@@ -55,6 +51,8 @@ gnunet_core_SOURCES = \
 gnunet_core_LDADD = \
   libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
+gnunet_core_LDFLAGS = \
+  $(GN_LIBINTL)
 
 if HAVE_TESTING
   TESTING_TESTS = \

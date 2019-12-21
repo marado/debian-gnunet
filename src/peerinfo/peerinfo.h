@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file peerinfo/peerinfo.h
@@ -32,7 +32,6 @@
 #include "gnunet_peerinfo_service.h"
 
 
-
 GNUNET_NETWORK_STRUCT_BEGIN
 
 /**
@@ -41,7 +40,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct ListPeerMessage
 {
-
   /**
    * Type will be GNUNET_MESSAGE_TYPE_PEERINFO_GET
    */
@@ -57,7 +55,6 @@ struct ListPeerMessage
    * field, check header.size!).
    */
   struct GNUNET_PeerIdentity peer;
-
 };
 
 /**
@@ -75,7 +72,6 @@ struct ListAllPeersMessage
    * Include friend only HELLOs and peers in callbacks
    */
   uint32_t include_friend_only GNUNET_PACKED;
-
 };
 
 
@@ -93,7 +89,6 @@ struct NotifyMessage
    * Include friend only HELLOs and peers in callbacks
    */
   uint32_t include_friend_only GNUNET_PACKED;
-
 };
 
 
@@ -106,7 +101,6 @@ struct NotifyMessage
  */
 struct InfoMessage
 {
-
   /**
    * Type will be GNUNET_MESSAGE_TYPE_PEERINFO_INFO
    */
@@ -121,7 +115,6 @@ struct InfoMessage
    * About which peer are we talking here?
    */
   struct GNUNET_PeerIdentity peer;
-
 };
 GNUNET_NETWORK_STRUCT_END
 

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api.c
  * @brief base test case for transport implementations
@@ -59,7 +59,8 @@ notify_receive (void *cls,
   }
 
   if ((GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE == ntohs (message->header.type)) &&
-      (GNUNET_TRANSPORT_TESTING_LARGE_MESSAGE_SIZE == ntohs (message->header.size)))
+      (GNUNET_TRANSPORT_TESTING_LARGE_MESSAGE_SIZE == ntohs (
+         message->header.size)))
   {
     ccc->global_ret = GNUNET_OK;
     GNUNET_SCHEDULER_shutdown ();
@@ -113,12 +114,13 @@ int
 main (int argc,
       char *argv[])
 {
-  if ( (0 != test (argv,
-                   GNUNET_NO)) ||
-       (0 != test (argv,
-                   GNUNET_YES) ) )
+  if ((0 != test (argv,
+                  GNUNET_NO)) ||
+      (0 != test (argv,
+                  GNUNET_YES)))
     return 1;
   return 0;
 }
+
 
 /* end of test_transport_api.c */

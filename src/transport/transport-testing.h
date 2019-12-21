@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport-testing.h
@@ -477,7 +477,6 @@ typedef void (*GNUNET_TRANSPORT_TESTING_NotifyDisconnect) (
  */
 struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext
 {
-
   /**
    * How should we continue after the connect?
    */

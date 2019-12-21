@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_os_network.c
  * @brief testcase for util/os_network.c
@@ -41,11 +41,11 @@ proc (void *cls,
 {
   int *ok = cls;
   char buf[INET6_ADDRSTRLEN];
-  const char * protocol;
+  const char *protocol;
 
   if (NULL == addr)
     return GNUNET_OK;
-  if (addrlen == sizeof (struct sockaddr_in))
+  if (addrlen == sizeof(struct sockaddr_in))
     protocol = "IPv4";
   else
     protocol = "IPv6";
@@ -53,20 +53,20 @@ proc (void *cls,
               "%s Address `%s'\n",
               protocol,
               GNUNET_a2s ((const struct sockaddr *) addr,
-                          addrlen) );
+                          addrlen));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Netmask `%s'\n",
               GNUNET_a2s ((const struct sockaddr *) netmask,
-                          addrlen) );
+                          addrlen));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "`%s'\n",
               GNUNET_a2s ((const struct sockaddr *) broadcast_addr,
-                          addrlen) );
+                          addrlen));
   inet_ntop (addr->sa_family,
              (addr->sa_family ==
               AF_INET) ? (void *) &((struct sockaddr_in *) addr)->sin_addr
              : (void *) &((struct sockaddr_in6 *) addr)->sin6_addr, buf,
-             sizeof (buf));
+             sizeof(buf));
   if ((0 == strcmp ("::1", buf)) || (0 == strcmp ("127.0.0.1", buf)))
     *ok = 0;
   return GNUNET_OK;
@@ -86,5 +86,6 @@ main (int argc, char *argv[])
                                      &ret);
   return ret;
 }
+
 
 /* end of test_os_network.c */

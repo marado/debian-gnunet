@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file perf_plugin_datastore.c
  * @brief Profile database plugin directly, focusing on iterators.
@@ -113,16 +113,16 @@ test (void *cls);
  */
 static void
 put_continuation (void *cls,
-		  const struct GNUNET_HashCode *key,
+                  const struct GNUNET_HashCode *key,
                   uint32_t size,
-		  int status,
-		  const char *msg)
+                  int status,
+                  const char *msg)
 {
   struct CpsRunContext *crc = cls;
 
   if (GNUNET_OK != status)
   {
-    FPRINTF (stderr, "ERROR: `%s'\n", msg);
+    fprintf (stderr, "ERROR: `%s'\n", msg);
   }
   else
   {
@@ -151,13 +151,16 @@ do_put (struct CpsRunContext *crc)
     crc->end = GNUNET_TIME_absolute_get ();
     {
       printf ("%s took %s for %llu items\n", "Storing an item",
-	      GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (crc->start,
-											   crc->end),
-						      GNUNET_YES),
+              GNUNET_STRINGS_relative_time_to_string (
+                GNUNET_TIME_absolute_get_difference (crc->start,
+                                                     crc
+                                                     ->end),
+                GNUNET_YES),
               PUT_10);
       if (PUT_10 > 0)
         GAUGER (category, "Storing an item",
-                (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL / PUT_10,
+                (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL
+                / PUT_10,
                 "ms/item");
     }
     crc->i++;
@@ -174,28 +177,28 @@ do_put (struct CpsRunContext *crc)
 
   /* generate random key */
   key.bits[0] = (unsigned int) GNUNET_TIME_absolute_get ().abs_value_us;
-  GNUNET_CRYPTO_hash (&key, sizeof (struct GNUNET_HashCode), &key);
+  GNUNET_CRYPTO_hash (&key, sizeof(struct GNUNET_HashCode), &key);
   memset (value, i, size);
   if (i > 255)
     memset (value, i - 255, size / 2);
   value[0] = crc->i;
-  GNUNET_memcpy (&value[4], &i, sizeof (i));
+  GNUNET_memcpy (&value[4], &i, sizeof(i));
   prio = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 100);
   crc->api->put (crc->api->cls,
                  &key,
                  false /* absent */,
                  size,
                  value,
-                 1 + i % 4 /* type */ ,
+                 1 + i % 4 /* type */,
                  prio,
-                 i % 4 /* anonymity */ ,
-                 0 /* replication */ ,
+                 i % 4 /* anonymity */,
+                 0 /* replication */,
                  GNUNET_TIME_relative_to_absolute
-                 (GNUNET_TIME_relative_multiply
-                   (GNUNET_TIME_UNIT_MILLISECONDS,
-                    60 * 60 * 60 * 1000 +
-                    GNUNET_CRYPTO_random_u32
-                      (GNUNET_CRYPTO_QUALITY_WEAK, 1000))),
+                   (GNUNET_TIME_relative_multiply
+                     (GNUNET_TIME_UNIT_MILLISECONDS,
+                     60 * 60 * 60 * 1000
+                     + GNUNET_CRYPTO_random_u32
+                       (GNUNET_CRYPTO_QUALITY_WEAK, 1000))),
                  put_continuation,
                  crc);
   i++;
@@ -220,14 +223,14 @@ iterate_zeros (void *cls,
 
   GNUNET_assert (key != NULL);
   GNUNET_assert (size >= 8);
-  GNUNET_memcpy (&i, &cdata[4], sizeof (i));
+  GNUNET_memcpy (&i, &cdata[4], sizeof(i));
   hits[i / 8] |= (1 << (i % 8));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Found result %d type=%u, priority=%u, size=%u, expire=%s\n",
-	      i,
-	      type, priority, size,
-	      GNUNET_STRINGS_absolute_time_to_string (expiration));
+              "Found result %d type=%u, priority=%u, size=%u, expire=%s\n",
+              i,
+              type, priority, size,
+              GNUNET_STRINGS_absolute_time_to_string (expiration));
   crc->cnt++;
   if (crc->cnt == PUT_10 / 4 - 1)
   {
@@ -241,15 +244,18 @@ iterate_zeros (void *cls,
     crc->end = GNUNET_TIME_absolute_get ();
     printf ("%s took %s yielding %u/%u items\n",
             "Select random zero-anonymity item",
-            GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (crc->start,
-											 crc->end),
-						    GNUNET_YES),
+            GNUNET_STRINGS_relative_time_to_string (
+              GNUNET_TIME_absolute_get_difference (crc->start,
+                                                   crc
+                                                   ->end),
+              GNUNET_YES),
             bc, crc->cnt);
     if (crc->cnt > 0)
       GAUGER (category, "Select random zero-anonymity item",
-              (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL / crc->cnt,
+              (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL
+              / crc->cnt,
               "ms/item");
-    memset (hits, 0, sizeof (hits));
+    memset (hits, 0, sizeof(hits));
     crc->phase++;
     crc->cnt = 0;
     crc->start = GNUNET_TIME_absolute_get ();
@@ -276,7 +282,7 @@ expiration_get (void *cls,
   const char *cdata = data;
 
   GNUNET_assert (size >= 8);
-  GNUNET_memcpy (&i, &cdata[4], sizeof (i));
+  GNUNET_memcpy (&i, &cdata[4], sizeof(i));
   hits[i / 8] |= (1 << (i % 8));
   crc->cnt++;
   if (PUT_10 <= crc->cnt)
@@ -291,15 +297,18 @@ expiration_get (void *cls,
     crc->end = GNUNET_TIME_absolute_get ();
     printf ("%s took %s yielding %u/%u items\n",
             "Selecting and deleting by expiration",
-            GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (crc->start,
-											 crc->end),
-						    GNUNET_YES),
+            GNUNET_STRINGS_relative_time_to_string (
+              GNUNET_TIME_absolute_get_difference (crc->start,
+                                                   crc
+                                                   ->end),
+              GNUNET_YES),
             bc, (unsigned int) PUT_10);
     if (crc->cnt > 0)
       GAUGER (category, "Selecting and deleting by expiration",
-              (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL / crc->cnt,
+              (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL
+              / crc->cnt,
               "ms/item");
-    memset (hits, 0, sizeof (hits));
+    memset (hits, 0, sizeof(hits));
     if (++crc->iter == ITERATIONS)
       crc->phase++;
     else
@@ -330,7 +339,7 @@ replication_get (void *cls,
 
   GNUNET_assert (NULL != key);
   GNUNET_assert (size >= 8);
-  GNUNET_memcpy (&i, &cdata[4], sizeof (i));
+  GNUNET_memcpy (&i, &cdata[4], sizeof(i));
   hits[i / 8] |= (1 << (i % 8));
   crc->cnt++;
   if (PUT_10 <= crc->cnt)
@@ -345,15 +354,18 @@ replication_get (void *cls,
     crc->end = GNUNET_TIME_absolute_get ();
     printf ("%s took %s yielding %u/%u items\n",
             "Selecting random item for replication",
-            GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_difference (crc->start,
-											 crc->end),
-						    GNUNET_YES),
+            GNUNET_STRINGS_relative_time_to_string (
+              GNUNET_TIME_absolute_get_difference (crc->start,
+                                                   crc
+                                                   ->end),
+              GNUNET_YES),
             bc, (unsigned int) PUT_10);
     if (crc->cnt > 0)
       GAUGER (category, "Selecting random item for replication",
-              (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL / crc->cnt,
+              (crc->end.abs_value_us - crc->start.abs_value_us) / 1000LL
+              / crc->cnt,
               "ms/item");
-    memset (hits, 0, sizeof (hits));
+    memset (hits, 0, sizeof(hits));
     crc->phase++;
     crc->offset = 0;
     crc->cnt = 0;
@@ -384,7 +396,8 @@ unload_plugin (struct GNUNET_DATASTORE_PluginFunctions *api,
                                              &name))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("No `%s' specified for `%s' in configuration!\n"), "DATABASE",
+                _ ("No `%s' specified for `%s' in configuration!\n"),
+                "DATABASE",
                 "DATASTORE");
     return;
   }
@@ -393,7 +406,6 @@ unload_plugin (struct GNUNET_DATASTORE_PluginFunctions *api,
   GNUNET_free (libname);
   GNUNET_free (name);
 }
-
 
 
 /**
@@ -416,7 +428,7 @@ test (void *cls)
   struct CpsRunContext *crc = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "In phase %d, iteration %u\n", crc->phase, crc->cnt);
+              "In phase %d, iteration %u\n", crc->phase, crc->cnt);
   switch (crc->phase)
   {
   case RP_ERROR:
@@ -426,19 +438,24 @@ test (void *cls)
     GNUNET_SCHEDULER_add_with_priority (GNUNET_SCHEDULER_PRIORITY_IDLE,
                                         &cleaning_task, crc);
     break;
+
   case RP_PUT:
     do_put (crc);
     break;
+
   case RP_REP_GET:
     crc->api->get_replication (crc->api->cls, &replication_get, crc);
     break;
+
   case RP_ZA_GET:
     crc->api->get_zero_anonymity (crc->api->cls, crc->offset++, 1,
                                   &iterate_zeros, crc);
     break;
+
   case RP_EXP_GET:
     crc->api->get_expiration (crc->api->cls, &expiration_get, crc);
     break;
+
   case RP_DONE:
     crc->api->drop (crc->api->cls);
     ok = 0;
@@ -465,19 +482,20 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
                                              &name))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("No `%s' specified for `%s' in configuration!\n"), "DATABASE",
+                _ ("No `%s' specified for `%s' in configuration!\n"),
+                "DATABASE",
                 "DATASTORE");
     return NULL;
   }
   env.cfg = cfg;
   env.duc = &disk_utilization_change_cb;
   env.cls = NULL;
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _("Loading `%s' datastore plugin\n"),
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, _ ("Loading `%s' datastore plugin\n"),
               name);
   GNUNET_asprintf (&libname, "libgnunet_plugin_datastore_%s", name);
   if (NULL == (ret = GNUNET_PLUGIN_load (libname, &env)))
   {
-    FPRINTF (stderr, "Failed to load plugin `%s'!\n", name);
+    fprintf (stderr, "Failed to load plugin `%s'!\n", name);
     GNUNET_free (name);
     GNUNET_free (libname);
     return NULL;
@@ -503,8 +521,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   api = load_plugin (c);
   if (api == NULL)
   {
-    FPRINTF (stderr,
-             "%s", "Could not initialize plugin, assuming database not configured. Test not run!\n");
+    fprintf (stderr,
+             "%s",
+             "Could not initialize plugin, assuming database not configured. Test not run!\n");
     return;
   }
   crc = GNUNET_new (struct CpsRunContext);
@@ -532,22 +551,23 @@ main (int argc, char *argv[])
   };
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
-  GNUNET_snprintf (dir_name, sizeof (dir_name), "/tmp/perf-gnunet-datastore-%s",
+  GNUNET_snprintf (dir_name, sizeof(dir_name), "/tmp/perf-gnunet-datastore-%s",
                    plugin_name);
   GNUNET_DISK_directory_remove (dir_name);
   GNUNET_log_setup ("perf-plugin-datastore",
                     "WARNING",
                     NULL);
-  GNUNET_snprintf (category, sizeof (category), "DATASTORE-%s", plugin_name);
-  GNUNET_snprintf (cfg_name, sizeof (cfg_name),
+  GNUNET_snprintf (category, sizeof(category), "DATASTORE-%s", plugin_name);
+  GNUNET_snprintf (cfg_name, sizeof(cfg_name),
                    "perf_plugin_datastore_data_%s.conf", plugin_name);
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1, xargv,
+  GNUNET_PROGRAM_run ((sizeof(xargv) / sizeof(char *)) - 1, xargv,
                       "perf-plugin-datastore", "nohelp", options, &run, NULL);
   if (ok != 0)
-    FPRINTF (stderr, "Missed some testcases: %u\n", ok);
+    fprintf (stderr, "Missed some testcases: %u\n", ok);
   GNUNET_DISK_directory_remove (dir_name);
 
   return ok;
 }
+
 
 /* end of perf_plugin_datastore.c */

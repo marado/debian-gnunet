@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file json/json_gnsrecord.c
@@ -83,7 +83,7 @@ parse_record (json_t *data, struct GNUNET_GNSRECORD_Data *rd)
   int flag;
   int unpack_state = 0;
 
-  //interpret single gns record
+  // interpret single gns record
   unpack_state = json_unpack (data,
                               "{s:s, s:s, s:s, s?:i!}",
                               GNUNET_JSON_GNSRECORD_VALUE,
@@ -108,7 +108,7 @@ parse_record (json_t *data, struct GNUNET_GNSRECORD_Data *rd)
   }
   if (GNUNET_OK != GNUNET_GNSRECORD_string_to_value (rd->record_type,
                                                      value,
-                                                     (void**)&rd->data,
+                                                     (void **) &rd->data,
                                                      &rd->data_size))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Value invalid for record type\n");
@@ -160,8 +160,8 @@ parse_record_data (struct GnsRecordInfo *gnsrecord_info, json_t *data)
     return GNUNET_SYSERR;
   }
   *(gnsrecord_info->rd_count) = json_array_size (data);
-  *(gnsrecord_info->rd) = GNUNET_malloc (sizeof (struct GNUNET_GNSRECORD_Data) *
-                                         json_array_size (data));
+  *(gnsrecord_info->rd) = GNUNET_malloc (sizeof(struct GNUNET_GNSRECORD_Data)
+                                         * json_array_size (data));
   size_t index;
   json_t *value;
   json_array_foreach (data, index, value)
@@ -190,7 +190,7 @@ parse_gnsrecordobject (void *cls,
                 "Error record JSON is not an object!\n");
     return GNUNET_SYSERR;
   }
-  //interpret single gns record
+  // interpret single gns record
   unpack_state = json_unpack (root,
                               "{s:s, s:o!}",
                               GNUNET_JSON_GNSRECORD_RECORD_NAME,
@@ -224,6 +224,7 @@ static void
 clean_gnsrecordobject (void *cls, struct GNUNET_JSON_Specification *spec)
 {
   struct GnsRecordInfo *gnsrecord_info = (struct GnsRecordInfo *) spec->ptr;
+
   GNUNET_free (gnsrecord_info);
 }
 
@@ -240,16 +241,17 @@ GNUNET_JSON_spec_gnsrecord (struct GNUNET_GNSRECORD_Data **rd,
                             char **name)
 {
   struct GnsRecordInfo *gnsrecord_info = GNUNET_new (struct GnsRecordInfo);
+
   gnsrecord_info->rd = rd;
   gnsrecord_info->name = name;
   gnsrecord_info->rd_count = rd_count;
-  struct GNUNET_JSON_Specification ret = {.parser = &parse_gnsrecordobject,
-    .cleaner = &clean_gnsrecordobject,
-    .cls = NULL,
-    .field = NULL,
-    .ptr = (struct GnsRecordInfo *)
-      gnsrecord_info,
-    .ptr_size = 0,
-    .size_ptr = NULL};
+  struct GNUNET_JSON_Specification ret = { .parser = &parse_gnsrecordobject,
+                                           .cleaner = &clean_gnsrecordobject,
+                                           .cls = NULL,
+                                           .field = NULL,
+                                           .ptr = (struct GnsRecordInfo *)
+                                                  gnsrecord_info,
+                                           .ptr_size = 0,
+                                           .size_ptr = NULL };
   return ret;
 }

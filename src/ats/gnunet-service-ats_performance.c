@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/gnunet-service-ats_performance.c
  * @brief ats service, interaction with 'performance' API
@@ -77,9 +77,9 @@ notify_client (struct GNUNET_SERVICE_Client *client,
   struct PeerInformationMessage *msg;
   size_t plugin_name_length = strlen (plugin_name) + 1;
   size_t msize =
-    sizeof (struct PeerInformationMessage) +
-    plugin_addr_len +
-    plugin_name_length;
+    sizeof(struct PeerInformationMessage)
+    + plugin_addr_len
+    + plugin_name_length;
   char buf[msize] GNUNET_ALIGN;
   char *addrp;
 
@@ -102,7 +102,7 @@ notify_client (struct GNUNET_SERVICE_Client *client,
   else
     memset (&msg->properties,
             0,
-            sizeof (struct GNUNET_ATS_Properties));
+            sizeof(struct GNUNET_ATS_Properties));
   msg->address_local_info = htonl (local_address_info);
   addrp = (char *) &msg[1];
   GNUNET_memcpy (addrp, plugin_addr, plugin_addr_len);
@@ -110,8 +110,8 @@ notify_client (struct GNUNET_SERVICE_Client *client,
   if (NULL == client)
   {
     GNUNET_notification_context_broadcast (nc_pic,
-					   &msg->header,
-					   GNUNET_YES);
+                                           &msg->header,
+                                           GNUNET_YES);
   }
   else
   {
@@ -119,7 +119,7 @@ notify_client (struct GNUNET_SERVICE_Client *client,
 
     env = GNUNET_MQ_msg_copy (&msg->header);
     GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client),
-		    env);
+                    env);
   }
 }
 
@@ -148,12 +148,15 @@ GAS_performance_notify_all_clients (const struct GNUNET_PeerIdentity *peer,
                                     size_t plugin_addr_len,
                                     int active,
                                     const struct GNUNET_ATS_Properties *prop,
-                                    enum GNUNET_HELLO_AddressInfo local_address_info,
-                                    struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-                                    struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in)
+                                    enum GNUNET_HELLO_AddressInfo
+                                    local_address_info,
+                                    struct GNUNET_BANDWIDTH_Value32NBO
+                                    bandwidth_out,
+                                    struct GNUNET_BANDWIDTH_Value32NBO
+                                    bandwidth_in)
 {
-  GNUNET_break ( (NULL == prop) ||
-                 (GNUNET_NT_UNSPECIFIED != prop->scope) );
+  GNUNET_break ((NULL == prop) ||
+                (GNUNET_NT_UNSPECIFIED != prop->scope));
   notify_client (NULL,
                  peer,
                  plugin_name,
@@ -237,7 +240,7 @@ GAS_performance_add_client (struct GNUNET_SERVICE_Client *client,
   if (START_FLAG_PERFORMANCE_WITH_PIC == flag)
   {
     GNUNET_notification_context_add (nc_pic,
-				     mq);
+                                     mq);
     GAS_addresses_get_peer_info (NULL,
                                  &peerinfo_it,
                                  client);
@@ -245,7 +248,7 @@ GAS_performance_add_client (struct GNUNET_SERVICE_Client *client,
   else
   {
     GNUNET_notification_context_add (nc_no_pic,
-				     mq);
+                                     mq);
   }
 }
 
@@ -274,5 +277,6 @@ GAS_performance_done ()
   GNUNET_notification_context_destroy (nc_pic);
   nc_pic = NULL;
 }
+
 
 /* end of gnunet-service-ats_performance.c */

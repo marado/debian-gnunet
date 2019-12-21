@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/util/gnunet-timeout.c
@@ -46,7 +46,7 @@ sigchld_handler (int val)
   {
     ret = WEXITSTATUS (status);
     fprintf (stderr, "Process exited with result %u\n", ret);
-    _exit (ret); /* return same status code */
+    _exit (ret);  /* return same status code */
   }
   if (WIFSIGNALED (status) != 0)
   {
@@ -99,7 +99,7 @@ main (int argc, char *argv[])
   if (child == 0)
   {
     /*  int setpgrp(pid_t pid, pid_t pgid); is not working on this machine */
-    //setpgrp (0, pid_t gpid);
+    // setpgrp (0, pid_t gpid);
     if (-1 != gpid)
       setpgid (0, gpid);
     execvp (argv[2], &argv[2]);
@@ -115,5 +115,6 @@ main (int argc, char *argv[])
   }
   exit (-1);
 }
+
 
 /* end of timeout_watchdog.c */

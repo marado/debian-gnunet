@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/dht_api.c
@@ -34,7 +34,7 @@
 #include "gnunet_dht_service.h"
 #include "dht.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "dht-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "dht-api", __VA_ARGS__)
 
 
 /**
@@ -71,7 +71,6 @@ struct GNUNET_DHT_PutHandle
    * Envelope from the PUT operation.
    */
   struct GNUNET_MQ_Envelope *env;
-
 };
 
 /**
@@ -79,7 +78,6 @@ struct GNUNET_DHT_PutHandle
  */
 struct GNUNET_DHT_GetHandle
 {
-
   /**
    * Iterator to call on data receipt
    */
@@ -142,7 +140,6 @@ struct GNUNET_DHT_GetHandle
    * end of the positions that are actually used.
    */
   unsigned int seen_results_end;
-
 };
 
 
@@ -195,7 +192,6 @@ struct GNUNET_DHT_MonitorHandle
    * Closure for @e get_cb, @e put_cb and @e get_resp_cb.
    */
   void *cb_cls;
-
 };
 
 
@@ -204,7 +200,6 @@ struct GNUNET_DHT_MonitorHandle
  */
 struct GNUNET_DHT_Handle
 {
-
   /**
    * Configuration to use.
    */
@@ -256,8 +251,6 @@ struct GNUNET_DHT_Handle
    * Generator for unique ids.
    */
   uint64_t uid_gen;
-
-
 };
 
 
@@ -319,8 +312,8 @@ send_get_known_results (struct GNUNET_DHT_GetHandle *gh,
   unsigned int max;
   unsigned int transmission_offset;
 
-  max = (GNUNET_MAX_MESSAGE_SIZE - sizeof (*msg))
-    / sizeof (struct GNUNET_HashCode);
+  max = (GNUNET_MAX_MESSAGE_SIZE - sizeof(*msg))
+        / sizeof(struct GNUNET_HashCode);
   transmission_offset = transmission_offset_start;
   while (transmission_offset < gh->seen_results_end)
   {
@@ -328,13 +321,13 @@ send_get_known_results (struct GNUNET_DHT_GetHandle *gh,
     if (delta > max)
       delta = max;
     env = GNUNET_MQ_msg_extra (msg,
-                               delta * sizeof (struct GNUNET_HashCode),
+                               delta * sizeof(struct GNUNET_HashCode),
                                GNUNET_MESSAGE_TYPE_DHT_CLIENT_GET_RESULTS_KNOWN);
     msg->key = gh->key;
     msg->unique_id = gh->unique_id;
     GNUNET_memcpy (&msg[1],
-	    &gh->seen_results[transmission_offset],
-	    sizeof (struct GNUNET_HashCode) * delta);
+                   &gh->seen_results[transmission_offset],
+                   sizeof(struct GNUNET_HashCode) * delta);
     GNUNET_MQ_send (h->mq,
                     env);
     transmission_offset += delta;
@@ -389,7 +382,7 @@ send_monitor_start (struct GNUNET_DHT_MonitorHandle *mh)
   m->put = htons (NULL != mh->put_cb);
   if (NULL != mh->key)
   {
-    m->filter_key = htons(1);
+    m->filter_key = htons (1);
     m->key = *mh->key;
   }
   GNUNET_MQ_send (h->mq,
@@ -450,7 +443,7 @@ do_disconnect (struct GNUNET_DHT_Handle *h)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Disconnecting from DHT service, will try to reconnect in %s\n",
               GNUNET_STRINGS_relative_time_to_string (h->retry_time,
-						      GNUNET_YES));
+                                                      GNUNET_YES));
   /* notify client about all PUTs that (may) have failed due to disconnect */
   while (NULL != (ph = h->put_head))
   {
@@ -500,10 +493,10 @@ check_monitor_get (void *cls,
                    const struct GNUNET_DHT_MonitorGetMessage *msg)
 {
   uint32_t plen = ntohl (msg->get_path_length);
-  uint16_t msize = ntohs (msg->header.size) - sizeof (*msg);
+  uint16_t msize = ntohs (msg->header.size) - sizeof(*msg);
 
-  if ( (plen > UINT16_MAX) ||
-       (plen * sizeof (struct GNUNET_PeerIdentity) != msize) )
+  if ((plen > UINT16_MAX) ||
+      (plen * sizeof(struct GNUNET_PeerIdentity) != msize))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -529,15 +522,15 @@ handle_monitor_get (void *cls,
   {
     if (NULL == mh->get_cb)
       continue;
-    if ( ( (GNUNET_BLOCK_TYPE_ANY == mh->type) ||
-           (mh->type == ntohl (msg->type)) ) &&
-         ( (NULL == mh->key) ||
-           (0 == memcmp (mh->key,
-                         &msg->key,
-                         sizeof (struct GNUNET_HashCode))) ) )
+    if (((GNUNET_BLOCK_TYPE_ANY == mh->type) ||
+         (mh->type == ntohl (msg->type))) &&
+        ((NULL == mh->key) ||
+         (0 == memcmp (mh->key,
+                       &msg->key,
+                       sizeof(struct GNUNET_HashCode)))))
       mh->get_cb (mh->cb_cls,
                   ntohl (msg->options),
-                  (enum GNUNET_BLOCK_Type) ntohl(msg->type),
+                  (enum GNUNET_BLOCK_Type) ntohl (msg->type),
                   ntohl (msg->hop_count),
                   ntohl (msg->desired_replication_level),
                   ntohl (msg->get_path_length),
@@ -559,12 +552,12 @@ static int
 check_monitor_get_resp (void *cls,
                         const struct GNUNET_DHT_MonitorGetRespMessage *msg)
 {
-  size_t msize = ntohs (msg->header.size) - sizeof (*msg);
+  size_t msize = ntohs (msg->header.size) - sizeof(*msg);
   uint32_t getl = ntohl (msg->get_path_length);
   uint32_t putl = ntohl (msg->put_path_length);
 
-  if ( (getl + putl < getl) ||
-       ( (msize / sizeof (struct GNUNET_PeerIdentity)) < getl + putl) )
+  if ((getl + putl < getl) ||
+      ((msize / sizeof(struct GNUNET_PeerIdentity)) < getl + putl))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -584,7 +577,7 @@ handle_monitor_get_resp (void *cls,
                          const struct GNUNET_DHT_MonitorGetRespMessage *msg)
 {
   struct GNUNET_DHT_Handle *handle = cls;
-  size_t msize = ntohs (msg->header.size) - sizeof (*msg);
+  size_t msize = ntohs (msg->header.size) - sizeof(*msg);
   const struct GNUNET_PeerIdentity *path;
   uint32_t getl = ntohl (msg->get_path_length);
   uint32_t putl = ntohl (msg->put_path_length);
@@ -595,22 +588,23 @@ handle_monitor_get_resp (void *cls,
   {
     if (NULL == mh->get_resp_cb)
       continue;
-    if ( ( (GNUNET_BLOCK_TYPE_ANY == mh->type) ||
-           (mh->type == ntohl(msg->type)) ) &&
-         ( (NULL == mh->key) ||
-           (0 == memcmp (mh->key,
-                         &msg->key,
-                         sizeof (struct GNUNET_HashCode))) ) )
+    if (((GNUNET_BLOCK_TYPE_ANY == mh->type) ||
+         (mh->type == ntohl (msg->type))) &&
+        ((NULL == mh->key) ||
+         (0 == memcmp (mh->key,
+                       &msg->key,
+                       sizeof(struct GNUNET_HashCode)))))
       mh->get_resp_cb (mh->cb_cls,
                        (enum GNUNET_BLOCK_Type) ntohl (msg->type),
                        path,
                        getl,
                        &path[getl],
                        putl,
-                       GNUNET_TIME_absolute_ntoh(msg->expiration_time),
+                       GNUNET_TIME_absolute_ntoh (msg->expiration_time),
                        &msg->key,
                        (const void *) &path[getl + putl],
-                       msize - sizeof (struct GNUNET_PeerIdentity) * (putl + getl));
+                       msize - sizeof(struct GNUNET_PeerIdentity) * (putl
+                                                                     + getl));
   }
 }
 
@@ -630,9 +624,9 @@ check_monitor_put (void *cls,
   size_t msize;
   uint32_t putl;
 
-  msize = ntohs (msg->header.size) - sizeof (*msg);
+  msize = ntohs (msg->header.size) - sizeof(*msg);
   putl = ntohl (msg->put_path_length);
-  if ((msize / sizeof (struct GNUNET_PeerIdentity)) < putl)
+  if ((msize / sizeof(struct GNUNET_PeerIdentity)) < putl)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -652,7 +646,7 @@ handle_monitor_put (void *cls,
                     const struct GNUNET_DHT_MonitorPutMessage *msg)
 {
   struct GNUNET_DHT_Handle *handle = cls;
-  size_t msize = ntohs (msg->header.size) - sizeof (*msg);
+  size_t msize = ntohs (msg->header.size) - sizeof(*msg);
   uint32_t putl = ntohl (msg->put_path_length);
   const struct GNUNET_PeerIdentity *path;
   struct GNUNET_DHT_MonitorHandle *mh;
@@ -662,23 +656,23 @@ handle_monitor_put (void *cls,
   {
     if (NULL == mh->put_cb)
       continue;
-    if ( ( (GNUNET_BLOCK_TYPE_ANY == mh->type) ||
-           (mh->type == ntohl(msg->type)) ) &&
-         ( (NULL == mh->key) ||
-           (0 == memcmp (mh->key,
-                         &msg->key,
-                         sizeof (struct GNUNET_HashCode))) ) )
+    if (((GNUNET_BLOCK_TYPE_ANY == mh->type) ||
+         (mh->type == ntohl (msg->type))) &&
+        ((NULL == mh->key) ||
+         (0 == memcmp (mh->key,
+                       &msg->key,
+                       sizeof(struct GNUNET_HashCode)))))
       mh->put_cb (mh->cb_cls,
                   ntohl (msg->options),
-                  (enum GNUNET_BLOCK_Type) ntohl(msg->type),
+                  (enum GNUNET_BLOCK_Type) ntohl (msg->type),
                   ntohl (msg->hop_count),
                   ntohl (msg->desired_replication_level),
                   putl,
                   path,
-                  GNUNET_TIME_absolute_ntoh(msg->expiration_time),
+                  GNUNET_TIME_absolute_ntoh (msg->expiration_time),
                   &msg->key,
                   (const void *) &path[putl],
-                  msize - sizeof (struct GNUNET_PeerIdentity) * putl);
+                  msize - sizeof(struct GNUNET_PeerIdentity) * putl);
   }
 }
 
@@ -695,18 +689,18 @@ static int
 check_client_result (void *cls,
                      const struct GNUNET_DHT_ClientResultMessage *msg)
 {
-  size_t msize = ntohs (msg->header.size) - sizeof (*msg);
+  size_t msize = ntohs (msg->header.size) - sizeof(*msg);
   uint32_t put_path_length = ntohl (msg->put_path_length);
   uint32_t get_path_length = ntohl (msg->get_path_length);
   size_t meta_length;
 
   meta_length =
-    sizeof (struct GNUNET_PeerIdentity) * (get_path_length + put_path_length);
-  if ( (msize < meta_length) ||
-       (get_path_length >
-        GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) ||
-       (put_path_length >
-        GNUNET_MAX_MESSAGE_SIZE / sizeof (struct GNUNET_PeerIdentity)) )
+    sizeof(struct GNUNET_PeerIdentity) * (get_path_length + put_path_length);
+  if ((msize < meta_length) ||
+      (get_path_length >
+       GNUNET_MAX_MESSAGE_SIZE / sizeof(struct GNUNET_PeerIdentity)) ||
+      (put_path_length >
+       GNUNET_MAX_MESSAGE_SIZE / sizeof(struct GNUNET_PeerIdentity)))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -730,7 +724,7 @@ process_client_result (void *cls,
 {
   const struct GNUNET_DHT_ClientResultMessage *crm = cls;
   struct GNUNET_DHT_GetHandle *get_handle = value;
-  size_t msize = ntohs (crm->header.size) - sizeof (*crm);
+  size_t msize = ntohs (crm->header.size) - sizeof(*crm);
   uint32_t put_path_length = ntohl (crm->put_path_length);
   uint32_t get_path_length = ntohl (crm->get_path_length);
   const struct GNUNET_PeerIdentity *put_path;
@@ -752,7 +746,7 @@ process_client_result (void *cls,
   }
   /* FIXME: might want to check that type matches */
   meta_length =
-      sizeof (struct GNUNET_PeerIdentity) * (get_path_length + put_path_length);
+    sizeof(struct GNUNET_PeerIdentity) * (get_path_length + put_path_length);
   data_length = msize - meta_length;
   put_path = (const struct GNUNET_PeerIdentity *) &crm[1];
   get_path = &put_path[put_path_length];
@@ -780,8 +774,8 @@ process_client_result (void *cls,
                       &hc);
   if (get_handle->seen_results_size == get_handle->seen_results_end)
     GNUNET_array_grow (get_handle->seen_results,
-		       get_handle->seen_results_size,
-		       get_handle->seen_results_size * 2 + 1);
+                       get_handle->seen_results_size,
+                       get_handle->seen_results_size * 2 + 1);
   get_handle->seen_results[get_handle->seen_results_end++] = hc;
   /* no need to block it explicitly, service already knows about it! */
   get_handle->iter (get_handle->iter_cls,
@@ -866,6 +860,7 @@ try_connect (struct GNUNET_DHT_Handle *h)
                            h),
     GNUNET_MQ_handler_end ()
   };
+
   if (NULL != h->mq)
     return GNUNET_OK;
   h->mq = GNUNET_CLIENT_connect (h->cfg,
@@ -984,7 +979,7 @@ GNUNET_DHT_put (struct GNUNET_DHT_Handle *handle,
   size_t msize;
   struct GNUNET_DHT_PutHandle *ph;
 
-  msize = sizeof (struct GNUNET_DHT_ClientPutMessage) + size;
+  msize = sizeof(struct GNUNET_DHT_ClientPutMessage) + size;
   if ((msize >= GNUNET_MAX_MESSAGE_SIZE) ||
       (size >= GNUNET_MAX_MESSAGE_SIZE))
   {
@@ -1002,8 +997,8 @@ GNUNET_DHT_put (struct GNUNET_DHT_Handle *handle,
   ph->cont = cont;
   ph->cont_cls = cont_cls;
   GNUNET_CONTAINER_DLL_insert_tail (handle->put_head,
-				    handle->put_tail,
-				    ph);
+                                    handle->put_tail,
+                                    ph);
   env = GNUNET_MQ_msg_extra (put_msg,
                              size,
                              GNUNET_MESSAGE_TYPE_DHT_CLIENT_PUT);
@@ -1046,8 +1041,8 @@ GNUNET_DHT_put_cancel (struct GNUNET_DHT_PutHandle *ph)
                            NULL,
                            NULL);
   GNUNET_CONTAINER_DLL_remove (handle->put_head,
-			       handle->put_tail,
-			       ph);
+                               handle->put_tail,
+                               ph);
   GNUNET_free (ph);
 }
 
@@ -1082,7 +1077,7 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
   struct GNUNET_DHT_GetHandle *gh;
   size_t msize;
 
-  msize = sizeof (struct GNUNET_DHT_ClientGetMessage) + xquery_size;
+  msize = sizeof(struct GNUNET_DHT_ClientGetMessage) + xquery_size;
   if ((msize >= GNUNET_MAX_MESSAGE_SIZE) ||
       (xquery_size >= GNUNET_MAX_MESSAGE_SIZE))
   {
@@ -1093,8 +1088,8 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
        "Sending query for %s to DHT %p\n",
        GNUNET_h2s (key),
        handle);
-  gh = GNUNET_malloc (sizeof (struct GNUNET_DHT_GetHandle) +
-                      xquery_size);
+  gh = GNUNET_malloc (sizeof(struct GNUNET_DHT_GetHandle)
+                      + xquery_size);
   gh->iter = iter;
   gh->iter_cls = iter_cls;
   gh->dht_handle = handle;
@@ -1105,8 +1100,8 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
   gh->type = type;
   gh->options = options;
   GNUNET_memcpy (&gh[1],
-          xquery,
-          xquery_size);
+                 xquery,
+                 xquery_size);
   GNUNET_CONTAINER_multihashmap_put (handle->active_requests,
                                      &gh->key,
                                      gh,
@@ -1129,8 +1124,8 @@ GNUNET_DHT_get_start (struct GNUNET_DHT_Handle *handle,
  */
 void
 GNUNET_DHT_get_filter_known_results (struct GNUNET_DHT_GetHandle *get_handle,
-				     unsigned int num_results,
-				     const struct GNUNET_HashCode *results)
+                                     unsigned int num_results,
+                                     const struct GNUNET_HashCode *results)
 {
   unsigned int needed;
   unsigned int had;
@@ -1139,11 +1134,11 @@ GNUNET_DHT_get_filter_known_results (struct GNUNET_DHT_GetHandle *get_handle,
   needed = had + num_results;
   if (needed > get_handle->seen_results_size)
     GNUNET_array_grow (get_handle->seen_results,
-		       get_handle->seen_results_size,
-		       needed);
+                       get_handle->seen_results_size,
+                       needed);
   GNUNET_memcpy (&get_handle->seen_results[get_handle->seen_results_end],
-	  results,
-	  num_results * sizeof (struct GNUNET_HashCode));
+                 results,
+                 num_results * sizeof(struct GNUNET_HashCode));
   get_handle->seen_results_end += num_results;
   if (NULL != get_handle->dht_handle->mq)
     send_get_known_results (get_handle,
@@ -1183,8 +1178,8 @@ GNUNET_DHT_get_stop (struct GNUNET_DHT_GetHandle *get_handle)
                                                        &get_handle->key,
                                                        get_handle));
   GNUNET_array_grow (get_handle->seen_results,
-		     get_handle->seen_results_end,
-		     0);
+                     get_handle->seen_results_end,
+                     0);
   GNUNET_free (get_handle);
 }
 
@@ -1254,7 +1249,7 @@ GNUNET_DHT_monitor_stop (struct GNUNET_DHT_MonitorHandle *mh)
                        GNUNET_MESSAGE_TYPE_DHT_MONITOR_STOP);
   m->type = htonl (mh->type);
   m->get = htons (NULL != mh->get_cb);
-  m->get_resp = htons(NULL != mh->get_resp_cb);
+  m->get_resp = htons (NULL != mh->get_resp_cb);
   m->put = htons (NULL != mh->put_cb);
   if (NULL != mh->key)
   {

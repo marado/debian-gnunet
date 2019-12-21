@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_common_logging.c
@@ -36,7 +36,6 @@ my_log (void *ctx, enum GNUNET_ErrorType kind, const char *component,
 }
 
 
-
 int
 main (int argc, char *argv[])
 {
@@ -44,7 +43,7 @@ main (int argc, char *argv[])
   unsigned int logs = 0;
 
   if (0 != putenv ("GNUNET_FORCE_LOG="))
-    FPRINTF (stderr, "Failed to putenv: %s\n", strerror (errno));
+    fprintf (stderr, "Failed to putenv: %s\n", strerror (errno));
   GNUNET_log_setup ("test-common-logging", "DEBUG", "/dev/null");
   GNUNET_logger_add (&my_log, &logs);
   GNUNET_logger_add (&my_log, &logs);
@@ -60,21 +59,21 @@ main (int argc, char *argv[])
   GNUNET_logger_remove (&my_log, &logs);
   if (logs != 4)
   {
-    FPRINTF (stdout, "Expected 4 log calls, got %u\n", logs);
+    fprintf (stdout, "Expected 4 log calls, got %u\n", logs);
     failureCount++;
   }
   GNUNET_break (0 ==
-                strcmp (_("ERROR"),
+                strcmp (_ ("ERROR"),
                         GNUNET_error_type_to_string (GNUNET_ERROR_TYPE_ERROR)));
   GNUNET_break (0 ==
-                strcmp (_("WARNING"),
+                strcmp (_ ("WARNING"),
                         GNUNET_error_type_to_string
-                        (GNUNET_ERROR_TYPE_WARNING)));
+                          (GNUNET_ERROR_TYPE_WARNING)));
   GNUNET_break (0 ==
-                strcmp (_("INFO"),
+                strcmp (_ ("INFO"),
                         GNUNET_error_type_to_string (GNUNET_ERROR_TYPE_INFO)));
   GNUNET_break (0 ==
-                strcmp (_("DEBUG"),
+                strcmp (_ ("DEBUG"),
                         GNUNET_error_type_to_string (GNUNET_ERROR_TYPE_DEBUG)));
   GNUNET_log_setup ("test_common_logging", "WARNING", "/dev/null");
   logs = 0;
@@ -84,16 +83,17 @@ main (int argc, char *argv[])
   GNUNET_logger_remove (&my_log, &logs);
   if (logs != 1)
   {
-    FPRINTF (stdout, "Expected 1 log call, got %u\n", logs);
+    fprintf (stdout, "Expected 1 log call, got %u\n", logs);
     failureCount++;
   }
 
   if (failureCount != 0)
   {
-    FPRINTF (stdout, "%u TESTS FAILED!\n", failureCount);
+    fprintf (stdout, "%u TESTS FAILED!\n", failureCount);
     return -1;
   }
   return 0;
 }                               /* end of main */
+
 
 /* end of test_common_logging.c */

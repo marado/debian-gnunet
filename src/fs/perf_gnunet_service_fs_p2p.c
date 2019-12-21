@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/perf_gnunet_service_fs_p2p.c
@@ -75,28 +75,28 @@ struct StatValues
  * Statistics we print out.
  */
 static struct StatValues stats[] = {
-  {"fs", "# queries forwarded"},
-  {"fs", "# replies received and matched"},
-  {"fs", "# results found locally"},
-  {"fs", "# requests forwarded due to high load"},
-  {"fs", "# requests done for free (low load)"},
-  {"fs", "# requests dropped, priority insufficient"},
-  {"fs", "# requests done for a price (normal load)"},
-  {"fs", "# requests dropped by datastore (queue length limit)"},
-  {"fs", "# P2P searches received"},
-  {"fs", "# P2P searches discarded (queue length bound)"},
-  {"fs", "# replies received for local clients"},
-  {"fs", "# queries retransmitted to same target"},
-  {"core", "# bytes decrypted"},
-  {"core", "# bytes encrypted"},
-  {"core", "# discarded CORE_SEND requests"},
-  {"core", "# discarded CORE_SEND request bytes"},
-  {"core", "# discarded lower priority CORE_SEND requests"},
-  {"core", "# discarded lower priority CORE_SEND request bytes"},
-  {"transport", "# bytes received via TCP"},
-  {"transport", "# bytes transmitted via TCP"},
-  {"datacache", "# bytes stored"},
-  {NULL, NULL}
+  { "fs", "# queries forwarded" },
+  { "fs", "# replies received and matched" },
+  { "fs", "# results found locally" },
+  { "fs", "# requests forwarded due to high load" },
+  { "fs", "# requests done for free (low load)" },
+  { "fs", "# requests dropped, priority insufficient" },
+  { "fs", "# requests done for a price (normal load)" },
+  { "fs", "# requests dropped by datastore (queue length limit)" },
+  { "fs", "# P2P searches received" },
+  { "fs", "# P2P searches discarded (queue length bound)" },
+  { "fs", "# replies received for local clients" },
+  { "fs", "# queries retransmitted to same target" },
+  { "core", "# bytes decrypted" },
+  { "core", "# bytes encrypted" },
+  { "core", "# discarded CORE_SEND requests" },
+  { "core", "# discarded CORE_SEND request bytes" },
+  { "core", "# discarded lower priority CORE_SEND requests" },
+  { "core", "# discarded lower priority CORE_SEND request bytes" },
+  { "transport", "# bytes received via TCP" },
+  { "transport", "# bytes transmitted via TCP" },
+  { "datacache", "# bytes stored" },
+  { NULL, NULL }
 };
 
 
@@ -116,7 +116,7 @@ print_stat (void *cls, const char *subsystem, const char *name, uint64_t value,
 {
   struct StatMaster *sm = cls;
 
-  FPRINTF (stderr,
+  fprintf (stderr,
            "Peer %2u: %12s/%50s = %12llu\n",
            sm->daemon,
            subsystem,
@@ -131,9 +131,9 @@ print_stat (void *cls, const char *subsystem, const char *name, uint64_t value,
  */
 static void
 stat_run (void *cls,
-	  struct GNUNET_TESTBED_Operation *op,
-	  void *ca_result,
-	  const char *emsg);
+          struct GNUNET_TESTBED_Operation *op,
+          void *ca_result,
+          const char *emsg);
 
 
 /**
@@ -162,10 +162,10 @@ get_done (void *cls, int success)
  */
 static void *
 statistics_connect_adapter (void *cls,
-			    const struct GNUNET_CONFIGURATION_Handle *cfg)
+                            const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   return GNUNET_STATISTICS_create ("<driver>",
-				   cfg);
+                                   cfg);
 }
 
 
@@ -178,7 +178,7 @@ statistics_connect_adapter (void *cls,
  */
 static void
 statistics_disconnect_adapter (void *cls,
-			       void *op_result)
+                               void *op_result)
 {
   GNUNET_STATISTICS_destroy (op_result, GNUNET_NO);
 }
@@ -189,20 +189,20 @@ statistics_disconnect_adapter (void *cls,
  */
 static void
 stat_run (void *cls,
-	  struct GNUNET_TESTBED_Operation *op,
-	  void *ca_result,
-	  const char *emsg)
+          struct GNUNET_TESTBED_Operation *op,
+          void *ca_result,
+          const char *emsg)
 {
   struct StatMaster *sm = cls;
 
   if (NULL != emsg)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  "Failed to statistics service: %s\n",
-		  emsg);
-      GNUNET_SCHEDULER_shutdown ();
-      return;
-    }
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failed to statistics service: %s\n",
+                emsg);
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
   sm->stat = ca_result;
 
   if (stats[sm->value].name != NULL)
@@ -228,12 +228,12 @@ stat_run (void *cls,
   }
   sm->op =
     GNUNET_TESTBED_service_connect (NULL,
-				    daemons[sm->daemon],
-				    "statistics",
-				    &stat_run, sm,
-				    &statistics_connect_adapter,
-				    &statistics_disconnect_adapter,
-				    NULL);
+                                    daemons[sm->daemon],
+                                    "statistics",
+                                    &stat_run, sm,
+                                    &statistics_connect_adapter,
+                                    &statistics_disconnect_adapter,
+                                    NULL);
 }
 
 
@@ -252,7 +252,8 @@ do_report (void *cls)
   }
   if (0 ==
       GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
-                                                                    TIMEOUT)).rel_value_us)
+                                                                    TIMEOUT)).
+      rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Timeout during download, shutting down with error\n");
@@ -265,9 +266,9 @@ do_report (void *cls)
   if (del.rel_value_us == 0)
     del.rel_value_us = 1;
   fancy =
-    GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-				    1000000LL / del.rel_value_us);
-  FPRINTF (stdout,
+    GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE)
+                                    * 1000000LL / del.rel_value_us);
+  fprintf (stdout,
            "Download speed was %s/s\n",
            fancy);
   GNUNET_free (fancy);
@@ -276,19 +277,19 @@ do_report (void *cls)
   sm = GNUNET_new (struct StatMaster);
   sm->op =
     GNUNET_TESTBED_service_connect (NULL,
-				    daemons[sm->daemon],
-				    "statistics",
-				    &stat_run, sm,
-				    &statistics_connect_adapter,
-				    &statistics_disconnect_adapter,
-				    NULL);
+                                    daemons[sm->daemon],
+                                    "statistics",
+                                    &stat_run, sm,
+                                    &statistics_connect_adapter,
+                                    &statistics_disconnect_adapter,
+                                    NULL);
 }
 
 
 static void
 do_download (void *cls,
-	     const struct GNUNET_FS_Uri *uri,
-	     const char *fn)
+             const struct GNUNET_FS_Uri *uri,
+             const char *fn)
 {
   int anonymity;
 
@@ -315,15 +316,15 @@ do_download (void *cls,
                            uri,
                            VERBOSE,
                            &do_report,
-			   (NULL == fn) ? NULL : GNUNET_strdup (fn));
+                           (NULL == fn) ? NULL : GNUNET_strdup (fn));
 }
 
 
 static void
 do_publish (void *cls,
             struct GNUNET_TESTBED_RunHandle *h,
-	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int num_peers,
+            struct GNUNET_TESTBED_Peer **peers,
             unsigned int links_succeeded,
             unsigned int links_failed)
 {
@@ -332,7 +333,7 @@ do_publish (void *cls,
   int anonymity;
 
   GNUNET_assert (NUM_DAEMONS == num_peers);
-  for (i=0;i<num_peers;i++)
+  for (i = 0; i < num_peers; i++)
     daemons[i] = peers[i];
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Publishing %llu bytes\n",
               (unsigned long long) FILESIZE);
@@ -362,5 +363,6 @@ main (int argc, char *argv[])
   GNUNET_DISK_directory_remove ("/tmp/gnunet-test-fs-lib/");
   return ok;
 }
+
 
 /* end of perf_gnunet_service_fs_p2p.c */

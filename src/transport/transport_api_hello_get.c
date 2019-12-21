@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api_hello_get.c
@@ -38,7 +38,6 @@
  */
 struct GNUNET_TRANSPORT_HelloGetHandle
 {
-
   /**
    * Our configuration.
    */
@@ -207,9 +206,9 @@ static void
 schedule_reconnect (struct GNUNET_TRANSPORT_HelloGetHandle *ghh)
 {
   ghh->reconnect_task =
-      GNUNET_SCHEDULER_add_delayed (ghh->reconnect_delay,
-                                    &reconnect,
-                                    ghh);
+    GNUNET_SCHEDULER_add_delayed (ghh->reconnect_delay,
+                                  &reconnect,
+                                  ghh);
   ghh->reconnect_delay = GNUNET_TIME_STD_BACKOFF (ghh->reconnect_delay);
 }
 

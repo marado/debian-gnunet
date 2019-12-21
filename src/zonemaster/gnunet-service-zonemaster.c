@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file zonemaster/gnunet-service-zonemaster.c
@@ -31,7 +31,10 @@
 #include "gnunet_statistics_service.h"
 
 
-#define LOG_STRERROR_FILE(kind,syscall,filename) GNUNET_log_from_strerror_file (kind, "util", syscall, filename)
+#define LOG_STRERROR_FILE(kind, syscall, \
+                          filename) GNUNET_log_from_strerror_file (kind, "util", \
+                                                                   syscall, \
+                                                                   filename)
 
 
 /**
@@ -73,7 +76,8 @@
  * The upper bound for the zone iteration interval
  * (per record).
  */
-#define MAXIMUM_ZONE_ITERATION_INTERVAL GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 15)
+#define MAXIMUM_ZONE_ITERATION_INTERVAL GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 15)
 
 /**
  * The factor the current zone iteration interval is divided by for each
@@ -326,8 +330,7 @@ calculate_put_interval ()
      * If no records are known (startup) or none present
      * we can safely set the interval to the value for a single
      * record
-     */
-    target_iteration_velocity_per_record = zone_publish_time_window;
+     */target_iteration_velocity_per_record = zone_publish_time_window;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG | GNUNET_ERROR_TYPE_BULK,
                 "No records in namestore database.\n");
   }
@@ -335,26 +338,27 @@ calculate_put_interval ()
   {
     last_min_relative_record_time
       = GNUNET_TIME_relative_min (last_min_relative_record_time,
-				  min_relative_record_time);
+                                  min_relative_record_time);
     zone_publish_time_window
-      = GNUNET_TIME_relative_min (GNUNET_TIME_relative_divide (last_min_relative_record_time,
-							       PUBLISH_OPS_PER_EXPIRATION),
+      = GNUNET_TIME_relative_min (GNUNET_TIME_relative_divide (
+                                    last_min_relative_record_time,
+                                    PUBLISH_OPS_PER_EXPIRATION),
                                   zone_publish_time_window_default);
     target_iteration_velocity_per_record
       = GNUNET_TIME_relative_divide (zone_publish_time_window,
-				     last_num_public_records);
+                                     last_num_public_records);
   }
   target_iteration_velocity_per_record
     = GNUNET_TIME_relative_min (target_iteration_velocity_per_record,
-				MAXIMUM_ZONE_ITERATION_INTERVAL);
+                                MAXIMUM_ZONE_ITERATION_INTERVAL);
   GNUNET_STATISTICS_set (statistics,
-			 "Minimum relative record expiration (in μs)",
-			 last_min_relative_record_time.rel_value_us,
-			 GNUNET_NO);
+                         "Minimum relative record expiration (in μs)",
+                         last_min_relative_record_time.rel_value_us,
+                         GNUNET_NO);
   GNUNET_STATISTICS_set (statistics,
-			 "Zone publication time window (in μs)",
-			 zone_publish_time_window.rel_value_us,
-			 GNUNET_NO);
+                         "Zone publication time window (in μs)",
+                         zone_publish_time_window.rel_value_us,
+                         GNUNET_NO);
   GNUNET_STATISTICS_set (statistics,
                          "Target zone iteration velocity (μs)",
                          target_iteration_velocity_per_record.rel_value_us,
@@ -383,18 +387,20 @@ update_velocity (unsigned int cnt)
   last_put_100 = GNUNET_TIME_absolute_get ();
 
   /* calculate expected frequency */
-  if ( (num_public_records > last_num_public_records) &&
-       (GNUNET_NO == first_zone_iteration) )
+  if ((num_public_records > last_num_public_records) &&
+      (GNUNET_NO == first_zone_iteration))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Last record count was lower than current record count.  Reducing interval.\n");
-    last_num_public_records = num_public_records * LATE_ITERATION_SPEEDUP_FACTOR;
+    last_num_public_records = num_public_records
+                              * LATE_ITERATION_SPEEDUP_FACTOR;
     calculate_put_interval ();
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Desired global zone iteration interval is %s/record!\n",
-              GNUNET_STRINGS_relative_time_to_string (target_iteration_velocity_per_record,
-                                                      GNUNET_YES));
+              GNUNET_STRINGS_relative_time_to_string (
+                target_iteration_velocity_per_record,
+                GNUNET_YES));
 
   /* Tell statistics actual vs. desired speed */
   GNUNET_STATISTICS_set (statistics,
@@ -424,7 +430,8 @@ update_velocity (unsigned int cnt)
       sub_delta = GNUNET_TIME_UNIT_ZERO;
     }
   }
-  else if (target_iteration_velocity_per_record.rel_value_us < delta.rel_value_us)
+  else if (target_iteration_velocity_per_record.rel_value_us <
+           delta.rel_value_us)
   {
     /* We were too slow, increase sub_delta! */
     struct GNUNET_TIME_Relative corr;
@@ -433,18 +440,19 @@ update_velocity (unsigned int cnt)
                                           target_iteration_velocity_per_record);
     sub_delta = GNUNET_TIME_relative_add (sub_delta,
                                           corr);
-    if (sub_delta.rel_value_us > target_iteration_velocity_per_record.rel_value_us)
+    if (sub_delta.rel_value_us >
+        target_iteration_velocity_per_record.rel_value_us)
     {
       /* CPU overload detected, we cannot go at desired speed,
          as this would mean using a negative delay. */
       /* compute how much faster we would want to be for
          the desired velocity */
       if (0 == target_iteration_velocity_per_record.rel_value_us)
-        pct = UINT64_MAX; /* desired speed is infinity ... */
+        pct = UINT64_MAX;     /* desired speed is infinity ... */
       else
-        pct = (sub_delta.rel_value_us -
-	       target_iteration_velocity_per_record.rel_value_us) * 100LLU
-          / target_iteration_velocity_per_record.rel_value_us;
+        pct = (sub_delta.rel_value_us
+               - target_iteration_velocity_per_record.rel_value_us) * 100LLU
+              / target_iteration_velocity_per_record.rel_value_us;
       sub_delta = target_iteration_velocity_per_record;
     }
   }
@@ -539,13 +547,13 @@ convert_records_for_export (const struct GNUNET_GNSRECORD_Data *rd,
 
   rd_public_count = 0;
   now = GNUNET_TIME_absolute_get ();
-  for (unsigned int i=0;i<rd_count;i++)
+  for (unsigned int i = 0; i < rd_count; i++)
   {
     if (0 != (rd[i].flags & GNUNET_GNSRECORD_RF_PRIVATE))
       continue;
-    if ( (0 == (rd[i].flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION)) &&
-         (rd[i].expiration_time < now.abs_value_us) )
-      continue;  /* record already expired, skip it */
+    if ((0 == (rd[i].flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION)) &&
+        (rd[i].expiration_time < now.abs_value_us))
+      continue;   /* record already expired, skip it */
     if (0 != (rd[i].flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION))
     {
       /* GNUNET_GNSRECORD_block_create will convert to absolute time;
@@ -600,11 +608,11 @@ perform_dht_put (const struct GNUNET_CRYPTO_EcdsaPrivateKey *key,
   if (NULL == block)
   {
     GNUNET_break (0);
-    return NULL; /* whoops */
+    return NULL;   /* whoops */
   }
   block_size = ntohl (block->purpose.size)
-    + sizeof (struct GNUNET_CRYPTO_EcdsaSignature)
-    + sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey);
+               + sizeof(struct GNUNET_CRYPTO_EcdsaSignature)
+               + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey);
   GNUNET_GNSRECORD_query_from_private_key (key,
                                            label,
                                            &query);
@@ -679,8 +687,9 @@ zone_iteration_finished (void *cls)
     = GNUNET_TIME_UNIT_FOREVER_REL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Zone iteration finished. Adjusted zone iteration interval to %s\n",
-              GNUNET_STRINGS_relative_time_to_string (target_iteration_velocity_per_record,
-                                                      GNUNET_YES));
+              GNUNET_STRINGS_relative_time_to_string (
+                target_iteration_velocity_per_record,
+                GNUNET_YES));
   GNUNET_STATISTICS_set (statistics,
                          "Target zone iteration velocity (μs)",
                          target_iteration_velocity_per_record.rel_value_us,
@@ -692,9 +701,10 @@ zone_iteration_finished (void *cls)
   GNUNET_assert (NULL == zone_publish_task);
   if (0 == last_num_public_records)
   {
-    zone_publish_task = GNUNET_SCHEDULER_add_delayed (target_iteration_velocity_per_record,
-                                                      &publish_zone_dht_start,
-                                                      NULL);
+    zone_publish_task = GNUNET_SCHEDULER_add_delayed (
+      target_iteration_velocity_per_record,
+      &publish_zone_dht_start,
+      NULL);
   }
   else
   {
@@ -771,8 +781,9 @@ put_gns_record (void *cls,
     dht_queue_length--;
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 "DHT PUT unconfirmed after %s, aborting PUT\n",
-                GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (ma->start_date),
-                                                        GNUNET_YES));
+                GNUNET_STRINGS_relative_time_to_string (
+                  GNUNET_TIME_absolute_get_duration (ma->start_date),
+                  GNUNET_YES));
     GNUNET_free (ma);
   }
 }
@@ -827,7 +838,7 @@ run (void *cls,
 
   (void) cls;
   (void) service;
-  last_put_100 = GNUNET_TIME_absolute_get (); /* first time! */
+  last_put_100 = GNUNET_TIME_absolute_get ();  /* first time! */
   min_relative_record_time
     = GNUNET_TIME_UNIT_FOREVER_REL;
   target_iteration_velocity_per_record = INITIAL_ZONE_ITERATION_INTERVAL;
@@ -835,7 +846,7 @@ run (void *cls,
   if (NULL == namestore_handle)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to connect to the namestore!\n"));
+                _ ("Failed to connect to the namestore!\n"));
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -845,19 +856,20 @@ run (void *cls,
   zone_publish_time_window_default = GNUNET_DHT_DEFAULT_REPUBLISH_FREQUENCY;
   if (GNUNET_OK ==
       GNUNET_CONFIGURATION_get_value_time (c,
-					   "zonemaster",
+                                           "zonemaster",
                                            "ZONE_PUBLISH_TIME_WINDOW",
                                            &zone_publish_time_window_default))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Time window for zone iteration: %s\n",
-                GNUNET_STRINGS_relative_time_to_string (zone_publish_time_window,
-                                                        GNUNET_YES));
+                GNUNET_STRINGS_relative_time_to_string (
+                  zone_publish_time_window,
+                  GNUNET_YES));
   }
   zone_publish_time_window = zone_publish_time_window_default;
   if (GNUNET_OK ==
       GNUNET_CONFIGURATION_get_value_number (c,
-					     "zonemaster",
+                                             "zonemaster",
                                              "MAX_PARALLEL_BACKGROUND_QUERIES",
                                              &max_parallel_bg_queries))
   {
@@ -872,9 +884,9 @@ run (void *cls,
   if (NULL == dht_handle)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Could not connect to DHT!\n"));
+                _ ("Could not connect to DHT!\n"));
     GNUNET_SCHEDULER_add_now (&shutdown_task,
-			      NULL);
+                              NULL);
     return;
   }
 
@@ -889,7 +901,7 @@ run (void *cls,
   zone_publish_task = GNUNET_SCHEDULER_add_now (&publish_zone_dht_start,
                                                 NULL);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
 }
 
 
@@ -897,13 +909,13 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("zonemaster",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- NULL,
- NULL,
- NULL,
- GNUNET_MQ_handler_end());
+  ("zonemaster",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  NULL,
+  NULL,
+  NULL,
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-zonemaster.c */

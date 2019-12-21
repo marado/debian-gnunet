@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/transport_api2_application.c
  * @brief enable clients to ask TRANSPORT about establishing connections to peers
@@ -65,7 +65,6 @@ struct GNUNET_TRANSPORT_ApplicationSuggestHandle
  */
 struct GNUNET_TRANSPORT_ApplicationHandle
 {
-
   /**
    * Our configuration.
    */
@@ -194,7 +193,7 @@ transmit_suggestion (void *cls,
 static void
 reconnect (struct GNUNET_TRANSPORT_ApplicationHandle *ch)
 {
-  static const struct GNUNET_MQ_MessageHandler handlers[] = {{NULL, 0, 0}};
+  static const struct GNUNET_MQ_MessageHandler handlers[] = { { NULL, 0, 0 } };
 
   GNUNET_assert (NULL == ch->mq);
   ch->mq =

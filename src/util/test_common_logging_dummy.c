@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_common_logging_dummy.c
@@ -51,7 +51,7 @@ my_log (void *ctx,
   (void) date;
   if (strncmp ("test-common-logging-dummy", component, 25) != 0)
     return;
-  FPRINTF (stdout, "%s", msg);
+  fprintf (stdout, "%s", msg);
   fflush (stdout);
 }
 
@@ -62,6 +62,8 @@ expensive_func ()
 {
   return GNUNET_NETWORK_socket_select (NULL, NULL, NULL, OUTPUT_DELAY);
 }
+
+
 #endif
 
 
@@ -74,7 +76,7 @@ expensive_func ()
     printf ("1%s %llu\n",                                                     \
             lvl,                                                              \
             (unsigned long long) GNUNET_TIME_absolute_get_difference (t1, t2) \
-              .rel_value_us);                                                 \
+            .rel_value_us);                                                 \
   }
 
 #define pr2(kind, lvl)                                                        \
@@ -86,7 +88,7 @@ expensive_func ()
     printf ("2%s %llu\n",                                                     \
             lvl,                                                              \
             (unsigned long long) GNUNET_TIME_absolute_get_difference (t1, t2) \
-              .rel_value_us);                                                 \
+            .rel_value_us);                                                 \
   }
 
 
@@ -115,5 +117,6 @@ main (int argc, char *argv[])
   pr2 (GNUNET_ERROR_TYPE_DEBUG, "DEBUG");
   return 0;
 } /* end of main */
+
 
 /* end of test_common_logging_dummy.c */

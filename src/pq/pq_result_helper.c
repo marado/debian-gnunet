@@ -1,22 +1,22 @@
- /*
-  This file is part of GNUnet
-  Copyright (C) 2014, 2015, 2016 GNUnet e.V.
+/*
+   This file is part of GNUnet
+   Copyright (C) 2014, 2015, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     SPDX-License-Identifier: AGPL3.0-or-later
-*/
+    SPDX-License-Identifier: AGPL3.0-or-later
+ */
 /**
  * @file pq/pq_result_helper.c
  * @brief functions to extract result values
@@ -36,7 +36,7 @@
  */
 static void
 clean_varsize_blob (void *cls,
-		    void *rd)
+                    void *rd)
 {
   void **dst = rd;
 
@@ -64,11 +64,11 @@ clean_varsize_blob (void *cls,
  */
 static int
 extract_varsize_blob (void *cls,
-		      PGresult *result,
-		      int row,
-		      const char *fname,
-		      size_t *dst_size,
-		      void *dst)
+                      PGresult *result,
+                      int row,
+                      const char *fname,
+                      size_t *dst_size,
+                      void *dst)
 {
   size_t len;
   const char *res;
@@ -80,15 +80,15 @@ extract_varsize_blob (void *cls,
   *((void **) dst) = NULL;
 
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     /* Let's allow this for varsize */
     return GNUNET_OK;
@@ -96,11 +96,11 @@ extract_varsize_blob (void *cls,
   /* if a field is null, continue but
    * remember that we now return a different result */
   len = PQgetlength (result,
-		     row,
-		     fnum);
+                     row,
+                     fnum);
   res = PQgetvalue (result,
-		    row,
-		    fnum);
+                    row,
+                    fnum);
   GNUNET_assert (NULL != res);
   *dst_size = len;
   idst = GNUNET_malloc (len);
@@ -122,13 +122,14 @@ extract_varsize_blob (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_variable_size (const char *name,
-				     void **dst,
-				     size_t *sptr)
+                                     void **dst,
+                                     size_t *sptr)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_varsize_blob,
-      &clean_varsize_blob, NULL,
-      (void *) (dst), 0, name, sptr };
+  { &extract_varsize_blob,
+    &clean_varsize_blob, NULL,
+    (void *) (dst), 0, name, sptr };
+
   return res;
 }
 
@@ -148,11 +149,11 @@ GNUNET_PQ_result_spec_variable_size (const char *name,
  */
 static int
 extract_fixed_blob (void *cls,
-		    PGresult *result,
-		    int row,
-		    const char *fname,
-		    size_t *dst_size,
-		    void *dst)
+                    PGresult *result,
+                    int row,
+                    const char *fname,
+                    size_t *dst_size,
+                    void *dst)
 {
   size_t len;
   const char *res;
@@ -160,15 +161,15 @@ extract_fixed_blob (void *cls,
 
   (void) cls;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -177,16 +178,16 @@ extract_fixed_blob (void *cls,
   /* if a field is null, continue but
    * remember that we now return a different result */
   len = PQgetlength (result,
-		     row,
-		     fnum);
+                     row,
+                     fnum);
   if (*dst_size != len)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   res = PQgetvalue (result,
-		    row,
-		    fnum);
+                    row,
+                    fnum);
   GNUNET_assert (NULL != res);
   GNUNET_memcpy (dst,
                  res,
@@ -205,13 +206,14 @@ extract_fixed_blob (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_fixed_size (const char *name,
-				  void *dst,
-				  size_t dst_size)
+                                  void *dst,
+                                  size_t dst_size)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_fixed_blob,
-      NULL, NULL,
-      (dst), dst_size, name, NULL };
+  { &extract_fixed_blob,
+    NULL, NULL,
+    (dst), dst_size, name, NULL };
+
   return res;
 }
 
@@ -231,11 +233,11 @@ GNUNET_PQ_result_spec_fixed_size (const char *name,
  */
 static int
 extract_rsa_public_key (void *cls,
-			PGresult *result,
-			int row,
-			const char *fname,
-			size_t *dst_size,
-			void *dst)
+                        PGresult *result,
+                        int row,
+                        const char *fname,
+                        size_t *dst_size,
+                        void *dst)
 {
   struct GNUNET_CRYPTO_RsaPublicKey **pk = dst;
   size_t len;
@@ -245,15 +247,15 @@ extract_rsa_public_key (void *cls,
   (void) cls;
   *pk = NULL;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -261,13 +263,13 @@ extract_rsa_public_key (void *cls,
   /* if a field is null, continue but
    * remember that we now return a different result */
   len = PQgetlength (result,
-		     row,
-		     fnum);
+                     row,
+                     fnum);
   res = PQgetvalue (result,
-		    row,
-		    fnum);
+                    row,
+                    fnum);
   *pk = GNUNET_CRYPTO_rsa_public_key_decode (res,
-					     len);
+                                             len);
   if (NULL == *pk)
   {
     GNUNET_break (0);
@@ -286,7 +288,7 @@ extract_rsa_public_key (void *cls,
  */
 static void
 clean_rsa_public_key (void *cls,
-		      void *rd)
+                      void *rd)
 {
   struct GNUNET_CRYPTO_RsaPublicKey **pk = rd;
 
@@ -308,13 +310,14 @@ clean_rsa_public_key (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_rsa_public_key (const char *name,
-				      struct GNUNET_CRYPTO_RsaPublicKey **rsa)
+                                      struct GNUNET_CRYPTO_RsaPublicKey **rsa)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_rsa_public_key,
-      &clean_rsa_public_key,
-      NULL,
-      (void *) rsa, 0, name, NULL };
+  { &extract_rsa_public_key,
+    &clean_rsa_public_key,
+    NULL,
+    (void *) rsa, 0, name, NULL };
+
   return res;
 }
 
@@ -334,11 +337,11 @@ GNUNET_PQ_result_spec_rsa_public_key (const char *name,
  */
 static int
 extract_rsa_signature (void *cls,
-		       PGresult *result,
-		       int row,
-		       const char *fname,
-		       size_t *dst_size,
-		       void *dst)
+                       PGresult *result,
+                       int row,
+                       const char *fname,
+                       size_t *dst_size,
+                       void *dst)
 {
   struct GNUNET_CRYPTO_RsaSignature **sig = dst;
   size_t len;
@@ -348,15 +351,15 @@ extract_rsa_signature (void *cls,
   (void) cls;
   *sig = NULL;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -364,13 +367,13 @@ extract_rsa_signature (void *cls,
   /* if a field is null, continue but
    * remember that we now return a different result */
   len = PQgetlength (result,
-		     row,
-		     fnum);
+                     row,
+                     fnum);
   res = PQgetvalue (result,
-		    row,
-		    fnum);
+                    row,
+                    fnum);
   *sig = GNUNET_CRYPTO_rsa_signature_decode (res,
-					     len);
+                                             len);
   if (NULL == *sig)
   {
     GNUNET_break (0);
@@ -389,7 +392,7 @@ extract_rsa_signature (void *cls,
  */
 static void
 clean_rsa_signature (void *cls,
-		     void *rd)
+                     void *rd)
 {
   struct GNUNET_CRYPTO_RsaSignature **sig = rd;
 
@@ -411,13 +414,14 @@ clean_rsa_signature (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_rsa_signature (const char *name,
-				    struct GNUNET_CRYPTO_RsaSignature **sig)
+                                     struct GNUNET_CRYPTO_RsaSignature **sig)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_rsa_signature,
-      &clean_rsa_signature,
-      NULL,
-      (void *) sig, 0, (name), NULL };
+  { &extract_rsa_signature,
+    &clean_rsa_signature,
+    NULL,
+    (void *) sig, 0, (name), NULL };
+
   return res;
 }
 
@@ -451,15 +455,15 @@ extract_string (void *cls,
   (void) cls;
   *str = NULL;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -467,11 +471,11 @@ extract_string (void *cls,
   /* if a field is null, continue but
    * remember that we now return a different result */
   len = PQgetlength (result,
-		     row,
-		     fnum);
+                     row,
+                     fnum);
   res = PQgetvalue (result,
-		    row,
-		    fnum);
+                    row,
+                    fnum);
   *str = GNUNET_strndup (res,
                          len);
   if (NULL == *str)
@@ -517,10 +521,11 @@ GNUNET_PQ_result_spec_string (const char *name,
                               char **dst)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_string,
-      &clean_string,
-      NULL,
-      (void *) dst, 0, (name), NULL };
+  { &extract_string,
+    &clean_string,
+    NULL,
+    (void *) dst, 0, (name), NULL };
+
   return res;
 }
 
@@ -540,11 +545,11 @@ GNUNET_PQ_result_spec_string (const char *name,
  */
 static int
 extract_abs_time (void *cls,
-		  PGresult *result,
-		  int row,
-		  const char *fname,
-		  size_t *dst_size,
-		  void *dst)
+                  PGresult *result,
+                  int row,
+                  const char *fname,
+                  size_t *dst_size,
+                  void *dst)
 {
   struct GNUNET_TIME_Absolute *udst = dst;
   const int64_t *res;
@@ -552,26 +557,26 @@ extract_abs_time (void *cls,
 
   (void) cls;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   GNUNET_assert (NULL != dst);
-  if (sizeof (struct GNUNET_TIME_Absolute) != *dst_size)
+  if (sizeof(struct GNUNET_TIME_Absolute) != *dst_size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (sizeof (int64_t) !=
+  if (sizeof(int64_t) !=
       PQgetlength (result,
                    row,
                    fnum))
@@ -580,9 +585,9 @@ extract_abs_time (void *cls,
     return GNUNET_SYSERR;
   }
   res = (int64_t *) PQgetvalue (result,
-				row,
-				fnum);
-  if (INT64_MAX == *res)
+                                row,
+                                fnum);
+  if (INT64_MAX == GNUNET_ntohll ((uint64_t) *res))
     *udst = GNUNET_TIME_UNIT_FOREVER_ABS;
   else
     udst->abs_value_us = GNUNET_ntohll ((uint64_t) *res);
@@ -599,13 +604,14 @@ extract_abs_time (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_absolute_time (const char *name,
-				     struct GNUNET_TIME_Absolute *at)
+                                     struct GNUNET_TIME_Absolute *at)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_abs_time,
-      NULL,
-      NULL,
-      (void *) at, sizeof (*at), (name), NULL };
+  { &extract_abs_time,
+    NULL,
+    NULL,
+    (void *) at, sizeof(*at), (name), NULL };
+
   return res;
 }
 
@@ -619,10 +625,11 @@ GNUNET_PQ_result_spec_absolute_time (const char *name,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_absolute_time_nbo (const char *name,
-					 struct GNUNET_TIME_AbsoluteNBO *at)
+                                         struct GNUNET_TIME_AbsoluteNBO *at)
 {
   struct GNUNET_PQ_ResultSpec res =
-    GNUNET_PQ_result_spec_auto_from_type(name, &at->abs_value_us__);
+    GNUNET_PQ_result_spec_auto_from_type (name, &at->abs_value_us__);
+
   return res;
 }
 
@@ -642,11 +649,11 @@ GNUNET_PQ_result_spec_absolute_time_nbo (const char *name,
  */
 static int
 extract_uint16 (void *cls,
-		PGresult *result,
-		int row,
-		const char *fname,
-		size_t *dst_size,
-		void *dst)
+                PGresult *result,
+                int row,
+                const char *fname,
+                size_t *dst_size,
+                void *dst)
 {
   uint16_t *udst = dst;
   const uint16_t *res;
@@ -654,26 +661,26 @@ extract_uint16 (void *cls,
 
   (void) cls;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   GNUNET_assert (NULL != dst);
-  if (sizeof (uint16_t) != *dst_size)
+  if (sizeof(uint16_t) != *dst_size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (sizeof (uint16_t) !=
+  if (sizeof(uint16_t) !=
       PQgetlength (result,
                    row,
                    fnum))
@@ -682,8 +689,8 @@ extract_uint16 (void *cls,
     return GNUNET_SYSERR;
   }
   res = (uint16_t *) PQgetvalue (result,
-				 row,
-				 fnum);
+                                 row,
+                                 fnum);
   *udst = ntohs (*res);
   return GNUNET_OK;
 }
@@ -698,13 +705,14 @@ extract_uint16 (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_uint16 (const char *name,
-			      uint16_t *u16)
+                              uint16_t *u16)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_uint16,
-      NULL,
-      NULL,
-      (void *) u16, sizeof (*u16), (name), NULL };
+  { &extract_uint16,
+    NULL,
+    NULL,
+    (void *) u16, sizeof(*u16), (name), NULL };
+
   return res;
 }
 
@@ -724,11 +732,11 @@ GNUNET_PQ_result_spec_uint16 (const char *name,
  */
 static int
 extract_uint32 (void *cls,
-		PGresult *result,
-		int row,
-		const char *fname,
-		size_t *dst_size,
-		void *dst)
+                PGresult *result,
+                int row,
+                const char *fname,
+                size_t *dst_size,
+                void *dst)
 {
   uint32_t *udst = dst;
   const uint32_t *res;
@@ -736,26 +744,26 @@ extract_uint32 (void *cls,
 
   (void) cls;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   GNUNET_assert (NULL != dst);
-  if (sizeof (uint32_t) != *dst_size)
+  if (sizeof(uint32_t) != *dst_size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (sizeof (uint32_t) !=
+  if (sizeof(uint32_t) !=
       PQgetlength (result,
                    row,
                    fnum))
@@ -764,8 +772,8 @@ extract_uint32 (void *cls,
     return GNUNET_SYSERR;
   }
   res = (uint32_t *) PQgetvalue (result,
-				 row,
-				 fnum);
+                                 row,
+                                 fnum);
   *udst = ntohl (*res);
   return GNUNET_OK;
 }
@@ -780,13 +788,14 @@ extract_uint32 (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_uint32 (const char *name,
-			      uint32_t *u32)
+                              uint32_t *u32)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_uint32,
-      NULL,
-      NULL,
-      (void *) u32, sizeof (*u32), (name), NULL };
+  { &extract_uint32,
+    NULL,
+    NULL,
+    (void *) u32, sizeof(*u32), (name), NULL };
+
   return res;
 }
 
@@ -806,11 +815,11 @@ GNUNET_PQ_result_spec_uint32 (const char *name,
  */
 static int
 extract_uint64 (void *cls,
-		PGresult *result,
-		int row,
-		const char *fname,
-		size_t *dst_size,
-		void *dst)
+                PGresult *result,
+                int row,
+                const char *fname,
+                size_t *dst_size,
+                void *dst)
 {
   uint64_t *udst = dst;
   const uint64_t *res;
@@ -818,26 +827,26 @@ extract_uint64 (void *cls,
 
   (void) cls;
   fnum = PQfnumber (result,
-		    fname);
+                    fname);
   if (fnum < 0)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (PQgetisnull (result,
-		   row,
-		   fnum))
+                   row,
+                   fnum))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   GNUNET_assert (NULL != dst);
-  if (sizeof (uint64_t) != *dst_size)
+  if (sizeof(uint64_t) != *dst_size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (sizeof (uint64_t) !=
+  if (sizeof(uint64_t) !=
       PQgetlength (result,
                    row,
                    fnum))
@@ -846,8 +855,8 @@ extract_uint64 (void *cls,
     return GNUNET_SYSERR;
   }
   res = (uint64_t *) PQgetvalue (result,
-				 row,
-				 fnum);
+                                 row,
+                                 fnum);
   *udst = GNUNET_ntohll (*res);
   return GNUNET_OK;
 }
@@ -862,13 +871,14 @@ extract_uint64 (void *cls,
  */
 struct GNUNET_PQ_ResultSpec
 GNUNET_PQ_result_spec_uint64 (const char *name,
-			      uint64_t *u64)
+                              uint64_t *u64)
 {
   struct GNUNET_PQ_ResultSpec res =
-    { &extract_uint64,
-      NULL,
-      NULL,
-      (void *) u64, sizeof (*u64), (name), NULL };
+  { &extract_uint64,
+    NULL,
+    NULL,
+    (void *) u64, sizeof(*u64), (name), NULL };
+
   return res;
 }
 

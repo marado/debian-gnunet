@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_lookup_nick.c
  * @brief testcase for namestore_api.c: NICK records
@@ -38,7 +38,7 @@
 
 static struct GNUNET_NAMESTORE_Handle *nsh;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -50,14 +50,14 @@ static struct GNUNET_GNSRECORD_Data rd_orig;
 
 static struct GNUNET_NAMESTORE_QueueEntry *nsqe;
 
-//static const char * name = "dummy.dummy.gnunet";
-static const char * name = "d";
+// static const char * name = "dummy.dummy.gnunet";
+static const char *name = "d";
 
 
 static void
 cleanup ()
 {
-  GNUNET_free_non_null ((void *)rd_orig.data);
+  GNUNET_free_non_null ((void *) rd_orig.data);
   if (NULL != nsh)
   {
     GNUNET_NAMESTORE_disconnect (nsh);
@@ -111,35 +111,35 @@ lookup_it (void *cls,
   int found_record = GNUNET_NO;
   int found_nick = GNUNET_NO;
 
-  if (0 != GNUNET_memcmp(privkey, zone))
+  if (0 != GNUNET_memcmp (privkey, zone))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
   if (NULL == label)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
   if (0 != strcmp (label, name))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
   if (2 != rd_count)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
@@ -147,24 +147,24 @@ lookup_it (void *cls,
   {
     if (GNUNET_GNSRECORD_TYPE_NICK == rd[c].record_type)
     {
-      if (rd[c].data_size != strlen(TEST_NICK)+1)
+      if (rd[c].data_size != strlen (TEST_NICK) + 1)
       {
-        GNUNET_break(0);
+        GNUNET_break (0);
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
       if (0 != (rd[c].flags & GNUNET_GNSRECORD_RF_PRIVATE))
       {
-        GNUNET_break(0);
+        GNUNET_break (0);
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
-      if (0 != strcmp(rd[c].data, TEST_NICK))
+      if (0 != strcmp (rd[c].data, TEST_NICK))
       {
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
       found_nick = GNUNET_YES;
@@ -173,35 +173,34 @@ lookup_it (void *cls,
     {
       if (rd[c].record_type != TEST_RECORD_TYPE)
       {
-        GNUNET_break(0);
+        GNUNET_break (0);
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
       if (rd[c].data_size != TEST_RECORD_DATALEN)
       {
-        GNUNET_break(0);
+        GNUNET_break (0);
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
       if (0 != memcmp (rd[c].data, rd_orig.data, TEST_RECORD_DATALEN))
       {
-        GNUNET_break(0);
+        GNUNET_break (0);
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
       if (rd[c].flags != rd->flags)
       {
-        GNUNET_break(0);
+        GNUNET_break (0);
         GNUNET_SCHEDULER_cancel (endbadly_task);
-        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+        endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
         return;
       }
       found_record = GNUNET_YES;
     }
-
   }
 
   /* Done */
@@ -209,14 +208,14 @@ lookup_it (void *cls,
   {
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = NULL;
-    GNUNET_SCHEDULER_add_now (&end, NULL );
+    GNUNET_SCHEDULER_add_now (&end, NULL);
   }
   else
   {
     GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = NULL;
-    GNUNET_SCHEDULER_add_now (&endbadly, NULL );
+    GNUNET_SCHEDULER_add_now (&endbadly, NULL);
   }
 }
 
@@ -236,9 +235,9 @@ put_cont (void *cls, int32_t success, const char *emsg)
   nsqe = NULL;
   GNUNET_assert (NULL != cls);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store added record for `%s': %s\n",
-	      name,
-	      (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
+              "Name store added record for `%s': %s\n",
+              name,
+              (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
 
   if (GNUNET_OK != success)
   {
@@ -266,7 +265,7 @@ nick_cont (void *cls, int32_t success, const char *emsg)
               "Nick added : %s\n",
               (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
 
-  rd_orig.expiration_time = GNUNET_TIME_absolute_get().abs_value_us;
+  rd_orig.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us;
   rd_orig.record_type = TEST_RECORD_TYPE;
   rd_orig.data_size = TEST_RECORD_DATALEN;
   rd_orig.data = GNUNET_malloc (TEST_RECORD_DATALEN);
@@ -274,7 +273,7 @@ nick_cont (void *cls, int32_t success, const char *emsg)
   memset ((char *) rd_orig.data, 'a', TEST_RECORD_DATALEN);
 
   nsqe = GNUNET_NAMESTORE_records_store (nsh, privkey, name,
-                                      1, &rd_orig, &put_cont, (void *) name);
+                                         1, &rd_orig, &put_cont, (void *) name);
 }
 
 
@@ -284,7 +283,7 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
+                                                &endbadly,
                                                 NULL);
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
@@ -302,9 +301,10 @@ run (void *cls,
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore cannot store no block\n"));
+                _ ("Namestore cannot store no block\n"));
   }
 }
+
 
 #include "test_common.c"
 

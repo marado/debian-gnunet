@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -43,7 +43,7 @@ PEERSTORE_hash_key (const char *sub_system,
   void *blockptr;
 
   sssize = strlen (sub_system) + 1;
-  psize = sizeof (struct GNUNET_PeerIdentity);
+  psize = sizeof(struct GNUNET_PeerIdentity);
   ksize = strlen (key) + 1;
   totalsize = sssize + psize + ksize;
   block = GNUNET_malloc (totalsize);
@@ -134,7 +134,7 @@ PEERSTORE_parse_record_message (const struct StoreRecordMessage *srm)
   uint16_t value_size;
   char *dummy;
 
-  req_size = ntohs (srm->header.size) - sizeof (*srm);
+  req_size = ntohs (srm->header.size) - sizeof(*srm);
   ss_size = ntohs (srm->sub_system_size);
   key_size = ntohs (srm->key_size);
   value_size = ntohs (srm->value_size);

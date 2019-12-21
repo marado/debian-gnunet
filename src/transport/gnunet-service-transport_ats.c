@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/gnunet-service-transport_ats.c
  * @brief interfacing between transport and ATS service
@@ -32,7 +32,7 @@
 /**
  * Log convenience function.
  */
-#define LOG(kind,...) GNUNET_log_from(kind, "transport-ats", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "transport-ats", __VA_ARGS__)
 
 
 /**
@@ -40,7 +40,6 @@
  */
 struct AddressInfo
 {
-
   /**
    * The address (with peer identity).  Must never change
    * while this struct is in the #p2a map.
@@ -89,7 +88,6 @@ struct AddressInfo
    * not yet remove it because we still have a valid session.
    */
   int expired;
-
 };
 
 
@@ -110,7 +108,6 @@ static unsigned int num_blocked;
  */
 struct FindClosure
 {
-
   /**
    * Session to look for (only used if the address is inbound).
    */
@@ -125,7 +122,6 @@ struct FindClosure
    * Where to store the result.
    */
   struct AddressInfo *ret;
-
 };
 
 
@@ -138,9 +134,9 @@ static void
 publish_p2a_stat_update ()
 {
   GNUNET_STATISTICS_set (GST_stats,
-			 gettext_noop ("# Addresses given to ATS"),
-			 GNUNET_CONTAINER_multipeermap_size (p2a) - num_blocked,
-			 GNUNET_NO);
+                         gettext_noop ("# Addresses given to ATS"),
+                         GNUNET_CONTAINER_multipeermap_size (p2a) - num_blocked,
+                         GNUNET_NO);
   GNUNET_STATISTICS_set (GST_stats,
                          "# blocked addresses",
                          num_blocked,
@@ -166,10 +162,10 @@ find_ai_cb (void *cls,
   struct FindClosure *fc = cls;
   struct AddressInfo *ai = value;
 
-  if ( (0 ==
-        GNUNET_HELLO_address_cmp (fc->address,
-                                  ai->address) ) &&
-       (fc->session == ai->session) )
+  if ((0 ==
+       GNUNET_HELLO_address_cmp (fc->address,
+                                 ai->address)) &&
+      (fc->session == ai->session))
   {
     fc->ret = ai;
     return GNUNET_NO;
@@ -284,8 +280,8 @@ int
 GST_ats_is_known_no_session (const struct GNUNET_HELLO_Address *address)
 {
   return (NULL != find_ai_no_session (address))
-    ? GNUNET_YES
-    : GNUNET_NO;
+         ? GNUNET_YES
+         : GNUNET_NO;
 }
 
 
@@ -333,11 +329,11 @@ GST_ats_block_address (const struct GNUNET_HELLO_Address *address,
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
   ai = find_ai (address,
                 session);
-  if (NULL == ai || NULL == ai->ar)
+  if ((NULL == ai) || (NULL == ai->ar))
   {
     /* The address is already gone/blocked, this can happen during a blacklist
      * callback. */
@@ -359,19 +355,18 @@ GST_ats_block_address (const struct GNUNET_HELLO_Address *address,
          GNUNET_STRINGS_relative_time_to_string (ai->back_off,
                                                  GNUNET_YES));
   /* destroy session and address */
-  if ( (NULL == session) ||
-       (GNUNET_NO ==
-        GNUNET_ATS_address_del_session (ai->ar,
-                                        session)) )
+  if ((NULL == session) ||
+      (GNUNET_NO ==
+       GNUNET_ATS_address_del_session (ai->ar,
+                                       session)))
   {
     GNUNET_ATS_address_destroy (ai->ar);
   }
   /* "ar" has been freed, regardless how the branch
      above played out: it was either freed in
-     #GNUNET_ATS_address_del_session() because it was
+   #GNUNET_ATS_address_del_session() because it was
      incoming, or explicitly in
-     #GNUNET_ATS_address_del_session(). */
-  ai->ar = NULL;
+   #GNUNET_ATS_address_del_session(). */ai->ar = NULL;
 
   /* determine when the address should come back to life */
   ai->blocked = GNUNET_TIME_relative_to_absolute (ai->back_off);
@@ -400,7 +395,7 @@ GST_ats_block_reset (const struct GNUNET_HELLO_Address *address,
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
   ai = find_ai (address, session);
   if (NULL == ai)
@@ -435,13 +430,13 @@ GST_ats_add_inbound_address (const struct GNUNET_HELLO_Address *address,
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
 
   /* Sanity checks for a valid inbound address */
   if (NULL == address->transport_name)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return;
   }
   GNUNET_break (GNUNET_NT_UNSPECIFIED != prop->scope);
@@ -499,12 +494,12 @@ GST_ats_add_address (const struct GNUNET_HELLO_Address *address,
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
   /* validadte address */
   if (NULL == address->transport_name)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return;
   }
   GNUNET_assert (GNUNET_YES !=
@@ -554,7 +549,7 @@ GST_ats_new_session (const struct GNUNET_HELLO_Address *address,
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
   ai = find_ai (address, NULL);
   if (NULL == ai)
@@ -563,8 +558,7 @@ GST_ats_new_session (const struct GNUNET_HELLO_Address *address,
        other part of the code could not tell if it just created a new
        session or just got one recycled from the plugin; hence, we may
        be called with "new" session even for an "old" session; in that
-       case, check that this is the case, but just ignore it. */
-    GNUNET_assert (NULL != (find_ai (address, session)));
+       case, check that this is the case, but just ignore it. */GNUNET_assert (NULL != (find_ai (address, session)));
     return;
   }
   GNUNET_assert (NULL == ai->session);
@@ -637,7 +631,7 @@ GST_ats_del_session (const struct GNUNET_HELLO_Address *address,
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
   if (NULL == session)
   {
@@ -681,10 +675,9 @@ GST_ats_del_session (const struct GNUNET_HELLO_Address *address,
       }
       /* "ar" has been freed, regardless how the branch
          above played out: it was either freed in
-         #GNUNET_ATS_address_del_session() because it was
+       #GNUNET_ATS_address_del_session() because it was
          incoming, or explicitly in
-         #GNUNET_ATS_address_del_session(). */
-      ai->ar = NULL;
+       #GNUNET_ATS_address_del_session(). */ai->ar = NULL;
     }
     destroy_ai (ai);
     return;
@@ -695,8 +688,8 @@ GST_ats_del_session (const struct GNUNET_HELLO_Address *address,
     /* If ATS doesn't know about the address/session, this means
        this address was blocked. */
     if (GNUNET_YES ==
-	GNUNET_HELLO_address_check_option (address,
-					   GNUNET_HELLO_ADDRESS_INFO_INBOUND))
+        GNUNET_HELLO_address_check_option (address,
+                                           GNUNET_HELLO_ADDRESS_INFO_INBOUND))
     {
       /* This was a blocked inbound session, which now lost the
          session.  But inbound addresses are by themselves useless,
@@ -855,7 +848,7 @@ GST_ats_expire_address (const struct GNUNET_HELLO_Address *address)
   if (0 ==
       memcmp (&GST_my_identity,
               &address->peer,
-              sizeof (struct GNUNET_PeerIdentity)))
+              sizeof(struct GNUNET_PeerIdentity)))
     return; /* our own, ignore! */
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Address %s of peer %s expired\n",
@@ -899,8 +892,8 @@ GST_ats_init ()
  */
 static int
 destroy_ai_cb (void *cls,
-	       const struct GNUNET_PeerIdentity *key,
-	       void *value)
+               const struct GNUNET_PeerIdentity *key,
+               void *value)
 {
   struct AddressInfo *ai = value;
 
@@ -922,5 +915,6 @@ GST_ats_done ()
   GNUNET_CONTAINER_multipeermap_destroy (p2a);
   p2a = NULL;
 }
+
 
 /* end of gnunet-service-transport_ats.c */

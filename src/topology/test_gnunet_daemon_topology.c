@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file topology/test_gnunet_daemon_topology.c
  * @brief testcase for topology maintenance code
@@ -35,8 +35,11 @@
  * for one peer to pass the test. Be aware that setting NUM_PEERS
  * too high can cause bandwidth problems for the testing peers.
  * Normal should be 5KB/s per peer. See gnunet-config -s ats.
+ * schanzen 12/2019: This _only_ makes sense if we connect to the
+ * actual network as in the test we do not connect to more than 1 peer.
+ * => reducing to 1 for now, was NUM_PEERS / 2
  */
-#define THRESHOLD NUM_PEERS/2
+#define THRESHOLD 1
 
 /**
  * How long until we give up on connecting the peers?
@@ -88,7 +91,8 @@ shutdown_task (void *cls)
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "Shutting down testcase\n");
 
-  for (i=0;i<NUM_PEERS;i++) {
+  for (i = 0; i < NUM_PEERS; i++)
+  {
     if (NULL != op[i])
       GNUNET_TESTBED_operation_done (op[i]);
   }
@@ -96,6 +100,7 @@ shutdown_task (void *cls)
   if (NULL != timeout_tid)
     GNUNET_SCHEDULER_cancel (timeout_tid);
 }
+
 
 static void
 timeout_task (void *cls)
@@ -105,8 +110,9 @@ timeout_task (void *cls)
               "Testcase timeout\n");
 
   result = GNUNET_SYSERR;
-  GNUNET_SCHEDULER_shutdown();
+  GNUNET_SCHEDULER_shutdown ();
 }
+
 
 /*
  * The function is called every time the topology of connected
@@ -130,25 +136,28 @@ statistics_iterator (void *cls,
   if (p_ctx->connections < value)
     p_ctx->connections = value;
 
-  if (THRESHOLD <= value && GNUNET_NO == p_ctx->reported) {
+  if ((THRESHOLD <= value) && (GNUNET_NO == p_ctx->reported))
+  {
     p_ctx->reported = GNUNET_YES;
     checked_peers++;
-    GNUNET_log(GNUNET_ERROR_TYPE_INFO,
-               "Peer %d successfully connected to at least %d peers once.\n",
-               p_ctx->index,
-               THRESHOLD);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "Peer %d successfully connected to at least %d peers once.\n",
+                p_ctx->index,
+                THRESHOLD);
 
-    if (checked_peers == NUM_PEERS) {
-      GNUNET_log(GNUNET_ERROR_TYPE_INFO,
-               "Test OK: All peers have connected to %d peers once.\n",
-               THRESHOLD);
+    if (checked_peers == NUM_PEERS)
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                  "Test OK: All peers have connected to %d peers once.\n",
+                  THRESHOLD);
       result = GNUNET_YES;
-      GNUNET_SCHEDULER_shutdown();
+      GNUNET_SCHEDULER_shutdown ();
     }
   }
 
   return GNUNET_YES;
 }
+
 
 static void *
 ca_statistics (void *cls,
@@ -165,8 +174,8 @@ da_statistics (void *cls,
   struct peerctx *p_ctx = (struct peerctx *) cls;
 
   GNUNET_break (GNUNET_OK == GNUNET_STATISTICS_watch_cancel
-                (p_ctx->statistics, "topology", "# peers connected",
-                 statistics_iterator, p_ctx));
+                  (p_ctx->statistics, "topology", "# peers connected",
+                  statistics_iterator, p_ctx));
 
   GNUNET_STATISTICS_destroy (p_ctx->statistics, GNUNET_NO);
   p_ctx->statistics = NULL;
@@ -177,15 +186,15 @@ da_statistics (void *cls,
 
 static void
 service_connect_complete (void *cls,
-		   	  struct GNUNET_TESTBED_Operation *op,
+                          struct GNUNET_TESTBED_Operation *op,
                           void *ca_result,
-			  const char *emsg)
+                          const char *emsg)
 {
   int ret;
   struct peerctx *p_ctx = (struct peerctx*) cls;
 
   if (NULL == ca_result)
-    GNUNET_SCHEDULER_shutdown();
+    GNUNET_SCHEDULER_shutdown ();
 
   p_ctx->statistics = ca_result;
 
@@ -200,6 +209,7 @@ service_connect_complete (void *cls,
                 "call to GNUNET_STATISTICS_watch() failed\n");
 }
 
+
 static void
 notify_connect_complete (void *cls,
                          struct GNUNET_TESTBED_Operation *op,
@@ -208,7 +218,7 @@ notify_connect_complete (void *cls,
   GNUNET_TESTBED_operation_done (op);
   if (NULL != emsg)
   {
-    FPRINTF (stderr, "Failed to connect two peers: %s\n", emsg);
+    fprintf (stderr, "Failed to connect two peers: %s\n", emsg);
     result = GNUNET_SYSERR;
     GNUNET_SCHEDULER_shutdown ();
     return;
@@ -216,11 +226,12 @@ notify_connect_complete (void *cls,
   connect_left--;
 }
 
+
 static void
 do_connect (void *cls,
             struct GNUNET_TESTBED_RunHandle *h,
-	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int num_peers,
+            struct GNUNET_TESTBED_Peer **peers,
             unsigned int links_succeeded,
             unsigned int links_failed)
 {
@@ -233,31 +244,31 @@ do_connect (void *cls,
 
   GNUNET_assert (NUM_PEERS == num_peers);
 
-  for (i=0;i<NUM_PEERS;i++)
+  for (i = 0; i < NUM_PEERS; i++)
+  {
+    p_ctx = GNUNET_new (struct peerctx);
+    p_ctx->index = i;
+    p_ctx->connections = 0;
+    p_ctx->reported = GNUNET_NO;
+
+    if (i < NUM_PEERS - 1)
     {
-      p_ctx = GNUNET_new (struct peerctx);
-      p_ctx->index = i;
-      p_ctx->connections = 0;
-      p_ctx->reported = GNUNET_NO;
-
-      if (i<NUM_PEERS-1) {
-        connect_left++;
-        GNUNET_TESTBED_overlay_connect (NULL,
-                                        &notify_connect_complete, NULL,
-                                        peers[i], peers[i+1]);
-      }
-
-      op[i] =
-        GNUNET_TESTBED_service_connect (cls,
-                                        peers[i],
-                                        "statistics",
-                                        service_connect_complete,
-                                        p_ctx, /* cls of completion cb */
-                                        ca_statistics, /* connect adapter */
-                                        da_statistics, /* disconnect adapter */
-                                        p_ctx);
-
+      connect_left++;
+      GNUNET_TESTBED_overlay_connect (NULL,
+                                      &notify_connect_complete, NULL,
+                                      peers[i], peers[i + 1]);
     }
+
+    op[i] =
+      GNUNET_TESTBED_service_connect (cls,
+                                      peers[i],
+                                      "statistics",
+                                      service_connect_complete,
+                                      p_ctx,   /* cls of completion cb */
+                                      ca_statistics,   /* connect adapter */
+                                      da_statistics,   /* disconnect adapter */
+                                      p_ctx);
+  }
 
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
   timeout_tid =
@@ -282,5 +293,6 @@ main (int argc, char *argv[])
 
   return (GNUNET_OK != result) ? 1 : 0;
 }
+
 
 /* end of test_gnunet_daemon_topology.c */

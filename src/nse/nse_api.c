@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file nse/nse_api.c
@@ -133,11 +133,11 @@ reconnect (void *cls)
 {
   struct GNUNET_NSE_Handle *h = cls;
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (estimate,
-                              GNUNET_MESSAGE_TYPE_NSE_ESTIMATE,
-                              struct GNUNET_NSE_ClientMessage,
-                              h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (estimate,
+                             GNUNET_MESSAGE_TYPE_NSE_ESTIMATE,
+                             struct GNUNET_NSE_ClientMessage,
+                             h),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MessageHeader *msg;
   struct GNUNET_MQ_Envelope *env;
 
@@ -204,5 +204,6 @@ GNUNET_NSE_disconnect (struct GNUNET_NSE_Handle *h)
   }
   GNUNET_free (h);
 }
+
 
 /* end of nse_api.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_mq.c
@@ -32,7 +32,8 @@
 /**
  * How long does the receiver take per message?
  */
-#define RECEIVER_THROTTLE GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 1)
+#define RECEIVER_THROTTLE GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 1)
 
 static unsigned int received_cnt;
 
@@ -199,7 +200,7 @@ run (void *cls,
   tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
                                      &do_timeout,
                                      NULL);
-  for (unsigned int i=0;i<NUM_TRANSMISSIONS;i++)
+  for (unsigned int i = 0; i < NUM_TRANSMISSIONS; i++)
   {
     unsigned int *cnt;
 
@@ -272,7 +273,7 @@ test1 ()
   GNUNET_assert (NULL != mqm);
   GNUNET_assert (NULL != mm);
   GNUNET_assert (GNUNET_MESSAGE_TYPE_DUMMY == ntohs (mm->header.type));
-  GNUNET_assert (sizeof (struct MyMessage) == ntohs (mm->header.size));
+  GNUNET_assert (sizeof(struct MyMessage) == ntohs (mm->header.size));
   GNUNET_MQ_discard (mqm);
 }
 
@@ -292,7 +293,7 @@ test2 ()
                                     20,
                                     GNUNET_MESSAGE_TYPE_DUMMY);
   GNUNET_assert (GNUNET_MESSAGE_TYPE_DUMMY == ntohs (mh->type));
-  GNUNET_assert (sizeof (struct GNUNET_MessageHeader) + 20 == ntohs (mh->size));
+  GNUNET_assert (sizeof(struct GNUNET_MessageHeader) + 20 == ntohs (mh->size));
   GNUNET_MQ_discard (mqm);
 }
 
@@ -300,7 +301,7 @@ test2 ()
 int
 main (int argc, char **argv)
 {
-  char * test_argv[] = {
+  char *test_argv[] = {
     (char *) "test_client",
     "-c",
     "test_client_data.conf",

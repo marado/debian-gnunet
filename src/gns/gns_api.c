@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file gns/gns_api.c
  * @brief library to access the GNS service
@@ -34,14 +34,13 @@
 #include "gns_api.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "gns-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "gns-api", __VA_ARGS__)
 
 /**
  * Handle to a lookup request
  */
 struct GNUNET_GNS_LookupRequest
 {
-
   /**
    * DLL
    */
@@ -76,7 +75,6 @@ struct GNUNET_GNS_LookupRequest
    * request id
    */
   uint32_t r_id;
-
 };
 
 
@@ -118,8 +116,8 @@ force_reconnect (struct GNUNET_GNS_Handle *handle)
     = GNUNET_TIME_STD_BACKOFF (handle->reconnect_backoff);
   handle->reconnect_task
     = GNUNET_SCHEDULER_add_delayed (handle->reconnect_backoff,
-				    &reconnect_task,
-				    handle);
+                                    &reconnect_task,
+                                    handle);
 }
 
 
@@ -154,14 +152,14 @@ static int
 check_result (void *cls,
               const struct LookupResultMessage *lookup_msg)
 {
-  size_t mlen = ntohs (lookup_msg->header.size) - sizeof (*lookup_msg);
+  size_t mlen = ntohs (lookup_msg->header.size) - sizeof(*lookup_msg);
   uint32_t rd_count = ntohl (lookup_msg->rd_count);
   struct GNUNET_GNSRECORD_Data rd[rd_count];
 
   (void) cls;
   if (GNUNET_SYSERR ==
       GNUNET_GNSRECORD_records_deserialize (mlen,
-                                            (const char*) &lookup_msg[1],
+                                            (const char *) &lookup_msg[1],
                                             rd_count,
                                             rd))
   {
@@ -183,7 +181,7 @@ handle_result (void *cls,
                const struct LookupResultMessage *lookup_msg)
 {
   struct GNUNET_GNS_Handle *handle = cls;
-  size_t mlen = ntohs (lookup_msg->header.size) - sizeof (*lookup_msg);
+  size_t mlen = ntohs (lookup_msg->header.size) - sizeof(*lookup_msg);
   uint32_t rd_count = ntohl (lookup_msg->rd_count);
   struct GNUNET_GNSRECORD_Data rd[rd_count];
   uint32_t r_id = ntohl (lookup_msg->id);
@@ -204,7 +202,8 @@ handle_result (void *cls,
 
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_GNSRECORD_records_deserialize (mlen,
-                                                       (const char*) &lookup_msg[1],
+                                                       (const
+                                                        char *) &lookup_msg[1],
                                                        rd_count,
                                                        rd));
   proc (proc_cls,
@@ -325,7 +324,7 @@ GNUNET_GNS_lookup_cancel (struct GNUNET_GNS_LookupRequest *lr)
  * Perform an asynchronous lookup operation on the GNS.
  *
  * @param handle handle to the GNS service
- * @param name the name to look up
+ * @param name the name to look up (in UTF-8 encoding)
  * @param zone the zone to start the resolution in
  * @param type the record type to look up
  * @param options local options for the lookup
@@ -356,7 +355,7 @@ GNUNET_GNS_lookup (struct GNUNET_GNS_Handle *handle,
        "Trying to lookup `%s' in GNS\n",
        name);
   nlen = strlen (name) + 1;
-  if (nlen >= GNUNET_MAX_MESSAGE_SIZE - sizeof (*lr))
+  if (nlen >= GNUNET_MAX_MESSAGE_SIZE - sizeof(*lr))
   {
     GNUNET_break (0);
     return NULL;

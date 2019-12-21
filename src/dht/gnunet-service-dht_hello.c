@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet-service-dht_hello.c
@@ -116,8 +116,8 @@ GDS_HELLO_init ()
  */
 static int
 free_hello (void *cls,
-	    const struct GNUNET_PeerIdentity *key,
-	    void *hello)
+            const struct GNUNET_PeerIdentity *key,
+            void *hello)
 {
   GNUNET_free (hello);
   return GNUNET_OK;
@@ -143,5 +143,6 @@ GDS_HELLO_done ()
     GNUNET_CONTAINER_multipeermap_destroy (peer_to_hello);
   }
 }
+
 
 /* end of gnunet-service-dht_hello.c */

@@ -1,4 +1,3 @@
-
 /*
      This file is part of GNUnet
      Copyright (C) 2012 GNUnet e.V.
@@ -12,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file mysql/mysql.c
  * @brief library to help with access to a MySQL database
@@ -75,7 +74,6 @@
  */
 struct GNUNET_MYSQL_Context
 {
-
   /**
    * Our configuration.
    */
@@ -113,7 +111,6 @@ struct GNUNET_MYSQL_Context
  */
 struct GNUNET_MYSQL_StatementHandle
 {
-
   /**
    * Kept in a DLL.
    */
@@ -161,12 +158,10 @@ get_my_cnf_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
   char *home_dir;
   struct stat st;
 
-#ifndef WINDOWS
   struct passwd *pw;
-#endif
+
   int configured;
 
-#ifndef WINDOWS
   pw = getpwuid (getuid ());
   if (! pw)
   {
@@ -189,18 +184,12 @@ get_my_cnf_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
     GNUNET_free (home_dir);
     configured = GNUNET_NO;
   }
-#else
-  home_dir = (char *) GNUNET_malloc (_MAX_PATH + 1);
-  plibc_conv_to_win_path ("~/", home_dir);
-  GNUNET_asprintf (&cnffile, "%s/.my.cnf", home_dir);
-  GNUNET_free (home_dir);
-  configured = GNUNET_NO;
-#endif
+
   GNUNET_log_from (GNUNET_ERROR_TYPE_INFO,
                    "mysql",
                    _ ("Trying to use file `%s' for MySQL configuration.\n"),
                    cnffile);
-  if ((0 != STAT (cnffile, &st)) || (0 != ACCESS (cnffile, R_OK)) ||
+  if ((0 != stat (cnffile, &st)) || (0 != access (cnffile, R_OK)) ||
       (! S_ISREG (st.st_mode)))
   {
     if (configured == GNUNET_YES)
@@ -208,7 +197,7 @@ get_my_cnf_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
                        "mysql",
                        _ ("Could not access file `%s': %s\n"),
                        cnffile,
-                       STRERROR (errno));
+                       strerror (errno));
     GNUNET_free (cnffile);
     return NULL;
   }

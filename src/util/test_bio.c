@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_bio.c
@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 #define TESTSTRING "testString"
-#define TESTNUMBER64 ((int64_t)100000L)
+#define TESTNUMBER64 ((int64_t) 100000L)
 
 static int
 test_normal_rw ()
@@ -76,6 +76,7 @@ test_normal_rw ()
   return 0;
 }
 
+
 static int
 test_nullstring_rw ()
 {
@@ -103,6 +104,7 @@ test_nullstring_rw ()
   return 0;
 }
 
+
 static int
 test_emptystring_rw ()
 {
@@ -129,6 +131,7 @@ test_emptystring_rw ()
   GNUNET_free (fileName);
   return 0;
 }
+
 
 static int
 test_bigstring_rw ()
@@ -159,6 +162,7 @@ test_bigstring_rw ()
   return 0;
 }
 
+
 static int
 test_bigmeta_rw ()
 {
@@ -169,12 +173,12 @@ test_bigmeta_rw ()
   char *fileName = GNUNET_DISK_mktemp ("gnunet_bio");
   struct GNUNET_CONTAINER_MetaData *metaDataR;
 
-  memset (meta, 'b', sizeof (meta));
-  meta[sizeof (meta) - 1] = '\0';
+  memset (meta, 'b', sizeof(meta));
+  meta[sizeof(meta) - 1] = '\0';
   fileW = GNUNET_BIO_write_open (fileName);
   GNUNET_assert (NULL != fileW);
-  GNUNET_assert (GNUNET_OK == GNUNET_BIO_write_int32 (fileW, sizeof (meta)));
-  GNUNET_assert (GNUNET_OK == GNUNET_BIO_write (fileW, meta, sizeof (meta)));
+  GNUNET_assert (GNUNET_OK == GNUNET_BIO_write_int32 (fileW, sizeof(meta)));
+  GNUNET_assert (GNUNET_OK == GNUNET_BIO_write (fileW, meta, sizeof(meta)));
   GNUNET_assert (GNUNET_OK == GNUNET_BIO_write_close (fileW));
 
   fileR = GNUNET_BIO_read_open (fileName);
@@ -192,10 +196,11 @@ test_bigmeta_rw ()
   return 0;
 }
 
+
 static int
 test_directory_r ()
 {
-#if LINUX
+#ifdef __linux__
   char *msg;
   char readResult[200];
   struct GNUNET_BIO_ReadHandle *fileR;
@@ -204,13 +209,14 @@ test_directory_r ()
   GNUNET_assert (NULL != fileR);
   GNUNET_assert (GNUNET_SYSERR ==
                  GNUNET_BIO_read (fileR, "Read error", readResult,
-                                  sizeof (readResult)));
+                                  sizeof(readResult)));
   msg = NULL;
   GNUNET_BIO_read_close (fileR, &msg);
   GNUNET_free (msg);
 #endif
   return 0;
 }
+
 
 static int
 test_nullfile_rw ()
@@ -219,8 +225,8 @@ test_nullfile_rw ()
   struct GNUNET_BIO_WriteHandle *fileWNO;
   struct GNUNET_BIO_ReadHandle *fileRNO;
 
-  memset (fileNameNO, 'a', sizeof (fileNameNO));
-  fileNameNO[sizeof (fileNameNO) - 1] = '\0';
+  memset (fileNameNO, 'a', sizeof(fileNameNO));
+  fileNameNO[sizeof(fileNameNO) - 1] = '\0';
 
   GNUNET_log_skip (1, GNUNET_NO);
   fileWNO = GNUNET_BIO_write_open (fileNameNO);
@@ -238,7 +244,7 @@ test_nullfile_rw ()
 static int
 test_fullfile_rw ()
 {
-#ifdef LINUX
+#ifdef __linux__
   /* /dev/full only seems to exist on Linux */
   char *msg;
   int64_t testNum;
@@ -268,7 +274,7 @@ test_fullfile_rw ()
   GNUNET_assert (NULL != fileR);
   GNUNET_assert (GNUNET_SYSERR ==
                  GNUNET_BIO_read (fileR, "Read error", readResult,
-                                  sizeof (readResult)));
+                                  sizeof(readResult)));
   readResultString = NULL;
   GNUNET_assert (GNUNET_SYSERR ==
                  GNUNET_BIO_read_string (fileR, "Read string error",
@@ -286,6 +292,7 @@ test_fullfile_rw ()
 #endif
   return 0;
 }
+
 
 static int
 test_fakestring_rw ()
@@ -314,6 +321,7 @@ test_fakestring_rw ()
   GNUNET_free (fileName);
   return 0;
 }
+
 
 static int
 test_fakemeta_rw ()
@@ -345,6 +353,7 @@ test_fakemeta_rw ()
   return 0;
 }
 
+
 static int
 test_fakebigmeta_rw ()
 {
@@ -375,6 +384,7 @@ test_fakebigmeta_rw ()
   return 0;
 }
 
+
 static int
 check_string_rw ()
 {
@@ -385,6 +395,7 @@ check_string_rw ()
   return 0;
 }
 
+
 static int
 check_metadata_rw ()
 {
@@ -393,6 +404,7 @@ check_metadata_rw ()
   GNUNET_assert (0 == test_bigmeta_rw ());
   return 0;
 }
+
 
 static int
 check_file_rw ()
@@ -404,6 +416,7 @@ check_file_rw ()
   return 0;
 }
 
+
 int
 main (int argc, char *argv[])
 {
@@ -413,5 +426,6 @@ main (int argc, char *argv[])
   GNUNET_assert (0 == check_string_rw ());
   return 0;
 }
+
 
 /* end of test_bio.c */

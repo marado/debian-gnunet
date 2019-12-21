@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet_connection.h
@@ -180,7 +180,8 @@ GCC_handle_kx (struct CadetConnection *cc,
  */
 void
 GCC_handle_kx_auth (struct CadetConnection *cc,
-                    const struct GNUNET_CADET_TunnelKeyExchangeAuthMessage *msg);
+                    const struct
+                    GNUNET_CADET_TunnelKeyExchangeAuthMessage *msg);
 
 
 /**
@@ -188,7 +189,6 @@ GCC_handle_kx_auth (struct CadetConnection *cc,
  */
 struct CadetConnectionMetrics
 {
-
   /**
    * Our current best estimate of the latency, based on a weighted
    * average of at least @a latency_datapoints values.
@@ -221,7 +221,6 @@ struct CadetConnectionMetrics
    * connections.)
    */
   unsigned long long num_successes;
-
 };
 
 

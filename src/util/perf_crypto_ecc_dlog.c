@@ -11,13 +11,13 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
 
-*/
+ */
 /**
  * @file util/perf_crypto_ecc_dlog.c
  * @brief benchmark for ECC DLOG calculation
@@ -49,12 +49,12 @@
 
 /**
  * How many values do we test?
- */  
+ */
 #define TEST_ITER 10
 
 /**
  * Range of values to use for MATH tests.
- */  
+ */
 #define MATH_MAX 500000
 
 
@@ -65,7 +65,7 @@
  * @param do_dlog #GNUNET_YES if we want to actually do the bencharked operation
  */
 static void
-test_dlog (struct GNUNET_CRYPTO_EccDlogContext *edc, 
+test_dlog (struct GNUNET_CRYPTO_EccDlogContext *edc,
            int do_dlog)
 {
   gcry_mpi_t fact;
@@ -83,32 +83,32 @@ test_dlog (struct GNUNET_CRYPTO_EccDlogContext *edc,
   n = gcry_mpi_ec_get_mpi ("n", ctx, 0);
   q = gcry_mpi_point_new (0);
   fact = gcry_mpi_new (0);
-  for (i=0;i<TEST_ITER;i++)
+  for (i = 0; i < TEST_ITER; i++)
   {
     fprintf (stderr, ".");
     x = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-				  MAX_FACT);
+                                  MAX_FACT);
     if (0 == GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-				       2))
+                                       2))
     {
       gcry_mpi_set_ui (fact, x);
       gcry_mpi_sub (fact, n, fact);
-      x = - x;
+      x = -x;
     }
-    else 
+    else
     {
       gcry_mpi_set_ui (fact, x);
     }
     gcry_mpi_ec_mul (q, fact, g, ctx);
-    if ( (GNUNET_YES == do_dlog) &&
-	 (x !=
-	  (iret = GNUNET_CRYPTO_ecc_dlog (edc,
-					  q))) )
+    if ((GNUNET_YES == do_dlog) &&
+        (x !=
+         (iret = GNUNET_CRYPTO_ecc_dlog (edc,
+                                         q))))
     {
-      fprintf (stderr, 
-	       "DLOG failed for value %d (%d)\n", 
-	       x,
-	       iret);
+      fprintf (stderr,
+               "DLOG failed for value %d (%d)\n",
+               x,
+               iret);
       GNUNET_assert (0);
     }
   }
@@ -130,44 +130,48 @@ main (int argc, char *argv[])
 
   if (! gcry_check_version ("1.6.0"))
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              _
-             ("libgcrypt has not the expected version (version %s is required).\n"),
+             (
+               "libgcrypt has not the expected version (version %s is required).\n"),
              "1.6.0");
     return 0;
   }
   if (getenv ("GNUNET_GCRYPT_DEBUG"))
-    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1u , 0);
-  GNUNET_log_setup ("perf-crypto-ecc-dlog", 
-		    "WARNING", 
-		    NULL);
+    gcry_control (GCRYCTL_SET_DEBUG_FLAGS, 1u, 0);
+  GNUNET_log_setup ("perf-crypto-ecc-dlog",
+                    "WARNING",
+                    NULL);
   start = GNUNET_TIME_absolute_get ();
   edc = GNUNET_CRYPTO_ecc_dlog_prepare (MAX_FACT,
-					MAX_MEM);
+                                        MAX_MEM);
   printf ("DLOG precomputation 1M/1K took %s\n",
-          GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (start),
-						  GNUNET_YES));
+          GNUNET_STRINGS_relative_time_to_string (
+            GNUNET_TIME_absolute_get_duration (start),
+            GNUNET_YES));
   GAUGER ("UTIL", "ECC DLOG initialization",
-	  GNUNET_TIME_absolute_get_duration
-	  (start).rel_value_us / 1000LL, "ms/op");
+          GNUNET_TIME_absolute_get_duration
+            (start).rel_value_us / 1000LL, "ms/op");
   start = GNUNET_TIME_absolute_get ();
   /* first do a baseline run without the DLOG */
   test_dlog (edc, GNUNET_NO);
   delta = GNUNET_TIME_absolute_get_duration (start);
   start = GNUNET_TIME_absolute_get ();
   test_dlog (edc, GNUNET_YES);
-  delta = GNUNET_TIME_relative_subtract (GNUNET_TIME_absolute_get_duration (start),
-					 delta);
+  delta = GNUNET_TIME_relative_subtract (GNUNET_TIME_absolute_get_duration (
+                                           start),
+                                         delta);
   printf ("%u DLOG calculations took %s\n",
-	  TEST_ITER,
+          TEST_ITER,
           GNUNET_STRINGS_relative_time_to_string (delta,
-						  GNUNET_YES));
+                                                  GNUNET_YES));
   GAUGER ("UTIL", "ECC DLOG operations",
-	  delta.rel_value_us / 1000LL / TEST_ITER, 
-	  "ms/op");
+          delta.rel_value_us / 1000LL / TEST_ITER,
+          "ms/op");
 
   GNUNET_CRYPTO_ecc_dlog_release (edc);
   return 0;
 }
+
 
 /* end of perf_crypto_ecc_dlog.c */

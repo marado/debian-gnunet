@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file
@@ -30,7 +30,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-op", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-op", __VA_ARGS__)
 
 struct OperationListItem
 {
@@ -129,7 +129,7 @@ GNUNET_OP_get_next_id (struct GNUNET_OP_Handle *h)
  */
 static struct OperationListItem *
 op_find (struct GNUNET_OP_Handle *h,
-	 uint64_t op_id)
+         uint64_t op_id)
 {
   struct OperationListItem *op;
 
@@ -165,6 +165,7 @@ GNUNET_OP_get (struct GNUNET_OP_Handle *h,
                void **ctx)
 {
   struct OperationListItem *op = op_find (h, op_id);
+
   if (NULL != op)
   {
     if (NULL != result_cb)
@@ -207,8 +208,8 @@ GNUNET_OP_add (struct GNUNET_OP_Handle *h,
   op->cls = cls;
   op->ctx = ctx;
   GNUNET_CONTAINER_DLL_insert_tail (h->op_head,
-				    h->op_tail,
-				    op);
+                                    h->op_tail,
+                                    op);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "%p Added operation #%" PRIu64 "\n",
        h, op->op_id);
@@ -243,11 +244,11 @@ GNUNET_OP_add (struct GNUNET_OP_Handle *h,
 static int
 op_result (struct GNUNET_OP_Handle *h,
            uint64_t op_id,
-	   int64_t result_code,
+           int64_t result_code,
            const void *data,
-	   uint16_t data_size,
+           uint16_t data_size,
            void **ctx,
-	   uint8_t cancel)
+           uint8_t cancel)
 {
   if (0 == op_id)
     return GNUNET_NO;
@@ -264,14 +265,14 @@ op_result (struct GNUNET_OP_Handle *h,
     *ctx = op->ctx;
 
   GNUNET_CONTAINER_DLL_remove (h->op_head,
-			       h->op_tail,
-			       op);
+                               h->op_tail,
+                               op);
 
-  if ( (GNUNET_YES != cancel) &&
-       (NULL != op->result_cb) )
+  if ((GNUNET_YES != cancel) &&
+      (NULL != op->result_cb))
     op->result_cb (op->cls,
-		   result_code, data,
-		   data_size);
+                   result_code, data,
+                   data_size);
   GNUNET_free (op);
   return GNUNET_YES;
 }

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Florian Dold
@@ -74,7 +74,7 @@
  * @param type type of the message
  */
 #define GNUNET_MQ_msg_header(type) \
-  GNUNET_MQ_msg_ (NULL, sizeof (struct GNUNET_MessageHeader), type)
+  GNUNET_MQ_msg_ (NULL, sizeof(struct GNUNET_MessageHeader), type)
 
 
 /**
@@ -86,7 +86,7 @@
  * @param type type of the message
  */
 #define GNUNET_MQ_msg_header_extra(mh, esize, type) \
-  GNUNET_MQ_msg_ (&mh, (esize) + sizeof (struct GNUNET_MessageHeader), type)
+  GNUNET_MQ_msg_ (&mh, (esize) + sizeof(struct GNUNET_MessageHeader), type)
 
 
 /**
@@ -103,10 +103,10 @@
   ({                                                                          \
     struct GNUNET_MQ_Envelope *_ev;                                           \
     _ev = GNUNET_MQ_msg_nested_mh_ ((struct GNUNET_MessageHeader **) &(mvar), \
-                                    sizeof (*(mvar)),                         \
+                                    sizeof(*(mvar)),                         \
                                     (type),                                   \
                                     (mh));                                    \
-    (void) (mvar)->header; /* type check */                                   \
+    (void) (mvar)->header;  /* type check */                                   \
     _ev;                                                                      \
   })
 
@@ -121,7 +121,7 @@
  */
 #define GNUNET_MQ_extract_nested_mh(var)                               \
   GNUNET_MQ_extract_nested_mh_ ((struct GNUNET_MessageHeader *) (var), \
-                                sizeof (*(var)))
+                                sizeof(*(var)))
 
 
 /**
@@ -226,7 +226,6 @@ enum GNUNET_MQ_Error
  */
 enum GNUNET_MQ_PriorityPreferences
 {
-
   /**
    * Lowest priority, i.e. background traffic (i.e. NSE, FS).
    * This is the default!
@@ -297,7 +296,6 @@ enum GNUNET_MQ_PriorityPreferences
    * Flag to indicate that out-of-order delivery is OK.
    */
   GNUNET_MQ_PREF_OUT_OF_ORDER = 256,
-
 };
 
 
@@ -549,12 +547,12 @@ struct GNUNET_MQ_MessageHandler
  */
 #define GNUNET_MQ_hd_fixed_size(name, code, str, ctx)                   \
   ({                                                                    \
-    void (*_cb) (void *cls, const str *msg) = &handle_##name;           \
-    ((struct GNUNET_MQ_MessageHandler){NULL,                            \
-                                       (GNUNET_MQ_MessageCallback) _cb, \
-                                       (ctx),                           \
-                                       (code),                          \
-                                       sizeof (str)});                  \
+    void (*_cb)(void *cls, const str * msg) = &handle_ ## name;           \
+    ((struct GNUNET_MQ_MessageHandler){ NULL,                            \
+                                        (GNUNET_MQ_MessageCallback) _cb, \
+                                        (ctx),                           \
+                                        (code),                          \
+                                        sizeof(str) });                  \
   })
 
 
@@ -599,15 +597,15 @@ struct GNUNET_MQ_MessageHandler
  * @param ctx context for the callbacks
  */
 #define GNUNET_MQ_hd_var_size(name, code, str, ctx)                          \
-  __extension__({                                                            \
-    int (*_mv) (void *cls, const str *msg) = &check_##name;                  \
-    void (*_cb) (void *cls, const str *msg) = &handle_##name;                \
-    ((struct GNUNET_MQ_MessageHandler){(GNUNET_MQ_MessageValidationCallback) \
-                                         _mv,                                \
-                                       (GNUNET_MQ_MessageCallback) _cb,      \
-                                       (ctx),                                \
-                                       (code),                               \
-                                       sizeof (str)});                       \
+  __extension__ ({                                                            \
+    int (*_mv)(void *cls, const str * msg) = &check_ ## name;                  \
+    void (*_cb)(void *cls, const str * msg) = &handle_ ## name;                \
+    ((struct GNUNET_MQ_MessageHandler){ (GNUNET_MQ_MessageValidationCallback) \
+                                        _mv,                                \
+                                        (GNUNET_MQ_MessageCallback) _cb,      \
+                                        (ctx),                                \
+                                        (code),                               \
+                                        sizeof(str) });                       \
   })
 
 
@@ -626,7 +624,7 @@ struct GNUNET_MQ_MessageHandler
     const char *str = (const char *) &m[1];                       \
     const struct GNUNET_MessageHeader *hdr =                      \
       (const struct GNUNET_MessageHeader *) m;                    \
-    uint16_t slen = ntohs (hdr->size) - sizeof (*m);              \
+    uint16_t slen = ntohs (hdr->size) - sizeof(*m);              \
     if ((0 == slen) || (memchr (str, 0, slen) != &str[slen - 1])) \
     {                                                             \
       GNUNET_break (0);                                           \
@@ -653,8 +651,8 @@ struct GNUNET_MQ_MessageHandler
       (const struct GNUNET_MessageHeader *) &m[1];       \
     const struct GNUNET_MessageHeader *hdr =             \
       (const struct GNUNET_MessageHeader *) m;           \
-    uint16_t slen = ntohs (hdr->size) - sizeof (*m);     \
-    if ((slen < sizeof (struct GNUNET_MessageHeader)) || \
+    uint16_t slen = ntohs (hdr->size) - sizeof(*m);     \
+    if ((slen < sizeof(struct GNUNET_MessageHeader)) || \
         (slen != ntohs (inbox->size)))                   \
     {                                                    \
       GNUNET_break (0);                                  \
@@ -1066,7 +1064,6 @@ GNUNET_MQ_impl_current (struct GNUNET_MQ_Handle *mq);
  */
 enum GNUNET_MQ_PreferenceKind
 {
-
   /**
    * No preference was expressed.
    */
@@ -1091,10 +1088,9 @@ enum GNUNET_MQ_PreferenceKind
   GNUNET_MQ_PREFERENCE_RELIABILITY = 3
 
 /**
-   * Number of preference values allowed.
-   */
+ * Number of preference values allowed.
+ */
 #define GNUNET_MQ_PREFERENCE_COUNT 4
-
 };
 
 

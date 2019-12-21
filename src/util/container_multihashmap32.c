@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/container_multihashmap32.c
  * @brief a version of hash map implemented in container_multihashmap.c but with
@@ -45,7 +45,6 @@
  */
 struct MapEntry
 {
-
   /**
    * Key for the entry.
    */
@@ -67,7 +66,6 @@ struct MapEntry
  */
 struct GNUNET_CONTAINER_MultiHashMap32
 {
-
   /**
    * All of our buckets.
    */
@@ -146,7 +144,7 @@ GNUNET_CONTAINER_multihashmap32_create (unsigned int len)
 
   GNUNET_assert (len > 0);
   ret = GNUNET_new (struct GNUNET_CONTAINER_MultiHashMap32);
-  ret->map = GNUNET_malloc_large (len * sizeof (struct MapEntry *));
+  ret->map = GNUNET_malloc_large (len * sizeof(struct MapEntry *));
   if (NULL == ret->map)
   {
     GNUNET_free (ret);
@@ -477,7 +475,7 @@ grow (struct GNUNET_CONTAINER_MultiHashMap32 *map)
     new_len = old_len; /* never use 0 */
   if (new_len == old_len)
     return; /* nothing changed */
-  new_map = GNUNET_malloc_large (new_len * sizeof (struct MapEntry *));
+  new_map = GNUNET_malloc_large (new_len * sizeof(struct MapEntry *));
   if (NULL == new_map)
     return; /* grow not possible */
   map->modification_counter++;

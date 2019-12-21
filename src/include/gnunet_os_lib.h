@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -67,7 +67,6 @@ extern "C"
  */
 enum GNUNET_OS_InheritStdioFlags
 {
-
   /**
    * No standard streams should be inherited.
    */
@@ -267,6 +266,27 @@ struct GNUNET_OS_ProjectData
    */
   const char *user_config_file;
 
+  /**
+   * String identifying the current project version.
+   */
+  const char *version;
+
+  /**
+   * Non-zero means this project is part of GNU.
+   */
+  int is_gnu;
+
+  /**
+   * Gettext domain for localisation, e.g. the PACKAGE macro.
+   * Setting this field to NULL disables gettext.
+   */
+  char *gettext_domain;
+
+  /**
+   * Gettext directory, e.g. the LOCALEDIR macro.
+   * If this field is NULL, the path is automatically inferred.
+   */
+  char *gettext_path;
 };
 
 
@@ -370,7 +390,9 @@ GNUNET_OS_network_interfaces_list (GNUNET_OS_NetworkInterfaceProcessor proc,
  * @brief Get maximum string length returned by gethostname()
  */
 #if HAVE_SYSCONF && defined(_SC_HOST_NAME_MAX)
-#define GNUNET_OS_get_hostname_max_length() ({ int __sc_tmp = sysconf(_SC_HOST_NAME_MAX); __sc_tmp <= 0 ? 255 : __sc_tmp; })
+#define GNUNET_OS_get_hostname_max_length() ({ int __sc_tmp = sysconf ( \
+                                                 _SC_HOST_NAME_MAX); __sc_tmp <= \
+                                               0 ? 255 : __sc_tmp; })
 #elif defined(HOST_NAME_MAX)
 #define GNUNET_OS_get_hostname_max_length() HOST_NAME_MAX
 #else
@@ -437,11 +459,11 @@ GNUNET_OS_process_get_pid (struct GNUNET_OS_Process *proc);
 struct GNUNET_OS_Process *
 GNUNET_OS_start_process_vap (int pipe_control,
                              enum GNUNET_OS_InheritStdioFlags std_inheritance,
-			     struct GNUNET_DISK_PipeHandle *pipe_stdin,
-			     struct GNUNET_DISK_PipeHandle *pipe_stdout,
-			     struct GNUNET_DISK_PipeHandle *pipe_stderr,
-			     const char *filename,
-			     char *const argv[]);
+                             struct GNUNET_DISK_PipeHandle *pipe_stdin,
+                             struct GNUNET_DISK_PipeHandle *pipe_stdout,
+                             struct GNUNET_DISK_PipeHandle *pipe_stderr,
+                             const char *filename,
+                             char *const argv[]);
 
 
 /**
@@ -459,7 +481,7 @@ GNUNET_OS_start_process_vap (int pipe_control,
 struct GNUNET_OS_Process *
 GNUNET_OS_start_process (int pipe_control,
                          enum GNUNET_OS_InheritStdioFlags std_inheritance,
-			 struct GNUNET_DISK_PipeHandle *pipe_stdin,
+                         struct GNUNET_DISK_PipeHandle *pipe_stdin,
                          struct GNUNET_DISK_PipeHandle *pipe_stdout,
                          struct GNUNET_DISK_PipeHandle *pipe_stderr,
                          const char *filename, ...);
@@ -480,7 +502,7 @@ GNUNET_OS_start_process (int pipe_control,
 struct GNUNET_OS_Process *
 GNUNET_OS_start_process_va (int pipe_control,
                             enum GNUNET_OS_InheritStdioFlags std_inheritance,
-			    struct GNUNET_DISK_PipeHandle *pipe_stdin,
+                            struct GNUNET_DISK_PipeHandle *pipe_stdin,
                             struct GNUNET_DISK_PipeHandle *pipe_stdout,
                             struct GNUNET_DISK_PipeHandle *pipe_stderr,
                             const char *filename, va_list va);
@@ -500,8 +522,8 @@ GNUNET_OS_start_process_va (int pipe_control,
 struct GNUNET_OS_Process *
 GNUNET_OS_start_process_v (int pipe_control,
                            enum GNUNET_OS_InheritStdioFlags std_inheritance,
-			   const SOCKTYPE *lsocks,
-			   const char *filename,
+                           const int *lsocks,
+                           const char *filename,
                            char *const argv[]);
 
 
@@ -526,7 +548,7 @@ GNUNET_OS_start_process_v (int pipe_control,
 struct GNUNET_OS_Process *
 GNUNET_OS_start_process_s (int pipe_control,
                            unsigned int std_inheritance,
-                           const SOCKTYPE * lsocks,
+                           const int *lsocks,
                            const char *filename, ...);
 
 
@@ -601,7 +623,6 @@ GNUNET_OS_process_status (struct GNUNET_OS_Process *proc,
  */
 int
 GNUNET_OS_process_wait (struct GNUNET_OS_Process *proc);
-
 
 
 /**

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -37,24 +37,24 @@
  */
 enum PeerState
 {
-    /**
-     * State to signify that this peer is invalid
-     */
+  /**
+   * State to signify that this peer is invalid
+   */
   TESTBED_PS_INVALID,
 
-    /**
-     * The peer has been created
-     */
+  /**
+   * The peer has been created
+   */
   TESTBED_PS_CREATED,
 
-    /**
-     * The peer is running
-     */
+  /**
+   * The peer is running
+   */
   TESTBED_PS_STARTED,
 
-    /**
-     * The peer is stopped
-     */
+  /**
+   * The peer is stopped
+   */
   TESTBED_PS_STOPPED,
 };
 
@@ -132,7 +132,6 @@ struct PeerCreateData
    * The peer structure to return when we get success message
    */
   struct GNUNET_TESTBED_Peer *peer;
-
 };
 
 
@@ -155,7 +154,6 @@ struct PeerEventData
    * Closure for the above callback
    */
   void *pcc_cls;
-
 };
 
 
@@ -169,7 +167,7 @@ struct PeerDestroyData
    */
   struct GNUNET_TESTBED_Peer *peer;
 
-  //PEERDESTROYDATA
+  // PEERDESTROYDATA
 };
 
 
@@ -227,7 +225,6 @@ struct PeerReconfigureData
  */
 struct OverlayConnectData
 {
-
   /**
    * Peer A to connect to peer B
    */
@@ -254,11 +251,11 @@ struct OverlayConnectData
    * overlay connection between peer 1 and peer 2.
    */
   struct OperationContext *sub_opc;
-
 };
 
 
-struct ManageServiceData {
+struct ManageServiceData
+{
   GNUNET_TESTBED_OperationCompletionCallback cb;
 
   void *cb_cls;
@@ -270,7 +267,6 @@ struct ManageServiceData {
   unsigned int start;
 
   uint16_t msize;
-
 };
 
 

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/test_set_api.c
@@ -63,6 +63,7 @@ result_cb_set1 (void *cls,
   case GNUNET_SET_STATUS_OK:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "set 1: got element\n");
     break;
+
   case GNUNET_SET_STATUS_FAILURE:
     GNUNET_break (0);
     oh1 = NULL;
@@ -75,6 +76,7 @@ result_cb_set1 (void *cls,
     }
     GNUNET_SCHEDULER_shutdown ();
     break;
+
   case GNUNET_SET_STATUS_DONE:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "set 1: done\n");
     oh1 = NULL;
@@ -90,6 +92,7 @@ result_cb_set1 (void *cls,
       GNUNET_SCHEDULER_shutdown ();
     }
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -107,6 +110,7 @@ result_cb_set2 (void *cls,
   case GNUNET_SET_STATUS_OK:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "set 2: got element\n");
     break;
+
   case GNUNET_SET_STATUS_FAILURE:
     GNUNET_break (0);
     oh2 = NULL;
@@ -114,6 +118,7 @@ result_cb_set2 (void *cls,
     GNUNET_SCHEDULER_shutdown ();
     ret = 1;
     break;
+
   case GNUNET_SET_STATUS_DONE:
     oh2 = NULL;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "set 2: done\n");
@@ -126,6 +131,7 @@ result_cb_set2 (void *cls,
       GNUNET_SCHEDULER_shutdown ();
     }
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -143,7 +149,7 @@ listen_cb (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "listen cb called\n");
   oh2 = GNUNET_SET_accept (request,
                            GNUNET_SET_RESULT_ADDED,
-                           (struct GNUNET_SET_Option[]){0},
+                           (struct GNUNET_SET_Option[]){ 0 },
                            &result_cb_set2,
                            NULL);
   GNUNET_SET_commit (oh2, set2);
@@ -172,7 +178,7 @@ start (void *cls)
                             &app_id,
                             &context_msg,
                             GNUNET_SET_RESULT_ADDED,
-                            (struct GNUNET_SET_Option[]){0},
+                            (struct GNUNET_SET_Option[]){ 0 },
                             &result_cb_set1,
                             NULL);
   GNUNET_SET_commit (oh1, set1);
@@ -337,7 +343,6 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
-
   struct GNUNET_SET_OperationHandle *my_oh;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Running preparatory tests\n");
@@ -373,7 +378,7 @@ run (void *cls,
                               &app_id,
                               NULL,
                               GNUNET_SET_RESULT_ADDED,
-                              (struct GNUNET_SET_Option[]){0},
+                              (struct GNUNET_SET_Option[]){ 0 },
                               NULL,
                               NULL);
   GNUNET_SET_operation_cancel (my_oh);

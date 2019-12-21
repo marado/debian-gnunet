@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,7 +33,7 @@
 /**
  * logging short hand
  */
-#define LOG(type,...) \
+#define LOG(type, ...) \
   GNUNET_log (type, __VA_ARGS__);
 
 /**
@@ -62,11 +62,11 @@ static int result;
  * Handle SIGINT and SIGTERM
  */
 static void
-shutdown_handler(void *cls)
+shutdown_handler (void *cls)
 {
   if (NULL != timeout_task)
   {
-    GNUNET_SCHEDULER_cancel(timeout_task);
+    GNUNET_SCHEDULER_cancel (timeout_task);
     timeout_task = NULL;
   }
 }
@@ -82,7 +82,7 @@ do_timeout (void *cls)
 {
   timeout_task = NULL;
   if (barrier != NULL)
-      GNUNET_TESTBED_barrier_cancel (barrier);
+    GNUNET_TESTBED_barrier_cancel (barrier);
   GNUNET_SCHEDULER_shutdown ();
 }
 
@@ -118,17 +118,20 @@ barrier_cb (void *cls,
          "Barrier initialised\n");
     old_status = status;
     return;
+
   case GNUNET_TESTBED_BARRIERSTATUS_ERROR:
     LOG (GNUNET_ERROR_TYPE_ERROR,
          "Barrier initialisation failed: %s",
          (NULL == emsg) ? "unknown reason" : emsg);
     break;
+
   case GNUNET_TESTBED_BARRIERSTATUS_CROSSED:
     LOG (GNUNET_ERROR_TYPE_INFO,
          "Barrier crossed\n");
     if (old_status == GNUNET_TESTBED_BARRIERSTATUS_INITIALISED)
       result = GNUNET_OK;
     break;
+
   default:
     GNUNET_assert (0);
     return;
@@ -175,11 +178,11 @@ test_master (void *cls,
                                          &barrier_cb,
                                          NULL);
   timeout_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_SECONDS,
-                                     10 * (NUM_PEERS + 1)),
-                                    &do_timeout, NULL);
-  GNUNET_SCHEDULER_add_shutdown(&shutdown_handler, NULL);
+                                    10 * (NUM_PEERS + 1)),
+                                  &do_timeout, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_handler, NULL);
 }
 
 
@@ -212,9 +215,10 @@ main (int argc, char **argv)
     return 1;
   GNUNET_assert (0 < GNUNET_asprintf (&binary, "%s/%s", pwd,
                                       "gnunet-service-test-barriers"));
-  GNUNET_CONFIGURATION_set_value_string (cfg, "test-barriers","BINARY", binary);
+  GNUNET_CONFIGURATION_set_value_string (cfg, "test-barriers", "BINARY",
+                                         binary);
   GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_write
-                 (cfg, "test_testbed_api_barriers.conf"));
+                   (cfg, "test_testbed_api_barriers.conf"));
   GNUNET_CONFIGURATION_destroy (cfg);
   cfg = NULL;
   GNUNET_free (binary);

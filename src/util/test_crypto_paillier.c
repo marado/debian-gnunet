@@ -11,13 +11,13 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
 
-*/
+ */
 /**
  * @file util/test_crypto_paillier.c
  * @brief testcase paillier crypto
@@ -229,17 +229,19 @@ main (int argc,
       char *argv[])
 {
   int ret;
+
   ret = test_crypto ();
   if (0 != ret)
     return ret;
-  ret = test_hom_simple (2,4);
+  ret = test_hom_simple (2, 4);
   if (0 != ret)
     return ret;
-  ret = test_hom_simple (13,17);
+  ret = test_hom_simple (13, 17);
   if (0 != ret)
     return ret;
   ret = test_hom ();
   return ret;
 }
+
 
 /* end of test_crypto_paillier.c */

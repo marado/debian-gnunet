@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file block/plugin_block_revocation.c
@@ -51,9 +51,7 @@
  */
 struct InternalContext
 {
-
   unsigned int matching_bits;
-
 };
 
 
@@ -83,7 +81,8 @@ block_plugin_revocation_create_group (void *cls,
   guard = va_arg (va, const char *);
   if (0 == strcmp (guard,
                    "seen-set-size"))
-    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned int),
+    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned
+                                                                   int),
                                                            BLOOMFILTER_K);
   else if (0 == strcmp (guard,
                         "filter-size"))
@@ -138,7 +137,7 @@ block_plugin_revocation_evaluate (void *cls,
 
   if (NULL == reply_block)
     return GNUNET_BLOCK_EVALUATION_REQUEST_VALID;
-  if (reply_block_size != sizeof (*rm))
+  if (reply_block_size != sizeof(*rm))
   {
     GNUNET_break_op (0);
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
@@ -161,7 +160,7 @@ block_plugin_revocation_evaluate (void *cls,
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
   }
   GNUNET_CRYPTO_hash (&rm->public_key,
-                      sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
+                      sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey),
                       &chash);
   if (GNUNET_YES ==
       GNUNET_BLOCK_GROUP_bf_test_and_set (group,
@@ -191,13 +190,13 @@ block_plugin_revocation_get_key (void *cls,
 {
   const struct RevokeMessage *rm = block;
 
-  if (block_size != sizeof (*rm))
+  if (block_size != sizeof(*rm))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
   GNUNET_CRYPTO_hash (&rm->public_key,
-                      sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
+                      sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey),
                       key);
   return GNUNET_OK;
 }
@@ -211,8 +210,7 @@ block_plugin_revocation_get_key (void *cls,
 void *
 libgnunet_plugin_block_revocation_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_REVOCATION,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -253,5 +251,6 @@ libgnunet_plugin_block_revocation_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_revocation.c */

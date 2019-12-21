@@ -12,7 +12,6 @@ pkgcfg_DATA = \
   communicator-unix.conf
 
 if HAVE_MHD
- GN_LIBMHD = -lmicrohttpd
  HTTP_SERVER_PLUGIN_LA = libgnunet_plugin_transport_http_server.la
  HTTPS_SERVER_PLUGIN_LA = libgnunet_plugin_transport_https_server.la
  HTTP_SERVER_PLUGIN_TEST = test_plugin_http_server
@@ -49,8 +48,10 @@ if HAVE_LIBGNURL
  HTTP_SWITCH = test_transport_address_switch_http
  HTTPS_API_TEST = test_transport_api_https
  HTTPS_API_TIMEOUT_TEST = test_transport_api_timeout_https
+if HAVE_EXPERIMENTAL
  HTTPS_REL_TEST = test_transport_api_reliability_https \
 		  test_transport_api_reliability_https_xhr
+endif
  HTTPS_QUOTA_TEST = test_quota_compliance_https \
 		test_quota_compliance_https_asymmetric
  HTTPS_SWITCH = test_transport_address_switch_https
@@ -66,8 +67,10 @@ if HAVE_LIBCURL
  HTTP_SWITCH = test_transport_address_switch_http
  HTTPS_API_TEST = test_transport_api_https
  HTTPS_API_TIMEOUT_TEST = test_transport_api_timeout_https
+if HAVE_EXPERIMENTAL
  HTTPS_REL_TEST = test_transport_api_reliability_https \
 		  test_transport_api_reliability_https_xhr
+endif
  HTTPS_QUOTA_TEST = test_quota_compliance_https \
 		test_quota_compliance_https_asymmetric
  HTTPS_SWITCH = test_transport_address_switch_https
@@ -95,16 +98,6 @@ if LINUX
 endif
 
 if LINUX
-install-exec-hook:
-	$(top_srcdir)/src/transport/install-wlan-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
-if HAVE_LIBBLUETOOTH
-	$(top_srcdir)/src/transport/install-bluetooth-helper.sh $(DESTDIR)$(libexecdir) $(SUDO_BINARY) || true
-endif
-else
-install-exec-hook:
-endif
-
-if LINUX
 if HAVE_LIBBLUETOOTH
  BT_BIN = gnunet-helper-transport-bluetooth
  BT_PLUGIN_LA = libgnunet_plugin_transport_bluetooth.la
@@ -115,18 +108,12 @@ if HAVE_LIBBLUETOOTH
  BT_QUOTA_TEST = test_quota_compliance_bluetooth \
     test_quota_compliance_bluetooth_asymmetric
 endif
-else
-if MINGW
- BT_BIN = gnunet-helper-transport-bluetooth
- BT_PLUGIN_LA = libgnunet_plugin_transport_bluetooth.la
-endif
 endif
 
 # end of HAVE_EXPERIMENTAL
 endif
 
 
-if !MINGW
 UNIX_PLUGIN_LA = libgnunet_plugin_transport_unix.la
 UNIX_PLUGIN_TEST = test_transport_api_unix
 UNIX_TEST = test_plugin_unix
@@ -137,7 +124,7 @@ UNIX_QUOTA_TEST = test_quota_compliance_unix \
 if LINUX
  UNIX_API_ABSTRACT_TEST = test_transport_api_unix_abstract
 endif
-endif
+
 
 noinst_PROGRAMS = \
  gnunet-transport-profiler \
@@ -183,7 +170,8 @@ libgnunettransporttesting2_la_LIBADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunettransporttesting2_la_LDFLAGS = \
- $(GN_LIB_LDFLAGS)
+  $(GN_LIBINTL) \
+  $(GN_LIB_LDFLAGS)
 
 libgnunettransport_la_SOURCES = \
   transport.h \
@@ -202,7 +190,7 @@ libgnunettransport_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunettransport_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 4:0:2
 
 libgnunettransportapplication_la_SOURCES = \
@@ -211,7 +199,7 @@ libgnunettransportapplication_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL)
 libgnunettransportapplication_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 
@@ -221,7 +209,7 @@ libgnunettransportcore_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunettransportcore_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 libgnunettransportcommunicator_la_SOURCES = \
@@ -230,7 +218,7 @@ libgnunettransportcommunicator_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunettransportcommunicator_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 
@@ -240,7 +228,7 @@ libgnunettransportmonitor_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 libgnunettransportmonitor_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 
@@ -320,13 +308,9 @@ gnunet_transport_wlan_receiver_LDADD = \
 
 gnunet_helper_transport_bluetooth_SOURCES = \
  gnunet-helper-transport-bluetooth.c
-if MINGW
- gnunet_helper_transport_bluetooth_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la
- gnunet_helper_transport_bluetooth_LDFLAGS = -lws2_32
-else
- gnunet_helper_transport_bluetooth_LDFLAGS = -lbluetooth
-endif
+
+gnunet_helper_transport_bluetooth_LDFLAGS = -lbluetooth
+
 
 gnunet_transport_profiler_SOURCES = \
  gnunet-transport-profiler.c
@@ -369,7 +353,7 @@ gnunet_service_transport_LDADD = \
   $(GN_GLPK) \
   $(GN_LIBINTL)
 gnunet_service_transport_CFLAGS = \
-  $(CFLAGS)
+  $(AM_CFLAGS)
 # -DANALYZE
 
 
@@ -385,7 +369,6 @@ gnunet_service_tng_LDADD = \
 
 plugin_LTLIBRARIES = \
   libgnunet_plugin_transport_tcp.la \
-  libgnunet_plugin_transport_udp.la \
   $(UNIX_PLUGIN_LA) \
   $(HTTP_CLIENT_PLUGIN_LA) \
   $(HTTPS_CLIENT_PLUGIN_LA) \
@@ -393,6 +376,10 @@ plugin_LTLIBRARIES = \
   $(HTTPS_SERVER_PLUGIN_LA) \
   $(WLAN_PLUGIN_LA) \
   $(BT_PLUGIN_LA)
+
+if HAVE_EXPERIMENTAL
+plugin_LTLIBRARIES += libgnunet_plugin_transport_udp.la
+endif
 
 # Note: real plugins of course need to be added
 # to the plugin_LTLIBRARIES above
@@ -430,7 +417,7 @@ libgnunet_plugin_transport_wlan_la_LIBADD = \
 libgnunet_plugin_transport_wlan_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunet_plugin_transport_wlan_la_CFLAGS = \
- $(CFLAGS) -DBUILD_WLAN
+ $(AM_CFLAGS) -DBUILD_WLAN
 
 libgnunet_plugin_transport_bluetooth_la_SOURCES = \
   plugin_transport_wlan.c plugin_transport_wlan.h
@@ -443,8 +430,9 @@ libgnunet_plugin_transport_bluetooth_la_LIBADD = \
 libgnunet_plugin_transport_bluetooth_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 libgnunet_plugin_transport_bluetooth_la_CFLAGS = \
- $(CFLAGS) -DBUILD_BLUETOOTH
+ $(AM_CFLAGS) -DBUILD_BLUETOOTH
 
+if HAVE_EXPERIMENTAL
 libgnunet_plugin_transport_udp_la_SOURCES = \
   plugin_transport_udp.c plugin_transport_udp.h \
   plugin_transport_udp_broadcasting.c
@@ -458,6 +446,7 @@ libgnunet_plugin_transport_udp_la_LIBADD = \
   $(LTLIBINTL)
 libgnunet_plugin_transport_udp_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
+endif
 
 libgnunet_plugin_transport_unix_la_SOURCES = \
   plugin_transport_unix.c
@@ -480,26 +469,26 @@ libgnunet_plugin_transport_http_client_la_LIBADD = \
   $(LIB_GNURL) \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunet_plugin_transport_http_client_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
+  $(GN_LIBINTL) \
+  $(GN_PLUGIN_LDFLAGS)
 libgnunet_plugin_transport_http_client_la_CFLAGS = \
- $(CFLAGS)
-libgnunet_plugin_transport_http_client_la_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
+ $(CPP_GNURL) $(AM_CFLAGS)
 
 
 libgnunet_plugin_transport_http_server_la_SOURCES = \
   plugin_transport_http_server.c plugin_transport_http_common.c
 libgnunet_plugin_transport_http_server_la_LIBADD = \
+  $(MHD_LIBS) \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/nat/libgnunetnatnew.la \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunet_plugin_transport_http_server_la_LDFLAGS = \
- $(GN_LIBMHD) \
+  $(GN_LIBINTL) \
  $(GN_PLUGIN_LDFLAGS)
 libgnunet_plugin_transport_http_server_la_CFLAGS = \
- $(CFLAGS)
+ $(MHD_CFLAGS) $(AM_CFLAGS)
 
 libgnunet_plugin_transport_https_client_la_SOURCES = \
   plugin_transport_http_client.c plugin_transport_http_common.c
@@ -510,36 +499,33 @@ libgnunet_plugin_transport_https_client_la_LIBADD = \
   $(LIB_GNURL) \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunet_plugin_transport_https_client_la_LDFLAGS = \
- $(GN_PLUGIN_LDFLAGS)
+  $(GN_LIBINTL) \
+  $(GN_PLUGIN_LDFLAGS)
 libgnunet_plugin_transport_https_client_la_CFLAGS = \
- $(CFLAGS) -DBUILD_HTTPS
-libgnunet_plugin_transport_https_client_la_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
+ $(CPP_GNURL) $(AM_CFLAGS) -DBUILD_HTTPS
 
 
 libgnunet_plugin_transport_https_server_la_SOURCES = \
   plugin_transport_http_server.c plugin_transport_http_common.c
 libgnunet_plugin_transport_https_server_la_LIBADD = \
+  $(MHD_LIBS) \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/nat/libgnunetnatnew.la \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunet_plugin_transport_https_server_la_LDFLAGS = \
- $(GN_LIBMHD) \
+  $(GN_LIBINTL) \
  $(GN_PLUGIN_LDFLAGS)
 libgnunet_plugin_transport_https_server_la_CFLAGS = \
- $(CFLAGS) -DBUILD_HTTPS
-
+ $(MHD_CFLAGS) $(AM_CFLAGS) -DBUILD_HTTPS
 
 if HAVE_TESTING
 check_PROGRAMS = \
  test_transport_address_switch_tcp \
- test_transport_address_switch_udp \
  test_transport_testing_startstop \
  test_transport_testing_restart \
  test_plugin_tcp \
- test_plugin_udp \
  $(UNIX_TEST) \
  $(WLAN_PLUGIN_TEST) \
  $(BT_PLUGIN_TEST) \
@@ -556,12 +542,9 @@ check_PROGRAMS = \
  test_transport_api_timeout_tcp \
  test_transport_api_limited_sockets_tcp \
  test_transport_api_tcp_nat \
- test_transport_api_udp \
- test_transport_api_timeout_udp \
  $(UNIX_PLUGIN_TEST) \
  $(UNIX_PLUGIN_TIMEOUT_TEST) \
  $(UNIX_API_ABSTRACT_TEST) \
- test_transport_api_udp_nat \
  $(HTTP_API_TEST) \
  $(HTTP_REVERSE_API_TEST) \
  $(HTTP_API_TIMEOUT_TEST) \
@@ -586,7 +569,6 @@ check_PROGRAMS = \
  test_transport_api_manipulation_cfg \
  test_transport_api_reliability_tcp \
  test_transport_api_reliability_tcp_nat \
- test_transport_api_reliability_udp \
  $(UNIX_REL_TEST) \
  $(HTTP_REL_TEST) \
  $(HTTPS_REL_TEST) \
@@ -596,7 +578,6 @@ check_PROGRAMS = \
  $(BT_UREL_TEST) \
  test_quota_compliance_tcp \
  test_quota_compliance_tcp_asymmetric \
- test_quota_compliance_udp \
  $(UNIX_QUOTA_TEST) \
  $(HTTP_QUOTA_TEST) \
  $(HTTPS_QUOTA_TEST) \
@@ -608,19 +589,27 @@ test_transport_api_slow_ats
 endif
 check_PROGRAMS += \
 test_communicator_unix
+if HAVE_EXPERIMENTAL
+check_PROGRAMS += \
+  test_transport_address_switch_udp \
+  test_plugin_udp \
+  test_transport_api_udp \
+  test_transport_api_timeout_udp \
+  test_transport_api_udp_nat \
+  test_transport_api_reliability_udp \
+  test_quota_compliance_udp
+endif
 endif
 
 if ENABLE_TEST_RUN
 AM_TESTS_ENVIRONMENT=export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 TESTS = \
  test_transport_address_switch_tcp \
- test_transport_address_switch_udp \
  $(HTTP_SWITCH) \
  $(HTTPS_SWITCH) \
  test_transport_testing_startstop \
  test_transport_testing_restart \
  test_plugin_tcp \
- test_plugin_udp \
  $(UNIX_TEST) \
  $(WLAN_PLUGIN_TEST) \
  $(BT_PLUGIN_TEST) \
@@ -631,10 +620,8 @@ TESTS = \
  test_transport_api_restart_2peers \
  test_transport_api_limited_sockets_tcp \
  test_transport_api_tcp_nat \
- test_transport_api_udp \
  $(UNIX_PLUGIN_TEST) \
  $(UNIX_API_ABSTRACT_TEST) \
- test_transport_api_udp_nat \
  $(HTTP_API_TEST) \
  $(HTTPS_API_TEST) \
  $(WLAN_API_TEST) \
@@ -652,7 +639,6 @@ TESTS = \
  test_transport_api_manipulation_cfg \
  test_transport_api_reliability_tcp \
  test_transport_api_reliability_tcp_nat \
- test_transport_api_reliability_udp \
  $(UNIX_REL_TEST) \
  $(HTTP_REL_TEST) \
  $(HTTPS_REL_TEST) \
@@ -662,12 +648,10 @@ TESTS = \
  $(BT_UREL_TEST) \
  test_quota_compliance_tcp \
  test_quota_compliance_tcp_asymmetric \
- test_quota_compliance_udp \
  $(UNIX_QUOTA_TEST) \
  $(HTTP_QUOTA_TEST) \
  $(HTTPS_QUOTA_TEST) \
  test_transport_api_timeout_tcp \
- test_transport_api_timeout_udp \
  $(UNIX_PLUGIN_TIMEOUT_TEST) \
  $(HTTP_API_TIMEOUT_TEST) \
  $(HTTPS_API_TIMEOUT_TEST) \
@@ -676,6 +660,16 @@ TESTS = \
 if HAVE_GETOPT_BINARY
 TESTS += \
 test_transport_api_slow_ats
+endif
+if HAVE_EXPERIMENTAL
+TESTS += \
+  test_transport_address_switch_udp \
+  test_plugin_udp \
+  test_transport_api_udp \
+  test_transport_api_timeout_udp \
+  test_transport_api_udp_nat \
+  test_transport_api_reliability_udp \
+  test_quota_compliance_udp
 endif
 endif
 
@@ -777,6 +771,7 @@ test_plugin_tcp_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la  \
  libgnunettransporttesting.la
 
+if HAVE_EXPERIMENTAL
 test_plugin_udp_SOURCES = \
  test_plugin_transport.c
 test_plugin_udp_LDADD = \
@@ -785,6 +780,7 @@ test_plugin_udp_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la  \
  libgnunettransporttesting.la
+endif
 
 test_communicator_unix_SOURCES = \
  test_communicator_unix.c
@@ -996,6 +992,7 @@ test_transport_api_reliability_wlan_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
+if HAVE_EXPERIMENTAL
 test_transport_api_udp_SOURCES = \
  test_transport_api.c
 test_transport_api_udp_LDADD = \
@@ -1019,6 +1016,7 @@ test_transport_api_udp_nat_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la  \
  libgnunettransporttesting.la
+endif
 
 test_transport_api_unix_SOURCES = \
  test_transport_api.c
@@ -1159,6 +1157,7 @@ test_transport_api_reliability_unix_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
+if HAVE_EXPERIMENTAL
 test_transport_api_reliability_udp_SOURCES = \
  test_transport_api_reliability.c
 test_transport_api_reliability_udp_LDADD = \
@@ -1166,6 +1165,7 @@ test_transport_api_reliability_udp_LDADD = \
  $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
+endif
 
 if LINUX
 test_transport_api_wlan_SOURCES = \
@@ -1198,7 +1198,8 @@ test_transport_address_switch_tcp_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
- test_transport_address_switch_udp_SOURCES = \
+if HAVE_EXPERIMENTAL
+test_transport_address_switch_udp_SOURCES = \
  test_transport_address_switch.c
 test_transport_address_switch_udp_LDADD = \
  libgnunettransport.la \
@@ -1206,7 +1207,7 @@ test_transport_address_switch_udp_LDADD = \
  $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
-
+endif
 
  test_transport_address_switch_http_SOURCES = \
  test_transport_address_switch.c
@@ -1246,6 +1247,7 @@ test_quota_compliance_tcp_asymmetric_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
 
+if HAVE_EXPERIMENTAL
 test_quota_compliance_udp_SOURCES = \
  test_quota_compliance.c
 test_quota_compliance_udp_LDADD = \
@@ -1255,6 +1257,7 @@ test_quota_compliance_udp_LDADD = \
  $(top_builddir)/src/nt/libgnunetnt.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettransporttesting.la
+endif
 
 test_quota_compliance_unix_SOURCES = \
  test_quota_compliance.c

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_remove_not_existing_record.c
  * @brief testcase for namestore_api.c
@@ -36,7 +36,7 @@
 
 static struct GNUNET_NAMESTORE_Handle *nsh;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -104,23 +104,25 @@ put_cont (void *cls,
   }
   switch (success)
   {
-    case GNUNET_NO:
-      /* We expected GNUNET_NO, since record was not found */
-      GNUNET_SCHEDULER_add_now (&end, NULL);
-      break;
-    case GNUNET_OK:
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  "Namestore could remove non-existing record: `%s'\n",
-                  (NULL !=emsg) ? emsg : "");
-      GNUNET_SCHEDULER_add_now (&endbadly, NULL);
-      break;
-    case GNUNET_SYSERR:
-    default:
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  "Namestore failed: `%s'\n",
-                  (NULL !=emsg) ? emsg : "");
-      GNUNET_SCHEDULER_add_now (&endbadly, NULL);
-      break;
+  case GNUNET_NO:
+    /* We expected GNUNET_NO, since record was not found */
+    GNUNET_SCHEDULER_add_now (&end, NULL);
+    break;
+
+  case GNUNET_OK:
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Namestore could remove non-existing record: `%s'\n",
+                (NULL != emsg) ? emsg : "");
+    GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    break;
+
+  case GNUNET_SYSERR:
+  default:
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Namestore failed: `%s'\n",
+                (NULL != emsg) ? emsg : "");
+    GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    break;
   }
 }
 
@@ -130,10 +132,10 @@ run (void *cls,
      const struct GNUNET_CONFIGURATION_Handle *cfg,
      struct GNUNET_TESTING_Peer *peer)
 {
-  const char * name = "dummy.dummy.gnunet";
+  const char *name = "dummy.dummy.gnunet";
 
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
+                                                &endbadly,
                                                 NULL);
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
@@ -147,7 +149,7 @@ run (void *cls,
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore cannot store no block\n"));
+                _ ("Namestore cannot store no block\n"));
   }
 }
 
@@ -176,5 +178,6 @@ main (int argc, char *argv[])
   GNUNET_free (cfg_name);
   return res;
 }
+
 
 /* end of test_namestore_api_remove_not_existing_record.c */

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -36,7 +36,7 @@
 /**
  * Generic logging shortcut
  */
-#define LOG(kind,...)				\
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 
@@ -58,12 +58,12 @@ static struct GNUNET_HELPER_SendHandle *shandle;
 /**
  * Abort task identifier
  */
-static struct GNUNET_SCHEDULER_Task * abort_task;
+static struct GNUNET_SCHEDULER_Task *abort_task;
 
 /**
  * Shutdown task identifier
  */
-static struct GNUNET_SCHEDULER_Task * shutdown_task;
+static struct GNUNET_SCHEDULER_Task *shutdown_task;
 
 /**
  * Configuratin handler
@@ -154,14 +154,14 @@ mst_cb (void *cls,
   msg = (const struct GNUNET_TESTBED_HelperReply *) message;
   config_size = 0;
   xconfig_size = 0;
-  GNUNET_assert (sizeof (struct GNUNET_TESTBED_HelperReply) <
+  GNUNET_assert (sizeof(struct GNUNET_TESTBED_HelperReply) <
                  ntohs (msg->header.size));
   GNUNET_assert (GNUNET_MESSAGE_TYPE_TESTBED_HELPER_REPLY ==
                  ntohs (msg->header.type));
   config_size = (uLongf) ntohs (msg->config_size);
   xconfig_size =
-      (uLongf) (ntohs (msg->header.size) -
-                sizeof (struct GNUNET_TESTBED_HelperReply));
+    (uLongf) (ntohs (msg->header.size)
+              - sizeof(struct GNUNET_TESTBED_HelperReply));
   config = GNUNET_malloc (config_size);
   GNUNET_assert (Z_OK ==
                  uncompress ((Bytef *) config, &config_size,
@@ -169,9 +169,9 @@ mst_cb (void *cls,
   GNUNET_free (config);
   if (NULL == shutdown_task)
     shutdown_task =
-        GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                       (GNUNET_TIME_UNIT_SECONDS, 1),
-                                      &do_shutdown, NULL);
+                                    &do_shutdown, NULL);
   return GNUNET_OK;
 }
 
@@ -209,22 +209,22 @@ run (void *cls, char *const *args, const char *cfgfile,
   const char *trusted_ip = "127.0.0.1";
 
   helper =
-      GNUNET_HELPER_start (GNUNET_YES,
-                           "gnunet-helper-testbed",
-                           binary_argv,
-                           &mst_cb,
-                           &exp_cb,
-                           NULL);
+    GNUNET_HELPER_start (GNUNET_YES,
+                         "gnunet-helper-testbed",
+                         binary_argv,
+                         &mst_cb,
+                         &exp_cb,
+                         NULL);
   GNUNET_assert (NULL != helper);
   cfg = GNUNET_CONFIGURATION_dup (cfg2);
   msg = GNUNET_TESTBED_create_helper_init_msg_ (trusted_ip, NULL, cfg);
   shandle =
-      GNUNET_HELPER_send (helper, &msg->header, GNUNET_NO, &cont_cb, NULL);
+    GNUNET_HELPER_send (helper, &msg->header, GNUNET_NO, &cont_cb, NULL);
   GNUNET_assert (NULL != shandle);
   abort_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES, 1), &do_abort,
-                                    NULL);
+                                  NULL);
 }
 
 
@@ -250,5 +250,6 @@ main (int argc, char **argv)
     return 1;
   return (GNUNET_OK == result) ? 0 : 1;
 }
+
 
 /* end of test_gnunet_helper_testbed.c */

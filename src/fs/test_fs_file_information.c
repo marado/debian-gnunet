@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_fs_file_information.c
@@ -84,8 +84,8 @@ run (void *cls, char *const *args, const char *cfgfile,
     buf[i] = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 256);
   GNUNET_assert (FILESIZE ==
                  GNUNET_DISK_fn_write (fn1, buf, FILESIZE,
-                                       GNUNET_DISK_PERM_USER_READ |
-                                       GNUNET_DISK_PERM_USER_WRITE));
+                                       GNUNET_DISK_PERM_USER_READ
+                                       | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_free (buf);
 
   fn2 = GNUNET_DISK_mktemp ("gnunet-file_information-test-dst");
@@ -94,8 +94,8 @@ run (void *cls, char *const *args, const char *cfgfile,
     buf[i] = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 256);
   GNUNET_assert (FILESIZE ==
                  GNUNET_DISK_fn_write (fn2, buf, FILESIZE,
-                                       GNUNET_DISK_PERM_USER_READ |
-                                       GNUNET_DISK_PERM_USER_WRITE));
+                                       GNUNET_DISK_PERM_USER_READ
+                                       | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_free (buf);
 
   meta = GNUNET_CONTAINER_meta_data_create ();
@@ -105,21 +105,21 @@ run (void *cls, char *const *args, const char *cfgfile,
   bo.replication_level = 0;
   bo.expiration_time = GNUNET_TIME_relative_to_absolute (LIFETIME);
   fi1 =
-      GNUNET_FS_file_information_create_from_file (fs,
-                                                   "file_information-context1",
-                                                   fn1, kuri, meta, GNUNET_YES,
-                                                   &bo);
+    GNUNET_FS_file_information_create_from_file (fs,
+                                                 "file_information-context1",
+                                                 fn1, kuri, meta, GNUNET_YES,
+                                                 &bo);
   GNUNET_assert (fi1 != NULL);
   fi2 =
-      GNUNET_FS_file_information_create_from_file (fs,
-                                                   "file_information-context2",
-                                                   fn2, kuri, meta, GNUNET_YES,
-                                                   &bo);
+    GNUNET_FS_file_information_create_from_file (fs,
+                                                 "file_information-context2",
+                                                 fn2, kuri, meta, GNUNET_YES,
+                                                 &bo);
   GNUNET_assert (fi2 != NULL);
   fidir =
-      GNUNET_FS_file_information_create_empty_directory (fs,
-                                                         "file_information-context-dir",
-                                                         kuri, meta, &bo, NULL);
+    GNUNET_FS_file_information_create_empty_directory (fs,
+                                                       "file_information-context-dir",
+                                                       kuri, meta, &bo, NULL);
   GNUNET_assert (GNUNET_OK == GNUNET_FS_file_information_add (fidir, fi1));
   GNUNET_assert (GNUNET_OK == GNUNET_FS_file_information_add (fidir, fi2));
   GNUNET_FS_uri_destroy (kuri);
@@ -151,10 +151,11 @@ main (int argc, char *argv[])
   GNUNET_log_setup ("test_fs_file_information",
                     "WARNING",
                     NULL);
-  GNUNET_PROGRAM_run ((sizeof (argvx) / sizeof (char *)) - 1, argvx,
+  GNUNET_PROGRAM_run ((sizeof(argvx) / sizeof(char *)) - 1, argvx,
                       "test-fs-file_information", "nohelp", options, &run,
                       NULL);
   return 0;
 }
+
 
 /* end of test_fs_file_information.c */

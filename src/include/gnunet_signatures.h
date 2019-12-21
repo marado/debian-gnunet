@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -188,7 +188,7 @@ extern "C"
 /**
  * Signature for a GNUnet credential
  */
-#define GNUNET_SIGNATURE_PURPOSE_CREDENTIAL 28
+#define GNUNET_SIGNATURE_PURPOSE_DELEGATE 28
 
 /**
  * Signature by a peer affirming that this is one of its

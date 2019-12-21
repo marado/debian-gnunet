@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_push.c
@@ -49,7 +49,8 @@
  * that if this value is increased, the migration testcase may need to be
  * adjusted as well (especially the CONTENT_LIFETIME in fs_test_lib.c).
  */
-#define MIN_MIGRATION_CONTENT_LIFETIME GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 30)
+#define MIN_MIGRATION_CONTENT_LIFETIME GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 30)
 
 
 /**
@@ -57,7 +58,6 @@
  */
 struct MigrationReadyBlock
 {
-
   /**
    * This is a doubly-linked list.
    */
@@ -189,10 +189,10 @@ static void
 delete_migration_block (struct MigrationReadyBlock *mb)
 {
   GNUNET_CONTAINER_DLL_remove (mig_head,
-			       mig_tail,
-			       mb);
+                               mig_tail,
+                               mb);
   GNUNET_PEER_decrement_rcs (mb->target_list,
-			     MIGRATION_LIST_SIZE);
+                             MIGRATION_LIST_SIZE);
   mig_size--;
   GNUNET_free (mb);
 }
@@ -226,20 +226,20 @@ transmit_content (struct MigrationReadyPeer *mrp,
   ppd = GSF_get_peer_performance_data_ (mrp->peer);
   GNUNET_assert (NULL == mrp->env);
   mrp->env = GNUNET_MQ_msg_extra (msg,
-				  block->size,
-				  GNUNET_MESSAGE_TYPE_FS_PUT);
+                                  block->size,
+                                  GNUNET_MESSAGE_TYPE_FS_PUT);
   msg->type = htonl (block->type);
   msg->expiration = GNUNET_TIME_absolute_hton (block->expiration);
   GNUNET_memcpy (&msg[1],
-		 &block[1],
-		 block->size);
+                 &block[1],
+                 block->size);
   for (i = 0; i < MIGRATION_LIST_SIZE; i++)
   {
     if (block->target_list[i] == 0)
     {
       block->target_list[i] = ppd->pid;
       GNUNET_PEER_change_rc (block->target_list[i],
-			     1);
+                             1);
       break;
     }
   }
@@ -253,12 +253,12 @@ transmit_content (struct MigrationReadyPeer *mrp,
     ret = GNUNET_NO;
   }
   GNUNET_MQ_notify_sent (mrp->env,
-			 &find_content,
-			 mrp);
+                         &find_content,
+                         mrp);
   GSF_peer_transmit_ (mrp->peer,
-		      GNUNET_NO,
-		      0 /* priority */ ,
-		      mrp->env);
+                      GNUNET_NO,
+                      0 /* priority */,
+                      mrp->env);
   return ret;
 }
 
@@ -306,12 +306,12 @@ score_content (struct MigrationReadyPeer *mrp,
       return -1;
   GNUNET_assert (0 != ppd->pid);
   GNUNET_PEER_resolve (ppd->pid,
-		       &id);
+                       &id);
   GNUNET_CRYPTO_hash (&id,
-		      sizeof (struct GNUNET_PeerIdentity),
-		      &hc);
+                      sizeof(struct GNUNET_PeerIdentity),
+                      &hc);
   dist = GNUNET_CRYPTO_hash_distance_u32 (&block->query,
-					  &hc);
+                                          &hc);
   /* closer distance, higher score: */
   return UINT32_MAX - dist;
 }
@@ -385,7 +385,7 @@ find_content (void *cls)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Preparing to push best content to peer\n");
   transmit_content (mrp,
-		    best);
+                    best);
 }
 
 
@@ -417,24 +417,25 @@ consider_gathering ()
   if (mig_size >= MAX_MIGRATION_QUEUE)
     return;
   delay = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-					 mig_size);
+                                         mig_size);
   delay = GNUNET_TIME_relative_divide (delay,
-				       MAX_MIGRATION_QUEUE);
+                                       MAX_MIGRATION_QUEUE);
   delay = GNUNET_TIME_relative_max (delay,
-				    min_migration_delay);
+                                    min_migration_delay);
   if (GNUNET_NO == value_found)
   {
     /* wait at least 5s if the datastore is empty */
     delay = GNUNET_TIME_relative_max (delay,
-                                      GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                                                     5));
+                                      GNUNET_TIME_relative_multiply (
+                                        GNUNET_TIME_UNIT_SECONDS,
+                                        5));
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Scheduling gathering task (queue size: %u)\n",
               mig_size);
   mig_task = GNUNET_SCHEDULER_add_delayed (delay,
-					   &gather_migration_blocks,
-					   NULL);
+                                           &gather_migration_blocks,
+                                           NULL);
 }
 
 
@@ -506,7 +507,7 @@ process_migration_content (void *cls,
               GNUNET_h2s (key),
               type, mig_size + 1,
               MAX_MIGRATION_QUEUE);
-  mb = GNUNET_malloc (sizeof (struct MigrationReadyBlock) + size);
+  mb = GNUNET_malloc (sizeof(struct MigrationReadyBlock) + size);
   mb->query = *key;
   mb->expiration = expiration;
   mb->size = size;
@@ -520,11 +521,12 @@ process_migration_content (void *cls,
   for (pos = peer_head; NULL != pos; pos = pos->next)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Preparing to push best content to peer %s\n",
-		GNUNET_i2s (GSF_connected_peer_get_identity2_(pos->peer)));
-    if ( (NULL == pos->env) &&
-         (GNUNET_YES == transmit_content (pos,
-                                          mb)) ) {
+                "Preparing to push best content to peer %s\n",
+                GNUNET_i2s (GSF_connected_peer_get_identity2_ (pos->peer)));
+    if ((NULL == pos->env) &&
+        (GNUNET_YES == transmit_content (pos,
+                                         mb)))
+    {
       break;                  /* 'mb' was freed! */
     }
   }
@@ -551,10 +553,10 @@ gather_migration_blocks (void *cls)
               mig_size);
   value_found = GNUNET_NO;
   mig_qe = GNUNET_DATASTORE_get_for_replication (GSF_dsh,
-						 0,
-						 UINT_MAX,
-						 &process_migration_content,
-						 NULL);
+                                                 0,
+                                                 UINT_MAX,
+                                                 &process_migration_content,
+                                                 NULL);
   if (NULL == mig_qe)
     consider_gathering ();
 }
@@ -585,7 +587,7 @@ GSF_push_start_ (struct GSF_ConnectedPeer *peer)
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Adding peer %s to list for pushing\n",
-              GNUNET_i2s (GSF_connected_peer_get_identity2_(peer)));
+              GNUNET_i2s (GSF_connected_peer_get_identity2_ (peer)));
 
   mrp = GNUNET_new (struct MigrationReadyPeer);
   mrp->peer = peer;
@@ -629,21 +631,21 @@ GSF_push_init_ ()
 {
   enabled =
     GNUNET_CONFIGURATION_get_value_yesno (GSF_cfg,
-					  "FS",
-					  "CONTENT_PUSHING");
+                                          "FS",
+                                          "CONTENT_PUSHING");
   if (GNUNET_YES != enabled)
     return;
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_time (GSF_cfg,
-					   "fs",
-					   "MIN_MIGRATION_DELAY",
+                                           "fs",
+                                           "MIN_MIGRATION_DELAY",
                                            &min_migration_delay))
   {
     GNUNET_log_config_invalid (GNUNET_ERROR_TYPE_WARNING,
-			       "fs",
-			       "MIN_MIGRATION_DELAY",
-			       _("time required, content pushing disabled"));
+                               "fs",
+                               "MIN_MIGRATION_DELAY",
+                               _ ("time required, content pushing disabled"));
     return;
   }
   consider_gathering ();
@@ -670,5 +672,6 @@ GSF_push_done_ ()
     delete_migration_block (mig_head);
   GNUNET_assert (0 == mig_size);
 }
+
 
 /* end of gnunet-service-fs_push.c */

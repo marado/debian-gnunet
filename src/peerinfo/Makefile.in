@@ -179,6 +179,10 @@ gnunet_service_peerinfo_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_service_peerinfo_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_service_peerinfo_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_perf_peerinfo_api_OBJECTS = perf_peerinfo_api.$(OBJEXT)
 perf_peerinfo_api_OBJECTS = $(am_perf_peerinfo_api_OBJECTS)
 perf_peerinfo_api_DEPENDENCIES =  \
@@ -484,20 +488,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -505,6 +506,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -530,6 +532,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -567,11 +570,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -615,6 +622,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -634,6 +644,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -644,7 +655,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -713,7 +723,6 @@ plugindir = $(libdir)/gnunet
 pkgcfg_DATA = \
   peerinfo.conf
 
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -liconv -lstdc++ -lcomdlg32 -lgdi32
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 lib_LTLIBRARIES = libgnunetpeerinfo.la
@@ -728,7 +737,7 @@ libgnunetpeerinfo_la_LIBADD = \
   $(LTLIBINTL)
 
 libgnunetpeerinfo_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 gnunet_service_peerinfo_SOURCES = \
@@ -738,6 +747,9 @@ gnunet_service_peerinfo_LDADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_service_peerinfo_LDFLAGS = \
+  $(GN_LIBINTL)
 
 @HAVE_BENCHMARKS_TRUE@PEERINFO_BENCHMARKS = \
 @HAVE_BENCHMARKS_TRUE@ perf_peerinfo_api
@@ -926,7 +938,7 @@ libgnunetpeerinfo.la: $(libgnunetpeerinfo_la_OBJECTS) $(libgnunetpeerinfo_la_DEP
 
 gnunet-service-peerinfo$(EXEEXT): $(gnunet_service_peerinfo_OBJECTS) $(gnunet_service_peerinfo_DEPENDENCIES) $(EXTRA_gnunet_service_peerinfo_DEPENDENCIES) 
 	@rm -f gnunet-service-peerinfo$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_service_peerinfo_OBJECTS) $(gnunet_service_peerinfo_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_service_peerinfo_LINK) $(gnunet_service_peerinfo_OBJECTS) $(gnunet_service_peerinfo_LDADD) $(LIBS)
 
 perf_peerinfo_api$(EXEEXT): $(perf_peerinfo_api_OBJECTS) $(perf_peerinfo_api_DEPENDENCIES) $(EXTRA_perf_peerinfo_api_DEPENDENCIES) 
 	@rm -f perf_peerinfo_api$(EXEEXT)

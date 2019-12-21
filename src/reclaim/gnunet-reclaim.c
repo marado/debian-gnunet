@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @file src/reclaim/gnunet-reclaim.c
@@ -191,22 +191,25 @@ do_cleanup (void *cls)
     GNUNET_free (attr_to_delete);
 }
 
+
 static void
 ticket_issue_cb (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
 {
   char *ticket_str;
+
   reclaim_op = NULL;
   if (NULL != ticket)
   {
     ticket_str =
       GNUNET_STRINGS_data_to_string_alloc (ticket,
-                                           sizeof (
+                                           sizeof(
                                              struct GNUNET_RECLAIM_Ticket));
     printf ("%s\n", ticket_str);
     GNUNET_free (ticket_str);
   }
   cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
+
 
 static void
 store_attr_cont (void *cls, int32_t success, const char *emsg)
@@ -218,6 +221,7 @@ store_attr_cont (void *cls, int32_t success, const char *emsg)
   }
   cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
+
 
 static void
 process_attrs (void *cls,
@@ -243,7 +247,7 @@ process_attrs (void *cls,
                                                         attr->data,
                                                         attr->data_size);
   attr_type = GNUNET_RECLAIM_ATTRIBUTE_number_to_typename (attr->type);
-  id = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof (uint64_t));
+  id = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof(uint64_t));
   fprintf (stdout,
            "Name: %s; Value: %s (%s); Version %u; ID: %s\n",
            attr->name,
@@ -254,6 +258,7 @@ process_attrs (void *cls,
   GNUNET_free (id);
 }
 
+
 static void
 ticket_iter_err (void *cls)
 {
@@ -262,12 +267,14 @@ ticket_iter_err (void *cls)
   cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
 
+
 static void
 ticket_iter_fin (void *cls)
 {
   ticket_iterator = NULL;
   cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
+
 
 static void
 ticket_iter (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
@@ -278,18 +285,19 @@ ticket_iter (void *cls, const struct GNUNET_RECLAIM_Ticket *ticket)
 
   aud =
     GNUNET_STRINGS_data_to_string_alloc (&ticket->audience,
-                                         sizeof (struct
-                                                 GNUNET_CRYPTO_EcdsaPublicKey));
-  ref = GNUNET_STRINGS_data_to_string_alloc (&ticket->rnd, sizeof (uint64_t));
+                                         sizeof(struct
+                                                GNUNET_CRYPTO_EcdsaPublicKey));
+  ref = GNUNET_STRINGS_data_to_string_alloc (&ticket->rnd, sizeof(uint64_t));
   tkt =
     GNUNET_STRINGS_data_to_string_alloc (ticket,
-                                         sizeof (struct GNUNET_RECLAIM_Ticket));
+                                         sizeof(struct GNUNET_RECLAIM_Ticket));
   fprintf (stdout, "Ticket: %s | ID: %s | Audience: %s\n", tkt, ref, aud);
   GNUNET_free (aud);
   GNUNET_free (ref);
   GNUNET_free (tkt);
   GNUNET_RECLAIM_ticket_iteration_next (ticket_iterator);
 }
+
 
 static void
 iter_error (void *cls)
@@ -298,6 +306,7 @@ iter_error (void *cls)
   fprintf (stderr, "Failed to iterate over attributes\n");
   cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
+
 
 static void
 timeout_task (void *cls)
@@ -308,6 +317,7 @@ timeout_task (void *cls)
   if (NULL == cleanup_task)
     cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
+
 
 static void
 process_rvk (void *cls, int success, const char *msg)
@@ -431,6 +441,7 @@ iter_finished (void *cls)
   cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
 }
 
+
 static void
 iter_cb (void *cls,
          const struct GNUNET_CRYPTO_EcdsaPublicKey *identity,
@@ -480,7 +491,7 @@ iter_cb (void *cls,
   }
   else if (attr_delete && (NULL == attr_to_delete))
   {
-    label = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof (uint64_t));
+    label = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof(uint64_t));
     if (0 == strcasecmp (attr_delete, label))
     {
       attr_to_delete = GNUNET_RECLAIM_ATTRIBUTE_claim_new (attr->name,
@@ -497,7 +508,7 @@ iter_cb (void *cls,
                                                          attr->data,
                                                          attr->data_size);
     attr_type = GNUNET_RECLAIM_ATTRIBUTE_number_to_typename (attr->type);
-    id = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof (uint64_t));
+    id = GNUNET_STRINGS_data_to_string_alloc (&attr->id, sizeof(uint64_t));
     fprintf (stdout,
              "Name: %s; Value: %s (%s); Version %u; ID: %s\n",
              attr->name,
@@ -509,6 +520,7 @@ iter_cb (void *cls,
   }
   GNUNET_RECLAIM_get_attributes_next (attr_iterator);
 }
+
 
 static void
 start_process ()
@@ -534,8 +546,8 @@ start_process ()
   }
 
   if ((NULL != rp) &&
-      GNUNET_OK !=
-        GNUNET_CRYPTO_ecdsa_public_key_from_string (rp, strlen (rp), &rp_key))
+      (GNUNET_OK !=
+       GNUNET_CRYPTO_ecdsa_public_key_from_string (rp, strlen (rp), &rp_key)) )
   {
     fprintf (stderr, "%s is not a public key!\n", rp);
     cleanup_task = GNUNET_SCHEDULER_add_now (&do_cleanup, NULL);
@@ -545,12 +557,12 @@ start_process ()
     GNUNET_STRINGS_string_to_data (consume_ticket,
                                    strlen (consume_ticket),
                                    &ticket,
-                                   sizeof (struct GNUNET_RECLAIM_Ticket));
+                                   sizeof(struct GNUNET_RECLAIM_Ticket));
   if (NULL != revoke_ticket)
     GNUNET_STRINGS_string_to_data (revoke_ticket,
                                    strlen (revoke_ticket),
                                    &ticket,
-                                   sizeof (struct GNUNET_RECLAIM_Ticket));
+                                   sizeof(struct GNUNET_RECLAIM_Ticket));
 
   attr_list = GNUNET_new (struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList);
   claim = NULL;
@@ -563,6 +575,7 @@ start_process ()
                                                        &iter_finished,
                                                        NULL);
 }
+
 
 static int init = GNUNET_YES;
 
@@ -626,7 +639,6 @@ main (int argc, char *const argv[])
 {
   exp_interval = GNUNET_TIME_UNIT_HOURS;
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_string ('a',
                                  "add",
                                  "NAME",
@@ -690,7 +702,8 @@ main (int argc, char *const argv[])
                                           "Expiration interval of the attribute"),
                                         &exp_interval),
 
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
   if (GNUNET_OK != GNUNET_PROGRAM_run (argc,
                                        argv,
                                        "gnunet-reclaim",

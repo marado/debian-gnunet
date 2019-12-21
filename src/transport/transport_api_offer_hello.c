@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api_offer_hello.c
@@ -35,7 +35,6 @@
  */
 struct GNUNET_TRANSPORT_OfferHelloHandle
 {
-
   /**
    * Transport service handle we use for transmission.
    */
@@ -50,7 +49,6 @@ struct GNUNET_TRANSPORT_OfferHelloHandle
    * Closure for @e cont
    */
   void *cls;
-
 };
 
 
@@ -78,8 +76,8 @@ finished_hello (void *cls)
  * @param cfg configuration
  * @param hello the hello message
  * @param cont continuation to call when HELLO has been sent,
- * 	tc reason #GNUNET_SCHEDULER_REASON_TIMEOUT for fail
- * 	tc reasong #GNUNET_SCHEDULER_REASON_READ_READY for success
+ *      tc reason #GNUNET_SCHEDULER_REASON_TIMEOUT for fail
+ *      tc reasong #GNUNET_SCHEDULER_REASON_READ_READY for success
  * @param cont_cls closure for @a cont
  * @return a `struct GNUNET_TRANSPORT_OfferHelloHandle` handle or NULL on failure,
  *      in case of failure @a cont will not be called
@@ -133,7 +131,8 @@ GNUNET_TRANSPORT_offer_hello (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * @param ohh the handle for the operation to cancel
  */
 void
-GNUNET_TRANSPORT_offer_hello_cancel (struct GNUNET_TRANSPORT_OfferHelloHandle *ohh)
+GNUNET_TRANSPORT_offer_hello_cancel (struct
+                                     GNUNET_TRANSPORT_OfferHelloHandle *ohh)
 {
   GNUNET_MQ_destroy (ohh->mq);
   GNUNET_free (ohh);

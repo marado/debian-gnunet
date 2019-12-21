@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Philipp Toelke
@@ -75,11 +75,11 @@ typedef void
  */
 struct GNUNET_HELPER_Handle *
 GNUNET_HELPER_start (int with_control_pipe,
-		     const char *binary_name,
-		     char *const binary_argv[],
-		     GNUNET_MessageTokenizerCallback cb,
-		     GNUNET_HELPER_ExceptionCallback exp_cb,
-		     void *cb_cls);
+                     const char *binary_name,
+                     char *const binary_argv[],
+                     GNUNET_MessageTokenizerCallback cb,
+                     GNUNET_HELPER_ExceptionCallback exp_cb,
+                     void *cb_cls);
 
 
 /**
@@ -137,7 +137,7 @@ GNUNET_HELPER_stop (struct GNUNET_HELPER_Handle *h, int soft_kill);
  *               #GNUNET_SYSERR during GNUNET_HELPER_destroy
  */
 typedef void (*GNUNET_HELPER_Continuation)(void *cls,
-					   int result);
+                                           int result);
 
 
 /**
@@ -161,10 +161,10 @@ struct GNUNET_HELPER_SendHandle;
  */
 struct GNUNET_HELPER_SendHandle *
 GNUNET_HELPER_send (struct GNUNET_HELPER_Handle *h,
-		    const struct GNUNET_MessageHeader *msg,
-		    int can_drop,
-		    GNUNET_HELPER_Continuation cont,
-		    void *cont_cls);
+                    const struct GNUNET_MessageHeader *msg,
+                    int can_drop,
+                    GNUNET_HELPER_Continuation cont,
+                    void *cont_cls);
 
 
 /**

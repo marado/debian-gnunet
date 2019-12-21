@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2008--2013 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/testbed/test_testbed_api_topology.c
@@ -46,7 +46,7 @@ static struct GNUNET_TESTBED_Operation *op;
 /**
  * Shutdown task
  */
-static struct GNUNET_SCHEDULER_Task * shutdown_task;
+static struct GNUNET_SCHEDULER_Task *shutdown_task;
 
 /**
  * Testing result
@@ -76,6 +76,7 @@ do_shutdown (void *cls)
   GNUNET_SCHEDULER_shutdown ();
 }
 
+
 /**
  * Controller event callback
  *
@@ -97,9 +98,11 @@ controller_event_cb (void *cls,
       shutdown_task = GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
     }
     break;
+
   case GNUNET_TESTBED_ET_OPERATION_FINISHED:
     GNUNET_assert (NULL != event->details.operation_finished.emsg);
     break;
+
   default:
     GNUNET_break (0);
     if ((GNUNET_TESTBED_ET_OPERATION_FINISHED == event->type) &&
@@ -155,9 +158,9 @@ test_master (void *cls,
                                                   GNUNET_TESTBED_TOPOLOGY_OPTION_END);
   GNUNET_assert (NULL != op);
   shutdown_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_SECONDS, 300),
-                                    do_shutdown, NULL);
+                                  do_shutdown, NULL);
 }
 
 
@@ -181,5 +184,6 @@ main (int argc, char **argv)
     return 1;
   return 0;
 }
+
 
 /* end of test_testbed_api_topology.c */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -88,7 +88,6 @@ enum GNUNET_HELLO_AddressInfo
  */
 struct GNUNET_HELLO_Address
 {
-
   /**
    * For which peer is this an address?
    */
@@ -440,7 +439,7 @@ GNUNET_HELLO_get_header (struct GNUNET_HELLO_Message *hello);
  * @return NULL if a plugin with name @a name is not known/loadable
  */
 typedef struct GNUNET_TRANSPORT_PluginFunctions *(
-  *GNUNET_HELLO_TransportPluginsFind) (const char *name);
+*GNUNET_HELLO_TransportPluginsFind) (const char *name);
 
 
 /**

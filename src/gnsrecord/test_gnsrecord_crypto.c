@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file gnsrecord/test_gnsrecord_crypto.c
  * @brief testcase for block creation, verification and decryption
@@ -41,7 +41,7 @@
 #define TEST_REMOVE_RECORD_DATA 'b'
 
 
-static struct GNUNET_CRYPTO_EcdsaPrivateKey * privkey;
+static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
 static struct GNUNET_GNSRECORD_Data *s_rd;
 
@@ -58,10 +58,11 @@ create_record (int count)
   rd = GNUNET_new_array (count, struct GNUNET_GNSRECORD_Data);
   for (unsigned int c = 0; c < count; c++)
   {
-    rd[c].expiration_time = GNUNET_TIME_absolute_get().abs_value_us + 1000000000;
+    rd[c].expiration_time = GNUNET_TIME_absolute_get ().abs_value_us
+                            + 1000000000;
     rd[c].record_type = TEST_RECORD_TYPE;
     rd[c].data_size = TEST_RECORD_DATALEN;
-    rd[c].data = GNUNET_malloc(TEST_RECORD_DATALEN);
+    rd[c].data = GNUNET_malloc (TEST_RECORD_DATALEN);
     memset ((char *) rd[c].data, TEST_RECORD_DATA, TEST_RECORD_DATALEN);
   }
   return rd;
@@ -89,10 +90,10 @@ rd_decrypt_cb (void *cls,
                                 TEST_RECORD_DATALEN));
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Block was decrypted successfully \n");
+              "Block was decrypted successfully \n");
   res = 0;
-
 }
+
 
 static void
 run (void *cls,
@@ -104,7 +105,7 @@ run (void *cls,
   struct GNUNET_CRYPTO_EcdsaPublicKey pubkey;
   struct GNUNET_HashCode query_pub;
   struct GNUNET_HashCode query_priv;
-  struct GNUNET_TIME_Absolute expire = GNUNET_TIME_absolute_get();
+  struct GNUNET_TIME_Absolute expire = GNUNET_TIME_absolute_get ();
 
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (NULL != privkey);
@@ -121,18 +122,18 @@ run (void *cls,
                                           &query_pub);
   GNUNET_assert (0 == memcmp (&query_priv,
                               &query_pub,
-                              sizeof (struct GNUNET_HashCode)));
+                              sizeof(struct GNUNET_HashCode)));
   /* create record */
   s_name = "DUMMY.dummy.gnunet";
   s_rd = create_record (RECORDS);
 
   /* Create block */
   GNUNET_assert (NULL != (block =
-                          GNUNET_GNSRECORD_block_create (privkey,
-                                                         expire,
-                                                         s_name,
-                                                         s_rd,
-                                                         RECORDS)));
+                            GNUNET_GNSRECORD_block_create (privkey,
+                                                           expire,
+                                                           s_name,
+                                                           s_rd,
+                                                           RECORDS)));
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_GNSRECORD_block_verify (block));
   GNUNET_assert (GNUNET_OK ==
@@ -158,12 +159,13 @@ main (int argc, char *argv[])
   };
 
   res = 1;
-  GNUNET_PROGRAM_run ((sizeof (argvx) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(argvx) / sizeof(char *)) - 1,
                       argvx,
                       "test-gnsrecord-crypto",
                       "nohelp", options,
                       &run, &res);
   return res;
 }
+
 
 /* end of test_gnsrecord_crypto.c */

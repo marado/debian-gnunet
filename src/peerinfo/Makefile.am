@@ -10,10 +10,6 @@ plugindir = $(libdir)/gnunet
 pkgcfg_DATA = \
   peerinfo.conf
 
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -liconv -lstdc++ -lcomdlg32 -lgdi32
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -31,7 +27,7 @@ libgnunetpeerinfo_la_LIBADD = \
   $(XLIB) \
   $(LTLIBINTL)
 libgnunetpeerinfo_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:0:0
 
 
@@ -44,6 +40,8 @@ gnunet_service_peerinfo_LDADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la
+gnunet_service_peerinfo_LDFLAGS = \
+  $(GN_LIBINTL)
 
 if HAVE_BENCHMARKS
  PEERINFO_BENCHMARKS = \

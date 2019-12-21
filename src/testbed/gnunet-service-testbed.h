@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2013 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-service-testbed.h
@@ -41,7 +41,7 @@
 /**
  * Generic logging
  */
-#define LOG(kind,...)                           \
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 /**
@@ -106,7 +106,7 @@ struct ForwardedOperationContext
   /**
    * Task ID for the timeout task
    */
-  struct GNUNET_SCHEDULER_Task * timeout_task;
+  struct GNUNET_SCHEDULER_Task *timeout_task;
 
   /**
    * The id of the operation that has been forwarded
@@ -117,7 +117,6 @@ struct ForwardedOperationContext
    * The type of the operation which is forwarded
    */
   enum OperationType type;
-
 };
 
 
@@ -167,7 +166,6 @@ struct LinkControllersContext
    * The ID of the operation
    */
   uint64_t operation_id;
-
 };
 
 
@@ -176,7 +174,6 @@ struct LinkControllersContext
  */
 struct Peer
 {
-
   union
   {
     struct
@@ -196,7 +193,6 @@ struct Peer
        * Is the peer running
        */
       int is_running;
-
     } local;
 
     struct
@@ -210,9 +206,7 @@ struct Peer
        * The id of the remote host this peer is running on
        */
       uint32_t remote_host_id;
-
     } remote;
-
   } details;
 
   /**
@@ -242,7 +236,6 @@ struct Peer
    * the peer
    */
   uint32_t destroy_flag;
-
 };
 
 
@@ -382,7 +375,6 @@ struct RegisteredHostContext
    */
   enum RHCState
   {
-
     /**
      * The initial state
      */
@@ -393,7 +385,6 @@ struct RegisteredHostContext
      */
     RHC_DONE
   } state;
-
 };
 
 
@@ -480,13 +471,13 @@ extern char *GST_stats_dir;
  * Condition to check if host id is valid
  */
 #define VALID_HOST_ID(id) \
-  ( ((id) < GST_host_list_size) && (NULL != GST_host_list[id]) )
+  (((id) < GST_host_list_size) && (NULL != GST_host_list[id]))
 
 /**
  * Condition to check if peer id is valid
  */
 #define VALID_PEER_ID(id) \
-  ( ((id) < GST_peer_list_size) && (NULL != GST_peer_list[id]) )
+  (((id) < GST_peer_list_size) && (NULL != GST_peer_list[id]))
 
 
 /**
@@ -646,7 +637,8 @@ GST_send_operation_success_msg (struct GNUNET_SERVICE_Client *client,
  */
 int
 check_remote_overlay_connect (void *cls,
-                              const struct GNUNET_TESTBED_RemoteOverlayConnectMessage *msg);
+                              const struct
+                              GNUNET_TESTBED_RemoteOverlayConnectMessage *msg);
 
 
 /**
@@ -657,7 +649,8 @@ check_remote_overlay_connect (void *cls,
  */
 void
 handle_remote_overlay_connect (void *cls,
-                               const struct GNUNET_TESTBED_RemoteOverlayConnectMessage *msg);
+                               const struct
+                               GNUNET_TESTBED_RemoteOverlayConnectMessage *msg);
 
 
 /**
@@ -724,7 +717,8 @@ handle_peer_stop (void *cls,
  */
 void
 handle_peer_get_config (void *cls,
-                        const struct GNUNET_TESTBED_PeerGetConfigurationMessage *msg);
+                        const struct
+                        GNUNET_TESTBED_PeerGetConfigurationMessage *msg);
 
 
 /**
@@ -747,7 +741,8 @@ handle_shutdown_peers (void *cls,
  */
 int
 check_manage_peer_service (void *cls,
-                           const struct GNUNET_TESTBED_ManagePeerServiceMessage *msg);
+                           const struct
+                           GNUNET_TESTBED_ManagePeerServiceMessage *msg);
 
 
 /**
@@ -758,9 +753,8 @@ check_manage_peer_service (void *cls,
  */
 void
 handle_manage_peer_service (void *cls,
-                            const struct GNUNET_TESTBED_ManagePeerServiceMessage *msg);
-
-
+                            const struct
+                            GNUNET_TESTBED_ManagePeerServiceMessage *msg);
 
 
 /**
@@ -772,7 +766,8 @@ handle_manage_peer_service (void *cls,
  */
 int
 check_peer_reconfigure (void *cls,
-                        const struct GNUNET_TESTBED_PeerReconfigureMessage *msg);
+                        const struct
+                        GNUNET_TESTBED_PeerReconfigureMessage *msg);
 
 
 /**
@@ -785,7 +780,8 @@ check_peer_reconfigure (void *cls,
  */
 void
 handle_peer_reconfigure (void *cls,
-                         const struct GNUNET_TESTBED_PeerReconfigureMessage *msg);
+                         const struct
+                         GNUNET_TESTBED_PeerReconfigureMessage *msg);
 
 
 /**

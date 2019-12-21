@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2013 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -36,7 +36,7 @@
 #ifdef __cplusplus
 extern "C"
 {
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -51,8 +51,8 @@ extern "C"
  * @param data audio data to play
  */
 typedef void (*GNUNET_MICROPHONE_RecordedDataCallback)(void *cls,
-						       size_t data_size,
-						       const void *data);
+                                                       size_t data_size,
+                                                       const void *data);
 
 /**
  * Enable a microphone.
@@ -63,8 +63,9 @@ typedef void (*GNUNET_MICROPHONE_RecordedDataCallback)(void *cls,
  * @return #GNUNET_OK on success, #GNUNET_SYSERR on error
  */
 typedef int (*GNUNET_MICROPHONE_EnableCallback)(void *cls,
-						GNUNET_MICROPHONE_RecordedDataCallback rdc,
-						void *rdc_cls);
+                                                GNUNET_MICROPHONE_RecordedDataCallback
+                                                rdc,
+                                                void *rdc_cls);
 
 /**
  * Function that disables a microphone.
@@ -86,7 +87,6 @@ typedef void (*GNUNET_MICROPHONE_DestroyCallback)(void *cls);
  */
 struct GNUNET_MICROPHONE_Handle
 {
-
   /**
    * Turn on the microphone.
    */
@@ -106,7 +106,6 @@ struct GNUNET_MICROPHONE_Handle
    * Closure for the callbacks.
    */
   void *cls;
-
 };
 
 
@@ -118,7 +117,8 @@ struct GNUNET_MICROPHONE_Handle
  * @return NULL on error
  */
 struct GNUNET_MICROPHONE_Handle *
-GNUNET_MICROPHONE_create_from_hardware (const struct GNUNET_CONFIGURATION_Handle *cfg);
+GNUNET_MICROPHONE_create_from_hardware (const struct
+                                        GNUNET_CONFIGURATION_Handle *cfg);
 
 
 /**
@@ -130,7 +130,7 @@ void
 GNUNET_MICROPHONE_destroy (struct GNUNET_MICROPHONE_Handle *microphone);
 
 
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -30,7 +30,7 @@
 #include "testbed_api_hosts.h"
 
 
-#define TIME_REL_SECS(sec)						\
+#define TIME_REL_SECS(sec)                                              \
   GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, sec)
 
 /**
@@ -106,7 +106,8 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_assert (0 == GNUNET_TESTBED_host_get_id_ (host));
   GNUNET_assert (host == GNUNET_TESTBED_host_lookup_by_id_ (0));
   hosts = NULL;
-  num_hosts = GNUNET_TESTBED_hosts_load_from_file ("sample_hosts.txt", cfg, &hosts);
+  num_hosts = GNUNET_TESTBED_hosts_load_from_file ("sample_hosts.txt", cfg,
+                                                   &hosts);
   GNUNET_assert (7 == num_hosts);
   GNUNET_assert (NULL != hosts);
   for (cnt = 0; cnt < num_hosts; cnt++)
@@ -115,7 +116,7 @@ run (void *cls, char *const *args, const char *cfgfile,
     {
       GNUNET_assert (0 == strcmp ("totakura",
                                   GNUNET_TESTBED_host_get_username_
-                                  (hosts[cnt])));
+                                    (hosts[cnt])));
       GNUNET_assert (NULL != GNUNET_TESTBED_host_get_hostname (hosts[cnt]));
       GNUNET_assert (22 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
     }
@@ -123,7 +124,7 @@ run (void *cls, char *const *args, const char *cfgfile,
     {
       GNUNET_assert (0 == strcmp ("totakura",
                                   GNUNET_TESTBED_host_get_username_
-                                  (hosts[cnt])));
+                                    (hosts[cnt])));
       GNUNET_assert (NULL != GNUNET_TESTBED_host_get_hostname (hosts[cnt]));
       GNUNET_assert (2022 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
     }
@@ -131,10 +132,10 @@ run (void *cls, char *const *args, const char *cfgfile,
     {
       GNUNET_assert (0 == strcmp ("totakura",
                                   GNUNET_TESTBED_host_get_username_
-                                  (hosts[cnt])));
+                                    (hosts[cnt])));
       GNUNET_assert (0 == strcmp ("asgard.realm",
                                   GNUNET_TESTBED_host_get_hostname
-                                  (hosts[cnt])));
+                                    (hosts[cnt])));
       GNUNET_assert (22 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
     }
     if (5 == cnt)
@@ -142,7 +143,7 @@ run (void *cls, char *const *args, const char *cfgfile,
       GNUNET_assert (NULL == GNUNET_TESTBED_host_get_username_ (hosts[cnt]));
       GNUNET_assert (0 == strcmp ("rivendal",
                                   GNUNET_TESTBED_host_get_hostname
-                                  (hosts[cnt])));
+                                    (hosts[cnt])));
       GNUNET_assert (22 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
     }
     if (6 == cnt)
@@ -150,7 +151,7 @@ run (void *cls, char *const *args, const char *cfgfile,
       GNUNET_assert (NULL == GNUNET_TESTBED_host_get_username_ (hosts[cnt]));
       GNUNET_assert (0 == strcmp ("rohan",
                                   GNUNET_TESTBED_host_get_hostname
-                                  (hosts[cnt])));
+                                    (hosts[cnt])));
       GNUNET_assert (561 == GNUNET_TESTBED_host_get_ssh_port_ (hosts[cnt]));
     }
   }
@@ -163,20 +164,20 @@ int
 main (int argc, char **argv)
 {
   char *const argv2[] = { "test_testbed_api_hosts",
-    "-c", "test_testbed_api.conf",
-    NULL
-  };
+                          "-c", "test_testbed_api.conf",
+                          NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
 
   status = GNUNET_SYSERR;
   if (GNUNET_OK !=
-      GNUNET_PROGRAM_run ((sizeof (argv2) / sizeof (char *)) - 1, argv2,
+      GNUNET_PROGRAM_run ((sizeof(argv2) / sizeof(char *)) - 1, argv2,
                           "test_testbed_api_hosts", "nohelp", options, &run,
                           NULL))
     return 1;
   return (GNUNET_OK == status) ? 0 : 1;
 }
+
 
 /* end of test_testbed_api_hosts.c */

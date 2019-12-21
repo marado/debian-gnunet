@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file template/test_template_api.c
  * @brief testcase for template.c
@@ -29,6 +29,7 @@ check ()
   return 0;
 }
 
+
 int
 main (int argc, char *argv[])
 {
@@ -38,5 +39,6 @@ main (int argc, char *argv[])
 
   return ret;
 }
+
 
 /* end of test_template_api.c */

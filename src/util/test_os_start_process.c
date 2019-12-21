@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_os_start_process.c
  * @brief testcase for os start process code
@@ -46,7 +46,7 @@ static struct GNUNET_DISK_PipeHandle *hello_pipe_stdin;
  */
 static struct GNUNET_DISK_PipeHandle *hello_pipe_stdout;
 
-static struct GNUNET_SCHEDULER_Task * die_task;
+static struct GNUNET_SCHEDULER_Task *die_task;
 
 struct read_context
 {
@@ -80,11 +80,11 @@ read_call (void *cls)
   int bytes;
 
   bytes = GNUNET_DISK_file_read (rc.stdout_read_handle,
-				 &rc.buf[rc.buf_offset],
-				 sizeof (rc.buf) - rc.buf_offset);
+                                 &rc.buf[rc.buf_offset],
+                                 sizeof(rc.buf) - rc.buf_offset);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "bytes is %d\n",
-	      bytes);
+              "bytes is %d\n",
+              bytes);
 
   if (bytes < 1)
   {
@@ -97,8 +97,8 @@ read_call (void *cls)
 
   ok = strncmp (rc.buf, test_phrase, strlen (test_phrase));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "read %s\n",
-	      &rc.buf[rc.buf_offset]);
+              "read %s\n",
+              &rc.buf[rc.buf_offset]);
   rc.buf_offset += bytes;
 
   if (0 == ok)
@@ -110,7 +110,7 @@ read_call (void *cls)
 
   GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
                                   rc.stdout_read_handle,
-				  &read_call,
+                                  &read_call,
                                   NULL);
 }
 
@@ -122,14 +122,12 @@ run_task (void *cls)
   const struct GNUNET_DISK_FileHandle *stdout_read_handle;
   const struct GNUNET_DISK_FileHandle *wh;
 
-#if !WINDOWS
   GNUNET_asprintf (&fn, "cat");
-#else
-  GNUNET_asprintf (&fn, "w32cat");
-#endif
 
-  hello_pipe_stdin = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_YES, GNUNET_NO);
-  hello_pipe_stdout = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_NO, GNUNET_YES);
+  hello_pipe_stdin = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_YES,
+                                       GNUNET_NO);
+  hello_pipe_stdout = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_NO,
+                                        GNUNET_YES);
 
   if ((hello_pipe_stdout == NULL) || (hello_pipe_stdin == NULL))
   {
@@ -140,10 +138,10 @@ run_task (void *cls)
   }
 
   proc =
-      GNUNET_OS_start_process (GNUNET_NO, GNUNET_OS_INHERIT_STD_ERR,
-                               hello_pipe_stdin, hello_pipe_stdout, NULL,
-                               fn,
-                               "test_gnunet_echo_hello", "-", NULL);
+    GNUNET_OS_start_process (GNUNET_NO, GNUNET_OS_INHERIT_STD_ERR,
+                             hello_pipe_stdin, hello_pipe_stdout, NULL,
+                             fn,
+                             "test_gnunet_echo_hello", "-", NULL);
   GNUNET_free (fn);
 
   /* Close the write end of the read pipe */
@@ -166,19 +164,19 @@ run_task (void *cls)
   GNUNET_DISK_pipe_close_end (hello_pipe_stdin, GNUNET_DISK_PIPE_END_WRITE);
 
   stdout_read_handle =
-      GNUNET_DISK_pipe_handle (hello_pipe_stdout, GNUNET_DISK_PIPE_END_READ);
+    GNUNET_DISK_pipe_handle (hello_pipe_stdout, GNUNET_DISK_PIPE_END_READ);
 
   die_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES, 1),
-				    &end_task,
-                                    NULL);
+                                  &end_task,
+                                  NULL);
 
-  memset (&rc, 0, sizeof (rc));
+  memset (&rc, 0, sizeof(rc));
   rc.stdout_read_handle = stdout_read_handle;
   GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
                                   stdout_read_handle,
-				  &read_call,
+                                  &read_call,
                                   NULL);
 }
 
@@ -204,8 +202,10 @@ check_kill ()
 {
   char *fn;
 
-  hello_pipe_stdin = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_YES, GNUNET_NO);
-  hello_pipe_stdout = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_NO, GNUNET_YES);
+  hello_pipe_stdin = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_YES,
+                                       GNUNET_NO);
+  hello_pipe_stdout = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_NO,
+                                        GNUNET_YES);
   if ((hello_pipe_stdout == NULL) || (hello_pipe_stdin == NULL))
   {
     return 1;
@@ -214,18 +214,18 @@ check_kill ()
   proc =
     GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_ERR,
                              hello_pipe_stdin,
-			     hello_pipe_stdout,
-			     NULL,
+                             hello_pipe_stdout,
+                             NULL,
                              fn,
-			     "gnunet-service-resolver", "-",
-			     NULL);
+                             "gnunet-service-resolver", "-",
+                             NULL);
   if (NULL == proc)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Failed to launch gnunet-service-resolver. Is your system setup correct?\n");
     return 77;
   }
-  sleep (1); /* give process time to start, so we actually use the pipe-kill mechanism! */
+  sleep (1);  /* give process time to start, so we actually use the pipe-kill mechanism! */
   GNUNET_free (fn);
   if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING, "kill");
@@ -246,8 +246,10 @@ check_instant_kill ()
 {
   char *fn;
 
-  hello_pipe_stdin = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_YES, GNUNET_NO);
-  hello_pipe_stdout = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_NO, GNUNET_YES);
+  hello_pipe_stdin = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_YES,
+                                       GNUNET_NO);
+  hello_pipe_stdout = GNUNET_DISK_pipe (GNUNET_YES, GNUNET_YES, GNUNET_NO,
+                                        GNUNET_YES);
   if ((hello_pipe_stdout == NULL) || (hello_pipe_stdin == NULL))
   {
     return 1;
@@ -257,7 +259,7 @@ check_instant_kill ()
     GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_ERR,
                              hello_pipe_stdin, hello_pipe_stdout, NULL,
                              fn,
-			     "gnunet-service-resolver", "-", NULL);
+                             "gnunet-service-resolver", "-", NULL);
   if (NULL == proc)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -293,5 +295,6 @@ main (int argc, char *argv[])
   ret |= check_instant_kill ();
   return ret;
 }
+
 
 /* end of test_os_start_process.c */

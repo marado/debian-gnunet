@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -29,13 +29,13 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_testing_lib.h"
 
-#define LOG(kind,...)                           \
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 
 #define FAIL_TEST(cond)                         \
   do {                                          \
-    if (!(cond)) {                              \
+    if (! (cond)) {                              \
       GNUNET_break (0);                         \
       if (GNUNET_OK == status) {                \
         status = GNUNET_SYSERR;                 \
@@ -72,7 +72,8 @@ struct TestingContext
   /**
    * State
    */
-  enum {
+  enum
+  {
     PEER_INIT,
 
     PEER_STARTED,
@@ -94,7 +95,6 @@ do_shutdown2 (void *cls)
   if (NULL != test_ctx->system)
     GNUNET_TESTING_system_destroy (test_ctx->system, GNUNET_YES);
   GNUNET_free (test_ctx);
-
 }
 
 
@@ -117,11 +117,13 @@ peer_status_cb (void *cls, struct GNUNET_TESTING_Peer *peer, int success)
   case PEER_INIT:
     FAIL_TEST (0);
     break;
+
   case PEER_STARTED:
     FAIL_TEST (GNUNET_YES == success);
     test_ctx->state = PEER_STOPPED;
     GNUNET_SCHEDULER_add_now (&do_shutdown2, cls);
     break;
+
   case PEER_STOPPED:
     FAIL_TEST (0);
   }
@@ -164,16 +166,16 @@ run (void *cls, char *const *args, const char *cfgfile,
 
   test_ctx = GNUNET_new (struct TestingContext);
   test_ctx->system =
-      GNUNET_TESTING_system_create ("test-gnunet-testing",
-                                    "127.0.0.1", NULL, NULL);
+    GNUNET_TESTING_system_create ("test-gnunet-testing",
+                                  "127.0.0.1", NULL, NULL);
   emsg = NULL;
   if (NULL == test_ctx->system)
     goto end;
   test_ctx->cfg = GNUNET_CONFIGURATION_dup (cfg);
   test_ctx->peer =
-      GNUNET_TESTING_peer_configure (test_ctx->system,
-                                     test_ctx->cfg,
-                                     0, &id, &emsg);
+    GNUNET_TESTING_peer_configure (test_ctx->system,
+                                   test_ctx->cfg,
+                                   0, &id, &emsg);
   if (NULL == test_ctx->peer)
   {
     if (NULL != emsg)
@@ -192,14 +194,15 @@ run (void *cls, char *const *args, const char *cfgfile,
                                 &do_shutdown, test_ctx);
   return;
 
- end:
+end:
   FAIL_TEST (0);
   GNUNET_SCHEDULER_add_now (&do_shutdown, test_ctx);
   GNUNET_free_non_null (emsg);
 }
 
 
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
@@ -214,5 +217,6 @@ int main (int argc, char *argv[])
     return 1;
   return (GNUNET_OK == status) ? 0 : 1;
 }
+
 
 /* end of test_testing_peerstartup.c */

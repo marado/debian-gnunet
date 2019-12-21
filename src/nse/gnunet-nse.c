@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file nse/gnunet-nse.c
@@ -72,7 +72,7 @@ handle_estimate (void *cls,
 {
   (void) cls;
   status = 0;
-  FPRINTF (stdout,
+  fprintf (stdout,
            "%llu %f %f %f\n",
            (unsigned long long) timestamp.abs_value_us,
            GNUNET_NSE_log_estimate_to_n (estimate),
@@ -112,7 +112,8 @@ int
 main (int argc, char *const *argv)
 {
   static struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
 
   status = 1;
   if (GNUNET_OK !=

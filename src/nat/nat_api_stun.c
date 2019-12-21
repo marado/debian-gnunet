@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * This code provides some support for doing STUN transactions.
  * We send simplest possible packet ia REQUEST with BIND to a STUN server.
@@ -43,7 +43,7 @@
 
 #include "nat_stun.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "stun", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "stun", __VA_ARGS__)
 
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 15)
 
@@ -55,7 +55,6 @@
  */
 struct GNUNET_NAT_STUN_Handle
 {
-
   /**
    * Handle to a pending DNS lookup request.
    */
@@ -90,7 +89,6 @@ struct GNUNET_NAT_STUN_Handle
    * STUN port
    */
   uint16_t stun_port;
-
 };
 
 
@@ -105,8 +103,9 @@ static int
 encode_message (enum StunClasses msg_class,
                 enum StunMethods method)
 {
-  return ((msg_class & 1) << 4) | ((msg_class & 2) << 7) |
-    (method & 0x000f) | ((method & 0x0070) << 1) | ((method & 0x0f800) << 2);
+  return ((msg_class & 1) << 4) | ((msg_class & 2) << 7)
+         | (method & 0x000f) | ((method & 0x0070) << 1) | ((method & 0x0f800)
+                                                           << 2);
 }
 
 
@@ -118,7 +117,7 @@ encode_message (enum StunClasses msg_class,
 static void
 generate_request_id (struct stun_header *req)
 {
-  req->magic = htonl(STUN_MAGIC_COOKIE);
+  req->magic = htonl (STUN_MAGIC_COOKIE);
   for (unsigned int x = 0; x < 3; x++)
     req->id.id[x] = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_NONCE,
                                               UINT32_MAX);
@@ -155,12 +154,12 @@ stun_dns_callback (void *cls,
     else if (GNUNET_SYSERR == rh->dns_success)
     {
       rh->cb (rh->cb_cls,
-	      GNUNET_NAT_ERROR_INTERNAL_NETWORK_ERROR);
+              GNUNET_NAT_ERROR_INTERNAL_NETWORK_ERROR);
     }
     else
     {
       rh->cb (rh->cb_cls,
-	      GNUNET_NAT_ERROR_SUCCESS);
+              GNUNET_NAT_ERROR_SUCCESS);
     }
     GNUNET_NAT_stun_make_request_cancel (rh);
     return;
@@ -169,25 +168,25 @@ stun_dns_callback (void *cls,
   rh->dns_success = GNUNET_YES;
   memset (&server, 0, sizeof(server));
   server.sin_family = AF_INET;
-  server.sin_addr = ((struct sockaddr_in *)addr)->sin_addr;
+  server.sin_addr = ((struct sockaddr_in *) addr)->sin_addr;
   server.sin_port = htons (rh->stun_port);
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  server.sin_len = (u_char) sizeof (struct sockaddr_in);
+  server.sin_len = (u_char) sizeof(struct sockaddr_in);
 #endif
 
   /* Craft the simplest possible STUN packet. A request binding */
   generate_request_id (&req);
   req.msglen = htons (0);
   req.msgtype = htons (encode_message (STUN_REQUEST,
-				       STUN_BINDING));
+                                       STUN_BINDING));
 
   /* Send the packet */
   if (-1 ==
       GNUNET_NETWORK_socket_sendto (rh->sock,
-				    &req,
-				    sizeof (req),
-				    (const struct sockaddr *) &server,
-				    sizeof (server)))
+                                    &req,
+                                    sizeof(req),
+                                    (const struct sockaddr *) &server,
+                                    sizeof(server)))
   {
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
                          "sendto");
@@ -228,7 +227,7 @@ GNUNET_NAT_stun_make_request (const char *server,
                                            AF_INET,
                                            TIMEOUT,
                                            &stun_dns_callback,
-					   rh);
+                                           rh);
   if (NULL == rh->dns_active)
   {
     GNUNET_NAT_stun_make_request_cancel (rh);

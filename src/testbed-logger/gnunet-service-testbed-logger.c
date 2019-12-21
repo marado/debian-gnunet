@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2013 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed-logger/gnunet-service-testbed-logger.c
@@ -83,7 +83,7 @@ handle_log_msg (void *cls,
   struct GNUNET_SERVICE_Client *client = cls;
   uint16_t ms;
 
-  ms = ntohs (msg->size) - sizeof (struct GNUNET_MessageHeader);
+  ms = ntohs (msg->size) - sizeof(struct GNUNET_MessageHeader);
   GNUNET_BIO_write (bio,
                     &msg[1],
                     ms);
@@ -122,8 +122,8 @@ shutdown_task (void *cls)
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *c,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
 {
   /* FIXME: is this really what we want here? */
   GNUNET_SERVICE_client_persist (c);
@@ -141,8 +141,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *c,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
 {
   nconn--;
   if (GNUNET_YES == in_shutdown)
@@ -160,7 +160,7 @@ client_disconnect_cb (void *cls,
  */
 static void
 logger_run (void *cls,
-	    const struct GNUNET_CONFIGURATION_Handle *cfg,
+            const struct GNUNET_CONFIGURATION_Handle *cfg,
             struct GNUNET_SERVICE_Handle *service)
 {
   char *dir;
@@ -171,13 +171,13 @@ logger_run (void *cls,
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (cfg,
-					       "TESTBED-LOGGER",
-					       "DIR",
+                                               "TESTBED-LOGGER",
+                                               "DIR",
                                                &dir))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
-			       "TESTBED-LOGGER",
-			       "DIR");
+                               "TESTBED-LOGGER",
+                               "DIR");
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -188,18 +188,18 @@ logger_run (void *cls,
                         hname_len))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-	 "Cannot get hostname.  Exiting\n");
+         "Cannot get hostname.  Exiting\n");
     GNUNET_free (hname);
     GNUNET_free (dir);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
   GNUNET_asprintf (&fn,
-		   "%s/%.*s_%jd.dat",
-		   dir,
-		   hname_len,
-		   hname,
-		   (intmax_t) pid);
+                   "%s/%.*s_%jd.dat",
+                   dir,
+                   hname_len,
+                   hname,
+                   (intmax_t) pid);
   GNUNET_free (hname);
   GNUNET_free (dir);
   if (NULL == (bio = GNUNET_BIO_write_open (fn)))
@@ -219,17 +219,17 @@ logger_run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("testbed-logger",
- GNUNET_SERVICE_OPTION_NONE,
- &logger_run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (log_msg,
-                        GNUNET_MESSAGE_TYPE_TESTBED_LOGGER_MSG,
-                        struct GNUNET_MessageHeader,
-                        NULL),
- GNUNET_MQ_handler_end ());
+  ("testbed-logger",
+  GNUNET_SERVICE_OPTION_NONE,
+  &logger_run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (log_msg,
+                         GNUNET_MESSAGE_TYPE_TESTBED_LOGGER_MSG,
+                         struct GNUNET_MessageHeader,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-testbed-logger.c */

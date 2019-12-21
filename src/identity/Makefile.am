@@ -3,10 +3,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/gnunet
 
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols 
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -35,9 +31,10 @@ libgnunet_plugin_rest_identity_la_LIBADD = \
   libgnunetidentity.la \
   $(top_builddir)/src/rest/libgnunetrest.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 libgnunet_plugin_rest_identity_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
+libgnunet_plugin_rest_identity_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 
 
 libgnunetidentity_la_SOURCES = \
@@ -49,7 +46,7 @@ libgnunetidentity_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
 libgnunetidentity_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 1:0:0
 
 bin_PROGRAMS = \

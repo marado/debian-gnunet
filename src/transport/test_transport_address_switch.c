@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2009, 2010, 2011, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2009, 2010, 2011, 2016 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -153,7 +153,6 @@ stat_addresses_available (void *cls,
  */
 static struct WatchEntry
 {
-
   /**
    * Name of the statistic we watch.
    */
@@ -164,16 +163,16 @@ static struct WatchEntry
    */
   GNUNET_STATISTICS_Iterator stat_handler;
 } watches[] =
-  {{"# Attempts to switch addresses", &stat_start_attempt_cb},
-   {"# Successful attempts to switch addresses", &stat_success_attempt_cb},
-   {"# Failed attempts to switch addresses (failed to send CONNECT CONT)",
-    &stat_fail_attempt_cb},
-   {"# Failed attempts to switch addresses (failed to send CONNECT)",
-    &stat_fail_attempt_cb},
-   {"# Failed attempts to switch addresses (no response)",
-    &stat_fail_attempt_cb},
-   {"# transport addresses", &stat_addresses_available},
-   {NULL, NULL}};
+{ { "# Attempts to switch addresses", &stat_start_attempt_cb },
+  { "# Successful attempts to switch addresses", &stat_success_attempt_cb },
+  { "# Failed attempts to switch addresses (failed to send CONNECT CONT)",
+    &stat_fail_attempt_cb },
+  { "# Failed attempts to switch addresses (failed to send CONNECT)",
+    &stat_fail_attempt_cb },
+  { "# Failed attempts to switch addresses (no response)",
+    &stat_fail_attempt_cb },
+  { "# transport addresses", &stat_addresses_available },
+  { NULL, NULL } };
 
 
 static void
@@ -196,7 +195,7 @@ custom_shutdown (void *cls)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Fail (timeout)! No transmission after switch! Stopping peers\n");
-    ccc->global_ret = 77; /* GNUNET_SYSERR; */
+    ccc->global_ret = 77;   /* GNUNET_SYSERR; */
   }
 
   /* stop statistics */
@@ -217,10 +216,10 @@ custom_shutdown (void *cls)
   }
 
   result = 0;
-  FPRINTF (stderr, "\n");
+  fprintf (stderr, "\n");
   if (stats[0].switch_attempts > 0)
   {
-    FPRINTF (
+    fprintf (
       stderr,
       "Peer 1 tried %u times to switch and succeeded %u times, failed %u times\n",
       stats[0].switch_attempts,
@@ -234,13 +233,13 @@ custom_shutdown (void *cls)
   }
   else if (stats[0].addresses_avail > 1)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Peer 1 had %u addresses available, but did not try to switch\n",
              stats[0].addresses_avail);
   }
   if (stats[1].switch_attempts > 0)
   {
-    FPRINTF (
+    fprintf (
       stderr,
       "Peer 2 tried %u times to switch and succeeded %u times, failed %u times\n",
       stats[1].switch_attempts,
@@ -254,7 +253,7 @@ custom_shutdown (void *cls)
   }
   else if (stats[1].addresses_avail > 1)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Peer 2 had %u addresses available, but did not try to switch\n",
              stats[1].addresses_avail);
   }
@@ -262,14 +261,14 @@ custom_shutdown (void *cls)
   if (((stats[0].switch_attempts > 0) || (stats[1].switch_attempts > 0)) &&
       (bytes_sent_after_switch == 0))
   {
-    FPRINTF (stderr, "No data sent after switching!\n");
+    fprintf (stderr, "No data sent after switching!\n");
     GNUNET_break (0);
     result++;
   }
   if (((stats[0].switch_attempts > 0) || (stats[1].switch_attempts > 0)) &&
       (bytes_recv_after_switch == 0))
   {
-    FPRINTF (stderr, "No data received after switching!\n");
+    fprintf (stderr, "No data received after switching!\n");
     GNUNET_break (0);
     result++;
   }
@@ -353,11 +352,11 @@ progress_indicator (void *cls)
   counter++;
   if ((TIMEOUT.rel_value_us / 1000 / 1000LL) < counter)
   {
-    FPRINTF (stderr, "%s", ".\n");
+    fprintf (stderr, "%s", ".\n");
   }
   else
   {
-    FPRINTF (stderr, "%s", ".");
+    fprintf (stderr, "%s", ".");
     measure_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
                                                  &progress_indicator,
                                                  NULL);
@@ -410,12 +409,13 @@ int
 main (int argc, char *argv[])
 {
   struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext my_ccc =
-    {.connect_continuation = &connected_cb,
-     .config_file = "test_transport_api_data.conf",
-     .rec = &notify_receive,
-     .nc = &GNUNET_TRANSPORT_TESTING_log_connect,
-     .shutdown_task = &custom_shutdown,
-     .timeout = TIMEOUT};
+  { .connect_continuation = &connected_cb,
+    .config_file = "test_transport_api_data.conf",
+    .rec = &notify_receive,
+    .nc = &GNUNET_TRANSPORT_TESTING_log_connect,
+    .shutdown_task = &custom_shutdown,
+    .timeout = TIMEOUT };
+
   ccc = &my_ccc;
   int ret;
 
@@ -428,4 +428,6 @@ main (int argc, char *argv[])
     return 1;
   return 0;
 }
+
+
 /* end of test_transport_address_switch.c */

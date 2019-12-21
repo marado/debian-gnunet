@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file tun/test_regex.c
  * @brief simple test for regex.c iptoregex functions
@@ -161,19 +161,27 @@ main (int argc, char *argv[])
                          "4-000(0|1|2)-C0" DOT DOT DOT DOT DOT DOT);
   error +=
     test_policy4toregex ("192.1.0.0/8:!25-56;",
-                         "4-(0(0(0"DOT"|1(0|1|2|3|4|5|6|7|8)|3(9|A|B|C|D|E|F)|(4|5|6|7|8|9|A|B|C|D|E|F)"DOT")|(1|2|3|4|5|6|7|8|9|A|B|C|D|E|F)"DOT DOT")|(1|2|3|4|5|6|7|8|9|A|B|C|D|E|F)"DOT DOT DOT")-C0"DOT DOT DOT DOT DOT DOT);
+                         "4-(0(0(0"DOT
+                         "|1(0|1|2|3|4|5|6|7|8)|3(9|A|B|C|D|E|F)|(4|5|6|7|8|9|A|B|C|D|E|F)"DOT
+                         ")|(1|2|3|4|5|6|7|8|9|A|B|C|D|E|F)"DOT DOT
+                         ")|(1|2|3|4|5|6|7|8|9|A|B|C|D|E|F)"DOT DOT
+                         DOT ")-C0"DOT DOT DOT DOT DOT DOT);
   error +=
     test_policy6toregex ("E1E1::1;",
-                         "6-"DOT DOT DOT DOT"-E1E10000000000000000000000000001");
+                         "6-"DOT DOT DOT
+                         DOT "-E1E10000000000000000000000000001");
   error +=
     test_policy6toregex ("E1E1:ABCD::1/120;",
-                         "6-"DOT DOT DOT DOT"-E1E1ABCD0000000000000000000000" DOT DOT);
+                         "6-"DOT DOT DOT
+                         DOT "-E1E1ABCD0000000000000000000000" DOT DOT);
   error +=
     test_policy6toregex ("E1E1:ABCD::ABCD/126;",
-                         "6-"DOT DOT DOT DOT"-E1E1ABCD00000000000000000000ABC(C|D|E|F)");
+                         "6-"DOT DOT DOT
+                         DOT "-E1E1ABCD00000000000000000000ABC(C|D|E|F)");
   error +=
     test_policy6toregex ("E1E1:ABCD::ABCD/127;",
-                         "6-"DOT DOT DOT DOT"-E1E1ABCD00000000000000000000ABC(C|D)");
+                         "6-"DOT DOT DOT
+                         DOT "-E1E1ABCD00000000000000000000ABC(C|D)");
   error +=
     test_policy6toregex ("E1E1:ABCD::ABCD/128:80;",
                          "6-0050-E1E1ABCD00000000000000000000ABCD");
