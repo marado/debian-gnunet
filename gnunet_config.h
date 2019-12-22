@@ -64,7 +64,7 @@
 #define HAVE_ABE 0
 
 /* Define to 1 if you have the <argz.h> header file. */
-/* #undef HAVE_ARGZ_H */
+#define HAVE_ARGZ_H 1
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #define HAVE_ARPA_INET_H 1
@@ -101,7 +101,7 @@
 
 /* Define to 1 if you have the declaration of `CURLINFO_TLS_SESSION', and to 0
    if you don't. */
-/* #undef HAVE_DECL_CURLINFO_TLS_SESSION */
+#define HAVE_DECL_CURLINFO_TLS_SESSION 1
 
 /* Define to 1 if you have the declaration of `gcry_mpi_set_opaque_copy', and
    to 0 if you don't. */
@@ -128,7 +128,7 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the <execinfo.h> header file. */
-/* #undef HAVE_EXECINFO_H */
+#define HAVE_EXECINFO_H 1
 
 /* explicit_bzero supported */
 /* #undef HAVE_EXPLICIT_BZERO */
@@ -149,7 +149,7 @@
 #define HAVE_FSEEKO 1
 
 /* getaddrinfo_a supported */
-/* #undef HAVE_GETADDRINFO_A */
+#define HAVE_GETADDRINFO_A 1
 
 /* Define to 1 if you have the `gethostbyname2' function. */
 #define HAVE_GETHOSTBYNAME2 1
@@ -185,22 +185,22 @@
 #define HAVE_GNUTLS_ABSTRACT_H 1
 
 /* We have GnuTLS with DANE support */
-#define HAVE_GNUTLS_DANE 0
+#define HAVE_GNUTLS_DANE 1
 
 /* Define to 1 if you have the <gnutls/dane.h> header file. */
-/* #undef HAVE_GNUTLS_DANE_H */
+#define HAVE_GNUTLS_DANE_H 1
 
 /* Define if you have the iconv() function and it works. */
 #define HAVE_ICONV 1
 
 /* Define to 1 if you have the <idn2.h> header file. */
-/* #undef HAVE_IDN2_H */
+#define HAVE_IDN2_H 1
 
 /* Define to 1 if you have the <idn2/idn2.h> header file. */
 /* #undef HAVE_IDN2_IDN2_H */
 
 /* Define to 1 if you have the <idna.h> header file. */
-#define HAVE_IDNA_H 1
+/* #undef HAVE_IDNA_H */
 
 /* Define to 1 if you have the <idn/idna.h> header file. */
 /* #undef HAVE_IDN_IDNA_H */
@@ -233,25 +233,25 @@
 #define HAVE_LIBATOMIC 1
 
 /* Lacking bluetooth library */
-#define HAVE_LIBBLUETOOTH 0
+#define HAVE_LIBBLUETOOTH 1
 
 /* Lacking libcurl */
-#define HAVE_LIBCURL 0
+#define HAVE_LIBCURL 1
 
 /* Define to 1 if you have the `curl-gnutls' library (-lcurl-gnutls). */
-/* #undef HAVE_LIBCURL_GNUTLS */
+#define HAVE_LIBCURL_GNUTLS 1
 
 /* Have libextractor */
 #define HAVE_LIBEXTRACTOR 1
 
 /* Lacking libgnurl */
-#define HAVE_LIBGNURL 1
+#define HAVE_LIBGNURL 0
 
 /* Define to 1 if you have 'libidn' (-lidn). */
-#define HAVE_LIBIDN 1
+/* #undef HAVE_LIBIDN */
 
 /* Define to 1 if you have 'libidn2' (-lidn2). */
-/* #undef HAVE_LIBIDN2 */
+#define HAVE_LIBIDN2 1
 
 /* Define to 1 if you have the `intl' library (-lintl). */
 /* #undef HAVE_LIBINTL */
@@ -269,7 +269,7 @@
 #define HAVE_LIBM 1
 
 /* Define to 1 if you have the <libpq-fe.h> header file. */
-/* #undef HAVE_LIBPQ_FE_H */
+#define HAVE_LIBPQ_FE_H 1
 
 /* Define to 1 if you have the `resolv' library (-lresolv). */
 /* #undef HAVE_LIBRESOLV */
@@ -296,7 +296,7 @@
 /* #undef HAVE_MACH_MACH_H */
 
 /* Define to 1 if you have the `mallinfo' function. */
-/* #undef HAVE_MALLINFO */
+#define HAVE_MALLINFO 1
 
 /* Define to 1 if you have the <malloc.h> header file. */
 #define HAVE_MALLOC_H 1
@@ -332,7 +332,7 @@
 #define HAVE_MREMAP 1
 
 /* Define to 1 if you have the <mysql/mysql.h> header file. */
-/* #undef HAVE_MYSQL_MYSQL_H */
+#define HAVE_MYSQL_MYSQL_H 1
 
 /* Define to 1 if you have the <ndir.h> header file, and it defines `DIR'. */
 /* #undef HAVE_NDIR_H */
@@ -350,19 +350,19 @@
 #define HAVE_NETINET_IP_H 1
 
 /* Define to 1 if you have the <nss.h> header file. */
-/* #undef HAVE_NSS_H */
+#define HAVE_NSS_H 1
 
 /* Define to 1 if the system has the type `off_t'. */
 #define HAVE_OFF_T 1
 
 /* Lacking ogg */
-/* #undef HAVE_OGG */
+#define HAVE_OGG 0
 
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
 /* #undef HAVE_OGG_OGG_H */
 
 /* Lacking libopus library */
-#define HAVE_OPUS 0
+#define HAVE_OPUS 1
 
 /* Define to 1 if you have the <opus/opus.h> header file. */
 /* #undef HAVE_OPUS_OPUS_H */
@@ -374,10 +374,10 @@
 #define HAVE_PERL 1
 
 /* Lacking PostgreSQL */
-#define HAVE_POSTGRESQL 0
+#define HAVE_POSTGRESQL 1
 
 /* Lacking libpulse(audio) library */
-#define HAVE_PULSE 0
+#define HAVE_PULSE 1
 
 /* Define to 1 if you have the <pulse/simple.h> header file. */
 /* #undef HAVE_PULSE_SIMPLE_H */
@@ -587,7 +587,7 @@
 #define ICONV_CONST 
 
 /* Path to ifconfig */
-#define IFCONFIG "/sbin/ifconfig"
+#define IFCONFIG "/usr/sbin/ifconfig"
 
 /* if_tun.h include path */
 #define IF_TUN_HDR "linux/if_tun.h"
@@ -596,94 +596,94 @@
 #define INCLUDE_MANPAGES 0
 
 /* Path to ip6tables */
-/* #undef IP6TABLES */
+#define IP6TABLES "/usr/sbin/ip6tables"
 
 /* Path to iptables */
-/* #undef IPTABLES */
+#define IPTABLES "/usr/sbin/iptables"
 
 /* Defined if libcurl supports AsynchDNS */
-/* #undef LIBCURL_FEATURE_ASYNCHDNS */
+#define LIBCURL_FEATURE_ASYNCHDNS 1
 
 /* Defined if libcurl supports IDN */
-/* #undef LIBCURL_FEATURE_IDN */
+#define LIBCURL_FEATURE_IDN 1
 
 /* Defined if libcurl supports IPv6 */
-/* #undef LIBCURL_FEATURE_IPV6 */
+#define LIBCURL_FEATURE_IPV6 1
 
 /* Defined if libcurl supports KRB4 */
 /* #undef LIBCURL_FEATURE_KRB4 */
 
 /* Defined if libcurl supports libz */
-/* #undef LIBCURL_FEATURE_LIBZ */
+#define LIBCURL_FEATURE_LIBZ 1
 
 /* Defined if libcurl supports NTLM */
-/* #undef LIBCURL_FEATURE_NTLM */
+#define LIBCURL_FEATURE_NTLM 1
 
 /* Defined if libcurl supports SSL */
-/* #undef LIBCURL_FEATURE_SSL */
+#define LIBCURL_FEATURE_SSL 1
 
 /* Defined if libcurl supports SSPI */
 /* #undef LIBCURL_FEATURE_SSPI */
 
 /* Defined if libcurl supports DICT */
-/* #undef LIBCURL_PROTOCOL_DICT */
+#define LIBCURL_PROTOCOL_DICT 1
 
 /* Defined if libcurl supports FILE */
-/* #undef LIBCURL_PROTOCOL_FILE */
+#define LIBCURL_PROTOCOL_FILE 1
 
 /* Defined if libcurl supports FTP */
-/* #undef LIBCURL_PROTOCOL_FTP */
+#define LIBCURL_PROTOCOL_FTP 1
 
 /* Defined if libcurl supports FTPS */
-/* #undef LIBCURL_PROTOCOL_FTPS */
+#define LIBCURL_PROTOCOL_FTPS 1
 
 /* Defined if libcurl supports HTTP */
-/* #undef LIBCURL_PROTOCOL_HTTP */
+#define LIBCURL_PROTOCOL_HTTP 1
 
 /* Defined if libcurl supports HTTPS */
-/* #undef LIBCURL_PROTOCOL_HTTPS */
+#define LIBCURL_PROTOCOL_HTTPS 1
 
 /* Defined if libcurl supports IMAP */
-/* #undef LIBCURL_PROTOCOL_IMAP */
+#define LIBCURL_PROTOCOL_IMAP 1
 
 /* Defined if libcurl supports LDAP */
-/* #undef LIBCURL_PROTOCOL_LDAP */
+#define LIBCURL_PROTOCOL_LDAP 1
 
 /* Defined if libcurl supports POP3 */
-/* #undef LIBCURL_PROTOCOL_POP3 */
+#define LIBCURL_PROTOCOL_POP3 1
 
 /* Defined if libcurl supports RTSP */
-/* #undef LIBCURL_PROTOCOL_RTSP */
+#define LIBCURL_PROTOCOL_RTSP 1
 
 /* Defined if libcurl supports SMTP */
-/* #undef LIBCURL_PROTOCOL_SMTP */
+#define LIBCURL_PROTOCOL_SMTP 1
 
 /* Defined if libcurl supports TELNET */
-/* #undef LIBCURL_PROTOCOL_TELNET */
+#define LIBCURL_PROTOCOL_TELNET 1
 
 /* Defined if libcurl supports TFTP */
-/* #undef LIBCURL_PROTOCOL_TFTP */
+#define LIBCURL_PROTOCOL_TFTP 1
 
 /* Defined if libgnurl supports AsynchDNS */
-#define LIBGNURL_FEATURE_ASYNCHDNS 1
+/* #undef LIBGNURL_FEATURE_ASYNCHDNS */
 
 /* Defined if libgnurl supports IDN */
 /* #undef LIBGNURL_FEATURE_IDN */
 
 /* Defined if libgnurl supports IPv6 */
-#define LIBGNURL_FEATURE_IPV6 1
+/* #undef LIBGNURL_FEATURE_IPV6 */
 
 /* Defined if libgnurl supports KRB4 */
 /* #undef LIBGNURL_FEATURE_KRB4 */
 
 /* Defined if libgnurl supports libz */
-#define LIBGNURL_FEATURE_LIBZ 1
+/* #undef LIBGNURL_FEATURE_LIBZ */
 
 /* Defined if libgnurl supports NTLM */
-#define LIBGNURL_FEATURE_NTLM 1
+/* #undef LIBGNURL_FEATURE_NTLM */
 
 /* Defined if libgnurl supports SSL */
-#define LIBGNURL_FEATURE_SSL 1
+/* #undef LIBGNURL_FEATURE_SSL */
 
 /* Defined if libgnurl supports SSPI */
 /* #undef LIBGNURL_FEATURE_SSPI */
@@ -701,10 +701,10 @@
 /* #undef LIBGNURL_PROTOCOL_FTPS */
 
 /* Defined if libgnurl supports HTTP */
-#define LIBGNURL_PROTOCOL_HTTP 1
+/* #undef LIBGNURL_PROTOCOL_HTTP */
 
 /* Defined if libgnurl supports HTTPS */
-#define LIBGNURL_PROTOCOL_HTTPS 1
+/* #undef LIBGNURL_PROTOCOL_HTTPS */
 
 /* Defined if libgnurl supports IMAP */
 /* #undef LIBGNURL_PROTOCOL_IMAP */
@@ -765,7 +765,7 @@
 #define PACKAGE_VERSION "0.12.0"
 
 /* Path to ip */
-#define PATH_TO_IP "/sbin/ip"
+#define PATH_TO_IP "/usr/sbin/ip"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -789,7 +789,7 @@
 #define STDC_HEADERS 1
 
 /* Path to sysctl */
-#define SYSCTL "/sbin/sysctl"
+#define SYSCTL "/usr/sbin/sysctl"
 
 /* Canonical compilation */
 #define TALER_WALLET_ONLY 0
@@ -804,10 +804,10 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Path to upnpc binary */
-/* #undef UPNPC */
+#define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-f0f45c511"
+#define VCS_VERSION "git-36cf1d5"
 
 /* Version number of package */
 #define VERSION "0.12.0"
