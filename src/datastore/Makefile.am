@@ -45,6 +45,7 @@ gnunet_service_datastore_LDADD = \
 gnunet_datastore_SOURCES = \
  gnunet-datastore.c
 gnunet_datastore_LDADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   libgnunetdatastore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
