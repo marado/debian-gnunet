@@ -58,6 +58,7 @@ gnunet_service_testbed_LDADD = $(XLIB) \
 gnunet_testbed_profiler_SOURCES = \
   gnunet-testbed-profiler.c
 gnunet_testbed_profiler_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 gnunet_testbed_profiler_LDFLAGS = \
@@ -126,6 +127,7 @@ libgnunettestbed_la_LDFLAGS = \
 
 generate_underlay_topology_SOURCES = generate-underlay-topology.c
 generate_underlay_topology_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la \
  $(LTLIBINTL) -lsqlite3
