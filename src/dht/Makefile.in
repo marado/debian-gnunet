@@ -225,6 +225,7 @@ gnunet_dht_monitor_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_gnunet_dht_profiler_OBJECTS = gnunet_dht_profiler.$(OBJEXT)
 gnunet_dht_profiler_OBJECTS = $(am_gnunet_dht_profiler_OBJECTS)
 gnunet_dht_profiler_DEPENDENCIES = libgnunetdht.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testbed/libgnunettestbed.la
@@ -904,6 +905,7 @@ gnunet_dht_profiler_SOURCES = \
 
 gnunet_dht_profiler_LDADD = \
   libgnunetdht.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la

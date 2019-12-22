@@ -204,6 +204,7 @@ gnunet_set_ibf_profiler_DEPENDENCIES =  \
 am_gnunet_set_profiler_OBJECTS = gnunet-set-profiler.$(OBJEXT)
 gnunet_set_profiler_OBJECTS = $(am_gnunet_set_profiler_OBJECTS)
 gnunet_set_profiler_DEPENDENCIES =  \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	libgnunetset.la \
@@ -748,6 +749,7 @@ gnunet_set_profiler_SOURCES = \
  gnunet-set-profiler.c
 
 gnunet_set_profiler_LDADD = \
+  $(top_builddir)/src/arm/libgnunetarm.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   libgnunetset.la \

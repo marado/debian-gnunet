@@ -575,6 +575,7 @@ libgnunettransportmonitor_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunettransportmonitor_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 libgnunettransporttesting_la_DEPENDENCIES = libgnunettransport.la \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
@@ -687,6 +688,7 @@ gnunet_service_transport_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_gnunet_transport_OBJECTS = gnunet-transport.$(OBJEXT)
 gnunet_transport_OBJECTS = $(am_gnunet_transport_OBJECTS)
 gnunet_transport_DEPENDENCIES = libgnunettransport.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -2257,6 +2259,7 @@ libgnunettransporttesting_la_SOURCES = \
 
 libgnunettransporttesting_la_LIBADD = \
   libgnunettransport.la \
+  $(top_builddir)/src/arm/libgnunetarm.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -2420,6 +2423,7 @@ gnunet_transport_SOURCES = \
 
 gnunet_transport_LDADD = \
   libgnunettransport.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)

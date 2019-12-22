@@ -167,6 +167,7 @@ libgnunetnatauto_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_gnunet_nat_auto_OBJECTS = gnunet-nat-auto.$(OBJEXT)
 gnunet_nat_auto_OBJECTS = $(am_gnunet_nat_auto_OBJECTS)
 gnunet_nat_auto_DEPENDENCIES = libgnunetnatauto.la \
+	$(top_builddir)/src/nat/libgnunetnatnew.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 gnunet_nat_auto_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -515,6 +516,7 @@ gnunet_nat_auto_SOURCES = \
 
 gnunet_nat_auto_LDADD = \
   libgnunetnatauto.la \
+  $(top_builddir)/src/nat/libgnunetnatnew.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 gnunet_nat_auto_LDFLAGS = \

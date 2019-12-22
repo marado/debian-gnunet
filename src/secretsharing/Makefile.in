@@ -173,6 +173,7 @@ gnunet_secretsharing_profiler_OBJECTS =  \
 	$(am_gnunet_secretsharing_profiler_OBJECTS)
 gnunet_secretsharing_profiler_DEPENDENCIES =  \
 	libgnunetsecretsharing.la \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/testbed/libgnunettestbed.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -695,6 +696,7 @@ gnunet_secretsharing_profiler_SOURCES = \
 
 gnunet_secretsharing_profiler_LDADD = \
   libgnunetsecretsharing.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)

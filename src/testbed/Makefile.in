@@ -251,6 +251,7 @@ am_gnunet_daemon_latency_logger_OBJECTS =  \
 gnunet_daemon_latency_logger_OBJECTS =  \
 	$(am_gnunet_daemon_latency_logger_OBJECTS)
 gnunet_daemon_latency_logger_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -259,6 +260,8 @@ am_gnunet_daemon_testbed_blacklist_OBJECTS =  \
 gnunet_daemon_testbed_blacklist_OBJECTS =  \
 	$(am_gnunet_daemon_testbed_blacklist_OBJECTS)
 gnunet_daemon_testbed_blacklist_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -267,12 +270,17 @@ am_gnunet_daemon_testbed_underlay_OBJECTS =  \
 gnunet_daemon_testbed_underlay_OBJECTS =  \
 	$(am_gnunet_daemon_testbed_underlay_OBJECTS)
 gnunet_daemon_testbed_underlay_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_gnunet_helper_testbed_OBJECTS = gnunet-helper-testbed.$(OBJEXT)
 gnunet_helper_testbed_OBJECTS = $(am_gnunet_helper_testbed_OBJECTS)
 gnunet_helper_testbed_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	libgnunettestbed.la $(am__DEPENDENCIES_1) \
@@ -294,6 +302,7 @@ am_gnunet_service_testbed_OBJECTS = gnunet-service-testbed.$(OBJEXT) \
 	gnunet-service-testbed_connectionpool.$(OBJEXT)
 gnunet_service_testbed_OBJECTS = $(am_gnunet_service_testbed_OBJECTS)
 gnunet_service_testbed_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
@@ -1099,6 +1108,7 @@ gnunet_service_testbed_SOURCES = \
   gnunet-service-testbed_connectionpool.c gnunet-service-testbed_connectionpool.h
 
 gnunet_service_testbed_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/core/libgnunetcore.la \
  $(top_builddir)/src/hello/libgnunethello.la \
@@ -1123,6 +1133,8 @@ gnunet_helper_testbed_SOURCES = \
   gnunet-helper-testbed.c
 
 gnunet_helper_testbed_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  libgnunettestbed.la \
@@ -1130,18 +1142,24 @@ gnunet_helper_testbed_LDADD = $(XLIB) \
 
 gnunet_daemon_testbed_blacklist_SOURCES = gnunet-daemon-testbed-blacklist.c
 gnunet_daemon_testbed_blacklist_LDADD = $(XLIB) \
+ $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/ats/libgnunetats.la \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL)
 
 gnunet_daemon_testbed_underlay_SOURCES = gnunet-daemon-testbed-underlay.c
 gnunet_daemon_testbed_underlay_LDADD = $(XLIB) \
+ $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL) -lsqlite3
 
 gnunet_daemon_latency_logger_SOURCES = gnunet-daemon-latency-logger.c
 gnunet_daemon_latency_logger_LDADD = $(XLIB) \
+ $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL) -lsqlite3

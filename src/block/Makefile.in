@@ -146,7 +146,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES) \
 	$(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_block_template_la_DEPENDENCIES =  \
-	libgnunetblockgroup.la \
+	libgnunetblockgroup.la libgnunetblock.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_libgnunet_plugin_block_template_la_OBJECTS =  \
@@ -507,6 +507,7 @@ libgnunet_plugin_block_template_la_SOURCES = \
 
 libgnunet_plugin_block_template_la_LIBADD = \
   libgnunetblockgroup.la \
+  libgnunetblock.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(LTLIBINTL)
 

@@ -148,6 +148,7 @@ am__uninstall_files_from_dir = { \
 LTLIBRARIES = $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_rest_peerinfo_la_DEPENDENCIES =  \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
@@ -173,6 +174,7 @@ am_gnunet_peerinfo_OBJECTS = gnunet-peerinfo.$(OBJEXT) \
 	gnunet-peerinfo_plugins.$(OBJEXT)
 gnunet_peerinfo_OBJECTS = $(am_gnunet_peerinfo_OBJECTS)
 gnunet_peerinfo_DEPENDENCIES =  \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
@@ -671,6 +673,7 @@ libgnunet_plugin_rest_peerinfo_la_SOURCES = \
   plugin_rest_peerinfo.c
 
 libgnunet_plugin_rest_peerinfo_la_LIBADD = \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
@@ -688,6 +691,7 @@ gnunet_peerinfo_SOURCES = \
  gnunet-peerinfo_plugins.c gnunet-peerinfo_plugins.h
 
 gnunet_peerinfo_LDADD = \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/hello/libgnunethello.la \

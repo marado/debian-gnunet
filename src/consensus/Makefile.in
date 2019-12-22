@@ -190,6 +190,7 @@ am_gnunet_consensus_profiler_OBJECTS =  \
 gnunet_consensus_profiler_OBJECTS =  \
 	$(am_gnunet_consensus_profiler_OBJECTS)
 gnunet_consensus_profiler_DEPENDENCIES =  \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunetconsensus.la \
 	$(top_builddir)/src/testbed/libgnunettestbed.la \
@@ -730,6 +731,7 @@ gnunet_consensus_profiler_SOURCES = \
  gnunet-consensus-profiler.c
 
 gnunet_consensus_profiler_LDADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetconsensus.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \

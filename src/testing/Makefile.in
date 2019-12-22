@@ -177,6 +177,7 @@ libgnunettesting_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_gnunet_testing_OBJECTS = gnunet-testing.$(OBJEXT)
 gnunet_testing_OBJECTS = $(am_gnunet_testing_OBJECTS)
 gnunet_testing_DEPENDENCIES = libgnunettesting.la \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_list_keys_OBJECTS = list-keys.$(OBJEXT)
@@ -734,6 +735,7 @@ gnunet_testing_SOURCES = \
 
 gnunet_testing_LDADD = \
  libgnunettesting.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(GN_LIBINTL)
 

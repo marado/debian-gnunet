@@ -183,6 +183,8 @@ am_gnunet_service_core_OBJECTS = gnunet-service-core.$(OBJEXT) \
 	gnunet-service-core_typemap.$(OBJEXT)
 gnunet_service_core_OBJECTS = $(am_gnunet_service_core_OBJECTS)
 gnunet_service_core_DEPENDENCIES =  \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
@@ -772,6 +774,8 @@ gnunet_service_core_SOURCES = \
  gnunet-service-core_typemap.c gnunet-service-core_typemap.h
 
 gnunet_service_core_LDADD = \
+  $(top_builddir)/src/hello/libgnunethello.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/util/libgnunetutil.la \

@@ -153,6 +153,7 @@ am__uninstall_files_from_dir = { \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 libgnunet_plugin_block_dns_la_DEPENDENCIES =  \
+	$(top_builddir)/src/block/libgnunetblock.la \
 	$(top_builddir)/src/block/libgnunetblockgroup.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_libgnunet_plugin_block_dns_la_OBJECTS = plugin_block_dns.lo
@@ -191,6 +192,7 @@ gnunet_helper_dns_LDADD = $(LDADD)
 am_gnunet_service_dns_OBJECTS = gnunet-service-dns.$(OBJEXT)
 gnunet_service_dns_OBJECTS = $(am_gnunet_service_dns_OBJECTS)
 gnunet_service_dns_DEPENDENCIES =  \
+	$(top_builddir)/src/block/libgnunetblock.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -734,6 +736,7 @@ gnunet_service_dns_SOURCES = \
  gnunet-service-dns.c
 
 gnunet_service_dns_LDADD = \
+  $(top_builddir)/src/block/libgnunetblock.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -753,6 +756,7 @@ libgnunet_plugin_block_dns_la_SOURCES = \
   plugin_block_dns.c
 
 libgnunet_plugin_block_dns_la_LIBADD = \
+  $(top_builddir)/src/block/libgnunetblock.la \
   $(top_builddir)/src/block/libgnunetblockgroup.la \
   $(top_builddir)/src/util/libgnunetutil.la
 

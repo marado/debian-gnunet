@@ -192,6 +192,7 @@ am_gnunet_service_ats_OBJECTS = gnunet-service-ats.$(OBJEXT) \
 	gnunet-service-ats_reservations.$(OBJEXT)
 gnunet_service_ats_OBJECTS = $(am_gnunet_service_ats_OBJECTS)
 gnunet_service_ats_DEPENDENCIES =  \
+	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/nt/libgnunetnt.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunetats.la \
@@ -764,6 +765,7 @@ gnunet_service_ats_SOURCES = \
  gnunet-service-ats_reservations.c gnunet-service-ats_reservations.h
 
 gnunet_service_ats_LDADD = \
+  $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/nt/libgnunetnt.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \

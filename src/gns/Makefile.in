@@ -239,6 +239,7 @@ gnunet_dns2gns_DEPENDENCIES =  \
 am_gnunet_gns_OBJECTS = gnunet-gns.$(OBJEXT)
 gnunet_gns_OBJECTS = $(am_gnunet_gns_OBJECTS)
 gnunet_gns_DEPENDENCIES = libgnunetgns.la \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -246,6 +247,7 @@ gnunet_gns_DEPENDENCIES = libgnunetgns.la \
 am_gnunet_gns_benchmark_OBJECTS = gnunet-gns-benchmark.$(OBJEXT)
 gnunet_gns_benchmark_OBJECTS = $(am_gnunet_gns_benchmark_OBJECTS)
 gnunet_gns_benchmark_DEPENDENCIES = libgnunetgns.la \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -254,6 +256,7 @@ am_gnunet_gns_proxy_OBJECTS =  \
 gnunet_gns_proxy_OBJECTS = $(am_gnunet_gns_proxy_OBJECTS)
 gnunet_gns_proxy_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) libgnunetgns.la \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/identity/libgnunetidentity.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -909,6 +912,7 @@ gnunet_gns_SOURCES = \
 
 gnunet_gns_LDADD = \
   libgnunetgns.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(LIBIDN) $(LIBIDN2) \
@@ -919,6 +923,7 @@ gnunet_gns_benchmark_SOURCES = \
 
 gnunet_gns_benchmark_LDADD = \
   libgnunetgns.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -949,6 +954,7 @@ gnunet_gns_proxy_SOURCES = \
 
 gnunet_gns_proxy_LDADD = $(MHD_LIBS) $(LIB_GNURL) -lgnutls \
 	libgnunetgns.la \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/identity/libgnunetidentity.la \
 	$(top_builddir)/src/util/libgnunetutil.la $(GN_LIBINTL) \
 	$(am__append_2)
