@@ -40,6 +40,8 @@ libgnunetatstesting_la_SOURCES = \
   ats-testing-log.c ats-testing-traffic.c \
   ats-testing-experiment.c ats-testing-preferences.c
 libgnunetatstesting_la_LIBADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
@@ -55,6 +57,8 @@ libgnunetatstesting_la_LDFLAGS = \
 gnunet_ats_sim_SOURCES = \
  gnunet-ats-sim.c
 gnunet_ats_sim_LDADD = \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+ $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la \

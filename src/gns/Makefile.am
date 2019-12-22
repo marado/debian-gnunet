@@ -142,6 +142,7 @@ gnunet_gns_SOURCES = \
  gnunet-gns.c
 gnunet_gns_LDADD = \
   libgnunetgns.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(LIBIDN) $(LIBIDN2) \
@@ -151,6 +152,7 @@ gnunet_gns_benchmark_SOURCES = \
  gnunet-gns-benchmark.c
 gnunet_gns_benchmark_LDADD = \
   libgnunetgns.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -193,6 +195,7 @@ gnunet_gns_proxy_SOURCES = \
  gnunet-gns-proxy.c
 gnunet_gns_proxy_LDADD = $(MHD_LIBS) $(LIB_GNURL) -lgnutls \
   libgnunetgns.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/identity/libgnunetidentity.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)

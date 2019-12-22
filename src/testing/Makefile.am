@@ -34,6 +34,7 @@ gnunet_testing_SOURCES = \
  gnunet-testing.c
 gnunet_testing_LDADD = \
  libgnunettesting.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(GN_LIBINTL)
 

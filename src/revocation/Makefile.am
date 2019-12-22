@@ -26,6 +26,7 @@ libgnunet_plugin_block_revocation_la_SOURCES = \
   plugin_block_revocation.c
 libgnunet_plugin_block_revocation_la_LIBADD = \
   libgnunetrevocation.la \
+  $(top_builddir)/src/block/libgnunetblock.la \
   $(top_builddir)/src/block/libgnunetblockgroup.la \
   $(top_builddir)/src/util/libgnunetutil.la  \
   $(LTLIBINTL)

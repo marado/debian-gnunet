@@ -64,6 +64,7 @@ gnunet_dns_redirector_LDADD = \
 gnunet_service_dns_SOURCES = \
  gnunet-service-dns.c
 gnunet_service_dns_LDADD = \
+  $(top_builddir)/src/block/libgnunetblock.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -80,6 +81,7 @@ libgnunetdns_la_LDFLAGS = \
 libgnunet_plugin_block_dns_la_SOURCES = \
   plugin_block_dns.c
 libgnunet_plugin_block_dns_la_LIBADD = \
+  $(top_builddir)/src/block/libgnunetblock.la \
   $(top_builddir)/src/block/libgnunetblockgroup.la \
   $(top_builddir)/src/util/libgnunetutil.la
 libgnunet_plugin_block_dns_la_LDFLAGS = \

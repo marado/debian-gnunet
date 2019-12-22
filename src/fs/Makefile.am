@@ -45,6 +45,7 @@ libgnunetfs_la_SOURCES = \
   fs_uri.c
 
 libgnunetfs_la_LIBADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/datastore/libgnunetdatastore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB) $(LIBGCRYPT_LIBS) -lunistring
@@ -89,6 +90,8 @@ gnunet_directory_SOURCES = \
  gnunet-directory.c
 gnunet_directory_LDADD = \
   libgnunetfs.la \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
@@ -100,6 +103,7 @@ endif
 gnunet_fs_profiler_SOURCES = \
  gnunet-fs-profiler.c
 gnunet_fs_profiler_LDADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -108,6 +112,8 @@ gnunet_fs_SOURCES = \
  gnunet-fs.c
 gnunet_fs_LDADD = \
   libgnunetfs.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
@@ -120,6 +126,8 @@ gnunet_download_SOURCES =  \
  gnunet-download.c
 gnunet_download_LDADD =  \
  libgnunetfs.la \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+ $(top_builddir)/src/datastore/libgnunetdatastore.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(GN_LIBINTL)
 
@@ -128,6 +136,8 @@ gnunet_publish_SOURCES =  \
 gnunet_publish_LDADD =  \
  $(top_builddir)/src/identity/libgnunetidentity.la \
  libgnunetfs.la \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+ $(top_builddir)/src/datastore/libgnunetdatastore.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(GN_LIBINTL)
 
@@ -162,6 +172,8 @@ gnunet_search_SOURCES = \
  gnunet-search.c
 gnunet_search_LDADD = \
   libgnunetfs.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
@@ -175,6 +187,7 @@ gnunet_daemon_fsprofiler_SOURCES =  \
  gnunet-daemon-fsprofiler.c
 gnunet_daemon_fsprofiler_LDADD = \
   libgnunetfs.la \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -191,6 +204,7 @@ gnunet_service_fs_SOURCES =  \
  gnunet-service-fs_cadet_server.c
 gnunet_service_fs_LDADD =  \
  libgnunetfs.la \
+ $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/dht/libgnunetdht.la \
  $(top_builddir)/src/block/libgnunetblock.la \
  $(top_builddir)/src/datastore/libgnunetdatastore.la \
@@ -206,6 +220,8 @@ gnunet_unindex_SOURCES = \
  gnunet-unindex.c
 gnunet_unindex_LDADD = \
   libgnunetfs.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
@@ -312,6 +328,8 @@ test_fs_directory_SOURCES = \
  test_fs_directory.c
 test_fs_directory_LDADD = \
   libgnunetfs.la  \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
 if HAVE_LIBEXTRACTOR

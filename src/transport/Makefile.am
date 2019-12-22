@@ -155,6 +155,7 @@ libgnunettransporttesting_la_SOURCES = \
   transport-testing-send.c
 libgnunettransporttesting_la_LIBADD = \
   libgnunettransport.la \
+  $(top_builddir)/src/arm/libgnunetarm.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/util/libgnunetutil.la \
@@ -325,6 +326,7 @@ gnunet_transport_SOURCES = \
  gnunet-transport.c
 gnunet_transport_LDADD = \
   libgnunettransport.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)

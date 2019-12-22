@@ -43,6 +43,7 @@ libexec_PROGRAMS = \
  gnunet-service-reclaim
 
 libgnunet_plugin_rest_reclaim_la_SOURCES = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   plugin_rest_reclaim.c \
   json_reclaim.h \
   json_reclaim.c
@@ -94,6 +95,7 @@ gnunet_service_reclaim_SOURCES = \
  gnunet-service-reclaim_tickets.c \
  gnunet-service-reclaim_tickets.h
 gnunet_service_reclaim_LDADD = \
+ $(top_builddir)/src/identity/libgnunetidentity.la \
  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/namestore/libgnunetnamestore.la \

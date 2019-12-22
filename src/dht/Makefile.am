@@ -110,6 +110,7 @@ gnunet_dht_profiler_SOURCES = \
   gnunet_dht_profiler.c
 gnunet_dht_profiler_LDADD = \
   libgnunetdht.la \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la

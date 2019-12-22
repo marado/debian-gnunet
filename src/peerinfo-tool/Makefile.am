@@ -22,6 +22,7 @@ bin_PROGRAMS = \
 libgnunet_plugin_rest_peerinfo_la_SOURCES = \
   plugin_rest_peerinfo.c
 libgnunet_plugin_rest_peerinfo_la_LIBADD = \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
@@ -38,6 +39,7 @@ gnunet_peerinfo_SOURCES = \
  gnunet-peerinfo.c \
  gnunet-peerinfo_plugins.c gnunet-peerinfo_plugins.h
 gnunet_peerinfo_LDADD = \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/hello/libgnunethello.la \

@@ -44,6 +44,7 @@ gnunet_service_testbed_SOURCES = \
   gnunet-service-testbed_barriers.c gnunet-service-testbed_barriers.h \
   gnunet-service-testbed_connectionpool.c gnunet-service-testbed_connectionpool.h
 gnunet_service_testbed_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/core/libgnunetcore.la \
  $(top_builddir)/src/hello/libgnunethello.la \
@@ -65,6 +66,8 @@ gnunet_testbed_profiler_LDFLAGS = \
 gnunet_helper_testbed_SOURCES = \
   gnunet-helper-testbed.c
 gnunet_helper_testbed_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  libgnunettestbed.la \
@@ -72,18 +75,24 @@ gnunet_helper_testbed_LDADD = $(XLIB) \
 
 gnunet_daemon_testbed_blacklist_SOURCES = gnunet-daemon-testbed-blacklist.c
 gnunet_daemon_testbed_blacklist_LDADD = $(XLIB) \
+ $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/ats/libgnunetats.la \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL)
 
 gnunet_daemon_testbed_underlay_SOURCES = gnunet-daemon-testbed-underlay.c
 gnunet_daemon_testbed_underlay_LDADD = $(XLIB) \
+ $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL) -lsqlite3
 
 gnunet_daemon_latency_logger_SOURCES = gnunet-daemon-latency-logger.c
 gnunet_daemon_latency_logger_LDADD = $(XLIB) \
+ $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/ats/libgnunetats.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  $(LTLIBINTL) -lsqlite3

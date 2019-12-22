@@ -38,6 +38,7 @@ lib_LTLIBRARIES = \
 gnunet_consensus_profiler_SOURCES = \
  gnunet-consensus-profiler.c
 gnunet_consensus_profiler_LDADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   libgnunetconsensus.la \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
