@@ -37,6 +37,7 @@ libgnunet_plugin_ats_proportional_la_SOURCES = \
   plugin_ats_proportional.c
 libgnunet_plugin_ats_proportional_la_LIBADD = \
   libgnunetats.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/nt/libgnunetnt.la \
