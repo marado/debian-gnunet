@@ -1,4 +1,4 @@
-gnunet (0.12.0-2) UNRELEASED; urgency=medium
+gnunet (0.12.0-3) UNRELEASED; urgency=medium
 
   [ fimbaz ]
   * Upgrade to 0.12.0
@@ -8,7 +8,10 @@ gnunet (0.12.0-2) UNRELEASED; urgency=medium
   [ fimbaz ]
   * Postgres support!
 
- -- root <root@guest.guest>  Mon, 23 Dec 2019 06:30:54 +0000
+  [ root ]
+  * Hopefully make postgres faster
+
+ -- root <root@guest.guest>  Mon, 23 Dec 2019 08:34:11 +0000
 
 gnunet (0.11.6-1) experimental; urgency=medium
   * New upstream version 0.11.6.
