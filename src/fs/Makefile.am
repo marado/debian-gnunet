@@ -228,6 +228,8 @@ gnunet_unindex_LDADD = \
 libgnunet_plugin_block_fs_la_SOURCES = \
   plugin_block_fs.c
 libgnunet_plugin_block_fs_la_LIBADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
+  $(top_builddir)/src/datastore/libgnunetdatastore.la \
   $(top_builddir)/src/block/libgnunetblockgroup.la \
   $(top_builddir)/src/block/libgnunetblock.la \
   libgnunetfs.la \
