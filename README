@@ -2,7 +2,7 @@ I've set up a repo that contains a build for Debian 10 (Buster).
 To use it, execute the following:
 
 sudo echo 'deb http://morpo.taxon.us/repos/apt/debian scruvunting main' >> /etc/apt/sources.list
-sudo apt key add - <<EOF
+sudo apt-key add - <<EOF
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQGNBF4AKA0BDACx93x9+CNdDN4J8OC31kq2S6ol4tIleuFpGI6AFpLM+CgUKa0Y
