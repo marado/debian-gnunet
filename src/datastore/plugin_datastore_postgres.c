@@ -74,6 +74,7 @@ init_connection (struct Plugin *plugin)
      * This will also cause problems for expiration times after 294247-01-10-04:00:54 UTC.
      * PostgreSQL also recommends against using WITH OIDS.
      */GNUNET_PQ_make_execute ("CREATE TABLE IF NOT EXISTS gn090 ("
+                            "  id BIGSERIAL,"
                             "  repl INTEGER NOT NULL DEFAULT 0,"
                             "  type INTEGER NOT NULL DEFAULT 0,"
                             "  prio INTEGER NOT NULL DEFAULT 0,"
@@ -83,7 +84,7 @@ init_connection (struct Plugin *plugin)
                             "  hash BYTEA NOT NULL DEFAULT '',"
                             "  vhash BYTEA NOT NULL DEFAULT '',"
                             "  value BYTEA NOT NULL DEFAULT '')"
-                            "WITH OIDS"),
+                            ),
     GNUNET_PQ_make_try_execute (
       "CREATE INDEX IF NOT EXISTS idx_hash ON gn090 (hash)"),
     GNUNET_PQ_make_try_execute (
@@ -105,15 +106,15 @@ init_connection (struct Plugin *plugin)
     GNUNET_PQ_EXECUTE_STATEMENT_END
   };
 
-#define RESULT_COLUMNS "repl, type, prio, anonLevel, expire, hash, value, oid"
+#define RESULT_COLUMNS "repl, type, prio, anonLevel, expire, hash, value, id"
   struct GNUNET_PQ_PreparedStatement ps[] = {
     GNUNET_PQ_make_prepare ("get",
                             "SELECT " RESULT_COLUMNS " FROM gn090"
-                            " WHERE oid >= $1::bigint AND"
+                            " WHERE id >= $1::bigint AND"
                             " (rvalue >= $2 OR 0 = $3::smallint) AND"
                             " (hash = $4 OR 0 = $5::smallint) AND"
                             " (type = $6 OR 0 = $7::smallint)"
-                            " ORDER BY oid ASC LIMIT 1",
+                            " ORDER BY id ASC LIMIT 1",
                             7),
     GNUNET_PQ_make_prepare ("put",
                             "INSERT INTO gn090 (repl, type, prio, anonLevel, expire, rvalue, hash, vhash, value) "
@@ -128,12 +129,12 @@ init_connection (struct Plugin *plugin)
                             5),
     GNUNET_PQ_make_prepare ("decrepl",
                             "UPDATE gn090 SET repl = GREATEST (repl - 1, 0) "
-                            "WHERE oid = $1",
+                            "WHERE id = $1",
                             1),
     GNUNET_PQ_make_prepare ("select_non_anonymous",
                             "SELECT " RESULT_COLUMNS " FROM gn090 "
-                            "WHERE anonLevel = 0 AND type = $1 AND oid >= $2::bigint "
-                            "ORDER BY oid ASC LIMIT 1",
+                            "WHERE anonLevel = 0 AND type = $1 AND id >= $2::bigint "
+                            "ORDER BY id ASC LIMIT 1",
                             2),
     GNUNET_PQ_make_prepare ("select_expiration_order",
                             "(SELECT " RESULT_COLUMNS " FROM gn090 "
@@ -149,7 +150,7 @@ init_connection (struct Plugin *plugin)
                             0),
     GNUNET_PQ_make_prepare ("delrow",
                             "DELETE FROM gn090 "
-                            "WHERE oid=$1",
+                            "WHERE id=$1",
                             1),
     GNUNET_PQ_make_prepare ("remove",
                             "DELETE FROM gn090"
@@ -410,7 +411,7 @@ process_result (void *cls,
       GNUNET_PQ_result_spec_absolute_time ("expire", &expiration_time),
       GNUNET_PQ_result_spec_auto_from_type ("hash", &key),
       GNUNET_PQ_result_spec_variable_size ("value", &data, &size),
-      GNUNET_PQ_result_spec_uint32 ("oid", &rowid),
+      GNUNET_PQ_result_spec_uint32 ("id", &rowid),
       GNUNET_PQ_result_spec_end
     };
 
@@ -639,9 +640,9 @@ repl_proc (void *cls,
   struct ReplCtx *rc = cls;
   struct Plugin *plugin = rc->plugin;
   int ret;
-  uint32_t oid = (uint32_t) uid;
+  uint32_t id = (uint32_t) uid;
   struct GNUNET_PQ_QueryParam params[] = {
-    GNUNET_PQ_query_param_uint32 (&oid),
+    GNUNET_PQ_query_param_uint32 (&id),
     GNUNET_PQ_query_param_end
   };
   enum GNUNET_DB_QueryStatus qret;
