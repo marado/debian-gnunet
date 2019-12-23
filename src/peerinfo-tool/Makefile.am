@@ -22,6 +22,7 @@ bin_PROGRAMS = \
 libgnunet_plugin_rest_peerinfo_la_SOURCES = \
   plugin_rest_peerinfo.c
 libgnunet_plugin_rest_peerinfo_la_LIBADD = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
