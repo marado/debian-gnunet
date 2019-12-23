@@ -67,7 +67,7 @@ Section: libdevel
 Architecture: any
 Depends:
  ${misc:Depends}, gnunet (= ${binary:Version}), libextractor-dev (>=1:0.6.3),
- libmicrohttpd-dev (>=0.9.33), libgcrypt20-dev (>=1.6)
+ libmicrohttpd-dev (>=0.9.66), libgcrypt20-dev (>=1.6)
 Description: GNU's framework for secure peer-to-peer networking (development)
  GNUnet is a framework for secure peer-to-peer networking that does not use any
  centralized or otherwise trusted services. Its high-level goal is to provide a
