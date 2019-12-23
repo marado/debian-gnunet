@@ -178,6 +178,7 @@ libgnunet_plugin_rest_copying_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(libgnunet_plugin_rest_copying_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_copying_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunetrest_la_DEPENDENCIES =  \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunetrest_la_OBJECTS = libgnunetrest_la-rest.lo
@@ -556,6 +557,7 @@ libgnunetrest_la_SOURCES = \
   rest.c
 
 libgnunetrest_la_LIBADD = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la $(XLIB) \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIB) \
   $(GN_LIBINTL) $(MHD_LIBS)
 

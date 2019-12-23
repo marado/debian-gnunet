@@ -244,6 +244,7 @@ am_generate_underlay_topology_OBJECTS =  \
 generate_underlay_topology_OBJECTS =  \
 	$(am_generate_underlay_topology_OBJECTS)
 generate_underlay_topology_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la \
 	$(am__DEPENDENCIES_1)
 am_gnunet_daemon_latency_logger_OBJECTS =  \
@@ -316,6 +317,7 @@ am_gnunet_testbed_profiler_OBJECTS =  \
 gnunet_testbed_profiler_OBJECTS =  \
 	$(am_gnunet_testbed_profiler_OBJECTS)
 gnunet_testbed_profiler_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la
 gnunet_testbed_profiler_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -1123,6 +1125,7 @@ gnunet_testbed_profiler_SOURCES = \
   gnunet-testbed-profiler.c
 
 gnunet_testbed_profiler_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la
 
@@ -1195,6 +1198,7 @@ libgnunettestbed_la_LDFLAGS = \
 
 generate_underlay_topology_SOURCES = generate-underlay-topology.c
 generate_underlay_topology_LDADD = $(XLIB) \
+ $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la \
  $(LTLIBINTL) -lsqlite3
