@@ -1,4 +1,60 @@
-                       Welcome to GNUnet
+I've set up a repo that contains a build for Debian 10 (Buster).
+To use it, execute the following:
+
+sudo echo 'deb http://morpo.taxon.us/repos/apt/debian scruvunting main' >> /etc/apt/sources.list
+sudo apt-key add - <<EOF
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+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
+v30r9KQbxUDdNHCsPBL2m/gpxbMc57Lb
+=w2NW
+-----END PGP PUBLIC KEY BLOCK-----
+EOF
+sudo apt update
+sudo apt install gnunet
+
+
+
+
+             
+             
+             
+             Welcome to GNUnet
 
 ToC
 ===
