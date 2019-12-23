@@ -13837,17 +13837,6 @@ $as_echo "#define HAVE_FSEEKO 1" >>confdefs.h
 fi
 
 
-case "$host_os" in #(
-  linux-gnu) :
-
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Fixing libtool for -rpath problems." >&5
-$as_echo "Fixing libtool for -rpath problems." >&6; }
-	sed -i 's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' libtool
- ;; #(
-  *) :
-     ;;
-esac
-
 CFLAGS="-Wall $CFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether cc can use -fno-strict-aliasing" >&5
 $as_echo_n "checking whether cc can use -fno-strict-aliasing... " >&6; }
@@ -33046,3 +33035,15 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: For detailed setup instructions, type 'info gnunet' after the installation or visit https://docs.gnunet.org/" >&5
 $as_echo "$as_me: For detailed setup instructions, type 'info gnunet' after the installation or visit https://docs.gnunet.org/" >&6;}
+
+case "$host_os" in #(
+  linux-gnu) :
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Fixing libtool for -rpath problems." >&5
+$as_echo "Fixing libtool for -rpath problems." >&6; }
+	sed -i 's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' libtool
+ ;; #(
+  *) :
+     ;;
+esac
+

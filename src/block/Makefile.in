@@ -161,7 +161,8 @@ libgnunet_plugin_block_template_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_block_template_la_LDFLAGS) $(LDFLAGS) -o $@
-libgnunet_plugin_block_test_la_DEPENDENCIES = libgnunetblockgroup.la \
+libgnunet_plugin_block_test_la_DEPENDENCIES = libgnunetblock.la \
+	libgnunetblockgroup.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_libgnunet_plugin_block_test_la_OBJECTS = plugin_block_test.lo
@@ -518,6 +519,7 @@ libgnunet_plugin_block_test_la_SOURCES = \
   plugin_block_test.c
 
 libgnunet_plugin_block_test_la_LIBADD = \
+  libgnunetblock.la \
   libgnunetblockgroup.la \
 $(top_builddir)/src/util/libgnunetutil.la  \
   $(LTLIBINTL)

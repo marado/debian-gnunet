@@ -32,6 +32,7 @@ libgnunet_plugin_block_template_la_LDFLAGS = \
 libgnunet_plugin_block_test_la_SOURCES = \
   plugin_block_test.c
 libgnunet_plugin_block_test_la_LIBADD = \
+  libgnunetblock.la \
   libgnunetblockgroup.la \
 $(top_builddir)/src/util/libgnunetutil.la  \
   $(LTLIBINTL)

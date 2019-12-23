@@ -60,6 +60,7 @@ gnunet_rest_server_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunetrest_la_SOURCES = \
   rest.c
 libgnunetrest_la_LIBADD = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la $(XLIB) \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIB) \
   $(GN_LIBINTL) $(MHD_LIBS)
 libgnunetrest_la_LDFLAGS = \

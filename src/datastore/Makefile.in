@@ -263,7 +263,9 @@ libgnunetdatastore_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 am_gnunet_datastore_OBJECTS = gnunet-datastore.$(OBJEXT)
 gnunet_datastore_OBJECTS = $(am_gnunet_datastore_OBJECTS)
-gnunet_datastore_DEPENDENCIES = libgnunetdatastore.la \
+gnunet_datastore_DEPENDENCIES =  \
+	$(top_builddir)/src/statistics/libgnunetstatistics.la \
+	libgnunetdatastore.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
 am_gnunet_service_datastore_OBJECTS =  \
@@ -993,6 +995,7 @@ gnunet_datastore_SOURCES = \
  gnunet-datastore.c
 
 gnunet_datastore_LDADD = \
+  $(top_builddir)/src/statistics/libgnunetstatistics.la \
   libgnunetdatastore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)

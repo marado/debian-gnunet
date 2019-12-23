@@ -58,12 +58,6 @@ AS_AUTOTOOLS_ALTERNATE
 AC_SYS_LARGEFILE
 AC_FUNC_FSEEKO
 
-AS_CASE(["$host_os"],
-  [linux-gnu],[
-	AC_MSG_RESULT([Fixing libtool for -rpath problems.])
-	sed -i 's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' libtool
-])
-
 CFLAGS="-Wall $CFLAGS"
 AC_MSG_CHECKING(whether cc can use -fno-strict-aliasing)
 # use '-fno-strict-aliasing', but only if the compiler can take it
@@ -2219,3 +2213,10 @@ AS_IF([test x$MSG_USER_SETUP != xfalse],
 ])])])
 
 AC_MSG_NOTICE([For detailed setup instructions, type 'info gnunet' after the installation or visit https://docs.gnunet.org/])
+
+AS_CASE(["$host_os"],
+  [linux-gnu],[
+	AC_MSG_RESULT([Fixing libtool for -rpath problems.])
+	sed -i 's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" -D__LIBTOOL_IS_A_FOOL__ "/' libtool
+])
+

@@ -200,7 +200,7 @@
 /* #undef HAVE_IDN2_IDN2_H */
 
 /* Define to 1 if you have the <idna.h> header file. */
-/* #undef HAVE_IDNA_H */
+#define HAVE_IDNA_H 1
 
 /* Define to 1 if you have the <idn/idna.h> header file. */
 /* #undef HAVE_IDN_IDNA_H */
@@ -807,7 +807,7 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-43b0715"
+#define VCS_VERSION "git-e5513ed"
 
 /* Version number of package */
 #define VERSION "0.12.0"
