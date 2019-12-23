@@ -146,7 +146,7 @@ init_connection (struct Plugin *plugin)
                             1),
     GNUNET_PQ_make_prepare ("select_replication_order",
                             "SELECT " RESULT_COLUMNS " FROM gn090 "
-                            "ORDER BY repl DESC,RANDOM() LIMIT 1",
+                            "TABLESAMPLE system(1) where repl=(select max(repl) from gn090) limit 1",
                             0),
     GNUNET_PQ_make_prepare ("delrow",
                             "DELETE FROM gn090 "
