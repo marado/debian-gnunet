@@ -10,7 +10,7 @@ NEIGHBOUR_LIMIT = 50
 ACCEPT_FROM = 127.0.0.1;
 ACCEPT_FROM6 = ::1;
 # TCP is the only transport plugin known to work "reliably"
-PLUGINS = tcp
+PLUGINS = tcp https_server http_server
 UNIXPATH = $GNUNET_RUNTIME_DIR/gnunet-service-transport.sock
 BLACKLIST_FILE = $GNUNET_CONFIG_HOME/transport/blacklist
 UNIX_MATCH_UID = NO
@@ -151,10 +151,10 @@ TESTING_IGNORE_KEYS = ACCEPT_FROM;
 
 [transport-http_server]
 #EXTERNAL_HOSTNAME = <your hostname/path>
-PORT = 1080
+PORT = 80
 
 # Obsolete option, to be replaced by HOLE_EXTERNAL (soon)
-ADVERTISED_PORT = 1080
+ADVERTISED_PORT = 80
 
 # If we have a manually punched NAT, what is the external IP and port?
 # Can use DNS names for DynDNS-based detection of external IP.
@@ -199,10 +199,10 @@ TESTING_IGNORE_KEYS = ACCEPT_FROM;
 # VERIFY_EXTERNAL_HOSTNAME = YES
 # Does the external hostname use the same port?
 # EXTERNAL_HOSTNAME_USE_PORT = YES
-PORT = 4433
+PORT = 443
 
 # Obsolete option, to be replaced by HOLE_EXTERNAL (soon)
-ADVERTISED_PORT = 4433
+ADVERTISED_PORT = 443
 
 # If we have a manually punched NAT, what is the external IP and port?
 # Can use DNS names for DynDNS-based detection of external IP.
