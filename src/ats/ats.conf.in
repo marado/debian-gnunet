@@ -22,8 +22,8 @@ LOOPBACK_QUOTA_OUT = unlimited
 LAN_QUOTA_IN = unlimited
 LAN_QUOTA_OUT = unlimited
 # WAN
-WAN_QUOTA_IN = 1 GiB
-WAN_QUOTA_OUT = 1 GiB
+WAN_QUOTA_IN = unlimited
+WAN_QUOTA_OUT = unlimited
 # WLAN
 WLAN_QUOTA_IN = 100 MiB
 WLAN_QUOTA_OUT = 100 MiB
