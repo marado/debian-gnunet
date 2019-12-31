@@ -594,7 +594,7 @@ AC_ARG_ENABLE([sanitizer],
  ])])
 
 
-extra_logging=GNUNET_NO
+extra_logging=GNUNET_YES
 AC_ARG_ENABLE([logging],
    AS_HELP_STRING([--enable-logging@<:@=value@:>@],[Enable logging calls. Possible values: yes,no,verbose,veryverbose ('yes' is the default)]),
    [AS_IF([test "x$enableval" = "xyes"], [],
