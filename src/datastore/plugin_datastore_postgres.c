@@ -74,7 +74,7 @@ init_connection (struct Plugin *plugin)
      * This will also cause problems for expiration times after 294247-01-10-04:00:54 UTC.
      * PostgreSQL also recommends against using WITH OIDS.
      */GNUNET_PQ_make_execute ("CREATE TABLE IF NOT EXISTS gn090 ("
-                            "  id BIGSERIAL,"
+                            "  id SERIAL,"
                             "  repl INTEGER NOT NULL DEFAULT 0,"
                             "  type INTEGER NOT NULL DEFAULT 0,"
                             "  prio INTEGER NOT NULL DEFAULT 0,"
