@@ -283,6 +283,10 @@ gnunet_service_conversation_OBJECTS =  \
 	$(am_gnunet_service_conversation_OBJECTS)
 gnunet_service_conversation_DEPENDENCIES = libgnunetconversation.la \
 	libgnunetspeaker.la libgnunetmicrophone.la \
+	$(top_builddir)/src/gns/libgnunetgns.la \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+	$(top_builddir)/src/identity/libgnunetidentity.la \
+	$(top_builddir)/src/namestore/libgnunetnamestore.la \
 	$(top_builddir)/src/cadet/libgnunetcadet.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
@@ -1041,6 +1045,10 @@ gnunet_service_conversation_LDADD = \
   libgnunetconversation.la \
   libgnunetspeaker.la \
   libgnunetmicrophone.la \
+  $(top_builddir)/src/gns/libgnunetgns.la \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
+  $(top_builddir)/src/identity/libgnunetidentity.la \
+  $(top_builddir)/src/namestore/libgnunetnamestore.la \
   $(top_builddir)/src/cadet/libgnunetcadet.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(INTLLIBS)

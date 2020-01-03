@@ -593,6 +593,7 @@ libgnunettransporttesting_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 @HAVE_TESTING_TRUE@am_libgnunettransporttesting_la_rpath = -rpath \
 @HAVE_TESTING_TRUE@	$(libdir)
 libgnunettransporttesting2_la_DEPENDENCIES = libgnunettransport.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_libgnunettransporttesting2_la_OBJECTS = transport-testing2.lo
@@ -716,6 +717,7 @@ gnunet_transport_wlan_sender_DEPENDENCIES =  \
 am_test_communicator_unix_OBJECTS = test_communicator_unix.$(OBJEXT)
 test_communicator_unix_OBJECTS = $(am_test_communicator_unix_OBJECTS)
 test_communicator_unix_DEPENDENCIES = libgnunettransporttesting2.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_test_http_common_OBJECTS = test_http_common.$(OBJEXT) \
 	plugin_transport_http_common.$(OBJEXT)
@@ -2274,6 +2276,7 @@ libgnunettransporttesting2_la_SOURCES = \
 
 libgnunettransporttesting2_la_LIBADD = \
   libgnunettransport.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
@@ -2758,6 +2761,7 @@ test_communicator_unix_SOURCES = \
 
 test_communicator_unix_LDADD = \
  libgnunettransporttesting2.la \
+ $(top_builddir)/src/ats/libgnunetats.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
 test_plugin_unix_SOURCES = \

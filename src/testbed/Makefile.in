@@ -217,6 +217,8 @@ am__uninstall_files_from_dir = { \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunettestbed_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
@@ -244,6 +246,11 @@ am_generate_underlay_topology_OBJECTS =  \
 generate_underlay_topology_OBJECTS =  \
 	$(am_generate_underlay_topology_OBJECTS)
 generate_underlay_topology_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	$(top_builddir)/src/transport/libgnunettransport.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
+	$(top_builddir)/src/arm/libgnunetarm.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la \
 	$(am__DEPENDENCIES_1)
@@ -328,8 +335,11 @@ am_test_gnunet_helper_testbed_OBJECTS =  \
 test_gnunet_helper_testbed_OBJECTS =  \
 	$(am_test_gnunet_helper_testbed_OBJECTS)
 test_gnunet_helper_testbed_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la libgnunettestbed.la \
-	$(am__DEPENDENCIES_1)
+	$(top_builddir)/src/transport/libgnunettransport.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
+	$(top_builddir)/src/util/libgnunetutil.la \
+	$(top_builddir)/src/testing/libgnunettesting.la \
+	libgnunettestbed.la $(am__DEPENDENCIES_1)
 am_test_testbed_api_OBJECTS = test_testbed_api.$(OBJEXT)
 test_testbed_api_OBJECTS = $(am_test_testbed_api_OBJECTS)
 test_testbed_api_DEPENDENCIES =  \
@@ -1184,6 +1194,8 @@ libgnunettestbed_la_SOURCES = \
   testbed_api_barriers.c
 
 libgnunettestbed_la_LIBADD = $(XLIB) \
+ $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/transport/libgnunettransport.la \
  $(top_builddir)/src/hello/libgnunethello.la \
@@ -1198,6 +1210,11 @@ libgnunettestbed_la_LDFLAGS = \
 
 generate_underlay_topology_SOURCES = generate-underlay-topology.c
 generate_underlay_topology_LDADD = $(XLIB) \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ $(top_builddir)/src/transport/libgnunettransport.la \
+ $(top_builddir)/src/hello/libgnunethello.la \
+ $(top_builddir)/src/ats/libgnunetats.la \
+ $(top_builddir)/src/arm/libgnunetarm.la \
  $(top_builddir)/src/statistics/libgnunetstatistics.la \
  $(top_builddir)/src/util/libgnunetutil.la \
  libgnunettestbed.la \
@@ -1296,7 +1313,10 @@ test_gnunet_helper_testbed_SOURCES = \
  test_gnunet_helper_testbed.c
 
 test_gnunet_helper_testbed_LDADD = \
+ $(top_builddir)/src/transport/libgnunettransport.la \
+ $(top_builddir)/src/hello/libgnunethello.la \
  $(top_builddir)/src/util/libgnunetutil.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
  libgnunettestbed.la \
  $(Z_LIBS)
 

@@ -153,6 +153,7 @@ am__uninstall_files_from_dir = { \
 LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_ats_proportional_la_DEPENDENCIES = libgnunetats.la \
+	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/nt/libgnunetnt.la $(am__DEPENDENCIES_1)
@@ -745,6 +746,7 @@ libgnunet_plugin_ats_proportional_la_SOURCES = \
 
 libgnunet_plugin_ats_proportional_la_LIBADD = \
   libgnunetats.la \
+  $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(top_builddir)/src/nt/libgnunetnt.la \

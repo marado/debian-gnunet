@@ -148,6 +148,7 @@ am__uninstall_files_from_dir = { \
 LTLIBRARIES = $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_rest_peerinfo_la_DEPENDENCIES =  \
+	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
@@ -673,6 +674,7 @@ libgnunet_plugin_rest_peerinfo_la_SOURCES = \
   plugin_rest_peerinfo.c
 
 libgnunet_plugin_rest_peerinfo_la_LIBADD = \
+  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \

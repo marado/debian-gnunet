@@ -143,6 +143,7 @@ am__DEPENDENCIES_1 =
 @HAVE_MHD_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 gnunet_daemon_hostlist_DEPENDENCIES =  \
 	$(top_builddir)/src/core/libgnunetcore.la \
+	$(top_builddir)/src/ats/libgnunetats.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
@@ -722,6 +723,7 @@ gnunet_daemon_hostlist_SOURCES = \
 
 gnunet_daemon_hostlist_LDADD = \
   $(top_builddir)/src/core/libgnunetcore.la \
+  $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/peerinfo/libgnunetpeerinfo.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \

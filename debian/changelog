@@ -1,4 +1,4 @@
-gnunet (0.12.0-4) UNRELEASED; urgency=medium
+gnunet (0.12.0-6) UNRELEASED; urgency=medium
 
   [ fimbaz ]
   * Upgrade to 0.12.0
@@ -11,8 +11,11 @@ gnunet (0.12.0-4) UNRELEASED; urgency=medium
   [ root ]
   * Hopefully make postgres faster
   * Try to modernize config defaults
+  * add verbose debugging
+  	
+  * Fix a bug keeping postgres datastore from working
 
- -- root <root@guest.guest>  Mon, 23 Dec 2019 23:58:25 +0000
+ -- root <root@guest.guest>  Wed, 01 Jan 2020 20:03:20 +0000
 
 gnunet (0.11.6-1) experimental; urgency=medium
   * New upstream version 0.11.6.

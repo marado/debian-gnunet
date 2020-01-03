@@ -35,7 +35,7 @@
 #define ENABLE_NSE_HISTOGRAM 0
 
 /* 1 if freed memory should be poisoned, 0 otherwise */
-#define ENABLE_POISONING 0
+#define ENABLE_POISONING 1
 
 /* Build with support for SuperMUC */
 #define ENABLE_SUPERMUC 0
@@ -55,7 +55,7 @@
 
 /* 1 if extra logging is enabled, 2 for very verbose extra logging, 0
    otherwise */
-#define GNUNET_EXTRA_LOGGING GNUNET_NO
+#define GNUNET_EXTRA_LOGGING GNUNET_YES
 
 /* Not installing gnunet-logread */
 #define GNUNET_LOGREAD 0
@@ -200,7 +200,7 @@
 /* #undef HAVE_IDN2_IDN2_H */
 
 /* Define to 1 if you have the <idna.h> header file. */
-#define HAVE_IDNA_H 1
+/* #undef HAVE_IDNA_H */
 
 /* Define to 1 if you have the <idn/idna.h> header file. */
 /* #undef HAVE_IDN_IDNA_H */
@@ -807,7 +807,7 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-e5513ed"
+#define VCS_VERSION "git-3bef3c5"
 
 /* Version number of package */
 #define VERSION "0.12.0"

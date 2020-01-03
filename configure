@@ -17710,7 +17710,7 @@ fi
 
 
 
-extra_logging=GNUNET_NO
+extra_logging=GNUNET_YES
 # Check whether --enable-logging was given.
 if test "${enable_logging+set}" = set; then :
   enableval=$enable_logging; if test "x$enableval" = "xyes"; then :

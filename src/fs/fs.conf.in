@@ -14,7 +14,7 @@ ACCEPT_FROM6 = ::1;
 # PREFIX = valgrind
 
 # Do we introduce artificial delays? (may improve anonymity)
-DELAY = YES
+DELAY = NO
 
 # Do we cache content from other nodes? (may improve anonymity)
 CONTENT_CACHING = YES
@@ -38,7 +38,7 @@ MAX_PENDING_REQUESTS = 65536
 
 # How many requests do we have at most waiting in the queue towards
 # the datastore? (important for memory consumption)
-DATASTORE_QUEUE_SIZE = 32
+DATASTORE_QUEUE_SIZE = 256
 
 # Maximum frequency we're allowed to poll the datastore
 # for content for migration (can be used to reduce
@@ -46,7 +46,7 @@ DATASTORE_QUEUE_SIZE = 32
 MIN_MIGRATION_DELAY = 100 ms
 
 # For how many neighbouring peers should we allocate hash maps?
-EXPECTED_NEIGHBOUR_COUNT = 128
+EXPECTED_NEIGHBOUR_COUNT = 64
 
 # Disable anonymous file-sharing (but keep non-anonymous transfers)?
 # This option is mostly for testing.
