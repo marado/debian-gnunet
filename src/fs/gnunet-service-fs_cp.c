@@ -743,7 +743,7 @@ cancel_pending_request (void *cls,
 
   free_pending_request (peerreq);
   GSF_pending_request_cancel_ (pr,
-                               GNUNET_NO);
+                               GNUNET_YES);
   return GNUNET_OK;
 }
 
@@ -1228,7 +1228,7 @@ handle_p2p_get (void *cls,
     return;
   }
   unsigned int queue_size = GNUNET_MQ_get_length (cp->mq);
-  queue_size += cp->ppd.pending_replies + cp->delay_queue_size;
+  queue_size += cp->ppd.pending_replies + cp->delay_queue_size + cp->ppd.pending_queries;
   if (queue_size > MAX_QUEUE_PER_PEER)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
