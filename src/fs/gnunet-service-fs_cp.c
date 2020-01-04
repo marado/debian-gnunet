@@ -1229,8 +1229,15 @@ handle_p2p_get (void *cls,
     return;
   }
   unsigned int queue_size = GNUNET_MQ_get_length (cp->mq);
-  queue_size += cp->ppd.pending_replies + cp->delay_queue_size + cp->ppd.pending_requests;
-  if (queue_size > MAX_QUEUE_PER_PEER)
+  queue_size += cp->ppd.pending_replies + cp->delay_queue_size + cp->ppd.pending_reque
+   //previously, it was possible for a single peer to DDOS fs system by spamming search requests
+  // for unavailable blocks.  The requests hang around for a long time and clog up the works.
+  // appropriate TTLs might help but there's still nothing preventing clients from spamming:
+  // re-sending the search resets the TTL.
+  //'pending_requests' remedies this.  I've set it to a constant value which works for the current
+  // size of the network (1000), but to prevent sybils  we should tie it to respect, like TTL.
+    
+  if (queue_size > MAX_QUEUE_PER_PEER || cp->ppd.pending_requests > 1000) 
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Peer `%s' has too many replies queued already. Dropping query.\n",
