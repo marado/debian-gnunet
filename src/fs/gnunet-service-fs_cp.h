@@ -134,6 +134,11 @@ struct GSF_PeerPerformanceData
   uint32_t respect;
 
   /**
+   * Number of active requests
+   */
+  unsigned int pending_requests;
+
+  /**
    * Number of pending queries (replies are not counted)
    */
   unsigned int pending_queries;

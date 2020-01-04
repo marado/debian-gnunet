@@ -944,6 +944,7 @@ handle_p2p_reply (void *cls,
       GNUNET_SCHEDULER_add_now (&peer_request_destroy,
                                 peerreq);
   }
+  GNUNET_assert (0 < cp->ppd.pending_requests--);
 }
 
 
@@ -1228,7 +1229,7 @@ handle_p2p_get (void *cls,
     return;
   }
   unsigned int queue_size = GNUNET_MQ_get_length (cp->mq);
-  queue_size += cp->ppd.pending_replies + cp->delay_queue_size + cp->ppd.pending_queries;
+  queue_size += cp->ppd.pending_replies + cp->delay_queue_size + cp->ppd.pending_requests;
   if (queue_size > MAX_QUEUE_PER_PEER)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -1329,6 +1330,7 @@ handle_p2p_get (void *cls,
                                     &handle_p2p_reply,
                                     peerreq);
   GNUNET_assert (NULL != pr);
+  cp->ppd.pending_requests++;
   prd = GSF_pending_request_get_data_ (pr);
   peerreq->pr = pr;
   GNUNET_break (GNUNET_OK ==
