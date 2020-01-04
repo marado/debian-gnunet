@@ -1237,7 +1237,7 @@ handle_p2p_get (void *cls,
   //'pending_requests' remedies this.  I've set it to a constant value which works for the current
   // size of the network (1000), but to prevent sybils  we should tie it to respect, like TTL.
     
-  if (queue_size > MAX_QUEUE_PER_PEER || cp->ppd.pending_requests > 50) 
+  if (queue_size > MAX_QUEUE_PER_PEER || cp->ppd.pending_requests > 100) 
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Peer `%s' has too many replies queued already. Dropping query.\n",

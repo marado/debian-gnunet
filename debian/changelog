@@ -1,4 +1,4 @@
-gnunet (0.12.0-7b) UNRELEASED; urgency=medium
+gnunet (0.12.0-7c) UNRELEASED; urgency=medium
 
   [ fimbaz ]
   * Upgrade to 0.12.0
@@ -16,8 +16,9 @@ gnunet (0.12.0-7b) UNRELEASED; urgency=medium
   * Fix a bug keeping postgres datastore from working
   * Maybe... flip this switch?
   * Fix a DOS
+  * I'm liking 50
 
- -- root <root@guest.guest>  Sat, 04 Jan 2020 05:37:19 +0000
+ -- root <root@guest.guest>  Sat, 04 Jan 2020 06:45:12 +0000
 
 gnunet (0.11.6-1) experimental; urgency=medium
   * New upstream version 0.11.6.
