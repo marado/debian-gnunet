@@ -1229,7 +1229,7 @@ handle_p2p_get (void *cls,
     return;
   }
   unsigned int queue_size = GNUNET_MQ_get_length (cp->mq);
-  queue_size += cp->ppd.pending_replies + cp->delay_queue_size + cp->ppd.pending_reque
+  queue_size += cp->ppd.pending_replies + cp->delay_queue_size;
    //previously, it was possible for a single peer to DOS the fs system by spamming search requests
   // for unavailable blocks.  The requests hang around for a long time and clog up the works.
   // appropriate TTLs might help but there's still nothing preventing clients from spamming:
