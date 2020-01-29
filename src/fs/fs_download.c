@@ -978,6 +978,8 @@ trigger_recursive_download (void *cls,
                             0,
                             GNUNET_FS_uri_chk_get_file_size (uri),
                             dc->anonymity,
+			    dc->priority,
+			    dc->ttl,
                             dc->options,
                             NULL,
                             dc);
@@ -2049,6 +2051,8 @@ create_download_context (struct GNUNET_FS_Handle *h,
                          uint64_t offset,
                          uint64_t length,
                          uint32_t anonymity,
+			 uint32_t priority,
+			 uint32_t ttl,
                          enum GNUNET_FS_DownloadOptions options,
                          void *cctx)
 {
@@ -2150,6 +2154,8 @@ GNUNET_FS_download_start (struct GNUNET_FS_Handle *h,
                           uint64_t offset,
                           uint64_t length,
                           uint32_t anonymity,
+			  uint32_t priority,
+			  uint32_t ttl,
                           enum GNUNET_FS_DownloadOptions options,
                           void *cctx,
                           struct GNUNET_FS_DownloadContext *parent)
@@ -2164,6 +2170,8 @@ GNUNET_FS_download_start (struct GNUNET_FS_Handle *h,
                                 offset,
                                 length,
                                 anonymity,
+				priority,
+				ttl,
                                 options,
                                 cctx);
   if (NULL == dc)
@@ -2220,6 +2228,8 @@ GNUNET_FS_download_start_from_search (struct GNUNET_FS_Handle *h,
                                       uint64_t offset,
                                       uint64_t length,
                                       uint32_t anonymity,
+				      uint32_t priority,
+				      uint32_t ttl,
                                       enum GNUNET_FS_DownloadOptions options,
                                       void *cctx)
 {
@@ -2238,6 +2248,8 @@ GNUNET_FS_download_start_from_search (struct GNUNET_FS_Handle *h,
                                 offset,
                                 length,
                                 anonymity,
+				priority,
+				ttl,
                                 options,
                                 cctx);
   if (NULL == dc)

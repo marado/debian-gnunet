@@ -292,7 +292,8 @@ struct SearchMessage
    * Desired anonymity level, big-endian.
    */
   uint32_t anonymity_level GNUNET_PACKED;
-
+  uint32_t ttl GNUNET_PACKED;
+  uint32_t priority GNUNET_PACKED;
   /**
    * If the request is for a DBLOCK or IBLOCK, this is the identity of
    * the peer that is known to have a response.  Set to all-zeros if

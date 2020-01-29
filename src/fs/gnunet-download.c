@@ -42,6 +42,10 @@ static struct GNUNET_FS_DownloadContext *dc;
 
 static unsigned int anonymity = 1;
 
+static unsigned int ttl = 60;
+
+static unsigned int priority = 0;
+
 static unsigned int parallelism = 16;
 
 static unsigned int request_parallelism = 4092;
@@ -286,6 +290,8 @@ run (void *cls,
                                  0,
                                  GNUNET_FS_uri_chk_get_file_size (uri),
                                  anonymity,
+				 priority,
+				 ttl,
                                  options,
                                  NULL,
                                  NULL);
@@ -317,7 +323,18 @@ main (int argc, char *const *argv)
                                gettext_noop (
                                  "set the desired LEVEL of receiver-anonymity"),
                                &anonymity),
-
+    GNUNET_GETOPT_option_uint ('p',
+                               "priority",
+                               "LEVEL",
+                               gettext_noop (
+                                 "set the desired Priority of the download"),
+                               &priority),
+    GNUNET_GETOPT_option_uint ('t',
+                               "ttl",
+                               "TTL",
+                               gettext_noop (
+                                 "set the ttl in seconds"),
+                               &ttl),
     GNUNET_GETOPT_option_flag (
       'D',
       "delete-incomplete",

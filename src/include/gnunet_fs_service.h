@@ -2377,6 +2377,8 @@ GNUNET_FS_download_start (struct GNUNET_FS_Handle *h,
                           const struct GNUNET_CONTAINER_MetaData *meta,
                           const char *filename, const char *tempname,
                           uint64_t offset, uint64_t length, uint32_t anonymity,
+			  uint32_t priority,
+			  uint32_t ttl,
                           enum GNUNET_FS_DownloadOptions options, void *cctx,
                           struct GNUNET_FS_DownloadContext *parent);
 
@@ -2421,6 +2423,8 @@ GNUNET_FS_download_start_from_search (struct GNUNET_FS_Handle *h,
                                       const char *filename,
                                       const char *tempname, uint64_t offset,
                                       uint64_t length, uint32_t anonymity,
+				      uint32_t priority,
+				      uint32_t ttl,
                                       enum GNUNET_FS_DownloadOptions options,
                                       void *cctx);
 

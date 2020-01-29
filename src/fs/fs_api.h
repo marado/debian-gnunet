@@ -1911,6 +1911,9 @@ struct GNUNET_FS_DownloadContext
    */
   uint32_t anonymity;
 
+  uint32_t priority;
+
+  uint32_t ttl;
   /**
    * The depth of the file-tree.
    */
