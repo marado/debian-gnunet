@@ -1,4 +1,6 @@
-gnunet (0.12.0-7c) UNRELEASED; urgency=medium
+gnunet (0.12.0-8) UNRELEASED; urgency=medium
+  [ fimbaz ]
+   * Attempt to use ttl and priority in gnunet-download
 
   [ fimbaz ]
   * Upgrade to 0.12.0
@@ -17,8 +19,9 @@ gnunet (0.12.0-7c) UNRELEASED; urgency=medium
   * Maybe... flip this switch?
   * Fix a DOS
   * I'm liking 50
+  * 
 
- -- root <root@guest.guest>  Sat, 04 Jan 2020 06:45:12 +0000
+ -- root <root@guest.guest>  Wed, 29 Jan 2020 04:46:10 +0000
 
 gnunet (0.11.6-1) experimental; urgency=medium
   * New upstream version 0.11.6.
