@@ -467,7 +467,7 @@ GNUNET_FS_search_start_probe_ (struct GNUNET_FS_SearchResult *sr)
                                                    + sr->availability_trials));
   sr->probe_ctx =
     GNUNET_FS_download_start (sr->h, sr->uri, sr->meta, NULL, NULL, off,
-                              len, sr->anonymity,
+                              len, sr->anonymity,0,1200,
                               GNUNET_FS_DOWNLOAD_NO_TEMPORARIES
                               | GNUNET_FS_DOWNLOAD_IS_PROBE, sr, NULL);
   start_probe_ping_task (sr);

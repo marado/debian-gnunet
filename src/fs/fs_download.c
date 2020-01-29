@@ -761,6 +761,8 @@ retry_entry (void *cls, const struct GNUNET_HashCode *key, void *entry)
     sm->type = htonl (GNUNET_BLOCK_TYPE_FS_IBLOCK);
   sm->anonymity_level = htonl (dc->anonymity);
   sm->target = dc->target;
+  sm->priority = dc->priority;
+  sm->ttl = dc->ttl;
   sm->query = dr->chk.query;
   GNUNET_MQ_send (dc->mq, env);
   return GNUNET_OK;
@@ -2052,7 +2054,7 @@ create_download_context (struct GNUNET_FS_Handle *h,
                          uint64_t length,
                          uint32_t anonymity,
 			 uint32_t priority,
-			 uint32_t ttl,
+			 int32_t ttl,
                          enum GNUNET_FS_DownloadOptions options,
                          void *cctx)
 {
@@ -2091,6 +2093,9 @@ create_download_context (struct GNUNET_FS_Handle *h,
   dc->offset = offset;
   dc->length = length;
   dc->anonymity = anonymity;
+  dc->ttl = ttl;
+  dc->priority = priority;
+  
   dc->options = options;
   dc->active =
     GNUNET_CONTAINER_multihashmap_create (1 + 2 * (length / DBLOCK_SIZE),
@@ -2155,7 +2160,7 @@ GNUNET_FS_download_start (struct GNUNET_FS_Handle *h,
                           uint64_t length,
                           uint32_t anonymity,
 			  uint32_t priority,
-			  uint32_t ttl,
+			  int32_t ttl,
                           enum GNUNET_FS_DownloadOptions options,
                           void *cctx,
                           struct GNUNET_FS_DownloadContext *parent)
@@ -2229,7 +2234,7 @@ GNUNET_FS_download_start_from_search (struct GNUNET_FS_Handle *h,
                                       uint64_t length,
                                       uint32_t anonymity,
 				      uint32_t priority,
-				      uint32_t ttl,
+				      int32_t ttl,
                                       enum GNUNET_FS_DownloadOptions options,
                                       void *cctx)
 {

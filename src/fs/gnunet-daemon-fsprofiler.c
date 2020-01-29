@@ -470,6 +470,8 @@ progress_cb (void *cls,
                                        NULL, NULL, NULL,
                                        0, GNUNET_FS_uri_chk_get_file_size (uri),
                                        anonymity_level,
+				       0,
+				       0,
                                        GNUNET_FS_DOWNLOAD_NO_TEMPORARIES,
                                        p,
                                        NULL);

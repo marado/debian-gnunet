@@ -607,7 +607,7 @@ download_fs_connect_complete_cb (void *cls,
   GNUNET_assert (NULL != dop->fs);
   dop->download_context =
     GNUNET_FS_download_start (dop->fs, dop->uri, NULL, NULL, NULL, 0, dop->size,
-                              dop->anonymity, GNUNET_FS_DOWNLOAD_OPTION_NONE,
+                              dop->anonymity,0, 0, GNUNET_FS_DOWNLOAD_OPTION_NONE,
                               NULL, NULL);
 }
 
