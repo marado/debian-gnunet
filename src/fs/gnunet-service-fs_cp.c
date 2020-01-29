@@ -293,6 +293,13 @@ static struct GNUNET_SCHEDULER_Task *fr_task;
 
 
 /**
+ * Maximum number of requests (from other peers, overall) that we're
+ * willing to have pending at any given point in time.  Can be changed
+ * via the configuration file (32k is just the default).
+ */
+static unsigned long long max_pending_requests = (32 * 1024);
+
+/**
  * Update the latency information kept for the given peer.
  *
  * @param id peer record to update
@@ -1237,7 +1244,7 @@ handle_p2p_get (void *cls,
   //'pending_requests' remedies this.  I've set it to a constant value which works for the current
   // size of the network (1000), but to prevent sybils  we should tie it to respect, like TTL.
     
-  if (queue_size > MAX_QUEUE_PER_PEER || cp->ppd.pending_requests > 100) 
+  if (queue_size > MAX_QUEUE_PER_PEER || (10 + cp->ppd.respect) <  cp->ppd.pending_requests) 
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Peer `%s' has too many replies queued already. Dropping query.\n",
@@ -1769,6 +1776,16 @@ cron_flush_respect (void *cls)
 void
 GSF_connected_peer_init_ ()
 {
+  if (GNUNET_OK !=
+      GNUNET_CONFIGURATION_get_value_number (GSF_cfg,
+                                             "fs",
+                                             "MAX_PENDING_REQUESTS",
+                                             &max_pending_requests))
+  {
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_INFO,
+                               "fs",
+                               "MAX_PENDING_REQUESTS");
+  }
   cp_map = GNUNET_CONTAINER_multipeermap_create (128, GNUNET_YES);
   peerstore = GNUNET_PEERSTORE_connect (GSF_cfg);
   fr_task = GNUNET_SCHEDULER_add_with_priority (GNUNET_SCHEDULER_PRIORITY_HIGH,
