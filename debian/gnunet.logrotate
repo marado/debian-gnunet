@@ -1,5 +1,5 @@
 /var/log/gnunetd/gnunetd.log {
-        hourly
+	hourly
 	size=100m
 	rotate 7
 	compress
