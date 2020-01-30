@@ -34,7 +34,7 @@ UNIX_MATCH_GID = YES
 
 # Maximum number of requests this peer tracks (important for
 # memory consumption; 2k RAM/request is not unusual)
-MAX_PENDING_REQUESTS = 65536
+MAX_PENDING_REQUESTS = 10000
 
 # How many requests do we have at most waiting in the queue towards
 # the datastore? (important for memory consumption)

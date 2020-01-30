@@ -807,7 +807,7 @@
 #define UPNPC "/usr/bin/upnpc"
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-abf280f"
+#define VCS_VERSION "git-577677a"
 
 /* Version number of package */
 #define VERSION "0.12.0"
