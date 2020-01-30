@@ -1,6 +1,6 @@
 /var/log/gnunetd/gnunetd.log {
-	weekly
-	size=100k
+        hourly
+	size=100m
 	rotate 7
 	compress
 	copytruncate
