@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python3
 # This file is part of GNUnet.
 # (C) 2013, 2018 Christian Grothoff (and other contributing authors)
 #

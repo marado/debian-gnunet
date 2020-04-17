@@ -80,6 +80,11 @@ struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
   struct GNUNET_OS_Process *c_proc;
 
   /**
+   * NAT process
+   */
+  struct GNUNET_OS_Process *nat_proc;
+
+  /**
    * @brief Task that will be run on shutdown to stop and clean communicator
    */
   struct GNUNET_SCHEDULER_Task *c_shutdown_task;
@@ -135,6 +140,11 @@ struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
    * @brief Callback called when a new communicator connects
    */
   GNUNET_TRANSPORT_TESTING_IncomingMessageCallback incoming_msg_cb;
+
+  /**
+   * Our service handle
+   */
+  struct GNUNET_SERVICE_Handle *sh;
 
   /**
    * @brief Closure to the callback
@@ -280,8 +290,6 @@ static int
 check_add_address (void *cls,
                    const struct GNUNET_TRANSPORT_AddAddressMessage *msg)
 {
-  struct TransportClient *tc = cls;
-
   // if (CT_COMMUNICATOR != tc->type)
   // {
   //  GNUNET_break (0);
@@ -306,14 +314,14 @@ handle_add_address (void *cls,
 {
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
   uint16_t size;
-
   size = ntohs (msg->header.size) - sizeof(*msg);
   if (0 == size)
     return; /* receive-only communicator */
+  LOG (GNUNET_ERROR_TYPE_DEBUG, "received add address cb %u\n", size);
   tc_h->c_address = GNUNET_strdup ((const char *) &msg[1]);
   if (NULL != tc_h->add_address_cb)
   {
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "calling communicator_available()\n");
+    LOG (GNUNET_ERROR_TYPE_DEBUG, "calling add_address_cb()\n");
     tc_h->add_address_cb (tc_h->cb_cls,
                           tc_h,
                           tc_h->c_address,
@@ -358,21 +366,39 @@ check_incoming_msg (void *cls,
  */
 static void
 handle_incoming_msg (void *cls,
-                     const struct GNUNET_TRANSPORT_IncomingMessage *msg)
+                     const struct GNUNET_TRANSPORT_IncomingMessage *inc_msg)
 {
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
+  struct GNUNET_MessageHeader *msg;
+  msg = (struct GNUNET_MessageHeader *)&inc_msg[1];
+  size_t payload_len = ntohs (msg->size) - sizeof (struct
+                                                          GNUNET_MessageHeader);
 
   if (NULL != tc_h->incoming_msg_cb)
   {
     tc_h->incoming_msg_cb (tc_h->cb_cls,
                            tc_h,
-                           (const struct GNUNET_MessageHeader *) msg);
+                           (char*) &msg[1],
+                           payload_len);
   }
   else
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          "Incoming message from communicator but no handler!\n");
   }
+  if (0 != ntohl (inc_msg->fc_on))
+  {
+    /* send ACK when done to communicator for flow control! */
+    struct GNUNET_MQ_Envelope *env;
+    struct GNUNET_TRANSPORT_IncomingMessageAck *ack;
+
+    env = GNUNET_MQ_msg (ack, GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG_ACK);
+    ack->reserved = htonl (0);
+    ack->fc_id = inc_msg->fc_id;
+    ack->sender = inc_msg->sender;
+    GNUNET_MQ_send (tc_h->c_mq, env);
+  }
+
   GNUNET_SERVICE_client_continue (tc_h->client);
 }
 
@@ -452,9 +478,21 @@ handle_add_queue_message (void *cls,
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *tc_queue;
 
   tc_queue = tc_h->queue_head;
-  while (tc_queue->qid != msg->qid)
+  if (NULL != tc_queue)
   {
-    tc_queue = tc_queue->next;
+    while (tc_queue->qid != msg->qid)
+    {
+      tc_queue = tc_queue->next;
+    }
+  }
+  else
+  {
+    tc_queue =
+      GNUNET_new (struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue);
+    tc_queue->tc_h = tc_h;
+    tc_queue->qid = msg->qid;
+    tc_queue->peer_id = msg->receiver;
+    GNUNET_CONTAINER_DLL_insert (tc_h->queue_head, tc_h->queue_tail, tc_queue);
   }
   GNUNET_assert (tc_queue->qid == msg->qid);
   GNUNET_assert (0 == GNUNET_memcmp (&tc_queue->peer_id, &msg->receiver));
@@ -538,6 +576,22 @@ disconnect_cb (void *cls,
   tc_h->client = NULL;
 }
 
+/**
+ * Message was transmitted.  Process the request.
+ *
+ * @param cls the client
+ * @param sma the send message that was sent
+ */
+static void
+handle_send_message_ack (void *cls,
+                         const struct GNUNET_TRANSPORT_SendMessageToAck *sma)
+{
+  struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
+  GNUNET_SERVICE_client_continue (tc_h->client);
+  //NOP
+}
+
+
 
 /**
  * @brief Start the communicator part of the transport service
@@ -554,7 +608,7 @@ transport_communicator_start (
     GNUNET_MQ_hd_var_size (communicator_available,
                            GNUNET_MESSAGE_TYPE_TRANSPORT_NEW_COMMUNICATOR,
                            struct GNUNET_TRANSPORT_CommunicatorAvailableMessage,
-                           &tc_h),
+                           tc_h),
     // GNUNET_MQ_hd_var_size (communicator_backchannel,
     //    GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL,
     //    struct GNUNET_TRANSPORT_CommunicatorBackchannel,
@@ -562,7 +616,7 @@ transport_communicator_start (
     GNUNET_MQ_hd_var_size (add_address,
                            GNUNET_MESSAGE_TYPE_TRANSPORT_ADD_ADDRESS,
                            struct GNUNET_TRANSPORT_AddAddressMessage,
-                           &tc_h),
+                           tc_h),
     // GNUNET_MQ_hd_fixed_size (del_address,
     //                         GNUNET_MESSAGE_TYPE_TRANSPORT_DEL_ADDRESS,
     //                         struct GNUNET_TRANSPORT_DelAddressMessage,
@@ -570,7 +624,7 @@ transport_communicator_start (
     GNUNET_MQ_hd_var_size (incoming_msg,
                            GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG,
                            struct GNUNET_TRANSPORT_IncomingMessage,
-                           NULL),
+                           tc_h),
     GNUNET_MQ_hd_fixed_size (queue_create_ok,
                              GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE_OK,
                              struct GNUNET_TRANSPORT_CreateQueueResponse,
@@ -582,31 +636,26 @@ transport_communicator_start (
     GNUNET_MQ_hd_var_size (add_queue_message,
                            GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_SETUP,
                            struct GNUNET_TRANSPORT_AddQueueMessage,
-                           NULL),
+                           tc_h),
     // GNUNET_MQ_hd_fixed_size (del_queue_message,
     //                         GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_TEARDOWN,
     //                         struct GNUNET_TRANSPORT_DelQueueMessage,
     //                         NULL),
-    // GNUNET_MQ_hd_fixed_size (send_message_ack,
-    //                         GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG_ACK,
-    //                         struct GNUNET_TRANSPORT_SendMessageToAck,
-    //                         NULL),
+    GNUNET_MQ_hd_fixed_size (send_message_ack,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG_ACK,
+                             struct GNUNET_TRANSPORT_SendMessageToAck,
+                             tc_h),
+    GNUNET_MQ_handler_end ()
   };
-  struct GNUNET_SERVICE_Handle *h;
 
-  h = GNUNET_SERVICE_start ("transport",
+
+  tc_h->sh = GNUNET_SERVICE_start ("transport",
                             tc_h->cfg,
                             &connect_cb,
                             &disconnect_cb,
                             tc_h,
                             mh);
-  if (NULL == h)
-    LOG (GNUNET_ERROR_TYPE_ERROR, "Failed starting service!\n");
-  else
-  {
-    LOG (GNUNET_ERROR_TYPE_DEBUG, "Started service\n");
-    /* TODO */ GNUNET_SCHEDULER_add_shutdown (&shutdown_service, h);
-  }
+  GNUNET_assert (NULL != tc_h->sh);
 }
 
 
@@ -616,21 +665,26 @@ transport_communicator_start (
  * @param cls Closure - Process of communicator
  */
 static void
-shutdown_communicator (void *cls)
+shutdown_process (struct GNUNET_OS_Process *proc)
 {
-  struct GNUNET_OS_Process *proc = cls;
-
-  if (GNUNET_OK != GNUNET_OS_process_kill (proc, SIGTERM))
+  if (0 != GNUNET_OS_process_kill (proc, SIGTERM))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          "Error shutting down communicator with SIGERM, trying SIGKILL\n");
-    if (GNUNET_OK != GNUNET_OS_process_kill (proc, SIGKILL))
+    if (0 != GNUNET_OS_process_kill (proc, SIGKILL))
     {
       LOG (GNUNET_ERROR_TYPE_ERROR,
            "Error shutting down communicator with SIGERM and SIGKILL\n");
     }
   }
   GNUNET_OS_process_destroy (proc);
+}
+
+static void
+shutdown_communicator (void *cls)
+{
+  struct GNUNET_OS_Process *proc = cls;
+  shutdown_process(proc);
 }
 
 
@@ -663,10 +717,63 @@ communicator_start (
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to start communicator!");
     return;
   }
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "started communicator\n");
+  LOG (GNUNET_ERROR_TYPE_INFO, "started communicator\n");
   GNUNET_free (binary);
-  /* TODO */ GNUNET_SCHEDULER_add_shutdown (&shutdown_communicator,
-                                            tc_h->c_proc);
+}
+
+/**
+ * @brief Task run at shutdown to kill communicator and clean up
+ *
+ * @param cls Closure - Process of communicator
+ */
+static void
+shutdown_nat (void *cls)
+{
+  struct GNUNET_OS_Process *proc = cls;
+  shutdown_process (proc);
+}
+
+
+/**
+ * @brief Start NAT
+ *
+ */
+static void
+nat_start (
+  struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h)
+{
+  char *binary;
+
+  LOG (GNUNET_ERROR_TYPE_DEBUG, "nat_start\n");
+  binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-nat");
+  tc_h->nat_proc = GNUNET_OS_start_process (GNUNET_YES,
+                                          GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                                          NULL,
+                                          NULL,
+                                          NULL,
+                                          binary,
+                                          "gnunet-service-nat",
+                                          "-c",
+                                          tc_h->cfg_filename,
+                                          NULL);
+  if (NULL == tc_h->nat_proc)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to start NAT!");
+    return;
+  }
+  LOG (GNUNET_ERROR_TYPE_INFO, "started NAT\n");
+  GNUNET_free (binary);
+}
+
+
+
+static void
+do_shutdown (void *cls)
+{
+  struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h = cls;
+  shutdown_communicator(tc_h->c_proc);
+  shutdown_service(tc_h->sh);
+  shutdown_nat(tc_h->nat_proc);
 }
 
 
@@ -720,13 +827,14 @@ GNUNET_TRANSPORT_TESTING_transport_communicator_service_start (
 
   /* Start communicator part of service */
   transport_communicator_start (tc_h);
-
+  /* Start NAT */
+  nat_start (tc_h);
   /* Schedule start communicator */
   communicator_start (tc_h,
                       binary_name);
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, tc_h);
   return tc_h;
 }
-
 
 /**
  * @brief Instruct communicator to open a queue
@@ -792,9 +900,7 @@ struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorTransmission *
 GNUNET_TRANSPORT_TESTING_transport_communicator_send
   (struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *tc_queue,
   const void *payload,
-  size_t payload_size /*,
-                         GNUNET_TRANSPORT_TESTING_SuccessStatus cb,
-                         void *cb_cls*/)
+  size_t payload_size)
 {
   struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorTransmission *tc_t;
   struct GNUNET_MessageHeader *mh;

@@ -587,8 +587,6 @@ if HAVE_GETOPT_BINARY
 check_PROGRAMS += \
 test_transport_api_slow_ats
 endif
-check_PROGRAMS += \
-test_communicator_unix
 if HAVE_EXPERIMENTAL
 check_PROGRAMS += \
   test_transport_address_switch_udp \
@@ -597,7 +595,9 @@ check_PROGRAMS += \
   test_transport_api_timeout_udp \
   test_transport_api_udp_nat \
   test_transport_api_reliability_udp \
-  test_quota_compliance_udp
+  test_quota_compliance_udp \
+  test_communicator_basic_unix \
+  test_communicator_basic_tcp
 endif
 endif
 
@@ -782,11 +782,21 @@ test_plugin_udp_LDADD = \
  libgnunettransporttesting.la
 endif
 
-test_communicator_unix_SOURCES = \
- test_communicator_unix.c
-test_communicator_unix_LDADD = \
+if HAVE_EXPERIMENTAL
+test_communicator_basic_unix_SOURCES = \
+ test_communicator_basic.c
+test_communicator_basic_unix_LDADD = \
  libgnunettransporttesting2.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
+
+test_communicator_basic_tcp_SOURCES = \
+ test_communicator_basic.c
+test_communicator_basic_tcp_LDADD = \
+ libgnunettransporttesting2.la \
+ $(top_builddir)/src/testing/libgnunettesting.la \
+ $(top_builddir)/src/util/libgnunetutil.la
+endif
 
 test_plugin_unix_SOURCES = \
  test_plugin_transport.c
@@ -1485,5 +1495,7 @@ test_transport_api_slow_ats_peer2.conf \
   tcp_server_mst_legacy.c \
   tcp_server_legacy.c \
   tcp_service_legacy.c \
-test_communicator_1.conf \
-test_communicator_1.conf
+test_communicator_unix_peer1.conf \
+test_communicator_unix_peer2.conf \
+test_communicator_tcp_peer1.conf \
+test_communicator_tcp_peer2.conf

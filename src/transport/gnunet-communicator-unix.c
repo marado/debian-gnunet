@@ -42,7 +42,7 @@
  * otherwise we may read messages just to have them dropped
  * by the communicator API.
  */
-#define DEFAULT_MAX_QUEUE_LENGTH 8
+#define DEFAULT_MAX_QUEUE_LENGTH 8000
 
 /**
  * Address prefix used by the communicator.
@@ -114,7 +114,7 @@ struct Queue
    * Message currently scheduled for transmission, non-NULL if and only
    * if this queue is in the #queue_head DLL.
    */
-  const struct GNUNET_MessageHeader *msg;
+  struct UNIXMessage *msg;
 
   /**
    * Message queue we are providing for the #ch.
@@ -142,6 +142,10 @@ struct Queue
   struct GNUNET_SCHEDULER_Task *timeout_task;
 };
 
+/**
+ * My Peer Identity
+ */
+static struct GNUNET_PeerIdentity my_identity;
 
 /**
  * ID of read task
@@ -357,7 +361,7 @@ lookup_queue_it (void *cls, const struct GNUNET_PeerIdentity *key, void *value)
   struct LookupCtx *lctx = cls;
   struct Queue *queue = value;
 
-  if ((queue->address_len = lctx->un_len) &&
+  if ((queue->address_len == lctx->un_len) &&
       (0 == memcmp (lctx->un, queue->address, queue->address_len)))
   {
     lctx->res = queue;
@@ -383,6 +387,7 @@ lookup_queue (const struct GNUNET_PeerIdentity *peer,
 
   lctx.un = un;
   lctx.un_len = un_len;
+  lctx.res = NULL;
   GNUNET_CONTAINER_multipeermap_get_multiple (queue_map,
                                               peer,
                                               &lookup_queue_it,
@@ -401,22 +406,12 @@ static void
 select_write_cb (void *cls)
 {
   struct Queue *queue = queue_tail;
-  const struct GNUNET_MessageHeader *msg = queue->msg;
+  const struct GNUNET_MessageHeader *msg = &queue->msg->header;
   size_t msg_size = ntohs (msg->size);
   ssize_t sent;
 
   /* take queue of the ready list */
   write_task = NULL;
-  GNUNET_CONTAINER_DLL_remove (queue_head, queue_tail, queue);
-  if (NULL != queue_head)
-    write_task = GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
-                                                 unix_sock,
-                                                 &select_write_cb,
-                                                 NULL);
-
-  /* send 'msg' */
-  queue->msg = NULL;
-  GNUNET_MQ_impl_send_continue (queue->mq);
 resend:
   /* Send the data */
   sent = GNUNET_NETWORK_socket_sendto (unix_sock,
@@ -432,6 +427,17 @@ resend:
               (sent < 0) ? strerror (errno) : "ok");
   if (-1 != sent)
   {
+    GNUNET_CONTAINER_DLL_remove (queue_head, queue_tail, queue);
+    if (NULL != queue_head)
+      write_task = GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
+                                                   unix_sock,
+                                                   &select_write_cb,
+                                                   NULL);
+
+    /* send 'msg' */
+    GNUNET_free (queue->msg);
+    queue->msg = NULL;
+    GNUNET_MQ_impl_send_continue (queue->mq);
     GNUNET_STATISTICS_update (stats,
                               "# bytes sent",
                               (long long) sent,
@@ -443,6 +449,10 @@ resend:
                             "# network transmission failures",
                             1,
                             GNUNET_NO);
+  write_task = GNUNET_SCHEDULER_add_write_net (GNUNET_TIME_UNIT_FOREVER_REL,
+                                               unix_sock,
+                                               &select_write_cb,
+                                               NULL);
   switch (errno)
   {
   case EAGAIN:
@@ -468,7 +478,7 @@ resend:
         return;
       }
       GNUNET_log (
-        GNUNET_ERROR_TYPE_DEBUG,
+        GNUNET_ERROR_TYPE_WARNING,
         "Trying to increase socket buffer size from %u to %u for message size %u\n",
         (unsigned int) size,
         (unsigned int) ((msg_size / 1000) + 2) * 1000,
@@ -514,10 +524,15 @@ mq_send (struct GNUNET_MQ_Handle *mq,
          void *impl_state)
 {
   struct Queue *queue = impl_state;
+  size_t msize = ntohs (msg->size);
 
   GNUNET_assert (mq == queue->mq);
   GNUNET_assert (NULL == queue->msg);
-  queue->msg = msg;
+  // Convert to UNIXMessage
+  queue->msg = GNUNET_malloc (msize + sizeof (struct UNIXMessage));
+  queue->msg->header.size = htons (msize + sizeof (struct UNIXMessage));
+  queue->msg->sender = my_identity;
+  memcpy (&queue->msg[1], msg, msize);
   GNUNET_CONTAINER_DLL_insert (queue_head, queue_tail, queue);
   GNUNET_assert (NULL != unix_sock);
   if (NULL == write_task)
@@ -692,8 +707,8 @@ receive_complete_cb (void *cls, int success)
                               "# transport transmission failures",
                               1,
                               GNUNET_NO);
-  GNUNET_assert (NULL != unix_sock);
-  if ((NULL == read_task) && (delivering_messages < max_queue_length))
+  if ((NULL == read_task) && (delivering_messages < max_queue_length) &&
+      (NULL != unix_sock))
     read_task = GNUNET_SCHEDULER_add_read_net (GNUNET_TIME_UNIT_FOREVER_REL,
                                                unix_sock,
                                                &select_read_cb,
@@ -747,6 +762,9 @@ select_read_cb (void *cls)
   msize = ntohs (msg->header.size);
   if ((msize < sizeof(struct UNIXMessage)) || (msize > ret))
   {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Wrong message size: %d bytes\n",
+                msize);
     GNUNET_break_op (0);
     return;
   }
@@ -766,42 +784,45 @@ select_read_cb (void *cls)
   }
 
   {
-    uint16_t offset = 0;
     uint16_t tsize = msize - sizeof(struct UNIXMessage);
-    const char *msgbuf = (const char *) &msg[1];
 
-    while (offset + sizeof(struct GNUNET_MessageHeader) <= tsize)
+    const struct GNUNET_MessageHeader *currhdr;
+    struct GNUNET_MessageHeader al_hdr;
+
+    currhdr = (const struct GNUNET_MessageHeader *) &msg[1];
+    /* ensure aligned access */
+    memcpy (&al_hdr, currhdr, sizeof(al_hdr));
+    if ((tsize < sizeof(struct GNUNET_MessageHeader)) ||
+        (tsize != ntohs(al_hdr.size)))
     {
-      const struct GNUNET_MessageHeader *currhdr;
-      struct GNUNET_MessageHeader al_hdr;
-      uint16_t csize;
-
-      currhdr = (const struct GNUNET_MessageHeader *) &msgbuf[offset];
-      /* ensure aligned access */
-      memcpy (&al_hdr, currhdr, sizeof(al_hdr));
-      csize = ntohs (al_hdr.size);
-      if ((csize < sizeof(struct GNUNET_MessageHeader)) ||
-          (csize > tsize - offset))
-      {
-        GNUNET_break_op (0);
-        break;
-      }
-      ret = GNUNET_TRANSPORT_communicator_receive (ch,
-                                                   &msg->sender,
-                                                   currhdr,
-                                                   GNUNET_TIME_UNIT_FOREVER_REL,
-                                                   &receive_complete_cb,
-                                                   NULL);
-      if (GNUNET_SYSERR == ret)
-        return;   /* transport not up */
-      if (GNUNET_NO == ret)
-        break;
-      delivering_messages++;
-      offset += csize;
+      GNUNET_break_op (0);
+      return;
     }
+    ret = GNUNET_TRANSPORT_communicator_receive (ch,
+                                                 &msg->sender,
+                                                 currhdr,
+                                                 GNUNET_TIME_UNIT_FOREVER_REL,
+                                                 &receive_complete_cb,
+                                                 NULL);
+    if (GNUNET_SYSERR == ret)
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  "Transport not up!\n");
+      return;   /* transport not up */
+    }
+    if (GNUNET_NO == ret)
+    {
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  "Error sending message to transport\n");
+      return;
+    }
+    delivering_messages++;
   }
   if (delivering_messages >= max_queue_length)
   {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "Back pressure %llu\n", delivering_messages);
+
     /* we should try to apply 'back pressure' */
     GNUNET_SCHEDULER_cancel (read_task);
     read_task = NULL;
@@ -974,8 +995,22 @@ run (void *cls,
   struct sockaddr_un *un;
   socklen_t un_len;
   char *my_addr;
+  struct GNUNET_CRYPTO_EddsaPrivateKey *my_private_key;
 
   (void) cls;
+  delivering_messages = 0;
+
+  my_private_key = GNUNET_CRYPTO_eddsa_key_create_from_configuration (cfg);
+  if (NULL == my_private_key)
+  {
+    GNUNET_log (
+      GNUNET_ERROR_TYPE_ERROR,
+      _ (
+        "UNIX communicator is lacking key configuration settings. Exiting.\n"));
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
+  GNUNET_CRYPTO_eddsa_key_get_public (my_private_key, &my_identity.public_key);
 
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (cfg,
