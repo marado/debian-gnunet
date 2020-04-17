@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -446,7 +446,6 @@ struct GNUNET_TRANSPORT_PluginSession;
  */
 enum GNUNET_TRANSPORT_SessionState
 {
-
   /**
    * The session was created (first call for each session object).
    */
@@ -473,7 +472,6 @@ enum GNUNET_TRANSPORT_SessionState
    * Last call for each session object.
    */
   GNUNET_TRANSPORT_SS_DONE
-
 };
 
 
@@ -482,7 +480,6 @@ enum GNUNET_TRANSPORT_SessionState
  */
 struct GNUNET_TRANSPORT_SessionInfo
 {
-
   /**
    * New state of the session.
    */

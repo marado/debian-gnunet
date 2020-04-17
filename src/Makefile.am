@@ -12,7 +12,7 @@ endif
 if HAVE_EXPERIMENTAL
  EXP_DIR = \
   rps \
-  credential
+  abd
 if HAVE_ABE
  EXP_DIR += \
   abe
@@ -23,16 +23,16 @@ if HAVE_JSON
 endif
 endif
 
-if HAVE_MHD
 if HAVE_JSON
+if HAVE_MHD
   JSON_DIR = json
+endif
+endif
 if HAVE_LIBGNURL
-  JSON_DIR += curl
+  CURL_DIR = curl
 else
 if HAVE_LIBCURL
-  JSON_DIR += curl
-endif
-endif
+  CURL_DIR = curl
 endif
 endif
 
@@ -59,7 +59,9 @@ endif
 if HAVE_MHD
 if HAVE_JSON
  REST_DIR = rest
- RECLAIM_DIR = reclaim-attribute reclaim
+ RECLAIM_DIR = \
+  reclaim-attribute \
+  reclaim
 endif
 endif
 
@@ -81,6 +83,7 @@ SUBDIRS = \
   arm \
   $(TESTING) \
   $(JSON_DIR) \
+  $(CURL_DIR) \
   $(REST_DIR) \
   peerinfo \
   $(SQLITE_DIR) \

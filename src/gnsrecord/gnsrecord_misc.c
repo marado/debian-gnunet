@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file gnsrecord/gnsrecord_misc.c
@@ -35,7 +35,7 @@
 #include "gnunet_tun_lib.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "gnsrecord",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "gnsrecord", __VA_ARGS__)
 
 /**
  * Convert a UTF-8 string to UTF-8 lowercase
@@ -64,12 +64,13 @@ GNUNET_GNSRECORD_string_to_lowercase (const char *src)
 const char *
 GNUNET_GNSRECORD_z2s (const struct GNUNET_CRYPTO_EcdsaPublicKey *z)
 {
-  static char buf[sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey) * 8];
+  static char buf[sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey) * 8];
   char *end;
 
   end = GNUNET_STRINGS_data_to_string ((const unsigned char *) z,
-				       sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
-				       buf, sizeof (buf));
+                                       sizeof(struct
+                                              GNUNET_CRYPTO_EcdsaPublicKey),
+                                       buf, sizeof(buf));
   if (NULL == end)
   {
     GNUNET_break (0);
@@ -111,7 +112,7 @@ GNUNET_GNSRECORD_records_cmp (const struct GNUNET_GNSRECORD_Data *a,
     return GNUNET_NO;
   }
   if ((a->flags & GNUNET_GNSRECORD_RF_RCMP_FLAGS)
-       != (b->flags & GNUNET_GNSRECORD_RF_RCMP_FLAGS))
+      != (b->flags & GNUNET_GNSRECORD_RF_RCMP_FLAGS))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Flags %lu (%lu) != %lu (%lu)\n", a->flags,
@@ -150,7 +151,8 @@ GNUNET_GNSRECORD_records_cmp (const struct GNUNET_GNSRECORD_Data *a,
  */
 struct GNUNET_TIME_Absolute
 GNUNET_GNSRECORD_record_get_expiration_time (unsigned int rd_count,
-					     const struct GNUNET_GNSRECORD_Data *rd)
+                                             const struct
+                                             GNUNET_GNSRECORD_Data *rd)
 {
   struct GNUNET_TIME_Absolute expire;
   struct GNUNET_TIME_Absolute at;
@@ -176,10 +178,10 @@ GNUNET_GNSRECORD_record_get_expiration_time (unsigned int rd_count,
     for (unsigned int c2 = 0; c2 < rd_count; c2++)
     {
       /* Check for shadow record */
-      if ( (c == c2) ||
-	   (rd[c].record_type != rd[c2].record_type) ||
-	   (0 == (rd[c2].flags & GNUNET_GNSRECORD_RF_SHADOW_RECORD)) )
-          continue;
+      if ((c == c2) ||
+          (rd[c].record_type != rd[c2].record_type) ||
+          (0 == (rd[c2].flags & GNUNET_GNSRECORD_RF_SHADOW_RECORD)))
+        continue;
       /* We have a shadow record */
       if (0 != (rd[c2].flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION))
       {
@@ -191,10 +193,10 @@ GNUNET_GNSRECORD_record_get_expiration_time (unsigned int rd_count,
         at_shadow.abs_value_us = rd[c2].expiration_time;
       }
       at = GNUNET_TIME_absolute_max (at,
-				     at_shadow);
+                                     at_shadow);
     }
-    expire = GNUNET_TIME_absolute_min (at, 
-				       expire);
+    expire = GNUNET_TIME_absolute_min (at,
+                                       expire);
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Determined expiration time for block with %u records to be %s\n",
@@ -218,7 +220,8 @@ GNUNET_GNSRECORD_is_expired (const struct GNUNET_GNSRECORD_Data *rd)
   if (0 != (rd->flags & GNUNET_GNSRECORD_RF_RELATIVE_EXPIRATION))
     return GNUNET_NO;
   at.abs_value_us = rd->expiration_time;
-  return (0 == GNUNET_TIME_absolute_get_remaining (at).rel_value_us) ? GNUNET_YES : GNUNET_NO;
+  return (0 == GNUNET_TIME_absolute_get_remaining (at).rel_value_us) ?
+         GNUNET_YES : GNUNET_NO;
 }
 
 
@@ -240,9 +243,9 @@ GNUNET_GNSRECORD_pkey_to_zkey (const struct GNUNET_CRYPTO_EcdsaPublicKey *pkey)
 
   pkeys = GNUNET_CRYPTO_ecdsa_public_key_to_string (pkey);
   GNUNET_snprintf (ret,
-		   sizeof (ret),
-		   "%s",
-		   pkeys);
+                   sizeof(ret),
+                   "%s",
+                   pkeys);
   GNUNET_free (pkeys);
   return ret;
 }
@@ -259,7 +262,7 @@ GNUNET_GNSRECORD_pkey_to_zkey (const struct GNUNET_CRYPTO_EcdsaPublicKey *pkey)
  */
 int
 GNUNET_GNSRECORD_zkey_to_pkey (const char *zkey,
-			       struct GNUNET_CRYPTO_EcdsaPublicKey *pkey)
+                               struct GNUNET_CRYPTO_EcdsaPublicKey *pkey)
 {
   if (GNUNET_OK !=
       GNUNET_CRYPTO_ecdsa_public_key_from_string (zkey,

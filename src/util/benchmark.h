@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/benchmark.h
@@ -37,17 +37,21 @@
 
 #if ENABLE_BENCHMARK
 #define BENCHMARK_START(opname) \
-    struct GNUNET_TIME_Absolute _benchmark_##opname##_start = GNUNET_TIME_absolute_get ()
+  struct GNUNET_TIME_Absolute _benchmark_ ## opname ## _start = \
+    GNUNET_TIME_absolute_get ()
 #define BENCHMARK_END(opname) do { \
-  { \
-    struct GNUNET_TIME_Absolute _benchmark_##opname##_end = GNUNET_TIME_absolute_get (); \
-    struct BenchmarkData *bd = get_benchmark_data (); \
-    bd->opname##_count++; \
-    bd->opname##_time = \
-        GNUNET_TIME_relative_add (bd->opname##_time, \
-                                  GNUNET_TIME_absolute_get_difference (_benchmark_##opname##_start, \
-                                                                       _benchmark_##opname##_end)); \
-  } \
+    { \
+      struct GNUNET_TIME_Absolute _benchmark_ ## opname ## _end = \
+        GNUNET_TIME_absolute_get (); \
+      struct BenchmarkData *bd = get_benchmark_data (); \
+      bd->opname ## _count++; \
+      bd->opname ## _time = \
+        GNUNET_TIME_relative_add (bd->opname ## _time, \
+                                  GNUNET_TIME_absolute_get_difference ( \
+                                    _benchmark_ ## opname ## _start, \
+                                    _benchmark_ \
+                                    ## opname ## _end)); \
+    } \
 } while (0)
 #else
 #define BENCHMARK_START(opname) do { } while (0)
@@ -69,7 +73,7 @@ struct UrlRequestData
    * HTTP status code.
    */
   unsigned int status;
-  
+
   /**
    * How often was the URL requested?
    */
@@ -102,8 +106,8 @@ struct UrlRequestData
 };
 
 #define GNUNET_DECLARE_BENCHMARK_OP(opname) \
-    uint64_t opname##_count; \
-    struct GNUNET_TIME_Relative opname##_time
+  uint64_t opname ## _count; \
+  struct GNUNET_TIME_Relative opname ## _time
 
 /**
  * Thread-local struct for benchmarking data.

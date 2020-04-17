@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_core_api_start_only.c
  * @brief testcase for core_api.c that only starts two peers,
@@ -51,8 +51,8 @@ static int ok;
 
 static void *
 connect_notify (void *cls,
-		const struct GNUNET_PeerIdentity *peer,
-		struct GNUNET_MQ_Handle *mq)
+                const struct GNUNET_PeerIdentity *peer,
+                struct GNUNET_MQ_Handle *mq)
 {
   return NULL;
 }
@@ -60,8 +60,8 @@ connect_notify (void *cls,
 
 static void
 disconnect_notify (void *cls,
-		   const struct GNUNET_PeerIdentity *peer,
-		   void *internal_cls)
+                   const struct GNUNET_PeerIdentity *peer,
+                   void *internal_cls)
 {
 }
 
@@ -92,11 +92,11 @@ init_notify (void *cls,
   {
     /* connect p2 */
     p2.ch = GNUNET_CORE_connect (p2.cfg,
-				 &p2,
-				 &init_notify,
-				 &connect_notify,
-				 &disconnect_notify,
-				 handlers);
+                                 &p2,
+                                 &init_notify,
+                                 &connect_notify,
+                                 &disconnect_notify,
+                                 handlers);
   }
   else
   {
@@ -104,14 +104,14 @@ init_notify (void *cls,
     GNUNET_SCHEDULER_cancel (timeout_task_id);
     timeout_task_id = NULL;
     GNUNET_SCHEDULER_add_now (&shutdown_task,
-			      NULL);
+                              NULL);
   }
 }
 
 
 static void
 setup_peer (struct PeerContext *p,
-	    const char *cfgname)
+            const char *cfgname)
 {
   char *binary;
 
@@ -119,15 +119,15 @@ setup_peer (struct PeerContext *p,
   p->cfg = GNUNET_CONFIGURATION_create ();
   p->arm_proc =
     GNUNET_OS_start_process (GNUNET_YES,
-			     GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-			     NULL, NULL, NULL,
-			     binary,
-			     "gnunet-service-arm",
-			     "-c", cfgname,
-			     NULL);
+                             GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                             NULL, NULL, NULL,
+                             binary,
+                             "gnunet-service-arm",
+                             "-c", cfgname,
+                             NULL);
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CONFIGURATION_load (p->cfg,
-					    cfgname));
+                 GNUNET_CONFIGURATION_load (p->cfg,
+                                            cfgname));
   GNUNET_free (binary);
 }
 
@@ -135,9 +135,9 @@ setup_peer (struct PeerContext *p,
 static void
 timeout_task (void *cls)
 {
-  FPRINTF (stderr,
-	   "%s",
-	   "Timeout.\n");
+  fprintf (stderr,
+           "%s",
+           "Timeout.\n");
   if (NULL != p1.ch)
   {
     GNUNET_CORE_disconnect (p1.ch);
@@ -163,17 +163,17 @@ run (void *cls,
   setup_peer (&p1, "test_core_api_peer1.conf");
   setup_peer (&p2, "test_core_api_peer2.conf");
   timeout_task_id =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES,
-				     TIMEOUT),
-                                    &timeout_task,
-				    NULL);
+                                    TIMEOUT),
+                                  &timeout_task,
+                                  NULL);
   p1.ch = GNUNET_CORE_connect (p1.cfg,
-			       &p1,
-			       &init_notify,
-			       &connect_notify,
-			       &disconnect_notify,
-			       handlers);
+                               &p1,
+                               &init_notify,
+                               &connect_notify,
+                               &disconnect_notify,
+                               handlers);
 }
 
 
@@ -181,17 +181,17 @@ static void
 stop_arm (struct PeerContext *p)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Stopping peer\n");
+              "Stopping peer\n");
   if (0 != GNUNET_OS_process_kill (p->arm_proc,
-				   GNUNET_TERM_SIG))
+                                   GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-			 "kill");
+                         "kill");
   if (GNUNET_OK !=
       GNUNET_OS_process_wait (p->arm_proc))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-			 "waitpid");
+                         "waitpid");
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "ARM process %u stopped\n",
+              "ARM process %u stopped\n",
               (unsigned int) GNUNET_OS_process_get_pid (p->arm_proc));
   GNUNET_OS_process_destroy (p->arm_proc);
   p->arm_proc = NULL;
@@ -211,19 +211,20 @@ check ()
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
+
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-peer-1");
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-peer-2");
 
   ok = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
-		      argv,
+  GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
+                      argv,
                       "test-core-api-start-only",
-		      "nohelp",
-		      options,
-		      &run,
-		      &ok);
+                      "nohelp",
+                      options,
+                      &run,
+                      &ok);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Test finished\n");
+              "Test finished\n");
   stop_arm (&p1);
   stop_arm (&p2);
   return ok;
@@ -244,5 +245,6 @@ main (int argc,
   GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-peer-2");
   return ret;
 }
+
 
 /* end of test_core_api_start_only.c */

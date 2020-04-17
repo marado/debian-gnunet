@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_scheduler.c
  * @brief tests for the scheduler
@@ -121,7 +121,7 @@ taskRd (void *cls)
   GNUNET_assert (1 == GNUNET_DISK_file_read (fds[0], &c, 1));
   (*ok) = 8;
   GNUNET_SCHEDULER_add_shutdown (&taskLastRd,
-				 cls);
+                                 cls);
   GNUNET_SCHEDULER_shutdown ();
 }
 
@@ -138,13 +138,13 @@ task4 (void *cls)
   fds[0] = GNUNET_DISK_pipe_handle (p, GNUNET_DISK_PIPE_END_READ);
   fds[1] = GNUNET_DISK_pipe_handle (p, GNUNET_DISK_PIPE_END_WRITE);
   GNUNET_SCHEDULER_add_read_file (GNUNET_TIME_UNIT_FOREVER_REL,
-				  fds[0],
-				  &taskRd,
+                                  fds[0],
+                                  &taskRd,
                                   cls);
   GNUNET_SCHEDULER_add_write_file (GNUNET_TIME_UNIT_FOREVER_REL,
-				   fds[1],
+                                   fds[1],
                                    &taskWrt,
-				   cls);
+                                   cls);
 }
 
 
@@ -157,11 +157,11 @@ task1 (void *cls)
   (*ok) = 2;
   GNUNET_SCHEDULER_add_now (&task3, cls);
   GNUNET_SCHEDULER_add_with_priority (GNUNET_SCHEDULER_PRIORITY_UI,
-				      &task2,
+                                      &task2,
                                       cls);
   GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
-				&task4,
-				cls);
+                                &task4,
+                                cls);
 }
 
 
@@ -175,7 +175,7 @@ check ()
   int ok;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "[Check scheduling]\n");
+              "[Check scheduling]\n");
   ok = 1;
   GNUNET_SCHEDULER_run (&task1, &ok);
   return ok;
@@ -204,14 +204,13 @@ checkShutdown ()
   int ok;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "[Check shutdown]\n");
+              "[Check shutdown]\n");
   ok = 1;
   GNUNET_SCHEDULER_run (&taskShutdown, &ok);
   return ok;
 }
 
 
-#ifndef MINGW
 static void
 taskSig (void *cls)
 {
@@ -220,12 +219,13 @@ taskSig (void *cls)
   GNUNET_assert (1 == *ok);
   *ok = 9;
   GNUNET_SCHEDULER_add_shutdown (&taskLastSig, cls);
-  never_run_task = 
-    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5),
-				  &taskNeverRun,
-				  NULL);
-  GNUNET_break (0 == PLIBC_KILL (getpid (),
-				 GNUNET_TERM_SIG));
+  never_run_task =
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                    GNUNET_TIME_UNIT_SECONDS, 5),
+                                  &taskNeverRun,
+                                  NULL);
+  GNUNET_break (0 == kill (getpid (),
+                           GNUNET_TERM_SIG));
 }
 
 
@@ -239,12 +239,11 @@ checkSignal ()
   int ok;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "[Check signal handling]\n");
+              "[Check signal handling]\n");
   ok = 1;
   GNUNET_SCHEDULER_run (&taskSig, &ok);
   return ok;
 }
-#endif
 
 
 static void
@@ -268,7 +267,7 @@ checkCancel ()
   int ok;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "[Check task cancellation]\n");
+              "[Check task cancellation]\n");
   ok = 1;
   GNUNET_SCHEDULER_run (&taskCancel, &ok);
   return ok;
@@ -283,13 +282,12 @@ main (int argc, char *argv[])
   GNUNET_log_setup ("test_scheduler", "WARNING", NULL);
   ret += check ();
   ret += checkCancel ();
-#ifndef MINGW
   ret += checkSignal ();
-#endif
   ret += checkShutdown ();
   GNUNET_DISK_pipe_close (p);
 
   return ret;
 }
+
 
 /* end of test_scheduler.c */

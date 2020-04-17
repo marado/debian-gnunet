@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -61,9 +61,10 @@ struct GNUNET_RPS_Request_Handle;
  * @param num_peers the number of peers returned
  * @param peers array with num_peers PeerIDs
  */
-typedef void (* GNUNET_RPS_NotifyReadyCB) (void *cls,
-    uint64_t num_peers,
-    const struct GNUNET_PeerIdentity *peers);
+typedef void (*GNUNET_RPS_NotifyReadyCB) (void *cls,
+                                          uint64_t num_peers,
+                                          const struct
+                                          GNUNET_PeerIdentity *peers);
 
 
 /**
@@ -75,10 +76,11 @@ typedef void (* GNUNET_RPS_NotifyReadyCB) (void *cls,
  * @param probability The probability with which all elements have been observed
  * @param num_observed Number of IDs this sampler has observed
  */
-typedef void (* GNUNET_RPS_NotifyReadySingleInfoCB) (void *cls,
-    const struct GNUNET_PeerIdentity *peer,
-    double probability,
-    uint32_t num_observed);
+typedef void (*GNUNET_RPS_NotifyReadySingleInfoCB) (void *cls,
+                                                    const struct
+                                                    GNUNET_PeerIdentity *peer,
+                                                    double probability,
+                                                    uint32_t num_observed);
 
 
 /**
@@ -156,7 +158,7 @@ GNUNET_RPS_request_peer_info (struct GNUNET_RPS_Handle *rps_handle,
  */
 void
 GNUNET_RPS_seed_ids (struct GNUNET_RPS_Handle *h, uint32_t n,
-                     const struct GNUNET_PeerIdentity * ids);
+                     const struct GNUNET_PeerIdentity *ids);
 
 /**
  * Cancle an issued request.
@@ -174,7 +176,7 @@ GNUNET_RPS_request_cancel (struct GNUNET_RPS_Request_Handle *rh);
  */
 void
 GNUNET_RPS_request_single_info_cancel (
-    struct GNUNET_RPS_Request_Handle_Single_Info *rhs);
+  struct GNUNET_RPS_Request_Handle_Single_Info *rhs);
 
 
 #if ENABLE_MALICIOUS
@@ -192,12 +194,13 @@ GNUNET_RPS_request_single_info_cancel (
  *            if @type is 2 the last id is the id of the
  *            peer to be isolated from the rest
  */
-  void
+void
 GNUNET_RPS_act_malicious (struct GNUNET_RPS_Handle *h,
                           uint32_t type,
                           uint32_t num_peers,
                           const struct GNUNET_PeerIdentity *ids,
                           const struct GNUNET_PeerIdentity *target_peer);
+
 #endif /* ENABLE_MALICIOUS */
 
 /* Get internals for debugging/profiling purposes */
@@ -245,7 +248,7 @@ GNUNET_RPS_stream_cancel (struct GNUNET_RPS_StreamRequestHandle *srh);
  *
  * @param h the handle to the rps service
  */
-  void
+void
 GNUNET_RPS_disconnect (struct GNUNET_RPS_Handle *h);
 
 

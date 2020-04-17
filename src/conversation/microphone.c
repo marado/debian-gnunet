@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2013 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -36,7 +36,6 @@
  */
 struct Microphone
 {
-
   /**
    * Our configuration.
    */
@@ -56,7 +55,6 @@ struct Microphone
    * Closure for @e rdc.
    */
   void *rdc_cls;
-
 };
 
 
@@ -71,7 +69,7 @@ struct Microphone
  */
 static int
 process_record_messages (void *cls,
-			 const struct GNUNET_MessageHeader *msg)
+                         const struct GNUNET_MessageHeader *msg)
 {
   struct Microphone *mic = cls;
   const struct AudioMessage *am;
@@ -83,8 +81,8 @@ process_record_messages (void *cls,
   }
   am = (const struct AudioMessage *) msg;
   mic->rdc (mic->rdc_cls,
-	    ntohs (msg->size) - sizeof (struct AudioMessage),
-	    &am[1]);
+            ntohs (msg->size) - sizeof(struct AudioMessage),
+            &am[1]);
   return GNUNET_OK;
 }
 
@@ -98,12 +96,11 @@ process_record_messages (void *cls,
  */
 static int
 enable (void *cls,
-	GNUNET_MICROPHONE_RecordedDataCallback rdc,
-	void *rdc_cls)
+        GNUNET_MICROPHONE_RecordedDataCallback rdc,
+        void *rdc_cls)
 {
   struct Microphone *mic = cls;
-  static char * const record_helper_argv[] =
-  {
+  static char *const record_helper_argv[] = {
     "gnunet-helper-audio-record",
     NULL
   };
@@ -111,14 +108,14 @@ enable (void *cls,
   mic->rdc = rdc;
   mic->rdc_cls = rdc_cls;
   mic->record_helper = GNUNET_HELPER_start (GNUNET_NO,
-					    "gnunet-helper-audio-record",
-					    record_helper_argv,
-					    &process_record_messages,
-					    NULL, mic);
+                                            "gnunet-helper-audio-record",
+                                            record_helper_argv,
+                                            &process_record_messages,
+                                            NULL, mic);
   if (NULL == mic->record_helper)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Could not start record audio helper\n"));
+                _ ("Could not start record audio helper\n"));
     return GNUNET_SYSERR;
   }
   return GNUNET_OK;
@@ -141,7 +138,7 @@ disable (void *cls)
     return;
   }
   GNUNET_break (GNUNET_OK ==
-		GNUNET_HELPER_kill (mic->record_helper, GNUNET_NO));
+                GNUNET_HELPER_kill (mic->record_helper, GNUNET_NO));
   GNUNET_HELPER_destroy (mic->record_helper);
   mic->record_helper = NULL;
 }
@@ -170,7 +167,8 @@ destroy (void *cls)
  * @return NULL on error
  */
 struct GNUNET_MICROPHONE_Handle *
-GNUNET_MICROPHONE_create_from_hardware (const struct GNUNET_CONFIGURATION_Handle *cfg)
+GNUNET_MICROPHONE_create_from_hardware (const struct
+                                        GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_MICROPHONE_Handle *microphone;
   struct Microphone *mic;
@@ -197,5 +195,6 @@ GNUNET_MICROPHONE_destroy (struct GNUNET_MICROPHONE_Handle *microphone)
   microphone->destroy_microphone (microphone->cls);
   GNUNET_free (microphone);
 }
+
 
 /* end of microphone.c */

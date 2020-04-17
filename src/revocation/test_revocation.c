@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file revocation/test_revocation.c
  * @brief base testcase for revocation exchange
@@ -259,6 +259,7 @@ static void
 identity_disconnect_adapter (void *cls, void *op_result)
 {
   struct TestPeer *me = cls;
+
   GNUNET_IDENTITY_disconnect (me->idh);
   me->idh = NULL;
 }
@@ -404,5 +405,6 @@ main (int argc, char *argv[])
                                   NULL);
   return ok;
 }
+
 
 /* end of test_revocation.c */

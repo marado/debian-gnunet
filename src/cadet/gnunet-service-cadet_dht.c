@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/gnunet-service-cadet_dht.c
  * @brief Information we track per peer.
@@ -40,17 +40,19 @@
  * notifications when our HELLO is ready, so this is just the maximum
  * we wait for the first notification.
  */
-#define STARTUP_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 500)
+#define STARTUP_DELAY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 500)
 
 /**
  * How long do we wait after we get an updated HELLO before publishing?
  * Allows for the HELLO to be updated again quickly, for example in
  * case multiple addresses changed and we got a partial update.
  */
-#define CHANGE_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 100)
+#define CHANGE_DELAY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 100)
 
 
-#define LOG(level, ...) GNUNET_log_from (level,"cadet-dht",__VA_ARGS__)
+#define LOG(level, ...) GNUNET_log_from (level, "cadet-dht", __VA_ARGS__)
 
 
 /**
@@ -62,7 +64,6 @@ struct GCD_search_handle
    * DHT_GET handle.
    */
   struct GNUNET_DHT_GetHandle *dhtget;
-
 };
 
 
@@ -126,9 +127,9 @@ dht_get_id_handler (void *cls, struct GNUNET_TIME_Absolute exp,
                           get_path_length,
                           put_path,
                           put_path_length);
-  if ( (size >= sizeof (struct GNUNET_HELLO_Message)) &&
-       (ntohs (hello->header.size) == size) &&
-       (size == GNUNET_HELLO_size (hello)) )
+  if ((size >= sizeof(struct GNUNET_HELLO_Message)) &&
+      (ntohs (hello->header.size) == size) &&
+      (size == GNUNET_HELLO_size (hello)))
   {
     peer = GCP_get (&put_path[0],
                     GNUNET_YES);
@@ -189,14 +190,14 @@ announce_id (void *cls)
                             GNUNET_NO);
   memset (&phash,
           0,
-          sizeof (phash));
+          sizeof(phash));
   GNUNET_memcpy (&phash,
                  &my_full_id,
-                 sizeof (my_full_id));
+                 sizeof(my_full_id));
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Announcing my HELLO (%u bytes) in the DHT\n",
        size);
-  GNUNET_DHT_put (dht_handle,   /* DHT handle */
+  GNUNET_DHT_put (dht_handle,    /* DHT handle */
                   &phash,       /* Key to use */
                   dht_replication_level,     /* Replication level */
                   GNUNET_DHT_RO_RECORD_ROUTE
@@ -309,22 +310,22 @@ GCD_search (const struct GNUNET_PeerIdentity *peer_id)
                             GNUNET_NO);
   memset (&phash,
           0,
-          sizeof (phash));
+          sizeof(phash));
   GNUNET_memcpy (&phash,
                  peer_id,
-                 sizeof (*peer_id));
+                 sizeof(*peer_id));
 
   h = GNUNET_new (struct GCD_search_handle);
-  h->dhtget = GNUNET_DHT_get_start (dht_handle,    /* handle */
+  h->dhtget = GNUNET_DHT_get_start (dht_handle,     /* handle */
                                     GNUNET_BLOCK_TYPE_DHT_HELLO, /* type */
                                     &phash,     /* key to search */
                                     dht_replication_level, /* replication level */
-                                    GNUNET_DHT_RO_RECORD_ROUTE |
-                                    GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                                    GNUNET_DHT_RO_RECORD_ROUTE
+                                    | GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
                                     NULL,       /* xquery */
                                     0,     /* xquery bits */
                                     &dht_get_id_handler,
-				    h);
+                                    h);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Starting DHT GET for peer %s (%p)\n",
        GNUNET_i2s (peer_id),
@@ -347,5 +348,6 @@ GCD_search_stop (struct GCD_search_handle *h)
   GNUNET_DHT_get_stop (h->dhtget);
   GNUNET_free (h);
 }
+
 
 /* end of gnunet-service-cadet_dht.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * Message types for STUN server resolution
  *
@@ -28,12 +28,13 @@
  */
 
 
-#define STUN_IGNORE		(0)
-#define STUN_ACCEPT		(1)
+#define STUN_IGNORE             (0)
+#define STUN_ACCEPT             (1)
 
-#define STUN_MAGIC_COOKIE	0x2112A442
+#define STUN_MAGIC_COOKIE       0x2112A442
 
-typedef struct {
+typedef struct
+{
   uint32_t id[3];
 } GNUNET_PACKED stun_trans_id;
 
@@ -59,12 +60,12 @@ struct stun_attr
  */
 struct stun_addr
 {
-  uint8_t  unused;
+  uint8_t unused;
 
   /**
    * Address family, we expect AF_INET.
    */
-  uint8_t  family;
+  uint8_t family;
 
   /**
    * Port number.
@@ -74,14 +75,15 @@ struct stun_addr
   /**
    * IPv4 address. Should this be "struct in_addr"?
    */
-  uint32_t   addr;
+  uint32_t addr;
 } GNUNET_PACKED;
 
 
 /**
  * STUN message classes
  */
-enum StunClasses {
+enum StunClasses
+{
   INVALID_CLASS = 0,
   STUN_REQUEST = 0x0000,
   STUN_INDICATION = 0x0001,
@@ -89,7 +91,8 @@ enum StunClasses {
   STUN_ERROR_RESPONSE = 0x0003
 };
 
-enum StunMethods {
+enum StunMethods
+{
   INVALID_METHOD = 0,
   STUN_BINDING = 0x0001,
   STUN_SHARED_SECRET = 0x0002,
@@ -106,7 +109,8 @@ enum StunMethods {
  * Basic attribute types in stun messages.
  * Messages can also contain custom attributes (codes above 0x7fff)
  */
-enum StunAttributes {
+enum StunAttributes
+{
   STUN_MAPPED_ADDRESS = 0x0001,
   STUN_RESPONSE_ADDRESS = 0x0002,
   STUN_CHANGE_ADDRESS = 0x0003,
@@ -152,7 +156,9 @@ decode_class (int msg)
 static enum StunMethods
 decode_method (int msg)
 {
-  return (enum StunMethods) (msg & 0x000f) | ((msg & 0x00e0) >> 1) | ((msg & 0x3e00) >> 2);
+  return (enum StunMethods) (msg & 0x000f) | ((msg & 0x00e0) >> 1) | ((msg
+                                                                       & 0x3e00)
+                                                                      >> 2);
 }
 
 
@@ -166,7 +172,8 @@ GNUNET_UNUSED
 static const char *
 stun_msg2str (int msg)
 {
-  static const struct {
+  static const struct
+  {
     enum StunClasses value;
     const char *name;
   } classes[] = {
@@ -176,7 +183,8 @@ stun_msg2str (int msg)
     { STUN_ERROR_RESPONSE, "Error Response" },
     { INVALID_CLASS, NULL }
   };
-  static const struct {
+  static const struct
+  {
     enum StunMethods value;
     const char *name;
   } methods[] = {
@@ -222,7 +230,8 @@ GNUNET_UNUSED
 static const char *
 stun_attr2str (enum StunAttributes msg)
 {
-  static const struct {
+  static const struct
+  {
     enum StunAttributes value;
     const char *name;
   } attrs[] = {

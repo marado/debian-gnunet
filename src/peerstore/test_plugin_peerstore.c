@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file namestore/test_plugin_namestore.c
  * @brief Test for the namestore plugins
@@ -75,15 +75,15 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
   char *libname;
 
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("Loading `%s' peer plugin\n"),
+              _ ("Loading `%s' peer plugin\n"),
               plugin_name);
   GNUNET_asprintf (&libname,
                    "libgnunet_plugin_peerstore_%s",
                    plugin_name);
   if (NULL == (ret = GNUNET_PLUGIN_load (libname,
-                                         (void*) cfg)))
+                                         (void *) cfg)))
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Failed to load plugin `%s'!\n",
              plugin_name);
     GNUNET_free (libname);
@@ -100,7 +100,7 @@ test_record (void *cls,
              const char *error)
 {
   const struct GNUNET_PeerIdentity *id = cls;
-  const char* testval = "test_val";
+  const char*testval = "test_val";
 
   if (NULL == record)
   {
@@ -109,7 +109,7 @@ test_record (void *cls,
   }
   GNUNET_assert (0 == memcmp (&record->peer,
                               id,
-                              sizeof (struct GNUNET_PeerIdentity)));
+                              sizeof(struct GNUNET_PeerIdentity)));
   GNUNET_assert (0 == strcmp ("subsys",
                               record->sub_system));
   GNUNET_assert (0 == strcmp ("key",
@@ -131,7 +131,7 @@ get_record (struct GNUNET_PEERSTORE_PluginFunctions *psp,
                                        identity,
                                        "key",
                                        &test_record,
-                                       (void*)identity));
+                                       (void *) identity));
 }
 
 
@@ -169,17 +169,16 @@ run (void *cls,
      const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
-
   ok = 1;
   psp = load_plugin (cfg);
   if (NULL == psp)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
-	     "Failed to initialize peerstore.  Database likely not setup, skipping test.\n");
+             "Failed to initialize peerstore.  Database likely not setup, skipping test.\n");
     return;
   }
-  memset (&p1, 1, sizeof (p1));
+  memset (&p1, 1, sizeof(p1));
   put_record (psp,
               &p1);
 }
@@ -204,10 +203,10 @@ main (int argc, char *argv[])
                     NULL);
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
-                   sizeof (cfg_name),
+                   sizeof(cfg_name),
                    "test_plugin_peerstore_%s.conf",
                    plugin_name);
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(xargv) / sizeof(char *)) - 1,
                       xargv,
                       "test-plugin-peerstore",
                       "nohelp",
@@ -215,10 +214,11 @@ main (int argc, char *argv[])
                       &run,
                       NULL);
   if (ok != 0)
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Missed some testcases: %d\n",
              ok);
   return ok;
 }
+
 
 /* end of test_plugin_peerstore.c */

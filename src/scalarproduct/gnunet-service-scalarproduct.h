@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -58,7 +58,6 @@ struct ServiceRequestMessage
    * Alice's public key
    */
   struct GNUNET_CRYPTO_PaillierPublicKey public_key;
-
 };
 
 
@@ -135,7 +134,6 @@ struct BobCryptodataMultipartMessage
    * GNUNET_CRYPTO_PaillierCiphertext[contained_element_count]`
    */
 };
-
 
 
 GNUNET_NETWORK_STRUCT_END

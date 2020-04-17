@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -124,7 +124,6 @@ enum EXTRACTOR_MetaType
   EXTRACTOR_METATYPE_ORIGINAL_TITLE = 162,
   EXTRACTOR_METATYPE_GNUNET_FULL_DATA = 174,
   EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME = 180,
-
 };
 
 /**
@@ -722,7 +721,6 @@ struct GNUNET_CONTAINER_MultiHashMapIterator;
  */
 enum GNUNET_CONTAINER_MultiHashMapOption
 {
-
   /**
    * @ingroup hashmap
    * If a value with the given key exists, replace it.  Note that the
@@ -2304,14 +2302,14 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
 #define GNUNET_CONTAINER_MDLL_insert(mdll, head, tail, element)                \
   do                                                                           \
   {                                                                            \
-    GNUNET_assert (((element)->prev_##mdll == NULL) && ((head) != (element))); \
-    GNUNET_assert (((element)->next_##mdll == NULL) && ((tail) != (element))); \
-    (element)->next_##mdll = (head);                                           \
-    (element)->prev_##mdll = NULL;                                             \
+    GNUNET_assert (((element)->prev_ ## mdll == NULL) && ((head) != (element))); \
+    GNUNET_assert (((element)->next_ ## mdll == NULL) && ((tail) != (element))); \
+    (element)->next_ ## mdll = (head);                                           \
+    (element)->prev_ ## mdll = NULL;                                             \
     if ((tail) == NULL)                                                        \
       (tail) = element;                                                        \
     else                                                                       \
-      (head)->prev_##mdll = element;                                           \
+      (head)->prev_ ## mdll = element;                                           \
     (head) = (element);                                                        \
   } while (0)
 
@@ -2329,14 +2327,14 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
 #define GNUNET_CONTAINER_MDLL_insert_tail(mdll, head, tail, element)           \
   do                                                                           \
   {                                                                            \
-    GNUNET_assert (((element)->prev_##mdll == NULL) && ((head) != (element))); \
-    GNUNET_assert (((element)->next_##mdll == NULL) && ((tail) != (element))); \
-    (element)->prev_##mdll = (tail);                                           \
-    (element)->next_##mdll = NULL;                                             \
+    GNUNET_assert (((element)->prev_ ## mdll == NULL) && ((head) != (element))); \
+    GNUNET_assert (((element)->next_ ## mdll == NULL) && ((tail) != (element))); \
+    (element)->prev_ ## mdll = (tail);                                           \
+    (element)->next_ ## mdll = NULL;                                             \
     if ((head) == NULL)                                                        \
       (head) = element;                                                        \
     else                                                                       \
-      (tail)->next_##mdll = element;                                           \
+      (tail)->next_ ## mdll = element;                                           \
     (tail) = (element);                                                        \
   } while (0)
 
@@ -2355,23 +2353,23 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
 #define GNUNET_CONTAINER_MDLL_insert_after(mdll, head, tail, other, element)   \
   do                                                                           \
   {                                                                            \
-    GNUNET_assert (((element)->prev_##mdll == NULL) && ((head) != (element))); \
-    GNUNET_assert (((element)->next_##mdll == NULL) && ((tail) != (element))); \
-    (element)->prev_##mdll = (other);                                          \
+    GNUNET_assert (((element)->prev_ ## mdll == NULL) && ((head) != (element))); \
+    GNUNET_assert (((element)->next_ ## mdll == NULL) && ((tail) != (element))); \
+    (element)->prev_ ## mdll = (other);                                          \
     if (NULL == other)                                                         \
     {                                                                          \
-      (element)->next_##mdll = (head);                                         \
+      (element)->next_ ## mdll = (head);                                         \
       (head) = (element);                                                      \
     }                                                                          \
     else                                                                       \
     {                                                                          \
-      (element)->next_##mdll = (other)->next_##mdll;                           \
-      (other)->next_##mdll = (element);                                        \
+      (element)->next_ ## mdll = (other)->next_ ## mdll;                           \
+      (other)->next_ ## mdll = (element);                                        \
     }                                                                          \
-    if (NULL == (element)->next_##mdll)                                        \
+    if (NULL == (element)->next_ ## mdll)                                        \
       (tail) = (element);                                                      \
     else                                                                       \
-      (element)->next_##mdll->prev_##mdll = (element);                         \
+      (element)->next_ ## mdll->prev_ ## mdll = (element);                         \
   } while (0)
 
 
@@ -2389,9 +2387,9 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
 #define GNUNET_CONTAINER_MDLL_insert_before(mdll, head, tail, other, element)  \
   do                                                                           \
   {                                                                            \
-    GNUNET_assert (((element)->prev_##mdll == NULL) && ((head) != (element))); \
-    GNUNET_assert (((element)->next_##mdll == NULL) && ((tail) != (element))); \
-    (element)->next_##mdll = (other);                                          \
+    GNUNET_assert (((element)->prev_ ## mdll == NULL) && ((head) != (element))); \
+    GNUNET_assert (((element)->next_ ## mdll == NULL) && ((tail) != (element))); \
+    (element)->next_ ## mdll = (other);                                          \
     if (NULL == other)                                                         \
     {                                                                          \
       (element)->prev = (tail);                                                \
@@ -2399,13 +2397,13 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
     }                                                                          \
     else                                                                       \
     {                                                                          \
-      (element)->prev_##mdll = (other)->prev_##mdll;                           \
-      (other)->prev_##mdll = (element);                                        \
+      (element)->prev_ ## mdll = (other)->prev_ ## mdll;                           \
+      (other)->prev_ ## mdll = (element);                                        \
     }                                                                          \
-    if (NULL == (element)->prev_##mdll)                                        \
+    if (NULL == (element)->prev_ ## mdll)                                        \
       (head) = (element);                                                      \
     else                                                                       \
-      (element)->prev_##mdll->next_##mdll = (element);                         \
+      (element)->prev_ ## mdll->next_ ## mdll = (element);                         \
   } while (0)
 
 
@@ -2423,18 +2421,18 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
 #define GNUNET_CONTAINER_MDLL_remove(mdll, head, tail, element)                \
   do                                                                           \
   {                                                                            \
-    GNUNET_assert (((element)->prev_##mdll != NULL) || ((head) == (element))); \
-    GNUNET_assert (((element)->next_##mdll != NULL) || ((tail) == (element))); \
-    if ((element)->prev_##mdll == NULL)                                        \
-      (head) = (element)->next_##mdll;                                         \
+    GNUNET_assert (((element)->prev_ ## mdll != NULL) || ((head) == (element))); \
+    GNUNET_assert (((element)->next_ ## mdll != NULL) || ((tail) == (element))); \
+    if ((element)->prev_ ## mdll == NULL)                                        \
+      (head) = (element)->next_ ## mdll;                                         \
     else                                                                       \
-      (element)->prev_##mdll->next_##mdll = (element)->next_##mdll;            \
-    if ((element)->next_##mdll == NULL)                                        \
-      (tail) = (element)->prev_##mdll;                                         \
+      (element)->prev_ ## mdll->next_ ## mdll = (element)->next_ ## mdll;            \
+    if ((element)->next_ ## mdll == NULL)                                        \
+      (tail) = (element)->prev_ ## mdll;                                         \
     else                                                                       \
-      (element)->next_##mdll->prev_##mdll = (element)->prev_##mdll;            \
-    (element)->next_##mdll = NULL;                                             \
-    (element)->prev_##mdll = NULL;                                             \
+      (element)->next_ ## mdll->prev_ ## mdll = (element)->prev_ ## mdll;            \
+    (element)->next_ ## mdll = NULL;                                             \
+    (element)->prev_ ## mdll = NULL;                                             \
   } while (0)
 
 
@@ -2471,11 +2469,11 @@ GNUNET_CONTAINER_multihashmap32_iterator_destroy (
       for (pos = head; NULL != pos; pos = pos->next)                        \
         if (0 < comparator (comparator_cls, element, pos))                  \
           break; /* element < pos */                                        \
-      if (NULL == pos) /* => element > tail */                              \
+      if (NULL == pos)     /* => element > tail */                              \
       {                                                                     \
         GNUNET_CONTAINER_DLL_insert_tail (head, tail, element);             \
       }                                                                     \
-      else /* prev < element < pos */                                       \
+      else     /* prev < element < pos */                                       \
       {                                                                     \
         GNUNET_CONTAINER_DLL_insert_after (head, tail, pos->prev, element); \
       }                                                                     \

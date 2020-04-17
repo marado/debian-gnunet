@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-fs-profiler.c
@@ -50,7 +50,7 @@ static struct GNUNET_TIME_Relative timeout;
 /**
  * Handle to the task run during termination.
  */
-static struct GNUNET_SCHEDULER_Task * terminate_taskid;
+static struct GNUNET_SCHEDULER_Task *terminate_taskid;
 
 
 /**
@@ -63,13 +63,13 @@ static struct GNUNET_SCHEDULER_Task * terminate_taskid;
  */
 static void
 shutdown_task (void *cls,
-	       struct GNUNET_TESTBED_Operation *op,
-	       const char *emsg)
+               struct GNUNET_TESTBED_Operation *op,
+               const char *emsg)
 {
   if (NULL != emsg)
     fprintf (stderr,
-	     "Error collecting statistics: %s\n",
-	     emsg);
+             "Error collecting statistics: %s\n",
+             emsg);
   GNUNET_SCHEDULER_shutdown ();
 }
 
@@ -88,18 +88,18 @@ shutdown_task (void *cls,
  */
 static int
 process_stats (void *cls,
-	       const struct GNUNET_TESTBED_Peer *peer,
-	       const char *subsystem,
-	       const char *name,
-	       uint64_t value,
-	       int is_persistent)
+               const struct GNUNET_TESTBED_Peer *peer,
+               const char *subsystem,
+               const char *name,
+               uint64_t value,
+               int is_persistent)
 {
   fprintf (stdout,
-	   "%p-%s: %s = %llu\n",
-	   peer,
-	   subsystem,
-	   name,
-	   (unsigned long long) value);
+           "%p-%s: %s = %llu\n",
+           peer,
+           subsystem,
+           name,
+           (unsigned long long) value);
   return GNUNET_OK;
 }
 
@@ -120,9 +120,9 @@ terminate_task (void *cls)
   }
   GNUNET_TESTBED_get_statistics (0, NULL,
                                  NULL, NULL,
-				 &process_stats,
-				 &shutdown_task,
-				 NULL);
+                                 &process_stats,
+                                 &shutdown_task,
+                                 NULL);
 }
 
 
@@ -166,10 +166,10 @@ test_master (void *cls,
 
   if (0 != timeout.rel_value_us)
     terminate_taskid = GNUNET_SCHEDULER_add_delayed (timeout,
-						     &timeout_task,
-						     NULL);
-   GNUNET_SCHEDULER_add_shutdown (&terminate_task,
-				  NULL);
+                                                     &timeout_task,
+                                                     NULL);
+  GNUNET_SCHEDULER_add_shutdown (&terminate_task,
+                                 NULL);
 }
 
 
@@ -186,10 +186,10 @@ run (void *cls, char *const *args, const char *cfgfile,
      const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   GNUNET_TESTBED_run (host_filename,
-		      cfg,
-		      num_peers,
-		      0, NULL, NULL,
-		      &test_master, (void *) cfg);
+                      cfg,
+                      num_peers,
+                      0, NULL, NULL,
+                      &test_master, (void *) cfg);
 }
 
 
@@ -204,36 +204,42 @@ int
 main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_uint ('n',
-                                   "num-peers",
-                                   "COUNT",
-                                   gettext_noop ("run the experiment with COUNT peers"),
-                                   &num_peers),
+                               "num-peers",
+                               "COUNT",
+                               gettext_noop (
+                                 "run the experiment with COUNT peers"),
+                               &num_peers),
 
     GNUNET_GETOPT_option_string ('H',
                                  "hosts",
                                  "HOSTFILE",
-                                 gettext_noop ("specifies name of a file with the HOSTS the testbed should use"),
+                                 gettext_noop (
+                                   "specifies name of a file with the HOSTS the testbed should use"),
                                  &host_filename),
 
     GNUNET_GETOPT_option_relative_time ('t',
-                                            "timeout",
-                                            "DELAY",
-                                            gettext_noop ("automatically terminate experiment after DELAY"),
-                                            &timeout),
+                                        "timeout",
+                                        "DELAY",
+                                        gettext_noop (
+                                          "automatically terminate experiment after DELAY"),
+                                        &timeout),
 
     GNUNET_GETOPT_OPTION_END
   };
+
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
     return 2;
 
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv, "gnunet-fs-profiler",
-			     gettext_noop ("run a testbed to measure file-sharing performance"), options, &run,
-			     NULL)) ? ret : 1;
-  GNUNET_free ((void*) argv);
+         GNUNET_PROGRAM_run (argc, argv, "gnunet-fs-profiler",
+                             gettext_noop (
+                               "run a testbed to measure file-sharing performance"),
+                             options, &run,
+                             NULL)) ? ret : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }
+
 
 /* end of gnunet-fs-profiler.c */

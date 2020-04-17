@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file conversation/conversation.h
@@ -30,13 +30,14 @@
 #ifdef __cplusplus
 extern "C"
 {
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
 
 
-#define MAX_TRANSMIT_DELAY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 60)
+#define MAX_TRANSMIT_DELAY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 60)
 
 
 /**
@@ -60,7 +61,6 @@ struct AudioMessage
   struct GNUNET_MessageHeader header;
 
   /* followed by audio data */
-
 };
 
 
@@ -106,7 +106,6 @@ struct ClientPhoneRingMessage
    * Who is calling us?
    */
   struct GNUNET_CRYPTO_EcdsaPublicKey caller_id;
-
 };
 
 
@@ -125,7 +124,6 @@ struct ClientPhoneSuspendMessage
    * talking about.
    */
   uint32_t cid GNUNET_PACKED;
-
 };
 
 
@@ -144,7 +142,6 @@ struct ClientPhoneResumeMessage
    * talking about.
    */
   uint32_t cid GNUNET_PACKED;
-
 };
 
 
@@ -163,7 +160,6 @@ struct ClientPhonePickupMessage
    * talking about.
    */
   uint32_t cid GNUNET_PACKED;
-
 };
 
 
@@ -183,7 +179,6 @@ struct ClientPhoneHangupMessage
    * talking about.
    */
   uint32_t cid GNUNET_PACKED;
-
 };
 
 
@@ -204,7 +199,6 @@ struct ClientAudioMessage
   uint32_t cid GNUNET_PACKED;
 
   /* followed by audio data */
-
 };
 
 
@@ -256,7 +250,6 @@ struct ClientPhonePickedupMessage
    * #GNUNET_MESSAGE_TYPE_CONVERSATION_CS_PHONE_CALL
    */
   uint32_t cid GNUNET_PACKED;
-
 };
 
 
@@ -319,7 +312,6 @@ struct CadetPhoneRingMessage
    * Signature over a `struct CadetPhoneRingInfoPS`
    */
   struct GNUNET_CRYPTO_EcdsaSignature signature;
-
 };
 
 
@@ -332,7 +324,6 @@ struct CadetPhoneHangupMessage
    * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_HANG_UP
    */
   struct GNUNET_MessageHeader header;
-
 };
 
 
@@ -345,7 +336,6 @@ struct CadetPhonePickupMessage
    * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_PICK_UP
    */
   struct GNUNET_MessageHeader header;
-
 };
 
 
@@ -358,7 +348,6 @@ struct CadetPhoneSuspendMessage
    * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_SUSPEND
    */
   struct GNUNET_MessageHeader header;
-
 };
 
 
@@ -371,7 +360,6 @@ struct CadetPhoneResumeMessage
    * Type is: #GNUNET_MESSAGE_TYPE_CONVERSATION_CADET_PHONE_RESUME
    */
   struct GNUNET_MessageHeader header;
-
 };
 
 
@@ -386,14 +374,13 @@ struct CadetAudioMessage
   struct GNUNET_MessageHeader header;
 
   /* followed by audio data */
-
 };
 
 
 GNUNET_NETWORK_STRUCT_END
 
 
-#if 0				/* keep Emacsens' auto-indent happy */
+#if 0                           /* keep Emacsens' auto-indent happy */
 {
 #endif
 #ifdef __cplusplus

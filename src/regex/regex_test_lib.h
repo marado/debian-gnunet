@@ -11,7 +11,7 @@
  *  WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Affero General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -54,7 +54,7 @@ extern "C"
  * @return A string with a single regex that matches any of the original regexes
  */
 char *
-REGEX_TEST_combine (char * const regexes[], unsigned int alphabet_size);
+REGEX_TEST_combine (char *const regexes[], unsigned int alphabet_size);
 
 
 /**
@@ -143,9 +143,8 @@ enum REGEX_TEST_GraphSavingOptions
  */
 void
 REGEX_TEST_automaton_save_graph (struct REGEX_INTERNAL_Automaton *a,
-                                   const char *filename,
-                                   enum REGEX_TEST_GraphSavingOptions options);
-
+                                 const char *filename,
+                                 enum REGEX_TEST_GraphSavingOptions options);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

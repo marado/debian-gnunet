@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -53,7 +53,6 @@ struct EccServiceRequestMessage
    * The transaction/session key used to identify a session
    */
   struct GNUNET_HashCode session_id;
-
 };
 
 
@@ -110,7 +109,6 @@ struct EccBobCryptodataMessage
    * The product of the h_i^{b_i} values.
    */
   struct GNUNET_CRYPTO_EccPoint prod_h_i_b_i;
-
 };
 
 

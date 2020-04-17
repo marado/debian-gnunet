@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file core/core_api.c
  * @brief core service; this is the main API for encrypted P2P
@@ -37,7 +37,6 @@
  */
 struct PeerRecord
 {
-
   /**
    * Corresponding CORE handle.
    */
@@ -77,7 +76,6 @@ struct PeerRecord
  */
 struct GNUNET_CORE_Handle
 {
-
   /**
    * Configuration we're using.
    */
@@ -283,7 +281,7 @@ core_mq_send_impl (struct GNUNET_MQ_Handle *mq,
 
   /* check message size for sanity */
   msize = ntohs (msg->size);
-  if (msize >= GNUNET_MAX_MESSAGE_SIZE - sizeof (struct SendMessage))
+  if (msize >= GNUNET_MAX_MESSAGE_SIZE - sizeof(struct SendMessage))
   {
     GNUNET_break (0);
     GNUNET_MQ_impl_send_continue (mq);
@@ -444,7 +442,7 @@ handle_init_reply (void *cls, const struct InitReplyMessage *m)
     {
       GNUNET_break (0 == memcmp (&h->me,
                                  &m->my_identity,
-                                 sizeof (struct GNUNET_PeerIdentity)));
+                                 sizeof(struct GNUNET_PeerIdentity)));
     }
   }
   /* fake 'connect to self' */
@@ -468,7 +466,7 @@ handle_connect_notify (void *cls, const struct ConnectNotifyMessage *cnm)
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Received notification about connection from `%s'.\n",
        GNUNET_i2s (&cnm->peer));
-  if (0 == memcmp (&h->me, &cnm->peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (&h->me, &cnm->peer, sizeof(struct GNUNET_PeerIdentity)))
   {
     /* connect to self!? */
     GNUNET_break (0);
@@ -498,7 +496,7 @@ handle_disconnect_notify (void *cls, const struct DisconnectNotifyMessage *dnm)
   struct GNUNET_CORE_Handle *h = cls;
   struct PeerRecord *pr;
 
-  if (0 == memcmp (&h->me, &dnm->peer, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (&h->me, &dnm->peer, sizeof(struct GNUNET_PeerIdentity)))
   {
     /* disconnect from self!? */
     GNUNET_break (0);
@@ -533,8 +531,8 @@ check_notify_inbound (void *cls, const struct NotifyTrafficMessage *ntm)
   const struct GNUNET_MessageHeader *em;
 
   (void) cls;
-  msize = ntohs (ntm->header.size) - sizeof (struct NotifyTrafficMessage);
-  if (msize < sizeof (struct GNUNET_MessageHeader))
+  msize = ntohs (ntm->header.size) - sizeof(struct NotifyTrafficMessage);
+  if (msize < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -632,27 +630,27 @@ static void
 reconnect (struct GNUNET_CORE_Handle *h)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (init_reply,
-                              GNUNET_MESSAGE_TYPE_CORE_INIT_REPLY,
-                              struct InitReplyMessage,
-                              h),
-     GNUNET_MQ_hd_fixed_size (connect_notify,
-                              GNUNET_MESSAGE_TYPE_CORE_NOTIFY_CONNECT,
-                              struct ConnectNotifyMessage,
-                              h),
-     GNUNET_MQ_hd_fixed_size (disconnect_notify,
-                              GNUNET_MESSAGE_TYPE_CORE_NOTIFY_DISCONNECT,
-                              struct DisconnectNotifyMessage,
-                              h),
-     GNUNET_MQ_hd_var_size (notify_inbound,
-                            GNUNET_MESSAGE_TYPE_CORE_NOTIFY_INBOUND,
-                            struct NotifyTrafficMessage,
-                            h),
-     GNUNET_MQ_hd_fixed_size (send_ready,
-                              GNUNET_MESSAGE_TYPE_CORE_SEND_READY,
-                              struct SendMessageReady,
-                              h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (init_reply,
+                             GNUNET_MESSAGE_TYPE_CORE_INIT_REPLY,
+                             struct InitReplyMessage,
+                             h),
+    GNUNET_MQ_hd_fixed_size (connect_notify,
+                             GNUNET_MESSAGE_TYPE_CORE_NOTIFY_CONNECT,
+                             struct ConnectNotifyMessage,
+                             h),
+    GNUNET_MQ_hd_fixed_size (disconnect_notify,
+                             GNUNET_MESSAGE_TYPE_CORE_NOTIFY_DISCONNECT,
+                             struct DisconnectNotifyMessage,
+                             h),
+    GNUNET_MQ_hd_var_size (notify_inbound,
+                           GNUNET_MESSAGE_TYPE_CORE_NOTIFY_INBOUND,
+                           struct NotifyTrafficMessage,
+                           h),
+    GNUNET_MQ_hd_fixed_size (send_ready,
+                             GNUNET_MESSAGE_TYPE_CORE_SEND_READY,
+                             struct SendMessageReady,
+                             h),
+    GNUNET_MQ_handler_end () };
   struct InitMessage *init;
   struct GNUNET_MQ_Envelope *env;
   uint16_t *ts;
@@ -665,7 +663,7 @@ reconnect (struct GNUNET_CORE_Handle *h)
     return;
   }
   env = GNUNET_MQ_msg_extra (init,
-                             sizeof (uint16_t) * h->hcnt,
+                             sizeof(uint16_t) * h->hcnt,
                              GNUNET_MESSAGE_TYPE_CORE_INIT);
   LOG (GNUNET_ERROR_TYPE_INFO, "(Re)connecting to CORE service\n");
   init->options = htonl (0);
@@ -710,8 +708,8 @@ GNUNET_CORE_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
   h->handlers = GNUNET_MQ_copy_handlers (handlers);
   h->hcnt = GNUNET_MQ_count_handlers (handlers);
   GNUNET_assert (h->hcnt <
-                 (GNUNET_MAX_MESSAGE_SIZE - sizeof (struct InitMessage)) /
-                   sizeof (uint16_t));
+                 (GNUNET_MAX_MESSAGE_SIZE - sizeof(struct InitMessage))
+                 / sizeof(uint16_t));
   LOG (GNUNET_ERROR_TYPE_DEBUG, "Connecting to CORE service\n");
   reconnect (h);
   if (NULL == h->mq)

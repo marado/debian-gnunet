@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport-testing2.h
@@ -59,9 +59,13 @@ struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorTransmission;
  */
 typedef void
 (*GNUNET_TRANSPORT_TESTING_CommunicatorAvailableCallback)(void *cls,
-      struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-      enum GNUNET_TRANSPORT_CommunicatorCharacteristics cc,
-      char *address_prefix);
+                                                          struct
+                                                          GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                                                          *tc_h,
+                                                          enum
+                                                          GNUNET_TRANSPORT_CommunicatorCharacteristics
+                                                          cc,
+                                                          char *address_prefix);
 
 
 /**
@@ -76,11 +80,14 @@ typedef void
  */
 typedef void
 (*GNUNET_TRANSPORT_TESTING_AddAddressCallback)(void *cls,
-      struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-      const char *address,
-      struct GNUNET_TIME_Relative expiration,
-      uint32_t aid,
-      enum GNUNET_NetworkType nt);
+                                               struct
+                                               GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                                               *tc_h,
+                                               const char *address,
+                                               struct GNUNET_TIME_Relative
+                                               expiration,
+                                               uint32_t aid,
+                                               enum GNUNET_NetworkType nt);
 
 
 /**
@@ -92,8 +99,10 @@ typedef void
  */
 typedef void
 (*GNUNET_TRANSPORT_TESTING_QueueCreateReplyCallback)(void *cls,
-    struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-    int will_try);
+                                                     struct
+                                                     GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                                                     *tc_h,
+                                                     int will_try);
 
 
 /**
@@ -105,8 +114,12 @@ typedef void
  */
 typedef void
 (*GNUNET_TRANSPORT_TESTING_AddQueueCallback)(void *cls,
-    struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-    struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *tc_queue);
+                                             struct
+                                             GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                                             *tc_h,
+                                             struct
+                                             GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue
+                                             *tc_queue);
 
 
 /**
@@ -118,8 +131,11 @@ typedef void
  */
 typedef void
 (*GNUNET_TRANSPORT_TESTING_IncomingMessageCallback)(void *cls,
-    struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-    const struct GNUNET_MessageHeader *msg);
+                                                    struct
+                                                    GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                                                    *tc_h,
+                                                    const struct
+                                                    GNUNET_MessageHeader *msg);
 
 
 /**
@@ -139,15 +155,16 @@ typedef void
  */
 struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *
 GNUNET_TRANSPORT_TESTING_transport_communicator_service_start (
-   const char *service_name,
-   const char *binary_name,
-   const char *cfg_filename,
-   GNUNET_TRANSPORT_TESTING_CommunicatorAvailableCallback communicator_available_cb,
-   GNUNET_TRANSPORT_TESTING_AddAddressCallback add_address_cb,
-   GNUNET_TRANSPORT_TESTING_QueueCreateReplyCallback queue_create_reply_cb,
-   GNUNET_TRANSPORT_TESTING_AddQueueCallback add_queue_cb,
-   GNUNET_TRANSPORT_TESTING_IncomingMessageCallback incoming_message_cb,
-   void *cb_cls);
+  const char *service_name,
+  const char *binary_name,
+  const char *cfg_filename,
+  GNUNET_TRANSPORT_TESTING_CommunicatorAvailableCallback
+  communicator_available_cb,
+  GNUNET_TRANSPORT_TESTING_AddAddressCallback add_address_cb,
+  GNUNET_TRANSPORT_TESTING_QueueCreateReplyCallback queue_create_reply_cb,
+  GNUNET_TRANSPORT_TESTING_AddQueueCallback add_queue_cb,
+  GNUNET_TRANSPORT_TESTING_IncomingMessageCallback incoming_message_cb,
+  void *cb_cls);
 
 
 /**
@@ -158,10 +175,13 @@ GNUNET_TRANSPORT_TESTING_transport_communicator_service_start (
  * @param address For which address
  */
 void
-GNUNET_TRANSPORT_TESTING_transport_communicator_open_queue
-  (struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle *tc_h,
-   const struct GNUNET_PeerIdentity *peer_id,
-   const char *address);
+GNUNET_TRANSPORT_TESTING_transport_communicator_open_queue (struct
+                                                            GNUNET_TRANSPORT_TESTING_TransportCommunicatorHandle
+                                                            *tc_h,
+                                                            const struct
+                                                            GNUNET_PeerIdentity
+                                                            *peer_id,
+                                                            const char *address);
 
 
 /**
@@ -174,10 +194,10 @@ GNUNET_TRANSPORT_TESTING_transport_communicator_open_queue
  * @return Handle to the transmission
  */
 struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorTransmission *
-GNUNET_TRANSPORT_TESTING_transport_communicator_send
-  (struct GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue *tc_queue,
-   const void *payload,
-   size_t payload_size/*,
-   GNUNET_TRANSPORT_TESTING_SuccessStatus cb,
-   void *cb_cls*/);
-
+GNUNET_TRANSPORT_TESTING_transport_communicator_send (struct
+                                                      GNUNET_TRANSPORT_TESTING_TransportCommunicatorQueue
+                                                      *tc_queue,
+                                                      const void *payload,
+                                                      size_t payload_size /*,
+                         GNUNET_TRANSPORT_TESTING_SuccessStatus cb,
+                         void *cb_cls*/               );

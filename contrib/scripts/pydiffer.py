@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
 
 import os
 import sys
@@ -10,7 +10,10 @@ def getdiff(old, new):
     diff = []
     with open(old) as a:
         with open(new) as b:
-            for l in difflib.unified_diff(a.read().splitlines(), b.read().splitlines()):
+            for l in difflib.unified_diff(
+                a.read().splitlines(),
+                b.read().splitlines()
+            ):
                 diff.append(l)
     return diff
 

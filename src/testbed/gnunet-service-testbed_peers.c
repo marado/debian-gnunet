@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2013, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2013, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 
 /**
@@ -148,7 +148,6 @@ static struct PeerReconfigureContext *prc_head;
 static struct PeerReconfigureContext *prc_tail;
 
 
-
 /**
  * DLL head for queue of manage service requests
  */
@@ -206,8 +205,8 @@ peer_list_remove (struct Peer *peer)
   if (orig_size == GST_peer_list_size)
     return;
   GST_peer_list =
-      GNUNET_realloc (GST_peer_list,
-                      sizeof (struct Peer *) * GST_peer_list_size);
+    GNUNET_realloc (GST_peer_list,
+                    sizeof(struct Peer *) * GST_peer_list_size);
 }
 
 
@@ -293,8 +292,8 @@ cleanup_mctx (struct ManageServiceContext *mctx)
   GNUNET_ARM_disconnect (mctx->ah);
   GNUNET_assert (0 < mctx->peer->reference_cnt);
   mctx->peer->reference_cnt--;
-  if ( (GNUNET_YES == mctx->peer->destroy_flag) &&
-       (0 == mctx->peer->reference_cnt) )
+  if ((GNUNET_YES == mctx->peer->destroy_flag) &&
+      (0 == mctx->peer->reference_cnt))
     GST_destroy_peer (mctx->peer);
   GNUNET_free (mctx->service);
   GNUNET_free (mctx);
@@ -498,10 +497,10 @@ handle_peer_create (void *cls,
     LOG_DEBUG ("Creating peer with id: %u\n",
                (unsigned int) peer->id);
     peer->details.local.peer =
-        GNUNET_TESTING_peer_configure (GST_context->system,
-                                       peer->details.local.cfg, peer->id,
-                                       NULL /* Peer id */ ,
-                                       &emsg);
+      GNUNET_TESTING_peer_configure (GST_context->system,
+                                     peer->details.local.cfg, peer->id,
+                                     NULL /* Peer id */,
+                                     &emsg);
     if (NULL == peer->details.local.peer)
     {
       LOG (GNUNET_ERROR_TYPE_WARNING,
@@ -530,7 +529,7 @@ handle_peer_create (void *cls,
   if (NULL == route)
   {
     GNUNET_break (0);
-    GNUNET_SERVICE_client_continue (client); // ?
+    GNUNET_SERVICE_client_continue (client);  // ?
     return;
   }
   peer = GNUNET_new (struct Peer);
@@ -544,16 +543,16 @@ handle_peer_create (void *cls,
   fo_ctxt->cls = peer;
   fo_ctxt->type = OP_PEER_CREATE;
   fo_ctxt->opc =
-      GNUNET_TESTBED_forward_operation_msg_ (GST_slave_list
-                                             [route->dest]->controller,
-                                             fo_ctxt->operation_id,
-                                             &msg->header,
-                                             &peer_create_success_cb,
-                                             fo_ctxt);
+    GNUNET_TESTBED_forward_operation_msg_ (GST_slave_list
+                                           [route->dest]->controller,
+                                           fo_ctxt->operation_id,
+                                           &msg->header,
+                                           &peer_create_success_cb,
+                                           fo_ctxt);
   fo_ctxt->timeout_task =
-      GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                    &peer_create_forward_timeout,
-                                    fo_ctxt);
+    GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                  &peer_create_forward_timeout,
+                                  fo_ctxt);
   GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                     fopcq_tail,
                                     fo_ctxt);
@@ -580,7 +579,7 @@ handle_peer_destroy (void *cls,
   LOG_DEBUG ("Received peer destory on peer: %u and operation id: %llu\n",
              (unsigned int) peer_id,
              (unsigned long long) GNUNET_ntohll (msg->operation_id));
-  if (!VALID_PEER_ID (peer_id))
+  if (! VALID_PEER_ID (peer_id))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
          "Asked to destroy a non existent peer with id: %u\n", peer_id);
@@ -600,16 +599,16 @@ handle_peer_destroy (void *cls,
     fopc->type = OP_PEER_DESTROY;
     fopc->operation_id = GNUNET_ntohll (msg->operation_id);
     fopc->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
-                                               slave->controller,
-                                               fopc->operation_id,
-                                               &msg->header,
-                                               &peer_destroy_success_cb,
-                                               fopc);
+      GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
+                                             slave->controller,
+                                             fopc->operation_id,
+                                             &msg->header,
+                                             &peer_destroy_success_cb,
+                                             fopc);
     fopc->timeout_task =
-        GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                      &GST_forwarded_operation_timeout,
-                                      fopc);
+      GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                    &GST_forwarded_operation_timeout,
+                                    fopc);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fopc);
@@ -680,15 +679,16 @@ handle_peer_start (void *cls,
     fopc->operation_id = GNUNET_ntohll (msg->operation_id);
     fopc->type = OP_PEER_START;
     fopc->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
-                                               slave->controller,
-                                               fopc->operation_id, &msg->header,
-                                               &GST_forwarded_operation_reply_relay,
-                                               fopc);
+      GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
+                                             slave->controller,
+                                             fopc->operation_id, &msg->header,
+                                             &
+                                             GST_forwarded_operation_reply_relay,
+                                             fopc);
     fopc->timeout_task =
-        GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                      &GST_forwarded_operation_timeout,
-                                      fopc);
+      GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                    &GST_forwarded_operation_timeout,
+                                    fopc);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fopc);
@@ -754,16 +754,17 @@ handle_peer_stop (void *cls,
     fopc->operation_id = GNUNET_ntohll (msg->operation_id);
     fopc->type = OP_PEER_STOP;
     fopc->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
-                                               slave->controller,
-                                               fopc->operation_id,
-                                               &msg->header,
-                                               &GST_forwarded_operation_reply_relay,
-                                               fopc);
+      GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
+                                             slave->controller,
+                                             fopc->operation_id,
+                                             &msg->header,
+                                             &
+                                             GST_forwarded_operation_reply_relay,
+                                             fopc);
     fopc->timeout_task =
-        GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                      &GST_forwarded_operation_timeout,
-                                      fopc);
+      GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                    &GST_forwarded_operation_timeout,
+                                    fopc);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fopc);
@@ -805,7 +806,8 @@ handle_peer_stop (void *cls,
  */
 void
 handle_peer_get_config (void *cls,
-                        const struct GNUNET_TESTBED_PeerGetConfigurationMessage *msg)
+                        const struct
+                        GNUNET_TESTBED_PeerGetConfigurationMessage *msg)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   struct GNUNET_MQ_Envelope *env;
@@ -821,7 +823,7 @@ handle_peer_get_config (void *cls,
   peer_id = ntohl (msg->peer_id);
   LOG_DEBUG ("Received GET_CONFIG for peer %u\n",
              (unsigned int) peer_id);
-  if (!VALID_PEER_ID (peer_id))
+  if (! VALID_PEER_ID (peer_id))
   {
     GST_send_operation_fail_msg (client,
                                  GNUNET_ntohll (msg->operation_id),
@@ -839,16 +841,17 @@ handle_peer_get_config (void *cls,
     fopc->operation_id = GNUNET_ntohll (msg->operation_id);
     fopc->type = OP_PEER_INFO;
     fopc->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
-                                               slave->controller,
-                                               fopc->operation_id,
-                                               &msg->header,
-                                               &GST_forwarded_operation_reply_relay,
-                                               fopc);
+      GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
+                                             slave->controller,
+                                             fopc->operation_id,
+                                             &msg->header,
+                                             &
+                                             GST_forwarded_operation_reply_relay,
+                                             fopc);
     fopc->timeout_task =
-        GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                      &GST_forwarded_operation_timeout,
-                                      fopc);
+      GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                    &GST_forwarded_operation_timeout,
+                                    fopc);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fopc);
@@ -858,8 +861,8 @@ handle_peer_get_config (void *cls,
   LOG_DEBUG ("Received PEER_GET_CONFIG for peer: %u\n",
              peer_id);
   config =
-      GNUNET_CONFIGURATION_serialize (GST_peer_list[peer_id]->details.local.cfg,
-                                      &c_size);
+    GNUNET_CONFIGURATION_serialize (GST_peer_list[peer_id]->details.local.cfg,
+                                    &c_size);
   xc_size = GNUNET_TESTBED_compress_config_ (config,
                                              c_size,
                                              &xconfig);
@@ -911,11 +914,11 @@ update_peer_config (struct Peer *peer,
   peer->details.local.cfg = cfg;
   emsg = NULL;
   peer->details.local.peer
-      = GNUNET_TESTING_peer_configure (GST_context->system,
-                                       peer->details.local.cfg,
-                                       peer->id,
-                                       NULL /* Peer id */ ,
-                                       &emsg);
+    = GNUNET_TESTING_peer_configure (GST_context->system,
+                                     peer->details.local.cfg,
+                                     peer->id,
+                                     NULL /* Peer id */,
+                                     &emsg);
   return emsg;
 }
 
@@ -960,7 +963,7 @@ prc_stop_cb (void *cls,
   GST_send_operation_success_msg (prc->client,
                                   prc->op_id);
 
- cleanup:
+cleanup:
   cleanup_prc (prc);
   return;
 }
@@ -991,7 +994,8 @@ check_peer_reconfigure (void *cls,
  */
 void
 handle_peer_reconfigure (void *cls,
-                         const struct GNUNET_TESTBED_PeerReconfigureMessage *msg)
+                         const struct
+                         GNUNET_TESTBED_PeerReconfigureMessage *msg)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   struct Peer *peer;
@@ -1022,16 +1026,17 @@ handle_peer_reconfigure (void *cls,
     fopc->operation_id = op_id;
     fopc->type = OP_PEER_RECONFIGURE;
     fopc->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
-                                               slave->controller,
-                                               fopc->operation_id,
-                                               &msg->header,
-                                               &GST_forwarded_operation_reply_relay,
-                                               fopc);
+      GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
+                                             slave->controller,
+                                             fopc->operation_id,
+                                             &msg->header,
+                                             &
+                                             GST_forwarded_operation_reply_relay,
+                                             fopc);
     fopc->timeout_task =
-        GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                      &GST_forwarded_operation_timeout,
-                                      fopc);
+      GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                    &GST_forwarded_operation_timeout,
+                                    fopc);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fopc);
@@ -1136,11 +1141,12 @@ arm_req_string (enum GNUNET_ARM_RequestStatus rs)
   switch (rs)
   {
   case GNUNET_ARM_REQUEST_SENT_OK:
-    return _("Message was sent successfully");
+    return _ ("Message was sent successfully");
+
   case GNUNET_ARM_REQUEST_DISCONNECTED:
-    return _("We disconnected from ARM before we could send a request");
+    return _ ("We disconnected from ARM before we could send a request");
   }
-  return _("Unknown request status");
+  return _ ("Unknown request status");
 }
 
 
@@ -1156,27 +1162,36 @@ arm_ret_string (enum GNUNET_ARM_Result result)
   switch (result)
   {
   case GNUNET_ARM_RESULT_STOPPED:
-    return _("%s is stopped");
+    return _ ("%s is stopped");
+
   case GNUNET_ARM_RESULT_STARTING:
-    return _("%s is starting");
+    return _ ("%s is starting");
+
   case GNUNET_ARM_RESULT_STOPPING:
-    return _("%s is stopping");
+    return _ ("%s is stopping");
+
   case GNUNET_ARM_RESULT_IS_STARTING_ALREADY:
-    return _("%s is starting already");
+    return _ ("%s is starting already");
+
   case GNUNET_ARM_RESULT_IS_STOPPING_ALREADY:
-    return _("%s is stopping already");
+    return _ ("%s is stopping already");
+
   case GNUNET_ARM_RESULT_IS_STARTED_ALREADY:
-    return _("%s is started already");
+    return _ ("%s is started already");
+
   case GNUNET_ARM_RESULT_IS_STOPPED_ALREADY:
-    return _("%s is stopped already");
+    return _ ("%s is stopped already");
+
   case GNUNET_ARM_RESULT_IS_NOT_KNOWN:
-    return _("%s service is not known to ARM");
+    return _ ("%s service is not known to ARM");
+
   case GNUNET_ARM_RESULT_START_FAILED:
-    return _("%s service failed to start");
+    return _ ("%s service failed to start");
+
   case GNUNET_ARM_RESULT_IN_SHUTDOWN:
-    return _("%s service can't be started because ARM is shutting down");
+    return _ ("%s service can't be started because ARM is shutting down");
   }
-  return _("%.s Unknown result code.");
+  return _ ("%.s Unknown result code.");
 }
 
 
@@ -1212,9 +1227,9 @@ service_manage_result_cb (void *cls,
   if (1 == mctx->start)
     goto service_start_check;
   if (! ((GNUNET_ARM_RESULT_STOPPED == result)
-            || (GNUNET_ARM_RESULT_STOPPING == result)
-            || (GNUNET_ARM_RESULT_IS_STOPPING_ALREADY == result)
-            || (GNUNET_ARM_RESULT_IS_STOPPED_ALREADY == result)) )
+         || (GNUNET_ARM_RESULT_STOPPING == result)
+         || (GNUNET_ARM_RESULT_IS_STOPPING_ALREADY == result)
+         || (GNUNET_ARM_RESULT_IS_STOPPED_ALREADY == result)))
   {
     /* stopping a service failed */
     GNUNET_asprintf (&emsg,
@@ -1225,10 +1240,10 @@ service_manage_result_cb (void *cls,
   /* service stopped successfully */
   goto ret;
 
- service_start_check:
+service_start_check:
   if (! ((GNUNET_ARM_RESULT_STARTING == result)
-            || (GNUNET_ARM_RESULT_IS_STARTING_ALREADY == result)
-            || (GNUNET_ARM_RESULT_IS_STARTED_ALREADY == result)) )
+         || (GNUNET_ARM_RESULT_IS_STARTING_ALREADY == result)
+         || (GNUNET_ARM_RESULT_IS_STARTED_ALREADY == result)))
   {
     /* starting a service failed */
     GNUNET_asprintf (&emsg,
@@ -1238,7 +1253,7 @@ service_manage_result_cb (void *cls,
   }
   /* service started successfully */
 
- ret:
+ret:
   if (NULL != emsg)
   {
     LOG_DEBUG ("%s\n", emsg);
@@ -1263,10 +1278,11 @@ service_manage_result_cb (void *cls,
  */
 int
 check_manage_peer_service (void *cls,
-                           const struct GNUNET_TESTBED_ManagePeerServiceMessage *msg)
+                           const struct
+                           GNUNET_TESTBED_ManagePeerServiceMessage *msg)
 {
   uint16_t msize;
-  const char* service;
+  const char*service;
 
   msize = ntohs (msg->header.size);
   service = (const char *) &msg[1];
@@ -1293,10 +1309,11 @@ check_manage_peer_service (void *cls,
  */
 void
 handle_manage_peer_service (void *cls,
-                            const struct GNUNET_TESTBED_ManagePeerServiceMessage *msg)
+                            const struct
+                            GNUNET_TESTBED_ManagePeerServiceMessage *msg)
 {
   struct GNUNET_SERVICE_Client *client = cls;
-  const char* service;
+  const char*service;
   struct Peer *peer;
   char *emsg;
   struct GNUNET_ARM_Handle *ah;
@@ -1332,16 +1349,17 @@ handle_manage_peer_service (void *cls,
     fopc->type = OP_MANAGE_SERVICE;
     fopc->operation_id = op_id;
     fopc->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
-                                               slave->controller,
-                                               fopc->operation_id,
-                                               &msg->header,
-                                               &GST_forwarded_operation_reply_relay,
-                                               fopc);
+      GNUNET_TESTBED_forward_operation_msg_ (peer->details.remote.
+                                             slave->controller,
+                                             fopc->operation_id,
+                                             &msg->header,
+                                             &
+                                             GST_forwarded_operation_reply_relay,
+                                             fopc);
     fopc->timeout_task =
-        GNUNET_SCHEDULER_add_delayed (GST_timeout,
-                                      &GST_forwarded_operation_timeout,
-                                      fopc);
+      GNUNET_SCHEDULER_add_delayed (GST_timeout,
+                                    &GST_forwarded_operation_timeout,
+                                    fopc);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fopc);
@@ -1354,8 +1372,8 @@ handle_manage_peer_service (void *cls,
     goto err_ret;
   }
   if ((0 != peer->reference_cnt)
-      && ( (0 == strcasecmp ("core", service))
-           || (0 == strcasecmp ("transport", service)) )  )
+      && ((0 == strcasecmp ("core", service))
+          || (0 == strcasecmp ("transport", service))))
   {
     GNUNET_asprintf (&emsg, "Cannot stop %s service of peer with id: %u "
                      "since it is required by existing operations",
@@ -1394,7 +1412,7 @@ handle_manage_peer_service (void *cls,
   GNUNET_SERVICE_client_continue (client);
   return;
 
- err_ret:
+err_ret:
   LOG (GNUNET_ERROR_TYPE_ERROR, "%s\n", emsg);
   GST_send_operation_fail_msg (client, op_id, emsg);
   GNUNET_free (emsg);
@@ -1505,7 +1523,7 @@ handle_shutdown_peers (void *cls,
   unsigned int cnt;
 
   LOG_DEBUG ("Received SHUTDOWN_PEERS\n");
-    /* Stop and destroy all peers */
+  /* Stop and destroy all peers */
   GST_free_mctxq ();
   GST_free_occq ();
   GST_free_roccq ();
@@ -1520,7 +1538,7 @@ handle_shutdown_peers (void *cls,
     slave = GST_slave_list[cnt];
     if (NULL == slave)
       continue;
-    if (NULL == slave->controller_proc) /* We didn't start the slave */
+    if (NULL == slave->controller_proc)   /* We didn't start the slave */
       continue;
     LOG_DEBUG ("Forwarding SHUTDOWN_PEERS\n");
     hc->nslaves++;
@@ -1530,11 +1548,11 @@ handle_shutdown_peers (void *cls,
     fo_ctxt->cls = hc;
     fo_ctxt->type = OP_SHUTDOWN_PEERS;
     fo_ctxt->opc =
-        GNUNET_TESTBED_forward_operation_msg_ (slave->controller,
-                                               fo_ctxt->operation_id,
-                                               &msg->header,
-                                               shutdown_peers_reply_cb,
-                                               fo_ctxt);
+      GNUNET_TESTBED_forward_operation_msg_ (slave->controller,
+                                             fo_ctxt->operation_id,
+                                             &msg->header,
+                                             shutdown_peers_reply_cb,
+                                             fo_ctxt);
     GNUNET_CONTAINER_DLL_insert_tail (fopcq_head,
                                       fopcq_tail,
                                       fo_ctxt);

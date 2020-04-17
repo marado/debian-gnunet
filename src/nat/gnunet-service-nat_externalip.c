@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * Code to figure out what our external IPv4 address(es) might
  * be (external IPv4s are what is seen on the rest of the Internet).
@@ -54,19 +54,22 @@
  * How long do we wait until we re-try running `external-ip` if the
  * command failed to terminate nicely?
  */
-#define EXTERN_IP_RETRY_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 15)
+#define EXTERN_IP_RETRY_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 15)
 
 /**
  * How long do we wait until we re-try running `external-ip` if the
  * command failed (but terminated)?
  */
-#define EXTERN_IP_RETRY_FAILURE GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 30)
+#define EXTERN_IP_RETRY_FAILURE GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 30)
 
 /**
  * How long do we wait until we re-try running `external-ip` if the
  * command succeeded?
  */
-#define EXTERN_IP_RETRY_SUCCESS GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 5)
+#define EXTERN_IP_RETRY_SUCCESS GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MINUTES, 5)
 
 
 /**
@@ -93,7 +96,6 @@ struct GN_ExternalIPMonitor
    * Closure for @e cb.
    */
   void *cb_cls;
-
 };
 
 
@@ -134,14 +136,14 @@ static struct in_addr mini_external_ipv4;
  */
 static void
 notify_monitors_external_ipv4_change (int add,
-				      const struct in_addr *v4)
+                                      const struct in_addr *v4)
 {
   for (struct GN_ExternalIPMonitor *mon = mon_head;
        NULL != mon;
        mon = mon->next)
     mon->cb (mon->cb_cls,
-	     v4,
-	     add);
+             v4,
+             add);
 }
 
 
@@ -166,8 +168,8 @@ run_external_ip (void *cls);
  */
 static void
 handle_external_ip (void *cls,
-		    const struct in_addr *addr,
-		    enum GNUNET_NAT_StatusCode result)
+                    const struct in_addr *addr,
+                    enum GNUNET_NAT_StatusCode result)
 {
   char buf[INET_ADDRSTRLEN];
 
@@ -175,33 +177,34 @@ handle_external_ip (void *cls,
   GNUNET_SCHEDULER_cancel (probe_external_ip_task);
   probe_external_ip_task
     = GNUNET_SCHEDULER_add_delayed ((NULL == addr)
-				    ? EXTERN_IP_RETRY_FAILURE
-				    : EXTERN_IP_RETRY_SUCCESS,
-				    &run_external_ip,
-				    NULL);
+                                    ? EXTERN_IP_RETRY_FAILURE
+                                    : EXTERN_IP_RETRY_SUCCESS,
+                                    &run_external_ip,
+                                    NULL);
   switch (result)
   {
   case GNUNET_NAT_ERROR_SUCCESS:
     GNUNET_assert (NULL != addr);
     if (addr->s_addr == mini_external_ipv4.s_addr)
-      return; /* not change */
+      return;   /* not change */
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Our external IP is now %s\n",
-		inet_ntop (AF_INET,
-			   addr,
-			   buf,
-			   sizeof (buf)));
+                "Our external IP is now %s\n",
+                inet_ntop (AF_INET,
+                           addr,
+                           buf,
+                           sizeof(buf)));
     if (0 != mini_external_ipv4.s_addr)
       notify_monitors_external_ipv4_change (GNUNET_NO,
-					    &mini_external_ipv4);
+                                            &mini_external_ipv4);
     mini_external_ipv4 = *addr;
     notify_monitors_external_ipv4_change (GNUNET_YES,
-					  &mini_external_ipv4);
+                                          &mini_external_ipv4);
     break;
+
   default:
     if (0 != mini_external_ipv4.s_addr)
       notify_monitors_external_ipv4_change (GNUNET_NO,
-					    &mini_external_ipv4);
+                                            &mini_external_ipv4);
     mini_external_ipv4.s_addr = 0;
     break;
   }
@@ -219,8 +222,8 @@ run_external_ip (void *cls)
 {
   probe_external_ip_task
     = GNUNET_SCHEDULER_add_delayed (EXTERN_IP_RETRY_TIMEOUT,
-				    &run_external_ip,
-				    NULL);
+                                    &run_external_ip,
+                                    NULL);
   if (NULL != probe_external_ip_op)
   {
     GNUNET_NAT_mini_get_external_ipv4_cancel_ (probe_external_ip_op);
@@ -228,7 +231,7 @@ run_external_ip (void *cls)
   }
   probe_external_ip_op
     = GNUNET_NAT_mini_get_external_ipv4_ (&handle_external_ip,
-					  NULL);
+                                          NULL);
 }
 
 
@@ -243,13 +246,13 @@ GN_nat_status_changed (int have_nat)
 {
   if (GNUNET_YES != enable_upnp)
     return;
-  if ( (GNUNET_YES == have_nat) &&
-       (NULL == probe_external_ip_task) &&
-       (NULL == probe_external_ip_op) )
+  if ((GNUNET_YES == have_nat) &&
+      (NULL == probe_external_ip_task) &&
+      (NULL == probe_external_ip_op))
   {
     probe_external_ip_task
       = GNUNET_SCHEDULER_add_now (&run_external_ip,
-				  NULL);
+                                  NULL);
     return;
   }
   if (GNUNET_NO == have_nat)
@@ -277,7 +280,7 @@ GN_nat_status_changed (int have_nat)
  */
 struct GN_ExternalIPMonitor *
 GN_external_ipv4_monitor_start (GN_NotifyExternalIPv4Change cb,
-				void *cb_cls)
+                                void *cb_cls)
 {
   struct GN_ExternalIPMonitor *mon;
 
@@ -285,12 +288,12 @@ GN_external_ipv4_monitor_start (GN_NotifyExternalIPv4Change cb,
   mon->cb = cb;
   mon->cb_cls = cb_cls;
   GNUNET_CONTAINER_DLL_insert (mon_head,
-			       mon_tail,
-			       mon);
+                               mon_tail,
+                               mon);
   if (0 != mini_external_ipv4.s_addr)
     cb (cb_cls,
-	&mini_external_ipv4,
-	GNUNET_YES);
+        &mini_external_ipv4,
+        GNUNET_YES);
   return mon;
 }
 
@@ -304,9 +307,10 @@ void
 GN_external_ipv4_monitor_stop (struct GN_ExternalIPMonitor *mon)
 {
   GNUNET_CONTAINER_DLL_remove (mon_head,
-			       mon_tail,
-			       mon);
+                               mon_tail,
+                               mon);
   GNUNET_free (mon);
 }
+
 
 /* end of gnunet-service-nat_externalip.c */

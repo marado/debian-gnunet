@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_speedup.c
  * @brief testcase for speedup.c
@@ -54,13 +54,13 @@ run (void *cls)
   if (cycles <= 5)
   {
     GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
-				  &run,
-				  NULL);
+                                  &run,
+                                  NULL);
     return;
   }
-  end = GNUNET_TIME_absolute_get();
+  end = GNUNET_TIME_absolute_get ();
   fprintf (stderr, "\n");
-  fflush(stdout);
+  fflush (stdout);
 }
 
 
@@ -84,7 +84,7 @@ main (int argc, char *argv[])
 {
   static char *const argvn[] = {
     "test-speedup",
-    "-c",  "test_speedup_data.conf",
+    "-c", "test_speedup_data.conf",
     NULL
   };
   static struct GNUNET_GETOPT_CommandLineOption options[] = {
@@ -95,30 +95,32 @@ main (int argc, char *argv[])
   struct GNUNET_TIME_Relative delta;
 
   start_real = time (NULL);
-  start = GNUNET_TIME_absolute_get();
-  GNUNET_PROGRAM_run ((sizeof (argvn) / sizeof (char *)) - 1, argvn, "test-speedup",
+  start = GNUNET_TIME_absolute_get ();
+  GNUNET_PROGRAM_run ((sizeof(argvn) / sizeof(char *)) - 1, argvn,
+                      "test-speedup",
                       "nohelp", options, &check, NULL);
 
   end_real = time (NULL);
   delta = GNUNET_TIME_absolute_get_difference (start, end);
 
-  if (delta.rel_value_us >  ((end_real - start_real) * 1500LL * 1000LL))
+  if (delta.rel_value_us > ((end_real - start_real) * 1500LL * 1000LL))
   {
-    GNUNET_log  (GNUNET_ERROR_TYPE_DEBUG,
-		 "Execution time in GNUnet time: %s\n",
-		 GNUNET_STRINGS_relative_time_to_string (delta, GNUNET_YES));
-    GNUNET_log  (GNUNET_ERROR_TYPE_DEBUG,
-		 "Execution time in system time: %llu ms\n",
-		 (unsigned long long) ((end_real - start_real) * 1000LL));
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Execution time in GNUnet time: %s\n",
+                GNUNET_STRINGS_relative_time_to_string (delta, GNUNET_YES));
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Execution time in system time: %llu ms\n",
+                (unsigned long long) ((end_real - start_real) * 1000LL));
     return 0;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-	      "Execution time in GNUnet time: %s\n",
-	      GNUNET_STRINGS_relative_time_to_string (delta, GNUNET_YES));
-  GNUNET_log  (GNUNET_ERROR_TYPE_ERROR,
-	       "Execution time in system time: %llu ms\n",
-	       (unsigned long long) ((end_real - start_real) * 1000LL));
+              "Execution time in GNUnet time: %s\n",
+              GNUNET_STRINGS_relative_time_to_string (delta, GNUNET_YES));
+  GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+              "Execution time in system time: %llu ms\n",
+              (unsigned long long) ((end_real - start_real) * 1000LL));
   return 1;
 }
+
 
 /* end of test_speedup.c */

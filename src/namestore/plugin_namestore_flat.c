@@ -1,22 +1,22 @@
- /*
-  * This file is part of GNUnet
-  * Copyright (C) 2009-2015, 2018, 2019 GNUnet e.V.
-  *
-  * GNUnet is free software: you can redistribute it and/or modify it
-  * under the terms of the GNU Affero General Public License as published
-  * by the Free Software Foundation, either version 3 of the License,
-  * or (at your option) any later version.
-  *
-  * GNUnet is distributed in the hope that it will be useful, but
-  * WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Affero General Public License for more details.
-  *
-  * You should have received a copy of the GNU Affero General Public License
-  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of GNUnet
+ * Copyright (C) 2009-2015, 2018, 2019 GNUnet e.V.
+ *
+ * GNUnet is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * GNUnet is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     SPDX-License-Identifier: AGPL3.0-or-later
-  */
+    SPDX-License-Identifier: AGPL3.0-or-later
+ */
 /**
  * @file namestore/plugin_namestore_flat.c
  * @brief file-based namestore backend
@@ -35,7 +35,6 @@
  */
 struct Plugin
 {
-
   const struct GNUNET_CONFIGURATION_Handle *cfg;
 
   /**
@@ -47,7 +46,6 @@ struct Plugin
    * HashMap
    */
   struct GNUNET_CONTAINER_MultiHashMap *hm;
-
 };
 
 
@@ -77,7 +75,6 @@ struct FlatFileEntry
    * Label
    */
   char *label;
-
 };
 
 
@@ -98,14 +95,14 @@ hash_pkey_and_label (const struct GNUNET_CRYPTO_EcdsaPrivateKey *pkey,
   size_t key_len;
 
   label_len = strlen (label);
-  key_len = label_len + sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey);
+  key_len = label_len + sizeof(struct GNUNET_CRYPTO_EcdsaPrivateKey);
   key = GNUNET_malloc (key_len);
   GNUNET_memcpy (key,
                  label,
                  label_len);
   GNUNET_memcpy (key + label_len,
                  pkey,
-                 sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey));
+                 sizeof(struct GNUNET_CRYPTO_EcdsaPrivateKey));
   GNUNET_CRYPTO_hash (key,
                       key_len,
                       h);
@@ -144,18 +141,18 @@ database_setup (struct Plugin *plugin)
       GNUNET_CONFIGURATION_get_value_filename (plugin->cfg,
                                                "namestore-flat",
                                                "FILENAME",
-					       &flatdbfile))
+                                               &flatdbfile))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
                                "namestore-flat",
-			       "FILENAME");
+                               "FILENAME");
     return GNUNET_SYSERR;
   }
   if (GNUNET_OK !=
       GNUNET_DISK_file_test (flatdbfile))
   {
     if (GNUNET_OK !=
-	GNUNET_DISK_directory_create_for_file (flatdbfile))
+        GNUNET_DISK_directory_create_for_file (flatdbfile))
     {
       GNUNET_break (0);
       GNUNET_free (flatdbfile);
@@ -169,15 +166,15 @@ database_setup (struct Plugin *plugin)
   plugin->hm = GNUNET_CONTAINER_multihashmap_create (10,
                                                      GNUNET_NO);
   fh = GNUNET_DISK_file_open (flatdbfile,
-                              GNUNET_DISK_OPEN_CREATE |
-                              GNUNET_DISK_OPEN_READWRITE,
-                              GNUNET_DISK_PERM_USER_WRITE |
-                              GNUNET_DISK_PERM_USER_READ);
+                              GNUNET_DISK_OPEN_CREATE
+                              | GNUNET_DISK_OPEN_READWRITE,
+                              GNUNET_DISK_PERM_USER_WRITE
+                              | GNUNET_DISK_PERM_USER_READ);
   if (NULL == fh)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-         _("Unable to initialize file: %s.\n"),
-         flatdbfile);
+                _ ("Unable to initialize file: %s.\n"),
+                flatdbfile);
     return GNUNET_SYSERR;
   }
   if (GNUNET_SYSERR ==
@@ -187,15 +184,15 @@ database_setup (struct Plugin *plugin)
                              GNUNET_YES))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-         _("Unable to get filesize: %s.\n"),
-         flatdbfile);
+                _ ("Unable to get filesize: %s.\n"),
+                flatdbfile);
     GNUNET_DISK_file_close (fh);
     return GNUNET_SYSERR;
   }
   if (size > SIZE_MAX)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("File too big to map: %llu bytes.\n"),
+                _ ("File too big to map: %llu bytes.\n"),
                 (unsigned long long) size);
     GNUNET_DISK_file_close (fh);
     return GNUNET_SYSERR;
@@ -216,10 +213,10 @@ database_setup (struct Plugin *plugin)
     GNUNET_DISK_file_close (fh);
     return GNUNET_SYSERR;
   }
-  if ('\0' != buffer[size-1])
+  if ('\0' != buffer[size - 1])
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Namestore database file `%s' malformed\n"),
+                _ ("Namestore database file `%s' malformed\n"),
                 flatdbfile);
     GNUNET_DISK_file_unmap (mh);
     GNUNET_DISK_file_close (fh);
@@ -248,7 +245,7 @@ database_setup (struct Plugin *plugin)
     entry = GNUNET_new (struct FlatFileEntry);
     {
       unsigned long long ll;
-      
+
       if (1 != sscanf (rvalue,
                        "%llu",
                        &ll))
@@ -297,17 +294,17 @@ database_setup (struct Plugin *plugin)
       break;
     }
     GNUNET_free (record_data);
-    
+
     {
       struct GNUNET_CRYPTO_EcdsaPrivateKey *private_key;
-      
+
       GNUNET_STRINGS_base64_decode (zone_private_key,
                                     strlen (zone_private_key),
-                                    (void**)&private_key);
+                                    (void **) &private_key);
       entry->private_key = *private_key;
       GNUNET_free (private_key);
     }
-    
+
     hash_pkey_and_label (&entry->private_key,
                          label,
                          &hkey);
@@ -348,7 +345,7 @@ store_and_free_entries (void *cls,
 
   (void) key;
   GNUNET_STRINGS_base64_encode (&entry->private_key,
-                                sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey),
+                                sizeof(struct GNUNET_CRYPTO_EcdsaPrivateKey),
                                 &zone_private_key);
   data_size = GNUNET_GNSRECORD_records_get_size (entry->record_count,
                                                  entry->record_data);
@@ -369,11 +366,11 @@ store_and_free_entries (void *cls,
     ssize_t ret;
 
     ret = GNUNET_GNSRECORD_records_serialize (entry->record_count,
-					      entry->record_data,
-					      data_size,
-					      data);
-    if ( (ret < 0) ||
-	 (data_size != ret) )
+                                              entry->record_data,
+                                              data_size,
+                                              data);
+    if ((ret < 0) ||
+        (data_size != ret))
     {
       GNUNET_break (0);
       GNUNET_free (zone_private_key);
@@ -416,15 +413,15 @@ database_shutdown (struct Plugin *plugin)
   struct GNUNET_DISK_FileHandle *fh;
 
   fh = GNUNET_DISK_file_open (plugin->fn,
-                              GNUNET_DISK_OPEN_CREATE |
-                              GNUNET_DISK_OPEN_TRUNCATE |
-                              GNUNET_DISK_OPEN_READWRITE,
-                              GNUNET_DISK_PERM_USER_WRITE |
-                              GNUNET_DISK_PERM_USER_READ);
+                              GNUNET_DISK_OPEN_CREATE
+                              | GNUNET_DISK_OPEN_TRUNCATE
+                              | GNUNET_DISK_OPEN_READWRITE,
+                              GNUNET_DISK_PERM_USER_WRITE
+                              | GNUNET_DISK_PERM_USER_READ);
   if (NULL == fh)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to initialize file: %s.\n"),
+                _ ("Unable to initialize file: %s.\n"),
                 plugin->fn);
     return;
   }
@@ -454,7 +451,8 @@ database_shutdown (struct Plugin *plugin)
  */
 static int
 namestore_flat_store_records (void *cls,
-                              const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
+                              const struct
+                              GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
                               const char *label,
                               unsigned int rd_count,
                               const struct GNUNET_GNSRECORD_Data *rd)
@@ -465,7 +463,7 @@ namestore_flat_store_records (void *cls,
   struct FlatFileEntry *entry;
 
   rvalue = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
-				     UINT64_MAX);
+                                     UINT64_MAX);
   hash_pkey_and_label (zone_key,
                        label,
                        &hkey);
@@ -484,7 +482,7 @@ namestore_flat_store_records (void *cls,
                    strlen (label));
   GNUNET_memcpy (&entry->private_key,
                  zone_key,
-                 sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey));
+                 sizeof(struct GNUNET_CRYPTO_EcdsaPrivateKey));
   entry->rvalue = rvalue;
   entry->record_count = rd_count;
   entry->record_data = GNUNET_new_array (rd_count,
@@ -496,7 +494,7 @@ namestore_flat_store_records (void *cls,
     entry->record_data[i].flags = rd[i].flags;
     entry->record_data[i].data_size = rd[i].data_size;
     entry->record_data[i].data = GNUNET_malloc (rd[i].data_size);
-    GNUNET_memcpy ((char*)entry->record_data[i].data,
+    GNUNET_memcpy ((char *) entry->record_data[i].data,
                    rd[i].data,
                    rd[i].data_size);
   }
@@ -537,17 +535,17 @@ namestore_flat_lookup_records (void *cls,
                        label,
                        &hkey);
   entry = GNUNET_CONTAINER_multihashmap_get (plugin->hm,
-					     &hkey);
+                                             &hkey);
 
   if (NULL == entry)
     return GNUNET_NO;
   if (NULL != iter)
     iter (iter_cls,
-	  1, /* zero is illegal */
-	  &entry->private_key,
-	  entry->label,
-	  entry->record_count,
-	  entry->record_data);
+          1, /* zero is illegal */
+          &entry->private_key,
+          entry->label,
+          entry->record_count,
+          entry->record_data);
   return GNUNET_YES;
 }
 
@@ -587,7 +585,6 @@ struct IterateContext
    * Closure for @e iter.
    */
   void *iter_cls;
-
 };
 
 
@@ -610,9 +607,9 @@ iterate_zones (void *cls,
   (void) key;
   if (0 == ic->limit)
     return GNUNET_NO;
-  if ( (NULL != ic->zone) &&
-       (0 != GNUNET_memcmp (&entry->private_key,
-                     ic->zone)) )
+  if ((NULL != ic->zone) &&
+      (0 != GNUNET_memcmp (&entry->private_key,
+                           ic->zone)))
     return GNUNET_YES;
   ic->pos++;
   if (ic->offset > 0)
@@ -621,10 +618,10 @@ iterate_zones (void *cls,
     return GNUNET_YES;
   }
   ic->iter (ic->iter_cls,
-	    ic->pos,
+            ic->pos,
             (NULL == ic->zone)
-	    ? &entry->private_key
-	    : ic->zone,
+            ? &entry->private_key
+            : ic->zone,
             entry->label,
             entry->record_count,
             entry->record_data);
@@ -649,7 +646,8 @@ iterate_zones (void *cls,
  */
 static int
 namestore_flat_iterate_records (void *cls,
-                                const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
+                                const struct
+                                GNUNET_CRYPTO_EcdsaPrivateKey *zone,
                                 uint64_t serial,
                                 uint64_t limit,
                                 GNUNET_NAMESTORE_RecordIterator iter,
@@ -695,7 +693,7 @@ zone_to_name (void *cls,
 
   (void) key;
   if (0 != GNUNET_memcmp (&entry->private_key,
-                   ztn->zone))
+                          ztn->zone))
     return GNUNET_YES;
 
   for (unsigned int i = 0; i < entry->record_count; i++)
@@ -704,10 +702,10 @@ zone_to_name (void *cls,
       continue;
     if (0 == memcmp (ztn->value_zone,
                      entry->record_data[i].data,
-                     sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey)))
+                     sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey)))
     {
       ztn->iter (ztn->iter_cls,
-                 i + 1, /* zero is illegal! */
+                 i + 1,    /* zero is illegal! */
                  &entry->private_key,
                  entry->label,
                  entry->record_count,
@@ -733,7 +731,8 @@ zone_to_name (void *cls,
 static int
 namestore_flat_zone_to_name (void *cls,
                              const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone,
-                             const struct GNUNET_CRYPTO_EcdsaPublicKey *value_zone,
+                             const struct
+                             GNUNET_CRYPTO_EcdsaPublicKey *value_zone,
                              GNUNET_NAMESTORE_RecordIterator iter,
                              void *iter_cls)
 {
@@ -772,8 +771,8 @@ libgnunet_plugin_namestore_flat_init (void *cls)
   if (NULL != plugin.cfg)
     return NULL;                /* can only initialize once! */
   memset (&plugin,
-	  0,
-	  sizeof (struct Plugin));
+          0,
+          sizeof(struct Plugin));
   plugin.cfg = cfg;
   if (GNUNET_OK != database_setup (&plugin))
   {
@@ -787,7 +786,7 @@ libgnunet_plugin_namestore_flat_init (void *cls)
   api->zone_to_name = &namestore_flat_zone_to_name;
   api->lookup_records = &namestore_flat_lookup_records;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("Flat file database running\n"));
+              _ ("Flat file database running\n"));
   return api;
 }
 
@@ -811,5 +810,6 @@ libgnunet_plugin_namestore_flat_done (void *cls)
               "Flat file plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_namestore_flat.c */

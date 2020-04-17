@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file dht/gnunet-service-dht_datacache.c
  * @brief GNUnet DHT service's datacache integration
@@ -30,7 +30,7 @@
 #include "gnunet-service-dht_routing.h"
 #include "gnunet-service-dht.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "dht-dhtcache",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "dht-dhtcache", __VA_ARGS__)
 
 /**
  * How many "closest" results to we return for migration when
@@ -70,7 +70,7 @@ GDS_DATACACHE_handle_put (struct GNUNET_TIME_Absolute expiration,
   if (NULL == datacache)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("%s request received, but have no datacache!\n"), "PUT");
+                _ ("%s request received, but have no datacache!\n"), "PUT");
     return;
   }
   if (data_size >= GNUNET_MAX_MESSAGE_SIZE)
@@ -141,7 +141,6 @@ struct GetRequestContext
    * Return value to give back.
    */
   enum GNUNET_BLOCK_EvaluationResult eval;
-
 };
 
 
@@ -165,9 +164,9 @@ datacache_get_iterator (void *cls,
                         size_t data_size,
                         const char *data,
                         enum GNUNET_BLOCK_Type type,
-			struct GNUNET_TIME_Absolute exp,
-			unsigned int put_path_length,
-			const struct GNUNET_PeerIdentity *put_path)
+                        struct GNUNET_TIME_Absolute exp,
+                        unsigned int put_path_length,
+                        const struct GNUNET_PeerIdentity *put_path)
 {
   static char non_null;
   struct GetRequestContext *ctx = cls;
@@ -175,11 +174,11 @@ datacache_get_iterator (void *cls,
 
   if (0 == GNUNET_TIME_absolute_get_remaining (exp).rel_value_us)
   {
-    GNUNET_break (0); /* why does datacache return expired values? */
-    return GNUNET_OK; /* skip expired record */
+    GNUNET_break (0);  /* why does datacache return expired values? */
+    return GNUNET_OK;   /* skip expired record */
   }
-  if ( (NULL == data) &&
-       (0 == data_size) )
+  if ((NULL == data) &&
+      (0 == data_size))
     data = &non_null; /* point anywhere, but not to NULL */
 
   eval
@@ -204,7 +203,7 @@ datacache_get_iterator (void *cls,
     /* forward to local clients */
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# Good RESULTS found in datacache"), 1,
+                                ("# Good RESULTS found in datacache"), 1,
                               GNUNET_NO);
     ctx->gc (ctx->gc_cls,
              type,
@@ -214,37 +213,47 @@ datacache_get_iterator (void *cls,
              0, NULL,
              data, data_size);
     break;
+
   case GNUNET_BLOCK_EVALUATION_OK_DUPLICATE:
     GNUNET_STATISTICS_update (GDS_stats,
-                              gettext_noop ("# Duplicate RESULTS found in datacache"),
+                              gettext_noop (
+                                "# Duplicate RESULTS found in datacache"),
                               1,
                               GNUNET_NO);
     break;
+
   case GNUNET_BLOCK_EVALUATION_RESULT_INVALID:
     GNUNET_STATISTICS_update (GDS_stats,
-                              gettext_noop ("# Invalid RESULTS found in datacache"),
+                              gettext_noop (
+                                "# Invalid RESULTS found in datacache"),
                               1,
                               GNUNET_NO);
     break;
+
   case GNUNET_BLOCK_EVALUATION_RESULT_IRRELEVANT:
     GNUNET_STATISTICS_update (GDS_stats,
-                              gettext_noop ("# Irrelevant RESULTS found in datacache"),
+                              gettext_noop (
+                                "# Irrelevant RESULTS found in datacache"),
                               1,
                               GNUNET_NO);
     break;
+
   case GNUNET_BLOCK_EVALUATION_REQUEST_VALID:
     GNUNET_break (0);
     break;
+
   case GNUNET_BLOCK_EVALUATION_REQUEST_INVALID:
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
+
   case GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED:
     GNUNET_STATISTICS_update (GDS_stats,
-                              gettext_noop ("# Unsupported RESULTS found in datacache"),
+                              gettext_noop (
+                                "# Unsupported RESULTS found in datacache"),
                               1,
                               GNUNET_NO);
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Unsupported block type (%u) in local response!\n"),
+                _ ("Unsupported block type (%u) in local response!\n"),
                 type);
     break;
   }

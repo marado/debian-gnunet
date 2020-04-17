@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file arm/test_gnunet_service_arm.c
  * @brief testcase for gnunet-service-arm.c; tests ARM by making it start the resolver
@@ -34,7 +34,8 @@
  * (by checking if running before starting, so really this time is always waited on
  * startup (annoying)).
  */
-#define START_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 50)
+#define START_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 50)
 
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 10)
 
@@ -60,8 +61,8 @@ trigger_disconnect (void *cls)
 
 static void
 arm_stop_cb (void *cls,
-	     enum GNUNET_ARM_RequestStatus status,
-	     enum GNUNET_ARM_Result result)
+             enum GNUNET_ARM_RequestStatus status,
+             enum GNUNET_ARM_Result result)
 {
   GNUNET_break (status == GNUNET_ARM_REQUEST_SENT_OK);
   GNUNET_break (result == GNUNET_ARM_RESULT_STOPPED);
@@ -76,21 +77,21 @@ arm_stop_cb (void *cls,
 
 static void
 service_list (void *cls,
-	      enum GNUNET_ARM_RequestStatus rs,
-	      unsigned int count,
-              const char *const*list)
+              enum GNUNET_ARM_RequestStatus rs,
+              unsigned int count,
+              const struct GNUNET_ARM_ServiceInfo *list)
 {
   unsigned int i;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "%u services are are currently running\n",
-	      count);
+              "%u services are are currently running\n",
+              count);
   if (GNUNET_ARM_REQUEST_SENT_OK != rs)
     goto stop_arm;
-  for (i=0;i<count;i++)
+  for (i = 0; i < count; i++)
   {
-    if (0 == strcasecmp (list[i],
-                         "resolver (gnunet-service-resolver)"))
+    if ((0 == strcasecmp (list[i].name, "resolver")) &&
+        (0 == strcasecmp (list[i].binary, "gnunet-service-resolver")))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "Got service list, now stopping arm\n");
@@ -98,7 +99,7 @@ service_list (void *cls,
     }
   }
 
- stop_arm:
+stop_arm:
   GNUNET_ARM_request_service_stop (arm,
                                    "arm",
                                    &arm_stop_cb,
@@ -140,8 +141,8 @@ hostname_resolve_cb (void *cls,
 
 static void
 arm_start_cb (void *cls,
-	      enum GNUNET_ARM_RequestStatus status,
-	      enum GNUNET_ARM_Result result)
+              enum GNUNET_ARM_RequestStatus status,
+              enum GNUNET_ARM_Result result)
 {
   GNUNET_break (status == GNUNET_ARM_REQUEST_SENT_OK);
   GNUNET_break (result == GNUNET_ARM_RESULT_STARTING);
@@ -150,10 +151,10 @@ arm_start_cb (void *cls,
   /* connect to the resolver service */
   if (NULL ==
       GNUNET_RESOLVER_ip_get (hostname,
-			      AF_UNSPEC,
-			      TIMEOUT,
-			      &hostname_resolve_cb,
-			      NULL))
+                              AF_UNSPEC,
+                              TIMEOUT,
+                              &hostname_resolve_cb,
+                              NULL))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Unable initiate connection to resolver service\n");
@@ -205,7 +206,7 @@ main (int argc, char *av[])
 
     if (0 != (ret = getaddrinfo (hostname, NULL, NULL, &ai)))
     {
-      FPRINTF (stderr,
+      fprintf (stderr,
                "Failed to resolve `%s', testcase not run.\n",
                hostname);
       return 77;
@@ -220,12 +221,12 @@ main (int argc, char *av[])
     if (NULL == host)
       host = gethostbyname2 (hostname, AF_INET6);
     if (NULL == host)
-      {
-        FPRINTF (stderr,
-                 "Failed to resolve `%s', testcase not run.\n",
-                 hostname);
-        return 77;
-      }
+    {
+      fprintf (stderr,
+               "Failed to resolve `%s', testcase not run.\n",
+               hostname);
+      return 77;
+    }
   }
 #elif HAVE_GETHOSTBYNAME
   {
@@ -233,25 +234,25 @@ main (int argc, char *av[])
 
     host = gethostbyname (hostname);
     if (NULL == host)
-      {
-        FPRINTF (stderr,
-                 "Failed to resolve `%s', testcase not run.\n",
-                 hostname);
-        return 77;
-      }
+    {
+      fprintf (stderr,
+               "Failed to resolve `%s', testcase not run.\n",
+               hostname);
+      return 77;
+    }
   }
 #else
-  FPRINTF (stderr,
+  fprintf (stderr,
            "libc fails to have resolver function, testcase not run.\n");
   return 77;
 #endif
   GNUNET_log_setup ("test-gnunet-service-arm",
-		    "WARNING",
-		    NULL);
+                    "WARNING",
+                    NULL);
   GNUNET_break (GNUNET_OK ==
-		GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
-				    argv, "test-gnunet-service-arm",
-				    "nohelp", options,
+                GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
+                                    argv, "test-gnunet-service-arm",
+                                    "nohelp", options,
                                     &run, NULL));
   if (0 != ret)
   {
@@ -261,5 +262,6 @@ main (int argc, char *av[])
   }
   return ret;
 }
+
 
 /* end of test_gnunet_service_arm.c */

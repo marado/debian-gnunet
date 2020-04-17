@@ -3,10 +3,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
 plugindir = $(libdir)/gnunet
 
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -54,7 +50,7 @@ libgnunetrevocation_la_LIBADD = \
   $(LIBGCRYPT_LIBS) \
   $(GN_LIBINTL) $(XLIB) -lgcrypt
 libgnunetrevocation_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 libexec_PROGRAMS = \
@@ -94,10 +90,8 @@ if ENABLE_TEST_RUN
  $(check_PROGRAMS)
 endif
 
-do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
-
 test_local_revocation.py: test_local_revocation.py.in Makefile
-	$(do_subst) < $(srcdir)/test_local_revocation.py.in > test_local_revocation.py
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/test_local_revocation.py.in > test_local_revocation.py
 	chmod +x test_local_revocation.py
 
 EXTRA_DIST = test_revocation.conf \

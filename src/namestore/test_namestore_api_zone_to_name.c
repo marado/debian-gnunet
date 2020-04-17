@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_zone_to_name.c
  * @brief testcase for zone to name translation
@@ -48,7 +48,7 @@ static struct GNUNET_CRYPTO_EcdsaPublicKey pubkey;
 
 static struct GNUNET_CRYPTO_EcdsaPublicKey s_zone_value;
 
-static char * s_name;
+static char *s_name;
 
 static int res;
 
@@ -97,31 +97,31 @@ end (void *cls)
 
 static void
 zone_to_name_proc (void *cls,
-		   const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
-		   const char *n,
-		   unsigned int rd_count,
-		   const struct GNUNET_GNSRECORD_Data *rd)
+                   const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
+                   const char *n,
+                   unsigned int rd_count,
+                   const struct GNUNET_GNSRECORD_Data *rd)
 {
   int fail = GNUNET_NO;
 
   qe = NULL;
-  if ( (NULL == zone_key) &&
-       (NULL == n) &&
-       (0 == rd_count) &&
-       (NULL == rd) )
+  if ((NULL == zone_key) &&
+      (NULL == n) &&
+      (0 == rd_count) &&
+      (NULL == rd))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"No result found\n");
+                "No result found\n");
     res = 1;
   }
   else
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Result found: `%s'\n",
-		n);
-    if ( (NULL == n) ||
-	 (0 != strcmp (n,
-		       s_name)))
+                "Result found: `%s'\n",
+                n);
+    if ((NULL == n) ||
+        (0 != strcmp (n,
+                      s_name)))
     {
       fail = GNUNET_YES;
       GNUNET_break (0);
@@ -131,9 +131,9 @@ zone_to_name_proc (void *cls,
       fail = GNUNET_YES;
       GNUNET_break (0);
     }
-    if ( (NULL == zone_key) ||
-	 (0 != GNUNET_memcmp (zone_key,
-		       privkey)))
+    if ((NULL == zone_key) ||
+        (0 != GNUNET_memcmp (zone_key,
+                             privkey)))
     {
       fail = GNUNET_YES;
       GNUNET_break (0);
@@ -144,7 +144,7 @@ zone_to_name_proc (void *cls,
       res = 1;
   }
   GNUNET_SCHEDULER_add_now (&end,
-			    NULL);
+                            NULL);
 }
 
 
@@ -154,7 +154,7 @@ error_cb (void *cls)
   (void) cls;
   qe = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-	      "Not found!\n");
+              "Not found!\n");
   GNUNET_SCHEDULER_shutdown ();
   res = 2;
 }
@@ -162,35 +162,35 @@ error_cb (void *cls)
 
 static void
 put_cont (void *cls,
-	  int32_t success,
-	  const char *emsg)
+          int32_t success,
+          const char *emsg)
 {
   char *name = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store added record for `%s': %s\n",
-	      name,
-	      (success == GNUNET_OK) ? "SUCCESS" : emsg);
+              "Name store added record for `%s': %s\n",
+              name,
+              (success == GNUNET_OK) ? "SUCCESS" : emsg);
   if (success == GNUNET_OK)
   {
     res = 0;
 
     qe = GNUNET_NAMESTORE_zone_to_name (nsh,
-					privkey,
-					&s_zone_value,
-					&error_cb,
-					NULL,
-					&zone_to_name_proc,
-					NULL);
+                                        privkey,
+                                        &s_zone_value,
+                                        &error_cb,
+                                        NULL,
+                                        &zone_to_name_proc,
+                                        NULL);
   }
   else
   {
     res = 1;
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Failed to put records for name `%s'\n",
-		name);
+                name);
     GNUNET_SCHEDULER_add_now (&end,
-			      NULL);
+                              NULL);
   }
 }
 
@@ -203,38 +203,38 @@ run (void *cls,
   (void) cls;
   (void) peer;
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
-						NULL);
+                                                &endbadly,
+                                                NULL);
   GNUNET_SCHEDULER_add_shutdown (&end,
-				 NULL);
+                                 NULL);
   GNUNET_asprintf (&s_name, "dummy");
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (NULL != privkey);
   /* get public key */
   GNUNET_CRYPTO_ecdsa_key_get_public (privkey,
-				      &pubkey);
+                                      &pubkey);
 
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_WEAK,
-			      &s_zone_value,
-			      sizeof (s_zone_value));
+                              &s_zone_value,
+                              sizeof(s_zone_value));
   {
     struct GNUNET_GNSRECORD_Data rd;
 
-    rd.expiration_time = GNUNET_TIME_absolute_get().abs_value_us;
+    rd.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us;
     rd.record_type = GNUNET_GNSRECORD_TYPE_PKEY;
-    rd.data_size = sizeof (s_zone_value);
+    rd.data_size = sizeof(s_zone_value);
     rd.data = &s_zone_value;
     rd.flags = 0;
 
     nsh = GNUNET_NAMESTORE_connect (cfg);
     GNUNET_break (NULL != nsh);
     GNUNET_NAMESTORE_records_store (nsh,
-				    privkey,
-				    s_name,
-				    1,
-				    &rd,
-				    &put_cont,
-				    NULL);
+                                    privkey,
+                                    s_name,
+                                    1,
+                                    &rd,
+                                    &put_cont,
+                                    NULL);
   }
 }
 
@@ -265,5 +265,6 @@ main (int argc,
   GNUNET_free (cfg_name);
   return res;
 }
+
 
 /* end of test_namestore_api_zone_to_name.c */

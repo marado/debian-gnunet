@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -37,17 +37,18 @@ test (int number)
   struct GNUNET_HashCode h2;
   struct GNUNET_CRYPTO_HashAsciiEncoded enc;
 
-  memset (&h1, number, sizeof (struct GNUNET_HashCode));
+  memset (&h1, number, sizeof(struct GNUNET_HashCode));
   GNUNET_CRYPTO_hash_to_enc (&h1, &enc);
   if (GNUNET_OK != GNUNET_CRYPTO_hash_from_string ((char *) &enc, &h2))
   {
     printf ("enc2hash failed!\n");
     return 1;
   }
-  if (0 != memcmp (&h1, &h2, sizeof (struct GNUNET_HashCode)))
+  if (0 != memcmp (&h1, &h2, sizeof(struct GNUNET_HashCode)))
     return 1;
   return 0;
 }
+
 
 static int
 testEncoding ()
@@ -59,6 +60,7 @@ testEncoding ()
       return 1;
   return 0;
 }
+
 
 static int
 testArithmetic ()
@@ -89,24 +91,25 @@ testArithmetic ()
     return 1;
   if (1 != GNUNET_CRYPTO_hash_xorcmp (&h1, &h2, &h2))
     return 1;
-  memset (&d, 0xF0, sizeof (d));
+  memset (&d, 0xF0, sizeof(d));
   if (0 != GNUNET_CRYPTO_hash_get_bit (&d, 3))
     return 1;
   if (1 != GNUNET_CRYPTO_hash_get_bit (&d, 6))
     return 1;
-  memset (&d, 0, sizeof (d));
+  memset (&d, 0, sizeof(d));
   GNUNET_CRYPTO_hash_to_aes_key (&d, &skey, &iv);
   return 0;
 }
 
+
 static void
-finished_task (void *cls, const struct GNUNET_HashCode * res)
+finished_task (void *cls, const struct GNUNET_HashCode *res)
 {
   int *ret = cls;
   struct GNUNET_HashCode want;
 
-  GNUNET_CRYPTO_hash (block, sizeof (block), &want);
-  if (0 != memcmp (res, &want, sizeof (want)))
+  GNUNET_CRYPTO_hash (block, sizeof(block), &want);
+  if (0 != memcmp (res, &want, sizeof(want)))
     *ret = 2;
   else
     *ret = 0;
@@ -128,14 +131,14 @@ testFileHash ()
   int ret;
   FILE *f;
 
-  memset (block, 42, sizeof (block) / 2);
-  memset (&block[sizeof (block) / 2], 43, sizeof (block) / 2);
-  GNUNET_assert (NULL != (f = FOPEN (FILENAME, "w+")));
-  GNUNET_break (sizeof (block) == fwrite (block, 1, sizeof (block), f));
-  GNUNET_break (0 == FCLOSE (f));
+  memset (block, 42, sizeof(block) / 2);
+  memset (&block[sizeof(block) / 2], 43, sizeof(block) / 2);
+  GNUNET_assert (NULL != (f = fopen (FILENAME, "w+")));
+  GNUNET_break (sizeof(block) == fwrite (block, 1, sizeof(block), f));
+  GNUNET_break (0 == fclose (f));
   ret = 1;
   GNUNET_SCHEDULER_run (&file_hasher, &ret);
-  GNUNET_break (0 == UNLINK (FILENAME));
+  GNUNET_break (0 == unlink (FILENAME));
   return ret;
 }
 
@@ -155,5 +158,6 @@ main (int argc, char *argv[])
     return 1;
   return 0;
 }
+
 
 /* end of hashingtest.c */

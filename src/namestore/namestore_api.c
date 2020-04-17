@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file namestore/namestore_api.c
@@ -52,7 +52,6 @@
  */
 struct GNUNET_NAMESTORE_QueueEntry
 {
-
   /**
    * Kept in a DLL.
    */
@@ -121,7 +120,6 @@ struct GNUNET_NAMESTORE_QueueEntry
  */
 struct GNUNET_NAMESTORE_ZoneIterator
 {
-
   /**
    * Kept in a DLL.
    */
@@ -190,7 +188,6 @@ struct GNUNET_NAMESTORE_ZoneIterator
  */
 struct GNUNET_NAMESTORE_Handle
 {
-
   /**
    * Configuration to use.
    */
@@ -403,7 +400,7 @@ check_lookup_result (void *cls, const struct LabelLookupResponseMessage *msg)
   rd_len = ntohs (msg->rd_len);
   msg_len = ntohs (msg->gns_header.header.size);
   name_len = ntohs (msg->name_len);
-  exp_msg_len = sizeof (*msg) + name_len + rd_len;
+  exp_msg_len = sizeof(*msg) + name_len + rd_len;
   if (msg_len != exp_msg_len)
   {
     GNUNET_break (0);
@@ -509,7 +506,7 @@ check_record_result (void *cls, const struct RecordResultMessage *msg)
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if (msg_len != sizeof (struct RecordResultMessage) + name_len + rd_len)
+  if (msg_len != sizeof(struct RecordResultMessage) + name_len + rd_len)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -558,7 +555,7 @@ handle_record_result (void *cls, const struct RecordResultMessage *msg)
     return; /* rid not found */
   if ((NULL != ze) && (NULL != qe))
   {
-    GNUNET_break (0); /* rid ambigous */
+    GNUNET_break (0);  /* rid ambigous */
     force_reconnect (h);
     return;
   }
@@ -615,7 +612,7 @@ handle_record_result_end (void *cls, const struct GNUNET_NAMESTORE_Header *msg)
     return; /* rid not found */
   if ((NULL != ze) && (NULL != qe))
   {
-    GNUNET_break (0); /* rid ambigous */
+    GNUNET_break (0);  /* rid ambigous */
     force_reconnect (h);
     return;
   }
@@ -654,7 +651,7 @@ check_zone_to_name_response (void *cls,
   name_len = ntohs (msg->name_len);
   rd_ser_len = ntohs (msg->rd_len);
   if (ntohs (msg->gns_header.header.size) !=
-      sizeof (struct ZoneToNameResponseMessage) + name_len + rd_ser_len)
+      sizeof(struct ZoneToNameResponseMessage) + name_len + rd_ser_len)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -698,6 +695,7 @@ handle_zone_to_name_response (void *cls,
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "An error occurred during zone to name operation\n");
     break;
+
   case GNUNET_NO:
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Namestore has no result for zone to name mapping \n");
@@ -705,6 +703,7 @@ handle_zone_to_name_response (void *cls,
       qe->proc (qe->proc_cls, &msg->zone, NULL, 0, NULL);
     free_qe (qe);
     return;
+
   case GNUNET_YES:
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Namestore has result for zone to name mapping \n");
@@ -728,6 +727,7 @@ handle_zone_to_name_response (void *cls,
       free_qe (qe);
       return;
     }
+
   default:
     GNUNET_break (0);
     force_reconnect (h);
@@ -767,27 +767,27 @@ static void
 reconnect (struct GNUNET_NAMESTORE_Handle *h)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (record_store_response,
-                              GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_STORE_RESPONSE,
-                              struct RecordStoreResponseMessage,
-                              h),
-     GNUNET_MQ_hd_var_size (zone_to_name_response,
-                            GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME_RESPONSE,
-                            struct ZoneToNameResponseMessage,
-                            h),
-     GNUNET_MQ_hd_var_size (record_result,
-                            GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT,
-                            struct RecordResultMessage,
-                            h),
-     GNUNET_MQ_hd_fixed_size (record_result_end,
-                              GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT_END,
-                              struct GNUNET_NAMESTORE_Header,
-                              h),
-     GNUNET_MQ_hd_var_size (lookup_result,
-                            GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_LOOKUP_RESPONSE,
-                            struct LabelLookupResponseMessage,
-                            h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (record_store_response,
+                             GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_STORE_RESPONSE,
+                             struct RecordStoreResponseMessage,
+                             h),
+    GNUNET_MQ_hd_var_size (zone_to_name_response,
+                           GNUNET_MESSAGE_TYPE_NAMESTORE_ZONE_TO_NAME_RESPONSE,
+                           struct ZoneToNameResponseMessage,
+                           h),
+    GNUNET_MQ_hd_var_size (record_result,
+                           GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT,
+                           struct RecordResultMessage,
+                           h),
+    GNUNET_MQ_hd_fixed_size (record_result_end,
+                             GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT_END,
+                             struct GNUNET_NAMESTORE_Header,
+                             h),
+    GNUNET_MQ_hd_var_size (lookup_result,
+                           GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_LOOKUP_RESPONSE,
+                           struct LabelLookupResponseMessage,
+                           h),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_NAMESTORE_ZoneIterator *it;
   struct GNUNET_NAMESTORE_QueueEntry *qe;
 
@@ -1084,7 +1084,7 @@ GNUNET_NAMESTORE_set_nick (struct GNUNET_NAMESTORE_Handle *h,
 
   if (NULL == h->mq)
     return NULL;
-  memset (&rd, 0, sizeof (rd));
+  memset (&rd, 0, sizeof(rd));
   rd.data = nick;
   rd.data_size = strlen (nick) + 1;
   rd.record_type = GNUNET_GNSRECORD_TYPE_NICK;

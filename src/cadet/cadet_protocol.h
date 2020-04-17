@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/cadet_protocol.h
@@ -46,7 +46,7 @@ struct GNUNET_CADET_TunnelMessage;
 extern "C"
 {
 #if 0
-  /* keep Emacsens' auto-indent happy */
+/* keep Emacsens' auto-indent happy */
 }
 #endif
 #endif
@@ -116,7 +116,6 @@ struct GNUNET_CADET_ConnectionCreateAckMessage
    * ID of the connection.
    */
   struct GNUNET_CADET_ConnectionTunnelIdentifier cid;
-
 };
 
 
@@ -198,8 +197,8 @@ struct CadetEncryptedMessageIdentifier
 /**
  * Flags to be used in GNUNET_CADET_KX.
  */
-enum GNUNET_CADET_KX_Flags {
-
+enum GNUNET_CADET_KX_Flags
+{
   /**
    * Should the peer reply with its KX details?
    */
@@ -264,7 +263,6 @@ struct GNUNET_CADET_TunnelKeyExchangeMessage
    * using 'gcry_sexp_sprint'.
    */
   struct GNUNET_CRYPTO_EcdhePublicKey ratchet_key;
-
 };
 
 
@@ -274,7 +272,6 @@ struct GNUNET_CADET_TunnelKeyExchangeMessage
  */
 struct GNUNET_CADET_TunnelKeyExchangeAuthMessage
 {
-
   /**
    * Message header with key material.
    */
@@ -294,7 +291,6 @@ struct GNUNET_CADET_TunnelKeyExchangeAuthMessage
    * signature or payload data.
    */
   struct GNUNET_HashCode auth;
-
 };
 
 
@@ -304,7 +300,6 @@ struct GNUNET_CADET_TunnelKeyExchangeAuthMessage
  */
 struct GNUNET_CADET_AxHeader
 {
-
   /**
    * Number of messages sent with the current ratchet key.
    */
@@ -319,7 +314,6 @@ struct GNUNET_CADET_AxHeader
    * Current ratchet key.
    */
   struct GNUNET_CRYPTO_EcdhePublicKey DHRs;
-
 };
 
 

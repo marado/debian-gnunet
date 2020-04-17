@@ -16,18 +16,32 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file gnunet-gns.c
  * @brief command line tool to access distributed GNS
  * @author Christian Grothoff
  */
 #include "platform.h"
+#if HAVE_LIBIDN2
+#if HAVE_IDN2_H
+#include <idn2.h>
+#elif HAVE_IDN2_IDN2_H
+#include <idn2/idn2.h>
+#endif
+#elif HAVE_LIBIDN
+#if HAVE_IDNA_H
+#include <idna.h>
+#elif HAVE_IDN_IDNA_H
+#include <idn/idna.h>
+#endif
+#endif
 #include <gnunet_util_lib.h>
 #include <gnunet_dnsparser_lib.h>
 #include <gnunet_gnsrecord_lib.h>
 #include <gnunet_namestore_service.h>
 #include <gnunet_gns_service.h>
+
 
 /**
  * Configuration we are using.
@@ -43,6 +57,16 @@ static struct GNUNET_GNS_Handle *gns;
  * GNS name to lookup. (-u option)
  */
 static char *lookup_name;
+
+/**
+ * DNS IDNA name to lookup. (set if -d option is set)
+ */
+char *idna_name;
+
+/**
+ * DNS compatibility (name is given as DNS name, possible IDNA).
+ */
+static int dns_compat;
 
 /**
  * record type to look up (-t option)
@@ -108,7 +132,13 @@ do_shutdown (void *cls)
     GNUNET_GNS_disconnect (gns);
     gns = NULL;
   }
+  if (NULL != idna_name)
+  {
+    GNUNET_free (idna_name);
+    idna_name = NULL;
+  }
 }
+
 
 /**
  * Task to run on timeout
@@ -116,12 +146,13 @@ do_shutdown (void *cls)
  * @param cls unused
  */
 static void
-do_timeout (void* cls)
+do_timeout (void*cls)
 {
   to_task = NULL;
-  global_ret = 3; //Timeout
+  global_ret = 3; // Timeout
   GNUNET_SCHEDULER_shutdown ();
 }
+
 
 /**
  * Function called with the result of a GNS lookup.
@@ -144,7 +175,7 @@ process_lookup_result (void *cls,
   lr = NULL;
   if (GNUNET_NO == was_gns)
   {
-    global_ret = 4; /* not for GNS */
+    global_ret = 4;   /* not for GNS */
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -201,28 +232,73 @@ run (void *cls,
 
   cfg = c;
   to_task = NULL;
-  if (GNUNET_OK != GNUNET_DNSPARSER_check_name (lookup_name))
   {
-    fprintf (stderr, _ ("`%s' is not a valid domain name\n"), lookup_name);
-    global_ret = 3;
-    return;
+    char *colon;
+
+    if (NULL != (colon = strchr (lookup_name, ':')))
+      *colon = '\0';
   }
-  to_task = GNUNET_SCHEDULER_add_delayed (timeout, &do_timeout, NULL);
-  gns = GNUNET_GNS_connect (cfg);
-  if (NULL == gns)
+
+  /**
+   * If DNS compatibility is requested, we first verify that the
+   * lookup_name is in a DNS format. If yes, we convert it to UTF-8.
+   */
+  if (GNUNET_YES == dns_compat)
   {
-    fprintf (stderr, _ ("Failed to connect to GNS\n"));
+    Idna_rc rc;
+
+    if (GNUNET_OK != GNUNET_DNSPARSER_check_name (lookup_name))
+    {
+      fprintf (stderr,
+               _ ("`%s' is not a valid DNS domain name\n"),
+               lookup_name);
+      global_ret = 3;
+      return;
+    }
+    if (IDNA_SUCCESS !=
+        (rc = idna_to_unicode_8z8z (lookup_name, &idna_name,
+                                    IDNA_ALLOW_UNASSIGNED)))
+    {
+      fprintf (stderr,
+               _ ("Failed to convert DNS IDNA name `%s' to UTF-8: %s\n"),
+               lookup_name,
+               idna_strerror (rc));
+      global_ret = 4;
+      return;
+    }
+    lookup_name = idna_name;
+  }
+
+  if (GNUNET_YES !=
+      GNUNET_CLIENT_test (cfg,
+                          "arm"))
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                _ ("Cannot resolve using GNS: GNUnet peer not running\n"));
     global_ret = 2;
     return;
   }
-  GNUNET_SCHEDULER_add_shutdown (&do_shutdown, NULL);
+  to_task = GNUNET_SCHEDULER_add_delayed (timeout,
+                                          &do_timeout,
+                                          NULL);
+  gns = GNUNET_GNS_connect (cfg);
+  if (NULL == gns)
+  {
+    fprintf (stderr,
+             _ ("Failed to connect to GNS\n"));
+    global_ret = 2;
+    return;
+  }
+  GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
+                                 NULL);
   if (NULL != lookup_type)
     rtype = GNUNET_GNSRECORD_typename_to_number (lookup_type);
   else
     rtype = GNUNET_DNSPARSER_TYPE_A;
   if (UINT32_MAX == rtype)
   {
-    fprintf (stderr, _ ("Invalid typename specified, assuming `ANY'\n"));
+    fprintf (stderr,
+             _ ("Invalid typename specified, assuming `ANY'\n"));
     rtype = GNUNET_GNSRECORD_TYPE_ANY;
   }
   lr = GNUNET_GNS_lookup_with_tld (gns,
@@ -252,33 +328,40 @@ main (int argc, char *const *argv)
 {
   timeout = GNUNET_TIME_UNIT_FOREVER_REL;
   struct GNUNET_GETOPT_CommandLineOption options[] =
-    {GNUNET_GETOPT_option_mandatory (
-       GNUNET_GETOPT_option_string ('u',
-                                    "lookup",
-                                    "NAME",
-                                    gettext_noop (
-                                      "Lookup a record for the given name"),
-                                    &lookup_name)),
-     GNUNET_GETOPT_option_string ('t',
-                                  "type",
-                                  "TYPE",
-                                  gettext_noop (
-                                    "Specify the type of the record to lookup"),
-                                  &lookup_type),
-     GNUNET_GETOPT_option_relative_time ('T',
-                                         "timeout",
-                                         "TIMEOUT",
-                                         gettext_noop (
-                                           "Specify a timeout for the lookup"),
-                                         &timeout),
-     GNUNET_GETOPT_option_flag ('r',
-                                "raw",
-                                gettext_noop ("No unneeded output"),
-                                &raw),
-     GNUNET_GETOPT_OPTION_END};
+  { GNUNET_GETOPT_option_mandatory (
+      GNUNET_GETOPT_option_string ('u',
+                                   "lookup",
+                                   "NAME",
+                                   gettext_noop (
+                                     "Lookup a record for the given name"),
+                                   &lookup_name)),
+    GNUNET_GETOPT_option_string ('t',
+                                 "type",
+                                 "TYPE",
+                                 gettext_noop (
+                                   "Specify the type of the record to lookup"),
+                                 &lookup_type),
+    GNUNET_GETOPT_option_relative_time ('T',
+                                        "timeout",
+                                        "TIMEOUT",
+                                        gettext_noop (
+                                          "Specify a timeout for the lookup"),
+                                        &timeout),
+    GNUNET_GETOPT_option_flag ('r',
+                               "raw",
+                               gettext_noop ("No unneeded output"),
+                               &raw),
+    GNUNET_GETOPT_option_flag ('d',
+                               "dns",
+                               gettext_noop (
+                                 "DNS Compatibility: Name is passed in IDNA instead of UTF-8"),
+                               &dns_compat),
+    GNUNET_GETOPT_OPTION_END };
   int ret;
 
-  if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
+  if (GNUNET_OK !=
+      GNUNET_STRINGS_get_utf8_args (argc, argv,
+                                    &argc, &argv))
     return 2;
 
   GNUNET_log_setup ("gnunet-gns", "WARNING", NULL);
@@ -294,5 +377,6 @@ main (int argc, char *const *argv)
     return 1;
   return global_ret;
 }
+
 
 /* end of gnunet-gns.c */

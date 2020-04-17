@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file test_gns_proxy.c
@@ -59,9 +59,9 @@ static char *url;
 
 static struct GNUNET_OS_Process *proxy_proc;
 
-static char* cafile_opt;
+static char*cafile_opt;
 
-static char* cafile_srv;
+static char*cafile_srv;
 
 static uint16_t port;
 
@@ -85,8 +85,8 @@ static struct CBC cbc;
  * @return NULL on error
  */
 static void*
-load_file (const char* filename,
-           unsigned int* size)
+load_file (const char*filename,
+           unsigned int*size)
 {
   void *buffer;
   uint64_t fsize;
@@ -112,6 +112,7 @@ load_file (const char* filename,
   return buffer;
 }
 
+
 /**
  * Load PEM key from file
  *
@@ -121,7 +122,7 @@ load_file (const char* filename,
  */
 static int
 load_key_from_file (gnutls_x509_privkey_t key,
-                    const char* keyfile)
+                    const char*keyfile)
 {
   gnutls_datum_t key_data;
   int ret;
@@ -135,12 +136,13 @@ load_key_from_file (gnutls_x509_privkey_t key,
   if (GNUTLS_E_SUCCESS != ret)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to import private key from file `%s'\n"),
+                _ ("Unable to import private key from file `%s'\n"),
                 keyfile);
   }
   GNUNET_free_non_null (key_data.data);
   return (GNUTLS_E_SUCCESS != ret) ? GNUNET_SYSERR : GNUNET_OK;
 }
+
 
 /**
  * Load cert from file
@@ -151,7 +153,7 @@ load_key_from_file (gnutls_x509_privkey_t key,
  */
 static int
 load_cert_from_file (gnutls_x509_crt_t crt,
-                     const char* certfile)
+                     const char*certfile)
 {
   gnutls_datum_t cert_data;
   int ret;
@@ -166,12 +168,13 @@ load_cert_from_file (gnutls_x509_crt_t crt,
   if (GNUTLS_E_SUCCESS != ret)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to import certificate from `%s'\n"),
+                _ ("Unable to import certificate from `%s'\n"),
                 certfile);
   }
   GNUNET_free_non_null (cert_data.data);
   return (GNUTLS_E_SUCCESS != ret) ? GNUNET_SYSERR : GNUNET_OK;
 }
+
 
 static size_t
 copy_buffer (void *ptr, size_t size, size_t nmemb, void *ctx)
@@ -188,12 +191,12 @@ copy_buffer (void *ptr, size_t size, size_t nmemb, void *ctx)
 
 static int
 mhd_ahc (void *cls,
-          struct MHD_Connection *connection,
-          const char *url,
-          const char *method,
-          const char *version,
-          const char *upload_data, size_t *upload_data_size,
-          void **unused)
+         struct MHD_Connection *connection,
+         const char *url,
+         const char *method,
+         const char *version,
+         const char *upload_data, size_t *upload_data_size,
+         void **unused)
 {
   static int ptr;
   struct MHD_Response *response;
@@ -207,13 +210,15 @@ mhd_ahc (void *cls,
     return MHD_YES;
   }
   *unused = NULL;
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "MHD sends respose for request to URL `%s'\n", url);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              "MHD sends respose for request to URL `%s'\n", url);
   response = MHD_create_response_from_buffer (strlen (url),
-					      (void *) url,
-					      MHD_RESPMEM_MUST_COPY);
+                                              (void *) url,
+                                              MHD_RESPMEM_MUST_COPY);
   ret = MHD_queue_response (connection, MHD_HTTP_OK, response);
   MHD_destroy_response (response);
-  if (ret == MHD_NO) {
+  if (ret == MHD_NO)
+  {
     global_ret = 1;
     abort ();
   }
@@ -243,12 +248,12 @@ do_shutdown ()
   GNUNET_free_non_null (url);
 
   if (NULL != proxy_proc)
-    {
-      (void) GNUNET_OS_process_kill (proxy_proc, SIGKILL);
-      GNUNET_assert (GNUNET_OK == GNUNET_OS_process_wait (proxy_proc));
-      GNUNET_OS_process_destroy (proxy_proc);
-      proxy_proc = NULL;
-    }
+  {
+    (void) GNUNET_OS_process_kill (proxy_proc, SIGKILL);
+    GNUNET_assert (GNUNET_OK == GNUNET_OS_process_wait (proxy_proc));
+    GNUNET_OS_process_destroy (proxy_proc);
+    proxy_proc = NULL;
+  }
   url = NULL;
   GNUNET_SCHEDULER_shutdown ();
 }
@@ -323,11 +328,12 @@ curl_main ()
     return;
   }
   GNUNET_assert (CURLM_OK == curl_multi_fdset (multi, &rs, &ws, &es, &max));
-  if ( (CURLM_OK != curl_multi_timeout (multi, &timeout)) ||
-       (-1 == timeout) )
+  if ((CURLM_OK != curl_multi_timeout (multi, &timeout)) ||
+      (-1 == timeout))
     delay = GNUNET_TIME_UNIT_SECONDS;
   else
-    delay = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, (unsigned int) timeout);
+    delay = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS,
+                                           (unsigned int) timeout);
   GNUNET_NETWORK_fdset_copy_native (&nrs,
                                     &rs,
                                     max + 1);
@@ -352,7 +358,7 @@ start_curl (void *cls)
                    TEST_DOMAIN, port);
   curl = curl_easy_init ();
   curl_easy_setopt (curl, CURLOPT_URL, url);
-  //curl_easy_setopt (curl, CURLOPT_URL, "https://127.0.0.1:8443/hello_world");
+  // curl_easy_setopt (curl, CURLOPT_URL, "https://127.0.0.1:8443/hello_world");
   curl_easy_setopt (curl, CURLOPT_WRITEFUNCTION, &copy_buffer);
   curl_easy_setopt (curl, CURLOPT_WRITEDATA, &cbc);
   curl_easy_setopt (curl, CURLOPT_FAILONERROR, 1);
@@ -360,8 +366,8 @@ start_curl (void *cls)
   curl_easy_setopt (curl, CURLOPT_CONNECTTIMEOUT, 15L);
   curl_easy_setopt (curl, CURLOPT_NOSIGNAL, 1);
   curl_easy_setopt (curl, CURLOPT_CAINFO, cafile_opt);
-  //curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
-  //curl_easy_setopt (curl, CURLOPT_SSL_VERIFYHOST, 0L);
+  // curl_easy_setopt (curl, CURLOPT_SSL_VERIFYPEER, 0L);
+  // curl_easy_setopt (curl, CURLOPT_SSL_VERIFYHOST, 0L);
   curl_easy_setopt (curl, CURLOPT_PROXY, "socks5h://127.0.0.1:7777");
 
   multi = curl_multi_init ();
@@ -477,15 +483,15 @@ run (void *cls,
   gnutls_x509_crt_init (&proxy_cert);
   gnutls_x509_privkey_init (&proxy_key);
 
-  if ( (GNUNET_OK !=
-        load_cert_from_file (proxy_cert,
-                             cafile_srv)) ||
-       (GNUNET_OK !=
-        load_key_from_file (proxy_key,
-                            cafile_srv)) )
+  if ((GNUNET_OK !=
+       load_cert_from_file (proxy_cert,
+                            cafile_srv)) ||
+      (GNUNET_OK !=
+       load_key_from_file (proxy_key,
+                           cafile_srv)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to load X.509 key and certificate from `%s'\n"),
+                _ ("Failed to load X.509 key and certificate from `%s'\n"),
                 cafile_srv);
     gnutls_x509_crt_deinit (proxy_cert);
     gnutls_x509_privkey_deinit (proxy_key);
@@ -494,8 +500,8 @@ run (void *cls,
   }
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
                                  NULL);
-  key_buf_size = sizeof (key);
-  cert_buf_size = sizeof (cert);
+  key_buf_size = sizeof(key);
+  cert_buf_size = sizeof(cert);
   gnutls_x509_crt_export (proxy_cert,
                           GNUTLS_X509_FMT_PEM,
                           cert,
@@ -504,7 +510,8 @@ run (void *cls,
                               GNUTLS_X509_FMT_PEM,
                               key,
                               &key_buf_size);
-  mhd = MHD_start_daemon (MHD_USE_DEBUG | MHD_USE_SSL | MHD_ALLOW_SUSPEND_RESUME, port,
+  mhd = MHD_start_daemon (MHD_USE_DEBUG | MHD_USE_SSL
+                          | MHD_ALLOW_SUSPEND_RESUME, port,
                           NULL, NULL,
                           &mhd_ahc, NULL,
                           MHD_OPTION_HTTPS_MEM_KEY, key,
@@ -517,6 +524,7 @@ run (void *cls,
                             NULL);
 }
 
+
 int
 main (int argc, char *const *argv)
 {
@@ -524,7 +532,8 @@ main (int argc, char *const *argv)
     GNUNET_GETOPT_option_uint16 ('p',
                                  "port",
                                  NULL,
-                                 gettext_noop ("listen on specified port (default: 7777)"),
+                                 gettext_noop (
+                                   "listen on specified port (default: 7777)"),
                                  &port),
     GNUNET_GETOPT_option_string ('A',
                                  "curlcert",
@@ -534,7 +543,8 @@ main (int argc, char *const *argv)
     GNUNET_GETOPT_option_string ('S',
                                  "servercert",
                                  NULL,
-                                 gettext_noop ("pem file to use for the server"),
+                                 gettext_noop (
+                                   "pem file to use for the server"),
                                  &cafile_srv),
 
     GNUNET_GETOPT_OPTION_END
@@ -554,12 +564,13 @@ main (int argc, char *const *argv)
                     NULL);
   if (GNUNET_OK != GNUNET_PROGRAM_run (argc, argv,
                                        "gnunet-gns-proxy-test",
-                                       _("GNUnet GNS proxy test"),
+                                       _ ("GNUnet GNS proxy test"),
                                        options,
                                        &run, NULL))
     return 1;
   GNUNET_free_non_null ((char *) argv);
   return global_ret;
 }
+
 
 /* end of test_gns_proxy.c */

@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  Copyright (C) 2008--2013 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2008--2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/test_testbed_api_testbed_run.c
@@ -46,7 +46,7 @@ static struct GNUNET_TESTBED_Operation *op;
 /**
  * Abort task identifier
  */
-static struct GNUNET_SCHEDULER_Task * abort_task;
+static struct GNUNET_SCHEDULER_Task *abort_task;
 
 /**
  * Current peer id
@@ -74,7 +74,7 @@ do_shutdown (void *cls)
 {
   if (NULL != abort_task)
     GNUNET_SCHEDULER_cancel (abort_task);
-  GNUNET_SCHEDULER_shutdown (); /* Stop scheduler to shutdown testbed run */
+  GNUNET_SCHEDULER_shutdown ();  /* Stop scheduler to shutdown testbed run */
 }
 
 
@@ -88,7 +88,7 @@ do_abort (void *cls)
 {
   abort_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-	      "Test timed out -- Aborting\n");
+              "Test timed out -- Aborting\n");
   GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
 }
 
@@ -139,7 +139,6 @@ static void
 controller_event_cb (void *cls,
                      const struct GNUNET_TESTBED_EventInformation *event)
 {
-
   switch (event->type)
   {
   case GNUNET_TESTBED_ET_PEER_START:
@@ -147,12 +146,14 @@ controller_event_cb (void *cls,
     GNUNET_assert (NULL != event->details.peer_start.peer);
     peers[peer_id++] = event->details.peer_start.peer;
     break;
+
   case GNUNET_TESTBED_ET_PEER_STOP:
     GNUNET_assert (NULL != op);
     GNUNET_TESTBED_operation_done (op);
     GNUNET_assert (peers[0] == event->details.peer_stop.peer);
     GNUNET_SCHEDULER_add_now (&do_shutdown, NULL);
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -179,13 +180,13 @@ run (void *cls,
   event_mask |= (1LL << GNUNET_TESTBED_ET_PEER_START);
   event_mask |= (1LL << GNUNET_TESTBED_ET_PEER_STOP);
   GNUNET_TESTBED_run (NULL, config, NUM_PEERS, event_mask,
-		      &controller_event_cb, NULL,
-		      &test_master, NULL);
+                      &controller_event_cb, NULL,
+                      &test_master, NULL);
   abort_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_SECONDS, 300),
-				    &do_abort,
-                                    NULL);
+                                  &do_abort,
+                                  NULL);
 }
 
 
@@ -214,21 +215,10 @@ main (int argc, char **argv)
   }
   testname++;
   testname = GNUNET_strdup (testname);
-#ifdef MINGW
-  {
-    char *period;
 
-    /* check and remove .exe extension */
-    period = strrchr (testname, (int) '.');
-    if (NULL != period)
-      *period = '\0';
-    else
-      GNUNET_break (0);         /* Windows with no .exe? */
-  }
-#endif
   if (0 == strcmp ("waitforever", testname))
     wait_forever = GNUNET_YES;
-  if ( (GNUNET_YES != wait_forever) && (0 != strcmp ("run", testname)) )
+  if ((GNUNET_YES != wait_forever) && (0 != strcmp ("run", testname)))
   {
     GNUNET_asprintf (&config_filename, "test_testbed_api_testbed_run_%s.conf",
                      testname);
@@ -239,13 +229,14 @@ main (int argc, char **argv)
   argv2[2] = config_filename;
   result = GNUNET_SYSERR;
   ret =
-      GNUNET_PROGRAM_run ((sizeof (argv2) / sizeof (char *)) - 1, argv2,
-                          "test_testbed_api_testbed_run", "nohelp", options,
-                          &run, NULL);
+    GNUNET_PROGRAM_run ((sizeof(argv2) / sizeof(char *)) - 1, argv2,
+                        "test_testbed_api_testbed_run", "nohelp", options,
+                        &run, NULL);
   GNUNET_free (config_filename);
   if ((GNUNET_OK != ret) || (GNUNET_OK != result))
     return 1;
   return 0;
 }
+
 
 /* end of test_testbed_api_testbed_run.c */

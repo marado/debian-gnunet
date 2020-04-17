@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file ats/gnunet-service-ats_scheduling.c
@@ -81,10 +81,13 @@ GAS_scheduling_remove_client (struct GNUNET_SERVICE_Client *client)
  * @param bandwidth_in assigned inbound bandwidth
  */
 void
-GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity *peer,
+GAS_scheduling_transmit_address_suggestion (const struct
+                                            GNUNET_PeerIdentity *peer,
                                             uint32_t session_id,
-                                            struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-                                            struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in)
+                                            struct GNUNET_BANDWIDTH_Value32NBO
+                                            bandwidth_out,
+                                            struct GNUNET_BANDWIDTH_Value32NBO
+                                            bandwidth_in)
 {
   struct GNUNET_MQ_Envelope *env;
   struct AddressSuggestionMessage *msg;
@@ -93,10 +96,10 @@ GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity *pe
     return;
   GNUNET_STATISTICS_update (GSA_stats,
                             "# address suggestions made",
-			    1,
+                            1,
                             GNUNET_NO);
   env = GNUNET_MQ_msg (msg,
-		       GNUNET_MESSAGE_TYPE_ATS_ADDRESS_SUGGESTION);
+                       GNUNET_MESSAGE_TYPE_ATS_ADDRESS_SUGGESTION);
   msg->peer = *peer;
   msg->session_id = htonl (session_id);
   msg->bandwidth_out = bandwidth_out;
@@ -107,7 +110,7 @@ GAS_scheduling_transmit_address_suggestion (const struct GNUNET_PeerIdentity *pe
               (unsigned int) ntohl (bandwidth_in.value__),
               (unsigned int) ntohl (bandwidth_out.value__));
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (my_client),
-		  env);
+                  env);
 }
 
 
@@ -195,11 +198,11 @@ GAS_handle_address_destroyed (const struct AddressDestroyedMessage *m)
   GAS_addresses_destroy (&m->peer,
                          ntohl (m->session_id));
   env = GNUNET_MQ_msg (srm,
-		       GNUNET_MESSAGE_TYPE_ATS_SESSION_RELEASE);
+                       GNUNET_MESSAGE_TYPE_ATS_SESSION_RELEASE);
   srm->session_id = m->session_id;
   srm->peer = m->peer;
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (my_client),
-		  env);
+                  env);
 }
 
 

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file arm/test_exponential_backoff.c
  * @brief testcase for gnunet-service-arm.c
@@ -35,7 +35,8 @@
 
 #define SERVICE_TEST_TIMEOUT GNUNET_TIME_UNIT_FOREVER_REL
 
-#define FIVE_MILLISECONDS GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 5)
+#define FIVE_MILLISECONDS GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 5)
 
 #define SERVICE "do-nothing"
 
@@ -85,7 +86,6 @@ struct ShutdownContext
    * Task set up to cancel the shutdown request on timeout.
    */
   struct GNUNET_SCHEDULER_Task *cancel_task;
-
 };
 
 
@@ -185,8 +185,8 @@ trigger_disconnect (void *cls)
 
 static void
 arm_stop_cb (void *cls,
-	     enum GNUNET_ARM_RequestStatus status,
-	     enum GNUNET_ARM_Result result)
+             enum GNUNET_ARM_RequestStatus status,
+             enum GNUNET_ARM_Result result)
 {
   GNUNET_break (status == GNUNET_ARM_REQUEST_SENT_OK);
   GNUNET_break (result == GNUNET_ARM_RESULT_STOPPED);
@@ -198,7 +198,7 @@ arm_stop_cb (void *cls,
 static void
 srv_status (void *cls,
             const char *service,
-            enum GNUNET_ARM_ServiceStatus status)
+            enum GNUNET_ARM_ServiceMonitorStatus status)
 {
   if (status == GNUNET_ARM_SERVICE_MONITORING_STARTED)
   {
@@ -265,7 +265,8 @@ arm_start_cb (void *cls,
   GNUNET_break (result == GNUNET_ARM_RESULT_STARTING);
   GNUNET_break (phase == 0);
   LOG ("Sent 'START' request for arm to ARM %s\n",
-       (status == GNUNET_ARM_REQUEST_SENT_OK) ? "successfully" : "unsuccessfully");
+       (status == GNUNET_ARM_REQUEST_SENT_OK) ? "successfully" :
+       "unsuccessfully");
 }
 
 
@@ -316,10 +317,10 @@ check ()
 
   /* Running ARM  and running the do_nothing task */
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
-				     argv,
+                 GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
+                                     argv,
                                      "test-exponential-backoff",
-				     "nohelp",
+                                     "nohelp",
                                      options,
                                      &task,
                                      NULL));
@@ -370,15 +371,15 @@ init ()
 
 #if LOG_BACKOFF
   killLogFileName = GNUNET_DISK_mktemp ("exponential-backoff-waiting.log");
-  if (NULL == (killLogFilePtr = FOPEN (killLogFileName,
+  if (NULL == (killLogFilePtr = fopen (killLogFileName,
                                        "w")))
-    {
-      GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
-                                "fopen",
-				killLogFileName);
-      GNUNET_free (killLogFileName);
-      return GNUNET_SYSERR;
-    }
+  {
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING,
+                              "fopen",
+                              killLogFileName);
+    GNUNET_free (killLogFileName);
+    return GNUNET_SYSERR;
+  }
 #endif
   return GNUNET_OK;
 }
@@ -401,8 +402,8 @@ main (int argc, char *argv[])
   int ret;
 
   GNUNET_log_setup ("test-exponential-backoff",
-		    "WARNING",
-		    NULL);
+                    "WARNING",
+                    NULL);
 
   if (GNUNET_OK != init ())
     return 1;
@@ -410,5 +411,6 @@ main (int argc, char *argv[])
   houseKeep ();
   return ret;
 }
+
 
 /* end of test_exponential_backoff.c */

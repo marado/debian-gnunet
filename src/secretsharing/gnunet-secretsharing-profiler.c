@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -144,7 +144,6 @@ session_connect_complete (void *cls,
                           void *ca_result,
                           const char *emsg)
 {
-
   if (NULL != emsg)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -181,7 +180,6 @@ decrypt_connect_complete (void *cls,
                           void *ca_result,
                           const char *emsg)
 {
-
   if (NULL != emsg)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -209,11 +207,13 @@ decrypt_connect_complete (void *cls,
  * @param cls Plaintext
  * @param plaintext Plaintext
  */
-static void decrypt_cb (void *cls,
-                        const struct GNUNET_SECRETSHARING_Plaintext *plaintext)
+static void
+decrypt_cb (void *cls,
+            const struct GNUNET_SECRETSHARING_Plaintext *plaintext)
 {
   struct GNUNET_SECRETSHARING_DecryptionHandle **dhp = cls;
   unsigned int n = dhp - decrypt_handles;
+
   num_decrypted++;
 
   *dhp = NULL;
@@ -229,9 +229,11 @@ static void decrypt_cb (void *cls,
     return;
   }
   else if (0 == GNUNET_memcmp (&reference_plaintext, plaintext))
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "decrypt got correct result for peer %u\n", n);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "decrypt got correct result for peer %u\n", n);
   else
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "decrypt got wrong result for peer %u\n", n);
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "decrypt got wrong result for peer %u\n", n);
 
   if (num_decrypted == num_peers)
   {
@@ -241,7 +243,6 @@ static void decrypt_cb (void *cls,
 
   *dhp = NULL;
 }
-
 
 
 /**
@@ -256,7 +257,7 @@ static void decrypt_cb (void *cls,
  */
 static void *
 decrypt_connect_adapter (void *cls,
-                 const struct GNUNET_CONFIGURATION_Handle *cfg)
+                         const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct GNUNET_SECRETSHARING_DecryptionHandle **hp = cls;
   unsigned int n = hp - decrypt_handles;
@@ -281,7 +282,7 @@ decrypt_connect_adapter (void *cls,
  * @param op_result service handle returned from the connect adapter
  */
 static void
-decrypt_disconnect_adapter(void *cls, void *op_result)
+decrypt_disconnect_adapter (void *cls, void *op_result)
 {
   struct GNUNET_SECRETSHARING_DecryptionHandle **dh = cls;
   unsigned int n = dh - decrypt_handles;
@@ -316,14 +317,17 @@ secret_ready_cb (void *cls,
   shares[n] = my_share;
   if (NULL == my_share)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "key generation failed for peer #%u\n", n);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "key generation failed for peer #%u\n",
+                n);
   }
   else
   {
-    ret = GNUNET_STRINGS_data_to_string (public_key, sizeof *public_key, pubkey_str, 1024);
+    ret = GNUNET_STRINGS_data_to_string (public_key, sizeof *public_key,
+                                         pubkey_str, 1024);
     GNUNET_assert (NULL != ret);
     *ret = '\0';
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "key generation successful for peer #%u, pubkey %s\n", n,
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                "key generation successful for peer #%u, pubkey %s\n", n,
                 pubkey_str);
 
     /* we're the first to get the key -> store it */
@@ -333,7 +337,8 @@ secret_ready_cb (void *cls,
     }
     else if (0 != GNUNET_memcmp (public_key, &common_pubkey))
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "generated public keys do not match\n");
+      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                  "generated public keys do not match\n");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -344,7 +349,6 @@ secret_ready_cb (void *cls,
 
   // disconnect from the service, will call the disconnect callback
   GNUNET_TESTBED_operation_done (connect_ops[n]);
-
 }
 
 
@@ -377,7 +381,6 @@ session_connect_adapter (void *cls,
                                              &secret_ready_cb, sp);
   return *sp;
 }
-
 
 
 /**
@@ -419,18 +422,23 @@ session_disconnect_adapter (void *cls, void *op_result)
       return;
     }
 
-    decrypt_start = GNUNET_TIME_absolute_add (GNUNET_TIME_absolute_get (), delay);
+    decrypt_start = GNUNET_TIME_absolute_add (GNUNET_TIME_absolute_get (),
+                                              delay);
     decrypt_deadline = GNUNET_TIME_absolute_add (decrypt_start, timeout);
 
     // compute g^42 as the plaintext which we will decrypt and then
     // cooperatively decrypt
     GNUNET_SECRETSHARING_plaintext_generate_i (&reference_plaintext, 42);
-    GNUNET_SECRETSHARING_encrypt (&common_pubkey, &reference_plaintext, &ciphertext);
+    GNUNET_SECRETSHARING_encrypt (&common_pubkey, &reference_plaintext,
+                                  &ciphertext);
 
     for (i = 0; i < num_peers; i++)
       connect_ops[i] =
-          GNUNET_TESTBED_service_connect (NULL, peers[i], "secretsharing", &decrypt_connect_complete, NULL,
-                                          &decrypt_connect_adapter, &decrypt_disconnect_adapter, &decrypt_handles[i]);
+        GNUNET_TESTBED_service_connect (NULL, peers[i], "secretsharing",
+                                        &decrypt_connect_complete, NULL,
+                                        &decrypt_connect_adapter,
+                                        &decrypt_disconnect_adapter,
+                                        &decrypt_handles[i]);
   }
 }
 
@@ -464,8 +472,11 @@ peer_info_cb (void *cb_cls,
     if (num_retrieved_peer_ids == num_peers)
       for (i = 0; i < num_peers; i++)
         connect_ops[i] =
-            GNUNET_TESTBED_service_connect (NULL, peers[i], "secretsharing", session_connect_complete, NULL,
-                                            session_connect_adapter, session_disconnect_adapter, &session_handles[i]);
+          GNUNET_TESTBED_service_connect (NULL, peers[i], "secretsharing",
+                                          session_connect_complete, NULL,
+                                          session_connect_adapter,
+                                          session_disconnect_adapter,
+                                          &session_handles[i]);
   }
   else
   {
@@ -534,10 +545,12 @@ test_master (void *cls,
 
   peers = started_peers;
 
-  peer_ids = GNUNET_malloc (num_peers * sizeof (struct GNUNET_PeerIdentity));
+  peer_ids = GNUNET_malloc (num_peers * sizeof(struct GNUNET_PeerIdentity));
 
-  session_handles = GNUNET_new_array (num_peers, struct GNUNET_SECRETSHARING_Session *);
-  decrypt_handles = GNUNET_new_array (num_peers, struct GNUNET_SECRETSHARING_DecryptionHandle *);
+  session_handles = GNUNET_new_array (num_peers, struct
+                                      GNUNET_SECRETSHARING_Session *);
+  decrypt_handles = GNUNET_new_array (num_peers, struct
+                                      GNUNET_SECRETSHARING_DecryptionHandle *);
   connect_ops = GNUNET_new_array (num_peers, struct GNUNET_TESTBED_Operation *);
   shares = GNUNET_new_array (num_peers, struct GNUNET_SECRETSHARING_Share *);
 
@@ -564,7 +577,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   dkg_start = GNUNET_TIME_absolute_add (GNUNET_TIME_absolute_get (), delay);
   dkg_deadline = GNUNET_TIME_absolute_add (dkg_start, timeout);
 
-  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (cfg, "testbed", "OVERLAY_TOPOLOGY", &topology))
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (cfg, "testbed",
+                                                          "OVERLAY_TOPOLOGY",
+                                                          &topology))
   {
     fprintf (stderr,
              "'OVERLAY_TOPOLOGY' not found in 'testbed' config section, "
@@ -603,45 +618,45 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
-
     GNUNET_GETOPT_option_uint ('n',
-                                   "num-peers",
-                                   NULL,
-                                   gettext_noop ("number of peers in consensus"),
-                                   &num_peers),
+                               "num-peers",
+                               NULL,
+                               gettext_noop ("number of peers in consensus"),
+                               &num_peers),
 
     GNUNET_GETOPT_option_relative_time ('D',
-                                            "delay",
-                                            NULL,
-                                            gettext_noop ("dkg start delay"),
-                                            &delay),
+                                        "delay",
+                                        NULL,
+                                        gettext_noop ("dkg start delay"),
+                                        &delay),
 
     GNUNET_GETOPT_option_relative_time ('t',
-                                            "timeout",
-                                            NULL,
-                                            gettext_noop ("dkg timeout"),
-                                            &timeout),
+                                        "timeout",
+                                        NULL,
+                                        gettext_noop ("dkg timeout"),
+                                        &timeout),
 
     GNUNET_GETOPT_option_uint ('k',
-                                   "threshold",
-                                   NULL,
-                                   gettext_noop ("threshold"),
-                                   &threshold),
-    
+                               "threshold",
+                               NULL,
+                               gettext_noop ("threshold"),
+                               &threshold),
+
     GNUNET_GETOPT_option_flag ('d',
-                                  "descrypt",
-                                  gettext_noop ("also profile decryption"),
-                                  &decrypt),
+                               "descrypt",
+                               gettext_noop ("also profile decryption"),
+                               &decrypt),
 
 
     GNUNET_GETOPT_option_verbose (&verbose),
 
     GNUNET_GETOPT_OPTION_END
   };
+
   delay = GNUNET_TIME_UNIT_ZERO;
   timeout = GNUNET_TIME_UNIT_MINUTES;
   GNUNET_PROGRAM_run2 (argc, argv, "gnunet-secretsharing-profiler",
-		      "help",
-		      options, &run, NULL, GNUNET_YES);
+                       "help",
+                       options, &run, NULL, GNUNET_YES);
   return 0;
 }

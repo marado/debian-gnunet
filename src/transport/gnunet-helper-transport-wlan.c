@@ -13,12 +13,12 @@
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Affero General Public License for more details.
-  
+
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file src/transport/gnunet-helper-transport-wlan.c
  * @brief mediator between the wlan interface and gnunet; must run as root (SUID will do)
@@ -110,8 +110,6 @@
  * parts taken from aircrack-ng, parts changend.
  */
 #include "gnunet_config.h"
-#define SOCKTYPE int
-#define FDTYPE int
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -174,7 +172,6 @@
  * (used for our receive and sent buffers).
  */
 #define MAXLINE 4096
-
 
 
 /* ********* structure of messages of type ARPHRD_IEEE80211_PRISM *********** */
@@ -258,7 +255,6 @@ struct PrismValue
    * The data value
    */
   uint32_t data;
-
 } __attribute__ ((packed));
 
 
@@ -286,7 +282,6 @@ struct PrismHeader
      are typically the hosttime, mactime, channel, rssi, sq, signal, noise,
      rate, istx and frmlen values, but documentation is sparse.  So we
      will use the 'did' fields to find out what we actually got. */
-
 } __attribute__ ((packed));
 
 
@@ -307,7 +302,6 @@ struct PrismHeader
  */
 enum RadiotapType
 {
-
   /**
    * IEEE80211_RADIOTAP_TSFT              __le64       microseconds
    *
@@ -468,7 +462,6 @@ enum RadiotapType
 #define IEEE80211_RADIOTAP_PRESENT_EXTEND_MASK (1 << IEEE80211_RADIOTAP_EXT)
 
 
-
 /**
  * Bit in IEEE80211_RADIOTAP_FLAGS (which we might get
  * as part of a 'struct Ieee80211RadiotapHeader' extension
@@ -477,7 +470,7 @@ enum RadiotapType
  *
  * Frame was sent/received during CFP (Contention Free Period)
  */
-#define	IEEE80211_RADIOTAP_F_CFP	0x01
+#define IEEE80211_RADIOTAP_F_CFP        0x01
 
 /**
  * Bit in IEEE80211_RADIOTAP_FLAGS (which we might get
@@ -487,7 +480,7 @@ enum RadiotapType
  *
  * Frame was sent/received with short preamble
  */
-#define	IEEE80211_RADIOTAP_F_SHORTPRE	0x02
+#define IEEE80211_RADIOTAP_F_SHORTPRE   0x02
 
 /**
  * Bit in IEEE80211_RADIOTAP_FLAGS (which we might get
@@ -497,7 +490,7 @@ enum RadiotapType
  *
  * Frame was sent/received with WEP encryption
  */
-#define	IEEE80211_RADIOTAP_F_WEP	0x04
+#define IEEE80211_RADIOTAP_F_WEP        0x04
 
 /**
  * Bit in IEEE80211_RADIOTAP_FLAGS (which we might get
@@ -507,7 +500,7 @@ enum RadiotapType
  *
  * Frame was sent/received with fragmentation
  */
-#define	IEEE80211_RADIOTAP_F_FRAG	0x08
+#define IEEE80211_RADIOTAP_F_FRAG       0x08
 
 /**
  * Bit in IEEE80211_RADIOTAP_FLAGS (which we might get
@@ -517,7 +510,7 @@ enum RadiotapType
  *
  * Frame includes FCS (CRC at the end that needs to be removeD).
  */
-#define	IEEE80211_RADIOTAP_F_FCS	0x10
+#define IEEE80211_RADIOTAP_F_FCS        0x10
 
 /**
  * Bit in IEEE80211_RADIOTAP_FLAGS (which we might get
@@ -528,44 +521,44 @@ enum RadiotapType
  * Frame has padding between 802.11 header and payload
  * (to 32-bit boundary)
  */
-#define	IEEE80211_RADIOTAP_F_DATAPAD	0x20
+#define IEEE80211_RADIOTAP_F_DATAPAD    0x20
 
 
 /**
  * For IEEE80211_RADIOTAP_RX_FLAGS:
  * frame failed crc check
  */
-#define IEEE80211_RADIOTAP_F_RX_BADFCS	0x0001
+#define IEEE80211_RADIOTAP_F_RX_BADFCS  0x0001
 
 /**
  * For IEEE80211_RADIOTAP_TX_FLAGS ('txflags' in 'struct RadiotapTransmissionHeader'):
  * failed due to excessive retries
  */
-#define IEEE80211_RADIOTAP_F_TX_FAIL	0x0001
+#define IEEE80211_RADIOTAP_F_TX_FAIL    0x0001
 
 /**
  * For IEEE80211_RADIOTAP_TX_FLAGS ('txflags' in 'struct RadiotapTransmissionHeader'):
  * used cts 'protection'
  */
-#define IEEE80211_RADIOTAP_F_TX_CTS	0x0002
+#define IEEE80211_RADIOTAP_F_TX_CTS     0x0002
 
 /**
  * For IEEE80211_RADIOTAP_TX_FLAGS ('txflags' in 'struct RadiotapTransmissionHeader'):
  * used rts/cts handshake
  */
-#define IEEE80211_RADIOTAP_F_TX_RTS	0x0004
+#define IEEE80211_RADIOTAP_F_TX_RTS     0x0004
 
 /**
  * For IEEE80211_RADIOTAP_TX_FLAGS ('txflags' in 'struct RadiotapTransmissionHeader'):
  * frame should not be ACKed
  */
-#define IEEE80211_RADIOTAP_F_TX_NOACK	0x0008
+#define IEEE80211_RADIOTAP_F_TX_NOACK   0x0008
 
 /**
  * For IEEE80211_RADIOTAP_TX_FLAGS ('txflags' in 'struct RadiotapTransmissionHeader'):
  * sequence number handled by userspace
  */
-#define IEEE80211_RADIOTAP_F_TX_NOSEQ	0x0010
+#define IEEE80211_RADIOTAP_F_TX_NOSEQ   0x0010
 
 
 /**
@@ -616,7 +609,6 @@ struct Ieee80211RadiotapHeader
  */
 struct RadiotapTransmissionHeader
 {
-
   /**
    * First we begin with the 'generic' header we also get when receiving
    * messages.
@@ -640,7 +632,6 @@ struct RadiotapTransmissionHeader
    * Transmission flags from on the IEEE80211_RADIOTAP_F_TX_* constant family.
    */
   uint16_t txflags;
-
 };
 
 /**
@@ -648,8 +639,12 @@ struct RadiotapTransmissionHeader
  * following value for 'header.it_present' based on the presence of
  * the 'rate' and 'txflags' in the overall struct.
  */
-#define IEEE80211_RADIOTAP_OUR_TRANSMISSION_HEADER_MASK ((1 << IEEE80211_RADIOTAP_RATE) | (1 << IEEE80211_RADIOTAP_TX_FLAGS))
-
+#define IEEE80211_RADIOTAP_OUR_TRANSMISSION_HEADER_MASK ((1 \
+                                                          << \
+                                                          IEEE80211_RADIOTAP_RATE) \
+                                                         | (1 \
+                                                            << \
+                                                            IEEE80211_RADIOTAP_TX_FLAGS))
 
 
 /**
@@ -698,7 +693,6 @@ struct Ieee80211RadiotapHeaderIterator
    * internal next argument index
    */
   unsigned int arg_index;
-
 };
 
 
@@ -712,7 +706,6 @@ struct Ieee80211RadiotapHeaderIterator
  */
 struct HardwareInfos
 {
-
   /**
    * file descriptor for the raw socket
    */
@@ -772,7 +765,6 @@ static struct SendBuffer write_pout;
 static struct SendBuffer write_std;
 
 
-
 /* *********** specialized version of server_mst.c begins here ********** */
 
 /**
@@ -784,7 +776,7 @@ static struct SendBuffer write_std;
 /**
  * Smallest supported message.
  */
-#define MIN_BUFFER_SIZE sizeof (struct GNUNET_MessageHeader)
+#define MIN_BUFFER_SIZE sizeof(struct GNUNET_MessageHeader)
 
 
 /**
@@ -795,16 +787,15 @@ static struct SendBuffer write_std;
  * @param message the actual message
  */
 typedef void (*MessageTokenizerCallback) (void *cls,
-					  const struct
-					  GNUNET_MessageHeader *
-					  message);
+                                          const struct
+                                          GNUNET_MessageHeader *
+                                          message);
 
 /**
  * Handle to a message stream tokenizer.
  */
 struct MessageStreamTokenizer
 {
-
   /**
    * Function to call on completed messages.
    */
@@ -834,7 +825,6 @@ struct MessageStreamTokenizer
    * Beginning of the buffer.  Typed like this to force alignment.
    */
   struct GNUNET_MessageHeader *hdr;
-
 };
 
 
@@ -847,11 +837,11 @@ struct MessageStreamTokenizer
  */
 static struct MessageStreamTokenizer *
 mst_create (MessageTokenizerCallback cb,
-	    void *cb_cls)
+            void *cb_cls)
 {
   struct MessageStreamTokenizer *ret;
 
-  ret = malloc (sizeof (struct MessageStreamTokenizer));
+  ret = malloc (sizeof(struct MessageStreamTokenizer));
   if (NULL == ret)
   {
     fprintf (stderr, "Failed to allocate buffer for tokenizer\n");
@@ -882,7 +872,7 @@ mst_create (MessageTokenizerCallback cb,
  */
 static int
 mst_receive (struct MessageStreamTokenizer *mst,
-	     const char *buf, size_t size)
+             const char *buf, size_t size)
 {
   const struct GNUNET_MessageHeader *hdr;
   size_t delta;
@@ -897,7 +887,7 @@ mst_receive (struct MessageStreamTokenizer *mst,
   while (mst->pos > 0)
   {
 do_align:
-    if ((mst->curr_buf - mst->off < sizeof (struct GNUNET_MessageHeader)) ||
+    if ((mst->curr_buf - mst->off < sizeof(struct GNUNET_MessageHeader)) ||
         (0 != (mst->off % ALIGN_FACTOR)))
     {
       /* need to align or need more space */
@@ -905,26 +895,26 @@ do_align:
       memmove (ibuf, &ibuf[mst->off], mst->pos);
       mst->off = 0;
     }
-    if (mst->pos - mst->off < sizeof (struct GNUNET_MessageHeader))
+    if (mst->pos - mst->off < sizeof(struct GNUNET_MessageHeader))
     {
       delta =
-          GNUNET_MIN (sizeof (struct GNUNET_MessageHeader) -
-                      (mst->pos - mst->off), size);
+        GNUNET_MIN (sizeof(struct GNUNET_MessageHeader)
+                    - (mst->pos - mst->off), size);
       GNUNET_memcpy (&ibuf[mst->pos], buf, delta);
       mst->pos += delta;
       buf += delta;
       size -= delta;
     }
-    if (mst->pos - mst->off < sizeof (struct GNUNET_MessageHeader))
+    if (mst->pos - mst->off < sizeof(struct GNUNET_MessageHeader))
     {
       return GNUNET_OK;
     }
     hdr = (const struct GNUNET_MessageHeader *) &ibuf[mst->off];
     want = ntohs (hdr->size);
-    if (want < sizeof (struct GNUNET_MessageHeader))
+    if (want < sizeof(struct GNUNET_MessageHeader))
     {
       fprintf (stderr,
-	       "Received invalid message from stdin\n");
+               "Received invalid message from stdin\n");
       exit (1);
     }
     if (mst->curr_buf - mst->off < want)
@@ -939,8 +929,8 @@ do_align:
       mst->hdr = realloc (mst->hdr, want);
       if (NULL == mst->hdr)
       {
-	fprintf (stderr, "Failed to allocate buffer for alignment\n");
-	exit (1);
+        fprintf (stderr, "Failed to allocate buffer for alignment\n");
+        exit (1);
       }
       ibuf = (char *) mst->hdr;
       mst->curr_buf = want;
@@ -969,7 +959,7 @@ do_align:
   }
   while (size > 0)
   {
-    if (size < sizeof (struct GNUNET_MessageHeader))
+    if (size < sizeof(struct GNUNET_MessageHeader))
       break;
     offset = (unsigned long) buf;
     need_align = (0 != offset % ALIGN_FACTOR) ? GNUNET_YES : GNUNET_NO;
@@ -978,11 +968,11 @@ do_align:
       /* can try to do zero-copy and process directly from original buffer */
       hdr = (const struct GNUNET_MessageHeader *) buf;
       want = ntohs (hdr->size);
-      if (want < sizeof (struct GNUNET_MessageHeader))
+      if (want < sizeof(struct GNUNET_MessageHeader))
       {
-	fprintf (stderr,
-		 "Received invalid message from stdin\n");
-	exit (1);
+        fprintf (stderr,
+                 "Received invalid message from stdin\n");
+        exit (1);
       }
       if (size < want)
         break;                  /* or not, buffer incomplete, so copy to private buffer... */
@@ -1004,8 +994,8 @@ do_align:
       mst->hdr = realloc (mst->hdr, size + mst->pos);
       if (NULL == mst->hdr)
       {
-	fprintf (stderr, "Failed to allocate buffer for alignment\n");
-	exit (1);
+        fprintf (stderr, "Failed to allocate buffer for alignment\n");
+        exit (1);
       }
       ibuf = (char *) mst->hdr;
       mst->curr_buf = size + mst->pos;
@@ -1013,7 +1003,7 @@ do_align:
     if (mst->pos + size > mst->curr_buf)
     {
       fprintf (stderr,
-	       "Assertion failed\n");
+               "Assertion failed\n");
       exit (1);
     }
     GNUNET_memcpy (&ibuf[mst->pos], buf, size);
@@ -1034,6 +1024,7 @@ mst_destroy (struct MessageStreamTokenizer *mst)
   free (mst->hdr);
   free (mst);
 }
+
 
 /* *****************  end of server_mst.c clone ***************** **/
 
@@ -1058,12 +1049,14 @@ mst_destroy (struct MessageStreamTokenizer *mst)
  * @return 0 on success, -1 on error
  */
 static int
-ieee80211_radiotap_iterator_init (struct Ieee80211RadiotapHeaderIterator *iterator,
-                                  const struct Ieee80211RadiotapHeader *radiotap_header,
-				  size_t max_length)
+ieee80211_radiotap_iterator_init (struct
+                                  Ieee80211RadiotapHeaderIterator *iterator,
+                                  const struct
+                                  Ieee80211RadiotapHeader *radiotap_header,
+                                  size_t max_length)
 {
-  if ( (iterator == NULL) ||
-       (radiotap_header == NULL) )
+  if ((iterator == NULL) ||
+      (radiotap_header == NULL))
     return -1;
 
   /* Linux only supports version 0 radiotap format */
@@ -1071,37 +1064,38 @@ ieee80211_radiotap_iterator_init (struct Ieee80211RadiotapHeaderIterator *iterat
     return -1;
 
   /* sanity check for allowed length and radiotap length field */
-  if ( (max_length < sizeof (struct Ieee80211RadiotapHeader)) ||
-       (max_length < (GNUNET_le16toh (radiotap_header->it_len))) )
+  if ((max_length < sizeof(struct Ieee80211RadiotapHeader)) ||
+      (max_length < (GNUNET_le16toh (radiotap_header->it_len))))
     return -1;
 
-  memset (iterator, 0, sizeof (struct Ieee80211RadiotapHeaderIterator));
+  memset (iterator, 0, sizeof(struct Ieee80211RadiotapHeaderIterator));
   iterator->rtheader = radiotap_header;
   iterator->max_length = GNUNET_le16toh (radiotap_header->it_len);
   iterator->bitmap_shifter = GNUNET_le32toh (radiotap_header->it_present);
-  iterator->arg = ((uint8_t *) radiotap_header) + sizeof (struct Ieee80211RadiotapHeader);
+  iterator->arg = ((uint8_t *) radiotap_header) + sizeof(struct
+                                                         Ieee80211RadiotapHeader);
 
   /* find payload start allowing for extended bitmap(s) */
   if (0 != (iterator->bitmap_shifter & IEEE80211_RADIOTAP_PRESENT_EXTEND_MASK))
   {
-    while (GNUNET_le32toh (*((uint32_t *) iterator->arg)) & IEEE80211_RADIOTAP_PRESENT_EXTEND_MASK)
+    while (GNUNET_le32toh (*((uint32_t *) iterator->arg))
+           & IEEE80211_RADIOTAP_PRESENT_EXTEND_MASK)
     {
-      iterator->arg += sizeof (uint32_t);
+      iterator->arg += sizeof(uint32_t);
       /*
        * check for insanity where the present bitmaps
        * keep claiming to extend up to or even beyond the
        * stated radiotap header length
-       */
-      if (iterator->arg - ((uint8_t*) iterator->rtheader) > iterator->max_length)
+       */if (iterator->arg - ((uint8_t *) iterator->rtheader) >
+          iterator->max_length)
         return -1;
     }
-    iterator->arg += sizeof (uint32_t);
+    iterator->arg += sizeof(uint32_t);
     /*
      * no need to check again for blowing past stated radiotap
      * header length, becuase ieee80211_radiotap_iterator_next
      * checks it before it is dereferenced
-     */
-  }
+     */}
   /* we are all initialized happily */
   return 0;
 }
@@ -1120,7 +1114,8 @@ ieee80211_radiotap_iterator_init (struct Ieee80211RadiotapHeaderIterator *iterat
  * @return next present arg index on success or -1 if no more or error
  */
 static int
-ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterator)
+ieee80211_radiotap_iterator_next (struct
+                                  Ieee80211RadiotapHeaderIterator *iterator)
 {
   /*
    * small length lookup table for all radiotap types we heard of
@@ -1135,9 +1130,7 @@ ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterat
    *
    * upper nybble: content alignment for arg
    * lower nybble: content length for arg
-   */
-
-  static const uint8_t rt_sizes[] = {
+   */static const uint8_t rt_sizes[] = {
     [IEEE80211_RADIOTAP_TSFT] = 0x88,
     [IEEE80211_RADIOTAP_FLAGS] = 0x11,
     [IEEE80211_RADIOTAP_RATE] = 0x11,
@@ -1156,17 +1149,17 @@ ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterat
     [IEEE80211_RADIOTAP_RX_FLAGS] = 0x22,
     [IEEE80211_RADIOTAP_RTS_RETRIES] = 0x11,
     [IEEE80211_RADIOTAP_DATA_RETRIES] = 0x11
-        /*
-         * add more here as they are defined in
-         * include/net/ieee80211_radiotap.h
-         */
+                                        /*
+                                         * add more here as they are defined in
+                                         * include/net/ieee80211_radiotap.h
+                                         */
   };
 
   /*
    * for every radiotap entry we can at
    * least skip (by knowing the length)...
    */
-  while (iterator->arg_index < sizeof (rt_sizes))
+  while (iterator->arg_index < sizeof(rt_sizes))
   {
     int hit = (0 != (iterator->bitmap_shifter & 1));
 
@@ -1196,13 +1189,13 @@ ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterat
        * radiotap header.  There is no guarantee that the radiotap
        * header itself is aligned on any kind of boundary, thus we
        * need to really look at the delta here.
-       */
-      wanted_alignment = rt_sizes[iterator->arg_index] >> 4;
-      unalignment = (((void *) iterator->arg) - ((void *) iterator->rtheader)) & (wanted_alignment - 1);
+       */wanted_alignment = rt_sizes[iterator->arg_index] >> 4;
+      unalignment = (((void *) iterator->arg) - ((void *) iterator->rtheader))
+                    & (wanted_alignment - 1);
       if (0 != unalignment)
       {
-	/* need padding (by 'wanted_alignment - unalignment') */
-	iterator->arg_index += wanted_alignment - unalignment;
+        /* need padding (by 'wanted_alignment - unalignment') */
+        iterator->arg_index += wanted_alignment - unalignment;
       }
 
       /*
@@ -1213,7 +1206,7 @@ ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterat
       iterator->this_arg = iterator->arg;
 
       /* internally move on the size of this arg (using lower nybble from
-	 the table) */
+         the table) */
       iterator->arg += rt_sizes[iterator->arg_index] & 0x0f;
 
       /*
@@ -1221,9 +1214,9 @@ ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterat
        * claims to have more arg content than the length of the
        * radiotap section.  We will normally end up equalling this
        * max_length on the last arg, never exceeding it.
-       */
-      if ((((void *) iterator->arg) - ((void *) iterator->rtheader)) > iterator->max_length)
-	return -1;
+       */if ((((void *) iterator->arg) - ((void *) iterator->rtheader)) >
+          iterator->max_length)
+        return -1;
     }
 
     /* Now, move on to next bit / next entry */
@@ -1241,7 +1234,7 @@ ieee80211_radiotap_iterator_next (struct Ieee80211RadiotapHeaderIterator *iterat
       else
       {
         /* no more bitmaps: end (by setting arg_index to high, unsupported value) */
-        iterator->arg_index = sizeof (rt_sizes);
+        iterator->arg_index = sizeof(rt_sizes);
       }
     }
     else
@@ -1342,7 +1335,7 @@ calc_crc_osdep (const unsigned char *buf, size_t len)
 
   for (; len > 0; len--, buf++)
     crc = crc_tbl_osdep[(crc ^ *buf) & 0xFF] ^ (crc >> 8);
-  return (~crc);
+  return(~crc);
 }
 
 
@@ -1361,8 +1354,8 @@ check_crc_buf_osdep (const unsigned char *buf, size_t len)
 
   crc = calc_crc_osdep (buf, len);
   buf += len;
-  if (((crc) & 0xFF) == buf[0] && ((crc >> 8) & 0xFF) == buf[1] &&
-      ((crc >> 16) & 0xFF) == buf[2] && ((crc >> 24) & 0xFF) == buf[3])
+  if ((((crc) & 0xFF) == buf[0]) && (((crc >> 8) & 0xFF) == buf[1]) &&
+      ( ((crc >> 16) & 0xFF) == buf[2]) && ( ((crc >> 24) & 0xFF) == buf[3]) )
     return 0;
   return 1;
 }
@@ -1382,11 +1375,11 @@ check_crc_buf_osdep (const unsigned char *buf, size_t len)
 static int
 get_channel_from_frequency (int32_t frequency)
 {
-  if (frequency >= 2412 && frequency <= 2472)
+  if ((frequency >= 2412) && (frequency <= 2472))
     return (frequency - 2407) / 5;
   if (frequency == 2484)
     return 14;
-  if (frequency >= 5000 && frequency <= 6100)
+  if ((frequency >= 5000) && (frequency <= 6100))
     return (frequency - 5000) / 5;
   return -1;
 }
@@ -1404,7 +1397,7 @@ linux_get_channel (const struct HardwareInfos *dev)
   struct iwreq wrq;
   int32_t frequency;
 
-  memset (&wrq, 0, sizeof (struct iwreq));
+  memset (&wrq, 0, sizeof(struct iwreq));
   strncpy (wrq.ifr_name, dev->iface, IFNAMSIZ);
   if (0 > ioctl (dev->fd_raw, SIOCGIWFREQ, &wrq))
     return -1;
@@ -1432,7 +1425,7 @@ linux_get_channel (const struct HardwareInfos *dev)
  */
 static ssize_t
 linux_read (struct HardwareInfos *dev,
-	    unsigned char *buf, size_t buf_size,
+            unsigned char *buf, size_t buf_size,
             struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage *ri)
 {
   unsigned char tmpbuf[buf_size];
@@ -1452,7 +1445,7 @@ linux_read (struct HardwareInfos *dev,
     return -1;
   }
 
-  memset (ri, 0, sizeof (*ri));
+  memset (ri, 0, sizeof(*ri));
   switch (dev->arptype_in)
   {
   case ARPHRD_IEEE80211_PRISM:
@@ -1461,155 +1454,175 @@ linux_read (struct HardwareInfos *dev,
 
       ph = (const struct PrismHeader*) tmpbuf;
       n = ph->msglen;
-      if ( (n < 8) || (n >= caplen) )
-	return 0; /* invalid format */
-      if ( (PRISM_MSGCODE_MONITOR == ph->msgcode) &&
-	   (n >= sizeof (struct PrismHeader)) )
+      if ((n < 8) || (n >= caplen))
+        return 0; /* invalid format */
+      if ((PRISM_MSGCODE_MONITOR == ph->msgcode) &&
+          (n >= sizeof(struct PrismHeader)))
       {
-	const char *pos;
-	size_t left;
-	struct PrismValue pv;
-	
-	left = n - sizeof (struct PrismHeader);
-	pos = (const char *) &ph[1];
-	while (left > sizeof (struct PrismValue))
-	{
-	  left -= sizeof (struct PrismValue);
-	  GNUNET_memcpy (&pv, pos, sizeof (struct PrismValue));
-	  pos += sizeof (struct PrismValue);
+        const char *pos;
+        size_t left;
+        struct PrismValue pv;
 
-	  switch (pv.did)
-	  {
-	  case PRISM_DID_NOISE:
-	    if (PRISM_STATUS_OK == pv.status)
-	    {
-	      ri->ri_noise = pv.data;
-	      /* got_noise = 1; */
-	    }
-	    break;
-	  case PRISM_DID_RATE:
-	    if (PRISM_STATUS_OK == pv.status)
-	      ri->ri_rate = pv.data * 500000;
-	    break;
-	  case PRISM_DID_CHANNEL:
-	    if (PRISM_STATUS_OK == pv.status)
-	    {
-	      ri->ri_channel = pv.data;
-	      got_channel = 1;
-	    }
-	    break;
-	  case PRISM_DID_MACTIME:
-	    if (PRISM_STATUS_OK == pv.status)
-	      ri->ri_mactime = pv.data;
-	    break;
-	  case PRISM_DID_SIGNAL:
-	    if (PRISM_STATUS_OK == pv.status)
-	    {
-	      ri->ri_power = pv.data;
-	      /* got_signal = 1; */
-	    }
-	    break;
-	  }
-	}
+        left = n - sizeof(struct PrismHeader);
+        pos = (const char *) &ph[1];
+        while (left > sizeof(struct PrismValue))
+        {
+          left -= sizeof(struct PrismValue);
+          GNUNET_memcpy (&pv, pos, sizeof(struct PrismValue));
+          pos += sizeof(struct PrismValue);
+
+          switch (pv.did)
+          {
+          case PRISM_DID_NOISE:
+            if (PRISM_STATUS_OK == pv.status)
+            {
+              ri->ri_noise = pv.data;
+              /* got_noise = 1; */
+            }
+            break;
+
+          case PRISM_DID_RATE:
+            if (PRISM_STATUS_OK == pv.status)
+              ri->ri_rate = pv.data * 500000;
+            break;
+
+          case PRISM_DID_CHANNEL:
+            if (PRISM_STATUS_OK == pv.status)
+            {
+              ri->ri_channel = pv.data;
+              got_channel = 1;
+            }
+            break;
+
+          case PRISM_DID_MACTIME:
+            if (PRISM_STATUS_OK == pv.status)
+              ri->ri_mactime = pv.data;
+            break;
+
+          case PRISM_DID_SIGNAL:
+            if (PRISM_STATUS_OK == pv.status)
+            {
+              ri->ri_power = pv.data;
+              /* got_signal = 1; */
+            }
+            break;
+          }
+        }
       }
-      if ( (n < 8) || (n >= caplen) )
-	return 0; /* invalid format */
+      if ((n < 8) || (n >= caplen))
+        return 0; /* invalid format */
     }
     break;
+
   case ARPHRD_IEEE80211_FULL:
     {
       struct Ieee80211RadiotapHeaderIterator iterator;
       struct Ieee80211RadiotapHeader *rthdr;
 
-      memset (&iterator, 0, sizeof (iterator));
+      memset (&iterator, 0, sizeof(iterator));
       rthdr = (struct Ieee80211RadiotapHeader *) tmpbuf;
       n = GNUNET_le16toh (rthdr->it_len);
-      if ( (n < sizeof (struct Ieee80211RadiotapHeader)) || (n >= caplen))
-	return 0; /* invalid 'it_len' */
+      if ((n < sizeof(struct Ieee80211RadiotapHeader)) || (n >= caplen))
+        return 0; /* invalid 'it_len' */
       if (0 != ieee80211_radiotap_iterator_init (&iterator, rthdr, caplen))
-	return 0;
+        return 0;
       /* go through the radiotap arguments we have been given by the driver */
       while (0 <= ieee80211_radiotap_iterator_next (&iterator))
       {
-	switch (iterator.this_arg_index)
-	{
-	case IEEE80211_RADIOTAP_TSFT:
-	  ri->ri_mactime = GNUNET_le64toh (*((uint64_t *) iterator.this_arg));
-	  break;
-	case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
-	  if (!got_signal)
-	  {
-	    ri->ri_power = * ((int8_t*) iterator.this_arg);
-	    got_signal = 1;	
-	  }
-	  break;
-	case IEEE80211_RADIOTAP_DB_ANTSIGNAL:
-	  if (!got_signal)
-	  {
-	    ri->ri_power = * ((int8_t*) iterator.this_arg);
-	    got_signal = 1;
-	  }
-	  break;
-	case IEEE80211_RADIOTAP_DBM_ANTNOISE:
-	  if (!got_noise)
-	  {
-	    ri->ri_noise = * ((int8_t*) iterator.this_arg);
-	    got_noise = 1;
-	  }
-	  break;
-	case IEEE80211_RADIOTAP_DB_ANTNOISE:
-	  if (!got_noise)
-	  {
-	    ri->ri_noise = * ((int8_t*) iterator.this_arg);
-	    got_noise = 1;
-	  }
-	  break;
-	case IEEE80211_RADIOTAP_ANTENNA:
-	  ri->ri_antenna = *iterator.this_arg;
-	  break;
-	case IEEE80211_RADIOTAP_CHANNEL:
-	  ri->ri_channel = *iterator.this_arg;
-	  got_channel = 1;
-	  break;
-	case IEEE80211_RADIOTAP_RATE:
-	  ri->ri_rate = (*iterator.this_arg) * 500000;
-	  break;
-	case IEEE80211_RADIOTAP_FLAGS:
-	  {
-	    uint8_t flags = *iterator.this_arg;
-	    /* is the CRC visible at the end? if so, remove */
-	    if (0 != (flags & IEEE80211_RADIOTAP_F_FCS))
-	    {
-	      fcs_removed = 1;
-	      caplen -= sizeof (uint32_t);
-	    }
-	    break;
-	  }
-	case IEEE80211_RADIOTAP_RX_FLAGS:
-	  {
-	    uint16_t flags = ntohs (* ((uint16_t *) iterator.this_arg));
-	    if (0 != (flags & IEEE80211_RADIOTAP_F_RX_BADFCS))
-	      return 0;
-	  }
-	  break;
-	} /* end of 'switch' */
-      } /* end of the 'while' loop */
+        switch (iterator.this_arg_index)
+        {
+        case IEEE80211_RADIOTAP_TSFT:
+          ri->ri_mactime = GNUNET_le64toh (*((uint64_t *) iterator.this_arg));
+          break;
+
+        case IEEE80211_RADIOTAP_DBM_ANTSIGNAL:
+          if (! got_signal)
+          {
+            ri->ri_power = *((int8_t *) iterator.this_arg);
+            got_signal = 1;
+          }
+          break;
+
+        case IEEE80211_RADIOTAP_DB_ANTSIGNAL:
+          if (! got_signal)
+          {
+            ri->ri_power = *((int8_t *) iterator.this_arg);
+            got_signal = 1;
+          }
+          break;
+
+        case IEEE80211_RADIOTAP_DBM_ANTNOISE:
+          if (! got_noise)
+          {
+            ri->ri_noise = *((int8_t *) iterator.this_arg);
+            got_noise = 1;
+          }
+          break;
+
+        case IEEE80211_RADIOTAP_DB_ANTNOISE:
+          if (! got_noise)
+          {
+            ri->ri_noise = *((int8_t *) iterator.this_arg);
+            got_noise = 1;
+          }
+          break;
+
+        case IEEE80211_RADIOTAP_ANTENNA:
+          ri->ri_antenna = *iterator.this_arg;
+          break;
+
+        case IEEE80211_RADIOTAP_CHANNEL:
+          ri->ri_channel = *iterator.this_arg;
+          got_channel = 1;
+          break;
+
+        case IEEE80211_RADIOTAP_RATE:
+          ri->ri_rate = (*iterator.this_arg) * 500000;
+          break;
+
+        case IEEE80211_RADIOTAP_FLAGS:
+          {
+            uint8_t flags = *iterator.this_arg;
+            /* is the CRC visible at the end? if so, remove */
+            if (0 != (flags & IEEE80211_RADIOTAP_F_FCS))
+            {
+              fcs_removed = 1;
+              caplen -= sizeof(uint32_t);
+            }
+            break;
+          }
+
+        case IEEE80211_RADIOTAP_RX_FLAGS:
+          {
+            uint16_t flags = ntohs (*((uint16_t *) iterator.this_arg));
+            if (0 != (flags & IEEE80211_RADIOTAP_F_RX_BADFCS))
+              return 0;
+          }
+          break;
+        }     /* end of 'switch' */
+      }   /* end of the 'while' loop */
     }
     break;
+
   case ARPHRD_IEEE80211:
-    n = 0; /* no header */
+    n = 0;   /* no header */
     break;
+
   case ARPHRD_ETHER:
     {
-      if (sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) > caplen)
-	return 0; /* invalid */
-      GNUNET_memcpy (&buf[sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame)],
-	      tmpbuf + sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame),
-	      caplen - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) - 4 /* 4 byte FCS */);
-      return caplen - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) - 4;
-    }	
+      if (sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) > caplen)
+        return 0; /* invalid */
+      GNUNET_memcpy (&buf[sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame)],
+                     tmpbuf + sizeof(struct
+                                     GNUNET_TRANSPORT_WLAN_Ieee8023Frame),
+                     caplen - sizeof(struct
+                                     GNUNET_TRANSPORT_WLAN_Ieee8023Frame)
+                     - 4 /* 4 byte FCS */);
+      return caplen - sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame) - 4;
+    }
+
   default:
-    errno = ENOTSUP; /* unsupported format */
+    errno = ENOTSUP;   /* unsupported format */
     return -1;
   }
   caplen -= n;
@@ -1617,13 +1630,13 @@ linux_read (struct HardwareInfos *dev,
     ri->ri_channel = linux_get_channel (dev);
 
   /* detect CRC32 at the end, even if the flag wasn't set and remove it */
-  if ( (0 == fcs_removed) &&
-       (0 == check_crc_buf_osdep (tmpbuf + n, caplen - sizeof (uint32_t))) )
+  if ((0 == fcs_removed) &&
+      (0 == check_crc_buf_osdep (tmpbuf + n, caplen - sizeof(uint32_t))))
   {
     /* NOTE: this heuristic can of course fail if there happens to
        be a matching checksum at the end. Would be good to have
        some data to see how often this heuristic actually works. */
-    caplen -= sizeof (uint32_t);
+    caplen -= sizeof(uint32_t);
   }
   /* copy payload to target buffer */
   GNUNET_memcpy (buf, tmpbuf + n, caplen);
@@ -1651,7 +1664,7 @@ open_device_raw (struct HardwareInfos *dev)
   struct sockaddr_ll sll;
 
   /* find the interface index */
-  memset (&ifr, 0, sizeof (ifr));
+  memset (&ifr, 0, sizeof(ifr));
   strncpy (ifr.ifr_name, dev->iface, IFNAMSIZ);
   if (-1 == ioctl (dev->fd_raw, SIOCGIFINDEX, &ifr))
   {
@@ -1661,7 +1674,7 @@ open_device_raw (struct HardwareInfos *dev)
   }
 
   /* lookup the hardware type */
-  memset (&sll, 0, sizeof (sll));
+  memset (&sll, 0, sizeof(sll));
   sll.sll_family = AF_PACKET;
   sll.sll_ifindex = ifr.ifr_ifindex;
   sll.sll_protocol = htons (ETH_P_ALL);
@@ -1674,30 +1687,32 @@ open_device_raw (struct HardwareInfos *dev)
   if (((ifr.ifr_hwaddr.sa_family != ARPHRD_IEEE80211) &&
        (ifr.ifr_hwaddr.sa_family != ARPHRD_ETHER) &&
        (ifr.ifr_hwaddr.sa_family != ARPHRD_IEEE80211_PRISM) &&
-       (ifr.ifr_hwaddr.sa_family != ARPHRD_IEEE80211_FULL)) )
+       (ifr.ifr_hwaddr.sa_family != ARPHRD_IEEE80211_FULL)))
   {
-    fprintf (stderr, "Error: interface `%.*s' is not using a supported hardware address family (got %d)\n",
+    fprintf (stderr,
+             "Error: interface `%.*s' is not using a supported hardware address family (got %d)\n",
              IFNAMSIZ, dev->iface,
-	     ifr.ifr_hwaddr.sa_family);
+             ifr.ifr_hwaddr.sa_family);
     return 1;
   }
 
   /* lookup iw mode */
-  memset (&wrq, 0, sizeof (struct iwreq));
+  memset (&wrq, 0, sizeof(struct iwreq));
   strncpy (wrq.ifr_name, dev->iface, IFNAMSIZ);
   if (-1 == ioctl (dev->fd_raw, SIOCGIWMODE, &wrq))
   {
     /* most probably not supported (ie for rtap ipw interface) *
-     * so just assume its correctly set...                     */
+    * so just assume its correctly set...                     */
     wrq.u.mode = IW_MODE_MONITOR;
   }
 
-  if ( (wrq.u.mode != IW_MODE_MONITOR) &&
-       (wrq.u.mode != IW_MODE_ADHOC) )	
+  if ((wrq.u.mode != IW_MODE_MONITOR) &&
+      (wrq.u.mode != IW_MODE_ADHOC))
   {
-    fprintf (stderr, "Error: interface `%.*s' is not in monitor or ad-hoc mode (got %d)\n",
+    fprintf (stderr,
+             "Error: interface `%.*s' is not in monitor or ad-hoc mode (got %d)\n",
              IFNAMSIZ, dev->iface,
-	     wrq.u.mode);
+             wrq.u.mode);
     return 1;
   }
 
@@ -1716,7 +1731,7 @@ open_device_raw (struct HardwareInfos *dev)
   }
 
   /* bind the raw socket to the interface */
-  if (-1 == bind (dev->fd_raw, (struct sockaddr *) &sll, sizeof (sll)))
+  if (-1 == bind (dev->fd_raw, (struct sockaddr *) &sll, sizeof(sll)))
   {
     fprintf (stderr, "Failed to bind interface `%.*s': %s\n", IFNAMSIZ,
              dev->iface, strerror (errno));
@@ -1744,17 +1759,17 @@ open_device_raw (struct HardwareInfos *dev)
   }
 
   /* enable promiscuous mode */
-  memset (&mr, 0, sizeof (mr));
+  memset (&mr, 0, sizeof(mr));
   mr.mr_ifindex = sll.sll_ifindex;
   mr.mr_type = PACKET_MR_PROMISC;
   if (0 !=
       setsockopt (dev->fd_raw, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr,
-                  sizeof (mr)))
+                  sizeof(mr)))
   {
     fprintf (stderr,
-	     "Failed to enable promiscuous mode on interface `%.*s'\n",
+             "Failed to enable promiscuous mode on interface `%.*s'\n",
              IFNAMSIZ,
-	     dev->iface);
+             dev->iface);
     return 1;
   }
   return 0;
@@ -1775,14 +1790,14 @@ test_wlan_interface (const char *iface)
   struct stat sbuf;
   int ret;
 
-  ret = snprintf (strbuf, sizeof (strbuf),
-		  "/sys/class/net/%s/phy80211/subsystem",
-		  iface);
-  if ((ret < 0) || (ret >= sizeof (strbuf)) || (0 != stat (strbuf, &sbuf)))
+  ret = snprintf (strbuf, sizeof(strbuf),
+                  "/sys/class/net/%s/phy80211/subsystem",
+                  iface);
+  if ((ret < 0) || (ret >= sizeof(strbuf)) || (0 != stat (strbuf, &sbuf)))
   {
     fprintf (stderr,
-	     "Did not find 802.11 interface `%s'. Exiting.\n",
-	     iface);
+             "Did not find 802.11 interface `%s'. Exiting.\n",
+             iface);
     exit (1);
   }
   return 0;
@@ -1802,14 +1817,14 @@ mac_test (const struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame *taIeeeHeader,
 {
   static struct GNUNET_TRANSPORT_WLAN_MacAddress all_zeros;
 
-  if ( (0 == memcmp (&taIeeeHeader->addr3, &all_zeros, MAC_ADDR_SIZE)) ||
-       (0 == memcmp (&taIeeeHeader->addr1, &all_zeros, MAC_ADDR_SIZE)) )
+  if ((0 == memcmp (&taIeeeHeader->addr3, &all_zeros, MAC_ADDR_SIZE)) ||
+      (0 == memcmp (&taIeeeHeader->addr1, &all_zeros, MAC_ADDR_SIZE)))
     return 0; /* some drivers set no Macs, then assume it is all for us! */
 
   if (0 != memcmp (&taIeeeHeader->addr3, &mac_bssid_gnunet, MAC_ADDR_SIZE))
     return 1; /* not a GNUnet ad-hoc package */
-  if ( (0 == memcmp (&taIeeeHeader->addr1, &dev->pl_mac, MAC_ADDR_SIZE)) ||
-       (0 == memcmp (&taIeeeHeader->addr1, &bc_all_mac, MAC_ADDR_SIZE)) )
+  if ((0 == memcmp (&taIeeeHeader->addr1, &dev->pl_mac, MAC_ADDR_SIZE)) ||
+      (0 == memcmp (&taIeeeHeader->addr1, &bc_all_mac, MAC_ADDR_SIZE)))
     return 0; /* for us, or broadcast */
   return 1; /* not for us */
 }
@@ -1850,14 +1865,15 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
   struct GNUNET_TRANSPORT_WLAN_Ieee8023Frame etheader;
 
   sendsize = ntohs (hdr->size);
-  if ( (sendsize <
-	sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage)) ||
-       (GNUNET_MESSAGE_TYPE_WLAN_DATA_TO_HELPER != ntohs (hdr->type)) )
+  if ((sendsize <
+       sizeof(struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage)) ||
+      (GNUNET_MESSAGE_TYPE_WLAN_DATA_TO_HELPER != ntohs (hdr->type)))
   {
     fprintf (stderr, "Received malformed message\n");
     exit (1);
   }
-  sendsize -= (sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage) - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame));
+  sendsize -= (sizeof(struct GNUNET_TRANSPORT_WLAN_RadiotapSendMessage)
+               - sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame));
   if (MAXLINE < sendsize)
   {
     fprintf (stderr, "Packet too big for buffer\n");
@@ -1871,32 +1887,42 @@ stdin_send_hw (void *cls, const struct GNUNET_MessageHeader *hdr)
   case ARPHRD_IEEE80211:
     rtheader.header.it_version = 0;
     rtheader.header.it_pad = 0;
-    rtheader.header.it_len = GNUNET_htole16 (sizeof (rtheader));
-    rtheader.header.it_present = GNUNET_htole16 (IEEE80211_RADIOTAP_OUR_TRANSMISSION_HEADER_MASK);
+    rtheader.header.it_len = GNUNET_htole16 (sizeof(rtheader));
+    rtheader.header.it_present = GNUNET_htole16 (
+      IEEE80211_RADIOTAP_OUR_TRANSMISSION_HEADER_MASK);
     rtheader.rate = header->rate;
     rtheader.pad1 = 0;
-    rtheader.txflags = GNUNET_htole16 (IEEE80211_RADIOTAP_F_TX_NOACK | IEEE80211_RADIOTAP_F_TX_NOSEQ);
-    GNUNET_memcpy (write_pout.buf, &rtheader, sizeof (rtheader));
-    GNUNET_memcpy (&write_pout.buf[sizeof (rtheader)], &header->frame, sendsize);
-    wlanheader = (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame *) &write_pout.buf[sizeof (rtheader)];
+    rtheader.txflags = GNUNET_htole16 (IEEE80211_RADIOTAP_F_TX_NOACK
+                                       | IEEE80211_RADIOTAP_F_TX_NOSEQ);
+    GNUNET_memcpy (write_pout.buf, &rtheader, sizeof(rtheader));
+    GNUNET_memcpy (&write_pout.buf[sizeof(rtheader)], &header->frame, sendsize);
+    wlanheader = (struct
+                  GNUNET_TRANSPORT_WLAN_Ieee80211Frame *) &write_pout.buf[sizeof(
+                                                                            rtheader)
+                 ];
 
     /* payload contains MAC address, but we don't trust it, so we'll
      * overwrite it with OUR MAC address to prevent mischief */
     mac_set (wlanheader, dev);
-    write_pout.size = sendsize + sizeof (rtheader);
+    write_pout.size = sendsize + sizeof(rtheader);
     break;
+
   case ARPHRD_ETHER:
     etheader.dst = header->frame.addr1;
     /* etheader.src = header->frame.addr2; --- untrusted input */
     etheader.src = dev->pl_mac;
     etheader.type = htons (ETH_P_IP);
-    GNUNET_memcpy (write_pout.buf, &etheader, sizeof (etheader));
-    GNUNET_memcpy (&write_pout.buf[sizeof (etheader)], &header[1], sendsize - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame));
-    write_pout.size = sendsize - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame) + sizeof (etheader);
+    GNUNET_memcpy (write_pout.buf, &etheader, sizeof(etheader));
+    GNUNET_memcpy (&write_pout.buf[sizeof(etheader)], &header[1], sendsize
+                   - sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame));
+    write_pout.size = sendsize - sizeof(struct
+                                        GNUNET_TRANSPORT_WLAN_Ieee80211Frame)
+                      + sizeof(etheader);
     break;
+
   default:
     fprintf (stderr,
-	     "Unsupported ARPTYPE!\n");
+             "Unsupported ARPTYPE!\n");
     break;
   }
 }
@@ -1932,22 +1958,22 @@ main (int argc, char *argv[])
     if (0 != setresuid (uid, 0, 0))
     {
       fprintf (stderr,
-	       "Failed to setresuid to root: %s\n", 
-	       strerror (errno));
+               "Failed to setresuid to root: %s\n",
+               strerror (errno));
       return 254;
     }
 #else
     if (0 != seteuid (0))
     {
-      fprintf (stderr, 
-	       "Failed to seteuid back to root: %s\n", strerror (errno));
+      fprintf (stderr,
+               "Failed to seteuid back to root: %s\n", strerror (errno));
       return 254;
     }
 #endif
   }
 
   /* make use of SGID capabilities on POSIX */
-  memset (&dev, 0, sizeof (dev));
+  memset (&dev, 0, sizeof(dev));
   dev.fd_raw = socket (PF_PACKET, SOCK_RAW, htons (ETH_P_ALL));
   raw_eno = errno; /* remember for later */
 
@@ -1993,7 +2019,7 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, "Failed to setresuid: %s\n", strerror (errno));
       if (-1 != dev.fd_raw)
-	(void) close (dev.fd_raw);
+        (void) close (dev.fd_raw);
       return 1;
     }
 #else
@@ -2001,7 +2027,7 @@ main (int argc, char *argv[])
     {
       fprintf (stderr, "Failed to setuid: %s\n", strerror (errno));
       if (-1 != dev.fd_raw)
-	(void) close (dev.fd_raw);
+        (void) close (dev.fd_raw);
       return 1;
     }
 #endif
@@ -2012,11 +2038,12 @@ main (int argc, char *argv[])
   {
     struct GNUNET_TRANSPORT_WLAN_HelperControlMessage macmsg;
 
-    macmsg.hdr.size = htons (sizeof (macmsg));
+    macmsg.hdr.size = htons (sizeof(macmsg));
     macmsg.hdr.type = htons (GNUNET_MESSAGE_TYPE_WLAN_HELPER_CONTROL);
-    GNUNET_memcpy (&macmsg.mac, &dev.pl_mac, sizeof (struct GNUNET_TRANSPORT_WLAN_MacAddress));
-    GNUNET_memcpy (write_std.buf, &macmsg, sizeof (macmsg));
-    write_std.size = sizeof (macmsg);
+    GNUNET_memcpy (&macmsg.mac, &dev.pl_mac, sizeof(struct
+                                                    GNUNET_TRANSPORT_WLAN_MacAddress));
+    GNUNET_memcpy (write_std.buf, &macmsg, sizeof(macmsg));
+    write_std.size = sizeof(macmsg);
   }
 
   stdin_mst = mst_create (&stdin_send_hw, &dev);
@@ -2049,18 +2076,18 @@ main (int argc, char *argv[])
     {
       int retval = select (maxfd + 1, &rfds, &wfds, NULL, NULL);
       if ((-1 == retval) && (EINTR == errno))
-	continue;
+        continue;
       if (0 > retval)
       {
-	fprintf (stderr, "select failed: %s\n", strerror (errno));
-	break;
+        fprintf (stderr, "select failed: %s\n", strerror (errno));
+        break;
       }
     }
     if (FD_ISSET (STDOUT_FILENO, &wfds))
     {
       ssize_t ret =
-          write (STDOUT_FILENO, write_std.buf + write_std.pos,
-                 write_std.size - write_std.pos);
+        write (STDOUT_FILENO, write_std.buf + write_std.pos,
+               write_std.size - write_std.pos);
       if (0 > ret)
       {
         fprintf (stderr, "Failed to write to STDOUT: %s\n", strerror (errno));
@@ -2076,8 +2103,8 @@ main (int argc, char *argv[])
     if (FD_ISSET (dev.fd_raw, &wfds))
     {
       ssize_t ret =
-	write (dev.fd_raw, write_pout.buf + write_pout.pos,
-	       write_pout.size - write_pout.pos);
+        write (dev.fd_raw, write_pout.buf + write_pout.pos,
+               write_pout.size - write_pout.pos);
       if (0 > ret)
       {
         fprintf (stderr, "Failed to write to WLAN device: %s\n",
@@ -2090,7 +2117,7 @@ main (int argc, char *argv[])
         /* we should not get partial sends with packet-oriented devices... */
         fprintf (stderr, "Write error, partial send: %u/%u\n",
                  (unsigned int) write_pout.pos,
-		 (unsigned int) write_pout.size);
+                 (unsigned int) write_pout.size);
         break;
       }
       if (write_pout.pos == write_pout.size)
@@ -2103,7 +2130,7 @@ main (int argc, char *argv[])
     if (FD_ISSET (STDIN_FILENO, &rfds))
     {
       ssize_t ret =
-	read (STDIN_FILENO, readbuf, sizeof (readbuf));
+        read (STDIN_FILENO, readbuf, sizeof(readbuf));
       if (0 > ret)
       {
         fprintf (stderr, "Read error from STDIN: %s\n", strerror (errno));
@@ -2122,13 +2149,15 @@ main (int argc, char *argv[])
       struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage *rrm;
       ssize_t ret;
 
-      rrm = (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage *) write_std.buf;
+      rrm = (struct
+             GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage *) write_std.buf;
       ret =
-          linux_read (&dev, (unsigned char *) &rrm->frame,
-                      sizeof (write_std.buf)
-		      - sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)
-		      + sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame),
-		      rrm);
+        linux_read (&dev, (unsigned char *) &rrm->frame,
+                    sizeof(write_std.buf)
+                    - sizeof(struct
+                             GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)
+                    + sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame),
+                    rrm);
       if (0 > ret)
       {
         fprintf (stderr, "Read error from raw socket: %s\n", strerror (errno));
@@ -2137,8 +2166,9 @@ main (int argc, char *argv[])
       if ((0 < ret) && (0 == mac_test (&rrm->frame, &dev)))
       {
         write_std.size = ret
-	  + sizeof (struct GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)
-	  - sizeof (struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame);
+                         + sizeof(struct
+                                  GNUNET_TRANSPORT_WLAN_RadiotapReceiveMessage)
+                         - sizeof(struct GNUNET_TRANSPORT_WLAN_Ieee80211Frame);
         rrm->header.size = htons (write_std.size);
         rrm->header.type = htons (GNUNET_MESSAGE_TYPE_WLAN_DATA_FROM_HELPER);
       }
@@ -2149,5 +2179,6 @@ main (int argc, char *argv[])
   (void) close (dev.fd_raw);
   return 1;                     /* we never exit 'normally' */
 }
+
 
 /* end of gnunet-helper-transport-wlan.c */

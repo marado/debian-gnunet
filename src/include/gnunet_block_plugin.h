@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -49,7 +49,8 @@
  */
 typedef void
 (*GNUNET_BLOCK_GroupMarkSeenFunction)(struct GNUNET_BLOCK_Group *bg,
-                                      const struct GNUNET_HashCode *seen_results,
+                                      const struct
+                                      GNUNET_HashCode *seen_results,
                                       unsigned int seen_results_count);
 
 
@@ -99,7 +100,6 @@ typedef void
  */
 struct GNUNET_BLOCK_Group
 {
-
   /**
    * Context owning the block group. Set by the main block library.
    */
@@ -138,7 +138,6 @@ struct GNUNET_BLOCK_Group
    * Internal data structure of the plugin.
    */
   void *internal_cls;
-
 };
 
 
@@ -183,16 +182,16 @@ typedef struct GNUNET_BLOCK_Group *
  * @return characterization of result
  */
 typedef enum GNUNET_BLOCK_EvaluationResult
-(*GNUNET_BLOCK_EvaluationFunction) (void *cls,
-                                    struct GNUNET_BLOCK_Context *ctx,
-				    enum GNUNET_BLOCK_Type type,
-                                    struct GNUNET_BLOCK_Group *group,
-                                    enum GNUNET_BLOCK_EvaluationOptions eo,
-				    const struct GNUNET_HashCode *query,
-				    const void *xquery,
-				    size_t xquery_size,
-				    const void *reply_block,
-				    size_t reply_block_size);
+(*GNUNET_BLOCK_EvaluationFunction)(void *cls,
+                                   struct GNUNET_BLOCK_Context *ctx,
+                                   enum GNUNET_BLOCK_Type type,
+                                   struct GNUNET_BLOCK_Group *group,
+                                   enum GNUNET_BLOCK_EvaluationOptions eo,
+                                   const struct GNUNET_HashCode *query,
+                                   const void *xquery,
+                                   size_t xquery_size,
+                                   const void *reply_block,
+                                   size_t reply_block_size);
 
 
 /**
@@ -216,14 +215,12 @@ typedef int
                                 struct GNUNET_HashCode *key);
 
 
-
 /**
  * Each plugin is required to return a pointer to a struct of this
  * type as the return value from its entry point.
  */
 struct GNUNET_BLOCK_PluginFunctions
 {
-
   /**
    * Closure for all of the callbacks.
    */

@@ -1,4 +1,4 @@
-#!@PYTHON@
+#!@PYTHONEXE@
 #    This file is part of GNUnet.
 #    (C) 2010, 2018 Christian Grothoff (and other contributing authors)
 #
@@ -31,7 +31,6 @@ from gnunet_testing import Test
 from gnunet_testing import Check
 from gnunet_testing import Condition
 from gnunet_testing import *
-
 
 #
 # This test tests if a fresh peer bootstraps from a hostlist server and then
@@ -123,6 +122,7 @@ def check():
     check.add(StatisticsCondition(server, 'fs', '# peers connected', 1))
 
     check.run_blocking(check_timeout, success_cont, fail_cont)
+
 
 #
 # Test execution

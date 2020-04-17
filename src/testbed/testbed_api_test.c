@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -143,20 +143,21 @@ GNUNET_TESTBED_test_run (const char *testname,
   argv2[2] = GNUNET_strdup (cfg_filename);
   GNUNET_assert (NULL != test_master);
   GNUNET_assert (num_peers > 0);
-  rc = GNUNET_malloc (sizeof (struct TestRunContext) +
-                      (num_peers * sizeof (struct GNUNET_TESTBED_Peer *)));
+  rc = GNUNET_malloc (sizeof(struct TestRunContext)
+                      + (num_peers * sizeof(struct GNUNET_TESTBED_Peer *)));
   rc->test_master = test_master;
   rc->test_master_cls = test_master_cls;
   rc->num_peers = num_peers;
   rc->event_mask = event_mask;
   rc->cc = cc;
   rc->cc_cls = cc_cls;
-  ret = GNUNET_PROGRAM_run ((sizeof (argv2) / sizeof (char *)) - 1, argv2,
+  ret = GNUNET_PROGRAM_run ((sizeof(argv2) / sizeof(char *)) - 1, argv2,
                             testname, "nohelp", options, &run, rc);
   GNUNET_free (rc);
   GNUNET_free (argv2[0]);
   GNUNET_free (argv2[2]);
   return ret;
 }
+
 
 /* end of testbed_api_test.c */

@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  (C) 2015, 2016 GNUnet e.V.
+   This file is part of GNUnet
+   (C) 2015, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file json/test_json.c
@@ -39,12 +39,14 @@ test_abs_time ()
   json_t *j;
   struct GNUNET_TIME_Absolute a1;
   struct GNUNET_TIME_Absolute a2;
-  struct GNUNET_JSON_Specification s1[] = {GNUNET_JSON_spec_absolute_time (NULL,
-                                                                           &a2),
-                                           GNUNET_JSON_spec_end ()};
-  struct GNUNET_JSON_Specification s2[] = {GNUNET_JSON_spec_absolute_time (NULL,
-                                                                           &a2),
-                                           GNUNET_JSON_spec_end ()};
+  struct GNUNET_JSON_Specification s1[] = { GNUNET_JSON_spec_absolute_time (
+                                              NULL,
+                                              &a2),
+                                            GNUNET_JSON_spec_end () };
+  struct GNUNET_JSON_Specification s2[] = { GNUNET_JSON_spec_absolute_time (
+                                              NULL,
+                                              &a2),
+                                            GNUNET_JSON_spec_end () };
 
   a1 = GNUNET_TIME_absolute_get ();
   GNUNET_TIME_round_abs (&a1);
@@ -75,12 +77,14 @@ test_rel_time ()
   json_t *j;
   struct GNUNET_TIME_Relative r1;
   struct GNUNET_TIME_Relative r2;
-  struct GNUNET_JSON_Specification s1[] = {GNUNET_JSON_spec_relative_time (NULL,
-                                                                           &r2),
-                                           GNUNET_JSON_spec_end ()};
-  struct GNUNET_JSON_Specification s2[] = {GNUNET_JSON_spec_relative_time (NULL,
-                                                                           &r2),
-                                           GNUNET_JSON_spec_end ()};
+  struct GNUNET_JSON_Specification s1[] = { GNUNET_JSON_spec_relative_time (
+                                              NULL,
+                                              &r2),
+                                            GNUNET_JSON_spec_end () };
+  struct GNUNET_JSON_Specification s2[] = { GNUNET_JSON_spec_relative_time (
+                                              NULL,
+                                              &r2),
+                                            GNUNET_JSON_spec_end () };
 
   r1 = GNUNET_TIME_UNIT_SECONDS;
   j = GNUNET_JSON_from_time_rel (r1);
@@ -114,10 +118,10 @@ test_raw ()
   for (i = 0; i <= 256; i++)
   {
     char blob2[256];
-    struct GNUNET_JSON_Specification spec[] = {GNUNET_JSON_spec_fixed (NULL,
-                                                                       blob2,
-                                                                       i),
-                                               GNUNET_JSON_spec_end ()};
+    struct GNUNET_JSON_Specification spec[] = { GNUNET_JSON_spec_fixed (NULL,
+                                                                        blob2,
+                                                                        i),
+                                                GNUNET_JSON_spec_end () };
 
     memset (blob, i, i);
     j = GNUNET_JSON_from_data (blob, i);
@@ -140,11 +144,11 @@ test_rsa ()
   struct GNUNET_CRYPTO_RsaPublicKey *pub;
   struct GNUNET_CRYPTO_RsaPublicKey *pub2;
   struct GNUNET_JSON_Specification pspec[] =
-    {GNUNET_JSON_spec_rsa_public_key (NULL, &pub2), GNUNET_JSON_spec_end ()};
+  { GNUNET_JSON_spec_rsa_public_key (NULL, &pub2), GNUNET_JSON_spec_end () };
   struct GNUNET_CRYPTO_RsaSignature *sig;
   struct GNUNET_CRYPTO_RsaSignature *sig2;
   struct GNUNET_JSON_Specification sspec[] =
-    {GNUNET_JSON_spec_rsa_signature (NULL, &sig2), GNUNET_JSON_spec_end ()};
+  { GNUNET_JSON_spec_rsa_signature (NULL, &sig2), GNUNET_JSON_spec_end () };
   struct GNUNET_CRYPTO_RsaPrivateKey *priv;
   struct GNUNET_HashCode msg;
   json_t *jp;
@@ -152,7 +156,7 @@ test_rsa ()
 
   priv = GNUNET_CRYPTO_rsa_private_key_create (1024);
   pub = GNUNET_CRYPTO_rsa_private_key_get_public (priv);
-  memset (&msg, 42, sizeof (msg));
+  memset (&msg, 42, sizeof(msg));
   sig = GNUNET_CRYPTO_rsa_sign_fdh (priv, &msg);
   GNUNET_assert (NULL != (jp = GNUNET_JSON_from_rsa_public_key (pub)));
   GNUNET_assert (NULL != (js = GNUNET_JSON_from_rsa_signature (sig)));
@@ -180,11 +184,11 @@ test_boolean ()
   int b1;
   int b2;
   json_t *json;
-  struct GNUNET_JSON_Specification pspec[] = {GNUNET_JSON_spec_boolean ("b1",
-                                                                        &b1),
-                                              GNUNET_JSON_spec_boolean ("b2",
-                                                                        &b2),
-                                              GNUNET_JSON_spec_end ()};
+  struct GNUNET_JSON_Specification pspec[] = { GNUNET_JSON_spec_boolean ("b1",
+                                                                         &b1),
+                                               GNUNET_JSON_spec_boolean ("b2",
+                                                                         &b2),
+                                               GNUNET_JSON_spec_end () };
 
   json = json_object ();
   json_object_set_new (json, "b1", json_true ());
@@ -220,5 +224,6 @@ main (int argc, const char *const argv[])
   /* FIXME: test EdDSA signature conversion... */
   return 0;
 }
+
 
 /* end of test_json.c */

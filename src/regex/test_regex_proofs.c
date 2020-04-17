@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/test_regex_proofs.c
  * @brief test for regex.c
@@ -132,7 +132,8 @@ test_proofs_static ()
   for (i = 0; i < 8; i += 2)
   {
     dfa1 = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 1);
-    dfa2 = REGEX_INTERNAL_construct_dfa (regex[i + 1], strlen (regex[i + 1]), 1);
+    dfa2 = REGEX_INTERNAL_construct_dfa (regex[i + 1], strlen (regex[i + 1]),
+                                         1);
     GNUNET_assert (NULL != dfa1);
     GNUNET_assert (NULL != dfa2);
 

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -58,7 +58,6 @@ extern "C"
  */
 struct GNUNET_TRANSPORT_MonitorInformation
 {
-
   /**
    * Address we have for the peer, human-readable, 0-terminated, in UTF-8.
    */
@@ -103,7 +102,6 @@ struct GNUNET_TRANSPORT_MonitorInformation
    * Current estimate of the RTT.
    */
   struct GNUNET_TIME_Relative rtt;
-
 };
 
 
@@ -126,7 +124,8 @@ struct GNUNET_TRANSPORT_MonitorInformation
 typedef void
 (*GNUNET_TRANSPORT_MonitorCallback) (void *cls,
                                      const struct GNUNET_PeerIdentity *peer,
-                                     const struct GNUNET_TRANSPORT_MonitorInformation *mi);
+                                     const struct
+                                     GNUNET_TRANSPORT_MonitorInformation *mi);
 
 
 /**

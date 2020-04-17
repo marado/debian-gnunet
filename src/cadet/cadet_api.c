@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/cadet_api.c
  * @brief cadet api: client implementation of cadet service
@@ -79,7 +79,6 @@ struct GNUNET_CADET_Handle
  */
 struct GNUNET_CADET_Channel
 {
-
   /**
    * Other end of the channel.
    */
@@ -145,7 +144,6 @@ struct GNUNET_CADET_Channel
  */
 struct GNUNET_CADET_Port
 {
-
   /**
    * Port "number"
    */
@@ -239,8 +237,8 @@ create_channel (struct GNUNET_CADET_Handle *h,
   {
     while (NULL != find_channel (h, h->next_ccn))
       h->next_ccn.channel_of_client =
-        htonl (GNUNET_CADET_LOCAL_CHANNEL_ID_CLI |
-               (1 + ntohl (h->next_ccn.channel_of_client)));
+        htonl (GNUNET_CADET_LOCAL_CHANNEL_ID_CLI
+               | (1 + ntohl (h->next_ccn.channel_of_client)));
     ccn = h->next_ccn;
   }
   else
@@ -638,7 +636,7 @@ check_local_data (void *cls, const struct GNUNET_CADET_LocalData *message)
 
   (void) cls;
   size = ntohs (message->header.size);
-  if (sizeof (*message) + sizeof (struct GNUNET_MessageHeader) > size)
+  if (sizeof(*message) + sizeof(struct GNUNET_MessageHeader) > size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -783,23 +781,23 @@ static void
 reconnect (struct GNUNET_CADET_Handle *h)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (channel_created,
-                              GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_CREATE,
-                              struct GNUNET_CADET_LocalChannelCreateMessage,
-                              h),
-     GNUNET_MQ_hd_fixed_size (channel_destroy,
-                              GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_DESTROY,
-                              struct GNUNET_CADET_LocalChannelDestroyMessage,
-                              h),
-     GNUNET_MQ_hd_var_size (local_data,
-                            GNUNET_MESSAGE_TYPE_CADET_LOCAL_DATA,
-                            struct GNUNET_CADET_LocalData,
-                            h),
-     GNUNET_MQ_hd_fixed_size (local_ack,
-                              GNUNET_MESSAGE_TYPE_CADET_LOCAL_ACK,
-                              struct GNUNET_CADET_LocalAck,
-                              h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (channel_created,
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_CREATE,
+                             struct GNUNET_CADET_LocalChannelCreateMessage,
+                             h),
+    GNUNET_MQ_hd_fixed_size (channel_destroy,
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_DESTROY,
+                             struct GNUNET_CADET_LocalChannelDestroyMessage,
+                             h),
+    GNUNET_MQ_hd_var_size (local_data,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_DATA,
+                           struct GNUNET_CADET_LocalData,
+                           h),
+    GNUNET_MQ_hd_fixed_size (local_ack,
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_ACK,
+                             struct GNUNET_CADET_LocalAck,
+                             h),
+    GNUNET_MQ_handler_end () };
 
   GNUNET_assert (NULL == h->mq);
   h->mq =
@@ -939,6 +937,7 @@ GNUNET_CADET_channel_get_info (struct GNUNET_CADET_Channel *channel,
   {
   case GNUNET_CADET_OPTION_PEER:
     return (const union GNUNET_CADET_ChannelInfo *) &channel->peer;
+
   default:
     GNUNET_break (0);
     return NULL;
@@ -1028,10 +1027,10 @@ GNUNET_CADET_open_port (struct GNUNET_CADET_Handle *h,
   p->cadet = h;
   p->id = *port;
   if (GNUNET_OK != GNUNET_CONTAINER_multihashmap_put (
-                     h->ports,
-                     &p->id,
-                     p,
-                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
+        h->ports,
+        &p->id,
+        p,
+        GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
   {
     GNUNET_free (p);
     return NULL;
@@ -1050,9 +1049,9 @@ GNUNET_CADET_open_port (struct GNUNET_CADET_Handle *h,
 /**
  * Create a new channel towards a remote peer.
  *
- * If the destination port is not open by any peer or the destination peer
- * does not accept the channel, #GNUNET_CADET_ChannelEndHandler will be called
- * for this channel.
+ * If the destination peer closes the channel after accepting it,
+ * @a disconnects will be called for this channel (unless
+ * #GNUNET_CADET_channel_destroy() was called on this end first).
  *
  * @param h CADET handle.
  * @param channel_cls Closure for the channel. It's given to:
@@ -1060,7 +1059,6 @@ GNUNET_CADET_open_port (struct GNUNET_CADET_Handle *h,
  *                    - Each message type callback in @a handlers
  * @param destination Peer identity the channel should go to.
  * @param port Identification of the destination port.
- * @param options CadetOption flag field, with all desired option bits set to 1.
  * @param window_changes Function called when the transmit window size changes.
  * @param disconnects Function called when the channel is disconnected.
  * @param handlers Callbacks for messages we care about, NULL-terminated.
@@ -1122,5 +1120,6 @@ GNUNET_CADET_get_mq (const struct GNUNET_CADET_Channel *channel)
 {
   return channel->mq;
 }
+
 
 /* end of cadet_api.c */

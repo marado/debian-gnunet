@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,6 +63,8 @@ gns_resolve_name (int af, const char *name, struct userdata *u)
   int out[2];
   pid_t pid;
 
+  if (0 == getuid ())
+    return -2; /* GNS via NSS is NEVER for root */
   if (0 != pipe (out))
     return -1;
   pid = fork ();
@@ -70,15 +72,16 @@ gns_resolve_name (int af, const char *name, struct userdata *u)
     return -1;
   if (0 == pid)
   {
-    char *argv[] = {"gnunet-gns",
-                    "-r",
-                    "-t",
-                    (AF_INET6 == af) ? "AAAA" : "A",
-                    "-u",
-                    (char *) name,
-                    "-T",
-                    TIMEOUT,
-                    NULL};
+    char *argv[] = { "gnunet-gns",
+                     "-r", /* Raw output for easier parsing */
+                     "-d", /* DNS compatibility (allow IDNA names, no UTF-8) */
+                     "-t",
+                     (AF_INET6 == af) ? "AAAA" : "A",
+                     "-u",
+                     (char *) name,
+                     "-T",
+                     TIMEOUT,
+                     NULL };
 
     (void) close (STDOUT_FILENO);
     if ((0 != close (out[0])) ||
@@ -94,7 +97,7 @@ gns_resolve_name (int af, const char *name, struct userdata *u)
     kwait (pid);
     return -1;
   }
-  while (NULL != fgets (line, sizeof (line), p))
+  while (NULL != fgets (line, sizeof(line), p))
   {
     if (u->count >= MAX_ENTRIES)
       break;
@@ -106,7 +109,7 @@ gns_resolve_name (int af, const char *name, struct userdata *u)
         if (inet_pton (af, line, &u->data.ipv4[u->count]))
         {
           u->count++;
-          u->data_len += sizeof (ipv4_address_t);
+          u->data_len += sizeof(ipv4_address_t);
         }
         else
         {
@@ -121,7 +124,7 @@ gns_resolve_name (int af, const char *name, struct userdata *u)
         if (inet_pton (af, line, &u->data.ipv6[u->count]))
         {
           u->count++;
-          u->data_len += sizeof (ipv6_address_t);
+          u->data_len += sizeof(ipv6_address_t);
         }
         else
         {
@@ -145,5 +148,6 @@ gns_resolve_name (int af, const char *name, struct userdata *u)
     return -2; /* launch failure -> service unavailable */
   return 0;
 }
+
 
 /* end of nss_gns_query.c */

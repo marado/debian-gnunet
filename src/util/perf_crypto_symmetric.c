@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -39,19 +39,19 @@ perfEncrypt ()
 
   GNUNET_CRYPTO_symmetric_create_session_key (&sk);
 
-  memset (buf, 1, sizeof (buf));
+  memset (buf, 1, sizeof(buf));
   for (i = 0; i < 1024; i++)
   {
-    memset (&iv, (int8_t) i, sizeof (iv));
-    GNUNET_CRYPTO_symmetric_encrypt (buf, sizeof (buf),
-                               &sk, &iv,
-                               rbuf);
-    GNUNET_CRYPTO_symmetric_decrypt (rbuf, sizeof (buf),
-                               &sk, &iv,
-                               buf);
+    memset (&iv, (int8_t) i, sizeof(iv));
+    GNUNET_CRYPTO_symmetric_encrypt (buf, sizeof(buf),
+                                     &sk, &iv,
+                                     rbuf);
+    GNUNET_CRYPTO_symmetric_decrypt (rbuf, sizeof(buf),
+                                     &sk, &iv,
+                                     buf);
   }
-  memset (rbuf, 1, sizeof (rbuf));
-  GNUNET_assert (0 == memcmp (rbuf, buf, sizeof (buf)));
+  memset (rbuf, 1, sizeof(rbuf));
+  GNUNET_assert (0 == memcmp (rbuf, buf, sizeof(buf)));
 }
 
 
@@ -63,13 +63,15 @@ main (int argc, char *argv[])
   start = GNUNET_TIME_absolute_get ();
   perfEncrypt ();
   printf ("Encrypt perf took %s\n",
-          GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (start),
-						  GNUNET_YES));
+          GNUNET_STRINGS_relative_time_to_string (
+            GNUNET_TIME_absolute_get_duration (start),
+            GNUNET_YES));
   GAUGER ("UTIL", "Symmetric encryption",
-          64 * 1024 / (1 +
-		       GNUNET_TIME_absolute_get_duration
-		       (start).rel_value_us / 1000LL), "kb/ms");
+          64 * 1024 / (1
+                       + GNUNET_TIME_absolute_get_duration
+                         (start).rel_value_us / 1000LL), "kb/ms");
   return 0;
 }
+
 
 /* end of perf_crypto_aes.c */

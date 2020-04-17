@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,7 +33,7 @@
 /**
  * Generic loggins shorthand
  */
-#define LOG(kind,...)                                           \
+#define LOG(kind, ...)                                           \
   GNUNET_log_from (kind, "testbed-api-topology", __VA_ARGS__)
 
 
@@ -54,7 +54,6 @@ struct TopologyContext;
  */
 struct OverlayLink
 {
-
   /**
    * An operation corresponding to this link
    */
@@ -74,7 +73,6 @@ struct OverlayLink
    * position of peer B's handle in peers array
    */
   uint32_t B;
-
 };
 
 
@@ -216,8 +214,8 @@ struct TopologyContext
   /**
    * The type of this context
    */
-  enum {
-
+  enum
+  {
     /**
      * Type for underlay topology
      */
@@ -227,11 +225,10 @@ struct TopologyContext
      * Type for overlay topology
      */
     TOPOLOGYCONTEXT_TYPE_OVERLAY
-
   } type;
 
-  union {
-
+  union
+  {
     /**
      * Topology context information for overlay topology
      */
@@ -252,7 +249,6 @@ struct TopologyContext
    * The size of the link array
    */
   unsigned int link_array_size;
-
 };
 
 
@@ -261,78 +257,77 @@ struct TopologyContext
  * GNUNET_TESTBED_TopologyOption
  */
 static const char *topology_strings[] = {
-
-    /**
-     * A clique (everyone connected to everyone else).  No options. If there are N
-     * peers this topology results in (N * (N -1)) connections.
-     */
+  /**
+   * A clique (everyone connected to everyone else).  No options. If there are N
+   * peers this topology results in (N * (N -1)) connections.
+   */
   "CLIQUE",
 
-    /*
-     * Small-world network (2d torus plus random links).  Followed
-     * by the number of random links to add (unsigned int).
-     */
+  /*
+   * Small-world network (2d torus plus random links).  Followed
+   * by the number of random links to add (unsigned int).
+   */
   "SMALL_WORLD",
 
-    /**
-     * Small-world network (ring plus random links).  Followed
-     * by the number of random links to add (unsigned int).
-     */
+  /**
+   * Small-world network (ring plus random links).  Followed
+   * by the number of random links to add (unsigned int).
+   */
   "SMALL_WORLD_RING",
 
-    /**
-     * Ring topology.  No options.
-     */
+  /**
+   * Ring topology.  No options.
+   */
   "RING",
 
-    /**
-     * Star topology.  No options.
-     */
+  /**
+   * Star topology.  No options.
+   */
   "STAR",
 
-    /**
-     * 2-d torus.  No options.
-     */
+  /**
+   * 2-d torus.  No options.
+   */
   "2D_TORUS",
 
-    /**
-     * Random graph.  Followed by the number of random links to be established
-     * (unsigned int)
-     */
+  /**
+   * Random graph.  Followed by the number of random links to be established
+   * (unsigned int)
+   */
   "RANDOM",                     // GNUNET_TESTBED_TOPOLOGY_ERDOS_RENYI
 
-    /**
-     * Certain percentage of peers are unable to communicate directly
-     * replicating NAT conditions.  Followed by the fraction of
-     * NAT'ed peers (float).
-     */
+  /**
+   * Certain percentage of peers are unable to communicate directly
+   * replicating NAT conditions.  Followed by the fraction of
+   * NAT'ed peers (float).
+   */
   "INTERNAT",
 
-    /**
-     * Scale free topology. Followed by the maximum number of links a node can
-     * have (unsigned int); and the number of links a new node should have when
-     * it is added to the network (unsigned int)
-     */
+  /**
+   * Scale free topology. Followed by the maximum number of links a node can
+   * have (unsigned int); and the number of links a new node should have when
+   * it is added to the network (unsigned int)
+   */
   "SCALE_FREE",
 
-    /**
-     * Straight line topology.  No options.
-     */
+  /**
+   * Straight line topology.  No options.
+   */
   "LINE",
 
-    /**
-     * Read a topology from a given file.  Followed by the name of the file (const char *).
-     */
+  /**
+   * Read a topology from a given file.  Followed by the name of the file (const char *).
+   */
   "FROM_FILE",
 
-    /**
-     * All peers are disconnected.  No options.
-     */
+  /**
+   * All peers are disconnected.  No options.
+   */
   "NONE",
 
-    /**
-     * End of strings
-     */
+  /**
+   * End of strings
+   */
   NULL
 };
 
@@ -390,11 +385,11 @@ overlay_link_completed (void *cls,
     {
       link = retry_entry->link;
       link->op =
-          GNUNET_TESTBED_overlay_connect (overlay->op_cls,
-                                          &overlay_link_completed,
-                                          link,
-                                          overlay->peers[link->A],
-                                          overlay->peers[link->B]);
+        GNUNET_TESTBED_overlay_connect (overlay->op_cls,
+                                        &overlay_link_completed,
+                                        link,
+                                        overlay->peers[link->A],
+                                        overlay->peers[link->B]);
       overlay->nlinks++;
       GNUNET_CONTAINER_DLL_remove (overlay->rl_head,
                                    overlay->rl_tail,
@@ -410,7 +405,6 @@ overlay_link_completed (void *cls,
                       overlay->nfailures);
   }
 }
-
 
 
 /**
@@ -431,11 +425,11 @@ opstart_overlay_configure_topology (void *cls)
   for (p = 0; p < tc->link_array_size; p++)
   {
     overlay->link_array[p].op =
-        GNUNET_TESTBED_overlay_connect (overlay->op_cls,
-                                        &overlay_link_completed,
-                                        &overlay->link_array[p],
-                                        overlay->peers[overlay->link_array[p].A],
-                                        overlay->peers[overlay->link_array[p].B]);
+      GNUNET_TESTBED_overlay_connect (overlay->op_cls,
+                                      &overlay_link_completed,
+                                      &overlay->link_array[p],
+                                      overlay->peers[overlay->link_array[p].A],
+                                      overlay->peers[overlay->link_array[p].B]);
   }
 }
 
@@ -457,7 +451,8 @@ oprelease_overlay_configure_topology (void *cls)
   overlay = &tc->u.overlay;
   while (NULL != (retry_entry = overlay->rl_head))
   {
-    GNUNET_CONTAINER_DLL_remove (overlay->rl_head, overlay->rl_tail, retry_entry);
+    GNUNET_CONTAINER_DLL_remove (overlay->rl_head, overlay->rl_tail,
+                                 retry_entry);
     GNUNET_free (retry_entry);
   }
   if (NULL != overlay->link_array)
@@ -504,6 +499,7 @@ make_link (unsigned int offset,
       olink->tc = tc;
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
@@ -543,6 +539,7 @@ gen_topo_line (struct TopologyContext *tc)
                           struct OverlayLink);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
@@ -582,6 +579,7 @@ gen_topo_star (struct TopologyContext *tc)
                           struct OverlayLink);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
@@ -619,18 +617,19 @@ gen_topo_ring (struct TopologyContext *tc)
 
       overlay = &tc->u.overlay;
       overlay->link_array =
-          GNUNET_realloc (overlay->link_array, sizeof (struct OverlayLink) *
-                          tc->link_array_size);
+        GNUNET_realloc (overlay->link_array, sizeof(struct OverlayLink)
+                        * tc->link_array_size);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
 
       underlay = &tc->u.underlay;
       underlay->link_array =
-          GNUNET_realloc (underlay->link_array, sizeof (struct UnderlayLink) *
-      tc->link_array_size);
+        GNUNET_realloc (underlay->link_array, sizeof(struct UnderlayLink)
+                        * tc->link_array_size);
     }
     break;
   }
@@ -667,7 +666,7 @@ GNUNET_TESTBED_2dtorus_calc_links (unsigned int num_peers, unsigned int *rows,
   sq = floor (sq);
   sq_floor = (unsigned int) sq;
   _rows = (sq_floor + 1);
-  _rows_len = GNUNET_malloc (sizeof (unsigned int) * _rows);
+  _rows_len = GNUNET_malloc (sizeof(unsigned int) * _rows);
   for (y = 0; y < _rows - 1; y++)
     _rows_len[y] = sq_floor;
   _num_peers = sq_floor * sq_floor;
@@ -712,7 +711,7 @@ gen_topo_2dtorus (struct TopologyContext *tc)
   unsigned int offset;
 
   tc->link_array_size =
-      GNUNET_TESTBED_2dtorus_calc_links (tc->num_peers, &rows, &rows_len);
+    GNUNET_TESTBED_2dtorus_calc_links (tc->num_peers, &rows, &rows_len);
   switch (tc->type)
   {
   case TOPOLOGYCONTEXT_TYPE_OVERLAY:
@@ -721,16 +720,17 @@ gen_topo_2dtorus (struct TopologyContext *tc)
 
       overlay = &tc->u.overlay;
       overlay->link_array =
-          GNUNET_malloc (sizeof (struct OverlayLink) * tc->link_array_size);
+        GNUNET_malloc (sizeof(struct OverlayLink) * tc->link_array_size);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
 
       underlay = &tc->u.underlay;
       underlay->link_array =
-          GNUNET_malloc (sizeof (struct UnderlayLink) * tc->link_array_size);
+        GNUNET_malloc (sizeof(struct UnderlayLink) * tc->link_array_size);
       break;
     }
   }
@@ -812,15 +812,17 @@ gen_topo_random (struct TopologyContext *tc,
       {
         GNUNET_assert (NULL == overlay->link_array);
         overlay->link_array =
-            GNUNET_malloc (sizeof (struct OverlayLink) * tc->link_array_size);
+          GNUNET_malloc (sizeof(struct OverlayLink) * tc->link_array_size);
         break;
       }
-      GNUNET_assert ((0 < tc->link_array_size) && (NULL != overlay->link_array));
+      GNUNET_assert ((0 < tc->link_array_size) && (NULL !=
+                                                   overlay->link_array));
       overlay->link_array =
-          GNUNET_realloc (overlay->link_array,
-                          sizeof (struct OverlayLink) * tc->link_array_size);
+        GNUNET_realloc (overlay->link_array,
+                        sizeof(struct OverlayLink) * tc->link_array_size);
       break;
     }
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
@@ -830,13 +832,14 @@ gen_topo_random (struct TopologyContext *tc,
       {
         GNUNET_assert (NULL == underlay->link_array);
         underlay->link_array =
-            GNUNET_malloc (sizeof (struct UnderlayLink) * tc->link_array_size);
+          GNUNET_malloc (sizeof(struct UnderlayLink) * tc->link_array_size);
         break;
       }
-      GNUNET_assert ((0 < tc->link_array_size) && (NULL != underlay->link_array));
+      GNUNET_assert ((0 < tc->link_array_size) && (NULL !=
+                                                   underlay->link_array));
       underlay->link_array =
-          GNUNET_realloc (underlay->link_array,
-                          sizeof (struct UnderlayLink) * tc->link_array_size);
+        GNUNET_realloc (underlay->link_array,
+                        sizeof(struct UnderlayLink) * tc->link_array_size);
       break;
     }
   }
@@ -845,12 +848,12 @@ gen_topo_random (struct TopologyContext *tc,
     do
     {
       A_rand =
-          GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, tc->num_peers);
+        GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, tc->num_peers);
       B_rand =
-          GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, tc->num_peers);
+        GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, tc->num_peers);
     }
     while (A_rand == B_rand);
-    make_link (index+cnt, A_rand, B_rand, tc);
+    make_link (index + cnt, A_rand, B_rand, tc);
   }
 }
 
@@ -891,23 +894,24 @@ gen_topo_scale_free (struct TopologyContext *tc,
       struct TopologyContextOverlay *overlay;
 
       overlay = &tc->u.overlay;
-      overlay->link_array = GNUNET_malloc_large (sizeof (struct OverlayLink) *
-                                                 tc->link_array_size);
+      overlay->link_array = GNUNET_malloc_large (sizeof(struct OverlayLink)
+                                                 * tc->link_array_size);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
 
       underlay = &tc->u.underlay;
-      underlay->link_array = GNUNET_malloc_large (sizeof (struct UnderlayLink) *
-                                                  tc->link_array_size);
+      underlay->link_array = GNUNET_malloc_large (sizeof(struct UnderlayLink)
+                                                  * tc->link_array_size);
     }
     break;
   }
-  etab = GNUNET_malloc_large (sizeof (unsigned int) * 2 * tc->link_array_size);
-  deg = GNUNET_malloc (sizeof (unsigned int) * tc->num_peers);
-  used = GNUNET_malloc (sizeof (unsigned int) * m);
+  etab = GNUNET_malloc_large (sizeof(unsigned int) * 2 * tc->link_array_size);
+  deg = GNUNET_malloc (sizeof(unsigned int) * tc->num_peers);
+  used = GNUNET_malloc (sizeof(unsigned int) * m);
   /* start by connecting peer 1 to peer 0 */
   make_link (0, 0, 1, tc);
   deg[0]++;
@@ -922,7 +926,7 @@ gen_topo_scale_free (struct TopologyContext *tc,
     for (cnt = 0; cnt < GNUNET_MIN (peer, m); cnt++)
     {
       redo_threshold = 0;
-    redo:
+redo:
       off = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK, etaboff);
       random_peer = etab[off];
       if (cap < deg[random_peer])
@@ -972,16 +976,19 @@ gen_topo_scale_free (struct TopologyContext *tc,
 
       overlay = &tc->u.overlay;
       overlay->link_array =
-          GNUNET_realloc (overlay->link_array, sizeof (struct OverlayLink) * tc->link_array_size);
+        GNUNET_realloc (overlay->link_array, sizeof(struct OverlayLink)
+                        * tc->link_array_size);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
 
       underlay = &tc->u.underlay;
       underlay->link_array =
-          GNUNET_realloc (underlay->link_array, sizeof (struct UnderlayLink) * tc->link_array_size);
+        GNUNET_realloc (underlay->link_array, sizeof(struct UnderlayLink)
+                        * tc->link_array_size);
     }
     break;
   }
@@ -1007,7 +1014,6 @@ gen_topo_from_file (struct TopologyContext *tc,
   unsigned long int other_peer_id;
   enum ParseState
   {
-
     /**
      * We read the peer index
      */
@@ -1017,7 +1023,6 @@ gen_topo_from_file (struct TopologyContext *tc,
      * We read the other peer indices
      */
     OTHER_PEER_INDEX,
-
   } state;
   int status;
 
@@ -1025,7 +1030,7 @@ gen_topo_from_file (struct TopologyContext *tc,
   if (GNUNET_YES != GNUNET_DISK_file_test (filename))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Topology file %s not found\n"),
+         _ ("Topology file %s not found\n"),
          filename);
     return;
   }
@@ -1033,7 +1038,7 @@ gen_topo_from_file (struct TopologyContext *tc,
       GNUNET_DISK_file_size (filename, &fs, GNUNET_YES, GNUNET_YES))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Topology file %s has no data\n"),
+         _ ("Topology file %s has no data\n"),
          filename);
     return;
   }
@@ -1041,7 +1046,7 @@ gen_topo_from_file (struct TopologyContext *tc,
   if (fs != GNUNET_DISK_fn_read (filename, data, fs))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Topology file %s cannot be read\n"),
+         _ ("Topology file %s cannot be read\n"),
          filename);
     goto _exit;
   }
@@ -1063,7 +1068,7 @@ gen_topo_from_file (struct TopologyContext *tc,
       if (NULL == buf)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Failed to read peer index from toology file: %s"), filename);
+             _ ("Failed to read peer index from toology file: %s"), filename);
         goto _exit;
       }
       *buf = '\0';
@@ -1072,43 +1077,44 @@ gen_topo_from_file (struct TopologyContext *tc,
       if (0 != errno)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Value in given topology file: %s out of range\n"), filename);
+             _ ("Value in given topology file: %s out of range\n"), filename);
         goto _exit;
       }
       if (&data[offset] == end)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Failed to read peer index from topology file: %s"), filename);
+             _ ("Failed to read peer index from topology file: %s"), filename);
         goto _exit;
       }
       if (tc->num_peers <= peer_id)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Topology file needs more peers than given ones\n"), filename);
+             _ ("Topology file needs more peers than given ones\n"), filename);
         goto _exit;
       }
       state = OTHER_PEER_INDEX;
       offset += ((unsigned int) (buf - &data[offset])) + 1;
       break;
+
     case OTHER_PEER_INDEX:
       errno = 0;
       other_peer_id = (unsigned int) strtoul (&data[offset], &end, 10);
       if (0 != errno)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Value in given topology file: %s out of range\n"), filename);
+             _ ("Value in given topology file: %s out of range\n"), filename);
         goto _exit;
       }
       if (&data[offset] == end)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Failed to read peer index from topology file: %s"), filename);
+             _ ("Failed to read peer index from topology file: %s"), filename);
         goto _exit;
       }
       if (tc->num_peers <= other_peer_id)
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Topology file needs more peers than given ones\n"), filename);
+             _ ("Topology file needs more peers than given ones\n"), filename);
         goto _exit;
       }
       if (peer_id != other_peer_id)
@@ -1122,18 +1128,20 @@ gen_topo_from_file (struct TopologyContext *tc,
 
             overlay = &tc->u.overlay;
             overlay->link_array =
-                GNUNET_realloc (overlay->link_array,
-                                sizeof (struct OverlayLink) * tc->link_array_size);
+              GNUNET_realloc (overlay->link_array,
+                              sizeof(struct OverlayLink) * tc->link_array_size);
           }
           break;
+
         case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
           {
             struct TopologyContextUnderlay *underlay;
 
             underlay = &tc->u.underlay;
             underlay->link_array =
-                GNUNET_realloc (underlay->link_array,
-                                sizeof (struct UnderlayLink) * tc->link_array_size);
+              GNUNET_realloc (underlay->link_array,
+                              sizeof(struct UnderlayLink)
+                              * tc->link_array_size);
           }
           break;
         }
@@ -1142,16 +1150,16 @@ gen_topo_from_file (struct TopologyContext *tc,
       }
       else
         LOG (GNUNET_ERROR_TYPE_WARNING,
-             _("Ignoring to connect peer %u to peer %u\n"),
+             _ ("Ignoring to connect peer %u to peer %u\n"),
              peer_id,
              other_peer_id);
       while (('\n' != data[offset]) && ('|' != data[offset]) && (offset < fs))
         offset++;
-      if ( (offset < fs) &&
-           ('\n' == data[offset]) )
+      if ((offset < fs) &&
+          ('\n' == data[offset]))
         state = PEER_INDEX;
-      else if ( (offset < fs) &&
-                ('|' == data[offset]) )
+      else if ((offset < fs) &&
+               ('|' == data[offset]))
       {
         state = OTHER_PEER_INDEX;
         offset++;
@@ -1179,6 +1187,7 @@ _exit:
         overlay->link_array = NULL;
       }
       break;
+
     case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
       {
         struct TopologyContextUnderlay *underlay;
@@ -1217,6 +1226,7 @@ gen_topo_clique (struct TopologyContext *tc)
                                               struct OverlayLink);
     }
     break;
+
   case TOPOLOGYCONTEXT_TYPE_UNDERLAY:
     {
       struct TopologyContextUnderlay *underlay;
@@ -1316,7 +1326,8 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
                                               GNUNET_TESTBED_TopologyCompletionCallback
                                               comp_cb,
                                               void *comp_cb_cls,
-                                              enum GNUNET_TESTBED_TopologyOption topo,
+                                              enum GNUNET_TESTBED_TopologyOption
+                                              topo,
                                               va_list va)
 {
   struct TopologyContext *tc;
@@ -1342,30 +1353,38 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
   case GNUNET_TESTBED_TOPOLOGY_LINE:
     gen_topo_line (tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_STAR:
     gen_topo_star (tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_RING:
     gen_topo_ring (tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_ERDOS_RENYI:
     gen_topo_random (tc, va_arg (va, unsigned int), GNUNET_NO);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_SMALL_WORLD_RING:
     gen_topo_ring (tc);
     gen_topo_random (tc, va_arg (va, unsigned int), GNUNET_YES);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_CLIQUE:
     gen_topo_clique (tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_2D_TORUS:
     gen_topo_2dtorus (tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_SMALL_WORLD:
     gen_topo_2dtorus (tc);
     gen_topo_random (tc, va_arg (va, unsigned int), GNUNET_YES);
 
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_SCALE_FREE:
     {
       uint16_t cap;
@@ -1376,16 +1395,18 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
       gen_topo_scale_free (tc, cap, m);
     }
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_FROM_FILE:
-  {
-    const char *filename;
+    {
+      const char *filename;
 
-    filename = va_arg (va, const char *);
+      filename = va_arg (va, const char *);
 
-    GNUNET_assert (NULL != filename);
-    gen_topo_from_file (tc, filename);
-  }
+      GNUNET_assert (NULL != filename);
+      gen_topo_from_file (tc, filename);
+    }
     break;
+
   default:
     GNUNET_break (0);
     GNUNET_free (tc);
@@ -1398,10 +1419,12 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
     switch (secondary_option)
     {
     case GNUNET_TESTBED_TOPOLOGY_RETRY_CNT:
-      overlay->retry_cnt =  va_arg (va, unsigned int);
+      overlay->retry_cnt = va_arg (va, unsigned int);
       break;
+
     case GNUNET_TESTBED_TOPOLOGY_OPTION_END:
       break;
+
     default:
       GNUNET_break (0);         /* Should not use any other option apart from
                                  * the ones handled here */
@@ -1415,7 +1438,7 @@ GNUNET_TESTBED_overlay_configure_topology_va (void *op_cls,
                                          &opstart_overlay_configure_topology,
                                          &oprelease_overlay_configure_topology);
   GNUNET_TESTBED_operation_queue_insert_
-      (c->opq_parallel_topology_config_operations, op);
+    (c->opq_parallel_topology_config_operations, op);
   GNUNET_TESTBED_operation_begin_wait_ (op);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Generated %u connections\n",
@@ -1454,7 +1477,8 @@ GNUNET_TESTBED_overlay_configure_topology (void *op_cls,
                                            GNUNET_TESTBED_TopologyCompletionCallback
                                            comp_cb,
                                            void *comp_cb_cls,
-                                           enum GNUNET_TESTBED_TopologyOption topo,
+                                           enum GNUNET_TESTBED_TopologyOption
+                                           topo,
                                            ...)
 {
   struct GNUNET_TESTBED_Operation *op;
@@ -1493,7 +1517,8 @@ GNUNET_TESTBED_topology_get_ (enum GNUNET_TESTBED_TopologyOption *topology,
     {
       if (NULL != topology)
         *topology = (enum GNUNET_TESTBED_TopologyOption) cnt;
-      GNUNET_assert (GNUNET_TESTBED_TOPOLOGY_OPTION_END != (enum GNUNET_TESTBED_TopologyOption) cnt);
+      GNUNET_assert (GNUNET_TESTBED_TOPOLOGY_OPTION_END !=
+                     (enum GNUNET_TESTBED_TopologyOption) cnt);
       return GNUNET_YES;
     }
   }
@@ -1549,7 +1574,7 @@ GNUNET_TESTBED_underlay_construct_ (int num_peers,
 
   GNUNET_assert (NULL != proc);
   ret = GNUNET_OK;
-  memset (&tc, 0, sizeof (tc));
+  memset (&tc, 0, sizeof(tc));
   tc.num_peers = num_peers;
   tc.type = TOPOLOGYCONTEXT_TYPE_UNDERLAY;
   underlay = &tc.u.underlay;
@@ -1560,29 +1585,37 @@ GNUNET_TESTBED_underlay_construct_ (int num_peers,
   case GNUNET_TESTBED_TOPOLOGY_LINE:
     gen_topo_line (&tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_STAR:
     gen_topo_star (&tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_RING:
     gen_topo_ring (&tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_CLIQUE:
     gen_topo_clique (&tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_2D_TORUS:
     gen_topo_2dtorus (&tc);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_ERDOS_RENYI:
     gen_topo_random (&tc, va_arg (vargs, unsigned int), GNUNET_NO);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_SMALL_WORLD_RING:
     gen_topo_ring (&tc);
     gen_topo_random (&tc, va_arg (vargs, unsigned int), GNUNET_YES);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_SMALL_WORLD:
     gen_topo_2dtorus (&tc);
     gen_topo_random (&tc, va_arg (vargs, unsigned int), GNUNET_YES);
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_FROM_FILE:
     {
       const char *filename;
@@ -1591,6 +1624,7 @@ GNUNET_TESTBED_underlay_construct_ (int num_peers,
       gen_topo_from_file (&tc, filename);
     }
     break;
+
   case GNUNET_TESTBED_TOPOLOGY_SCALE_FREE:
     {
       uint16_t cap;
@@ -1600,6 +1634,7 @@ GNUNET_TESTBED_underlay_construct_ (int num_peers,
       gen_topo_scale_free (&tc, cap, m);
     }
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -1621,5 +1656,6 @@ GNUNET_TESTBED_underlay_construct_ (int num_peers,
   GNUNET_free_non_null (underlay->link_array);
   return ret;
 }
+
 
 /* end of testbed_api_topology.c */

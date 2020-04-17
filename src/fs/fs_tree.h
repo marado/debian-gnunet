@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_tree.h
@@ -95,7 +95,7 @@ struct GNUNET_FS_TreeEncoder;
  * @param block_size size of block (in bytes)
  */
 typedef void (*GNUNET_FS_TreeBlockProcessor) (void *cls,
-                                              const struct ContentHashKey * chk,
+                                              const struct ContentHashKey *chk,
                                               uint64_t offset,
                                               unsigned int depth,
                                               enum GNUNET_BLOCK_Type type,
@@ -195,7 +195,7 @@ GNUNET_FS_tree_encoder_finish (struct GNUNET_FS_TreeEncoder *te,
  */
 void
 GNUNET_FS_tree_encoder_resume_get_data (const struct GNUNET_FS_TreeEncoder *te,
-                                        void **data, size_t * size);
+                                        void **data, size_t *size);
 
 
 /**

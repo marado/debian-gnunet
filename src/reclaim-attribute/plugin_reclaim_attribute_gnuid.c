@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file reclaim-attribute/plugin_reclaim_attribute_gnuid.c
@@ -47,13 +47,13 @@ gnuid_value_to_string (void *cls,
                        const void *data,
                        size_t data_size)
 {
-
   switch (type)
   {
-    case GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING:
-      return GNUNET_strndup (data, data_size);
-    default:
-      return NULL;
+  case GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING:
+    return GNUNET_strndup (data, data_size);
+
+  default:
+    return NULL;
   }
 }
 
@@ -80,13 +80,13 @@ gnuid_string_to_value (void *cls,
     return GNUNET_SYSERR;
   switch (type)
   {
+  case GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING:
+    *data = GNUNET_strdup (s);
+    *data_size = strlen (s);
+    return GNUNET_OK;
 
-    case GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING:
-      *data = GNUNET_strdup (s);
-      *data_size = strlen (s);
-      return GNUNET_OK;
-    default:
-      return GNUNET_SYSERR;
+  default:
+    return GNUNET_SYSERR;
   }
 }
 
@@ -99,8 +99,8 @@ static struct
 {
   const char *name;
   uint32_t number;
-} gnuid_name_map[] = {{"STRING", GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING},
-  {NULL, UINT32_MAX}};
+} gnuid_name_map[] = { { "STRING", GNUNET_RECLAIM_ATTRIBUTE_TYPE_STRING },
+                       { NULL, UINT32_MAX } };
 
 
 /**
@@ -176,5 +176,6 @@ libgnunet_plugin_reclaim_attribute_gnuid_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_reclaim_attribute_type_gnuid.c */

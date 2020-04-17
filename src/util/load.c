@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/load.c
@@ -27,14 +27,13 @@
 #include "gnunet_util_lib.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-load", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-load", __VA_ARGS__)
 
 /**
  * Values we track for load calculations.
  */
 struct GNUNET_LOAD_Value
 {
-
   /**
    * How fast should the load decline if no values are added?
    */
@@ -77,7 +76,6 @@ struct GNUNET_LOAD_Value
    * load is so high that we currently cannot calculate it.
    */
   double load;
-
 };
 
 
@@ -87,7 +85,8 @@ internal_update (struct GNUNET_LOAD_Value *load)
   struct GNUNET_TIME_Relative delta;
   unsigned int n;
 
-  if (load->autodecline.rel_value_us == GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us)
+  if (load->autodecline.rel_value_us ==
+      GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us)
     return;
   delta = GNUNET_TIME_absolute_get_duration (load->last_update);
   if (delta.rel_value_us < load->autodecline.rel_value_us)
@@ -170,14 +169,13 @@ calculate_load (struct GNUNET_LOAD_Value *load)
    * stddev = (sum (val_i - avg)^2) / (n-1)
    * = (sum (val_i^2 - 2 avg val_i + avg^2) / (n-1)
    * = (sum (val_i^2) - 2 avg sum (val_i) + n * avg^2) / (n-1)
-   */
-  sum_val_i = (double) load->cummulative_delay;
+   */sum_val_i = (double) load->cummulative_delay;
   n = ((double) load->cummulative_request_count);
   nm1 = n - 1.0;
   avgdel = sum_val_i / n;
   stddev =
-      (((double) load->cummulative_squared_delay) - 2.0 * avgdel * sum_val_i +
-       n * avgdel * avgdel) / nm1;
+    (((double) load->cummulative_squared_delay) - 2.0 * avgdel * sum_val_i
+     + n * avgdel * avgdel) / nm1;
   if (stddev <= 0)
     stddev = 0.01;              /* must have been rounding error or zero; prevent division by zero */
   /* now calculate load based on how far out we are from
@@ -253,7 +251,6 @@ GNUNET_LOAD_update (struct GNUNET_LOAD_Value *load, uint64_t data)
   load->cummulative_request_count++;
   load->runavg_delay = ((load->runavg_delay * 7.0) + dv) / 8.0;
 }
-
 
 
 /* end of load.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file ats/gnunet-service-ats_connectivity.c
@@ -80,7 +80,7 @@ GAS_connectivity_has_peer (void *cls,
  */
 void
 GAS_handle_request_address (struct GNUNET_SERVICE_Client *client,
-			    const struct RequestAddressMessage *msg)
+                            const struct RequestAddressMessage *msg)
 {
   struct ConnectionRequest *cr;
 
@@ -140,7 +140,7 @@ free_matching_requests (void *cls,
  */
 void
 GAS_handle_request_address_cancel (struct GNUNET_SERVICE_Client *client,
-				   const struct RequestAddressMessage *msg)
+                                   const struct RequestAddressMessage *msg)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received GNUNET_MESSAGE_TYPE_ATS_REQUEST_ADDRESS_CANCEL message for peer %s\n",
@@ -176,7 +176,7 @@ GAS_connectivity_init ()
 {
   connection_requests
     = GNUNET_CONTAINER_multipeermap_create (32,
-					    GNUNET_NO);
+                                            GNUNET_NO);
 }
 
 

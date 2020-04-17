@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api_core.c
@@ -55,7 +55,6 @@
  */
 struct Neighbour
 {
-
   /**
    * Identity of this neighbour.
    */
@@ -109,7 +108,6 @@ struct Neighbour
  */
 struct GNUNET_TRANSPORT_CoreHandle
 {
-
   /**
    * Closure for the callbacks.
    */
@@ -314,7 +312,7 @@ mq_send_impl (struct GNUNET_MQ_Handle *mq,
   uint16_t msize;
 
   msize = ntohs (msg->size);
-  if (msize >= GNUNET_MAX_MESSAGE_SIZE - sizeof (*obm))
+  if (msize >= GNUNET_MAX_MESSAGE_SIZE - sizeof(*obm))
   {
     GNUNET_break (0);
     GNUNET_MQ_impl_send_continue (mq);
@@ -340,7 +338,7 @@ mq_send_impl (struct GNUNET_MQ_Handle *mq,
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Flow control delays transmission to CORE until we see SEND_OK.\n");
-    return; /* can't send yet, need to wait for SEND_OK */
+    return;   /* can't send yet, need to wait for SEND_OK */
   }
   do_send (n);
 }
@@ -524,8 +522,8 @@ check_recv (void *cls, const struct InboundMessage *im)
   const struct GNUNET_MessageHeader *imm;
   uint16_t size;
 
-  size = ntohs (im->header.size) - sizeof (*im);
-  if (size < sizeof (struct GNUNET_MessageHeader))
+  size = ntohs (im->header.size) - sizeof(*im);
+  if (size < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -580,23 +578,23 @@ reconnect (void *cls)
 {
   struct GNUNET_TRANSPORT_CoreHandle *h = cls;
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (connect,
-                              GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT,
-                              struct ConnectInfoMessage,
-                              h),
-     GNUNET_MQ_hd_fixed_size (disconnect,
-                              GNUNET_MESSAGE_TYPE_TRANSPORT_DISCONNECT,
-                              struct DisconnectInfoMessage,
-                              h),
-     GNUNET_MQ_hd_fixed_size (send_ok,
-                              GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_OK,
-                              struct SendOkMessage,
-                              h),
-     GNUNET_MQ_hd_var_size (recv,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_RECV,
-                            struct InboundMessage,
-                            h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (connect,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT,
+                             struct ConnectInfoMessage,
+                             h),
+    GNUNET_MQ_hd_fixed_size (disconnect,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_DISCONNECT,
+                             struct DisconnectInfoMessage,
+                             h),
+    GNUNET_MQ_hd_fixed_size (send_ok,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_OK,
+                             struct SendOkMessage,
+                             h),
+    GNUNET_MQ_hd_var_size (recv,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_RECV,
+                           struct InboundMessage,
+                           h),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MQ_Envelope *env;
   struct StartMessage *s;
   uint32_t options;
@@ -758,7 +756,7 @@ GNUNET_TRANSPORT_core_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
     h->handlers = GNUNET_new_array (i + 1, struct GNUNET_MQ_MessageHandler);
     GNUNET_memcpy (h->handlers,
                    handlers,
-                   i * sizeof (struct GNUNET_MQ_MessageHandler));
+                   i * sizeof(struct GNUNET_MQ_MessageHandler));
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG, "Connecting to transport service\n");
   reconnect (h);

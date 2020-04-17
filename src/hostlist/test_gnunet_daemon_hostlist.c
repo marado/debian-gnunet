@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file hostlist/test_gnunet_daemon_hostlist.c
  * @brief test for gnunet_daemon_hostslist.c
@@ -219,13 +219,15 @@ run (void *cls,
 static int
 check ()
 {
-  char *const argv[] = {"test-gnunet-daemon-hostlist",
-                        "-c",
-                        "test_gnunet_daemon_hostlist_data.conf",
-                        NULL};
-  struct GNUNET_GETOPT_CommandLineOption options[] = {GNUNET_GETOPT_OPTION_END};
+  char *const argv[] = { "test-gnunet-daemon-hostlist",
+                         "-c",
+                         "test_gnunet_daemon_hostlist_data.conf",
+                         NULL };
+  struct GNUNET_GETOPT_CommandLineOption options[] =
+  { GNUNET_GETOPT_OPTION_END };
+
   ok = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
                       argv,
                       "test-gnunet-daemon-hostlist",
                       "nohelp",
@@ -257,5 +259,6 @@ main (int argc, char *argv[])
                              "GNUNET_TEST_HOME");
   return ret;
 }
+
 
 /* end of test_gnunet_daemon_hostlist.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/ats.h
  * @brief automatic transport selection messages
@@ -36,7 +36,6 @@
  */
 enum StartFlag
 {
-
   /**
    * This is a scheduling client (aka transport service)
    */
@@ -152,7 +151,6 @@ struct AddressAddMessage
    * - char address[address_length]
    * - char plugin_name[plugin_name_length] (including '\0'-termination).
    */
-
 };
 
 
@@ -183,7 +181,6 @@ struct AddressUpdateMessage
    * Performance properties of the address.
    */
   struct GNUNET_ATS_PropertiesNBO properties;
-
 };
 
 
@@ -210,7 +207,6 @@ struct AddressDestroyedMessage
    * to find the session faster).
    */
   struct GNUNET_PeerIdentity peer;
-
 };
 
 
@@ -237,7 +233,6 @@ struct GNUNET_ATS_SessionReleaseMessage
    */
   struct GNUNET_PeerIdentity peer;
 };
-
 
 
 /**
@@ -274,7 +269,6 @@ struct AddressSuggestionMessage
    * How much bandwidth we are allowed for receiving.
    */
   struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in;
-
 };
 
 
@@ -338,7 +332,6 @@ struct PeerInformationMessage
    * - char address[address_length]
    * - char plugin_name[plugin_name_length] (including '\0'-termination).
    */
-
 };
 
 
@@ -367,7 +360,6 @@ struct AddressListRequestMessage
    * #GNUNET_NO to only return addresses that are in use.
    */
   int32_t all GNUNET_PACKED;
-
 };
 
 
@@ -426,7 +418,6 @@ struct ReservationResultMessage
  */
 struct PreferenceInformation
 {
-
   /**
    * An `enum GNUNET_ATS_PreferenceKind` in NBO.
    */
@@ -437,7 +428,6 @@ struct PreferenceInformation
    * preference_kind being expressed.
    */
   float preference_value GNUNET_PACKED;
-
 };
 
 
@@ -497,7 +487,6 @@ struct FeedbackPreferenceMessage
 };
 
 GNUNET_NETWORK_STRUCT_END
-
 
 
 #endif

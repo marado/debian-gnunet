@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/nat-auto/nat-auto.h
@@ -27,7 +27,6 @@
 #ifndef NAT_AUTO_H
 #define NAT_AUTO_H
 #include "gnunet_util_lib.h"
-
 
 
 GNUNET_NETWORK_STRUCT_BEGIN
@@ -62,7 +61,6 @@ struct GNUNET_NAT_AUTO_TestMessage
    * #GNUNET_YES for TCP, #GNUNET_NO for UDP.
    */
   int32_t is_tcp;
-
 };
 
 
@@ -77,7 +75,6 @@ struct GNUNET_NAT_AUTO_AutoconfigRequestMessage
   struct GNUNET_MessageHeader header;
 
   /* Followed by configuration (diff, serialized, compressed) */
-  
 };
 
 
@@ -90,7 +87,7 @@ struct GNUNET_NAT_AUTO_AutoconfigResultMessage
    * Header with type #GNUNET_MESSAGE_TYPE_NAT_AUTO_CFG_RESULT
    */
   struct GNUNET_MessageHeader header;
-  
+
   /**
    * An `enum GNUNET_NAT_StatusCode` in NBO.
    */

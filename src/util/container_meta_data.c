@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/container_meta_data.c
@@ -31,8 +31,8 @@
 #endif
 #include <zlib.h>
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-container-meta-data", __VA_ARGS__)
-
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-container-meta-data", \
+                                        __VA_ARGS__)
 
 
 /**
@@ -162,7 +162,6 @@ struct MetaItem
    * Format of the meta data.
    */
   enum EXTRACTOR_MetaFormat format;
-
 };
 
 /**
@@ -195,7 +194,6 @@ struct GNUNET_CONTAINER_MetaData
    * Number of items in the linked list.
    */
   unsigned int item_count;
-
 };
 
 
@@ -283,7 +281,7 @@ GNUNET_CONTAINER_meta_data_clear (struct GNUNET_CONTAINER_MetaData *md)
     meta_item_free (mi);
   }
   GNUNET_free_non_null (md->sbuf);
-  memset (md, 0, sizeof (struct GNUNET_CONTAINER_MetaData));
+  memset (md, 0, sizeof(struct GNUNET_CONTAINER_MetaData));
 }
 
 
@@ -324,7 +322,7 @@ GNUNET_CONTAINER_meta_data_test_equal (const struct GNUNET_CONTAINER_MetaData
         break;
       }
       if (j->data_size < i->data_size)
-	break; /* elements are sorted by (decreasing) size... */
+        break;     /* elements are sorted by (decreasing) size... */
     }
     if (GNUNET_NO == found)
       return GNUNET_NO;
@@ -370,7 +368,7 @@ GNUNET_CONTAINER_meta_data_insert (struct GNUNET_CONTAINER_MetaData *md,
   for (pos = md->items_head; NULL != pos; pos = pos->next)
   {
     if (pos->data_size < data_size)
-      break; /* elements are sorted by size in the list */
+      break;   /* elements are sorted by size in the list */
     if ((pos->type == type) && (pos->data_size == data_size) &&
         (0 == memcmp (pos->data, data, data_size)))
     {
@@ -395,21 +393,21 @@ GNUNET_CONTAINER_meta_data_insert (struct GNUNET_CONTAINER_MetaData *md,
   mi->data_size = data_size;
   if (NULL == pos)
     GNUNET_CONTAINER_DLL_insert_tail (md->items_head,
-				      md->items_tail,
-				      mi);
+                                      md->items_tail,
+                                      mi);
   else
     GNUNET_CONTAINER_DLL_insert_after (md->items_head,
-				       md->items_tail,
-				       pos->prev,
-				       mi);
+                                       md->items_tail,
+                                       pos->prev,
+                                       mi);
   mi->mime_type =
-      (NULL == data_mime_type) ? NULL : GNUNET_strdup (data_mime_type);
+    (NULL == data_mime_type) ? NULL : GNUNET_strdup (data_mime_type);
   mi->plugin_name = (NULL == plugin_name) ? NULL : GNUNET_strdup (plugin_name);
   mi->data = GNUNET_malloc (data_size);
   GNUNET_memcpy (mi->data, data, data_size);
   /* change all dir separators to POSIX style ('/') */
-  if ( (EXTRACTOR_METATYPE_FILENAME == type) ||
-       (EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME == type) )
+  if ((EXTRACTOR_METATYPE_FILENAME == type) ||
+      (EXTRACTOR_METATYPE_GNUNET_ORIGINAL_FILENAME == type))
   {
     p = mi->data;
     while (('\0' != *p) && (p < mi->data + data_size))
@@ -488,7 +486,7 @@ GNUNET_CONTAINER_meta_data_delete (struct GNUNET_CONTAINER_MetaData *md,
   for (pos = md->items_head; NULL != pos; pos = pos->next)
   {
     if (pos->data_size < data_size)
-      break; /* items are sorted by (decreasing) size */
+      break;   /* items are sorted by (decreasing) size */
     if ((pos->type == type) &&
         ((NULL == data) ||
          ((pos->data_size == data_size) &&
@@ -569,7 +567,8 @@ GNUNET_CONTAINER_meta_data_iterate (const struct GNUNET_CONTAINER_MetaData *md,
  * @return NULL if no entry was found
  */
 char *
-GNUNET_CONTAINER_meta_data_get_by_type (const struct GNUNET_CONTAINER_MetaData *md,
+GNUNET_CONTAINER_meta_data_get_by_type (const struct
+                                        GNUNET_CONTAINER_MetaData *md,
                                         enum EXTRACTOR_MetaType type)
 {
   struct MetaItem *pos;
@@ -632,7 +631,7 @@ GNUNET_CONTAINER_meta_data_get_first_by_types (const struct
  */
 size_t
 GNUNET_CONTAINER_meta_data_get_thumbnail (const struct GNUNET_CONTAINER_MetaData
-                                          * md, unsigned char **thumb)
+                                          *md, unsigned char **thumb)
 {
   struct MetaItem *pos;
   struct MetaItem *match;
@@ -760,7 +759,6 @@ struct MetaDataEntry
    * Number of bytes in the mime type including 0-terminator.  0 for NULL.
    */
   uint32_t mime_type_len;
-
 };
 
 
@@ -804,7 +802,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
   size_t rlen;
   int comp;
 
-  if (max < sizeof (struct MetaDataHeader))
+  if (max < sizeof(struct MetaDataHeader))
     return GNUNET_SYSERR;       /* far too small */
   if (NULL == md)
     return 0;
@@ -827,7 +825,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
   msize = 0;
   for (pos = md->items_tail; NULL != pos; pos = pos->prev)
   {
-    msize += sizeof (struct MetaDataEntry);
+    msize += sizeof(struct MetaDataEntry);
     msize += pos->data_size;
     if (NULL != pos->plugin_name)
       msize += strlen (pos->plugin_name) + 1;
@@ -847,7 +845,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
   }
   ent = GNUNET_malloc (size);
   mdata = (char *) &ent[md->item_count];
-  off = size - (md->item_count * sizeof (struct MetaDataEntry));
+  off = size - (md->item_count * sizeof(struct MetaDataEntry));
   i = 0;
   for (pos = md->items_head; NULL != pos; pos = pos->next)
   {
@@ -898,7 +896,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
        * an internal cache we will cast away the 'const' instead
        * of making the API look strange. */
       vmd = (struct GNUNET_CONTAINER_MetaData *) md;
-      hdr = GNUNET_malloc (left + sizeof (struct MetaDataHeader));
+      hdr = GNUNET_malloc (left + sizeof(struct MetaDataHeader));
       hdr->size = htonl (left);
       hdr->entries = htonl (md->item_count);
       if (GNUNET_YES == comp)
@@ -906,53 +904,53 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
         GNUNET_assert (clen < left);
         hdr->version = htonl (2 | HEADER_COMPRESSED);
         GNUNET_memcpy (&hdr[1], cdata, clen);
-        vmd->sbuf_size = clen + sizeof (struct MetaDataHeader);
+        vmd->sbuf_size = clen + sizeof(struct MetaDataHeader);
       }
       else
       {
         hdr->version = htonl (2);
         GNUNET_memcpy (&hdr[1], &ent[0], left);
-        vmd->sbuf_size = left + sizeof (struct MetaDataHeader);
+        vmd->sbuf_size = left + sizeof(struct MetaDataHeader);
       }
       vmd->sbuf = (char *) hdr;
     }
 
-    if (((left + sizeof (struct MetaDataHeader)) <= max) ||
+    if (((left + sizeof(struct MetaDataHeader)) <= max) ||
         ((GNUNET_YES == comp) && (clen <= max)))
     {
       /* success, this now fits! */
       if (GNUNET_YES == comp)
       {
         if (NULL == dst)
-          dst = GNUNET_malloc (clen + sizeof (struct MetaDataHeader));
+          dst = GNUNET_malloc (clen + sizeof(struct MetaDataHeader));
         hdr = (struct MetaDataHeader *) dst;
         hdr->version = htonl (2 | HEADER_COMPRESSED);
         hdr->size = htonl (left);
         hdr->entries = htonl (md->item_count - i);
-        GNUNET_memcpy (&dst[sizeof (struct MetaDataHeader)], cdata, clen);
+        GNUNET_memcpy (&dst[sizeof(struct MetaDataHeader)], cdata, clen);
         GNUNET_free (cdata);
-	cdata = NULL;
+        cdata = NULL;
         GNUNET_free (ent);
-        rlen = clen + sizeof (struct MetaDataHeader);
+        rlen = clen + sizeof(struct MetaDataHeader);
       }
       else
       {
         if (NULL == dst)
-          dst = GNUNET_malloc (left + sizeof (struct MetaDataHeader));
+          dst = GNUNET_malloc (left + sizeof(struct MetaDataHeader));
         hdr = (struct MetaDataHeader *) dst;
         hdr->version = htonl (2);
         hdr->entries = htonl (md->item_count - i);
         hdr->size = htonl (left);
-        GNUNET_memcpy (&dst[sizeof (struct MetaDataHeader)], &ent[i], left);
+        GNUNET_memcpy (&dst[sizeof(struct MetaDataHeader)], &ent[i], left);
         GNUNET_free (ent);
-        rlen = left + sizeof (struct MetaDataHeader);
+        rlen = left + sizeof(struct MetaDataHeader);
       }
       if (NULL != *target)
       {
         if (GNUNET_YES == comp)
-          GNUNET_memcpy (*target, dst, clen + sizeof (struct MetaDataHeader));
+          GNUNET_memcpy (*target, dst, clen + sizeof(struct MetaDataHeader));
         else
-          GNUNET_memcpy (*target, dst, left + sizeof (struct MetaDataHeader));
+          GNUNET_memcpy (*target, dst, left + sizeof(struct MetaDataHeader));
         GNUNET_free (dst);
       }
       else
@@ -971,7 +969,7 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
 
     /* next iteration: ignore the corresponding meta data at the
      * end and try again without it */
-    left -= sizeof (struct MetaDataEntry);
+    left -= sizeof(struct MetaDataEntry);
     left -= pos->data_size;
     if (NULL != pos->plugin_name)
       left -= strlen (pos->plugin_name) + 1;
@@ -991,8 +989,8 @@ GNUNET_CONTAINER_meta_data_serialize (const struct GNUNET_CONTAINER_MetaData
   ihdr.size = htonl (0);
   if (NULL == *target)
     *target = (char *) GNUNET_new (struct MetaDataHeader);
-  GNUNET_memcpy (*target, &ihdr, sizeof (struct MetaDataHeader));
-  return sizeof (struct MetaDataHeader);
+  GNUNET_memcpy (*target, &ihdr, sizeof(struct MetaDataHeader));
+  return sizeof(struct MetaDataHeader);
 }
 
 
@@ -1013,8 +1011,8 @@ GNUNET_CONTAINER_meta_data_get_serialized_size (const struct
     return md->sbuf_size;
   ptr = NULL;
   ret =
-      GNUNET_CONTAINER_meta_data_serialize (md, &ptr, GNUNET_MAX_MALLOC_CHECKED,
-                                            GNUNET_CONTAINER_META_DATA_SERIALIZE_FULL);
+    GNUNET_CONTAINER_meta_data_serialize (md, &ptr, GNUNET_MAX_MALLOC_CHECKED,
+                                          GNUNET_CONTAINER_META_DATA_SERIALIZE_FULL);
   if (-1 != ret)
     GNUNET_free (ptr);
   return ret;
@@ -1052,9 +1050,9 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
   const char *mime_type;
   enum EXTRACTOR_MetaFormat format;
 
-  if (size < sizeof (struct MetaDataHeader))
+  if (size < sizeof(struct MetaDataHeader))
     return NULL;
-  GNUNET_memcpy (&hdr, input, sizeof (struct MetaDataHeader));
+  GNUNET_memcpy (&hdr, input, sizeof(struct MetaDataHeader));
   version = ntohl (hdr.version) & HEADER_VERSION_MASK;
   compressed = (ntohl (hdr.version) & HEADER_COMPRESSED) != 0;
 
@@ -1068,9 +1066,9 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
 
   ic = ntohl (hdr.entries);
   dataSize = ntohl (hdr.size);
-  if ( ((sizeof (struct MetaDataEntry) * ic) > dataSize) ||
-       ( (0 != ic) &&
-         (dataSize / ic < sizeof (struct MetaDataEntry)) ) )
+  if (((sizeof(struct MetaDataEntry) * ic) > dataSize) ||
+      ((0 != ic) &&
+       (dataSize / ic < sizeof(struct MetaDataEntry))))
   {
     GNUNET_break_op (0);
     return NULL;
@@ -1086,8 +1084,8 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
       return NULL;
     }
     data =
-      GNUNET_decompress ((const char *) &input[sizeof (struct MetaDataHeader)],
-                         size - sizeof (struct MetaDataHeader),
+      GNUNET_decompress ((const char *) &input[sizeof(struct MetaDataHeader)],
+                         size - sizeof(struct MetaDataHeader),
                          dataSize);
     if (NULL == data)
     {
@@ -1099,8 +1097,8 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
   else
   {
     data = NULL;
-    cdata = (const char *) &input[sizeof (struct MetaDataHeader)];
-    if (dataSize != size - sizeof (struct MetaDataHeader))
+    cdata = (const char *) &input[sizeof(struct MetaDataHeader)];
+    if (dataSize != size - sizeof(struct MetaDataHeader))
     {
       GNUNET_break_op (0);
       return NULL;
@@ -1108,12 +1106,12 @@ GNUNET_CONTAINER_meta_data_deserialize (const char *input, size_t size)
   }
 
   md = GNUNET_CONTAINER_meta_data_create ();
-  left = dataSize - ic * sizeof (struct MetaDataEntry);
-  mdata = &cdata[ic * sizeof (struct MetaDataEntry)];
+  left = dataSize - ic * sizeof(struct MetaDataEntry);
+  mdata = &cdata[ic * sizeof(struct MetaDataEntry)];
   for (i = 0; i < ic; i++)
   {
-    GNUNET_memcpy (&ent, &cdata[i * sizeof (struct MetaDataEntry)],
-            sizeof (struct MetaDataEntry));
+    GNUNET_memcpy (&ent, &cdata[i * sizeof(struct MetaDataEntry)],
+                   sizeof(struct MetaDataEntry));
     format = (enum EXTRACTOR_MetaFormat) ntohl (ent.format);
     if ((EXTRACTOR_METAFORMAT_UTF8 != format) &&
         (EXTRACTOR_METAFORMAT_C_STRING != format) &&

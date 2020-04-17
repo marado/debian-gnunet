@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file datacache/test_datacache_quota.c
  * @brief Test for the quota code of the datacache implementations.
@@ -27,7 +27,9 @@
 #include "gnunet_datacache_lib.h"
 #include "gnunet_testing_lib.h"
 
-#define ASSERT(x) do { if (! (x)) { printf("Error at %s:%d\n", __FILE__, __LINE__); goto FAILURE;} } while (0)
+#define ASSERT(x) do { if (! (x)) { printf ("Error at %s:%d\n", __FILE__, \
+                                            __LINE__); goto FAILURE; \
+                       } } while (0)
 
 static int ok;
 
@@ -59,27 +61,27 @@ run (void *cls,
   (void) cfgfile;
   ok = 0;
   h = GNUNET_DATACACHE_create (cfg,
-			       "testcache");
+                               "testcache");
 
   if (h == NULL)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
              "Failed to initialize datacache.  Database likely not setup, skipping test.\n");
     return;
   }
   exp = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_HOURS);
-  memset (buf, 1, sizeof (buf));
-  memset (&k, 0, sizeof (struct GNUNET_HashCode));
+  memset (buf, 1, sizeof(buf));
+  memset (&k, 0, sizeof(struct GNUNET_HashCode));
   for (unsigned int i = 0; i < 10; i++)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
              ".");
     GNUNET_CRYPTO_hash (&k,
-                        sizeof (struct GNUNET_HashCode),
+                        sizeof(struct GNUNET_HashCode),
                         &n);
-    for (unsigned int j = i; j < sizeof (buf); j += 10)
+    for (unsigned int j = i; j < sizeof(buf); j += 10)
     {
       exp.abs_value_us++;
       buf[j] = i;
@@ -97,19 +99,19 @@ run (void *cls,
     }
     k = n;
   }
-  FPRINTF (stderr, "%s",  "\n");
-  memset (&k, 0, sizeof (struct GNUNET_HashCode));
+  fprintf (stderr, "%s", "\n");
+  memset (&k, 0, sizeof(struct GNUNET_HashCode));
   for (unsigned int i = 0; i < 10; i++)
   {
-    FPRINTF (stderr, "%s",  ".");
-    GNUNET_CRYPTO_hash (&k, sizeof (struct GNUNET_HashCode), &n);
+    fprintf (stderr, "%s", ".");
+    GNUNET_CRYPTO_hash (&k, sizeof(struct GNUNET_HashCode), &n);
     if (i < 2)
       ASSERT (0 == GNUNET_DATACACHE_get (h, &k, 1 + i, NULL, NULL));
     if (i == 9)
       ASSERT (0 < GNUNET_DATACACHE_get (h, &k, 1 + i, NULL, NULL));
     k = n;
   }
-  FPRINTF (stderr, "%s",  "\n");
+  fprintf (stderr, "%s", "\n");
   GNUNET_DATACACHE_destroy (h);
   return;
 FAILURE:
@@ -141,21 +143,22 @@ main (int argc,
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
-		   sizeof (cfg_name),
-		   "test_datacache_data_%s.conf",
+                   sizeof(cfg_name),
+                   "test_datacache_data_%s.conf",
                    plugin_name);
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1,
-		      xargv,
+  GNUNET_PROGRAM_run ((sizeof(xargv) / sizeof(char *)) - 1,
+                      xargv,
                       "test-datacache-quota",
-		      "nohelp",
-		      options,
-		      &run,
-		      NULL);
+                      "nohelp",
+                      options,
+                      &run,
+                      NULL);
   if (0 != ok)
-    FPRINTF (stderr,
-	     "Missed some testcases: %d\n",
-	     ok);
+    fprintf (stderr,
+             "Missed some testcases: %d\n",
+             ok);
   return ok;
 }
+
 
 /* end of test_datacache_quota.c */

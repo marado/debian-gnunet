@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/dns/gnunet-dns-redirector.c
@@ -68,31 +68,33 @@ modify_record (const struct GNUNET_DNSPARSER_Record *record)
   switch (record->type)
   {
   case GNUNET_DNSPARSER_TYPE_A:
-    if (record->data.raw.data_len != sizeof (struct in_addr))
+    if (record->data.raw.data_len != sizeof(struct in_addr))
       return;
     if (NULL != n4)
     {
       if (verbosity > 1)
-	fprintf (stderr,
-		 "Changing A record from `%s' to `%s'\n",
-		 inet_ntop (AF_INET, record->data.raw.data, buf, sizeof (buf)),
-		 n4);
+        fprintf (stderr,
+                 "Changing A record from `%s' to `%s'\n",
+                 inet_ntop (AF_INET, record->data.raw.data, buf, sizeof(buf)),
+                 n4);
       GNUNET_assert (1 == inet_pton (AF_INET, n4, record->data.raw.data));
     }
     break;
+
   case GNUNET_DNSPARSER_TYPE_AAAA:
-    if (record->data.raw.data_len != sizeof (struct in6_addr))
+    if (record->data.raw.data_len != sizeof(struct in6_addr))
       return;
     if (NULL != n6)
     {
       if (verbosity > 1)
-	fprintf (stderr,
-		 "Changing AAAA record from `%s' to `%s'\n",
-		 inet_ntop (AF_INET6, record->data.raw.data, buf, sizeof (buf)),
-		 n6);
+        fprintf (stderr,
+                 "Changing AAAA record from `%s' to `%s'\n",
+                 inet_ntop (AF_INET6, record->data.raw.data, buf, sizeof(buf)),
+                 n6);
       GNUNET_assert (1 == inet_pton (AF_INET6, n6, record->data.raw.data));
     }
     break;
+
   case GNUNET_DNSPARSER_TYPE_NS:
   case GNUNET_DNSPARSER_TYPE_CNAME:
   case GNUNET_DNSPARSER_TYPE_PTR:
@@ -100,6 +102,7 @@ modify_record (const struct GNUNET_DNSPARSER_Record *record)
   case GNUNET_DNSPARSER_TYPE_MX:
   case GNUNET_DNSPARSER_TYPE_TXT:
     break;
+
   default:
     break;
   }
@@ -131,9 +134,9 @@ modify_record (const struct GNUNET_DNSPARSER_Record *record)
  */
 static void
 modify_request (void *cls,
-		struct GNUNET_DNS_RequestHandle *rh,
-		size_t request_length,
-		const char *request)
+                struct GNUNET_DNS_RequestHandle *rh,
+                size_t request_length,
+                const char *request)
 {
   struct GNUNET_DNSPARSER_Packet *p;
   unsigned int i;
@@ -148,7 +151,7 @@ modify_request (void *cls,
     GNUNET_DNS_request_forward (rh);
     return;
   }
-  for (i=0;i<p->num_answers;i++)
+  for (i = 0; i < p->num_answers; i++)
     modify_record (&p->answers[i]);
   buf = NULL;
   ret = GNUNET_DNSPARSER_pack (p, 1024, &buf, &len);
@@ -157,16 +160,16 @@ modify_request (void *cls,
   {
     if (GNUNET_NO == ret)
       fprintf (stderr,
-	       "Modified DNS response did not fit, keeping old response\n");
+               "Modified DNS response did not fit, keeping old response\n");
     else
-      GNUNET_break (0); /* our modifications should have been sane! */
+      GNUNET_break (0);  /* our modifications should have been sane! */
     GNUNET_DNS_request_forward (rh);
   }
   else
   {
     if (verbosity > 0)
       fprintf (stdout,
-	       "Injecting modified DNS response\n");
+               "Injecting modified DNS response\n");
     GNUNET_DNS_request_answer (rh, len, buf);
   }
   GNUNET_free_non_null (buf);
@@ -201,28 +204,29 @@ run (void *cls, char *const *args, const char *cfgfile,
 {
   struct in_addr i4;
   struct in6_addr i6;
-  if ( (n4 != NULL) &&
-       (1 != inet_pton (AF_INET, n4, &i4)) )
+
+  if ((n4 != NULL) &&
+      (1 != inet_pton (AF_INET, n4, &i4)))
   {
     fprintf (stderr,
-	     "`%s' is nto a valid IPv4 address!\n",
-	     n4);
+             "`%s' is nto a valid IPv4 address!\n",
+             n4);
     return;
   }
-  if ( (n6 != NULL) &&
-       (1 != inet_pton (AF_INET6, n6, &i6)) )
+  if ((n6 != NULL) &&
+      (1 != inet_pton (AF_INET6, n6, &i6)))
   {
     fprintf (stderr,
-	     "`%s' is nto a valid IPv6 address!\n",
-	     n6);
+             "`%s' is nto a valid IPv6 address!\n",
+             n6);
     return;
   }
 
   handle =
     GNUNET_DNS_connect (cfg,
-			GNUNET_DNS_FLAG_POST_RESOLUTION,
-			&modify_request,
-			NULL);
+                        GNUNET_DNS_FLAG_POST_RESOLUTION,
+                        &modify_request,
+                        NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_disconnect, NULL);
 }
 
@@ -251,11 +255,12 @@ main (int argc, char *const *argv)
     return 2;
 
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv, "gnunet-dns-redirector",
-			     gettext_noop
-			     ("Change DNS replies to point elsewhere."), options,
-			     &run, NULL)) ? ret : 1;
-  GNUNET_free ((void*) argv);
+         GNUNET_PROGRAM_run (argc, argv, "gnunet-dns-redirector",
+                             gettext_noop
+                               ("Change DNS replies to point elsewhere."),
+                             options,
+                             &run, NULL)) ? ret : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }
 

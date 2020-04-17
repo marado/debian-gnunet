@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/plugin_transport_udp.h
@@ -41,7 +41,7 @@
 #include "gnunet_transport_plugin.h"
 #include "transport.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "transport-udp", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "transport-udp", __VA_ARGS__)
 
 #define PLUGIN_NAME "udp"
 
@@ -136,7 +136,6 @@ struct PrettyPrinterContext;
  */
 struct Plugin
 {
-
   /**
    * Our environment.
    */
@@ -302,7 +301,6 @@ struct Plugin
    * Port we advertise on.
    */
   uint16_t aport;
-
 };
 
 

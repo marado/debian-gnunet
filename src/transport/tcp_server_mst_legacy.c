@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/server_mst.c
@@ -40,7 +40,6 @@
  */
 struct GNUNET_SERVER_MessageStreamTokenizer
 {
-
   /**
    * Function to call on completed messages.
    */
@@ -70,9 +69,7 @@ struct GNUNET_SERVER_MessageStreamTokenizer
    * Beginning of the buffer.  Typed like this to force alignment.
    */
   struct GNUNET_MessageHeader *hdr;
-
 };
-
 
 
 /**
@@ -137,7 +134,7 @@ GNUNET_SERVER_mst_receive (struct GNUNET_SERVER_MessageStreamTokenizer *mst,
   {
 do_align:
     GNUNET_assert (mst->pos >= mst->off);
-    if ((mst->curr_buf - mst->off < sizeof (struct GNUNET_MessageHeader)) ||
+    if ((mst->curr_buf - mst->off < sizeof(struct GNUNET_MessageHeader)) ||
         (0 != (mst->off % ALIGN_FACTOR)))
     {
       /* need to align or need more space */
@@ -145,17 +142,17 @@ do_align:
       memmove (ibuf, &ibuf[mst->off], mst->pos);
       mst->off = 0;
     }
-    if (mst->pos - mst->off < sizeof (struct GNUNET_MessageHeader))
+    if (mst->pos - mst->off < sizeof(struct GNUNET_MessageHeader))
     {
       delta =
-          GNUNET_MIN (sizeof (struct GNUNET_MessageHeader) -
-                      (mst->pos - mst->off), size);
+        GNUNET_MIN (sizeof(struct GNUNET_MessageHeader)
+                    - (mst->pos - mst->off), size);
       GNUNET_memcpy (&ibuf[mst->pos], buf, delta);
       mst->pos += delta;
       buf += delta;
       size -= delta;
     }
-    if (mst->pos - mst->off < sizeof (struct GNUNET_MessageHeader))
+    if (mst->pos - mst->off < sizeof(struct GNUNET_MessageHeader))
     {
       if (purge)
       {
@@ -166,13 +163,13 @@ do_align:
     }
     hdr = (const struct GNUNET_MessageHeader *) &ibuf[mst->off];
     want = ntohs (hdr->size);
-    if (want < sizeof (struct GNUNET_MessageHeader))
+    if (want < sizeof(struct GNUNET_MessageHeader))
     {
       GNUNET_break_op (0);
       return GNUNET_SYSERR;
     }
-    if ( (mst->curr_buf - mst->off < want) &&
-	 (mst->off > 0) )
+    if ((mst->curr_buf - mst->off < want) &&
+        (mst->off > 0))
     {
       /* can get more space by moving */
       mst->pos -= mst->off;
@@ -231,7 +228,7 @@ do_align:
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Server-mst has %u bytes left in inbound buffer\n",
          (unsigned int) size);
-    if (size < sizeof (struct GNUNET_MessageHeader))
+    if (size < sizeof(struct GNUNET_MessageHeader))
       break;
     offset = (unsigned long) buf;
     need_align = (0 != (offset % ALIGN_FACTOR)) ? GNUNET_YES : GNUNET_NO;
@@ -240,9 +237,9 @@ do_align:
       /* can try to do zero-copy and process directly from original buffer */
       hdr = (const struct GNUNET_MessageHeader *) buf;
       want = ntohs (hdr->size);
-      if (want < sizeof (struct GNUNET_MessageHeader))
+      if (want < sizeof(struct GNUNET_MessageHeader))
       {
-	GNUNET_break_op (0);
+        GNUNET_break_op (0);
         mst->off = 0;
         return GNUNET_SYSERR;
       }
@@ -270,7 +267,7 @@ do_align:
     }
   }
 copy:
-  if ((size > 0) && (!purge))
+  if ((size > 0) && (! purge))
   {
     if (size + mst->pos > mst->curr_buf)
     {
@@ -305,7 +302,6 @@ GNUNET_SERVER_mst_destroy (struct GNUNET_SERVER_MessageStreamTokenizer *mst)
   GNUNET_free (mst->hdr);
   GNUNET_free (mst);
 }
-
 
 
 /* end of server_mst.c */

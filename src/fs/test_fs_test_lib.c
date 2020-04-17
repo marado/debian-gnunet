@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_fs_test_lib.c
@@ -56,7 +56,8 @@ do_stop (void *cls)
 
   if (0 ==
       GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
-                                                                    TIMEOUT)).rel_value_us)
+                                                                    TIMEOUT)).
+      rel_value_us)
   {
     GNUNET_break (0);
     ret = 1;
@@ -78,7 +79,7 @@ do_stop (void *cls)
 static void
 do_download (void *cls,
              const struct GNUNET_FS_Uri *uri,
-	     const char *fn)
+             const char *fn)
 {
   if (NULL == uri)
   {
@@ -102,8 +103,8 @@ do_download (void *cls,
 
 static void
 do_publish (void *cls,
-	    struct GNUNET_TESTBED_Operation *op,
-	    const char *emsg)
+            struct GNUNET_TESTBED_Operation *op,
+            const char *emsg)
 {
   GNUNET_TESTBED_operation_done (op);
   if (NULL != emsg)
@@ -118,7 +119,6 @@ do_publish (void *cls,
               (unsigned long long) FILESIZE);
   GNUNET_FS_TEST_publish (the_peers[0], TIMEOUT, 1, GNUNET_NO, FILESIZE, SEED,
                           VERBOSE, &do_download, NULL);
-
 }
 
 
@@ -145,13 +145,13 @@ run (void *cls,
   unsigned int i;
 
   GNUNET_assert (NUM_DAEMONS == num_peers);
-  for (i=0;i<num_peers;i++)
+  for (i = 0; i < num_peers; i++)
     the_peers[i] = peers[i];
   GNUNET_TESTBED_overlay_connect (NULL,
-				  &do_publish,
-				  NULL,
-				  peers[0],
-				  peers[1]);
+                                  &do_publish,
+                                  NULL,
+                                  peers[0],
+                                  peers[1]);
 }
 
 
@@ -174,5 +174,6 @@ main (int argc, char *argv[])
   GNUNET_DISK_directory_remove ("/tmp/gnunet-test-fs-lib/");
   return ret;
 }
+
 
 /* end of test_fs_test_lib.c */

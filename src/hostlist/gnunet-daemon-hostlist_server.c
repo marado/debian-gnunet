@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file hostlist/gnunet-daemon-hostlist_server.c
@@ -198,7 +198,7 @@ check_has_addr (void *cls,
                               gettext_noop ("expired addresses encountered"),
                               1,
                               GNUNET_YES);
-    return GNUNET_YES; /* ignore this address */
+    return GNUNET_YES;   /* ignore this address */
   }
   *arg = GNUNET_YES;
   return GNUNET_SYSERR;
@@ -398,7 +398,7 @@ access_handler_callback (void *cls,
                                 "hostlist requests refused (upload data)"),
                               1,
                               GNUNET_YES);
-    return MHD_NO; /* do not support upload data */
+    return MHD_NO;   /* do not support upload data */
   }
   if (NULL == response)
   {
@@ -411,7 +411,7 @@ access_handler_callback (void *cls,
                                 "hostlist requests refused (not ready)"),
                               1,
                               GNUNET_YES);
-    return MHD_NO; /* internal error, no response yet */
+    return MHD_NO;   /* internal error, no response yet */
   }
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               _ ("Received request for our hostlist\n"));
@@ -446,8 +446,8 @@ adv_transmit (struct GNUNET_MQ_Handle *mq)
                              GNUNET_MESSAGE_TYPE_HOSTLIST_ADVERTISEMENT);
   GNUNET_memcpy (&header[1], hostlist_uri, uri_size);
   GNUNET_MQ_env_set_options (env,
-                             GNUNET_MQ_PREF_CORK_ALLOWED |
-                               GNUNET_MQ_PREF_UNRELIABLE);
+                             GNUNET_MQ_PREF_CORK_ALLOWED
+                             | GNUNET_MQ_PREF_UNRELIABLE);
   GNUNET_MQ_send (mq, env);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sent advertisement message: Copied %u bytes into buffer!\n",
@@ -483,12 +483,12 @@ connect_handler (void *cls,
   if (NULL == hostlist_uri)
     return NULL;
   size = strlen (hostlist_uri) + 1;
-  if (size + sizeof (struct GNUNET_MessageHeader) >= GNUNET_MAX_MESSAGE_SIZE)
+  if (size + sizeof(struct GNUNET_MessageHeader) >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
     return NULL;
   }
-  size += sizeof (struct GNUNET_MessageHeader);
+  size += sizeof(struct GNUNET_MessageHeader);
   if (NULL == core)
   {
     GNUNET_break (0);
@@ -749,12 +749,12 @@ GNUNET_HOSTLIST_server_start (const struct GNUNET_CONFIGURATION_Handle *c,
   {
     if (1 == inet_pton (AF_INET, ipv4, &i4))
     {
-      memset (&v4, 0, sizeof (v4));
+      memset (&v4, 0, sizeof(v4));
       v4.sin_family = AF_INET;
       v4.sin_addr = i4;
       v4.sin_port = htons (port);
 #if HAVE_SOCKADDR_IN_SIN_LEN
-      v4.sin_len = sizeof (v4);
+      v4.sin_len = sizeof(v4);
 #endif
       sa4 = (const struct sockaddr *) &v4;
     }
@@ -770,12 +770,12 @@ GNUNET_HOSTLIST_server_start (const struct GNUNET_CONFIGURATION_Handle *c,
   {
     if (1 == inet_pton (AF_INET6, ipv6, &i6))
     {
-      memset (&v6, 0, sizeof (v6));
+      memset (&v6, 0, sizeof(v6));
       v6.sin6_family = AF_INET6;
       v6.sin6_addr = i6;
       v6.sin6_port = htons (port);
 #if HAVE_SOCKADDR_IN_SIN_LEN
-      v6.sin6_len = sizeof (v6);
+      v6.sin6_len = sizeof(v6);
 #endif
       sa6 = (const struct sockaddr *) &v6;
     }
@@ -898,5 +898,6 @@ GNUNET_HOSTLIST_server_stop ()
   stats = NULL;
   core = NULL;
 }
+
 
 /* end of gnunet-daemon-hostlist_server.c */

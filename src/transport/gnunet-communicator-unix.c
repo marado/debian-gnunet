@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/gnunet-communicator-unix.c
@@ -85,7 +85,6 @@ GNUNET_NETWORK_STRUCT_END
  */
 struct Queue
 {
-
   /**
    * Queues with pending messages (!) are kept in a DLL.
    */
@@ -303,15 +302,15 @@ unix_address_to_sockaddr (const char *unixpath, socklen_t *sock_len)
   struct sockaddr_un *un;
   size_t slen;
 
-  GNUNET_assert (0 < strlen (unixpath)); /* sanity check */
+  GNUNET_assert (0 < strlen (unixpath));   /* sanity check */
   un = GNUNET_new (struct sockaddr_un);
   un->sun_family = AF_UNIX;
   slen = strlen (unixpath);
-  if (slen >= sizeof (un->sun_path))
-    slen = sizeof (un->sun_path) - 1;
+  if (slen >= sizeof(un->sun_path))
+    slen = sizeof(un->sun_path) - 1;
   GNUNET_memcpy (un->sun_path, unixpath, slen);
   un->sun_path[slen] = '\0';
-  slen = sizeof (struct sockaddr_un);
+  slen = sizeof(struct sockaddr_un);
 #if HAVE_SOCKADDR_UN_SUN_LEN
   un->sun_len = (u_char) slen;
 #endif
@@ -430,7 +429,7 @@ resend:
               GNUNET_i2s (&queue->target),
               (int) sent,
               (unsigned int) msg_size,
-              (sent < 0) ? STRERROR (errno) : "ok");
+              (sent < 0) ? strerror (errno) : "ok");
   if (-1 != sent)
   {
     GNUNET_STATISTICS_update (stats,
@@ -438,7 +437,7 @@ resend:
                               (long long) sent,
                               GNUNET_NO);
     reschedule_queue_timeout (queue);
-    return; /* all good */
+    return;   /* all good */
   }
   GNUNET_STATISTICS_update (stats,
                             "# network transmission failures",
@@ -451,47 +450,49 @@ resend:
     /* We should retry later... */
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_DEBUG, "send");
     return;
-  case EMSGSIZE: {
-    socklen_t size = 0;
-    socklen_t len = sizeof (size);
 
-    GNUNET_NETWORK_socket_getsockopt (unix_sock,
-                                      SOL_SOCKET,
-                                      SO_SNDBUF,
-                                      &size,
-                                      &len);
-    if (size > ntohs (msg->size))
-    {
-      /* Buffer is bigger than message:  error, no retry
+  case EMSGSIZE: {
+      socklen_t size = 0;
+      socklen_t len = sizeof(size);
+
+      GNUNET_NETWORK_socket_getsockopt (unix_sock,
+                                        SOL_SOCKET,
+                                        SO_SNDBUF,
+                                        &size,
+                                        &len);
+      if (size > ntohs (msg->size))
+      {
+        /* Buffer is bigger than message:  error, no retry
          * This should never happen!*/
-      GNUNET_break (0);
+        GNUNET_break (0);
+        return;
+      }
+      GNUNET_log (
+        GNUNET_ERROR_TYPE_DEBUG,
+        "Trying to increase socket buffer size from %u to %u for message size %u\n",
+        (unsigned int) size,
+        (unsigned int) ((msg_size / 1000) + 2) * 1000,
+        (unsigned int) msg_size);
+      size = ((msg_size / 1000) + 2) * 1000;
+      if (GNUNET_OK == GNUNET_NETWORK_socket_setsockopt (unix_sock,
+                                                         SOL_SOCKET,
+                                                         SO_SNDBUF,
+                                                         &size,
+                                                         sizeof(size)))
+        goto resend; /* Increased buffer size, retry sending */
+      /* Ok, then just try very modest increase */
+      size = msg_size;
+      if (GNUNET_OK == GNUNET_NETWORK_socket_setsockopt (unix_sock,
+                                                         SOL_SOCKET,
+                                                         SO_SNDBUF,
+                                                         &size,
+                                                         sizeof(size)))
+        goto resend; /* Increased buffer size, retry sending */
+      /* Could not increase buffer size: error, no retry */
+      GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "setsockopt");
       return;
     }
-    GNUNET_log (
-      GNUNET_ERROR_TYPE_DEBUG,
-      "Trying to increase socket buffer size from %u to %u for message size %u\n",
-      (unsigned int) size,
-      (unsigned int) ((msg_size / 1000) + 2) * 1000,
-      (unsigned int) msg_size);
-    size = ((msg_size / 1000) + 2) * 1000;
-    if (GNUNET_OK == GNUNET_NETWORK_socket_setsockopt (unix_sock,
-                                                       SOL_SOCKET,
-                                                       SO_SNDBUF,
-                                                       &size,
-                                                       sizeof (size)))
-      goto resend; /* Increased buffer size, retry sending */
-    /* Ok, then just try very modest increase */
-    size = msg_size;
-    if (GNUNET_OK == GNUNET_NETWORK_socket_setsockopt (unix_sock,
-                                                       SOL_SOCKET,
-                                                       SO_SNDBUF,
-                                                       &size,
-                                                       sizeof (size)))
-      goto resend; /* Increased buffer size, retry sending */
-    /* Could not increase buffer size: error, no retry */
-    GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "setsockopt");
-    return;
-  }
+
   default:
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "send");
     return;
@@ -723,11 +724,11 @@ select_read_cb (void *cls)
                                              unix_sock,
                                              &select_read_cb,
                                              NULL);
-  addrlen = sizeof (un);
-  memset (&un, 0, sizeof (un));
+  addrlen = sizeof(un);
+  memset (&un, 0, sizeof(un));
   ret = GNUNET_NETWORK_socket_recvfrom (unix_sock,
                                         buf,
-                                        sizeof (buf),
+                                        sizeof(buf),
                                         (struct sockaddr *) &un,
                                         &addrlen);
   if ((-1 == ret) && ((EAGAIN == errno) || (ENOBUFS == errno)))
@@ -744,7 +745,7 @@ select_read_cb (void *cls)
   GNUNET_assert (AF_UNIX == (un.sun_family));
   msg = (struct UNIXMessage *) buf;
   msize = ntohs (msg->header.size);
-  if ((msize < sizeof (struct UNIXMessage)) || (msize > ret))
+  if ((msize < sizeof(struct UNIXMessage)) || (msize > ret))
   {
     GNUNET_break_op (0);
     return;
@@ -766,10 +767,10 @@ select_read_cb (void *cls)
 
   {
     uint16_t offset = 0;
-    uint16_t tsize = msize - sizeof (struct UNIXMessage);
+    uint16_t tsize = msize - sizeof(struct UNIXMessage);
     const char *msgbuf = (const char *) &msg[1];
 
-    while (offset + sizeof (struct GNUNET_MessageHeader) <= tsize)
+    while (offset + sizeof(struct GNUNET_MessageHeader) <= tsize)
     {
       const struct GNUNET_MessageHeader *currhdr;
       struct GNUNET_MessageHeader al_hdr;
@@ -777,9 +778,9 @@ select_read_cb (void *cls)
 
       currhdr = (const struct GNUNET_MessageHeader *) &msgbuf[offset];
       /* ensure aligned access */
-      memcpy (&al_hdr, currhdr, sizeof (al_hdr));
+      memcpy (&al_hdr, currhdr, sizeof(al_hdr));
       csize = ntohs (al_hdr.size);
-      if ((csize < sizeof (struct GNUNET_MessageHeader)) ||
+      if ((csize < sizeof(struct GNUNET_MessageHeader)) ||
           (csize > tsize - offset))
       {
         GNUNET_break_op (0);
@@ -792,7 +793,7 @@ select_read_cb (void *cls)
                                                    &receive_complete_cb,
                                                    NULL);
       if (GNUNET_SYSERR == ret)
-        return; /* transport not up */
+        return;   /* transport not up */
       if (GNUNET_NO == ret)
         break;
       delivering_messages++;
@@ -973,6 +974,7 @@ run (void *cls,
   struct sockaddr_un *un;
   socklen_t un_len;
   char *my_addr;
+
   (void) cls;
 
   if (GNUNET_OK !=
@@ -1081,7 +1083,8 @@ int
 main (int argc, char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
   int ret;
 
   if (GNUNET_OK != GNUNET_STRINGS_get_utf8_args (argc, argv, &argc, &argv))
@@ -1095,25 +1098,28 @@ main (int argc, char *const *argv)
                              options,
                              &run,
                              NULL))
-          ? 0
-          : 1;
+        ? 0
+        : 1;
   GNUNET_free ((void *) argv);
   return ret;
 }
 
 
-#if defined(LINUX) && defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 #include <malloc.h>
 
 /**
  * MINIMIZE heap size (way below 128k) since this process doesn't need much.
  */
-void __attribute__ ((constructor)) GNUNET_ARM_memory_init ()
+void __attribute__ ((constructor))
+GNUNET_ARM_memory_init ()
 {
   mallopt (M_TRIM_THRESHOLD, 4 * 1024);
   mallopt (M_TOP_PAD, 1 * 1024);
   malloc_trim (0);
 }
+
+
 #endif
 
 /* end of gnunet-communicator-unix.c */

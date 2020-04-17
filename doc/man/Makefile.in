@@ -90,9 +90,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@TEXI2MDOC_GENERATION_TRUE@am__append_1 = gnunet-documentation.7 gnunet-c-tutorial.7
-@TEXI2MDOC_GENERATION_TRUE@am__append_2 = gnunet-c-tutorial.7 gnunet-documentation.7
-@TEXI2MDOC_GENERATION_TRUE@am__append_3 = gnunet-documentation.7 gnunet-c-tutorial.7
+@TEXI2MDOC_GENERATION_TRUE@am__append_1 = gnunet-documentation.7 gnunet-tutorial.7
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@am__append_2 =  \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	produce_html.sh \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	*.html
+@TEXI2MDOC_GENERATION_TRUE@am__append_3 = gnunet-tutorial.7 gnunet-documentation.7
 subdir = doc/man
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -178,20 +180,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -199,6 +198,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -224,6 +224,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -261,11 +262,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -309,6 +314,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -328,6 +336,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -338,7 +347,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -399,10 +407,10 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-do_subst = $(SED) -e 's,[@]SYSCONFDIR[@],$(sysconfdir),g'
-CLEANFILES = gnunet.conf.5 *.html $(am__append_1)
+CLEANFILES = gnunet.conf.5 $(am__append_1) $(am__append_2)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@htmldocdir = $(datadir)/doc/gnunet/manhtml/
 man_MANS = gnunet.conf.5 gnunet-arm.1 gnunet-ats.1 gnunet-auto-share.1 \
-	gnunet-bcd.1 gnunet-config.1 gnunet-core.1 \
+	gnunet-bcd.1 gnunet-bugreport.1 gnunet-config.1 gnunet-core.1 \
 	gnunet-conversation.1 gnunet-conversation-test.1 \
 	gnunet-directory.1 gnunet-dns2gns.1 gnunet-datastore.1 \
 	gnunet-download.1 gnunet-ecc.1 gnunet-fs.1 gnunet-gns.1 \
@@ -417,9 +425,12 @@ man_MANS = gnunet.conf.5 gnunet-arm.1 gnunet-ats.1 gnunet-auto-share.1 \
 	gnunet-testing-run-service.1 gnunet-timeout.1 \
 	gnunet-transport.1 gnunet-transport-certificate-creation.1 \
 	gnunet-unindex.1 gnunet-uri.1 gnunet-vpn.1 gnunet-zoneimport.1 \
-	$(am__append_2)
-EXTRA_DIST = ${man_MANS} gnunet.conf.5.in texi2mdoc-generation.sh \
-	README $(am__append_3)
+	$(am__append_3)
+EXTRA_DIST = ${man_MANS} \
+ gnunet.conf.5.in \
+ produce_html.sh.in \
+ README
+
 all: all-am
 
 .SUFFIXES:
@@ -677,6 +688,8 @@ dvi: dvi-am
 
 dvi-am:
 
+html: html-am
+
 html-am:
 
 info: info-am
@@ -751,16 +764,33 @@ uninstall-man: uninstall-man1 uninstall-man5 uninstall-man7
 
 
 gnunet.conf.5: gnunet.conf.5.in Makefile
-	$(do_subst) < $(srcdir)/gnunet.conf.5.in > gnunet.conf.5
-
-@TEXI2MDOC_GENERATION_TRUE@gnunet-c-tutorial.7: Makefile gnunet-tutorial.7
-@TEXI2MDOC_GENERATION_TRUE@	@echo generated texi2mdoc output || true
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/gnunet.conf.5.in > $(srcdir)/gnunet.conf.5
 
 @TEXI2MDOC_GENERATION_TRUE@gnunet-tutorial.7: Makefile
-@TEXI2MDOC_GENERATION_TRUE@	$(SH) $(srcdir)/texi2mdoc-generation.sh || true
+@TEXI2MDOC_GENERATION_TRUE@	@texi2mdoc -I../tutorial:../tutorial/chapters ../tutorial/tutorial.texi > gnunet-tutorial.7
 
-html:
-	$(SH) $(srcdir)/produce_html.sh
+@TEXI2MDOC_GENERATION_TRUE@gnunet-documentation.7: Makefile
+@TEXI2MDOC_GENERATION_TRUE@	@texi2mdoc -I../handbook:../handbook/chapters ../handbook/gnunet.texi > gnunet-documentation.7
+
+# After I went through the alternatives with the focus
+# on staying as portable as possible to other make
+# implementations, I have to face the fact after hours
+# that this is the most portable way to achieve what
+# I want and that the alternatives are depressing and
+# nonfunctional.
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@produce_html.sh: produce_html.sh.in Makefile
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/produce_html.sh.in > produce_html.sh
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	@chmod +x produce_html.sh
+
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@.PHONY: man-html
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@man-html: produce_html.sh
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	$(SH) $(srcdir)/produce_html.sh
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@.PHONY: man-html-install
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@man-html-install:
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	@mkdir -p $(htmldocdir)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	@mv $(srcdir)/*.html $(htmldocdir)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@man-html-uninstall:
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_MANDOC_TRUE@	@rm $(htmldocdir)/*.html
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

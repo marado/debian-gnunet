@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_list_indexed.c
@@ -36,7 +36,6 @@
  */
 struct GNUNET_FS_GetIndexedContext
 {
-
   /**
    * Connection to the FS service.
    */
@@ -95,7 +94,7 @@ static int
 check_index_info (void *cls,
                   const struct IndexInfoMessage *iim)
 {
-  uint16_t msize = ntohs (iim->header.size) - sizeof (*iim);
+  uint16_t msize = ntohs (iim->header.size) - sizeof(*iim);
   const char *filename;
 
   filename = (const char *) &iim[1];
@@ -149,7 +148,7 @@ mq_error_handler (void *cls,
   struct GNUNET_FS_GetIndexedContext *gic = cls;
 
   GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-              _("Failed to receive response from `%s' service.\n"),
+              _ ("Failed to receive response from `%s' service.\n"),
               "fs");
   (void) gic->iterator (gic->iterator_cls, NULL, NULL);
   GNUNET_FS_get_indexed_files_cancel (gic);
@@ -193,7 +192,7 @@ GNUNET_FS_get_indexed_files (struct GNUNET_FS_Handle *h,
   if (NULL == gic->mq)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Failed to not connect to `%s' service.\n"),
+                _ ("Failed to not connect to `%s' service.\n"),
                 "fs");
     GNUNET_free (gic);
     return NULL;

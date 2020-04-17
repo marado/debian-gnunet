@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file peerstore/test_peerstore_api_watch.c
  * @brief testcase for peerstore watch functionality
@@ -64,7 +64,7 @@ run (void *cls,
   GNUNET_assert (NULL != h);
   memset (&p,
           4,
-          sizeof (p));
+          sizeof(p));
   GNUNET_PEERSTORE_watch (h,
                           ss,
                           &p,
@@ -97,5 +97,6 @@ main (int argc,
     return 1;
   return ok;
 }
+
 
 /* end of test_peerstore_api_watch.c */

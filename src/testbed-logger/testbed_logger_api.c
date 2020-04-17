@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -39,7 +39,8 @@
 /**
  * The size of the buffer we fill before sending out the message
  */
-#define BUFFER_SIZE (GNUNET_MAX_MESSAGE_SIZE - sizeof (struct GNUNET_MessageHeader))
+#define BUFFER_SIZE (GNUNET_MAX_MESSAGE_SIZE - sizeof(struct \
+                                                      GNUNET_MessageHeader))
 
 /**
  * Connection handle for the logger service
@@ -154,8 +155,8 @@ notify_sent (void *cls)
   struct GNUNET_TESTBED_LOGGER_Handle *h = cls;
 
   h->mq_len--;
-  if ( (0 == h->mq_len) &&
-       (NULL != h->cb) )
+  if ((0 == h->mq_len) &&
+      (NULL != h->cb))
   {
     if (0 == h->buse)
       trigger_flush_notification (h);
@@ -180,8 +181,8 @@ dispatch_buffer (struct GNUNET_TESTBED_LOGGER_Handle *h)
                              h->buse,
                              GNUNET_MESSAGE_TYPE_TESTBED_LOGGER_MSG);
   GNUNET_memcpy (&msg[1],
-          h->buf,
-          h->buse);
+                 h->buf,
+                 h->buse);
   h->bwrote += h->buse;
   h->buse = 0;
   h->mq_len++;
@@ -285,8 +286,8 @@ GNUNET_TESTBED_LOGGER_write (struct GNUNET_TESTBED_LOGGER_Handle *h,
     size_t fit_size = GNUNET_MIN (size,
                                   BUFFER_SIZE - h->buse);
     GNUNET_memcpy (&h->buf[h->buse],
-            data,
-            fit_size);
+                   data,
+                   fit_size);
     h->buse += fit_size;
     data += fit_size;
     size -= fit_size;
@@ -311,8 +312,8 @@ GNUNET_TESTBED_LOGGER_flush (struct GNUNET_TESTBED_LOGGER_Handle *h,
   GNUNET_assert (NULL == h->cb);
   h->cb = cb;
   h->cb_cls = cb_cls;
-  if ( (NULL == h->mq) ||
-       (0 == h->buse) )
+  if ((NULL == h->mq) ||
+      (0 == h->buse))
   {
     trigger_flush_notification (h);
     return;
@@ -339,5 +340,6 @@ GNUNET_TESTBED_LOGGER_flush_cancel (struct GNUNET_TESTBED_LOGGER_Handle *h)
   h->cb = NULL;
   h->cb_cls = NULL;
 }
+
 
 /* End of testbed_logger_api.c */

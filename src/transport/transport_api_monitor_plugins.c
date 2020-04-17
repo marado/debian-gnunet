@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api_monitor_plugins.c
@@ -37,7 +37,6 @@
  */
 struct GNUNET_TRANSPORT_PluginMonitor
 {
-
   /**
    * Connection to the service.
    */
@@ -73,7 +72,6 @@ struct GNUNET_TRANSPORT_PluginMonitor
    * Task ID for reconnect.
    */
   struct GNUNET_SCHEDULER_Task *reconnect_task;
-
 };
 
 
@@ -93,7 +91,6 @@ struct GNUNET_TRANSPORT_PluginSession
    */
   void *client_ctx;
 };
-
 
 
 /**
@@ -173,7 +170,6 @@ wrap_id (uint64_t id)
  */
 struct SearchContext
 {
-
   /**
    * Result.
    */
@@ -183,7 +179,6 @@ struct SearchContext
    * ID to locate.
    */
   uint64_t session_id;
-
 };
 
 
@@ -230,11 +225,12 @@ check_event (void *cls,
   pname = (const char *) &tpmm[1];
   pname_len = ntohs (tpmm->plugin_name_len);
   paddr_len = ntohs (tpmm->plugin_address_len);
-  if ( (pname_len +
-        paddr_len +
-        sizeof (struct TransportPluginMonitorMessage) != ntohs (tpmm->header.size)) ||
-       ( (0 != pname_len) &&
-         ('\0' != pname[pname_len - 1]) ) )
+  if ((pname_len
+       + paddr_len
+       + sizeof(struct TransportPluginMonitorMessage) != ntohs (
+         tpmm->header.size)) ||
+      ((0 != pname_len) &&
+       ('\0' != pname[pname_len - 1])))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -278,14 +274,14 @@ handle_event (void *cls,
                                                 wrap_id (tpmm->session_id),
                                                 ps,
                                                 GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE);
-
   }
   else
   {
     rv.session_id = tpmm->session_id;
     rv.ps = NULL;
     (void) GNUNET_CONTAINER_multihashmap32_get_multiple (pm->sessions,
-                                                         wrap_id (tpmm->session_id),
+                                                         wrap_id (
+                                                           tpmm->session_id),
                                                          &locate_by_id,
                                                          &rv);
     ps = rv.ps;
@@ -318,7 +314,8 @@ handle_event (void *cls,
     GNUNET_break (NULL == ps->client_ctx);
     GNUNET_assert (GNUNET_YES ==
                    GNUNET_CONTAINER_multihashmap32_remove (pm->sessions,
-                                                           wrap_id (tpmm->session_id),
+                                                           wrap_id (
+                                                             tpmm->session_id),
                                                            ps));
     GNUNET_free (ps);
   }
@@ -442,7 +439,8 @@ GNUNET_TRANSPORT_monitor_plugins (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * @param pm handle of the request that is to be cancelled
  */
 void
-GNUNET_TRANSPORT_monitor_plugins_cancel (struct GNUNET_TRANSPORT_PluginMonitor *pm)
+GNUNET_TRANSPORT_monitor_plugins_cancel (struct
+                                         GNUNET_TRANSPORT_PluginMonitor *pm)
 {
   if (NULL != pm->mq)
   {

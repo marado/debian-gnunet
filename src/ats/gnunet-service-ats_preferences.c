@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/gnunet-service-ats_preferences.c
  * @brief manage preferences expressed by clients
@@ -32,12 +32,13 @@
 #include "gnunet-service-ats_reservations.h"
 #include "ats.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "ats-preferences",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "ats-preferences", __VA_ARGS__)
 
 /**
  * How frequently do we age preference values?
  */
-#define PREF_AGING_INTERVAL GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 10)
+#define PREF_AGING_INTERVAL GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 10)
 
 /**
  * By which factor do we age preferences expressed during
@@ -107,7 +108,6 @@ struct PreferencePeer
    * client scored other peers.
    */
   double f_rel[GNUNET_ATS_PREFERENCE_END];
-
 };
 
 
@@ -118,7 +118,6 @@ struct PreferencePeer
  */
 struct PreferenceClient
 {
-
   /**
    * Next in client list
    */
@@ -145,7 +144,6 @@ struct PreferenceClient
    * peers as expressed by this client.
    */
   double f_abs_sum[GNUNET_ATS_PREFERENCE_END];
-
 };
 
 
@@ -222,7 +220,7 @@ sum_relative_preferences (void *cls,
  */
 static void
 update_relative_values_for_peer (const struct GNUNET_PeerIdentity *id,
-				 enum GNUNET_ATS_PreferenceKind kind)
+                                 enum GNUNET_ATS_PreferenceKind kind)
 {
   struct PreferenceClient *c_cur;
   struct SumContext sum_ctx;
@@ -329,7 +327,6 @@ struct AgeContext
    * Client we are currently aging values for.
    */
   struct PreferenceClient *cur_client;
-
 };
 
 
@@ -396,7 +393,8 @@ preference_aging (void *cls)
   aging_task = NULL;
   GAS_plugin_solver_lock ();
   ac.values_to_update = 0;
-  for (ac.cur_client = pc_head; NULL != ac.cur_client; ac.cur_client = ac.cur_client->next)
+  for (ac.cur_client = pc_head; NULL != ac.cur_client; ac.cur_client =
+         ac.cur_client->next)
     GNUNET_CONTAINER_multipeermap_iterate (ac.cur_client->peer2pref,
                                            &age_values,
                                            &ac);
@@ -433,7 +431,6 @@ struct UpdateContext
    * Which kind are we updating?
    */
   enum GNUNET_ATS_PreferenceKind kind;
-
 };
 
 
@@ -565,7 +562,7 @@ update_preference (struct GNUNET_SERVICE_Client *client,
 
   if (kind >= GNUNET_ATS_PREFERENCE_END)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return;
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -633,8 +630,8 @@ update_preference (struct GNUNET_SERVICE_Client *client,
   p_cur->f_abs[kind] += score_abs;
   recalculate_relative_preferences (c_cur, kind);
   GNUNET_CONTAINER_multipeermap_iterate (preference_peers,
-					 &update_iterator,
-					 &kind);
+                                         &update_iterator,
+                                         &kind);
 
   if (NULL == aging_task)
     aging_task = GNUNET_SCHEDULER_add_delayed (PREF_AGING_INTERVAL,
@@ -651,7 +648,7 @@ update_preference (struct GNUNET_SERVICE_Client *client,
  */
 void
 GAS_handle_preference_change (struct GNUNET_SERVICE_Client *client,
-			      const struct ChangePreferenceMessage *msg)
+                              const struct ChangePreferenceMessage *msg)
 {
   const struct PreferenceInformation *pi;
   uint32_t nump;
@@ -669,7 +666,8 @@ GAS_handle_preference_change (struct GNUNET_SERVICE_Client *client,
   for (uint32_t i = 0; i < nump; i++)
     update_preference (client,
                        &msg->peer,
-                       (enum GNUNET_ATS_PreferenceKind) ntohl (pi[i].preference_kind),
+                       (enum GNUNET_ATS_PreferenceKind) ntohl (
+                         pi[i].preference_kind),
                        pi[i].preference_value);
   GAS_plugin_solver_unlock ();
 }
@@ -718,10 +716,9 @@ GAS_preference_done ()
     GNUNET_free (pc);
   }
   GNUNET_CONTAINER_multipeermap_iterate (preference_peers,
-					 &free_peer,
+                                         &free_peer,
                                          NULL);
   GNUNET_CONTAINER_multipeermap_destroy (preference_peers);
-
 }
 
 

@@ -1,22 +1,22 @@
- /*
-  * This file is part of GNUnet
-  * Copyright (C) 2009-2015 GNUnet e.V.
-  *
-  * GNUnet is free software: you can redistribute it and/or modify it
-  * under the terms of the GNU Affero General Public License as published
-  * by the Free Software Foundation, either version 3 of the License,
-  * or (at your option) any later version.
-  *
-  * GNUnet is distributed in the hope that it will be useful, but
-  * WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  * Affero General Public License for more details.
-  *
-  * You should have received a copy of the GNU Affero General Public License
-  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+/*
+ * This file is part of GNUnet
+ * Copyright (C) 2009-2015 GNUnet e.V.
+ *
+ * GNUnet is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * GNUnet is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-     SPDX-License-Identifier: AGPL3.0-or-later
-  */
+    SPDX-License-Identifier: AGPL3.0-or-later
+ */
 
 /**
  * @file namecache/plugin_namecache_flat.c
@@ -35,7 +35,6 @@
  */
 struct Plugin
 {
-
   const struct GNUNET_CONFIGURATION_Handle *cfg;
 
   /**
@@ -47,7 +46,6 @@ struct Plugin
    * HashMap
    */
   struct GNUNET_CONTAINER_MultiHashMap *hm;
-
 };
 
 struct FlatFileEntry
@@ -61,7 +59,6 @@ struct FlatFileEntry
    * query
    */
   struct GNUNET_HashCode query;
-
 };
 
 /**
@@ -76,11 +73,11 @@ static int
 database_setup (struct Plugin *plugin)
 {
   char *afsdir;
-  char* block_buffer;
-  char* buffer;
-  char* line;
-  char* query;
-  char* block;
+  char*block_buffer;
+  char*buffer;
+  char*line;
+  char*query;
+  char*block;
   size_t size;
   struct FlatFileEntry *entry;
   struct GNUNET_DISK_FileHandle *fh;
@@ -111,14 +108,14 @@ database_setup (struct Plugin *plugin)
   plugin->hm = GNUNET_CONTAINER_multihashmap_create (10,
                                                      GNUNET_NO);
   fh = GNUNET_DISK_file_open (afsdir,
-                              GNUNET_DISK_OPEN_CREATE |
-                              GNUNET_DISK_OPEN_READWRITE,
-                              GNUNET_DISK_PERM_USER_WRITE |
-                              GNUNET_DISK_PERM_USER_READ);
+                              GNUNET_DISK_OPEN_CREATE
+                              | GNUNET_DISK_OPEN_READWRITE,
+                              GNUNET_DISK_PERM_USER_WRITE
+                              | GNUNET_DISK_PERM_USER_READ);
   if (NULL == fh)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to initialize file: %s.\n"),
+                _ ("Unable to initialize file: %s.\n"),
                 afsdir);
     return GNUNET_SYSERR;
   }
@@ -129,7 +126,7 @@ database_setup (struct Plugin *plugin)
                                               GNUNET_YES))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to get filesize: %s.\n"),
+                _ ("Unable to get filesize: %s.\n"),
                 afsdir);
     GNUNET_DISK_file_close (fh);
     return GNUNET_SYSERR;
@@ -148,7 +145,7 @@ database_setup (struct Plugin *plugin)
                                               size))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to read file: %s.\n"),
+                _ ("Unable to read file: %s.\n"),
                 afsdir);
     GNUNET_free (buffer);
     GNUNET_DISK_file_close (fh);
@@ -160,7 +157,8 @@ database_setup (struct Plugin *plugin)
   if (0 < size)
   {
     line = strtok (buffer, "\n");
-    while (line != NULL) {
+    while (line != NULL)
+    {
       query = strtok (line, ",");
       if (NULL == query)
         break;
@@ -168,12 +166,12 @@ database_setup (struct Plugin *plugin)
       if (NULL == block)
         break;
       line = strtok (NULL, "\n");
-      entry = GNUNET_malloc (sizeof (struct FlatFileEntry));
+      entry = GNUNET_malloc (sizeof(struct FlatFileEntry));
       GNUNET_assert (GNUNET_OK == GNUNET_CRYPTO_hash_from_string (query,
-                                        &entry->query));
+                                                                  &entry->query));
       GNUNET_STRINGS_base64_decode (block,
                                     strlen (block),
-                                    (void**)&block_buffer);
+                                    (void **) &block_buffer);
       entry->block = (struct GNUNET_GNSRECORD_Block *) block_buffer;
       if (GNUNET_OK !=
           GNUNET_CONTAINER_multihashmap_put (plugin->hm,
@@ -189,6 +187,7 @@ database_setup (struct Plugin *plugin)
   GNUNET_free (buffer);
   return GNUNET_OK;
 }
+
 
 /**
  * Store values in hashmap in file and free data
@@ -208,18 +207,18 @@ store_and_free_entries (void *cls,
   struct GNUNET_CRYPTO_HashAsciiEncoded query;
   size_t block_size;
 
-  block_size = ntohl (entry->block->purpose.size) +
-    sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey) +
-    sizeof (struct GNUNET_CRYPTO_EcdsaSignature);
+  block_size = ntohl (entry->block->purpose.size)
+               + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey)
+               + sizeof(struct GNUNET_CRYPTO_EcdsaSignature);
 
-  GNUNET_STRINGS_base64_encode ((char*)entry->block,
+  GNUNET_STRINGS_base64_encode ((char *) entry->block,
                                 block_size,
                                 &block_b64);
   GNUNET_CRYPTO_hash_to_enc (&entry->query,
                              &query);
   GNUNET_asprintf (&line,
                    "%s,%s\n",
-                   (char*)&query,
+                   (char *) &query,
                    block_b64);
 
   GNUNET_free (block_b64);
@@ -234,6 +233,7 @@ store_and_free_entries (void *cls,
   return GNUNET_YES;
 }
 
+
 /**
  * Shutdown database connection and associate data
  * structures.
@@ -243,16 +243,17 @@ static void
 database_shutdown (struct Plugin *plugin)
 {
   struct GNUNET_DISK_FileHandle *fh;
+
   fh = GNUNET_DISK_file_open (plugin->fn,
-                              GNUNET_DISK_OPEN_CREATE |
-                              GNUNET_DISK_OPEN_TRUNCATE |
-                              GNUNET_DISK_OPEN_READWRITE,
-                              GNUNET_DISK_PERM_USER_WRITE |
-                              GNUNET_DISK_PERM_USER_READ);
+                              GNUNET_DISK_OPEN_CREATE
+                              | GNUNET_DISK_OPEN_TRUNCATE
+                              | GNUNET_DISK_OPEN_READWRITE,
+                              GNUNET_DISK_PERM_USER_WRITE
+                              | GNUNET_DISK_PERM_USER_READ);
   if (NULL == fh)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Unable to initialize file: %s.\n"),
+                _ ("Unable to initialize file: %s.\n"),
                 plugin->fn);
     return;
   }
@@ -262,8 +263,8 @@ database_shutdown (struct Plugin *plugin)
                                          fh);
   GNUNET_CONTAINER_multihashmap_destroy (plugin->hm);
   GNUNET_DISK_file_close (fh);
-
 }
+
 
 static int
 expire_blocks (void *cls,
@@ -285,7 +286,6 @@ expire_blocks (void *cls,
   }
   return GNUNET_YES;
 }
-
 
 
 /**
@@ -320,17 +320,17 @@ namecache_cache_block (void *cls,
 
   namecache_expire_blocks (plugin);
   GNUNET_CRYPTO_hash (&block->derived_key,
-                      sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey),
+                      sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey),
                       &query);
-  block_size = ntohl (block->purpose.size) +
-    sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey) +
-    sizeof (struct GNUNET_CRYPTO_EcdsaSignature);
+  block_size = ntohl (block->purpose.size)
+               + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey)
+               + sizeof(struct GNUNET_CRYPTO_EcdsaSignature);
   if (block_size > 64 * 65536)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  entry = GNUNET_malloc (sizeof (struct FlatFileEntry));
+  entry = GNUNET_malloc (sizeof(struct FlatFileEntry));
   entry->block = GNUNET_malloc (block_size);
   GNUNET_memcpy (entry->block, block, block_size);
   GNUNET_CONTAINER_multihashmap_remove_all (plugin->hm, &query);
@@ -395,7 +395,7 @@ libgnunet_plugin_namecache_flat_init (void *cls)
 
   if (NULL != plugin.cfg)
     return NULL;                /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   if (GNUNET_OK != database_setup (&plugin))
   {
@@ -407,7 +407,7 @@ libgnunet_plugin_namecache_flat_init (void *cls)
   api->cache_block = &namecache_cache_block;
   api->lookup_block = &namecache_lookup_block;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("flat plugin running\n"));
+              _ ("flat plugin running\n"));
   return api;
 }
 
@@ -431,5 +431,6 @@ libgnunet_plugin_namecache_flat_done (void *cls)
               "flat plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_namecache_sqlite.c */

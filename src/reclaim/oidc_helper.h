@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 
 /**
  * @file reclaim/oidc_helper.h
@@ -64,13 +64,15 @@ OIDC_id_token_new (const struct GNUNET_CRYPTO_EcdsaPublicKey *aud_key,
  * @param ticket the ticket to include in the code
  * @param attrs list of attributes to share
  * @param nonce the nonce to include in the code
+ * @param code_challenge PKCE code challenge
  * @return a new authorization code (caller must free)
  */
 char*
 OIDC_build_authz_code (const struct GNUNET_CRYPTO_EcdsaPrivateKey *issuer,
                        const struct GNUNET_RECLAIM_Ticket *ticket,
                        struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList *attrs,
-                       const char* nonce);
+                       const char *nonce,
+                       const char *code_challenge);
 
 /**
  * Parse reclaim ticket and nonce from
@@ -79,6 +81,7 @@ OIDC_build_authz_code (const struct GNUNET_CRYPTO_EcdsaPrivateKey *issuer,
  *
  * @param ecdsa_priv the audience of the ticket
  * @param code the string representation of the code
+ * @param code_verfier PKCE code verifier
  * @param ticket where to store the ticket
  * @param attrs the attributes found in the code
  * @param nonce where to store the nonce
@@ -86,7 +89,8 @@ OIDC_build_authz_code (const struct GNUNET_CRYPTO_EcdsaPrivateKey *issuer,
  */
 int
 OIDC_parse_authz_code (const struct GNUNET_CRYPTO_EcdsaPrivateKey *ecdsa_priv,
-                       const char* code,
+                       const char *code,
+                       const char *code_verifier,
                        struct GNUNET_RECLAIM_Ticket *ticket,
                        struct GNUNET_RECLAIM_ATTRIBUTE_ClaimList **attrs,
                        char **nonce);
@@ -105,6 +109,7 @@ OIDC_build_token_response (const char *access_token,
                            const char *id_token,
                            const struct GNUNET_TIME_Relative *expiration_time,
                            char **token_response);
+
 /**
  * Generate a new access token
  */

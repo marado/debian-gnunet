@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -28,7 +28,7 @@
 #include "gnunet_testing_lib.h"
 
 
-#define LOG(kind,...)                           \
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 
@@ -46,7 +46,7 @@ static int test_success;
  */
 static void
 test_run (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg,
-	  struct GNUNET_TESTING_Peer *peer)
+          struct GNUNET_TESTING_Peer *peer)
 {
   GNUNET_assert (NULL == cls);
   GNUNET_assert (NULL != cfg);
@@ -59,7 +59,8 @@ test_run (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg,
 /**
  * The main point of execution
  */
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
   test_success = GNUNET_NO;
   GNUNET_assert (0 == GNUNET_TESTING_service_run ("test-testing-servicestartup",
@@ -70,5 +71,5 @@ int main (int argc, char *argv[])
   return (GNUNET_YES == test_success) ? 0 : 1;
 }
 
-/* end of test_testing_servicestartup.c */
 
+/* end of test_testing_servicestartup.c */

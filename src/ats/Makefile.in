@@ -91,21 +91,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@HAVE_EXPERIMENTAL_TRUE@am__append_1 = \
-@HAVE_EXPERIMENTAL_TRUE@  libgnunet_plugin_ats_ril.la
-
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@am__append_2 = \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@  libgnunet_plugin_ats_mlp.la
-
-libexec_PROGRAMS = gnunet-service-ats$(EXEEXT) \
-	gnunet-service-ats-new$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@am__append_3 = \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@ test_ats_api_ril
-
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@@HAVE_TESTING_TRUE@am__append_4 = \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@@HAVE_TESTING_TRUE@ test_ats_api_mlp
-
-check_PROGRAMS = $(am__EXEEXT_3)
+libexec_PROGRAMS = gnunet-service-ats$(EXEEXT)
+check_PROGRAMS = $(am__EXEEXT_1)
 subdir = src/ats
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -131,12 +118,8 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/gnunet_config.h
 CONFIG_CLEAN_FILES = ats.conf
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@am__EXEEXT_1 = test_ats_api_ril$(EXEEXT)
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@@HAVE_TESTING_TRUE@am__EXEEXT_2 = test_ats_api_mlp$(EXEEXT)
-@HAVE_TESTING_TRUE@am__EXEEXT_3 = test_ats_api_proportional$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_ats_reservation_api_proportional$(EXEEXT) \
-@HAVE_TESTING_TRUE@	test_ats2_lib$(EXEEXT) $(am__EXEEXT_1) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_2)
+@HAVE_TESTING_TRUE@am__EXEEXT_1 = test_ats_api_proportional$(EXEEXT) \
+@HAVE_TESTING_TRUE@	test_ats_reservation_api_proportional$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libdir)" \
 	"$(DESTDIR)$(plugindir)" "$(DESTDIR)$(pkgcfgdir)"
 PROGRAMS = $(libexec_PROGRAMS)
@@ -169,37 +152,6 @@ am__uninstall_files_from_dir = { \
   }
 LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-libgnunet_plugin_ats2_simple_la_DEPENDENCIES =  \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/peerstore/libgnunetpeerstore.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_ats2_simple_la_OBJECTS = plugin_ats2_simple.lo
-libgnunet_plugin_ats2_simple_la_OBJECTS =  \
-	$(am_libgnunet_plugin_ats2_simple_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-libgnunet_plugin_ats2_simple_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
-	$(libgnunet_plugin_ats2_simple_la_LDFLAGS) $(LDFLAGS) -o $@
-libgnunet_plugin_ats_mlp_la_DEPENDENCIES = libgnunetats.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
-	$(top_builddir)/src/util/libgnunetutil.la
-am_libgnunet_plugin_ats_mlp_la_OBJECTS = plugin_ats_mlp.lo
-libgnunet_plugin_ats_mlp_la_OBJECTS =  \
-	$(am_libgnunet_plugin_ats_mlp_la_OBJECTS)
-libgnunet_plugin_ats_mlp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunet_plugin_ats_mlp_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@am_libgnunet_plugin_ats_mlp_la_rpath =  \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@	-rpath $(plugindir)
 libgnunet_plugin_ats_proportional_la_DEPENDENCIES = libgnunetats.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
@@ -208,25 +160,15 @@ am_libgnunet_plugin_ats_proportional_la_OBJECTS =  \
 	plugin_ats_proportional.lo
 libgnunet_plugin_ats_proportional_la_OBJECTS =  \
 	$(am_libgnunet_plugin_ats_proportional_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 libgnunet_plugin_ats_proportional_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_ats_proportional_la_LDFLAGS) $(LDFLAGS) -o \
 	$@
-libgnunet_plugin_ats_ril_la_DEPENDENCIES = libgnunetats.la \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_ats_ril_la_OBJECTS = plugin_ats_ril.lo
-libgnunet_plugin_ats_ril_la_OBJECTS =  \
-	$(am_libgnunet_plugin_ats_ril_la_OBJECTS)
-libgnunet_plugin_ats_ril_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunet_plugin_ats_ril_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
-@HAVE_EXPERIMENTAL_TRUE@am_libgnunet_plugin_ats_ril_la_rpath = -rpath \
-@HAVE_EXPERIMENTAL_TRUE@	$(plugindir)
 libgnunetats_la_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
@@ -239,26 +181,6 @@ libgnunetats_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetats_la_LDFLAGS) $(LDFLAGS) \
 	-o $@
-libgnunetatsapplication_la_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunetatsapplication_la_OBJECTS = ats_api2_application.lo
-libgnunetatsapplication_la_OBJECTS =  \
-	$(am_libgnunetatsapplication_la_OBJECTS)
-libgnunetatsapplication_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunetatsapplication_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
-libgnunetatstransport_la_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunetatstransport_la_OBJECTS = ats_api2_transport.lo
-libgnunetatstransport_la_OBJECTS =  \
-	$(am_libgnunetatstransport_la_OBJECTS)
-libgnunetatstransport_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunetatstransport_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
 am_gnunet_service_ats_OBJECTS = gnunet-service-ats.$(OBJEXT) \
 	gnunet-service-ats_addresses.$(OBJEXT) \
 	gnunet-service-ats_connectivity.$(OBJEXT) \
@@ -274,40 +196,11 @@ gnunet_service_ats_DEPENDENCIES =  \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la libgnunetats.la \
 	$(am__DEPENDENCIES_1)
-am_gnunet_service_ats_new_OBJECTS = gnunet-service-ats-new.$(OBJEXT)
-gnunet_service_ats_new_OBJECTS = $(am_gnunet_service_ats_new_OBJECTS)
-gnunet_service_ats_new_DEPENDENCIES =  \
-	$(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_test_ats2_lib_OBJECTS = test_ats2_lib.$(OBJEXT)
-test_ats2_lib_OBJECTS = $(am_test_ats2_lib_OBJECTS)
-test_ats2_lib_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	libgnunetatsapplication.la libgnunetatstransport.la
-am_test_ats_api_mlp_OBJECTS = test_ats_api.$(OBJEXT) \
-	test_ats_lib.$(OBJEXT)
-test_ats_api_mlp_OBJECTS = $(am_test_ats_api_mlp_OBJECTS)
-test_ats_api_mlp_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	libgnunetats.la
 am_test_ats_api_proportional_OBJECTS = test_ats_api.$(OBJEXT) \
 	test_ats_lib.$(OBJEXT)
 test_ats_api_proportional_OBJECTS =  \
 	$(am_test_ats_api_proportional_OBJECTS)
 test_ats_api_proportional_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/hello/libgnunethello.la \
-	$(top_builddir)/src/testing/libgnunettesting.la \
-	libgnunetats.la
-am_test_ats_api_ril_OBJECTS = test_ats_api.$(OBJEXT) \
-	test_ats_lib.$(OBJEXT)
-test_ats_api_ril_OBJECTS = $(am_test_ats_api_ril_OBJECTS)
-test_ats_api_ril_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
@@ -336,13 +229,10 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/ats_api2_application.Plo \
-	./$(DEPDIR)/ats_api2_transport.Plo \
-	./$(DEPDIR)/ats_api_connectivity.Plo \
+am__depfiles_remade = ./$(DEPDIR)/ats_api_connectivity.Plo \
 	./$(DEPDIR)/ats_api_performance.Plo \
 	./$(DEPDIR)/ats_api_scanner.Plo \
 	./$(DEPDIR)/ats_api_scheduling.Plo \
-	./$(DEPDIR)/gnunet-service-ats-new.Po \
 	./$(DEPDIR)/gnunet-service-ats.Po \
 	./$(DEPDIR)/gnunet-service-ats_addresses.Po \
 	./$(DEPDIR)/gnunet-service-ats_connectivity.Po \
@@ -352,10 +242,7 @@ am__depfiles_remade = ./$(DEPDIR)/ats_api2_application.Plo \
 	./$(DEPDIR)/gnunet-service-ats_preferences.Po \
 	./$(DEPDIR)/gnunet-service-ats_reservations.Po \
 	./$(DEPDIR)/gnunet-service-ats_scheduling.Po \
-	./$(DEPDIR)/plugin_ats2_simple.Plo \
-	./$(DEPDIR)/plugin_ats_mlp.Plo \
 	./$(DEPDIR)/plugin_ats_proportional.Plo \
-	./$(DEPDIR)/plugin_ats_ril.Plo ./$(DEPDIR)/test_ats2_lib.Po \
 	./$(DEPDIR)/test_ats_api.Po ./$(DEPDIR)/test_ats_lib.Po \
 	./$(DEPDIR)/test_ats_reservation_api.Po
 am__mv = mv -f
@@ -377,31 +264,13 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(libgnunet_plugin_ats2_simple_la_SOURCES) \
-	$(libgnunet_plugin_ats_mlp_la_SOURCES) \
-	$(libgnunet_plugin_ats_proportional_la_SOURCES) \
-	$(libgnunet_plugin_ats_ril_la_SOURCES) \
-	$(libgnunetats_la_SOURCES) \
-	$(libgnunetatsapplication_la_SOURCES) \
-	$(libgnunetatstransport_la_SOURCES) \
-	$(gnunet_service_ats_SOURCES) \
-	$(gnunet_service_ats_new_SOURCES) $(test_ats2_lib_SOURCES) \
-	$(test_ats_api_mlp_SOURCES) \
+SOURCES = $(libgnunet_plugin_ats_proportional_la_SOURCES) \
+	$(libgnunetats_la_SOURCES) $(gnunet_service_ats_SOURCES) \
 	$(test_ats_api_proportional_SOURCES) \
-	$(test_ats_api_ril_SOURCES) \
 	$(test_ats_reservation_api_proportional_SOURCES)
-DIST_SOURCES = $(libgnunet_plugin_ats2_simple_la_SOURCES) \
-	$(libgnunet_plugin_ats_mlp_la_SOURCES) \
-	$(libgnunet_plugin_ats_proportional_la_SOURCES) \
-	$(libgnunet_plugin_ats_ril_la_SOURCES) \
-	$(libgnunetats_la_SOURCES) \
-	$(libgnunetatsapplication_la_SOURCES) \
-	$(libgnunetatstransport_la_SOURCES) \
-	$(gnunet_service_ats_SOURCES) \
-	$(gnunet_service_ats_new_SOURCES) $(test_ats2_lib_SOURCES) \
-	$(test_ats_api_mlp_SOURCES) \
+DIST_SOURCES = $(libgnunet_plugin_ats_proportional_la_SOURCES) \
+	$(libgnunetats_la_SOURCES) $(gnunet_service_ats_SOURCES) \
 	$(test_ats_api_proportional_SOURCES) \
-	$(test_ats_api_ril_SOURCES) \
 	$(test_ats_reservation_api_proportional_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -613,20 +482,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -634,6 +500,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -659,6 +526,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -696,11 +564,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -744,6 +616,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -763,6 +638,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -773,7 +649,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -842,16 +717,13 @@ pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
   ats.conf
 
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = -fprofile-arcs -ftest-coverage
 lib_LTLIBRARIES = \
-  libgnunetats.la \
-  libgnunetatsapplication.la \
-  libgnunetatstransport.la
+  libgnunetats.la
 
-plugin_LTLIBRARIES = libgnunet_plugin_ats_proportional.la \
-	libgnunet_plugin_ats2_simple.la $(am__append_1) \
-	$(am__append_2)
+plugin_LTLIBRARIES = \
+  libgnunet_plugin_ats_proportional.la
+
 libgnunetats_la_SOURCES = \
   ats_api_connectivity.c \
   ats_api_scheduling.c \
@@ -864,30 +736,8 @@ libgnunetats_la_LIBADD = \
  $(LTLIBINTL)
 
 libgnunetats_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 4:0:0
-
-libgnunetatsapplication_la_SOURCES = \
-  ats_api2_application.c
-
-libgnunetatsapplication_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL)
-
-libgnunetatsapplication_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
-  -version-info 0:0:0
-
-libgnunetatstransport_la_SOURCES = \
-  ats_api2_transport.c
-
-libgnunetatstransport_la_LIBADD = \
- $(top_builddir)/src/util/libgnunetutil.la \
- $(LTLIBINTL)
-
-libgnunetatstransport_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
-  -version-info 0:0:0
 
 libgnunet_plugin_ats_proportional_la_SOURCES = \
   plugin_ats_proportional.c
@@ -896,50 +746,10 @@ libgnunet_plugin_ats_proportional_la_LIBADD = \
   libgnunetats.la \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
+  $(top_builddir)/src/nt/libgnunetnt.la \
   $(LTLIBINTL)
 
 libgnunet_plugin_ats_proportional_la_LDFLAGS = \
-  $(GN_PLUGIN_LDFLAGS)
-
-libgnunet_plugin_ats2_simple_la_SOURCES = \
-  plugin_ats2_simple.c
-
-libgnunet_plugin_ats2_simple_la_LIBADD = \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/peerstore/libgnunetpeerstore.la \
-  $(top_builddir)/src/nt/libgnunetnt.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
-
-libgnunet_plugin_ats2_simple_la_LDFLAGS = \
-  $(GN_PLUGIN_LDFLAGS)
-
-libgnunet_plugin_ats_mlp_la_SOURCES = \
-  plugin_ats_mlp.c
-
-libgnunet_plugin_ats_mlp_la_LIBADD = \
-  libgnunetats.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
-  $(top_builddir)/src/util/libgnunetutil.la
-
-libgnunet_plugin_ats_mlp_la_LDFLAGS = \
-  $(GN_PLUGIN_LDFLAGS) \
-  -lglpk
-
-libgnunet_plugin_ats_ril_la_SOURCES = \
-  plugin_ats_ril.c
-
-libgnunet_plugin_ats_ril_la_LIBADD = \
-  libgnunetats.la \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-	$(top_builddir)/src/nt/libgnunetnt.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(LTLIBINTL)
-
-libgnunet_plugin_ats_ril_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
 gnunet_service_ats_SOURCES = \
@@ -960,18 +770,10 @@ gnunet_service_ats_LDADD = \
   libgnunetats.la \
   $(GN_LIBINTL)
 
-gnunet_service_ats_new_SOURCES = \
- gnunet-service-ats-new.c
+@HAVE_TESTING_TRUE@TESTING_TESTS = \
+@HAVE_TESTING_TRUE@ test_ats_api_proportional \
+@HAVE_TESTING_TRUE@ test_ats_reservation_api_proportional
 
-gnunet_service_ats_new_LDADD = \
-  $(top_builddir)/src/statistics/libgnunetstatistics.la \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL)
-
-@HAVE_TESTING_TRUE@TESTING_TESTS = test_ats_api_proportional \
-@HAVE_TESTING_TRUE@	test_ats_reservation_api_proportional \
-@HAVE_TESTING_TRUE@	test_ats2_lib $(am__append_3) \
-@HAVE_TESTING_TRUE@	$(am__append_4)
 @ENABLE_TEST_RUN_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
 test_ats_api_proportional_SOURCES = \
@@ -994,44 +796,10 @@ test_ats_reservation_api_proportional_LDADD = \
   $(top_builddir)/src/testing/libgnunettesting.la \
   libgnunetats.la
 
-test_ats_api_ril_SOURCES = \
- test_ats_api.c \
- test_ats_lib.c test_ats_lib.h
-
-test_ats_api_ril_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  libgnunetats.la
-
-test_ats_api_mlp_SOURCES = \
- test_ats_api.c \
- test_ats_lib.c test_ats_lib.h
-
-test_ats_api_mlp_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  libgnunetats.la
-
-test_ats2_lib_SOURCES = \
- test_ats2_lib.c test_ats2_lib.h
-
-test_ats2_lib_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/hello/libgnunethello.la \
-  $(top_builddir)/src/testing/libgnunettesting.la \
-  libgnunetatsapplication.la \
-  libgnunetatstransport.la
-
 EXTRA_DIST = \
-  ats.h ats2.h \
-  plugin_ats2_common.c \
+  ats.h \
   test_delay \
-  test_ats2_lib.conf \
   test_ats_api.conf \
-  test_ats_api_mlp.conf \
-  test_ats_api_ril.conf \
   test_ats_api_proportional.conf
 
 all: all-am
@@ -1198,50 +966,19 @@ clean-pluginLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libgnunet_plugin_ats2_simple.la: $(libgnunet_plugin_ats2_simple_la_OBJECTS) $(libgnunet_plugin_ats2_simple_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats2_simple_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_ats2_simple_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_ats2_simple_la_OBJECTS) $(libgnunet_plugin_ats2_simple_la_LIBADD) $(LIBS)
-
-libgnunet_plugin_ats_mlp.la: $(libgnunet_plugin_ats_mlp_la_OBJECTS) $(libgnunet_plugin_ats_mlp_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats_mlp_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_ats_mlp_la_LINK) $(am_libgnunet_plugin_ats_mlp_la_rpath) $(libgnunet_plugin_ats_mlp_la_OBJECTS) $(libgnunet_plugin_ats_mlp_la_LIBADD) $(LIBS)
-
 libgnunet_plugin_ats_proportional.la: $(libgnunet_plugin_ats_proportional_la_OBJECTS) $(libgnunet_plugin_ats_proportional_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats_proportional_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunet_plugin_ats_proportional_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_ats_proportional_la_OBJECTS) $(libgnunet_plugin_ats_proportional_la_LIBADD) $(LIBS)
 
-libgnunet_plugin_ats_ril.la: $(libgnunet_plugin_ats_ril_la_OBJECTS) $(libgnunet_plugin_ats_ril_la_DEPENDENCIES) $(EXTRA_libgnunet_plugin_ats_ril_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunet_plugin_ats_ril_la_LINK) $(am_libgnunet_plugin_ats_ril_la_rpath) $(libgnunet_plugin_ats_ril_la_OBJECTS) $(libgnunet_plugin_ats_ril_la_LIBADD) $(LIBS)
-
 libgnunetats.la: $(libgnunetats_la_OBJECTS) $(libgnunetats_la_DEPENDENCIES) $(EXTRA_libgnunetats_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetats_la_LINK) -rpath $(libdir) $(libgnunetats_la_OBJECTS) $(libgnunetats_la_LIBADD) $(LIBS)
-
-libgnunetatsapplication.la: $(libgnunetatsapplication_la_OBJECTS) $(libgnunetatsapplication_la_DEPENDENCIES) $(EXTRA_libgnunetatsapplication_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetatsapplication_la_LINK) -rpath $(libdir) $(libgnunetatsapplication_la_OBJECTS) $(libgnunetatsapplication_la_LIBADD) $(LIBS)
-
-libgnunetatstransport.la: $(libgnunetatstransport_la_OBJECTS) $(libgnunetatstransport_la_DEPENDENCIES) $(EXTRA_libgnunetatstransport_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetatstransport_la_LINK) -rpath $(libdir) $(libgnunetatstransport_la_OBJECTS) $(libgnunetatstransport_la_LIBADD) $(LIBS)
 
 gnunet-service-ats$(EXEEXT): $(gnunet_service_ats_OBJECTS) $(gnunet_service_ats_DEPENDENCIES) $(EXTRA_gnunet_service_ats_DEPENDENCIES) 
 	@rm -f gnunet-service-ats$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_service_ats_OBJECTS) $(gnunet_service_ats_LDADD) $(LIBS)
 
-gnunet-service-ats-new$(EXEEXT): $(gnunet_service_ats_new_OBJECTS) $(gnunet_service_ats_new_DEPENDENCIES) $(EXTRA_gnunet_service_ats_new_DEPENDENCIES) 
-	@rm -f gnunet-service-ats-new$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_service_ats_new_OBJECTS) $(gnunet_service_ats_new_LDADD) $(LIBS)
-
-test_ats2_lib$(EXEEXT): $(test_ats2_lib_OBJECTS) $(test_ats2_lib_DEPENDENCIES) $(EXTRA_test_ats2_lib_DEPENDENCIES) 
-	@rm -f test_ats2_lib$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats2_lib_OBJECTS) $(test_ats2_lib_LDADD) $(LIBS)
-
-test_ats_api_mlp$(EXEEXT): $(test_ats_api_mlp_OBJECTS) $(test_ats_api_mlp_DEPENDENCIES) $(EXTRA_test_ats_api_mlp_DEPENDENCIES) 
-	@rm -f test_ats_api_mlp$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_mlp_OBJECTS) $(test_ats_api_mlp_LDADD) $(LIBS)
-
 test_ats_api_proportional$(EXEEXT): $(test_ats_api_proportional_OBJECTS) $(test_ats_api_proportional_DEPENDENCIES) $(EXTRA_test_ats_api_proportional_DEPENDENCIES) 
 	@rm -f test_ats_api_proportional$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_ats_api_proportional_OBJECTS) $(test_ats_api_proportional_LDADD) $(LIBS)
-
-test_ats_api_ril$(EXEEXT): $(test_ats_api_ril_OBJECTS) $(test_ats_api_ril_DEPENDENCIES) $(EXTRA_test_ats_api_ril_DEPENDENCIES) 
-	@rm -f test_ats_api_ril$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_ats_api_ril_OBJECTS) $(test_ats_api_ril_LDADD) $(LIBS)
 
 test_ats_reservation_api_proportional$(EXEEXT): $(test_ats_reservation_api_proportional_OBJECTS) $(test_ats_reservation_api_proportional_DEPENDENCIES) $(EXTRA_test_ats_reservation_api_proportional_DEPENDENCIES) 
 	@rm -f test_ats_reservation_api_proportional$(EXEEXT)
@@ -1253,13 +990,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api2_application.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api2_transport.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api_connectivity.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api_performance.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api_scanner.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ats_api_scheduling.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats-new.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_addresses.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_connectivity.Po@am__quote@ # am--include-marker
@@ -1269,11 +1003,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_preferences.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_reservations.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-ats_scheduling.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats2_simple.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats_mlp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats_proportional.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_ats_ril.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats2_lib.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_api.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_lib.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ats_reservation_api.Po@am__quote@ # am--include-marker
@@ -1539,27 +1269,6 @@ test_ats_reservation_api_proportional.log: test_ats_reservation_api_proportional
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_ats2_lib.log: test_ats2_lib$(EXEEXT)
-	@p='test_ats2_lib$(EXEEXT)'; \
-	b='test_ats2_lib'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_ats_api_ril.log: test_ats_api_ril$(EXEEXT)
-	@p='test_ats_api_ril$(EXEEXT)'; \
-	b='test_ats_api_ril'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-test_ats_api_mlp.log: test_ats_api_mlp$(EXEEXT)
-	@p='test_ats_api_mlp$(EXEEXT)'; \
-	b='test_ats_api_mlp'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1657,13 +1366,10 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/ats_api2_application.Plo
-	-rm -f ./$(DEPDIR)/ats_api2_transport.Plo
-	-rm -f ./$(DEPDIR)/ats_api_connectivity.Plo
+		-rm -f ./$(DEPDIR)/ats_api_connectivity.Plo
 	-rm -f ./$(DEPDIR)/ats_api_performance.Plo
 	-rm -f ./$(DEPDIR)/ats_api_scanner.Plo
 	-rm -f ./$(DEPDIR)/ats_api_scheduling.Plo
-	-rm -f ./$(DEPDIR)/gnunet-service-ats-new.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_addresses.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_connectivity.Po
@@ -1673,11 +1379,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_preferences.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_reservations.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_scheduling.Po
-	-rm -f ./$(DEPDIR)/plugin_ats2_simple.Plo
-	-rm -f ./$(DEPDIR)/plugin_ats_mlp.Plo
 	-rm -f ./$(DEPDIR)/plugin_ats_proportional.Plo
-	-rm -f ./$(DEPDIR)/plugin_ats_ril.Plo
-	-rm -f ./$(DEPDIR)/test_ats2_lib.Po
 	-rm -f ./$(DEPDIR)/test_ats_api.Po
 	-rm -f ./$(DEPDIR)/test_ats_lib.Po
 	-rm -f ./$(DEPDIR)/test_ats_reservation_api.Po
@@ -1726,13 +1428,10 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/ats_api2_application.Plo
-	-rm -f ./$(DEPDIR)/ats_api2_transport.Plo
-	-rm -f ./$(DEPDIR)/ats_api_connectivity.Plo
+		-rm -f ./$(DEPDIR)/ats_api_connectivity.Plo
 	-rm -f ./$(DEPDIR)/ats_api_performance.Plo
 	-rm -f ./$(DEPDIR)/ats_api_scanner.Plo
 	-rm -f ./$(DEPDIR)/ats_api_scheduling.Plo
-	-rm -f ./$(DEPDIR)/gnunet-service-ats-new.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_addresses.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_connectivity.Po
@@ -1742,11 +1441,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_preferences.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_reservations.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-ats_scheduling.Po
-	-rm -f ./$(DEPDIR)/plugin_ats2_simple.Plo
-	-rm -f ./$(DEPDIR)/plugin_ats_mlp.Plo
 	-rm -f ./$(DEPDIR)/plugin_ats_proportional.Plo
-	-rm -f ./$(DEPDIR)/plugin_ats_ril.Plo
-	-rm -f ./$(DEPDIR)/test_ats2_lib.Po
 	-rm -f ./$(DEPDIR)/test_ats_api.Po
 	-rm -f ./$(DEPDIR)/test_ats_lib.Po
 	-rm -f ./$(DEPDIR)/test_ats_reservation_api.Po

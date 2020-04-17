@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file datastore/test_datastore_api.c
  * @brief Test for the basic datastore API.
@@ -251,14 +251,14 @@ check_value (void *cls,
     return;
   }
 #if 0
-  FPRINTF (stderr,
-	   "Check value got `%s' of size %u, type %d, expire %s\n",
+  fprintf (stderr,
+           "Check value got `%s' of size %u, type %d, expire %s\n",
            GNUNET_h2s (key), (unsigned int) size, type,
            GNUNET_STRINGS_absolute_time_to_string (expiration));
-  FPRINTF (stderr,
+  fprintf (stderr,
            "Check value iteration %d wants size %u, type %d, expire %s\n", i,
            (unsigned int) get_size (i), get_type (i),
-           GNUNET_STRINGS_absolute_time_to_string (get_expiration(i)));
+           GNUNET_STRINGS_absolute_time_to_string (get_expiration (i)));
 #endif
   GNUNET_assert (size == get_size (i));
   GNUNET_assert (0 == memcmp (data, get_data (i), size));
@@ -345,10 +345,12 @@ check_multiple (void *cls,
     crc->phase = RP_GET_MULTIPLE_NEXT;
     crc->first_uid = uid;
     break;
+
   case RP_GET_MULTIPLE_NEXT:
     GNUNET_assert (uid != crc->first_uid);
     crc->phase = RP_DONE;
     break;
+
   default:
     GNUNET_break (0);
     crc->phase = RP_ERROR;
@@ -379,7 +381,7 @@ run_continuation (void *cls)
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Executing PUT number %u\n",
                 crc->i);
-    GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
+    GNUNET_CRYPTO_hash (&crc->i, sizeof(int), &crc->key);
     GNUNET_DATASTORE_put (datastore, 0, &crc->key, get_size (crc->i),
                           get_data (crc->i), get_type (crc->i),
                           get_priority (crc->i), get_anonymity (crc->i), 0,
@@ -389,13 +391,14 @@ run_continuation (void *cls)
     if (crc->i == ITERATIONS)
       crc->phase = RP_GET;
     break;
+
   case RP_GET:
     crc->i--;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Executing GET number %u\n",
                 crc->i);
     GNUNET_CRYPTO_hash (&crc->i,
-                        sizeof (int),
+                        sizeof(int),
                         &crc->key);
     GNUNET_DATASTORE_get_key (datastore,
                               0,
@@ -407,13 +410,14 @@ run_continuation (void *cls)
                               &check_value,
                               crc);
     break;
+
   case RP_DEL:
     crc->i--;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Executing DEL number %u\n",
                 crc->i);
     crc->data = NULL;
-    GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
+    GNUNET_CRYPTO_hash (&crc->i, sizeof(int), &crc->key);
     GNUNET_assert (NULL !=
                    GNUNET_DATASTORE_get_key (datastore,
                                              0,
@@ -425,6 +429,7 @@ run_continuation (void *cls)
                                              &delete_value,
                                              crc));
     break;
+
   case RP_DO_DEL:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Executing DO_DEL number %u\n",
@@ -443,12 +448,13 @@ run_continuation (void *cls)
                                             crc->data, 1, 1,
                                             &check_success, crc));
     break;
+
   case RP_DELVALIDATE:
     crc->i--;
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Executing DELVALIDATE number %u\n",
                 crc->i);
-    GNUNET_CRYPTO_hash (&crc->i, sizeof (int), &crc->key);
+    GNUNET_CRYPTO_hash (&crc->i, sizeof(int), &crc->key);
     GNUNET_assert (NULL !=
                    GNUNET_DATASTORE_get_key (datastore,
                                              0,
@@ -460,11 +466,13 @@ run_continuation (void *cls)
                                              &check_nothing,
                                              crc));
     break;
+
   case RP_RESERVE:
     crc->phase = RP_PUT_MULTIPLE;
     GNUNET_DATASTORE_reserve (datastore, 128 * 1024, 2,
                               &get_reserved, crc);
     break;
+
   case RP_PUT_MULTIPLE:
     crc->phase = RP_PUT_MULTIPLE_NEXT;
     GNUNET_DATASTORE_put (datastore, crc->rid, &crc->key, get_size (42),
@@ -472,6 +480,7 @@ run_continuation (void *cls)
                           get_anonymity (42), 0, get_expiration (42), 1, 1,
                           &check_success, crc);
     break;
+
   case RP_PUT_MULTIPLE_NEXT:
     crc->phase = RP_GET_MULTIPLE;
     GNUNET_DATASTORE_put (datastore, crc->rid,
@@ -486,6 +495,7 @@ run_continuation (void *cls)
                           1, 1,
                           &check_success, crc);
     break;
+
   case RP_GET_MULTIPLE:
     GNUNET_assert (NULL !=
                    GNUNET_DATASTORE_get_key (datastore,
@@ -498,6 +508,7 @@ run_continuation (void *cls)
                                              &check_multiple,
                                              crc));
     break;
+
   case RP_GET_MULTIPLE_NEXT:
     GNUNET_assert (NULL !=
                    GNUNET_DATASTORE_get_key (datastore,
@@ -510,6 +521,7 @@ run_continuation (void *cls)
                                              &check_multiple,
                                              crc));
     break;
+
   case RP_DONE:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Finished, disconnecting\n");
@@ -518,6 +530,7 @@ run_continuation (void *cls)
     GNUNET_free (crc);
     ok = 0;
     break;
+
   case RP_ERROR:
     GNUNET_DATASTORE_disconnect (datastore,
                                  GNUNET_YES);
@@ -554,21 +567,24 @@ run_tests (void *cls,
     GNUNET_SCHEDULER_add_now (&run_continuation,
                               crc);
     return;
+
   case GNUNET_NO:
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s", "Test 'put' operation failed, key already exists (!?)\n");
     GNUNET_DATASTORE_disconnect (datastore,
                                  GNUNET_YES);
     GNUNET_free (crc);
     return;
+
   case GNUNET_SYSERR:
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Test 'put' operation failed with error `%s' database likely not setup, skipping test.\n",
              msg);
     GNUNET_DATASTORE_disconnect (datastore,
                                  GNUNET_YES);
     GNUNET_free (crc);
     return;
+
   default:
     GNUNET_assert (0);
   }
@@ -605,11 +621,11 @@ run (void *cls,
                             GNUNET_BLOCK_TYPE_TEST,
                             0, 0, 0,
                             GNUNET_TIME_relative_to_absolute
-                            (GNUNET_TIME_UNIT_SECONDS),
+                              (GNUNET_TIME_UNIT_SECONDS),
                             0, 1,
                             &run_tests, crc))
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
              "Test 'put' operation failed.\n");
     ok = 1;
@@ -628,7 +644,7 @@ run (void *cls,
  */
 static void
 duc_dummy (void *cls,
-	   int delta)
+           int delta)
 {
   /* intentionally empty */
 }
@@ -648,19 +664,19 @@ test_plugin (const char *cfg_name)
   cfg = GNUNET_CONFIGURATION_create ();
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_load (cfg,
-				 cfg_name))
+                                 cfg_name))
   {
     GNUNET_CONFIGURATION_destroy (cfg);
     fprintf (stderr,
-	     "Failed to load configuration %s\n",
-	     cfg_name);
+             "Failed to load configuration %s\n",
+             cfg_name);
     return 1;
   }
-  memset (&env, 0, sizeof (env));
+  memset (&env, 0, sizeof(env));
   env.cfg = cfg;
   env.duc = &duc_dummy;
   GNUNET_snprintf (libname,
-		   sizeof (libname),
+                   sizeof(libname),
                    "libgnunet_plugin_datastore_%s",
                    plugin_name);
   api = GNUNET_PLUGIN_load (libname, &env);
@@ -668,8 +684,8 @@ test_plugin (const char *cfg_name)
   {
     GNUNET_CONFIGURATION_destroy (cfg);
     fprintf (stderr,
-	     "Failed to load plugin `%s'\n",
-	     libname);
+             "Failed to load plugin `%s'\n",
+             libname);
     return 77;
   }
   GNUNET_PLUGIN_unload (libname, api);
@@ -696,7 +712,7 @@ main (int argc,
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
-                   sizeof (cfg_name),
+                   sizeof(cfg_name),
                    "test_datastore_api_data_%s.conf",
                    plugin_name);
   ret = test_plugin (cfg_name);
@@ -705,11 +721,12 @@ main (int argc,
   /* run actual test */
   if (0 !=
       GNUNET_TESTING_peer_run ("test-gnunet-datastore",
-			       cfg_name,
-			       &run,
-			       NULL))
+                               cfg_name,
+                               &run,
+                               NULL))
     return 1;
   return ok;
 }
+
 
 /* end of test_datastore_api.c */

@@ -8,10 +8,6 @@ libexecdir= $(pkglibdir)/libexec/
 pkgcfg_DATA = \
   arm.conf
 
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -25,7 +21,7 @@ libgnunetarm_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL) $(XLIB)
 libgnunetarm_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 2:0:0
 
 
@@ -55,6 +51,8 @@ mockup_service_SOURCES = \
   mockup-service.c
  mockup_service_LDADD = \
  $(top_builddir)/src/util/libgnunetutil.la
+mockup_service_LDFLAGS = \
+ $(GN_LIBINTL)
 
 
 check_PROGRAMS = \
@@ -90,15 +88,13 @@ test_gnunet_service_arm_SOURCES = \
   libgnunetarm.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
-do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
-
 SUFFIXES = .py.in .py
 .py.in.py:
-	$(do_subst) < $(srcdir)/$< > $@
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/$< > $@
 	chmod +x $@
 
 test_gnunet_arm.py: test_gnunet_arm.py.in Makefile
-	$(do_subst) < $(srcdir)/test_gnunet_arm.py.in > test_gnunet_arm.py
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/test_gnunet_arm.py.in > test_gnunet_arm.py
 	chmod +x test_gnunet_arm.py
 
 EXTRA_DIST = \

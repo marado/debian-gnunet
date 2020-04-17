@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @file gns/plugin_rest_config.c
@@ -124,6 +124,7 @@ add_sections (void *cls,
   json_object_set_new (sections_obj, section, sec_obj);
 }
 
+
 static void
 add_section_contents (void *cls,
                       const char *section,
@@ -131,6 +132,7 @@ add_section_contents (void *cls,
                       const char *value)
 {
   json_t *section_obj = cls;
+
   json_object_set_new (section_obj, option, json_string (value));
 }
 
@@ -180,6 +182,137 @@ get_cont (struct GNUNET_REST_RequestHandle *con_handle,
 }
 
 
+struct GNUNET_CONFIGURATION_Handle *
+set_value (struct GNUNET_CONFIGURATION_Handle *config,
+           const char *section,
+           const char *option,
+           json_t *value)
+{
+  if (json_is_string (value))
+    GNUNET_CONFIGURATION_set_value_string (config, section, option,
+                                           json_string_value (value));
+  else if (json_is_number (value))
+    GNUNET_CONFIGURATION_set_value_number (config, section, option,
+                                           json_integer_value (value));
+  else if (json_is_null (value))
+    GNUNET_CONFIGURATION_set_value_string (config, section, option, NULL);
+  else if (json_is_true (value))
+    GNUNET_CONFIGURATION_set_value_string (config, section, option, "yes");
+  else if (json_is_false (value))
+    GNUNET_CONFIGURATION_set_value_string (config, section, option, "no");
+  else
+    return NULL;
+  return config; // for error handling (0 -> success, 1 -> error)
+}
+
+
+/**
+ * Handle REST POST request
+ *
+ * @param handle the lookup handle
+ */
+static void
+set_cont (struct GNUNET_REST_RequestHandle *con_handle,
+          const char *url,
+          void *cls)
+{
+  struct RequestHandle *handle = cls;
+  char term_data[handle->rest_handle->data_size + 1];
+  struct GNUNET_CONFIGURATION_Handle *out = GNUNET_CONFIGURATION_dup (cfg);
+
+  json_error_t err;
+  json_t *data_json;
+  const char *section;
+  const char *option;
+  json_t *sec_obj;
+  json_t *value;
+  char *cfg_fn;
+
+  // invalid url
+  if (strlen (GNUNET_REST_API_NS_CONFIG) > strlen (handle->url))
+  {
+    handle->response_code = MHD_HTTP_BAD_REQUEST;
+    GNUNET_SCHEDULER_add_now (&do_error, handle);
+    return;
+  }
+
+  // extract data from handle
+  term_data[handle->rest_handle->data_size] = '\0';
+  GNUNET_memcpy (term_data,
+                 handle->rest_handle->data,
+                 handle->rest_handle->data_size);
+  data_json = json_loads (term_data, JSON_DECODE_ANY, &err);
+
+  if (NULL == data_json)
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Unable to parse JSON Object from %s\n",
+                term_data);
+    GNUNET_SCHEDULER_add_now (&do_error, handle);
+    return;
+  }
+
+  // POST /config => {<section> : {<option> : <value>}}
+  if (strlen (GNUNET_REST_API_NS_CONFIG) == strlen (handle->url))   // POST /config
+  {
+    // iterate over sections
+    json_object_foreach (data_json, section, sec_obj)
+    {
+      // iterate over options
+      json_object_foreach (sec_obj, option, value)
+      {
+        out = set_value (out, section, option, value);
+        if (NULL == out)
+        {
+          handle->response_code = MHD_HTTP_BAD_REQUEST;
+          GNUNET_SCHEDULER_add_now (&do_error, handle);
+          json_decref (data_json);
+          return;
+        }
+      }
+    }
+  }
+  else // POST /config/<section> => {<option> : <value>}
+  {
+    // extract the "<section>" part from the url
+    section = &handle->url[strlen (GNUNET_REST_API_NS_CONFIG) + 1];
+    // iterate over options
+    json_object_foreach (data_json, option, value)
+    {
+      out = set_value (out, section, option, value);
+      if (NULL == out)
+      {
+        handle->response_code = MHD_HTTP_BAD_REQUEST;
+        GNUNET_SCHEDULER_add_now (&do_error, handle);
+        json_decref (data_json);
+        return;
+      }
+    }
+  }
+  json_decref (data_json);
+
+
+  // get cfg file path
+  cfg_fn = NULL;
+  const char *xdg = getenv ("XDG_CONFIG_HOME");
+  if (NULL != xdg)
+    GNUNET_asprintf (&cfg_fn,
+                     "%s%s%s",
+                     xdg,
+                     DIR_SEPARATOR_STR,
+                     GNUNET_OS_project_data_get ()->config_file);
+  else
+    cfg_fn = GNUNET_strdup (GNUNET_OS_project_data_get ()->user_config_file);
+
+  GNUNET_CONFIGURATION_write (out, cfg_fn);
+  cfg = out;
+  handle->proc (handle->proc_cls,
+                GNUNET_REST_create_response (NULL),
+                MHD_HTTP_OK);
+  cleanup_handle (handle);
+}
+
+
 /**
  * Handle rest request
  *
@@ -219,9 +352,11 @@ rest_config_process_request (struct GNUNET_REST_RequestHandle *conndata_handle,
                              void *proc_cls)
 {
   static const struct GNUNET_REST_RequestHandler handlers[] = {
-    {MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_CONFIG, &get_cont},
-    {MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_CONFIG, &options_cont},
-    GNUNET_REST_HANDLER_END};
+    { MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_CONFIG, &get_cont },
+    { MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_CONFIG, &set_cont },
+    { MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_CONFIG, &options_cont },
+    GNUNET_REST_HANDLER_END
+  };
   struct RequestHandle *handle = GNUNET_new (struct RequestHandle);
   struct GNUNET_REST_RequestHandlerError err;
 
@@ -251,12 +386,13 @@ void *
 libgnunet_plugin_rest_config_init (void *cls)
 {
   static struct Plugin plugin;
+
   cfg = cls;
   struct GNUNET_REST_Plugin *api;
 
   if (NULL != plugin.cfg)
     return NULL; /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   api = GNUNET_new (struct GNUNET_REST_Plugin);
   api->cls = &plugin;
@@ -284,5 +420,6 @@ libgnunet_plugin_rest_config_done (void *cls)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "CONFIG REST plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_rest_config.c */

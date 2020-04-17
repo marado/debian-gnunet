@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/gnunet-service-rps.c
@@ -41,7 +41,7 @@
 #include <inttypes.h>
 #include <string.h>
 
-#define LOG(kind, ...) GNUNET_log(kind, __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log (kind, __VA_ARGS__)
 
 // TODO check for overflows
 
@@ -54,7 +54,7 @@
 // hist_size_init, hist_size_max
 
 /***********************************************************************
- * Old gnunet-service-rps_peers.c
+* Old gnunet-service-rps_peers.c
 ***********************************************************************/
 
 /**
@@ -65,7 +65,7 @@
 /**
  * Get peer flag of given peer context.
  */
-#define check_peer_flag_set(peer_ctx, mask)\
+#define check_peer_flag_set(peer_ctx, mask) \
   ((peer_ctx->peer_flags) & (mask) ? GNUNET_YES : GNUNET_NO)
 
 /**
@@ -76,14 +76,13 @@
 /**
  * Get channel flag of given channel context.
  */
-#define check_channel_flag_set(channel_flags, mask)\
+#define check_channel_flag_set(channel_flags, mask) \
   ((*channel_flags) & (mask) ? GNUNET_YES : GNUNET_NO)
 
 /**
  * Unset flag of given channel context.
  */
 #define unset_channel_flag(channel_flags, mask) ((*channel_flags) &= ~(mask))
-
 
 
 /**
@@ -448,7 +447,7 @@ struct Sub
 
 
 /***********************************************************************
- * Globals
+* Globals
 ***********************************************************************/
 
 /**
@@ -590,7 +589,7 @@ static struct Sub *msub;
 static const uint32_t num_valid_peers_max = UINT32_MAX;
 
 /***********************************************************************
- * /Globals
+* /Globals
 ***********************************************************************/
 
 
@@ -622,6 +621,7 @@ get_peer_ctx (const struct GNUNET_CONTAINER_MultiPeerMap *peer_map,
   GNUNET_assert (NULL != ctx);
   return ctx;
 }
+
 
 /**
  * @brief Check whether we have information about the given peer.
@@ -670,14 +670,14 @@ create_peer_ctx (struct Sub *sub,
   ctx->peer_id = *peer;
   ctx->sub = sub;
   ret = GNUNET_CONTAINER_multipeermap_put (sub->peer_map, peer, ctx,
-      GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+                                           GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
   GNUNET_assert (GNUNET_OK == ret);
   if (sub == msub)
   {
     GNUNET_STATISTICS_set (stats,
-                          "# known peers",
-                          GNUNET_CONTAINER_multipeermap_size (sub->peer_map),
-                          GNUNET_NO);
+                           "# known peers",
+                           GNUNET_CONTAINER_multipeermap_size (sub->peer_map),
+                           GNUNET_NO);
   }
   return ctx;
 }
@@ -725,8 +725,8 @@ check_connected (struct PeerContext *peer_ctx)
   /* Get the context */
   peer_ctx = get_peer_ctx (peer_ctx->sub->peer_map, &peer_ctx->peer_id);
   /* If we have no channel to this peer we don't know whether it's online */
-  if ( (NULL == peer_ctx->send_channel_ctx) &&
-       (NULL == peer_ctx->recv_channel_ctx) )
+  if ((NULL == peer_ctx->send_channel_ctx) &&
+      (NULL == peer_ctx->recv_channel_ctx))
   {
     UNSET_PEER_FLAG (peer_ctx, Peers_ONLINE);
     return GNUNET_NO;
@@ -777,6 +777,7 @@ get_rand_peer_iterator (void *cls,
                         void *value)
 {
   struct GetRandPeerIteratorCls *iterator_cls = cls;
+
   (void) value;
 
   if (0 >= iterator_cls->index)
@@ -805,7 +806,8 @@ get_random_peer_from_peermap (struct GNUNET_CONTAINER_MultiPeerMap *valid_peers)
 
   iterator_cls = GNUNET_new (struct GetRandPeerIteratorCls);
   iterator_cls->index = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-      GNUNET_CONTAINER_multipeermap_size (valid_peers));
+                                                  GNUNET_CONTAINER_multipeermap_size (
+                                                    valid_peers));
   (void) GNUNET_CONTAINER_multipeermap_iterate (valid_peers,
                                                 get_rand_peer_iterator,
                                                 iterator_cls);
@@ -843,7 +845,7 @@ add_valid_peer (const struct GNUNET_PeerIdentity *peer,
     ret = GNUNET_NO;
   }
   (void) GNUNET_CONTAINER_multipeermap_put (valid_peers, peer, NULL,
-      GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+                                            GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
   if (valid_peers == msub->valid_peers)
   {
     GNUNET_STATISTICS_set (stats,
@@ -853,6 +855,7 @@ add_valid_peer (const struct GNUNET_PeerIdentity *peer,
   }
   return ret;
 }
+
 
 static void
 remove_pending_message (struct PendingMessage *pending_msg, int cancel);
@@ -873,9 +876,9 @@ set_peer_online (struct PeerContext *peer_ctx)
 
   peer = &peer_ctx->peer_id;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Peer %s is online and valid, calling %i pending operations on it\n",
-      GNUNET_i2s (peer),
-      peer_ctx->num_pending_ops);
+       "Peer %s is online and valid, calling %i pending operations on it\n",
+       GNUNET_i2s (peer),
+       peer_ctx->num_pending_ops);
 
   if (NULL != peer_ctx->online_check_pending)
   {
@@ -883,7 +886,7 @@ set_peer_online (struct PeerContext *peer_ctx)
          "Removing pending online check for peer %s\n",
          GNUNET_i2s (&peer_ctx->peer_id));
     // TODO wait until cadet sets mq->cancel_impl
-    //GNUNET_MQ_send_cancel (peer_ctx->online_check_pending->ev);
+    // GNUNET_MQ_send_cancel (peer_ctx->online_check_pending->ev);
     remove_pending_message (peer_ctx->online_check_pending, GNUNET_YES);
     peer_ctx->online_check_pending = NULL;
   }
@@ -897,6 +900,7 @@ set_peer_online (struct PeerContext *peer_ctx)
   }
   GNUNET_array_grow (peer_ctx->pending_ops, peer_ctx->num_pending_ops, 0);
 }
+
 
 static void
 cleanup_destroyed_channel (void *cls,
@@ -936,6 +940,7 @@ static struct ChannelCtx *
 add_channel_ctx (struct PeerContext *peer_ctx)
 {
   struct ChannelCtx *channel_ctx;
+
   channel_ctx = GNUNET_new (struct ChannelCtx);
   channel_ctx->peer_ctx = peer_ctx;
   return channel_ctx;
@@ -960,7 +965,8 @@ remove_channel_ctx (struct ChannelCtx *channel_ctx)
 
   GNUNET_free (channel_ctx);
 
-  if (NULL == peer_ctx) return;
+  if (NULL == peer_ctx)
+    return;
   if (channel_ctx == peer_ctx->send_channel_ctx)
   {
     peer_ctx->send_channel_ctx = NULL;
@@ -1012,11 +1018,11 @@ get_channel (struct PeerContext *peer_ctx)
     peer_ctx->send_channel_ctx = add_channel_ctx (peer_ctx);
     peer_ctx->send_channel_ctx->channel =
       GNUNET_CADET_channel_create (cadet_handle,
-                                   peer_ctx->send_channel_ctx, /* context */
+                                   peer_ctx->send_channel_ctx,  /* context */
                                    &peer_ctx->peer_id,
                                    &peer_ctx->sub->hash,
-                                   NULL, /* WindowSize handler */
-                                   &cleanup_destroyed_channel, /* Disconnect handler */
+                                   NULL,  /* WindowSize handler */
+                                   &cleanup_destroyed_channel,  /* Disconnect handler */
                                    cadet_handlers);
   }
   GNUNET_assert (NULL != peer_ctx->send_channel_ctx);
@@ -1043,6 +1049,7 @@ get_mq (struct PeerContext *peer_ctx)
   }
   return peer_ctx->mq;
 }
+
 
 /**
  * @brief Add an envelope to a message passed to mq to list of pending messages
@@ -1080,6 +1087,7 @@ static void
 remove_pending_message (struct PendingMessage *pending_msg, int cancel)
 {
   struct PeerContext *peer_ctx;
+
   (void) cancel;
 
   peer_ctx = pending_msg->peer_ctx;
@@ -1088,10 +1096,10 @@ remove_pending_message (struct PendingMessage *pending_msg, int cancel)
                                peer_ctx->pending_messages_tail,
                                pending_msg);
   // TODO wait for the cadet implementation of message cancellation
-  //if (GNUNET_YES == cancel)
-  //{
+  // if (GNUNET_YES == cancel)
+  // {
   //  GNUNET_MQ_send_cancel (pending_msg->ev);
-  //}
+  // }
   GNUNET_free (pending_msg);
 }
 
@@ -1110,14 +1118,15 @@ mq_online_check_successful (void *cls)
   if (NULL != peer_ctx->online_check_pending)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Online check for peer %s was successfull\n",
-        GNUNET_i2s (&peer_ctx->peer_id));
+         "Online check for peer %s was successfull\n",
+         GNUNET_i2s (&peer_ctx->peer_id));
     remove_pending_message (peer_ctx->online_check_pending, GNUNET_YES);
     peer_ctx->online_check_pending = NULL;
     set_peer_online (peer_ctx);
     (void) add_valid_peer (&peer_ctx->peer_id, peer_ctx->sub->valid_peers);
   }
 }
+
 
 /**
  * Issue a check whether peer is online
@@ -1283,20 +1292,20 @@ destroy_peer (struct PeerContext *peer_ctx)
          "Removing unsent %s\n",
          peer_ctx->pending_messages_head->type);
     /* Cancle pending message, too */
-    if ( (NULL != peer_ctx->online_check_pending) &&
-         (0 == memcmp (peer_ctx->pending_messages_head,
-                     peer_ctx->online_check_pending,
-                     sizeof (struct PendingMessage))) )
+    if ((NULL != peer_ctx->online_check_pending) &&
+        (0 == memcmp (peer_ctx->pending_messages_head,
+                      peer_ctx->online_check_pending,
+                      sizeof(struct PendingMessage))))
+    {
+      peer_ctx->online_check_pending = NULL;
+      if (peer_ctx->sub == msub)
       {
-        peer_ctx->online_check_pending = NULL;
-        if (peer_ctx->sub == msub)
-        {
-          GNUNET_STATISTICS_update (stats,
-                                    "# pending online checks",
-                                    -1,
-                                    GNUNET_NO);
-        }
+        GNUNET_STATISTICS_update (stats,
+                                  "# pending online checks",
+                                  -1,
+                                  GNUNET_NO);
       }
+    }
     remove_pending_message (peer_ctx->pending_messages_head,
                             GNUNET_YES);
   }
@@ -1309,7 +1318,7 @@ destroy_peer (struct PeerContext *peer_ctx)
                 "Removing pending online check for peer %s\n",
                 GNUNET_i2s (&peer_ctx->peer_id));
     // TODO wait until cadet sets mq->cancel_impl
-    //GNUNET_MQ_send_cancel (peer_ctx->online_check_pending->ev);
+    // GNUNET_MQ_send_cancel (peer_ctx->online_check_pending->ev);
     remove_pending_message (peer_ctx->online_check_pending,
                             GNUNET_YES);
     peer_ctx->online_check_pending = NULL;
@@ -1341,9 +1350,10 @@ destroy_peer (struct PeerContext *peer_ctx)
   if (peer_ctx->sub == msub)
   {
     GNUNET_STATISTICS_set (stats,
-                          "# known peers",
-                          GNUNET_CONTAINER_multipeermap_size (peer_ctx->sub->peer_map),
-                          GNUNET_NO);
+                           "# known peers",
+                           GNUNET_CONTAINER_multipeermap_size (
+                             peer_ctx->sub->peer_map),
+                           GNUNET_NO);
   }
   GNUNET_free (peer_ctx);
   return GNUNET_YES;
@@ -1365,6 +1375,7 @@ peermap_clear_iterator (void *cls,
                         void *value)
 {
   struct Sub *sub = cls;
+
   (void) value;
 
   destroy_peer (get_peer_ctx (sub->peer_map, key));
@@ -1383,25 +1394,27 @@ static void
 mq_notify_sent_cb (void *cls)
 {
   struct PendingMessage *pending_msg = (struct PendingMessage *) cls;
+
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "%s was sent.\n",
-      pending_msg->type);
+       "%s was sent.\n",
+       pending_msg->type);
   if (pending_msg->peer_ctx->sub == msub)
   {
     if (0 == strncmp ("PULL REPLY", pending_msg->type, 10))
-      GNUNET_STATISTICS_update(stats, "# pull replys sent", 1, GNUNET_NO);
+      GNUNET_STATISTICS_update (stats, "# pull replys sent", 1, GNUNET_NO);
     if (0 == strncmp ("PULL REQUEST", pending_msg->type, 12))
-      GNUNET_STATISTICS_update(stats, "# pull requests sent", 1, GNUNET_NO);
+      GNUNET_STATISTICS_update (stats, "# pull requests sent", 1, GNUNET_NO);
     if (0 == strncmp ("PUSH", pending_msg->type, 4))
-      GNUNET_STATISTICS_update(stats, "# pushes sent", 1, GNUNET_NO);
-    if (0 == strncmp ("PULL REQUEST", pending_msg->type, 12) &&
-                      NULL != map_single_hop &&
-        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
-          &pending_msg->peer_ctx->peer_id))
-      GNUNET_STATISTICS_update(stats,
-                               "# pull requests sent (multi-hop peer)",
-                               1,
-                               GNUNET_NO);
+      GNUNET_STATISTICS_update (stats, "# pushes sent", 1, GNUNET_NO);
+    if ((0 == strncmp ("PULL REQUEST", pending_msg->type, 12)) &&
+        (NULL != map_single_hop) &&
+        (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                              &pending_msg->
+                                                              peer_ctx->peer_id)) )
+      GNUNET_STATISTICS_update (stats,
+                                "# pull requests sent (multi-hop peer)",
+                                1,
+                                GNUNET_NO);
   }
   /* Do not cancle message */
   remove_pending_message (pending_msg, GNUNET_NO);
@@ -1431,6 +1444,7 @@ store_peer_presistently_iterator (void *cls,
   char peer_string[128];
   int size;
   ssize_t ret;
+
   (void) value;
 
   if (NULL == peer)
@@ -1438,7 +1452,7 @@ store_peer_presistently_iterator (void *cls,
     return GNUNET_YES;
   }
   size = GNUNET_snprintf (peer_string,
-                          sizeof (peer_string),
+                          sizeof(peer_string),
                           "%s\n",
                           GNUNET_i2s_full (peer));
   GNUNET_assert (53 == size);
@@ -1471,39 +1485,39 @@ store_valid_peers (const struct Sub *sub)
   if (GNUNET_SYSERR == ret)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Not able to create directory for file `%s'\n",
-        sub->filename_valid_peers);
+         "Not able to create directory for file `%s'\n",
+         sub->filename_valid_peers);
     GNUNET_break (0);
   }
   else if (GNUNET_NO == ret)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Directory for file `%s' exists but is not writable for us\n",
-        sub->filename_valid_peers);
+         "Directory for file `%s' exists but is not writable for us\n",
+         sub->filename_valid_peers);
     GNUNET_break (0);
   }
   fh = GNUNET_DISK_file_open (sub->filename_valid_peers,
-                              GNUNET_DISK_OPEN_WRITE |
-                                  GNUNET_DISK_OPEN_CREATE,
-                              GNUNET_DISK_PERM_USER_READ |
-                                  GNUNET_DISK_PERM_USER_WRITE);
+                              GNUNET_DISK_OPEN_WRITE
+                              | GNUNET_DISK_OPEN_CREATE,
+                              GNUNET_DISK_PERM_USER_READ
+                              | GNUNET_DISK_PERM_USER_WRITE);
   if (NULL == fh)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Not able to write valid peers to file `%s'\n",
-        sub->filename_valid_peers);
+         "Not able to write valid peers to file `%s'\n",
+         sub->filename_valid_peers);
     return;
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Writing %u valid peers to disk\n",
-      GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
+       "Writing %u valid peers to disk\n",
+       GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
   number_written_peers =
     GNUNET_CONTAINER_multipeermap_iterate (sub->valid_peers,
                                            store_peer_presistently_iterator,
                                            fh);
   GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fh));
   GNUNET_assert (number_written_peers ==
-      GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
+                 GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
 }
 
 
@@ -1528,10 +1542,10 @@ s2i_full (const char *string_repr)
   if (52 > len)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Not able to convert string representation of PeerID to PeerID\n"
-        "Sting representation: %s (len %lu) - too short\n",
-        string_repr,
-        len);
+         "Not able to convert string representation of PeerID to PeerID\n"
+         "Sting representation: %s (len %lu) - too short\n",
+         string_repr,
+         len);
     GNUNET_break (0);
   }
   else if (52 < len)
@@ -1544,9 +1558,9 @@ s2i_full (const char *string_repr)
   if (GNUNET_OK != ret)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Not able to convert string representation of PeerID to PeerID\n"
-        "Sting representation: %s\n",
-        string_repr);
+         "Not able to convert string representation of PeerID to PeerID\n"
+         "Sting representation: %s\n",
+         string_repr);
     GNUNET_break (0);
   }
   return peer;
@@ -1589,9 +1603,9 @@ restore_valid_peers (const struct Sub *sub)
   size_read = GNUNET_DISK_file_read (fh, buf, file_size);
   GNUNET_assert (size_read == file_size);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Restoring %" PRIu32 " peers from file `%s'\n",
-      num_peers,
-      sub->filename_valid_peers);
+       "Restoring %" PRIu32 " peers from file `%s'\n",
+       num_peers,
+       sub->filename_valid_peers);
   for (iter_buf = buf; iter_buf < buf + file_size - 1; iter_buf += 53)
   {
     str_repr = GNUNET_strndup (iter_buf, 53);
@@ -1599,24 +1613,24 @@ restore_valid_peers (const struct Sub *sub)
     GNUNET_free (str_repr);
     add_valid_peer (peer, sub->valid_peers);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Restored valid peer %s from disk\n",
-        GNUNET_i2s_full (peer));
+         "Restored valid peer %s from disk\n",
+         GNUNET_i2s_full (peer));
   }
   iter_buf = NULL;
   GNUNET_free (buf);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "num_peers: %" PRIu32 ", _size (sub->valid_peers): %u\n",
-      num_peers,
-      GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
+       "num_peers: %" PRIu32 ", _size (sub->valid_peers): %u\n",
+       num_peers,
+       GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
   if (num_peers != GNUNET_CONTAINER_multipeermap_size (sub->valid_peers))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Number of restored peers does not match file size. Have probably duplicates.\n");
+         "Number of restored peers does not match file size. Have probably duplicates.\n");
   }
   GNUNET_assert (GNUNET_OK == GNUNET_DISK_file_close (fh));
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Restored %u valid peers from disk\n",
-      GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
+       "Restored %u valid peers from disk\n",
+       GNUNET_CONTAINER_multipeermap_size (sub->valid_peers));
 }
 
 
@@ -1634,7 +1648,7 @@ peers_terminate (struct Sub *sub)
                                              sub))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Iteration destroying peers was aborted.\n");
+         "Iteration destroying peers was aborted.\n");
   }
   GNUNET_CONTAINER_multipeermap_destroy (sub->peer_map);
   sub->peer_map = NULL;
@@ -1662,6 +1676,7 @@ valid_peer_iterator (void *cls,
                      void *value)
 {
   struct PeersIteratorCls *it_cls = cls;
+
   (void) value;
 
   return it_cls->iterator (it_cls->cls, peer);
@@ -1714,7 +1729,7 @@ insert_peer (struct Sub *sub,
 {
   if (GNUNET_YES == check_peer_known (sub->peer_map, peer))
   {
-    return GNUNET_NO; /* We already know this peer - nothing to do */
+    return GNUNET_NO;   /* We already know this peer - nothing to do */
   }
   (void) create_peer_ctx (sub, peer);
   return GNUNET_YES;
@@ -1747,6 +1762,7 @@ check_peer_flag (const struct GNUNET_CONTAINER_MultiPeerMap *peer_map,
   return check_peer_flag_set (peer_ctx, flags);
 }
 
+
 /**
  * @brief Try connecting to a peer to see whether it is online
  *
@@ -1763,10 +1779,10 @@ issue_peer_online_check (struct Sub *sub,
 {
   struct PeerContext *peer_ctx;
 
-  (void) insert_peer (sub, peer); // TODO even needed?
+  (void) insert_peer (sub, peer);   // TODO even needed?
   peer_ctx = get_peer_ctx (sub->peer_map, peer);
-  if ( (GNUNET_NO == check_peer_flag (sub->peer_map, peer, Peers_ONLINE)) &&
-       (NULL == peer_ctx->online_check_pending) )
+  if ((GNUNET_NO == check_peer_flag (sub->peer_map, peer, Peers_ONLINE)) &&
+      (NULL == peer_ctx->online_check_pending))
   {
     check_peer_online (peer_ctx);
     return GNUNET_YES;
@@ -1791,15 +1807,16 @@ issue_peer_online_check (struct Sub *sub,
 static int
 check_removable (const struct PeerContext *peer_ctx)
 {
-  if (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (peer_ctx->sub->peer_map,
-                                                           &peer_ctx->peer_id))
+  if (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (
+        peer_ctx->sub->peer_map,
+        &peer_ctx->peer_id))
   {
     return GNUNET_SYSERR;
   }
 
-  if ( (NULL != peer_ctx->recv_channel_ctx) ||
-       (NULL != peer_ctx->pending_messages_head) ||
-       (GNUNET_YES == check_peer_flag_set (peer_ctx, Peers_PULL_REPLY_PENDING)) )
+  if ((NULL != peer_ctx->recv_channel_ctx) ||
+      (NULL != peer_ctx->pending_messages_head) ||
+      (GNUNET_YES == check_peer_flag_set (peer_ctx, Peers_PULL_REPLY_PENDING)))
   {
     return GNUNET_NO;
   }
@@ -1882,9 +1899,9 @@ handle_inbound_channel (void *cls,
   struct Sub *sub = cls;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "New channel was established to us (Peer %s).\n",
-      GNUNET_i2s (initiator));
-  GNUNET_assert (NULL != channel); /* according to cadet API */
+       "New channel was established to us (Peer %s).\n",
+       GNUNET_i2s (initiator));
+  GNUNET_assert (NULL != channel);  /* according to cadet API */
   /* Make sure we 'know' about this peer */
   peer_ctx = create_or_get_peer_ctx (sub, initiator);
   set_peer_online (peer_ctx);
@@ -1896,7 +1913,7 @@ handle_inbound_channel (void *cls,
                                                              initiator)))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Already got one receive channel. Destroying old one.\n");
+         "Already got one receive channel. Destroying old one.\n");
     GNUNET_break_op (0);
     destroy_channel (peer_ctx->recv_channel_ctx);
     peer_ctx->recv_channel_ctx = channel_ctx;
@@ -1921,7 +1938,7 @@ check_sending_channel_exists (const struct PeerContext *peer_ctx)
 {
   if (GNUNET_NO == check_peer_known (peer_ctx->sub->peer_map,
                                      &peer_ctx->peer_id))
-  { /* If no such peer exists, there is no channel */
+  {   /* If no such peer exists, there is no channel */
     return GNUNET_NO;
   }
   if (NULL == peer_ctx->send_channel_ctx)
@@ -1957,6 +1974,7 @@ destroy_sending_channel (struct PeerContext *peer_ctx)
   return GNUNET_NO;
 }
 
+
 /**
  * @brief Send a message to another peer.
  *
@@ -1976,9 +1994,9 @@ send_message (struct PeerContext *peer_ctx,
   struct GNUNET_MQ_Handle *mq;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Sending message to %s of type %s\n",
-	      GNUNET_i2s (&peer_ctx->peer_id),
-	      type);
+              "Sending message to %s of type %s\n",
+              GNUNET_i2s (&peer_ctx->peer_id),
+              type);
   pending_msg = insert_pending_message (peer_ctx, ev, type);
   mq = get_mq (peer_ctx);
   GNUNET_MQ_notify_sent (ev,
@@ -1986,6 +2004,7 @@ send_message (struct PeerContext *peer_ctx,
                          pending_msg);
   GNUNET_MQ_send (mq, ev);
 }
+
 
 /**
  * @brief Schedule a operation on given peer
@@ -2009,7 +2028,7 @@ schedule_operation (struct PeerContext *peer_ctx,
   GNUNET_assert (GNUNET_YES == check_peer_known (peer_ctx->sub->peer_map,
                                                  &peer_ctx->peer_id));
 
-  //TODO if ONLINE execute immediately
+  // TODO if ONLINE execute immediately
 
   if (GNUNET_NO == check_operation_scheduled (peer_ctx, peer_op))
   {
@@ -2023,13 +2042,14 @@ schedule_operation (struct PeerContext *peer_ctx,
   return GNUNET_NO;
 }
 
+
 /***********************************************************************
- * /Old gnunet-service-rps_peers.c
+* /Old gnunet-service-rps_peers.c
 ***********************************************************************/
 
 
 /***********************************************************************
- * Housekeeping with clients
+* Housekeeping with clients
 ***********************************************************************/
 
 /**
@@ -2106,15 +2126,12 @@ struct ClientContext *cli_ctx_head;
 struct ClientContext *cli_ctx_tail;
 
 /***********************************************************************
- * /Housekeeping with clients
+* /Housekeeping with clients
 ***********************************************************************/
 
 
-
-
-
 /***********************************************************************
- * Util functions
+* Util functions
 ***********************************************************************/
 
 
@@ -2123,7 +2140,7 @@ struct ClientContext *cli_ctx_tail;
  */
 static void
 print_peer_list (struct GNUNET_PeerIdentity *list,
-		 unsigned int len)
+                 unsigned int len)
 {
   unsigned int i;
 
@@ -2131,7 +2148,7 @@ print_peer_list (struct GNUNET_PeerIdentity *list,
        "Printing peer list of length %u at %p:\n",
        len,
        list);
-  for (i = 0 ; i < len ; i++)
+  for (i = 0; i < len; i++)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "%u. peer: %s\n",
@@ -2158,17 +2175,17 @@ rem_from_list (struct GNUNET_PeerIdentity **peer_list,
        GNUNET_i2s (peer),
        tmp);
 
-  for ( i = 0 ; i < *list_size ; i++ )
+  for (i = 0; i < *list_size; i++)
   {
     if (0 == GNUNET_memcmp (&tmp[i], peer))
     {
-      if (i < *list_size -1)
-      { /* Not at the last entry -- shift peers left */
-        memmove (&tmp[i], &tmp[i +1],
-                ((*list_size) - i -1) * sizeof (struct GNUNET_PeerIdentity));
+      if (i < *list_size - 1)
+      {       /* Not at the last entry -- shift peers left */
+        memmove (&tmp[i], &tmp[i + 1],
+                 ((*list_size) - i - 1) * sizeof(struct GNUNET_PeerIdentity));
       }
       /* Remove last entry (should be now useless PeerID) */
-      GNUNET_array_grow (tmp, *list_size, (*list_size) -1);
+      GNUNET_array_grow (tmp, *list_size, (*list_size) - 1);
     }
   }
   *peer_list = tmp;
@@ -2208,9 +2225,9 @@ insert_in_view (struct Sub *sub,
   int ret;
 
   online = check_peer_flag (sub->peer_map, peer, Peers_ONLINE);
-  peer_ctx = get_peer_ctx (sub->peer_map, peer); // TODO indirection needed?
-  if ( (GNUNET_NO == online) ||
-       (GNUNET_SYSERR == online) ) /* peer is not even known */
+  peer_ctx = get_peer_ctx (sub->peer_map, peer);  // TODO indirection needed?
+  if ((GNUNET_NO == online) ||
+      (GNUNET_SYSERR == online))   /* peer is not even known */
   {
     (void) issue_peer_online_check (sub, peer);
     (void) schedule_operation (peer_ctx, insert_in_view_op, sub);
@@ -2248,20 +2265,22 @@ send_view (const struct ClientContext *cli_ctx,
 
   if (NULL == view_array)
   {
-    if (NULL == cli_ctx->sub) sub = msub;
-    else sub = cli_ctx->sub;
+    if (NULL == cli_ctx->sub)
+      sub = msub;
+    else
+      sub = cli_ctx->sub;
     view_size = View_size (sub->view);
     view_array = View_get_as_array (sub->view);
   }
 
   ev = GNUNET_MQ_msg_extra (out_msg,
-                            view_size * sizeof (struct GNUNET_PeerIdentity),
+                            view_size * sizeof(struct GNUNET_PeerIdentity),
                             GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_REPLY);
   out_msg->num_peers = htonl (view_size);
 
   GNUNET_memcpy (&out_msg[1],
                  view_array,
-                 view_size * sizeof (struct GNUNET_PeerIdentity));
+                 view_size * sizeof(struct GNUNET_PeerIdentity));
   GNUNET_MQ_send (cli_ctx->mq, ev);
 }
 
@@ -2286,13 +2305,13 @@ send_stream_peers (const struct ClientContext *cli_ctx,
   GNUNET_assert (NULL != peers);
 
   ev = GNUNET_MQ_msg_extra (out_msg,
-                            num_peers * sizeof (struct GNUNET_PeerIdentity),
+                            num_peers * sizeof(struct GNUNET_PeerIdentity),
                             GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REPLY);
   out_msg->num_peers = htonl (num_peers);
 
   GNUNET_memcpy (&out_msg[1],
                  peers,
-                 num_peers * sizeof (struct GNUNET_PeerIdentity));
+                 num_peers * sizeof(struct GNUNET_PeerIdentity));
   GNUNET_MQ_send (cli_ctx->mq, ev);
 }
 
@@ -2310,7 +2329,7 @@ clients_notify_view_update (const struct Sub *sub)
   const struct GNUNET_PeerIdentity *view_array;
 
   num_peers = View_size (sub->view);
-  view_array = View_get_as_array(sub->view);
+  view_array = View_get_as_array (sub->view);
   /* check size of view is small enough */
   if (GNUNET_MAX_MESSAGE_SIZE < num_peers)
   {
@@ -2327,11 +2346,14 @@ clients_notify_view_update (const struct Sub *sub)
     {
       /* Client wants to receive limited amount of updates */
       cli_ctx_iter->view_updates_left -= 1;
-    } else if (1 == cli_ctx_iter->view_updates_left)
+    }
+    else if (1 == cli_ctx_iter->view_updates_left)
     {
       /* Last update of view for client */
       cli_ctx_iter->view_updates_left = -1;
-    } else if (0 > cli_ctx_iter->view_updates_left) {
+    }
+    else if (0 > cli_ctx_iter->view_updates_left)
+    {
       /* Client is not interested in updates */
       continue;
     }
@@ -2353,20 +2375,20 @@ static void
 clients_notify_stream_peer (const struct Sub *sub,
                             uint64_t num_peers,
                             const struct GNUNET_PeerIdentity *peers)
-                            // TODO enum StreamPeerSource)
+// TODO enum StreamPeerSource)
 {
   struct ClientContext *cli_ctx_iter;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Got peer (%s) from biased stream - update all clients\n",
-      GNUNET_i2s (peers));
+       "Got peer (%s) from biased stream - update all clients\n",
+       GNUNET_i2s (peers));
 
   for (cli_ctx_iter = cli_ctx_head;
        NULL != cli_ctx_iter;
        cli_ctx_iter = cli_ctx_iter->next)
   {
-    if (GNUNET_YES == cli_ctx_iter->stream_update &&
-        (sub == cli_ctx_iter->sub || sub == msub))
+    if ((GNUNET_YES == cli_ctx_iter->stream_update) &&
+        ((sub == cli_ctx_iter->sub) || (sub == msub) ))
     {
       send_stream_peers (cli_ctx_iter, num_peers, peers);
     }
@@ -2431,11 +2453,11 @@ resize_wrapper (struct RPS_Sampler *sampler, uint32_t new_size)
   // TODO respect the min, max
   sampler_size = RPS_sampler_get_size (sampler);
   if (sampler_size > new_size * 4)
-  { /* Shrinking */
+  {   /* Shrinking */
     RPS_sampler_resize (sampler, sampler_size / 2);
   }
   else if (sampler_size < new_size)
-  { /* Growing */
+  {   /* Growing */
     RPS_sampler_resize (sampler, sampler_size * 2);
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG, "sampler_size is now %u\n", sampler_size);
@@ -2455,6 +2477,7 @@ add_peer_array_to_set (const struct GNUNET_PeerIdentity *peer_array,
                        struct GNUNET_CONTAINER_MultiPeerMap *peer_map)
 {
   unsigned int i;
+
   if (NULL == peer_map)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
@@ -2471,9 +2494,9 @@ add_peer_array_to_set (const struct GNUNET_PeerIdentity *peer_array,
     if (msub->peer_map == peer_map)
     {
       GNUNET_STATISTICS_set (stats,
-                            "# known peers",
-                            GNUNET_CONTAINER_multipeermap_size (peer_map),
-                            GNUNET_NO);
+                             "# known peers",
+                             GNUNET_CONTAINER_multipeermap_size (peer_map),
+                             GNUNET_NO);
     }
   }
 }
@@ -2496,8 +2519,8 @@ send_pull_reply (struct PeerContext *peer_ctx,
   struct GNUNET_RPS_P2P_PullReplyMessage *out_msg;
 
   /* Compute actual size */
-  send_size = sizeof (struct GNUNET_RPS_P2P_PullReplyMessage) +
-              num_peer_ids * sizeof (struct GNUNET_PeerIdentity);
+  send_size = sizeof(struct GNUNET_RPS_P2P_PullReplyMessage)
+              + num_peer_ids * sizeof(struct GNUNET_PeerIdentity);
 
   if (GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE < send_size)
     /* Compute number of peers to send
@@ -2505,27 +2528,27 @@ send_pull_reply (struct PeerContext *peer_ctx,
     // TODO select random ones via permutation
     //      or even better: do good protocol design
     send_size =
-      (GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE -
-       sizeof (struct GNUNET_RPS_P2P_PullReplyMessage)) /
-       sizeof (struct GNUNET_PeerIdentity);
+      (GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE
+       - sizeof(struct GNUNET_RPS_P2P_PullReplyMessage))
+      / sizeof(struct GNUNET_PeerIdentity);
   else
     send_size = num_peer_ids;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Going to send PULL REPLY with %u peers to %s\n",
-      send_size, GNUNET_i2s (&peer_ctx->peer_id));
+       "Going to send PULL REPLY with %u peers to %s\n",
+       send_size, GNUNET_i2s (&peer_ctx->peer_id));
 
   ev = GNUNET_MQ_msg_extra (out_msg,
-                            send_size * sizeof (struct GNUNET_PeerIdentity),
+                            send_size * sizeof(struct GNUNET_PeerIdentity),
                             GNUNET_MESSAGE_TYPE_RPS_PP_PULL_REPLY);
   out_msg->num_peers = htonl (send_size);
   GNUNET_memcpy (&out_msg[1], peer_ids,
-         send_size * sizeof (struct GNUNET_PeerIdentity));
+                 send_size * sizeof(struct GNUNET_PeerIdentity));
 
   send_message (peer_ctx, ev, "PULL REPLY");
   if (peer_ctx->sub == msub)
   {
-    GNUNET_STATISTICS_update(stats, "# pull reply send issued", 1, GNUNET_NO);
+    GNUNET_STATISTICS_update (stats, "# pull reply send issued", 1, GNUNET_NO);
   }
   // TODO check with send intention: as send_channel is used/opened we indicate
   // a sending intention without intending it.
@@ -2599,7 +2622,7 @@ insert_in_sampler (void *cls,
     (void) issue_peer_online_check (sub, peer);
     /* Establish a channel towards that peer to indicate we are going to send
      * messages to it */
-    //indicate_sending_intention (peer);
+    // indicate_sending_intention (peer);
   }
   if (sub == msub)
   {
@@ -2612,9 +2635,9 @@ insert_in_sampler (void *cls,
   sub->num_observed_peers++;
   GNUNET_CONTAINER_multipeermap_put
     (sub->observed_unique_peers,
-     peer,
-     NULL,
-     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
+    peer,
+    NULL,
+    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY);
   uint32_t num_observed_unique_peers =
     GNUNET_CONTAINER_multipeermap_size (sub->observed_unique_peers);
   GNUNET_STATISTICS_set (stats,
@@ -2623,10 +2646,10 @@ insert_in_sampler (void *cls,
                          GNUNET_NO);
 #ifdef TO_FILE_FULL
   to_file (sub->file_name_observed_log,
-          "%" PRIu32 " %" PRIu32 " %f\n",
-          sub->num_observed_peers,
-          num_observed_unique_peers,
-          1.0*num_observed_unique_peers/sub->num_observed_peers)
+           "%" PRIu32 " %" PRIu32 " %f\n",
+           sub->num_observed_peers,
+           num_observed_unique_peers,
+           1.0 * num_observed_unique_peers / sub->num_observed_peers)
 #endif /* TO_FILE_FULL */
 #endif /* TO_FILE */
 }
@@ -2682,18 +2705,18 @@ check_sending_channel_needed (const struct PeerContext *peer_ctx)
   }
   if (GNUNET_YES == check_sending_channel_exists (peer_ctx))
   {
-    if ( (0 < RPS_sampler_count_id (peer_ctx->sub->sampler,
-                                    &peer_ctx->peer_id)) ||
-         (GNUNET_YES == View_contains_peer (peer_ctx->sub->view,
-                                            &peer_ctx->peer_id)) ||
-         (GNUNET_YES == CustomPeerMap_contains_peer (peer_ctx->sub->push_map,
-                                                     &peer_ctx->peer_id)) ||
-         (GNUNET_YES == CustomPeerMap_contains_peer (peer_ctx->sub->pull_map,
-                                                     &peer_ctx->peer_id)) ||
-         (GNUNET_YES == check_peer_flag (peer_ctx->sub->peer_map,
-                                         &peer_ctx->peer_id,
-                                         Peers_PULL_REPLY_PENDING)))
-    { /* If we want to keep the connection to peer open */
+    if ((0 < RPS_sampler_count_id (peer_ctx->sub->sampler,
+                                   &peer_ctx->peer_id)) ||
+        (GNUNET_YES == View_contains_peer (peer_ctx->sub->view,
+                                           &peer_ctx->peer_id)) ||
+        (GNUNET_YES == CustomPeerMap_contains_peer (peer_ctx->sub->push_map,
+                                                    &peer_ctx->peer_id)) ||
+        (GNUNET_YES == CustomPeerMap_contains_peer (peer_ctx->sub->pull_map,
+                                                    &peer_ctx->peer_id)) ||
+        (GNUNET_YES == check_peer_flag (peer_ctx->sub->peer_map,
+                                        &peer_ctx->peer_id,
+                                        Peers_PULL_REPLY_PENDING)))
+    {     /* If we want to keep the connection to peer open */
       return GNUNET_YES;
     }
     return GNUNET_NO;
@@ -2749,11 +2772,11 @@ clean_peer (struct Sub *sub,
                                                                peer)))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Going to remove send channel to peer %s\n",
-        GNUNET_i2s (peer));
+         "Going to remove send channel to peer %s\n",
+         GNUNET_i2s (peer));
     #if ENABLE_MALICIOUS
     if (0 != GNUNET_memcmp (&attacked_peer,
-                                              peer))
+                            peer))
       (void) destroy_sending_channel (get_peer_ctx (sub->peer_map,
                                                     peer));
     #else /* ENABLE_MALICIOUS */
@@ -2767,21 +2790,21 @@ clean_peer (struct Sub *sub,
   {
     /* Peer was already removed by callback on destroyed channel */
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Peer was removed from our knowledge during cleanup\n");
+         "Peer was removed from our knowledge during cleanup\n");
     return;
   }
 
-  if ( (GNUNET_NO == check_peer_send_intention (get_peer_ctx (sub->peer_map,
-                                                              peer))) &&
-       (GNUNET_NO == View_contains_peer (sub->view, peer)) &&
-       (GNUNET_NO == CustomPeerMap_contains_peer (sub->push_map, peer)) &&
-       (GNUNET_NO == CustomPeerMap_contains_peer (sub->push_map, peer)) &&
-       (0 == RPS_sampler_count_id (sub->sampler, peer)) &&
-       (GNUNET_YES == check_removable (get_peer_ctx (sub->peer_map, peer))) )
-  { /* We can safely remove this peer */
+  if ((GNUNET_NO == check_peer_send_intention (get_peer_ctx (sub->peer_map,
+                                                             peer))) &&
+      (GNUNET_NO == View_contains_peer (sub->view, peer)) &&
+      (GNUNET_NO == CustomPeerMap_contains_peer (sub->push_map, peer)) &&
+      (GNUNET_NO == CustomPeerMap_contains_peer (sub->push_map, peer)) &&
+      (0 == RPS_sampler_count_id (sub->sampler, peer)) &&
+      (GNUNET_YES == check_removable (get_peer_ctx (sub->peer_map, peer))))
+  {   /* We can safely remove this peer */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Going to remove peer %s\n",
-        GNUNET_i2s (peer));
+         "Going to remove peer %s\n",
+         GNUNET_i2s (peer));
     remove_peer (sub, peer);
     return;
   }
@@ -2805,26 +2828,27 @@ cleanup_destroyed_channel (void *cls,
 {
   struct ChannelCtx *channel_ctx = cls;
   struct PeerContext *peer_ctx = channel_ctx->peer_ctx;
+
   (void) channel;
 
   channel_ctx->channel = NULL;
   remove_channel_ctx (channel_ctx);
-  if (NULL != peer_ctx &&
-      peer_ctx->send_channel_ctx == channel_ctx &&
-      GNUNET_YES == check_sending_channel_needed (channel_ctx->peer_ctx))
+  if ((NULL != peer_ctx) &&
+      (peer_ctx->send_channel_ctx == channel_ctx) &&
+      (GNUNET_YES == check_sending_channel_needed (channel_ctx->peer_ctx)) )
   {
     remove_peer (peer_ctx->sub, &peer_ctx->peer_id);
   }
 }
 
+
 /***********************************************************************
- * /Util functions
+* /Util functions
 ***********************************************************************/
 
 
-
 /***********************************************************************
- * Sub
+* Sub
 ***********************************************************************/
 
 /**
@@ -2879,8 +2903,8 @@ new_sub (const struct GNUNET_HashCode *hash,
   if (NULL == sub->cadet_port)
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-        "Cadet port `%s' is already in use.\n",
-        GNUNET_APPLICATION_PORT_RPS);
+         "Cadet port `%s' is already in use.\n",
+         GNUNET_APPLICATION_PORT_RPS);
     GNUNET_assert (0);
   }
 
@@ -2902,13 +2926,13 @@ new_sub (const struct GNUNET_HashCode *hash,
     char str_hash[105];
 
     GNUNET_snprintf (str_hash,
-		     sizeof (str_hash),
-		     GNUNET_h2s_full (hash));
+                     sizeof(str_hash),
+                     GNUNET_h2s_full (hash));
     tmp_filename_valid_peers = sub->filename_valid_peers;
     GNUNET_asprintf (&sub->filename_valid_peers,
-		     "%s%s",
-		     tmp_filename_valid_peers,
-		     str_hash);
+                     "%s%s",
+                     tmp_filename_valid_peers,
+                     str_hash);
     GNUNET_free (tmp_filename_valid_peers);
   }
   sub->peer_map = GNUNET_CONTAINER_multipeermap_create (4, GNUNET_NO);
@@ -2920,7 +2944,7 @@ new_sub (const struct GNUNET_HashCode *hash,
   GNUNET_assert (0 != round_interval.rel_value_us);
   sub->round_interval = round_interval;
   sub->sampler = RPS_sampler_init (sampler_size,
-                                  round_interval);
+                                   round_interval);
 
   /* Logging of internals */
 #ifdef TO_FILE_FULL
@@ -2929,11 +2953,11 @@ new_sub (const struct GNUNET_HashCode *hash,
 #ifdef TO_FILE
 #ifdef TO_FILE_FULL
   sub->file_name_observed_log = store_prefix_file_name (&own_identity,
-                                                       "observed");
+                                                        "observed");
 #endif /* TO_FILE_FULL */
   sub->num_observed_peers = 0;
   sub->observed_unique_peers = GNUNET_CONTAINER_multipeermap_create (1,
-                                                                    GNUNET_NO);
+                                                                     GNUNET_NO);
 #endif /* TO_FILE */
 
   /* Set up data structures for gossip */
@@ -2981,9 +3005,9 @@ write_histogram_to_file (const uint32_t hist_array[],
     char collect_str_tmp[8];
 
     GNUNET_snprintf (collect_str_tmp,
-		     sizeof (collect_str_tmp),
-		     "%" PRIu32 "\n",
-		     hist_array[i]);
+                     sizeof(collect_str_tmp),
+                     "%" PRIu32 "\n",
+                     hist_array[i]);
     recv_str_iter = stpncpy (recv_str_iter,
                              collect_str_tmp,
                              6);
@@ -2997,6 +3021,8 @@ write_histogram_to_file (const uint32_t hist_array[],
                  collect_str);
   GNUNET_free (file_name_full);
 }
+
+
 #endif /* TO_FILE */
 
 
@@ -3015,7 +3041,7 @@ destroy_sub (struct Sub *sub)
 
   /* Disconnect from cadet */
   GNUNET_CADET_close_port (sub->cadet_port);
-  sub->cadet_port= NULL;
+  sub->cadet_port = NULL;
 
   /* Clean up data structures for peers */
   RPS_sampler_destroy (sub->sampler);
@@ -3060,12 +3086,12 @@ destroy_sub (struct Sub *sub)
 
 
 /***********************************************************************
- * /Sub
+* /Sub
 ***********************************************************************/
 
 
 /***********************************************************************
- * Core handlers
+* Core handlers
 ***********************************************************************/
 
 /**
@@ -3102,10 +3128,10 @@ core_connects (void *cls,
   (void) mq;
 
   GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CONTAINER_multipeermap_put (map_single_hop,
-						    peer,
-						    NULL,
-						    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
+                 GNUNET_CONTAINER_multipeermap_put (map_single_hop,
+                                                    peer,
+                                                    NULL,
+                                                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   return NULL;
 }
 
@@ -3129,8 +3155,9 @@ core_disconnects (void *cls,
   GNUNET_CONTAINER_multipeermap_remove_all (map_single_hop, peer);
 }
 
+
 /***********************************************************************
- * /Core handlers
+* /Core handlers
 ***********************************************************************/
 
 
@@ -3166,12 +3193,13 @@ static void
 adapt_sizes (struct Sub *sub, double logestimate, double std_dev)
 {
   double estimate;
-  //double scale; // TODO this might go gloabal/config
+
+  // double scale; // TODO this might go gloabal/config
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Received a ns estimate - logest: %f, std_dev: %f (old_size: %u)\n",
        logestimate, std_dev, RPS_sampler_get_size (sub->sampler));
-  //scale = .01;
+  // scale = .01;
   estimate = GNUNET_NSE_log_estimate_to_n (logestimate);
   // GNUNET_NSE_log_estimate_to_n (logestimate);
   estimate = pow (estimate, 1.0 / 3);
@@ -3182,10 +3210,11 @@ adapt_sizes (struct Sub *sub, double logestimate, double std_dev)
     LOG (GNUNET_ERROR_TYPE_DEBUG, "Changing estimate to %f\n", estimate);
     sub->sampler_size_est_need = estimate;
     sub->view_size_est_need = estimate;
-  } else
+  }
+  else
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG, "Not using estimate %f\n", estimate);
-    //sub->sampler_size_est_need = sub->view_size_est_min;
+    // sub->sampler_size_est_need = sub->view_size_est_min;
     sub->view_size_est_need = sub->view_size_est_min;
   }
   if (sub == msub)
@@ -3226,8 +3255,8 @@ nse_callback (void *cls,
 
   adapt_sizes (msub, logestimate, std_dev);
   for (cli_ctx_iter = cli_ctx_head;
-      NULL != cli_ctx_iter;
-      cli_ctx_iter = cli_ctx_iter->next)
+       NULL != cli_ctx_iter;
+       cli_ctx_iter = cli_ctx_iter->next)
   {
     if (NULL != cli_ctx_iter->sub)
     {
@@ -3253,14 +3282,14 @@ check_client_seed (void *cls, const struct GNUNET_RPS_CS_SeedMessage *msg)
   uint16_t msize = ntohs (msg->header.size);
   uint32_t num_peers = ntohl (msg->num_peers);
 
-  msize -= sizeof (struct GNUNET_RPS_CS_SeedMessage);
-  if ( (msize / sizeof (struct GNUNET_PeerIdentity) != num_peers) ||
-       (msize % sizeof (struct GNUNET_PeerIdentity) != 0) )
+  msize -= sizeof(struct GNUNET_RPS_CS_SeedMessage);
+  if ((msize / sizeof(struct GNUNET_PeerIdentity) != num_peers) ||
+      (msize % sizeof(struct GNUNET_PeerIdentity) != 0))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-        "message says it sends %" PRIu32 " peers, have space for %lu peers\n",
-        ntohl (msg->num_peers),
-        (msize / sizeof (struct GNUNET_PeerIdentity)));
+         "message says it sends %" PRIu32 " peers, have space for %lu peers\n",
+         ntohl (msg->num_peers),
+         (msize / sizeof(struct GNUNET_PeerIdentity)));
     GNUNET_break (0);
     GNUNET_SERVICE_client_drop (cli_ctx->client);
     return GNUNET_SYSERR;
@@ -3298,8 +3327,10 @@ handle_client_seed (void *cls,
          i,
          GNUNET_i2s (&peers[i]));
 
-    if (NULL != msub) got_peer (msub, &peers[i]); /* Condition needed? */
-    if (NULL != cli_ctx->sub) got_peer (cli_ctx->sub, &peers[i]);
+    if (NULL != msub)
+      got_peer (msub, &peers[i]);                 /* Condition needed? */
+    if (NULL != cli_ctx->sub)
+      got_peer (cli_ctx->sub, &peers[i]);
   }
   GNUNET_SERVICE_client_continue (cli_ctx->client);
 }
@@ -3343,6 +3374,7 @@ handle_client_view_cancel (void *cls,
                            const struct GNUNET_MessageHeader *msg)
 {
   struct ClientContext *cli_ctx = cls;
+
   (void) msg;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -3366,9 +3398,11 @@ handle_client_view_cancel (void *cls,
  */
 static void
 handle_client_stream_request (void *cls,
-                              const struct GNUNET_RPS_CS_DEBUG_StreamRequest *msg)
+                              const struct
+                              GNUNET_RPS_CS_DEBUG_StreamRequest *msg)
 {
   struct ClientContext *cli_ctx = cls;
+
   (void) msg;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -3391,6 +3425,7 @@ handle_client_stream_cancel (void *cls,
                              const struct GNUNET_MessageHeader *msg)
 {
   struct ClientContext *cli_ctx = cls;
+
   (void) msg;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -3415,18 +3450,19 @@ handle_client_start_sub (void *cls,
   struct ClientContext *cli_ctx = cls;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG, "Client requested start of a new sub.\n");
-  if (NULL != cli_ctx->sub &&
-      0 != memcmp (&cli_ctx->sub->hash,
-                   &msg->hash,
-                   sizeof (struct GNUNET_HashCode)))
+  if ((NULL != cli_ctx->sub) &&
+      (0 != memcmp (&cli_ctx->sub->hash,
+                    &msg->hash,
+                    sizeof(struct GNUNET_HashCode))) )
   {
-    LOG (GNUNET_ERROR_TYPE_WARNING, "Already have a Sub with different share for this client. Remove old one, add new.\n");
+    LOG (GNUNET_ERROR_TYPE_WARNING,
+         "Already have a Sub with different share for this client. Remove old one, add new.\n");
     destroy_sub (cli_ctx->sub);
     cli_ctx->sub = NULL;
   }
   cli_ctx->sub = new_sub (&msg->hash,
-                         msub->sampler_size_est_min, // TODO make api input?
-                         GNUNET_TIME_relative_ntoh (msg->round_interval));
+                          msub->sampler_size_est_min, // TODO make api input?
+                          GNUNET_TIME_relative_ntoh (msg->round_interval));
   GNUNET_SERVICE_client_continue (cli_ctx->client);
 }
 
@@ -3444,9 +3480,11 @@ handle_client_stop_sub (void *cls,
   struct ClientContext *cli_ctx = cls;
 
   GNUNET_assert (NULL != cli_ctx->sub);
-  if (0 != memcmp (&cli_ctx->sub->hash, &msg->hash, sizeof (struct GNUNET_HashCode)))
+  if (0 != memcmp (&cli_ctx->sub->hash, &msg->hash, sizeof(struct
+                                                           GNUNET_HashCode)))
   {
-    LOG (GNUNET_ERROR_TYPE_WARNING, "Share of current sub and request differ!\n");
+    LOG (GNUNET_ERROR_TYPE_WARNING,
+         "Share of current sub and request differ!\n");
   }
   destroy_sub (cli_ctx->sub);
   cli_ctx->sub = NULL;
@@ -3469,10 +3507,11 @@ handle_peer_check (void *cls,
 {
   const struct ChannelCtx *channel_ctx = cls;
   const struct GNUNET_PeerIdentity *peer = &channel_ctx->peer_ctx->peer_id;
+
   (void) msg;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Received CHECK_LIVE (%s)\n", GNUNET_i2s (peer));
+       "Received CHECK_LIVE (%s)\n", GNUNET_i2s (peer));
   if (channel_ctx->peer_ctx->sub == msub)
   {
     GNUNET_STATISTICS_update (stats,
@@ -3500,6 +3539,7 @@ handle_peer_push (void *cls,
 {
   const struct ChannelCtx *channel_ctx = cls;
   const struct GNUNET_PeerIdentity *peer = &channel_ctx->peer_ctx->peer_id;
+
   (void) msg;
 
   // (check the proof of work (?))
@@ -3509,10 +3549,10 @@ handle_peer_push (void *cls,
        GNUNET_i2s (peer));
   if (channel_ctx->peer_ctx->sub == msub)
   {
-    GNUNET_STATISTICS_update(stats, "# push message received", 1, GNUNET_NO);
-    if (NULL != map_single_hop &&
-        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
-                                                             peer))
+    GNUNET_STATISTICS_update (stats, "# push message received", 1, GNUNET_NO);
+    if ((NULL != map_single_hop) &&
+        (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                              peer)))
     {
       GNUNET_STATISTICS_update (stats,
                                 "# push message received (multi-hop peer)",
@@ -3524,9 +3564,9 @@ handle_peer_push (void *cls,
   #if ENABLE_MALICIOUS
   struct AttackedPeer *tmp_att_peer;
 
-  if ( (1 == mal_type) ||
-       (3 == mal_type) )
-  { /* Try to maximise representation */
+  if ((1 == mal_type) ||
+      (3 == mal_type))
+  {   /* Try to maximise representation */
     tmp_att_peer = GNUNET_new (struct AttackedPeer);
     tmp_att_peer->peer_id = *peer;
     if (NULL == att_peer_set)
@@ -3577,18 +3617,20 @@ handle_peer_pull_request (void *cls,
   struct PeerContext *peer_ctx = channel_ctx->peer_ctx;
   const struct GNUNET_PeerIdentity *peer = &peer_ctx->peer_id;
   const struct GNUNET_PeerIdentity *view_array;
+
   (void) msg;
 
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Received PULL REQUEST (%s)\n", GNUNET_i2s (peer));
+  LOG (GNUNET_ERROR_TYPE_DEBUG, "Received PULL REQUEST (%s)\n", GNUNET_i2s (
+         peer));
   if (peer_ctx->sub == msub)
   {
-    GNUNET_STATISTICS_update(stats,
-                             "# pull request message received",
-                             1,
-                             GNUNET_NO);
-    if (NULL != map_single_hop &&
-        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
-                                                             &peer_ctx->peer_id))
+    GNUNET_STATISTICS_update (stats,
+                              "# pull request message received",
+                              1,
+                              GNUNET_NO);
+    if ((NULL != map_single_hop) &&
+        (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                              &peer_ctx->peer_id)))
     {
       GNUNET_STATISTICS_update (stats,
                                 "# pull request message received (multi-hop peer)",
@@ -3598,14 +3640,14 @@ handle_peer_pull_request (void *cls,
   }
 
   #if ENABLE_MALICIOUS
-  if (1 == mal_type
-      || 3 == mal_type)
-  { /* Try to maximise representation */
+  if ((1 == mal_type)
+      || (3 == mal_type))
+  {   /* Try to maximise representation */
     send_pull_reply (peer_ctx, mal_peers, num_mal_peers);
   }
 
   else if (2 == mal_type)
-  { /* Try to partition network */
+  {   /* Try to partition network */
     if (0 == GNUNET_memcmp (&attacked_peer, peer))
     {
       send_pull_reply (peer_ctx, mal_peers, num_mal_peers);
@@ -3637,20 +3679,22 @@ check_peer_pull_reply (void *cls,
   struct ChannelCtx *channel_ctx = cls;
   struct PeerContext *sender_ctx = channel_ctx->peer_ctx;
 
-  if (sizeof (struct GNUNET_RPS_P2P_PullReplyMessage) > ntohs (msg->header.size))
+  if (sizeof(struct GNUNET_RPS_P2P_PullReplyMessage) > ntohs (msg->header.size))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
 
-  if ((ntohs (msg->header.size) - sizeof (struct GNUNET_RPS_P2P_PullReplyMessage)) /
-      sizeof (struct GNUNET_PeerIdentity) != ntohl (msg->num_peers))
+  if ((ntohs (msg->header.size) - sizeof(struct
+                                         GNUNET_RPS_P2P_PullReplyMessage))
+      / sizeof(struct GNUNET_PeerIdentity) != ntohl (msg->num_peers))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-        "message says it sends %" PRIu32 " peers, have space for %lu peers\n",
-        ntohl (msg->num_peers),
-        (ntohs (msg->header.size) - sizeof (struct GNUNET_RPS_P2P_PullReplyMessage)) /
-            sizeof (struct GNUNET_PeerIdentity));
+         "message says it sends %" PRIu32 " peers, have space for %lu peers\n",
+         ntohl (msg->num_peers),
+         (ntohs (msg->header.size) - sizeof(struct
+                                            GNUNET_RPS_P2P_PullReplyMessage))
+         / sizeof(struct GNUNET_PeerIdentity));
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
   }
@@ -3660,8 +3704,8 @@ check_peer_pull_reply (void *cls,
                                      Peers_PULL_REPLY_PENDING))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "Received a pull reply from a peer (%s) we didn't request one from!\n",
-        GNUNET_i2s (&sender_ctx->peer_id));
+         "Received a pull reply from a peer (%s) we didn't request one from!\n",
+         GNUNET_i2s (&sender_ctx->peer_id));
     if (sender_ctx->sub == msub)
     {
       GNUNET_STATISTICS_update (stats,
@@ -3689,21 +3733,24 @@ handle_peer_pull_reply (void *cls,
   const struct GNUNET_PeerIdentity *peers;
   struct Sub *sub = channel_ctx->peer_ctx->sub;
   uint32_t i;
+
 #if ENABLE_MALICIOUS
   struct AttackedPeer *tmp_att_peer;
 #endif /* ENABLE_MALICIOUS */
 
   sub->pull_delays[sub->num_rounds - channel_ctx->peer_ctx->round_pull_req]++;
-  LOG (GNUNET_ERROR_TYPE_DEBUG, "Received PULL REPLY (%s)\n", GNUNET_i2s (sender));
+  LOG (GNUNET_ERROR_TYPE_DEBUG, "Received PULL REPLY (%s)\n", GNUNET_i2s (
+         sender));
   if (channel_ctx->peer_ctx->sub == msub)
   {
     GNUNET_STATISTICS_update (stats,
                               "# pull reply messages received",
                               1,
                               GNUNET_NO);
-    if (NULL != map_single_hop &&
-        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
-          &channel_ctx->peer_ctx->peer_id))
+    if ((NULL != map_single_hop) &&
+        (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                              &channel_ctx->
+                                                              peer_ctx->peer_id)) )
     {
       GNUNET_STATISTICS_update (stats,
                                 "# pull reply messages received (multi-hop peer)",
@@ -3735,13 +3782,13 @@ handle_peer_pull_reply (void *cls,
 
     #if ENABLE_MALICIOUS
     if ((NULL != att_peer_set) &&
-        (1 == mal_type || 3 == mal_type))
-    { /* Add attacked peer to local list */
-      // TODO check if we sent a request and this was the first reply
-      if (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (att_peer_set,
-                                                               &peers[i])
-          && GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (mal_peer_set,
-                                                                  &peers[i]))
+        ((1 == mal_type) || (3 == mal_type) ))
+    {     /* Add attacked peer to local list */
+          // TODO check if we sent a request and this was the first reply
+      if ((GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (att_peer_set,
+                                                                &peers[i]))
+          && (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (mal_peer_set,
+                                                                   &peers[i])) )
       {
         tmp_att_peer = GNUNET_new (struct AttackedPeer);
         tmp_att_peer->peer_id = peers[i];
@@ -3767,7 +3814,7 @@ handle_peer_pull_reply (void *cls,
     {
       schedule_operation (channel_ctx->peer_ctx,
                           insert_in_pull_map,
-                          channel_ctx->peer_ctx->sub); /* cls */
+                          channel_ctx->peer_ctx->sub);    /* cls */
       (void) issue_peer_online_check (channel_ctx->peer_ctx->sub,
                                       &peers[i]);
     }
@@ -3816,15 +3863,17 @@ compute_rand_delay (struct GNUNET_TIME_Relative mean,
   /* Compute random time value between spread * mean and spread * mean */
   half_interval = GNUNET_TIME_relative_divide (mean, spread);
 
-  max_rand_delay = GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us / mean.rel_value_us * (2/spread);
+  max_rand_delay = GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us
+                   / mean.rel_value_us * (2 / spread);
   /**
    * Compute random value between (0 and 1) * round_interval
    * via multiplying round_interval with a 'fraction' (0 to value)/value
    */
-  rand_delay = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, max_rand_delay);
-  ret = GNUNET_TIME_relative_saturating_multiply (mean,  rand_delay);
-  ret = GNUNET_TIME_relative_divide   (ret, max_rand_delay);
-  ret = GNUNET_TIME_relative_add      (ret, half_interval);
+  rand_delay = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                                         max_rand_delay);
+  ret = GNUNET_TIME_relative_saturating_multiply (mean, rand_delay);
+  ret = GNUNET_TIME_relative_divide (ret, max_rand_delay);
+  ret = GNUNET_TIME_relative_add (ret, half_interval);
 
   if (GNUNET_TIME_UNIT_FOREVER_REL.rel_value_us == ret.rel_value_us)
     LOG (GNUNET_ERROR_TYPE_WARNING,
@@ -3865,9 +3914,9 @@ send_pull_request (struct PeerContext *peer_ctx)
                               "# pull request send issued",
                               1,
                               GNUNET_NO);
-    if (NULL != map_single_hop &&
-        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
-                                                             &peer_ctx->peer_id))
+    if ((NULL != map_single_hop) &&
+        (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                              &peer_ctx->peer_id)))
     {
       GNUNET_STATISTICS_update (stats,
                                 "# pull request send issued (multi-hop peer)",
@@ -3900,9 +3949,9 @@ send_push (struct PeerContext *peer_ctx)
                               "# push send issued",
                               1,
                               GNUNET_NO);
-    if (NULL != map_single_hop &&
-        GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
-                                                             &peer_ctx->peer_id))
+    if ((NULL != map_single_hop) &&
+        (GNUNET_NO == GNUNET_CONTAINER_multipeermap_contains (map_single_hop,
+                                                              &peer_ctx->peer_id)))
     {
       GNUNET_STATISTICS_update (stats,
                                 "# push send issued (multi-hop peer)",
@@ -3932,20 +3981,21 @@ check_client_act_malicious (void *cls,
   uint16_t msize = ntohs (msg->header.size);
   uint32_t num_peers = ntohl (msg->num_peers);
 
-  msize -= sizeof (struct GNUNET_RPS_CS_ActMaliciousMessage);
-  if ( (msize / sizeof (struct GNUNET_PeerIdentity) != num_peers) ||
-       (msize % sizeof (struct GNUNET_PeerIdentity) != 0) )
+  msize -= sizeof(struct GNUNET_RPS_CS_ActMaliciousMessage);
+  if ((msize / sizeof(struct GNUNET_PeerIdentity) != num_peers) ||
+      (msize % sizeof(struct GNUNET_PeerIdentity) != 0))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-        "message says it sends %" PRIu32 " peers, have space for %lu peers\n",
-        ntohl (msg->num_peers),
-        (msize / sizeof (struct GNUNET_PeerIdentity)));
+         "message says it sends %" PRIu32 " peers, have space for %lu peers\n",
+         ntohl (msg->num_peers),
+         (msize / sizeof(struct GNUNET_PeerIdentity)));
     GNUNET_break (0);
     GNUNET_SERVICE_client_drop (cli_ctx->client);
     return GNUNET_SYSERR;
   }
   return GNUNET_OK;
 }
+
 
 /**
  * Turn RPS service to act malicious.
@@ -3956,7 +4006,8 @@ check_client_act_malicious (void *cls,
  */
 static void
 handle_client_act_malicious (void *cls,
-                             const struct GNUNET_RPS_CS_ActMaliciousMessage *msg)
+                             const struct
+                             GNUNET_RPS_CS_ActMaliciousMessage *msg)
 {
   struct ClientContext *cli_ctx = cls;
   struct GNUNET_PeerIdentity *peers;
@@ -3964,7 +4015,8 @@ handle_client_act_malicious (void *cls,
   uint32_t num_mal_peers_old;
   struct Sub *sub = cli_ctx->sub;
 
-  if (NULL == sub) sub = msub;
+  if (NULL == sub)
+    sub = msub;
   /* Do actual logic */
   peers = (struct GNUNET_PeerIdentity *) &msg[1];
   mal_type = ntohl (msg->type);
@@ -3977,8 +4029,8 @@ handle_client_act_malicious (void *cls,
        ntohl (msg->num_peers));
 
   if (1 == mal_type)
-  { /* Try to maximise representation */
-    /* Add other malicious peers to those we already know */
+  {   /* Try to maximise representation */
+      /* Add other malicious peers to those we already know */
 
     num_mal_peers_sent = ntohl (msg->num_peers);
     num_mal_peers_old = num_mal_peers;
@@ -3986,8 +4038,8 @@ handle_client_act_malicious (void *cls,
                        num_mal_peers,
                        num_mal_peers + num_mal_peers_sent);
     GNUNET_memcpy (&mal_peers[num_mal_peers_old],
-            peers,
-            num_mal_peers_sent * sizeof (struct GNUNET_PeerIdentity));
+                   peers,
+                   num_mal_peers_sent * sizeof(struct GNUNET_PeerIdentity));
 
     /* Add all mal peers to mal_peer_set */
     add_peer_array_to_set (&mal_peers[num_mal_peers_old],
@@ -4000,10 +4052,10 @@ handle_client_act_malicious (void *cls,
     sub->do_round_task = GNUNET_SCHEDULER_add_now (&do_mal_round, sub);
   }
 
-  else if ( (2 == mal_type) ||
-            (3 == mal_type) )
-  { /* Try to partition the network */
-    /* Add other malicious peers to those we already know */
+  else if ((2 == mal_type) ||
+           (3 == mal_type))
+  {   /* Try to partition the network */
+      /* Add other malicious peers to those we already know */
 
     num_mal_peers_sent = ntohl (msg->num_peers) - 1;
     num_mal_peers_old = num_mal_peers;
@@ -4011,12 +4063,12 @@ handle_client_act_malicious (void *cls,
     GNUNET_array_grow (mal_peers,
                        num_mal_peers,
                        num_mal_peers + num_mal_peers_sent);
-    if (NULL != mal_peers &&
-        0 != num_mal_peers)
+    if ((NULL != mal_peers) &&
+        (0 != num_mal_peers) )
     {
       GNUNET_memcpy (&mal_peers[num_mal_peers_old],
-              peers,
-              num_mal_peers_sent * sizeof (struct GNUNET_PeerIdentity));
+                     peers,
+                     num_mal_peers_sent * sizeof(struct GNUNET_PeerIdentity));
 
       /* Add all mal peers to mal_peer_set */
       add_peer_array_to_set (&mal_peers[num_mal_peers_old],
@@ -4026,8 +4078,8 @@ handle_client_act_malicious (void *cls,
 
     /* Store the one attacked peer */
     GNUNET_memcpy (&attacked_peer,
-            &msg->attacked_peer,
-            sizeof (struct GNUNET_PeerIdentity));
+                   &msg->attacked_peer,
+                   sizeof(struct GNUNET_PeerIdentity));
     /* Set the flag of the attacked peer to valid to avoid problems */
     if (GNUNET_NO == check_peer_known (sub->peer_map, &attacked_peer))
     {
@@ -4047,7 +4099,7 @@ handle_client_act_malicious (void *cls,
     }
   }
   else if (0 == mal_type)
-  { /* Stop acting malicious */
+  {   /* Stop acting malicious */
     GNUNET_array_grow (mal_peers, num_mal_peers, 0);
 
     /* Substitute do_mal_round () with do_round () */
@@ -4081,14 +4133,13 @@ do_mal_round (void *cls)
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Going to execute next round maliciously type %" PRIu32 ".\n",
-      mal_type);
+       mal_type);
   sub->do_round_task = NULL;
   GNUNET_assert (mal_type <= 3);
   /* Do malicious actions */
   if (1 == mal_type)
-  { /* Try to maximise representation */
-
-    /* The maximum of pushes we're going to send this round */
+  {   /* Try to maximise representation */
+      /* The maximum of pushes we're going to send this round */
     num_pushes = GNUNET_MIN (GNUNET_MIN (push_limit,
                                          num_attacked_peers),
                              GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE);
@@ -4098,7 +4149,7 @@ do_mal_round (void *cls)
          num_pushes);
 
     /* Send PUSHes to attacked peers */
-    for (i = 0 ; i < num_pushes ; i++)
+    for (i = 0; i < num_pushes; i++)
     {
       if (att_peers_tail == att_peer_index)
         att_peer_index = att_peers_head;
@@ -4110,7 +4161,7 @@ do_mal_round (void *cls)
 
     /* Send PULLs to some peers to learn about additional peers to attack */
     tmp_att_peer = att_peer_index;
-    for (i = 0 ; i < num_pushes * alpha ; i++)
+    for (i = 0; i < num_pushes * alpha; i++)
     {
       if (att_peers_tail == tmp_att_peer)
         tmp_att_peer = att_peers_head;
@@ -4123,11 +4174,11 @@ do_mal_round (void *cls)
 
 
   else if (2 == mal_type)
-  { /**
-     * Try to partition the network
-     * Send as many pushes to the attacked peer as possible
-     * That is one push per round as it will ignore more.
-     */
+  {   /**
+       * Try to partition the network
+       * Send as many pushes to the attacked peer as possible
+       * That is one push per round as it will ignore more.
+       */
     (void) issue_peer_online_check (sub, &attacked_peer);
     if (GNUNET_YES == check_peer_flag (sub->peer_map,
                                        &attacked_peer,
@@ -4137,9 +4188,8 @@ do_mal_round (void *cls)
 
 
   if (3 == mal_type)
-  { /* Combined attack */
-
-    /* Send PUSH to attacked peers */
+  {   /* Combined attack */
+      /* Send PUSH to attacked peers */
     if (GNUNET_YES == check_peer_known (sub->peer_map, &attacked_peer))
     {
       (void) issue_peer_online_check (sub, &attacked_peer);
@@ -4148,8 +4198,8 @@ do_mal_round (void *cls)
                                          Peers_ONLINE))
       {
         LOG (GNUNET_ERROR_TYPE_DEBUG,
-            "Goding to send push to attacked peer (%s)\n",
-            GNUNET_i2s (&attacked_peer));
+             "Goding to send push to attacked peer (%s)\n",
+             GNUNET_i2s (&attacked_peer));
         send_push (get_peer_ctx (sub->peer_map, &attacked_peer));
       }
     }
@@ -4192,9 +4242,11 @@ do_mal_round (void *cls)
 
   GNUNET_assert (NULL == sub->do_round_task);
   sub->do_round_task = GNUNET_SCHEDULER_add_delayed (time_next_round,
-                                                    &do_mal_round, sub);
+                                                     &do_mal_round, sub);
   LOG (GNUNET_ERROR_TYPE_DEBUG, "Finished round\n");
 }
+
+
 #endif /* ENABLE_MALICIOUS */
 
 
@@ -4273,15 +4325,15 @@ do_round (void *cls)
       second_border = View_size (sub->view);
     }
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Going to send pulls to %u (ceil (%f * %u)) peers.\n",
-        b_peers, beta, View_size (sub->view));
+         "Going to send pulls to %u (ceil (%f * %u)) peers.\n",
+         b_peers, beta, View_size (sub->view));
     for (i = first_border; i < second_border; i++)
     {
       peer = view_array[permut[i]];
-      if ( GNUNET_NO == check_peer_flag (sub->peer_map,
-                                         &peer,
-                                         Peers_PULL_REPLY_PENDING))
-      { // FIXME if this fails schedule/loop this for later
+      if (GNUNET_NO == check_peer_flag (sub->peer_map,
+                                        &peer,
+                                        Peers_PULL_REPLY_PENDING))
+      {       // FIXME if this fails schedule/loop this for later
         send_pull_request (get_peer_ctx (sub->peer_map, &peer));
       }
     }
@@ -4297,7 +4349,7 @@ do_round (void *cls)
   if ((CustomPeerMap_size (sub->push_map) <= alpha * sub->view_size_est_need) &&
       (0 < CustomPeerMap_size (sub->push_map)) &&
       (0 < CustomPeerMap_size (sub->pull_map)))
-  { /* If conditions for update are fulfilled, update */
+  {   /* If conditions for update are fulfilled, update */
     LOG (GNUNET_ERROR_TYPE_DEBUG, "Update of the view.\n");
 
     uint32_t final_size;
@@ -4310,8 +4362,8 @@ do_round (void *cls)
                        peers_to_clean_size,
                        View_size (sub->view));
     GNUNET_memcpy (peers_to_clean,
-            view_array,
-            View_size (sub->view) * sizeof (struct GNUNET_PeerIdentity));
+                   view_array,
+                   View_size (sub->view) * sizeof(struct GNUNET_PeerIdentity));
 
     /* Seems like recreating is the easiest way of emptying the peermap */
     View_clear (sub->view);
@@ -4320,18 +4372,19 @@ do_round (void *cls)
              "--- emptied ---");
 #endif /* TO_FILE_FULL */
 
-    first_border  = GNUNET_MIN (ceil (alpha * sub->view_size_est_need),
-                                CustomPeerMap_size (sub->push_map));
-    second_border = first_border +
-                    GNUNET_MIN (floor (beta  * sub->view_size_est_need),
-                                CustomPeerMap_size (sub->pull_map));
-    final_size    = second_border +
-      ceil ((1 - (alpha + beta)) * sub->view_size_est_need);
+    first_border = GNUNET_MIN (ceil (alpha * sub->view_size_est_need),
+                               CustomPeerMap_size (sub->push_map));
+    second_border = first_border
+                    + GNUNET_MIN (floor (beta * sub->view_size_est_need),
+                                  CustomPeerMap_size (sub->pull_map));
+    final_size = second_border
+                 + ceil ((1 - (alpha + beta)) * sub->view_size_est_need);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "first border: %" PRIu32 ", second border: %" PRIu32 ", final size: %"PRIu32 "\n",
-        first_border,
-        second_border,
-        final_size);
+         "first border: %" PRIu32 ", second border: %" PRIu32 ", final size: %"
+         PRIu32 "\n",
+         first_border,
+         second_border,
+         final_size);
 
     /* Update view with peers received through PUSHes */
     permut = GNUNET_CRYPTO_random_permute (GNUNET_CRYPTO_QUALITY_STRONG,
@@ -4345,15 +4398,16 @@ do_round (void *cls)
       if (GNUNET_OK == inserted)
       {
         clients_notify_stream_peer (sub,
-            1,
-            CustomPeerMap_get_peer_by_index (sub->push_map, permut[i]));
+                                    1,
+                                    CustomPeerMap_get_peer_by_index (
+                                      sub->push_map, permut[i]));
       }
 #ifdef TO_FILE_FULL
       to_file (sub->file_name_view_log,
                "+%s\t(push list)",
                GNUNET_i2s_full (&view_array[i]));
 #endif /* TO_FILE_FULL */
-      // TODO change the peer_flags accordingly
+       // TODO change the peer_flags accordingly
     }
     GNUNET_free (permut);
     permut = NULL;
@@ -4365,21 +4419,26 @@ do_round (void *cls)
     {
       int inserted;
       inserted = insert_in_view (sub,
-          CustomPeerMap_get_peer_by_index (sub->pull_map,
-                                           permut[i - first_border]));
+                                 CustomPeerMap_get_peer_by_index (sub->pull_map,
+                                                                  permut[i
+                                                                         -
+                                                                         first_border
+                                                                  ]));
       if (GNUNET_OK == inserted)
       {
         clients_notify_stream_peer (sub,
-            1,
-            CustomPeerMap_get_peer_by_index (sub->pull_map,
-                                             permut[i - first_border]));
+                                    1,
+                                    CustomPeerMap_get_peer_by_index (
+                                      sub->pull_map,
+                                      permut[i
+                                             - first_border]));
       }
 #ifdef TO_FILE_FULL
       to_file (sub->file_name_view_log,
                "+%s\t(pull list)",
                GNUNET_i2s_full (&view_array[i]));
 #endif /* TO_FILE_FULL */
-      // TODO change the peer_flags accordingly
+       // TODO change the peer_flags accordingly
     }
     GNUNET_free (permut);
     permut = NULL;
@@ -4407,27 +4466,39 @@ do_round (void *cls)
 
     GNUNET_array_grow (peers_to_clean, peers_to_clean_size, 0);
     clients_notify_view_update (sub);
-  } else {
+  }
+  else
+  {
     LOG (GNUNET_ERROR_TYPE_DEBUG, "No update of the view.\n");
     if (sub == msub)
     {
-      GNUNET_STATISTICS_update(stats, "# rounds blocked", 1, GNUNET_NO);
-      if (CustomPeerMap_size (sub->push_map) > alpha * sub->view_size_est_need &&
-          !(0 >= CustomPeerMap_size (sub->pull_map)))
-        GNUNET_STATISTICS_update(stats, "# rounds blocked - too many pushes", 1, GNUNET_NO);
-      if (CustomPeerMap_size (sub->push_map) > alpha * sub->view_size_est_need &&
+      GNUNET_STATISTICS_update (stats, "# rounds blocked", 1, GNUNET_NO);
+      if ((CustomPeerMap_size (sub->push_map) > alpha
+           * sub->view_size_est_need) &&
+          ! (0 >= CustomPeerMap_size (sub->pull_map)))
+        GNUNET_STATISTICS_update (stats, "# rounds blocked - too many pushes",
+                                  1, GNUNET_NO);
+      if ((CustomPeerMap_size (sub->push_map) > alpha
+           * sub->view_size_est_need) &&
           (0 >= CustomPeerMap_size (sub->pull_map)))
-        GNUNET_STATISTICS_update(stats, "# rounds blocked - too many pushes, no pull replies", 1, GNUNET_NO);
-      if (0 >= CustomPeerMap_size (sub->push_map) &&
-          !(0 >= CustomPeerMap_size (sub->pull_map)))
-        GNUNET_STATISTICS_update(stats, "# rounds blocked - no pushes", 1, GNUNET_NO);
-      if (0 >= CustomPeerMap_size (sub->push_map) &&
+        GNUNET_STATISTICS_update (stats,
+                                  "# rounds blocked - too many pushes, no pull replies",
+                                  1, GNUNET_NO);
+      if ((0 >= CustomPeerMap_size (sub->push_map)) &&
+          ! (0 >= CustomPeerMap_size (sub->pull_map)))
+        GNUNET_STATISTICS_update (stats, "# rounds blocked - no pushes", 1,
+                                  GNUNET_NO);
+      if ((0 >= CustomPeerMap_size (sub->push_map)) &&
           (0 >= CustomPeerMap_size (sub->pull_map)))
-        GNUNET_STATISTICS_update(stats, "# rounds blocked - no pushes, no pull replies", 1, GNUNET_NO);
-      if (0 >= CustomPeerMap_size (sub->pull_map) &&
-          CustomPeerMap_size (sub->push_map) > alpha * sub->view_size_est_need &&
-          0 >= CustomPeerMap_size (sub->push_map))
-        GNUNET_STATISTICS_update(stats, "# rounds blocked - no pull replies", 1, GNUNET_NO);
+        GNUNET_STATISTICS_update (stats,
+                                  "# rounds blocked - no pushes, no pull replies",
+                                  1, GNUNET_NO);
+      if ((0 >= CustomPeerMap_size (sub->pull_map)) &&
+          (CustomPeerMap_size (sub->push_map) > alpha
+           * sub->view_size_est_need) &&
+          (0 >= CustomPeerMap_size (sub->push_map)) )
+        GNUNET_STATISTICS_update (stats, "# rounds blocked - no pull replies",
+                                  1, GNUNET_NO);
     }
   }
   // TODO independent of that also get some peers from CADET_get_peers()?
@@ -4443,31 +4514,33 @@ do_round (void *cls)
          HISTOGRAM_FILE_SLOTS);
   }
   // FIXME check bounds of histogram
-  sub->push_delta[(int32_t) (CustomPeerMap_size (sub->push_map) -
-                   (alpha * sub->view_size_est_need)) +
-                          (HISTOGRAM_FILE_SLOTS/2)]++;
+  sub->push_delta[(int32_t) (CustomPeerMap_size (sub->push_map)
+                             - (alpha * sub->view_size_est_need))
+                  + (HISTOGRAM_FILE_SLOTS / 2)]++;
   if (sub == msub)
   {
     GNUNET_STATISTICS_set (stats,
-        "# peers in push map at end of round",
-        CustomPeerMap_size (sub->push_map),
-        GNUNET_NO);
+                           "# peers in push map at end of round",
+                           CustomPeerMap_size (sub->push_map),
+                           GNUNET_NO);
     GNUNET_STATISTICS_set (stats,
-        "# peers in pull map at end of round",
-        CustomPeerMap_size (sub->pull_map),
-        GNUNET_NO);
+                           "# peers in pull map at end of round",
+                           CustomPeerMap_size (sub->pull_map),
+                           GNUNET_NO);
     GNUNET_STATISTICS_set (stats,
-        "# peers in view at end of round",
-        View_size (sub->view),
-        GNUNET_NO);
+                           "# peers in view at end of round",
+                           View_size (sub->view),
+                           GNUNET_NO);
     GNUNET_STATISTICS_set (stats,
-        "# expected pushes",
-        alpha * sub->view_size_est_need,
-        GNUNET_NO);
+                           "# expected pushes",
+                           alpha * sub->view_size_est_need,
+                           GNUNET_NO);
     GNUNET_STATISTICS_set (stats,
-        "delta expected - received pushes",
-        CustomPeerMap_size (sub->push_map) - (alpha * sub->view_size_est_need),
-        GNUNET_NO);
+                           "delta expected - received pushes",
+                           CustomPeerMap_size (sub->push_map) - (alpha
+                                                                 * sub->
+                                                                 view_size_est_need),
+                           GNUNET_NO);
   }
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -4486,7 +4559,7 @@ do_round (void *cls)
          "Updating with peer %s from push list\n",
          GNUNET_i2s (update_peer));
     insert_in_sampler (sub, update_peer);
-    clean_peer (sub, update_peer); /* This cleans only if it is not in the view */
+    clean_peer (sub, update_peer);  /* This cleans only if it is not in the view */
   }
 
   for (i = 0; i < CustomPeerMap_size (sub->pull_map); i++)
@@ -4508,7 +4581,7 @@ do_round (void *cls)
   {
     GNUNET_STATISTICS_set (stats,
                            "view size",
-                           View_size(sub->view),
+                           View_size (sub->view),
                            GNUNET_NO);
   }
 
@@ -4547,6 +4620,7 @@ init_peer_cb (void *cls,
                                        * (0 = unknown, 1 = ourselves, 2 = neighbor)" */
 {
   struct Sub *sub = cls;
+
   (void) tunnel;
   (void) n_paths;
   (void) best_path;
@@ -4604,6 +4678,7 @@ process_peerinfo_peers (void *cls,
                         const char *err_msg)
 {
   struct Sub *sub = cls;
+
   (void) hello;
   (void) err_msg;
 
@@ -4685,7 +4760,7 @@ shutdown_task (void *cls)
     GNUNET_free (tmp_att_peer);
   }
 #endif /* ENABLE_MALICIOUS */
-  close_all_files();
+  close_all_files ();
 }
 
 
@@ -4703,6 +4778,7 @@ client_connect_cb (void *cls,
                    struct GNUNET_MQ_Handle *mq)
 {
   struct ClientContext *cli_ctx;
+
   (void) cls;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -4719,6 +4795,7 @@ client_connect_cb (void *cls,
                                cli_ctx);
   return cli_ctx;
 }
+
 
 /**
  * Callback called when a client disconnected from the service
@@ -4737,14 +4814,14 @@ client_disconnect_cb (void *cls,
   (void) cls;
   GNUNET_assert (client == cli_ctx->client);
   if (NULL == client)
-  {/* shutdown task - destroy all clients */
+  {  /* shutdown task - destroy all clients */
     while (NULL != cli_ctx_head)
       destroy_cli_ctx (cli_ctx_head);
   }
   else
-  { /* destroy this client */
+  {   /* destroy this client */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Client disconnected. Destroy its context.\n");
+         "Client disconnected. Destroy its context.\n");
     destroy_cli_ctx (cli_ctx);
   }
 }
@@ -4823,7 +4900,7 @@ run (void *cls,
 
 
   alpha = 0.45;
-  beta  = 0.45;
+  beta = 0.45;
 
 
   /* Set up main Sub */
@@ -4831,8 +4908,8 @@ run (void *cls,
                       strlen (hash_port_string),
                       &hash);
   msub = new_sub (&hash,
-                 sampler_size, /* Will be overwritten by config */
-                 round_interval);
+                  sampler_size, /* Will be overwritten by config */
+                  round_interval);
 
 
   peerinfo_handle = GNUNET_PEERINFO_connect (cfg);
@@ -4840,8 +4917,8 @@ run (void *cls,
   /* connect to NSE */
   nse = GNUNET_NSE_connect (cfg, nse_callback, NULL);
 
-  //LOG (GNUNET_ERROR_TYPE_DEBUG, "Requesting peers from CADET\n");
-  //GNUNET_CADET_get_peers (cadet_handle, &init_peer_cb, msub);
+  // LOG (GNUNET_ERROR_TYPE_DEBUG, "Requesting peers from CADET\n");
+  // GNUNET_CADET_get_peers (cadet_handle, &init_peer_cb, msub);
   // TODO send push/pull to each of those peers?
   LOG (GNUNET_ERROR_TYPE_DEBUG, "Requesting stored valid peers\n");
   restore_valid_peers (msub);
@@ -4863,46 +4940,46 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("rps",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (client_seed,
-   GNUNET_MESSAGE_TYPE_RPS_CS_SEED,
-   struct GNUNET_RPS_CS_SeedMessage,
-   NULL),
+  ("rps",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (client_seed,
+                         GNUNET_MESSAGE_TYPE_RPS_CS_SEED,
+                         struct GNUNET_RPS_CS_SeedMessage,
+                         NULL),
 #if ENABLE_MALICIOUS
- GNUNET_MQ_hd_var_size (client_act_malicious,
-   GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS,
-   struct GNUNET_RPS_CS_ActMaliciousMessage,
-   NULL),
+  GNUNET_MQ_hd_var_size (client_act_malicious,
+                         GNUNET_MESSAGE_TYPE_RPS_ACT_MALICIOUS,
+                         struct GNUNET_RPS_CS_ActMaliciousMessage,
+                         NULL),
 #endif /* ENABLE_MALICIOUS */
- GNUNET_MQ_hd_fixed_size (client_view_request,
-   GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_REQUEST,
-   struct GNUNET_RPS_CS_DEBUG_ViewRequest,
-   NULL),
- GNUNET_MQ_hd_fixed_size (client_view_cancel,
-   GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_CANCEL,
-   struct GNUNET_MessageHeader,
-   NULL),
- GNUNET_MQ_hd_fixed_size (client_stream_request,
-   GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REQUEST,
-   struct GNUNET_RPS_CS_DEBUG_StreamRequest,
-   NULL),
- GNUNET_MQ_hd_fixed_size (client_stream_cancel,
-   GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_CANCEL,
-   struct GNUNET_MessageHeader,
-   NULL),
- GNUNET_MQ_hd_fixed_size (client_start_sub,
-   GNUNET_MESSAGE_TYPE_RPS_CS_SUB_START,
-   struct GNUNET_RPS_CS_SubStartMessage,
-   NULL),
- GNUNET_MQ_hd_fixed_size (client_stop_sub,
-   GNUNET_MESSAGE_TYPE_RPS_CS_SUB_STOP,
-   struct GNUNET_RPS_CS_SubStopMessage,
-   NULL),
- GNUNET_MQ_handler_end());
+  GNUNET_MQ_hd_fixed_size (client_view_request,
+                           GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_REQUEST,
+                           struct GNUNET_RPS_CS_DEBUG_ViewRequest,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (client_view_cancel,
+                           GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_VIEW_CANCEL,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (client_stream_request,
+                           GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_REQUEST,
+                           struct GNUNET_RPS_CS_DEBUG_StreamRequest,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (client_stream_cancel,
+                           GNUNET_MESSAGE_TYPE_RPS_CS_DEBUG_STREAM_CANCEL,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (client_start_sub,
+                           GNUNET_MESSAGE_TYPE_RPS_CS_SUB_START,
+                           struct GNUNET_RPS_CS_SubStartMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (client_stop_sub,
+                           GNUNET_MESSAGE_TYPE_RPS_CS_SUB_STOP,
+                           struct GNUNET_RPS_CS_SubStopMessage,
+                           NULL),
+  GNUNET_MQ_handler_end ());
 
 /* end of gnunet-service-rps.c */

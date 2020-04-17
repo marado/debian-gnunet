@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file datastore/plugin_datastore_mysql.c
@@ -77,7 +77,7 @@
  * Thats it. Note that .my.cnf file is a security risk unless its on
  * a safe partition etc. The $HOME/.my.cnf can of course be a symbolic
  * link. Even greater security risk can be achieved by setting no
- * password for $USER.  Luckily $USER has only priviledges to mess
+ * password for $USER.  Luckily $USER has only privileges to mess
  * up GNUnet's tables, nothing else (unless you give them more,
  * of course).<p>
  *
@@ -144,47 +144,48 @@ struct Plugin
   /**
    * Prepared statements.
    */
-#define INSERT_ENTRY "INSERT INTO gn090 (repl,type,prio,anonLevel,expire,rvalue,hash,vhash,value) VALUES (?,?,?,?,?,?,?,?,?)"
+#define INSERT_ENTRY \
+  "INSERT INTO gn090 (repl,type,prio,anonLevel,expire,rvalue,hash,vhash,value) VALUES (?,?,?,?,?,?,?,?,?)"
   struct GNUNET_MYSQL_StatementHandle *insert_entry;
 
 #define DELETE_ENTRY_BY_UID "DELETE FROM gn090 WHERE uid=?"
   struct GNUNET_MYSQL_StatementHandle *delete_entry_by_uid;
 
-#define DELETE_ENTRY_BY_HASH_VALUE "DELETE FROM gn090 "\
-  "WHERE hash = ? AND "\
-  "value = ? "\
+#define DELETE_ENTRY_BY_HASH_VALUE "DELETE FROM gn090 " \
+  "WHERE hash = ? AND " \
+  "value = ? " \
   "LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *delete_entry_by_hash_value;
 
 #define RESULT_COLUMNS "repl, type, prio, anonLevel, expire, hash, value, uid"
 
-#define SELECT_ENTRY "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "WHERE uid >= ? AND "\
-  "(rvalue >= ? OR 0 = ?) "\
+#define SELECT_ENTRY "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "WHERE uid >= ? AND " \
+  "(rvalue >= ? OR 0 = ?) " \
   "ORDER BY uid LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *select_entry;
 
-#define SELECT_ENTRY_BY_HASH "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "FORCE INDEX (idx_hash_type_uid) "\
-  "WHERE hash=? AND "\
-  "uid >= ? AND "\
-  "(rvalue >= ? OR 0 = ?) "\
+#define SELECT_ENTRY_BY_HASH "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "FORCE INDEX (idx_hash_type_uid) " \
+  "WHERE hash=? AND " \
+  "uid >= ? AND " \
+  "(rvalue >= ? OR 0 = ?) " \
   "ORDER BY uid LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *select_entry_by_hash;
 
-#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "FORCE INDEX (idx_hash_type_uid) "\
-  "WHERE hash = ? AND "\
-  "type = ? AND "\
-  "uid >= ? AND "\
-  "(rvalue >= ? OR 0 = ?) "\
+#define SELECT_ENTRY_BY_HASH_AND_TYPE "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "FORCE INDEX (idx_hash_type_uid) " \
+  "WHERE hash = ? AND " \
+  "type = ? AND " \
+  "uid >= ? AND " \
+  "(rvalue >= ? OR 0 = ?) " \
   "ORDER BY uid LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *select_entry_by_hash_and_type;
 
-#define UPDATE_ENTRY "UPDATE gn090 SET "\
-  "prio = prio + ?, "\
-  "repl = repl + ?, "\
-  "expire = GREATEST(expire, ?) "\
+#define UPDATE_ENTRY "UPDATE gn090 SET " \
+  "prio = prio + ?, " \
+  "repl = repl + ?, " \
+  "expire = GREATEST(expire, ?) " \
   "WHERE hash = ? AND vhash = ?"
   struct GNUNET_MYSQL_StatementHandle *update_entry;
 
@@ -194,31 +195,31 @@ struct Plugin
 #define SELECT_SIZE "SELECT SUM(LENGTH(value)+256) FROM gn090"
   struct GNUNET_MYSQL_StatementHandle *get_size;
 
-#define SELECT_IT_NON_ANONYMOUS "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "FORCE INDEX (idx_anonLevel_type_rvalue) "\
-  "WHERE anonLevel=0 AND "\
-  "type=? AND "\
-  "uid >= ? "\
+#define SELECT_IT_NON_ANONYMOUS "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "FORCE INDEX (idx_anonLevel_type_rvalue) " \
+  "WHERE anonLevel=0 AND " \
+  "type=? AND " \
+  "uid >= ? " \
   "ORDER BY uid LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *zero_iter;
 
-#define SELECT_IT_EXPIRATION "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "FORCE INDEX (idx_expire) "\
-  "WHERE expire < ? "\
+#define SELECT_IT_EXPIRATION "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "FORCE INDEX (idx_expire) " \
+  "WHERE expire < ? " \
   "ORDER BY expire ASC LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *select_expiration;
 
-#define SELECT_IT_PRIORITY "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "FORCE INDEX (idx_prio) "\
+#define SELECT_IT_PRIORITY "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "FORCE INDEX (idx_prio) " \
   "ORDER BY prio ASC LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *select_priority;
 
-#define SELECT_IT_REPLICATION "SELECT " RESULT_COLUMNS " FROM gn090 "\
-  "FORCE INDEX (idx_repl_rvalue) "\
-  "WHERE repl=? AND "\
-  " (rvalue>=? OR"\
-  "  NOT EXISTS (SELECT 1 FROM gn090 FORCE INDEX (idx_repl_rvalue) WHERE repl=? AND rvalue>=?)) "\
-  "ORDER BY rvalue ASC "\
+#define SELECT_IT_REPLICATION "SELECT " RESULT_COLUMNS " FROM gn090 " \
+  "FORCE INDEX (idx_repl_rvalue) " \
+  "WHERE repl=? AND " \
+  " (rvalue>=? OR" \
+  "  NOT EXISTS (SELECT 1 FROM gn090 FORCE INDEX (idx_repl_rvalue) WHERE repl=? AND rvalue>=?)) " \
+  "ORDER BY rvalue ASC " \
   "LIMIT 1"
   struct GNUNET_MYSQL_StatementHandle *select_replication;
 
@@ -227,7 +228,6 @@ struct Plugin
 
 #define GET_ALL_KEYS "SELECT hash from gn090"
   struct GNUNET_MYSQL_StatementHandle *get_all_keys;
-
 };
 
 #define MAX_PARAM 16
@@ -294,10 +294,10 @@ mysql_plugin_estimate_size (void *cls,
                                  params_get);
   *estimate = 0;
   total = UINT64_MAX;
-  if ( (GNUNET_OK == ret) &&
-       (GNUNET_OK ==
-        GNUNET_MY_extract_result (plugin->get_size,
-                                  results_get)) )
+  if ((GNUNET_OK == ret) &&
+      (GNUNET_OK ==
+       GNUNET_MY_extract_result (plugin->get_size,
+                                 results_get)))
   {
     *estimate = (unsigned long long) total;
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
@@ -348,7 +348,7 @@ mysql_plugin_put (void *cls,
   GNUNET_CRYPTO_hash (data,
                       size,
                       &vhash);
-  if (!absent)
+  if (! absent)
   {
     struct GNUNET_MY_QueryParam params_update[] = {
       GNUNET_MY_query_param_uint32 (&priority),
@@ -368,7 +368,7 @@ mysql_plugin_put (void *cls,
             key,
             size,
             GNUNET_SYSERR,
-            _("MySQL statement run failure"));
+            _ ("MySQL statement run failure"));
       return;
     }
 
@@ -407,7 +407,7 @@ mysql_plugin_put (void *cls,
   if (size > MAX_DATUM_SIZE)
   {
     GNUNET_break (0);
-    cont (cont_cls, key, size, GNUNET_SYSERR, _("Data too large"));
+    cont (cont_cls, key, size, GNUNET_SYSERR, _ ("Data too large"));
     return;
   }
 
@@ -420,7 +420,7 @@ mysql_plugin_put (void *cls,
           key,
           size,
           GNUNET_SYSERR,
-          _("MySQL statement run failure"));
+          _ ("MySQL statement run failure"));
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -503,9 +503,9 @@ execute_select (struct Plugin *plugin,
               "Found %u-byte value under key `%s' with prio %u, anon %u, expire %s selecting from gn090 table\n",
               (unsigned int) value_size,
               GNUNET_h2s (&key),
-	      (unsigned int) priority,
+              (unsigned int) priority,
               (unsigned int) anonymity,
-	      GNUNET_STRINGS_absolute_time_to_string (expiration));
+              GNUNET_STRINGS_absolute_time_to_string (expiration));
   GNUNET_assert (value_size < MAX_DATUM_SIZE);
   GNUNET_break (GNUNET_NO ==
                 GNUNET_MY_extract_result (stmt,
@@ -526,7 +526,7 @@ execute_select (struct Plugin *plugin,
     do_delete_entry (plugin, uid);
     if (0 != value_size)
       plugin->env->duc (plugin->env->cls,
-                        - value_size);
+                        -value_size);
   }
 }
 
@@ -656,7 +656,6 @@ mysql_plugin_get_zero_anonymity (void *cls,
  */
 struct ReplCtx
 {
-
   /**
    * Plugin handle.
    */
@@ -845,7 +844,7 @@ mysql_plugin_get_keys (void *cls,
                                params_select))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("`%s' for `%s' failed at %s:%d with error: %s\n"),
+                _ ("`%s' for `%s' failed at %s:%d with error: %s\n"),
                 "mysql_stmt_execute",
                 GET_ALL_KEYS,
                 __FILE__,
@@ -855,7 +854,7 @@ mysql_plugin_get_keys (void *cls,
     proc (proc_cls, NULL, 0);
     return;
   }
-  memset (&last, 0, sizeof (last)); /* make static analysis happy */
+  memset (&last, 0, sizeof(last));   /* make static analysis happy */
   ret = GNUNET_YES;
   cnt = 0;
   while (ret == GNUNET_YES)
@@ -863,7 +862,7 @@ mysql_plugin_get_keys (void *cls,
     ret = GNUNET_MY_extract_result (plugin->get_all_keys,
                                     results_select);
     if (0 != GNUNET_memcmp (&last,
-                     &key))
+                            &key))
     {
       if (0 != cnt)
         proc (proc_cls,
@@ -888,7 +887,7 @@ mysql_plugin_get_keys (void *cls,
   if (GNUNET_SYSERR == ret)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("`%s' failed at %s:%d with error: %s\n"),
+                _ ("`%s' failed at %s:%d with error: %s\n"),
                 "mysql_stmt_fetch",
                 __FILE__,
                 __LINE__,
@@ -904,7 +903,6 @@ mysql_plugin_get_keys (void *cls,
  */
 struct ExpiCtx
 {
-
   /**
    * Plugin handle.
    */
@@ -920,7 +918,6 @@ struct ExpiCtx
    */
   void *proc_cls;
 };
-
 
 
 /**
@@ -1071,11 +1068,12 @@ mysql_plugin_remove_key (void *cls,
           key,
           size,
           GNUNET_SYSERR,
-          _("MySQL statement run failure"));
+          _ ("MySQL statement run failure"));
     return;
   }
 
-  MYSQL_STMT *stmt = GNUNET_MYSQL_statement_get_stmt (plugin->delete_entry_by_hash_value);
+  MYSQL_STMT *stmt = GNUNET_MYSQL_statement_get_stmt (
+    plugin->delete_entry_by_hash_value);
   my_ulonglong rows = mysql_stmt_affected_rows (stmt);
 
   if (0 == rows)
@@ -1119,26 +1117,28 @@ libgnunet_plugin_datastore_mysql_init (void *cls)
     GNUNET_free (plugin);
     return NULL;
   }
-#define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_statement_run (plugin->mc, a) )
-#define PINIT(a,b) (NULL == (a = GNUNET_MYSQL_statement_prepare (plugin->mc, b)))
+#define MRUNS(a) (GNUNET_OK != GNUNET_MYSQL_statement_run (plugin->mc, a))
+#define PINIT(a, b) (NULL == (a = GNUNET_MYSQL_statement_prepare (plugin->mc, \
+                                                                  b)))
   if (MRUNS
-      ("CREATE TABLE IF NOT EXISTS gn090 ("
-       " repl INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-       " type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-       " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-       " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
-       " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
-       " rvalue BIGINT UNSIGNED NOT NULL,"
-       " hash BINARY(64) NOT NULL DEFAULT '',"
-       " vhash BINARY(64) NOT NULL DEFAULT '',"
-       " value BLOB NOT NULL DEFAULT ''," " uid BIGINT NOT NULL AUTO_INCREMENT,"
-       " PRIMARY KEY (uid),"
-       " INDEX idx_hash_type_uid (hash(64),type,rvalue),"
-       " INDEX idx_prio (prio),"
-       " INDEX idx_repl_rvalue (repl,rvalue),"
-       " INDEX idx_expire (expire),"
-       " INDEX idx_anonLevel_type_rvalue (anonLevel,type,rvalue)"
-       ") ENGINE=InnoDB") || MRUNS ("SET AUTOCOMMIT = 1") ||
+        ("CREATE TABLE IF NOT EXISTS gn090 ("
+        " repl INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+        " type INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+        " prio INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+        " anonLevel INT(11) UNSIGNED NOT NULL DEFAULT 0,"
+        " expire BIGINT UNSIGNED NOT NULL DEFAULT 0,"
+        " rvalue BIGINT UNSIGNED NOT NULL,"
+        " hash BINARY(64) NOT NULL DEFAULT '',"
+        " vhash BINARY(64) NOT NULL DEFAULT '',"
+        " value BLOB NOT NULL DEFAULT '',"
+        " uid BIGINT NOT NULL AUTO_INCREMENT,"
+        " PRIMARY KEY (uid),"
+        " INDEX idx_hash_type_uid (hash(64),type,rvalue),"
+        " INDEX idx_prio (prio),"
+        " INDEX idx_repl_rvalue (repl,rvalue),"
+        " INDEX idx_expire (expire),"
+        " INDEX idx_anonLevel_type_rvalue (anonLevel,type,rvalue)"
+        ") ENGINE=InnoDB") || MRUNS ("SET AUTOCOMMIT = 1") ||
       PINIT (plugin->insert_entry, INSERT_ENTRY) ||
       PINIT (plugin->delete_entry_by_uid, DELETE_ENTRY_BY_UID) ||
       PINIT (plugin->delete_entry_by_hash_value, DELETE_ENTRY_BY_HASH_VALUE) ||
@@ -1176,7 +1176,7 @@ libgnunet_plugin_datastore_mysql_init (void *cls)
   api->drop = &mysql_plugin_drop;
   api->remove_key = &mysql_plugin_remove_key;
   GNUNET_log_from (GNUNET_ERROR_TYPE_INFO, "mysql",
-                   _("Mysql database running\n"));
+                   _ ("Mysql database running\n"));
   return api;
 }
 
@@ -1198,5 +1198,6 @@ libgnunet_plugin_datastore_mysql_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_datastore_mysql.c */

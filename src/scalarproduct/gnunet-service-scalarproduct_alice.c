@@ -64,7 +64,6 @@ struct MpiElement
  */
 struct AliceServiceSession
 {
-
   /**
    * (hopefully) unique transaction ID
    */
@@ -536,7 +535,7 @@ compute_scalar_product (struct AliceServiceSession *session)
   gcry_mpi_sub (u, u, tmp);
   gcry_mpi_release (tmp);
 
-  //calculate U'
+  // calculate U'
   u_prime = gcry_mpi_new (0);
   tmp = compute_square_sum (r_prime, count);
   gcry_mpi_sub (u_prime, u_prime, tmp);
@@ -613,8 +612,8 @@ check_bobs_cryptodata_multipart (
   msg_size = ntohs (msg->header.size);
   contained = ntohl (msg->contained_element_count);
   required_size =
-    sizeof (struct BobCryptodataMultipartMessage) +
-    2 * contained * sizeof (struct GNUNET_CRYPTO_PaillierCiphertext);
+    sizeof(struct BobCryptodataMultipartMessage)
+    + 2 * contained * sizeof(struct GNUNET_CRYPTO_PaillierCiphertext);
   if ((required_size != msg_size) ||
       (s->cadet_received_element_count + contained > s->used_element_count))
   {
@@ -623,6 +622,7 @@ check_bobs_cryptodata_multipart (
   }
   return GNUNET_OK;
 }
+
 
 /**
  * Handle a multipart chunk of a response we got from another service
@@ -652,10 +652,10 @@ handle_bobs_cryptodata_multipart (
   {
     GNUNET_memcpy (&s->r[s->cadet_received_element_count + i],
                    &payload[2 * i],
-                   sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+                   sizeof(struct GNUNET_CRYPTO_PaillierCiphertext));
     GNUNET_memcpy (&s->r_prime[s->cadet_received_element_count + i],
                    &payload[2 * i],
-                   sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+                   sizeof(struct GNUNET_CRYPTO_PaillierCiphertext));
   }
   s->cadet_received_element_count += contained;
   GNUNET_CADET_receive_done (s->channel);
@@ -688,9 +688,9 @@ check_bobs_cryptodata_message (void *cls,
   msg_size = ntohs (msg->header.size);
   contained = ntohl (msg->contained_element_count);
   required_size =
-    sizeof (struct BobCryptodataMessage) +
-    2 * contained * sizeof (struct GNUNET_CRYPTO_PaillierCiphertext) +
-    2 * sizeof (struct GNUNET_CRYPTO_PaillierCiphertext);
+    sizeof(struct BobCryptodataMessage)
+    + 2 * contained * sizeof(struct GNUNET_CRYPTO_PaillierCiphertext)
+    + 2 * sizeof(struct GNUNET_CRYPTO_PaillierCiphertext);
   if ((msg_size != required_size) || (contained > UINT16_MAX) ||
       (s->used_element_count < contained))
   {
@@ -736,10 +736,10 @@ handle_bobs_cryptodata_message (void *cls,
   payload = (const struct GNUNET_CRYPTO_PaillierCiphertext *) &msg[1];
   GNUNET_memcpy (&s->s,
                  &payload[0],
-                 sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+                 sizeof(struct GNUNET_CRYPTO_PaillierCiphertext));
   GNUNET_memcpy (&s->s_prime,
                  &payload[1],
-                 sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+                 sizeof(struct GNUNET_CRYPTO_PaillierCiphertext));
   payload = &payload[2];
 
   s->r = GNUNET_new_array (s->used_element_count,
@@ -750,10 +750,10 @@ handle_bobs_cryptodata_message (void *cls,
   {
     GNUNET_memcpy (&s->r[i],
                    &payload[2 * i],
-                   sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+                   sizeof(struct GNUNET_CRYPTO_PaillierCiphertext));
     GNUNET_memcpy (&s->r_prime[i],
                    &payload[2 * i + 1],
-                   sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+                   sizeof(struct GNUNET_CRYPTO_PaillierCiphertext));
   }
   s->cadet_received_element_count = contained;
   GNUNET_CADET_receive_done (s->channel);
@@ -819,9 +819,9 @@ element_cmp (const void *a, const void *b)
  * message
  */
 #define ELEMENT_CAPACITY                          \
-  ((GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE - 1 - \
-    sizeof (struct AliceCryptodataMessage)) /     \
-   sizeof (struct GNUNET_CRYPTO_PaillierCiphertext))
+  ((GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE - 1   \
+    - sizeof(struct AliceCryptodataMessage))       \
+   / sizeof(struct GNUNET_CRYPTO_PaillierCiphertext))
 
 
 /**
@@ -842,8 +842,8 @@ send_alices_cryptodata_message (struct AliceServiceSession *s)
   uint32_t off;
 
   s->sorted_elements = GNUNET_malloc (
-    GNUNET_CONTAINER_multihashmap_size (s->intersected_elements) *
-    sizeof (struct MpiElement));
+    GNUNET_CONTAINER_multihashmap_size (s->intersected_elements)
+    * sizeof(struct MpiElement));
   s->used_element_count = 0;
   GNUNET_CONTAINER_multihashmap_iterate (s->intersected_elements,
                                          &copy_element_cb,
@@ -853,7 +853,7 @@ send_alices_cryptodata_message (struct AliceServiceSession *s)
        s->used_element_count);
   qsort (s->sorted_elements,
          s->used_element_count,
-         sizeof (struct MpiElement),
+         sizeof(struct MpiElement),
          &element_cmp);
   off = 0;
   while (off < s->used_element_count)
@@ -868,8 +868,8 @@ send_alices_cryptodata_message (struct AliceServiceSession *s)
 
     e =
       GNUNET_MQ_msg_extra (msg,
-                           todo_count *
-                             sizeof (struct GNUNET_CRYPTO_PaillierCiphertext),
+                           todo_count
+                           * sizeof(struct GNUNET_CRYPTO_PaillierCiphertext),
                            GNUNET_MESSAGE_TYPE_SCALARPRODUCT_ALICE_CRYPTODATA);
     msg->contained_element_count = htonl (todo_count);
     payload = (struct GNUNET_CRYPTO_PaillierCiphertext *) &msg[1];
@@ -925,6 +925,7 @@ cb_intersection_element_removed (void *cls,
                                             se));
     GNUNET_free (se);
     return;
+
   case GNUNET_SET_STATUS_DONE:
     s->intersection_op = NULL;
     if (NULL != s->intersection_set)
@@ -934,10 +935,12 @@ cb_intersection_element_removed (void *cls,
     }
     send_alices_cryptodata_message (s);
     return;
+
   case GNUNET_SET_STATUS_HALF_DONE:
     /* unexpected for intersection */
     GNUNET_break (0);
     return;
+
   case GNUNET_SET_STATUS_FAILURE:
     /* unhandled status code */
     LOG (GNUNET_ERROR_TYPE_DEBUG, "Set intersection failed!\n");
@@ -955,6 +958,7 @@ cb_intersection_element_removed (void *cls,
     s->status = GNUNET_SCALARPRODUCT_STATUS_FAILURE;
     prepare_client_end_notification (s);
     return;
+
   default:
     GNUNET_break (0);
     return;
@@ -992,7 +996,7 @@ cb_intersection_request_alice (void *cls,
   }
   s->intersection_op = GNUNET_SET_accept (request,
                                           GNUNET_SET_RESULT_REMOVED,
-                                          (struct GNUNET_SET_Option[]){{0}},
+                                          (struct GNUNET_SET_Option[]){ { 0 } },
                                           &cb_intersection_element_removed,
                                           s);
   if (NULL == s->intersection_op)
@@ -1021,16 +1025,16 @@ static void
 client_request_complete_alice (struct AliceServiceSession *s)
 {
   struct GNUNET_MQ_MessageHandler cadet_handlers[] =
-    {GNUNET_MQ_hd_var_size (bobs_cryptodata_message,
-                            GNUNET_MESSAGE_TYPE_SCALARPRODUCT_BOB_CRYPTODATA,
-                            struct BobCryptodataMessage,
-                            s),
-     GNUNET_MQ_hd_var_size (
-       bobs_cryptodata_multipart,
-       GNUNET_MESSAGE_TYPE_SCALARPRODUCT_BOB_CRYPTODATA_MULTIPART,
-       struct BobCryptodataMultipartMessage,
-       s),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (bobs_cryptodata_message,
+                           GNUNET_MESSAGE_TYPE_SCALARPRODUCT_BOB_CRYPTODATA,
+                           struct BobCryptodataMessage,
+                           s),
+    GNUNET_MQ_hd_var_size (
+      bobs_cryptodata_multipart,
+      GNUNET_MESSAGE_TYPE_SCALARPRODUCT_BOB_CRYPTODATA_MULTIPART,
+      struct BobCryptodataMultipartMessage,
+      s),
+    GNUNET_MQ_handler_end () };
   struct ServiceRequestMessage *msg;
   struct GNUNET_MQ_Envelope *e;
 
@@ -1093,8 +1097,8 @@ check_alice_client_message_multipart (
   msize = ntohs (msg->header.size);
   contained_count = ntohl (msg->element_count_contained);
   if ((msize !=
-       (sizeof (struct ComputationBobCryptodataMultipartMessage) +
-        contained_count * sizeof (struct GNUNET_SCALARPRODUCT_Element))) ||
+       (sizeof(struct ComputationBobCryptodataMultipartMessage)
+        + contained_count * sizeof(struct GNUNET_SCALARPRODUCT_Element))) ||
       (0 == contained_count) ||
       (s->total == s->client_received_element_count) ||
       (s->total < s->client_received_element_count + contained_count))
@@ -1132,19 +1136,19 @@ handle_alice_client_message_multipart (
     elem = GNUNET_new (struct GNUNET_SCALARPRODUCT_Element);
     GNUNET_memcpy (elem,
                    &elements[i],
-                   sizeof (struct GNUNET_SCALARPRODUCT_Element));
+                   sizeof(struct GNUNET_SCALARPRODUCT_Element));
     if (GNUNET_SYSERR == GNUNET_CONTAINER_multihashmap_put (
-                           s->intersected_elements,
-                           &elem->key,
-                           elem,
-                           GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
+          s->intersected_elements,
+          &elem->key,
+          elem,
+          GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
     {
       GNUNET_break (0);
       GNUNET_free (elem);
       continue;
     }
     set_elem.data = &elem->key;
-    set_elem.size = sizeof (elem->key);
+    set_elem.size = sizeof(elem->key);
     set_elem.element_type = 0;
     GNUNET_SET_add_element (s->intersection_set, &set_elem, NULL, NULL);
     s->used_element_count++;
@@ -1188,8 +1192,8 @@ check_alice_client_message (void *cls,
   contained_count = ntohl (msg->element_count_contained);
   if ((0 == total_count) || (0 == contained_count) ||
       (msize !=
-       (sizeof (struct AliceComputationMessage) +
-        contained_count * sizeof (struct GNUNET_SCALARPRODUCT_Element))))
+       (sizeof(struct AliceComputationMessage)
+        + contained_count * sizeof(struct GNUNET_SCALARPRODUCT_Element))))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -1236,12 +1240,12 @@ handle_alice_client_message (void *cls,
     elem = GNUNET_new (struct GNUNET_SCALARPRODUCT_Element);
     GNUNET_memcpy (elem,
                    &elements[i],
-                   sizeof (struct GNUNET_SCALARPRODUCT_Element));
+                   sizeof(struct GNUNET_SCALARPRODUCT_Element));
     if (GNUNET_SYSERR == GNUNET_CONTAINER_multihashmap_put (
-                           s->intersected_elements,
-                           &elem->key,
-                           elem,
-                           GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
+          s->intersected_elements,
+          &elem->key,
+          elem,
+          GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
     {
       /* element with same key encountered twice! */
       GNUNET_break (0);
@@ -1249,7 +1253,7 @@ handle_alice_client_message (void *cls,
       continue;
     }
     set_elem.data = &elem->key;
-    set_elem.size = sizeof (elem->key);
+    set_elem.size = sizeof(elem->key);
     set_elem.element_type = 0;
     GNUNET_SET_add_element (s->intersection_set, &set_elem, NULL, NULL);
     s->used_element_count++;
@@ -1346,9 +1350,9 @@ run (void *cls,
 {
   cfg = c;
   /*
-    offset has to be sufficiently small to allow computation of:
-    m1+m2 mod n == (S + a) + (S + b) mod n,
-    if we have more complex operations, this factor needs to be lowered */
+     offset has to be sufficiently small to allow computation of:
+     m1+m2 mod n == (S + a) + (S + b) mod n,
+     if we have more complex operations, this factor needs to be lowered */
   my_offset = gcry_mpi_new (GNUNET_CRYPTO_PAILLIER_BITS / 3);
   gcry_mpi_set_bit (my_offset, GNUNET_CRYPTO_PAILLIER_BITS / 3);
   GNUNET_CRYPTO_paillier_create (&my_pubkey, &my_privkey);

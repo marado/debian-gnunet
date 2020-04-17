@@ -60,11 +60,7 @@
 /**
  * We need pipe control only on WINDOWS
  */
-#if WINDOWS
-#define PIPE_CONTROL GNUNET_YES
-#else
 #define PIPE_CONTROL GNUNET_NO
-#endif
 
 
 /**
@@ -253,7 +249,7 @@ child_death_task (void *cls)
   pr = GNUNET_DISK_pipe_handle (sigpipe, GNUNET_DISK_PIPE_END_READ);
   child_death_task_id = NULL;
   /* consume the signal */
-  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof (c)));
+  GNUNET_break (0 < GNUNET_DISK_file_read (pr, &c, sizeof(c)));
   LOG_DEBUG ("Got SIGCHLD\n");
   if (NULL == testbed)
   {
@@ -267,10 +263,10 @@ child_death_task (void *cls)
     GNUNET_OS_process_destroy (testbed);
     testbed = NULL;
     /* Send SIGTERM to our process group */
-    if (0 != PLIBC_KILL (0, GNUNET_TERM_SIG))
+    if (0 != kill (0, GNUNET_TERM_SIG))
     {
       GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR, "signal");
-      GNUNET_SCHEDULER_shutdown (); /* Couldn't send the signal, we shutdown frowning */
+      GNUNET_SCHEDULER_shutdown ();    /* Couldn't send the signal, we shutdown frowning */
     }
     return;
   }
@@ -308,7 +304,7 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
   char *config;
   char *xconfig;
   char *evstr;
-  //char *str;
+  // char *str;
   size_t config_size;
   uLongf ul_config_size;
   size_t xconfig_size;
@@ -317,7 +313,7 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
   uint16_t msize;
 
   msize = ntohs (message->size);
-  if ((sizeof (struct GNUNET_TESTBED_HelperInit) >= msize) ||
+  if ((sizeof(struct GNUNET_TESTBED_HelperInit) >= msize) ||
       (GNUNET_MESSAGE_TYPE_TESTBED_HELPER_INIT != ntohs (message->type)))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING, "Received unexpected message -- exiting\n");
@@ -332,8 +328,8 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
     goto error;
   }
   hostname_size = ntohs (msg->hostname_size);
-  if ((sizeof (struct GNUNET_TESTBED_HelperInit) + trusted_ip_size + 1 +
-       hostname_size) >= msize)
+  if ((sizeof(struct GNUNET_TESTBED_HelperInit) + trusted_ip_size + 1
+       + hostname_size) >= msize)
   {
     GNUNET_break (0);
     LOG (GNUNET_ERROR_TYPE_WARNING, "Received unexpected message -- exiting\n");
@@ -341,12 +337,12 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
   }
   ul_config_size = (uLongf) ntohs (msg->config_size);
   config = GNUNET_malloc (ul_config_size);
-  xconfig_size = msize - (trusted_ip_size + 1 + hostname_size +
-                          sizeof (struct GNUNET_TESTBED_HelperInit));
+  xconfig_size = msize - (trusted_ip_size + 1 + hostname_size
+                          + sizeof(struct GNUNET_TESTBED_HelperInit));
   int ret = uncompress ((Bytef *) config,
                         &ul_config_size,
-                        (const Bytef *) (trusted_ip + trusted_ip_size + 1 +
-                                         hostname_size),
+                        (const Bytef *) (trusted_ip + trusted_ip_size + 1
+                                         + hostname_size),
                         (uLongf) xconfig_size);
   if (Z_OK != ret)
   {
@@ -355,12 +351,15 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
     case Z_MEM_ERROR:
       LOG (GNUNET_ERROR_TYPE_ERROR, "Not enough memory for decompression\n");
       break;
+
     case Z_BUF_ERROR:
       LOG (GNUNET_ERROR_TYPE_ERROR, "Output buffer too small\n");
       break;
+
     case Z_DATA_ERROR:
       LOG (GNUNET_ERROR_TYPE_ERROR, "Data corrupted/incomplete\n");
       break;
+
     default:
       GNUNET_break (0);
     }
@@ -392,25 +391,17 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
   {
     /* unsetting the variable will invalidate the pointer! */
     evstr = GNUNET_strdup (evstr);
-#ifdef WINDOWS
-    GNUNET_break (0 != SetEnvironmentVariable (GNUNET_TESTING_PREFIX, NULL));
-#else
     GNUNET_break (0 == unsetenv (GNUNET_TESTING_PREFIX));
-#endif
   }
   test_system =
     GNUNET_TESTING_system_create ("testbed-helper", trusted_ip, hostname, NULL);
   if (NULL != evstr)
   {
-#ifdef WINDOWS
-    GNUNET_assert (0 != SetEnvironmentVariable (GNUNET_TESTING_PREFIX, evstr));
-#else
     char *evar;
 
     GNUNET_asprintf (&evar, GNUNET_TESTING_PREFIX "=%s", evstr);
     GNUNET_assert (0 == putenv (evar)); /* consumes 'evar',
                                            see putenv(): becomes part of envrionment! */
-#endif
     GNUNET_free (evstr);
     evstr = NULL;
   }
@@ -440,7 +431,7 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
 
     /* expose testbed configuration through env variable */
     GNUNET_asprintf (&evar, "%s=%s", ENV_TESTBED_CONFIG, config);
-    GNUNET_assert (0 == putenv (evar)); /* consumes 'evar',
+    GNUNET_assert (0 == putenv (evar));   /* consumes 'evar',
                                             see putenv(): becomes part of envrionment! */
     evstr = NULL;
   }
@@ -471,7 +462,7 @@ tokenizer_cb (void *cls, const struct GNUNET_MessageHeader *message)
     GNUNET_TESTBED_compress_config_ (config, config_size, &xconfig);
   GNUNET_free (config);
   wc = GNUNET_new (struct WriteContext);
-  wc->length = xconfig_size + sizeof (struct GNUNET_TESTBED_HelperReply);
+  wc->length = xconfig_size + sizeof(struct GNUNET_TESTBED_HelperReply);
   reply = GNUNET_realloc (xconfig, wc->length);
   memmove (&reply[1], reply, xconfig_size);
   reply->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_HELPER_REPLY);
@@ -508,7 +499,7 @@ read_task (void *cls)
   ssize_t sread;
 
   read_task_id = NULL;
-  sread = GNUNET_DISK_file_read (stdin_fd, buf, sizeof (buf));
+  sread = GNUNET_DISK_file_read (stdin_fd, buf, sizeof(buf));
   if ((GNUNET_SYSERR == sread) || (0 == sread))
   {
     LOG_DEBUG ("STDIN closed\n");
@@ -581,7 +572,7 @@ sighandler_child_death ()
     GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle (sigpipe,
                                                      GNUNET_DISK_PIPE_END_WRITE),
                             &c,
-                            sizeof (c)));
+                            sizeof(c)));
   errno = old_errno;
 }
 
@@ -597,7 +588,8 @@ int
 main (int argc, char **argv)
 {
   struct GNUNET_SIGNAL_Context *shc_chld;
-  struct GNUNET_GETOPT_CommandLineOption options[] = {GNUNET_GETOPT_OPTION_END};
+  struct GNUNET_GETOPT_CommandLineOption options[] =
+  { GNUNET_GETOPT_OPTION_END };
   int ret;
 
   status = GNUNET_OK;
@@ -623,5 +615,6 @@ main (int argc, char **argv)
     return 1;
   return (GNUNET_OK == status) ? 0 : 1;
 }
+
 
 /* end of gnunet-helper-testbed.c */

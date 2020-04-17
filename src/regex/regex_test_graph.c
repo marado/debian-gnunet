@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file src/regex/regex_test_graph.c
  * @brief functions for creating .dot graphs from regexes
@@ -152,7 +152,7 @@ scc_tarjan (struct REGEX_INTERNAL_Automaton *a)
  */
 void
 REGEX_TEST_automaton_save_graph_step (void *cls, unsigned int count,
-                                        struct REGEX_INTERNAL_State *s)
+                                      struct REGEX_INTERNAL_State *s)
 {
   struct REGEX_TEST_Graph_Context *ctx = cls;
   struct REGEX_INTERNAL_Transition *ctran;
@@ -269,8 +269,8 @@ REGEX_TEST_automaton_save_graph_step (void *cls, unsigned int count,
  */
 void
 REGEX_TEST_automaton_save_graph (struct REGEX_INTERNAL_Automaton *a,
-                                   const char *filename,
-                                   enum REGEX_TEST_GraphSavingOptions options)
+                                 const char *filename,
+                                 enum REGEX_TEST_GraphSavingOptions options)
 {
   char *start;
   char *end;
@@ -282,7 +282,7 @@ REGEX_TEST_automaton_save_graph (struct REGEX_INTERNAL_Automaton *a,
     return;
   }
 
-  if (NULL == filename || strlen (filename) < 1)
+  if ((NULL == filename) || (strlen (filename) < 1))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "No Filename given!");
     return;
@@ -290,9 +290,9 @@ REGEX_TEST_automaton_save_graph (struct REGEX_INTERNAL_Automaton *a,
 
   ctx.filep = fopen (filename, "w");
   ctx.verbose =
-      (0 == (options & REGEX_TEST_GRAPH_VERBOSE)) ? GNUNET_NO : GNUNET_YES;
+    (0 == (options & REGEX_TEST_GRAPH_VERBOSE)) ? GNUNET_NO : GNUNET_YES;
   ctx.coloring =
-      (0 == (options & REGEX_TEST_GRAPH_COLORING)) ? GNUNET_NO : GNUNET_YES;
+    (0 == (options & REGEX_TEST_GRAPH_COLORING)) ? GNUNET_NO : GNUNET_YES;
 
   if (NULL == ctx.filep)
   {
@@ -309,8 +309,8 @@ REGEX_TEST_automaton_save_graph (struct REGEX_INTERNAL_Automaton *a,
   fwrite (start, strlen (start), 1, ctx.filep);
 
   REGEX_INTERNAL_automaton_traverse (a, a->start, NULL, NULL,
-                                   &REGEX_TEST_automaton_save_graph_step,
-                                   &ctx);
+                                     &REGEX_TEST_automaton_save_graph_step,
+                                     &ctx);
 
   end = "\n}\n";
   fwrite (end, strlen (end), 1, ctx.filep);

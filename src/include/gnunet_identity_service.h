@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -360,10 +360,11 @@ struct GNUNET_IDENTITY_EgoSuffixLookup;
  * @return handle to abort the operation
  */
 struct GNUNET_IDENTITY_EgoSuffixLookup *
-GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *cfg,
-				      const char *suffix,
-				      GNUNET_IDENTITY_EgoSuffixCallback cb,
-				      void *cb_cls);
+GNUNET_IDENTITY_ego_lookup_by_suffix (const struct
+                                      GNUNET_CONFIGURATION_Handle *cfg,
+                                      const char *suffix,
+                                      GNUNET_IDENTITY_EgoSuffixCallback cb,
+                                      void *cb_cls);
 
 
 /**
@@ -372,7 +373,8 @@ GNUNET_IDENTITY_ego_lookup_by_suffix (const struct GNUNET_CONFIGURATION_Handle *
  * @param el handle for lookup to abort
  */
 void
-GNUNET_IDENTITY_ego_lookup_by_suffix_cancel (struct GNUNET_IDENTITY_EgoSuffixLookup *el);
+GNUNET_IDENTITY_ego_lookup_by_suffix_cancel (struct
+                                             GNUNET_IDENTITY_EgoSuffixLookup *el);
 
 #if 0 /* keep Emacsens' auto-indent happy */
 {

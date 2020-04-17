@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
    SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 
 /**
  * @file rest-plugins/json_reclaim.c
@@ -96,11 +96,12 @@ parse_attr (void *cls, json_t *root, struct GNUNET_JSON_Specification *spec)
     GNUNET_STRINGS_string_to_data (id_str,
                                    strlen (id_str),
                                    &attr->id,
-                                   sizeof (uint64_t));
+                                   sizeof(uint64_t));
 
   *(struct GNUNET_RECLAIM_ATTRIBUTE_Claim **) spec->ptr = attr;
   return GNUNET_OK;
 }
+
 
 /**
  * Cleanup data left from parsing RSA public key.
@@ -112,6 +113,7 @@ static void
 clean_attr (void *cls, struct GNUNET_JSON_Specification *spec)
 {
   struct GNUNET_RECLAIM_ATTRIBUTE_Claim **attr;
+
   attr = (struct GNUNET_RECLAIM_ATTRIBUTE_Claim **) spec->ptr;
   if (NULL != *attr)
   {
@@ -119,6 +121,7 @@ clean_attr (void *cls, struct GNUNET_JSON_Specification *spec)
     *attr = NULL;
   }
 }
+
 
 /**
  * JSON Specification for Reclaim claims.
@@ -129,16 +132,19 @@ clean_attr (void *cls, struct GNUNET_JSON_Specification *spec)
 struct GNUNET_JSON_Specification
 GNUNET_RECLAIM_JSON_spec_claim (struct GNUNET_RECLAIM_ATTRIBUTE_Claim **attr)
 {
-  struct GNUNET_JSON_Specification ret = {.parser = &parse_attr,
-                                          .cleaner = &clean_attr,
-                                          .cls = NULL,
-                                          .field = NULL,
-                                          .ptr = attr,
-                                          .ptr_size = 0,
-                                          .size_ptr = NULL};
+  struct GNUNET_JSON_Specification ret = { .parser = &parse_attr,
+                                           .cleaner = &clean_attr,
+                                           .cls = NULL,
+                                           .field = NULL,
+                                           .ptr = attr,
+                                           .ptr_size = 0,
+                                           .size_ptr = NULL };
+
   *attr = NULL;
   return ret;
 }
+
+
 /**
  * Parse given JSON object to a ticket
  *
@@ -183,7 +189,7 @@ parse_ticket (void *cls, json_t *root, struct GNUNET_JSON_Specification *spec)
   if (GNUNET_OK != GNUNET_STRINGS_string_to_data (rnd_str,
                                                   strlen (rnd_str),
                                                   &ticket->rnd,
-                                                  sizeof (uint64_t)))
+                                                  sizeof(uint64_t)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Rnd invalid\n");
     GNUNET_free (ticket);
@@ -193,7 +199,7 @@ parse_ticket (void *cls, json_t *root, struct GNUNET_JSON_Specification *spec)
       GNUNET_STRINGS_string_to_data (id_str,
                                      strlen (id_str),
                                      &ticket->identity,
-                                     sizeof (
+                                     sizeof(
                                        struct GNUNET_CRYPTO_EcdsaPublicKey)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Identity invalid\n");
@@ -203,9 +209,10 @@ parse_ticket (void *cls, json_t *root, struct GNUNET_JSON_Specification *spec)
 
   if (GNUNET_OK !=
       GNUNET_STRINGS_string_to_data (aud_str,
-                                 strlen (aud_str),
-                                 &ticket->audience,
-                                 sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey)))
+                                     strlen (aud_str),
+                                     &ticket->audience,
+                                     sizeof(struct
+                                            GNUNET_CRYPTO_EcdsaPublicKey)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Audience invalid\n");
     GNUNET_free (ticket);
@@ -215,6 +222,7 @@ parse_ticket (void *cls, json_t *root, struct GNUNET_JSON_Specification *spec)
   *(struct GNUNET_RECLAIM_Ticket **) spec->ptr = ticket;
   return GNUNET_OK;
 }
+
 
 /**
  * Cleanup data left from parsing RSA public key.
@@ -226,6 +234,7 @@ static void
 clean_ticket (void *cls, struct GNUNET_JSON_Specification *spec)
 {
   struct GNUNET_RECLAIM_Ticket **ticket;
+
   ticket = (struct GNUNET_RECLAIM_Ticket **) spec->ptr;
   if (NULL != *ticket)
   {
@@ -233,6 +242,7 @@ clean_ticket (void *cls, struct GNUNET_JSON_Specification *spec)
     *ticket = NULL;
   }
 }
+
 
 /**
  * JSON Specification for Reclaim tickets.
@@ -243,13 +253,14 @@ clean_ticket (void *cls, struct GNUNET_JSON_Specification *spec)
 struct GNUNET_JSON_Specification
 GNUNET_RECLAIM_JSON_spec_ticket (struct GNUNET_RECLAIM_Ticket **ticket)
 {
-  struct GNUNET_JSON_Specification ret = {.parser = &parse_ticket,
-                                          .cleaner = &clean_ticket,
-                                          .cls = NULL,
-                                          .field = NULL,
-                                          .ptr = ticket,
-                                          .ptr_size = 0,
-                                          .size_ptr = NULL};
+  struct GNUNET_JSON_Specification ret = { .parser = &parse_ticket,
+                                           .cleaner = &clean_ticket,
+                                           .cls = NULL,
+                                           .field = NULL,
+                                           .ptr = ticket,
+                                           .ptr_size = 0,
+                                           .size_ptr = NULL };
+
   *ticket = NULL;
   return ret;
 }

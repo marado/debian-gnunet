@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,7 +33,6 @@
  */
 struct GNUNET_DNS_RequestHandle
 {
-
   /**
    * Handle to DNS API.
    */
@@ -48,7 +47,6 @@ struct GNUNET_DNS_RequestHandle
    * Re-connect counter, to make sure we did not reconnect in the meantime.
    */
   uint32_t generation;
-
 };
 
 
@@ -57,7 +55,6 @@ struct GNUNET_DNS_RequestHandle
  */
 struct GNUNET_DNS_Handle
 {
-
   /**
    * Connection to DNS service, or NULL.
    */
@@ -149,7 +146,6 @@ mq_error_handler (void *cls,
 }
 
 
-
 /**
  * This receives packets from the DNS service and calls the application to
  * check that the request is well-formed
@@ -182,18 +178,18 @@ handle_request (void *cls,
                 const struct GNUNET_DNS_Request *req)
 {
   struct GNUNET_DNS_Handle *dh = cls;
-  size_t payload_length = ntohs (req->header.size) - sizeof (*req);
+  size_t payload_length = ntohs (req->header.size) - sizeof(*req);
   struct GNUNET_DNS_RequestHandle *rh;
 
   rh = GNUNET_new (struct GNUNET_DNS_RequestHandle);
-  rh->dh =dh;
+  rh->dh = dh;
   rh->request_id = req->request_id;
   rh->generation = dh->generation;
   dh->pending_requests++;
   dh->rh (dh->rh_cls,
-	  rh,
-	  payload_length,
-	  (const char*) &req[1]);
+          rh,
+          payload_length,
+          (const char *) &req[1]);
 }
 
 
@@ -280,8 +276,8 @@ GNUNET_DNS_request_drop (struct GNUNET_DNS_RequestHandle *rh)
   GNUNET_assert (0 < rh->dh->pending_requests--);
   if (rh->generation != rh->dh->generation)
   {
-      GNUNET_free (rh);
-      return;
+    GNUNET_free (rh);
+    return;
   }
   env = GNUNET_MQ_msg (resp,
                        GNUNET_MESSAGE_TYPE_DNS_CLIENT_RESPONSE);
@@ -304,8 +300,8 @@ GNUNET_DNS_request_drop (struct GNUNET_DNS_RequestHandle *rh)
  */
 void
 GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
-			   uint16_t reply_length,
-			   const char *reply)
+                           uint16_t reply_length,
+                           const char *reply)
 {
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_DNS_Response *resp;
@@ -313,10 +309,10 @@ GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
   GNUNET_assert (0 < rh->dh->pending_requests--);
   if (rh->generation != rh->dh->generation)
   {
-      GNUNET_free (rh);
-      return;
+    GNUNET_free (rh);
+    return;
   }
-  if (reply_length + sizeof (struct GNUNET_DNS_Response)
+  if (reply_length + sizeof(struct GNUNET_DNS_Response)
       >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
@@ -329,8 +325,8 @@ GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
   resp->drop_flag = htonl (2);
   resp->request_id = rh->request_id;
   GNUNET_memcpy (&resp[1],
-          reply,
-          reply_length);
+                 reply,
+                 reply_length);
   GNUNET_MQ_send (rh->dh->mq,
                   env);
   GNUNET_free (rh);
@@ -348,9 +344,9 @@ GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
  */
 struct GNUNET_DNS_Handle *
 GNUNET_DNS_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
-		    enum GNUNET_DNS_Flags flags,
-		    GNUNET_DNS_RequestHandler rh,
-		    void *rh_cls)
+                    enum GNUNET_DNS_Flags flags,
+                    GNUNET_DNS_RequestHandler rh,
+                    void *rh_cls)
 {
   struct GNUNET_DNS_Handle *dh;
 
@@ -386,5 +382,6 @@ GNUNET_DNS_disconnect (struct GNUNET_DNS_Handle *dh)
   GNUNET_break (0 == dh->pending_requests);
   GNUNET_free (dh);
 }
+
 
 /* end of dns_api.c */

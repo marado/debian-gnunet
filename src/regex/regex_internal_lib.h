@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/regex_internal_lib.h
  * @brief library to parse regular expressions into dfa
@@ -105,7 +105,7 @@ REGEX_INTERNAL_eval (struct REGEX_INTERNAL_Automaton *a,
 size_t
 REGEX_INTERNAL_get_first_key (const char *input_string,
                               size_t string_len,
-                              struct GNUNET_HashCode * key);
+                              struct GNUNET_HashCode *key);
 
 
 /**
@@ -157,7 +157,6 @@ REGEX_INTERNAL_iterate_reachable_edges (struct REGEX_INTERNAL_Automaton *a,
                                         void *iterator_cls);
 
 
-
 /**
  * Handle to store cached data about a regex announce.
  */
@@ -183,10 +182,10 @@ struct REGEX_INTERNAL_Search;
  */
 struct REGEX_INTERNAL_Announcement *
 REGEX_INTERNAL_announce (struct GNUNET_DHT_Handle *dht,
-			 const struct GNUNET_CRYPTO_EddsaPrivateKey *priv,
-			 const char *regex,
-			 uint16_t compression,
-			 struct GNUNET_STATISTICS_Handle *stats);
+                         const struct GNUNET_CRYPTO_EddsaPrivateKey *priv,
+                         const char *regex,
+                         uint16_t compression,
+                         struct GNUNET_STATISTICS_Handle *stats);
 
 
 /**

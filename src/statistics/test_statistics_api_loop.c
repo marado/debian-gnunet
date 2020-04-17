@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file statistics/test_statistics_api_loop.c
  * @brief testcase for statistics_api.c
@@ -32,9 +32,9 @@ static struct GNUNET_STATISTICS_Handle *h;
 
 static int
 check_1 (void *cls,
-	 const char *subsystem,
-	 const char *name,
-	 uint64_t value,
+         const char *subsystem,
+         const char *name,
+         uint64_t value,
          int is_persistent)
 {
   GNUNET_assert (0 == strcmp (name, "test-0"));
@@ -68,9 +68,9 @@ run (void *cls,
   h = GNUNET_STATISTICS_create ("test-statistics-api-loop", cfg);
   for (i = 0; i < ROUNDS; i++)
   {
-    GNUNET_snprintf (name, sizeof (name), "test-%d", i % 32);
+    GNUNET_snprintf (name, sizeof(name), "test-%d", i % 32);
     GNUNET_STATISTICS_set (h, name, i, GNUNET_NO);
-    GNUNET_snprintf (name, sizeof (name), "test-%d", i % 16);
+    GNUNET_snprintf (name, sizeof(name), "test-%d", i % 16);
     GNUNET_STATISTICS_update (h, name, 1, GNUNET_NO);
   }
   i = 0;
@@ -87,10 +87,9 @@ main (int argc, char *argv_ign[])
   int ok = 1;
 
   char *const argv[] = { "test-statistics-api",
-    "-c",
-    "test_statistics_api_data.conf",
-    NULL
-  };
+                         "-c",
+                         "test_statistics_api_data.conf",
+                         NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
@@ -100,10 +99,10 @@ main (int argc, char *argv_ign[])
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-statistics");
   proc =
     GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-			     NULL, NULL, NULL,
-			     binary,
-			     "gnunet-service-statistics",
-			     "-c", "test_statistics_api_data.conf", NULL);
+                             NULL, NULL, NULL,
+                             binary,
+                             "gnunet-service-statistics",
+                             "-c", "test_statistics_api_data.conf", NULL);
   GNUNET_assert (NULL != proc);
   GNUNET_PROGRAM_run (3, argv, "test-statistics-api", "nohelp", options, &run,
                       &ok);
@@ -118,5 +117,6 @@ main (int argc, char *argv_ign[])
   GNUNET_free (binary);
   return ok;
 }
+
 
 /* end of test_statistics_api_loop.c */

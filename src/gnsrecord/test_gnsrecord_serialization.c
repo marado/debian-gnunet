@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file gnsrecord/test_gnsrecord_serialization.c
  * @brief testcase for gnsrecord_serialization.c
@@ -44,7 +44,7 @@ run (void *cls,
   size_t data_len;
   struct GNUNET_GNSRECORD_Data src[rd_count];
 
-  memset(src, '\0', rd_count * sizeof (struct GNUNET_GNSRECORD_Data));
+  memset (src, '\0', rd_count * sizeof(struct GNUNET_GNSRECORD_Data));
 
   data_len = 0;
   for (c = 0; c < rd_count; c++)
@@ -132,7 +132,7 @@ run (void *cls,
 
   for (c = 0; c < rd_count; c++)
   {
-    GNUNET_free ((void *)src[c].data);
+    GNUNET_free ((void *) src[c].data);
   }
 }
 
@@ -141,16 +141,17 @@ int
 main (int argcx, char *argvx[])
 {
   static char *const argv[] = { "test_gnsrecord_serialization",
-    NULL
-  };
+                                NULL };
   static struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
 
   res = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1, argv, "test_namestore_record_serialization",
+  GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1, argv,
+                      "test_namestore_record_serialization",
                       "nohelp", options, &run, &res);
   return res;
 }
+
 
 /* end of test_gnsrecord_serialization.c */

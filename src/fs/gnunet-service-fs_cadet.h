@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_cadet.h
@@ -122,7 +122,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct CadetQueryMessage
 {
-
   /**
    * Type is GNUNET_MESSAGE_TYPE_FS_CADET_QUERY.
    */
@@ -137,7 +136,6 @@ struct CadetQueryMessage
    * Query hash from CHK (hash of encrypted block).
    */
   struct GNUNET_HashCode query;
-
 };
 
 
@@ -146,7 +144,6 @@ struct CadetQueryMessage
  */
 struct CadetReplyMessage
 {
-
   /**
    * Type is GNUNET_MESSAGE_TYPE_FS_CADET_REPLY.
    */
@@ -163,7 +160,6 @@ struct CadetReplyMessage
   struct GNUNET_TIME_AbsoluteNBO expiration;
 
   /* followed by the encrypted block */
-
 };
 
 GNUNET_NETWORK_STRUCT_END

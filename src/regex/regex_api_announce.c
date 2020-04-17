@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/regex_api_announce.c
  * @brief access regex service to advertise capabilities via regex
@@ -29,7 +29,7 @@
 #include "gnunet_regex_service.h"
 #include "regex_ipc.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "regex-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "regex-api", __VA_ARGS__)
 
 /**
  * Handle to store cached data about a regex announce.
@@ -61,7 +61,6 @@ struct GNUNET_REGEX_Announcement
    */
   uint16_t compression;
 };
-
 
 
 /**
@@ -119,8 +118,8 @@ announce_reconnect (struct GNUNET_REGEX_Announcement *a)
   am->reserved = htons (0);
   am->refresh_delay = GNUNET_TIME_relative_hton (a->refresh_delay);
   GNUNET_memcpy (&am[1],
-          a->regex,
-          slen);
+                 a->regex,
+                 slen);
   GNUNET_MQ_send (a->mq,
                   env);
 }
@@ -139,17 +138,17 @@ announce_reconnect (struct GNUNET_REGEX_Announcement *a)
 struct GNUNET_REGEX_Announcement *
 GNUNET_REGEX_announce (const struct GNUNET_CONFIGURATION_Handle *cfg,
                        const char *regex,
-		       struct GNUNET_TIME_Relative refresh_delay,
+                       struct GNUNET_TIME_Relative refresh_delay,
                        uint16_t compression)
 {
   struct GNUNET_REGEX_Announcement *a;
   size_t slen;
 
   slen = strlen (regex) + 1;
-  if (slen + sizeof (struct AnnounceMessage) >= GNUNET_MAX_MESSAGE_SIZE)
+  if (slen + sizeof(struct AnnounceMessage) >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Regex `%s' is too long!\n"),
+                _ ("Regex `%s' is too long!\n"),
                 regex);
     GNUNET_break (0);
     return NULL;
@@ -182,5 +181,6 @@ GNUNET_REGEX_announce_cancel (struct GNUNET_REGEX_Announcement *a)
   GNUNET_free (a->regex);
   GNUNET_free (a);
 }
+
 
 /* end of regex_api_announce.c */

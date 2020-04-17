@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet_core.c
@@ -54,7 +54,6 @@ struct RouteDirection;
  */
 struct Rung
 {
-
   /**
    * Rung of RouteDirections with one more buffer entry each.
    */
@@ -93,7 +92,6 @@ struct Rung
  */
 struct RouteDirection
 {
-
   /**
    * DLL of other route directions within the same `struct Rung`.
    */
@@ -151,7 +149,6 @@ struct RouteDirection
  */
 struct CadetRoute
 {
-
   /**
    * Information about the next hop on this route.
    */
@@ -448,8 +445,8 @@ route_message (struct CadetPeer *prev,
   if ((0 != (priority & GNUNET_MQ_PREF_LOW_LATENCY)) &&
       (0 != (priority & GNUNET_MQ_PREF_OUT_OF_ORDER)) &&
       (NULL != dir->env_head) &&
-      (0 == (GNUNET_MQ_env_get_options (dir->env_head) &
-             GNUNET_MQ_PREF_LOW_LATENCY)))
+      (0 == (GNUNET_MQ_env_get_options (dir->env_head)
+             & GNUNET_MQ_PREF_LOW_LATENCY)))
     GNUNET_MQ_dll_insert_head (&dir->env_head, &dir->env_tail, env);
   else
     GNUNET_MQ_dll_insert_tail (&dir->env_head, &dir->env_tail, env);
@@ -476,9 +473,9 @@ static int
 check_connection_create (void *cls,
                          const struct GNUNET_CADET_ConnectionCreateMessage *msg)
 {
-  uint16_t size = ntohs (msg->header.size) - sizeof (*msg);
+  uint16_t size = ntohs (msg->header.size) - sizeof(*msg);
 
-  if (0 != (size % sizeof (struct GNUNET_PeerIdentity)))
+  if (0 != (size % sizeof(struct GNUNET_PeerIdentity)))
   {
     GNUNET_break_op (0);
     return GNUNET_NO;
@@ -724,11 +721,11 @@ handle_connection_create (
   const struct GNUNET_PeerIdentity *pids =
     (const struct GNUNET_PeerIdentity *) &msg[1];
   struct CadetRoute *route;
-  uint16_t size = ntohs (msg->header.size) - sizeof (*msg);
+  uint16_t size = ntohs (msg->header.size) - sizeof(*msg);
   unsigned int path_length;
   unsigned int off;
 
-  path_length = size / sizeof (struct GNUNET_PeerIdentity);
+  path_length = size / sizeof(struct GNUNET_PeerIdentity);
   if (0 == path_length)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -754,10 +751,10 @@ handle_connection_create (
            GNUNET_i2s (&pids[i]),
            i);
       if (GNUNET_SYSERR == GNUNET_CONTAINER_multipeermap_put (
-                             map,
-                             &pids[i],
-                             NULL,
-                             GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
+            map,
+            &pids[i],
+            NULL,
+            GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
       {
         /* bogus request */
         GNUNET_CONTAINER_multipeermap_destroy (map);
@@ -798,8 +795,8 @@ handle_connection_create (
     route_message (sender,
                    &msg->cid,
                    &msg->header,
-                   GNUNET_MQ_PRIO_CRITICAL_CONTROL |
-                     GNUNET_MQ_PREF_LOW_LATENCY);
+                   GNUNET_MQ_PRIO_CRITICAL_CONTROL
+                   | GNUNET_MQ_PREF_LOW_LATENCY);
     return;
   }
   if (off == path_length - 1)
@@ -893,8 +890,9 @@ handle_connection_create (
                                             route->last_use.abs_value_us);
   if (NULL == timeout_task)
     timeout_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (keepalive_period,
-                                                                   3),
+      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                      keepalive_period,
+                                      3),
                                     &timeout_cb,
                                     NULL);
   /* also pass CREATE message along to next hop */
@@ -1261,35 +1259,35 @@ void
 GCO_init (const struct GNUNET_CONFIGURATION_Handle *c)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (connection_create,
-                            GNUNET_MESSAGE_TYPE_CADET_CONNECTION_CREATE,
-                            struct GNUNET_CADET_ConnectionCreateMessage,
-                            NULL),
-     GNUNET_MQ_hd_fixed_size (connection_create_ack,
-                              GNUNET_MESSAGE_TYPE_CADET_CONNECTION_CREATE_ACK,
-                              struct GNUNET_CADET_ConnectionCreateAckMessage,
-                              NULL),
-     GNUNET_MQ_hd_fixed_size (connection_broken,
-                              GNUNET_MESSAGE_TYPE_CADET_CONNECTION_BROKEN,
-                              struct GNUNET_CADET_ConnectionBrokenMessage,
-                              NULL),
-     GNUNET_MQ_hd_fixed_size (connection_destroy,
-                              GNUNET_MESSAGE_TYPE_CADET_CONNECTION_DESTROY,
-                              struct GNUNET_CADET_ConnectionDestroyMessage,
-                              NULL),
-     GNUNET_MQ_hd_fixed_size (tunnel_kx,
-                              GNUNET_MESSAGE_TYPE_CADET_TUNNEL_KX,
-                              struct GNUNET_CADET_TunnelKeyExchangeMessage,
-                              NULL),
-     GNUNET_MQ_hd_fixed_size (tunnel_kx_auth,
-                              GNUNET_MESSAGE_TYPE_CADET_TUNNEL_KX_AUTH,
-                              struct GNUNET_CADET_TunnelKeyExchangeAuthMessage,
-                              NULL),
-     GNUNET_MQ_hd_var_size (tunnel_encrypted,
-                            GNUNET_MESSAGE_TYPE_CADET_TUNNEL_ENCRYPTED,
-                            struct GNUNET_CADET_TunnelEncryptedMessage,
-                            NULL),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (connection_create,
+                           GNUNET_MESSAGE_TYPE_CADET_CONNECTION_CREATE,
+                           struct GNUNET_CADET_ConnectionCreateMessage,
+                           NULL),
+    GNUNET_MQ_hd_fixed_size (connection_create_ack,
+                             GNUNET_MESSAGE_TYPE_CADET_CONNECTION_CREATE_ACK,
+                             struct GNUNET_CADET_ConnectionCreateAckMessage,
+                             NULL),
+    GNUNET_MQ_hd_fixed_size (connection_broken,
+                             GNUNET_MESSAGE_TYPE_CADET_CONNECTION_BROKEN,
+                             struct GNUNET_CADET_ConnectionBrokenMessage,
+                             NULL),
+    GNUNET_MQ_hd_fixed_size (connection_destroy,
+                             GNUNET_MESSAGE_TYPE_CADET_CONNECTION_DESTROY,
+                             struct GNUNET_CADET_ConnectionDestroyMessage,
+                             NULL),
+    GNUNET_MQ_hd_fixed_size (tunnel_kx,
+                             GNUNET_MESSAGE_TYPE_CADET_TUNNEL_KX,
+                             struct GNUNET_CADET_TunnelKeyExchangeMessage,
+                             NULL),
+    GNUNET_MQ_hd_fixed_size (tunnel_kx_auth,
+                             GNUNET_MESSAGE_TYPE_CADET_TUNNEL_KX_AUTH,
+                             struct GNUNET_CADET_TunnelKeyExchangeAuthMessage,
+                             NULL),
+    GNUNET_MQ_hd_var_size (tunnel_encrypted,
+                           GNUNET_MESSAGE_TYPE_CADET_TUNNEL_ENCRYPTED,
+                           struct GNUNET_CADET_TunnelEncryptedMessage,
+                           NULL),
+    GNUNET_MQ_handler_end () };
 
   if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_number (c,
                                                           "CADET",
@@ -1334,5 +1332,6 @@ GCO_shutdown ()
     timeout_task = NULL;
   }
 }
+
 
 /* end of gnunet-cadet-service_core.c */

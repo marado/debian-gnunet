@@ -175,16 +175,17 @@ libgnunet_plugin_rest_openid_connect_la_DEPENDENCIES =  \
 	$(top_builddir)/src/gns/libgnunetgns.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_rest_openid_connect_la_OBJECTS =  \
-	plugin_rest_openid_connect.lo oidc_helper.lo
+am_libgnunet_plugin_rest_openid_connect_la_OBJECTS = libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.lo \
+	libgnunet_plugin_rest_openid_connect_la-oidc_helper.lo
 libgnunet_plugin_rest_openid_connect_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_openid_connect_la_OBJECTS)
 libgnunet_plugin_rest_openid_connect_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgnunet_plugin_rest_openid_connect_la_LDFLAGS) $(LDFLAGS) \
-	-o $@
+	$(CCLD) $(libgnunet_plugin_rest_openid_connect_la_CFLAGS) \
+	$(CFLAGS) $(libgnunet_plugin_rest_openid_connect_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_openid_connect_la_rpath =  \
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
 libgnunet_plugin_rest_reclaim_la_DEPENDENCIES =  \
@@ -194,14 +195,15 @@ libgnunet_plugin_rest_reclaim_la_DEPENDENCIES =  \
 	$(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
 	$(top_builddir)/src/namestore/libgnunetnamestore.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunet_plugin_rest_reclaim_la_OBJECTS = plugin_rest_reclaim.lo \
-	json_reclaim.lo
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_reclaim_la_OBJECTS =  \
+	libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.lo \
+	libgnunet_plugin_rest_reclaim_la-json_reclaim.lo
 libgnunet_plugin_rest_reclaim_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_reclaim_la_OBJECTS)
 libgnunet_plugin_rest_reclaim_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_reclaim_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_reclaim_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_reclaim_la_rpath =  \
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
@@ -253,10 +255,11 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/gnunet-reclaim.Po \
 	./$(DEPDIR)/gnunet-service-reclaim.Po \
 	./$(DEPDIR)/gnunet-service-reclaim_tickets.Po \
-	./$(DEPDIR)/json_reclaim.Plo ./$(DEPDIR)/oidc_helper.Plo \
+	./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Plo \
+	./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Plo \
+	./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Plo \
+	./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Plo \
 	./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo \
-	./$(DEPDIR)/plugin_rest_openid_connect.Plo \
-	./$(DEPDIR)/plugin_rest_reclaim.Plo \
 	./$(DEPDIR)/reclaim_api.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -497,20 +500,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -518,6 +518,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -543,6 +544,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -580,11 +582,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -628,6 +634,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -647,6 +656,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -657,7 +667,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -722,7 +731,6 @@ top_srcdir = @top_srcdir@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 plugindir = $(libdir)/gnunet
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = \
@@ -759,11 +767,12 @@ libgnunet_plugin_rest_reclaim_la_LIBADD = \
   $(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
   $(top_builddir)/src/namestore/libgnunetnamestore.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 
 libgnunet_plugin_rest_reclaim_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_reclaim_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunet_plugin_rest_openid_connect_la_SOURCES = \
   plugin_rest_openid_connect.c \
   oidc_helper.h \
@@ -778,11 +787,13 @@ libgnunet_plugin_rest_openid_connect_la_LIBADD = \
   $(top_builddir)/src/gns/libgnunetgns.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS) \
+	$(LIBGCRYPT_LIBS)
 
 libgnunet_plugin_rest_openid_connect_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_openid_connect_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunet_plugin_gnsrecord_reclaim_la_SOURCES = \
   plugin_gnsrecord_reclaim.c
 
@@ -818,7 +829,7 @@ libgnunetreclaim_la_LIBADD = \
   $(GN_LIBINTL) $(XLIB)
 
 libgnunetreclaim_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 gnunet_reclaim_SOURCES = \
@@ -1071,11 +1082,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-reclaim.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-reclaim.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-reclaim_tickets.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/json_reclaim.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/oidc_helper.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_openid_connect.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_reclaim.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reclaim_api.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -1104,6 +1115,34 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.lo: plugin_rest_openid_connect.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_openid_connect_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Tpo -c -o libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.lo `test -f 'plugin_rest_openid_connect.c' || echo '$(srcdir)/'`plugin_rest_openid_connect.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Tpo $(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_openid_connect.c' object='libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_openid_connect_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.lo `test -f 'plugin_rest_openid_connect.c' || echo '$(srcdir)/'`plugin_rest_openid_connect.c
+
+libgnunet_plugin_rest_openid_connect_la-oidc_helper.lo: oidc_helper.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_openid_connect_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_openid_connect_la-oidc_helper.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Tpo -c -o libgnunet_plugin_rest_openid_connect_la-oidc_helper.lo `test -f 'oidc_helper.c' || echo '$(srcdir)/'`oidc_helper.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Tpo $(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='oidc_helper.c' object='libgnunet_plugin_rest_openid_connect_la-oidc_helper.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_openid_connect_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_openid_connect_la-oidc_helper.lo `test -f 'oidc_helper.c' || echo '$(srcdir)/'`oidc_helper.c
+
+libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.lo: plugin_rest_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_reclaim_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Tpo -c -o libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.lo `test -f 'plugin_rest_reclaim.c' || echo '$(srcdir)/'`plugin_rest_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Tpo $(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_reclaim.c' object='libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_reclaim_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.lo `test -f 'plugin_rest_reclaim.c' || echo '$(srcdir)/'`plugin_rest_reclaim.c
+
+libgnunet_plugin_rest_reclaim_la-json_reclaim.lo: json_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_reclaim_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_reclaim_la-json_reclaim.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Tpo -c -o libgnunet_plugin_rest_reclaim_la-json_reclaim.lo `test -f 'json_reclaim.c' || echo '$(srcdir)/'`json_reclaim.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Tpo $(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='json_reclaim.c' object='libgnunet_plugin_rest_reclaim_la-json_reclaim.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_reclaim_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_reclaim_la-json_reclaim.lo `test -f 'json_reclaim.c' || echo '$(srcdir)/'`json_reclaim.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1448,11 +1487,11 @@ distclean: distclean-am
 		-rm -f ./$(DEPDIR)/gnunet-reclaim.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-reclaim.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-reclaim_tickets.Po
-	-rm -f ./$(DEPDIR)/json_reclaim.Plo
-	-rm -f ./$(DEPDIR)/oidc_helper.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Plo
 	-rm -f ./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_openid_connect.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_reclaim.Plo
 	-rm -f ./$(DEPDIR)/reclaim_api.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -1503,11 +1542,11 @@ maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/gnunet-reclaim.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-reclaim.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-reclaim_tickets.Po
-	-rm -f ./$(DEPDIR)/json_reclaim.Plo
-	-rm -f ./$(DEPDIR)/oidc_helper.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-oidc_helper.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_openid_connect_la-plugin_rest_openid_connect.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-json_reclaim.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_reclaim_la-plugin_rest_reclaim.Plo
 	-rm -f ./$(DEPDIR)/plugin_gnsrecord_reclaim.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_openid_connect.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_reclaim.Plo
 	-rm -f ./$(DEPDIR)/reclaim_api.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

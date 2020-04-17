@@ -1,10 +1,6 @@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage
 endif
@@ -18,6 +14,7 @@ libgnunetnt_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 libgnunetnt_la_LDFLAGS = \
  $(GN_LIB_LDFLAGS) \
+ $(GN_LIBINTL) \
   -version-info 0:0:0
 
 #if ENABLE_TEST_RUN

@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -154,7 +154,7 @@ GNUNET_TESTBED_SD_add_data_ (struct SDHandle *h, unsigned int amount)
     GNUNET_CONTAINER_DLL_remove (h->head, h->tail, entry);
     h->sum -= entry->amount;
     h->sqsum -=
-        ((unsigned long) entry->amount) * ((unsigned long) entry->amount);
+      ((unsigned long) entry->amount) * ((unsigned long) entry->amount);
     h->cnt--;
   }
   GNUNET_assert (h->cnt < h->max_cnt);
@@ -208,5 +208,6 @@ GNUNET_TESTBED_SD_deviation_factor_ (struct SDHandle *h, unsigned int amount,
   *factor = f * n;
   return GNUNET_OK;
 }
+
 
 /* end of testbed_api_sd.c */

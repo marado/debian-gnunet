@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -41,7 +41,6 @@
 #define MAX_UBLOCK_SIZE (60 * 1024)
 
 
-
 GNUNET_NETWORK_STRUCT_BEGIN
 
 /**
@@ -49,7 +48,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct UBlock
 {
-
   /**
    * Signature using pseudonym and search keyword / identifier.
    */
@@ -72,7 +70,6 @@ struct UBlock
   /* 0-terminated URI here */
 
   /* variable-size Meta-Data follows here */
-
 };
 
 
@@ -95,7 +92,6 @@ struct OnDemandBlock
    * this on-demand encoded block? (in NBO)
    */
   uint64_t offset GNUNET_PACKED;
-
 };
 GNUNET_NETWORK_STRUCT_END
 

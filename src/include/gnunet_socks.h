@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Jeffrey Burdges
@@ -66,7 +66,7 @@ GNUNET_SOCKS_check_service (const char *service_name,
  */
 struct GNUNET_CONNECTION_Handle *
 GNUNET_SOCKS_do_connect (const char *service_name,
-                          const struct GNUNET_CONFIGURATION_Handle *cfg);
+                         const struct GNUNET_CONFIGURATION_Handle *cfg);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

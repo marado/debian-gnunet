@@ -154,9 +154,9 @@ libgnunet_plugin_rest_peerinfo_la_DEPENDENCIES =  \
 	$(top_builddir)/src/rest/libgnunetrest.la \
 	$(top_builddir)/src/json/libgnunetjson.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am_libgnunet_plugin_rest_peerinfo_la_OBJECTS =  \
-	plugin_rest_peerinfo.lo
+	libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.lo
 libgnunet_plugin_rest_peerinfo_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_peerinfo_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -165,7 +165,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 libgnunet_plugin_rest_peerinfo_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(CCLD) $(libgnunet_plugin_rest_peerinfo_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_peerinfo_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_peerinfo_la_rpath =  \
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
@@ -178,6 +178,10 @@ gnunet_peerinfo_DEPENDENCIES =  \
 	$(top_builddir)/src/hello/libgnunethello.la \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_peerinfo_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_peerinfo_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -195,7 +199,7 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/gnunet-peerinfo.Po \
 	./$(DEPDIR)/gnunet-peerinfo_plugins.Po \
-	./$(DEPDIR)/plugin_rest_peerinfo.Plo
+	./$(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -428,20 +432,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -449,6 +450,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -474,6 +476,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -511,11 +514,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -559,6 +566,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -578,6 +588,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -588,7 +599,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -652,7 +662,6 @@ top_srcdir = @top_srcdir@
 
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -liconv -lstdc++ -lcomdlg32 -lgdi32
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@REST_PLUGIN = libgnunet_plugin_rest_peerinfo.la
@@ -668,11 +677,12 @@ libgnunet_plugin_rest_peerinfo_la_LIBADD = \
   $(top_builddir)/src/rest/libgnunetrest.la \
   $(top_builddir)/src/json/libgnunetjson.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 
 libgnunet_plugin_rest_peerinfo_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_peerinfo_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 gnunet_peerinfo_SOURCES = \
  gnunet-peerinfo.c \
  gnunet-peerinfo_plugins.c gnunet-peerinfo_plugins.h
@@ -684,12 +694,14 @@ gnunet_peerinfo_LDADD = \
   $(top_builddir)/src/statistics/libgnunetstatistics.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
+gnunet_peerinfo_LDFLAGS = \
+  $(GN_LIBINTL)
+
 @HAVE_PYTHON_TRUE@check_SCRIPTS = \
 @HAVE_PYTHON_TRUE@ test_gnunet_peerinfo.py
 
 @ENABLE_TEST_RUN_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_SCRIPTS)
-do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 EXTRA_DIST = \
   test_gnunet_peerinfo.py.in \
   test_gnunet_peerinfo_data.conf
@@ -818,7 +830,7 @@ libgnunet_plugin_rest_peerinfo.la: $(libgnunet_plugin_rest_peerinfo_la_OBJECTS) 
 
 gnunet-peerinfo$(EXEEXT): $(gnunet_peerinfo_OBJECTS) $(gnunet_peerinfo_DEPENDENCIES) $(EXTRA_gnunet_peerinfo_DEPENDENCIES) 
 	@rm -f gnunet-peerinfo$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_peerinfo_OBJECTS) $(gnunet_peerinfo_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_peerinfo_LINK) $(gnunet_peerinfo_OBJECTS) $(gnunet_peerinfo_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -828,7 +840,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-peerinfo.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-peerinfo_plugins.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_peerinfo.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -856,6 +868,13 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.lo: plugin_rest_peerinfo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_peerinfo_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Tpo -c -o libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.lo `test -f 'plugin_rest_peerinfo.c' || echo '$(srcdir)/'`plugin_rest_peerinfo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Tpo $(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_peerinfo.c' object='libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_peerinfo_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.lo `test -f 'plugin_rest_peerinfo.c' || echo '$(srcdir)/'`plugin_rest_peerinfo.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1162,7 +1181,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/gnunet-peerinfo.Po
 	-rm -f ./$(DEPDIR)/gnunet-peerinfo_plugins.Po
-	-rm -f ./$(DEPDIR)/plugin_rest_peerinfo.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1210,7 +1229,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/gnunet-peerinfo.Po
 	-rm -f ./$(DEPDIR)/gnunet-peerinfo_plugins.Po
-	-rm -f ./$(DEPDIR)/plugin_rest_peerinfo.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_peerinfo_la-plugin_rest_peerinfo.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1251,7 +1270,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-pluginLTLIBRARIES
 
 
 test_gnunet_peerinfo.py: test_gnunet_peerinfo.py.in Makefile
-	$(do_subst) < $(srcdir)/test_gnunet_peerinfo.py.in > test_gnunet_peerinfo.py
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/test_gnunet_peerinfo.py.in > test_gnunet_peerinfo.py
 	chmod +x test_gnunet_peerinfo.py
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

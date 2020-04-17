@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if test -e @PKGDATADIRECTORY@/existence.sh
+then
+    . @PKGDATADIRECTORY@/existence.sh
+else
+    . $dir/../../contrib/build-common/sh/lib.sh/existence.sh
+fi
+
+if existence mandoc;
+then
+    for f in `find . -name \*\.[1-9]`;
+    do
+        mandoc -T html $f > $f.html;
+    done
+fi

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file dht/test_dht_topo.c
  * @author Christian Grothoff
@@ -32,12 +32,14 @@
 /**
  * How long until we give up on fetching the data?
  */
-#define GET_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 120)
+#define GET_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                   120)
 
 /**
  * How frequently do we execute the PUTs?
  */
-#define PUT_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5)
+#define PUT_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                     5)
 
 
 /**
@@ -59,7 +61,6 @@ struct GetOperation
    * Handle for the operation.
    */
   struct GNUNET_DHT_GetHandle *get;
-
 };
 
 
@@ -113,42 +114,42 @@ static struct
   const char *name;
   unsigned long long total;
 } stats[] = {
-  {"core", "# bytes decrypted", 0},
-  {"core", "# bytes encrypted", 0},
-  {"core", "# type maps received", 0},
-  {"core", "# session keys confirmed via PONG", 0},
-  {"core", "# peers connected", 0},
-  {"core", "# key exchanges initiated", 0},
-  {"core", "# send requests dropped (disconnected)", 0},
-  {"core", "# transmissions delayed due to corking", 0},
-  {"core", "# messages discarded (expired prior to transmission)", 0},
-  {"core", "# messages discarded (disconnected)", 0},
-  {"core", "# discarded CORE_SEND requests", 0},
-  {"core", "# discarded lower priority CORE_SEND requests", 0},
-  {"transport", "# bytes received via TCP", 0},
-  {"transport", "# bytes transmitted via TCP", 0},
-  {"dht", "# PUT messages queued for transmission", 0},
-  {"dht", "# P2P PUT requests received", 0},
-  {"dht", "# GET messages queued for transmission", 0},
-  {"dht", "# P2P GET requests received", 0},
-  {"dht", "# RESULT messages queued for transmission", 0},
-  {"dht", "# P2P RESULTS received", 0},
-  {"dht", "# Queued messages discarded (peer disconnected)", 0},
-  {"dht", "# Peers excluded from routing due to Bloomfilter", 0},
-  {"dht", "# Peer selection failed", 0},
-  {"dht", "# FIND PEER requests ignored due to Bloomfilter", 0},
-  {"dht", "# FIND PEER requests ignored due to lack of HELLO", 0},
-  {"dht", "# P2P FIND PEER requests processed", 0},
-  {"dht", "# P2P GET requests ONLY routed", 0},
-  {"dht", "# Preference updates given to core", 0},
-  {"dht", "# REPLIES ignored for CLIENTS (no match)", 0},
-  {"dht", "# GET requests from clients injected", 0},
-  {"dht", "# GET requests received from clients", 0},
-  {"dht", "# GET STOP requests received from clients", 0},
-  {"dht", "# ITEMS stored in datacache", 0},
-  {"dht", "# Good RESULTS found in datacache", 0},
-  {"dht", "# GET requests given to datacache", 0},
-  {NULL, NULL, 0}
+  { "core", "# bytes decrypted", 0 },
+  { "core", "# bytes encrypted", 0 },
+  { "core", "# type maps received", 0 },
+  { "core", "# session keys confirmed via PONG", 0 },
+  { "core", "# peers connected", 0 },
+  { "core", "# key exchanges initiated", 0 },
+  { "core", "# send requests dropped (disconnected)", 0 },
+  { "core", "# transmissions delayed due to corking", 0 },
+  { "core", "# messages discarded (expired prior to transmission)", 0 },
+  { "core", "# messages discarded (disconnected)", 0 },
+  { "core", "# discarded CORE_SEND requests", 0 },
+  { "core", "# discarded lower priority CORE_SEND requests", 0 },
+  { "transport", "# bytes received via TCP", 0 },
+  { "transport", "# bytes transmitted via TCP", 0 },
+  { "dht", "# PUT messages queued for transmission", 0 },
+  { "dht", "# P2P PUT requests received", 0 },
+  { "dht", "# GET messages queued for transmission", 0 },
+  { "dht", "# P2P GET requests received", 0 },
+  { "dht", "# RESULT messages queued for transmission", 0 },
+  { "dht", "# P2P RESULTS received", 0 },
+  { "dht", "# Queued messages discarded (peer disconnected)", 0 },
+  { "dht", "# Peers excluded from routing due to Bloomfilter", 0 },
+  { "dht", "# Peer selection failed", 0 },
+  { "dht", "# FIND PEER requests ignored due to Bloomfilter", 0 },
+  { "dht", "# FIND PEER requests ignored due to lack of HELLO", 0 },
+  { "dht", "# P2P FIND PEER requests processed", 0 },
+  { "dht", "# P2P GET requests ONLY routed", 0 },
+  { "dht", "# Preference updates given to core", 0 },
+  { "dht", "# REPLIES ignored for CLIENTS (no match)", 0 },
+  { "dht", "# GET requests from clients injected", 0 },
+  { "dht", "# GET requests received from clients", 0 },
+  { "dht", "# GET STOP requests received from clients", 0 },
+  { "dht", "# ITEMS stored in datacache", 0 },
+  { "dht", "# Good RESULTS found in datacache", 0 },
+  { "dht", "# GET requests given to datacache", 0 },
+  { NULL, NULL, 0 }
 };
 
 
@@ -177,8 +178,8 @@ stop_ops ()
   {
     GNUNET_DHT_get_stop (get_op->get);
     GNUNET_CONTAINER_DLL_remove (get_head,
-				 get_tail,
-				 get_op);
+                                 get_tail,
+                                 get_op);
     GNUNET_free (get_op);
   }
   return ctx;
@@ -194,8 +195,8 @@ stop_ops ()
  */
 static void
 stats_finished (void *cls,
-		struct GNUNET_TESTBED_Operation *op,
-		const char *emsg)
+                struct GNUNET_TESTBED_Operation *op,
+                const char *emsg)
 {
   struct GNUNET_DHT_TEST_Context *ctx = cls;
   unsigned int i;
@@ -205,18 +206,18 @@ stats_finished (void *cls,
   if (NULL != emsg)
   {
     fprintf (stderr,
-             _("Gathering statistics failed: %s\n"),
-	     emsg);
+             _ ("Gathering statistics failed: %s\n"),
+             emsg);
     GNUNET_SCHEDULER_cancel (put_task);
     GNUNET_DHT_TEST_cleanup (ctx);
     return;
   }
   for (i = 0; NULL != stats[i].name; i++)
-    FPRINTF (stderr,
-	     "%6s/%60s = %12llu\n",
-	     stats[i].subsystem,
-	     stats[i].name,
-	     stats[i].total);
+    fprintf (stderr,
+             "%6s/%60s = %12llu\n",
+             stats[i].subsystem,
+             stats[i].name,
+             stats[i].total);
   GNUNET_DHT_TEST_cleanup (ctx);
   GNUNET_SCHEDULER_shutdown ();
 }
@@ -235,19 +236,19 @@ stats_finished (void *cls,
  */
 static int
 handle_stats (void *cls,
-	      const struct GNUNET_TESTBED_Peer *peer,
-	      const char *subsystem,
-	      const char *name,
-	      uint64_t value,
-	      int is_persistent)
+              const struct GNUNET_TESTBED_Peer *peer,
+              const char *subsystem,
+              const char *name,
+              uint64_t value,
+              int is_persistent)
 {
   unsigned int i;
 
   for (i = 0; NULL != stats[i].name; i++)
-    if ( (0 == strcasecmp (subsystem,
-			   stats[i].subsystem)) &&
-	 (0 == strcasecmp (name,
-			   stats[i].name)) )
+    if ((0 == strcasecmp (subsystem,
+                          stats[i].subsystem)) &&
+        (0 == strcasecmp (name,
+                          stats[i].name)))
       stats[i].total += value;
   return GNUNET_OK;
 }
@@ -300,58 +301,58 @@ timeout_cb (void *cls)
 static void
 dht_get_handler (void *cls,
                  struct GNUNET_TIME_Absolute exp,
-		 const struct GNUNET_HashCode *key,
-		 const struct GNUNET_PeerIdentity *get_path,
-		 unsigned int get_path_length,
-		 const struct GNUNET_PeerIdentity *put_path,
-		 unsigned int put_path_length,
+                 const struct GNUNET_HashCode *key,
+                 const struct GNUNET_PeerIdentity *get_path,
+                 unsigned int get_path_length,
+                 const struct GNUNET_PeerIdentity *put_path,
+                 unsigned int put_path_length,
                  enum GNUNET_BLOCK_Type type,
-		 size_t size,
+                 size_t size,
                  const void *data)
 {
   struct GetOperation *get_op = cls;
   struct GNUNET_HashCode want;
   struct GNUNET_DHT_TEST_Context *ctx;
 
-  if (sizeof (struct GNUNET_HashCode) != size)
+  if (sizeof(struct GNUNET_HashCode) != size)
   {
     GNUNET_break (0);
     return;
   }
   GNUNET_CRYPTO_hash (key,
-                      sizeof (*key),
+                      sizeof(*key),
                       &want);
   if (0 != memcmp (&want,
                    data,
-                   sizeof (want)))
+                   sizeof(want)))
   {
     GNUNET_break (0);
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Get successful\n");
+              "Get successful\n");
 #if 0
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "PATH: (get %u, put %u)\n",
-		get_path_length,
+                get_path_length,
                 put_path_length);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "  LOCAL\n");
     for (int i = get_path_length - 1; i >= 0; i--)
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "  %s\n",
-		  GNUNET_i2s (&get_path[i]));
+                  GNUNET_i2s (&get_path[i]));
     for (int i = put_path_length - 1; i >= 0; i--)
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "  %s\n",
-		  GNUNET_i2s (&put_path[i]));
+                  GNUNET_i2s (&put_path[i]));
   }
 #endif
   GNUNET_DHT_get_stop (get_op->get);
   GNUNET_CONTAINER_DLL_remove (get_head,
-			       get_tail,
-			       get_op);
+                               get_tail,
+                               get_op);
   GNUNET_free (get_op);
   if (NULL != get_head)
     return;
@@ -362,11 +363,11 @@ dht_get_handler (void *cls,
   ctx = stop_ops ();
   GNUNET_assert (NULL != ctx);
   (void) GNUNET_TESTBED_get_statistics (NUM_PEERS,
-					my_peers,
+                                        my_peers,
                                         NULL, NULL,
-					&handle_stats,
-					&stats_finished,
-					ctx);
+                                        &handle_stats,
+                                        &stats_finished,
+                                        ctx);
 }
 
 
@@ -385,29 +386,29 @@ do_puts (void *cls)
 
   put_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Putting values into DHT\n");
+              "Putting values into DHT\n");
   for (unsigned int i = 0; i < NUM_PEERS; i++)
   {
     GNUNET_CRYPTO_hash (&i,
-                        sizeof (i),
+                        sizeof(i),
                         &key);
     GNUNET_CRYPTO_hash (&key,
-                        sizeof (key),
+                        sizeof(key),
                         &value);
     GNUNET_DHT_put (hs[i],
                     &key,
                     10U,
-                    GNUNET_DHT_RO_RECORD_ROUTE |
-                    GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                    GNUNET_DHT_RO_RECORD_ROUTE
+                    | GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
                     GNUNET_BLOCK_TYPE_TEST,
-		    sizeof (value),
+                    sizeof(value),
                     &value,
-		    GNUNET_TIME_UNIT_FOREVER_ABS,
-		    NULL,
+                    GNUNET_TIME_UNIT_FOREVER_ABS,
+                    NULL,
                     NULL);
   }
   put_task = GNUNET_SCHEDULER_add_delayed (PUT_FREQUENCY,
-					   &do_puts,
+                                           &do_puts,
                                            hs);
 }
 
@@ -425,23 +426,24 @@ start_get (void *cls)
   struct GetOperation *get_op;
 
   get_task = NULL;
-  for (i=0;i<NUM_PEERS;i++)
+  for (i = 0; i < NUM_PEERS; i++)
   {
-    GNUNET_CRYPTO_hash (&i, sizeof (i), &key);
-    for (j=0;j<NUM_PEERS;j++)
+    GNUNET_CRYPTO_hash (&i, sizeof(i), &key);
+    for (j = 0; j < NUM_PEERS; j++)
     {
       get_op = GNUNET_new (struct GetOperation);
       GNUNET_CONTAINER_DLL_insert (get_head,
-				   get_tail,
-				   get_op);
+                                   get_tail,
+                                   get_op);
       get_op->get = GNUNET_DHT_get_start (dhts[j],
-					  GNUNET_BLOCK_TYPE_TEST, /* type */
-					  &key,      /*key to search */
-					  4U,     /* replication level */
-					  GNUNET_DHT_RO_RECORD_ROUTE | GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
-					  NULL,        /* xquery */
-					  0,      /* xquery bits */
-					  &dht_get_handler,
+                                          GNUNET_BLOCK_TYPE_TEST,    /* type */
+                                          &key,      /*key to search */
+                                          4U,     /* replication level */
+                                          GNUNET_DHT_RO_RECORD_ROUTE
+                                          | GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                                          NULL,        /* xquery */
+                                          0,      /* xquery bits */
+                                          &dht_get_handler,
                                           get_op);
     }
   }
@@ -467,14 +469,14 @@ run (void *cls,
   GNUNET_assert (NUM_PEERS == num_peers);
   my_peers = peers;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Peers setup, starting test\n");
+              "Peers setup, starting test\n");
   put_task = GNUNET_SCHEDULER_add_now (&do_puts,
                                        dhts);
   get_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
                                            &start_get,
                                            dhts);
   timeout_task = GNUNET_SCHEDULER_add_delayed (GET_TIMEOUT,
-					       &timeout_cb,
+                                               &timeout_cb,
                                                ctx);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
                                  ctx);
@@ -520,10 +522,11 @@ main (int xargc, char *xargv[])
     return 1;
   }
   GNUNET_DHT_TEST_run (test_name,
-		       cfg_filename,
-		       NUM_PEERS,
-		       &run, NULL);
+                       cfg_filename,
+                       NUM_PEERS,
+                       &run, NULL);
   return ok;
 }
+
 
 /* end of test_dht_topo.c */

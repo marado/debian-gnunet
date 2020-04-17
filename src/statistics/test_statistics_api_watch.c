@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file statistics/test_statistics_api_watch.c
  * @brief testcase for statistics_api.c watch functions
@@ -56,9 +56,9 @@ normal_shutdown (void *cls)
 
 static int
 watch_1 (void *cls,
-	 const char *subsystem,
-	 const char *name,
-	 uint64_t value,
+         const char *subsystem,
+         const char *name,
+         uint64_t value,
          int is_persistent)
 {
   GNUNET_assert (value == 42);
@@ -75,9 +75,9 @@ watch_1 (void *cls,
 
 static int
 watch_2 (void *cls,
-	 const char *subsystem,
-	 const char *name,
-	 uint64_t value,
+         const char *subsystem,
+         const char *name,
+         uint64_t value,
          int is_persistent)
 {
   GNUNET_assert (value == 43);
@@ -109,9 +109,9 @@ run (void *cls,
   GNUNET_STATISTICS_set (h2, "test-1", 42, GNUNET_NO);
   GNUNET_STATISTICS_set (h2, "test-2", 43, GNUNET_NO);
   shutdown_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
-				    &force_shutdown,
-                                    NULL);
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
+                                  &force_shutdown,
+                                  NULL);
 }
 
 
@@ -119,10 +119,9 @@ int
 main (int argc, char *argv_ign[])
 {
   char *const argv[] = { "test-statistics-api",
-    "-c",
-    "test_statistics_api_data.conf",
-    NULL
-  };
+                         "-c",
+                         "test_statistics_api_data.conf",
+                         NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
@@ -133,9 +132,9 @@ main (int argc, char *argv_ign[])
   proc =
     GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
                              NULL, NULL, NULL,
-			     binary,
-			     "gnunet-service-statistics",
-			     "-c", "test_statistics_api_data.conf", NULL);
+                             binary,
+                             "gnunet-service-statistics",
+                             "-c", "test_statistics_api_data.conf", NULL);
   GNUNET_assert (NULL != proc);
   ok = 3;
   GNUNET_PROGRAM_run (3, argv, "test-statistics-api", "nohelp", options, &run,

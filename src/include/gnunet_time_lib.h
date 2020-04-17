@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -94,57 +94,61 @@ GNUNET_NETWORK_STRUCT_END
 /**
  * Relative time zero.
  */
-#define GNUNET_TIME_UNIT_ZERO     GNUNET_TIME_relative_get_zero_()
+#define GNUNET_TIME_UNIT_ZERO     GNUNET_TIME_relative_get_zero_ ()
 
 /**
  * Absolute time zero.
  */
-#define GNUNET_TIME_UNIT_ZERO_ABS GNUNET_TIME_absolute_get_zero_()
+#define GNUNET_TIME_UNIT_ZERO_ABS GNUNET_TIME_absolute_get_zero_ ()
 
 /**
  * One microsecond, our basic time unit.
  */
-#define GNUNET_TIME_UNIT_MICROSECONDS GNUNET_TIME_relative_get_unit_()
+#define GNUNET_TIME_UNIT_MICROSECONDS GNUNET_TIME_relative_get_unit_ ()
 
 /**
  * One millisecond.
  */
-#define GNUNET_TIME_UNIT_MILLISECONDS GNUNET_TIME_relative_get_millisecond_()
+#define GNUNET_TIME_UNIT_MILLISECONDS GNUNET_TIME_relative_get_millisecond_ ()
 
 /**
  * One second.
  */
-#define GNUNET_TIME_UNIT_SECONDS GNUNET_TIME_relative_get_second_()
+#define GNUNET_TIME_UNIT_SECONDS GNUNET_TIME_relative_get_second_ ()
 
 /**
  * One minute.
  */
-#define GNUNET_TIME_UNIT_MINUTES GNUNET_TIME_relative_get_minute_()
+#define GNUNET_TIME_UNIT_MINUTES GNUNET_TIME_relative_get_minute_ ()
 
 /**
  * One hour.
  */
-#define GNUNET_TIME_UNIT_HOURS   GNUNET_TIME_relative_get_hour_()
+#define GNUNET_TIME_UNIT_HOURS   GNUNET_TIME_relative_get_hour_ ()
 
 /**
  * One day.
  */
-#define GNUNET_TIME_UNIT_DAYS    GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_HOURS,   24)
+#define GNUNET_TIME_UNIT_DAYS    GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_HOURS, 24)
 
 /**
  * One week.
  */
-#define GNUNET_TIME_UNIT_WEEKS   GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_DAYS,     7)
+#define GNUNET_TIME_UNIT_WEEKS   GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_DAYS, 7)
 
 /**
  * One month (30 days).
  */
-#define GNUNET_TIME_UNIT_MONTHS  GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_DAYS,    30)
+#define GNUNET_TIME_UNIT_MONTHS  GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_DAYS, 30)
 
 /**
  * One year (365 days).
  */
-#define GNUNET_TIME_UNIT_YEARS   GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_DAYS,   365)
+#define GNUNET_TIME_UNIT_YEARS   GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_DAYS, 365)
 
 /**
  * Constant used to specify "forever".  This constant
@@ -159,11 +163,11 @@ GNUNET_NETWORK_STRUCT_END
 #define GNUNET_TIME_UNIT_FOREVER_ABS GNUNET_TIME_absolute_get_forever_ ()
 
 
-
 /**
  * Threshold after which exponential backoff should not increase (15 m).
  */
-#define GNUNET_TIME_STD_EXPONENTIAL_BACKOFF_THRESHOLD GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 15)
+#define GNUNET_TIME_STD_EXPONENTIAL_BACKOFF_THRESHOLD \
+  GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 15)
 
 
 /**
@@ -172,8 +176,10 @@ GNUNET_NETWORK_STRUCT_END
  *
  * @param r current backoff time, initially zero
  */
-#define GNUNET_TIME_STD_BACKOFF(r) GNUNET_TIME_relative_min (GNUNET_TIME_STD_EXPONENTIAL_BACKOFF_THRESHOLD, \
-   GNUNET_TIME_relative_multiply (GNUNET_TIME_relative_max (GNUNET_TIME_UNIT_MILLISECONDS, (r)), 2));
+#define GNUNET_TIME_STD_BACKOFF(r) GNUNET_TIME_relative_min ( \
+    GNUNET_TIME_STD_EXPONENTIAL_BACKOFF_THRESHOLD, \
+    GNUNET_TIME_relative_multiply ( \
+      GNUNET_TIME_relative_max (GNUNET_TIME_UNIT_MILLISECONDS, (r)), 2));
 
 
 /**
@@ -186,17 +192,18 @@ GNUNET_NETWORK_STRUCT_END
  * @return the next backoff time
  */
 struct GNUNET_TIME_Relative
-GNUNET_TIME_randomized_backoff(struct GNUNET_TIME_Relative rt, struct GNUNET_TIME_Relative threshold);
+GNUNET_TIME_randomized_backoff (struct GNUNET_TIME_Relative rt, struct
+                                GNUNET_TIME_Relative threshold);
 
 
 /**
  * Return a random time value between 0.5*r and 1.5*r.
- * 
+ *
  * @param r input time for scaling
  * @return randomized time
- */ 
+ */
 struct GNUNET_TIME_Relative
-GNUNET_TIME_randomize(struct GNUNET_TIME_Relative r);
+GNUNET_TIME_randomize (struct GNUNET_TIME_Relative r);
 
 
 /**
@@ -316,7 +323,6 @@ GNUNET_TIME_round_rel (struct GNUNET_TIME_Relative *rt);
 struct GNUNET_TIME_Relative
 GNUNET_TIME_relative_min (struct GNUNET_TIME_Relative t1,
                           struct GNUNET_TIME_Relative t2);
-
 
 
 /**
@@ -603,7 +609,8 @@ struct GNUNET_CONFIGURATION_Handle;
  * @return monotonically increasing time
  */
 struct GNUNET_TIME_Absolute
-GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cfg);
+GNUNET_TIME_absolute_get_monotonic (const struct
+                                    GNUNET_CONFIGURATION_Handle *cfg);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/cadet_test_lib.c
  * @author Bartlomiej Polot
@@ -92,7 +92,6 @@ struct GNUNET_CADET_TEST_Context
    * Number of ports in #ports.
    */
   unsigned int port_count;
-
 };
 
 
@@ -139,7 +138,7 @@ cadet_connect_adapter (void *cls,
   h = GNUNET_CADET_connect (cfg);
   if (NULL == h)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return NULL;
   }
   if (NULL == ctx->ports)
@@ -200,9 +199,9 @@ cadet_disconnect_adapter (void *cls,
  */
 static void
 cadet_connect_cb (void *cls,
-                 struct GNUNET_TESTBED_Operation *op,
-                 void *ca_result,
-                 const char *emsg)
+                  struct GNUNET_TESTBED_Operation *op,
+                  void *ca_result,
+                  const char *emsg)
 {
   struct GNUNET_CADET_TEST_Context *ctx = cls;
 
@@ -224,7 +223,8 @@ cadet_connect_cb (void *cls,
     }
   for (unsigned int i = 0; i < ctx->num_peers; i++)
     if (NULL == ctx->cadets[i])
-      return; /* still some CADET connections missing */
+      return;
+  /* still some CADET connections missing */
   /* all CADET connections ready! */
   ctx->app_main (ctx->app_main_cls,
                  ctx,
@@ -266,11 +266,11 @@ GNUNET_CADET_TEST_cleanup (struct GNUNET_CADET_TEST_Context *ctx)
  */
 static void
 cadet_test_run (void *cls,
-               struct GNUNET_TESTBED_RunHandle *h,
-               unsigned int num_peers,
-               struct GNUNET_TESTBED_Peer **peers,
-               unsigned int links_succeeded,
-               unsigned int links_failed)
+                struct GNUNET_TESTBED_RunHandle *h,
+                unsigned int num_peers,
+                struct GNUNET_TESTBED_Peer **peers,
+                unsigned int links_succeeded,
+                unsigned int links_failed)
 {
   struct GNUNET_CADET_TEST_Context *ctx = cls;
 
@@ -281,7 +281,7 @@ cadet_test_run (void *cls,
                 links_failed);
     exit (77);
   }
-  if  (num_peers != ctx->num_peers)
+  if (num_peers != ctx->num_peers)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Peers started %u/%u, ending\n",
@@ -371,5 +371,6 @@ GNUNET_CADET_TEST_ruN (const char *testname,
                            &cadet_test_run,
                            ctx);
 }
+
 
 /* end of cadet_test_lib.c */

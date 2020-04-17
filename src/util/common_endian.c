@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/common_endian.c
@@ -28,7 +28,7 @@
 #include "platform.h"
 #include "gnunet_crypto_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-common-endian",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-common-endian", __VA_ARGS__)
 
 
 uint64_t
@@ -69,7 +69,7 @@ GNUNET_hton_double (double d)
   uint64_t *in = (uint64_t *) &d;
   uint64_t *out = (uint64_t *) &res;
 
-  out[0] = GNUNET_htonll(in[0]);
+  out[0] = GNUNET_htonll (in[0]);
 
   return res;
 }
@@ -87,7 +87,7 @@ GNUNET_ntoh_double (double d)
   uint64_t *in = (uint64_t *) &d;
   uint64_t *out = (uint64_t *) &res;
 
-  out[0] = GNUNET_ntohll(in[0]);
+  out[0] = GNUNET_ntohll (in[0]);
 
   return res;
 }

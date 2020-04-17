@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_monitoring.c
  * @brief testcase for zone monitoring functionality: monitor first, then add records
@@ -30,35 +30,34 @@
 #define TEST_RECORD_TYPE GNUNET_DNSPARSER_TYPE_TXT
 
 
-
 #define TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 100)
 
 
-static struct GNUNET_NAMESTORE_Handle * nsh;
+static struct GNUNET_NAMESTORE_Handle *nsh;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
-static struct GNUNET_CRYPTO_EcdsaPrivateKey * privkey;
+static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
-static struct GNUNET_CRYPTO_EcdsaPrivateKey * privkey2;
+static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey2;
 
 static struct GNUNET_NAMESTORE_ZoneMonitor *zm;
 
 static int res;
 
-static char * s_name_1;
+static char *s_name_1;
 
 static struct GNUNET_GNSRECORD_Data *s_rd_1;
 
-static char * s_name_2;
+static char *s_name_2;
 
 static struct GNUNET_GNSRECORD_Data *s_rd_2;
 
-static char * s_name_3;
+static char *s_name_3;
 
 static struct GNUNET_GNSRECORD_Data *s_rd_3;
 
-struct GNUNET_NAMESTORE_QueueEntry * ns_ops[3];
+struct GNUNET_NAMESTORE_QueueEntry *ns_ops[3];
 
 
 static void
@@ -71,41 +70,41 @@ do_shutdown ()
   }
   if (NULL != ns_ops[0])
   {
-  	GNUNET_NAMESTORE_cancel(ns_ops[0]);
-  	ns_ops[0] = NULL;
+    GNUNET_NAMESTORE_cancel (ns_ops[0]);
+    ns_ops[0] = NULL;
   }
   if (NULL != ns_ops[1])
   {
-  	GNUNET_NAMESTORE_cancel(ns_ops[1]);
-  	ns_ops[1] = NULL;
+    GNUNET_NAMESTORE_cancel (ns_ops[1]);
+    ns_ops[1] = NULL;
   }
   if (NULL != ns_ops[2])
   {
-  	GNUNET_NAMESTORE_cancel(ns_ops[2]);
-  	ns_ops[2] = NULL;
+    GNUNET_NAMESTORE_cancel (ns_ops[2]);
+    ns_ops[2] = NULL;
   }
   if (NULL != nsh)
   {
     GNUNET_NAMESTORE_disconnect (nsh);
     nsh = NULL;
   }
-  GNUNET_free_non_null(s_name_1);
-  GNUNET_free_non_null(s_name_2);
-  GNUNET_free_non_null(s_name_3);
+  GNUNET_free_non_null (s_name_1);
+  GNUNET_free_non_null (s_name_2);
+  GNUNET_free_non_null (s_name_3);
 
   if (s_rd_1 != NULL)
   {
-    GNUNET_free ((void *)s_rd_1->data);
+    GNUNET_free ((void *) s_rd_1->data);
     GNUNET_free (s_rd_1);
   }
   if (s_rd_2 != NULL)
   {
-    GNUNET_free ((void *)s_rd_2->data);
+    GNUNET_free ((void *) s_rd_2->data);
     GNUNET_free (s_rd_2);
   }
   if (s_rd_3 != NULL)
   {
-    GNUNET_free ((void *)s_rd_3->data);
+    GNUNET_free ((void *) s_rd_3->data);
     GNUNET_free (s_rd_3);
   }
 
@@ -145,22 +144,22 @@ end (void *cls)
 
 static void
 zone_proc (void *cls,
-	   const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
-	   const char *name,
-	   unsigned int rd_count,
-	   const struct GNUNET_GNSRECORD_Data *rd)
+           const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone_key,
+           const char *name,
+           unsigned int rd_count,
+           const struct GNUNET_GNSRECORD_Data *rd)
 {
   static int returned_records;
   static int fail = GNUNET_NO;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Comparing results name %s\n",
-	      name);
+              "Comparing results name %s\n",
+              name);
   if (0 != GNUNET_memcmp (zone_key,
-                   privkey))
+                          privkey))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-  	      "Monitoring returned wrong zone key\n");
+                "Monitoring returned wrong zone key\n");
     GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
@@ -169,24 +168,24 @@ zone_proc (void *cls,
 
   if (0 == strcmp (name, s_name_1))
   {
-    if (GNUNET_YES != GNUNET_GNSRECORD_records_cmp(rd, s_rd_1))
+    if (GNUNET_YES != GNUNET_GNSRECORD_records_cmp (rd, s_rd_1))
     {
       GNUNET_break (0);
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
     }
   }
   else if (0 == strcmp (name, s_name_2))
   {
-    if (GNUNET_YES != GNUNET_GNSRECORD_records_cmp(rd, s_rd_2))
+    if (GNUNET_YES != GNUNET_GNSRECORD_records_cmp (rd, s_rd_2))
     {
       GNUNET_break (0);
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
     }
   }
   else
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      "Invalid name %s\n",
+                "Invalid name %s\n",
                 name);
     GNUNET_break (0);
     fail = GNUNET_YES;
@@ -203,15 +202,15 @@ zone_proc (void *cls,
     if (GNUNET_YES == fail)
       GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     else
-    	GNUNET_SCHEDULER_add_now (&end, NULL);
+      GNUNET_SCHEDULER_add_now (&end, NULL);
   }
 }
 
 
 static void
 put_cont (void *cls,
-	  int32_t success,
-	  const char *emsg)
+          int32_t success,
+          const char *emsg)
 {
   static int c = 0;
   char *label = cls;
@@ -235,11 +234,11 @@ put_cont (void *cls,
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Failed to create record `%s'\n",
-		label);
+                label);
     GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly,
-					      NULL);
+                                              NULL);
   }
 }
 
@@ -253,10 +252,11 @@ create_record (unsigned int count)
                          struct GNUNET_GNSRECORD_Data);
   for (unsigned int c = 0; c < count; c++)
   {
-    rd[c].expiration_time = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_HOURS).abs_value_us;
+    rd[c].expiration_time = GNUNET_TIME_relative_to_absolute (
+      GNUNET_TIME_UNIT_HOURS).abs_value_us;
     rd[c].record_type = TEST_RECORD_TYPE;
     rd[c].data_size = 50;
-    rd[c].data = GNUNET_malloc(50);
+    rd[c].data = GNUNET_malloc (50);
     rd[c].flags = 0;
     memset ((char *) rd[c].data, 'a', 50);
   }
@@ -293,10 +293,10 @@ run (void *cls,
                                             GNUNET_YES,
                                             &fail_cb,
                                             NULL,
-					    &zone_proc,
-					    NULL,
+                                            &zone_proc,
+                                            NULL,
                                             &sync_cb,
-					    NULL);
+                                            NULL);
   if (NULL == zm)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -324,41 +324,41 @@ run (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Created record 3\n");
   /* name in different zone */
-  GNUNET_asprintf(&s_name_3, "dummy3");
-  s_rd_3 = create_record(1);
+  GNUNET_asprintf (&s_name_3, "dummy3");
+  s_rd_3 = create_record (1);
   GNUNET_assert (NULL != (ns_ops[2] =
-			  GNUNET_NAMESTORE_records_store (nsh,
-							  privkey2,
-							  s_name_3,
-							  1,
-							  s_rd_3,
-							  &put_cont,
-							  s_name_3)));
+                            GNUNET_NAMESTORE_records_store (nsh,
+                                                            privkey2,
+                                                            s_name_3,
+                                                            1,
+                                                            s_rd_3,
+                                                            &put_cont,
+                                                            s_name_3)));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Created record 1\n");
-  GNUNET_asprintf(&s_name_1, "dummy1");
-  s_rd_1 = create_record(1);
+              "Created record 1\n");
+  GNUNET_asprintf (&s_name_1, "dummy1");
+  s_rd_1 = create_record (1);
   GNUNET_assert (NULL != (ns_ops[0] =
-                          GNUNET_NAMESTORE_records_store (nsh,
-                                                          privkey,
-                                                          s_name_1,
-                                                          1,
-                                                          s_rd_1,
-                                                          &put_cont,
-                                                          s_name_1)));
+                            GNUNET_NAMESTORE_records_store (nsh,
+                                                            privkey,
+                                                            s_name_1,
+                                                            1,
+                                                            s_rd_1,
+                                                            &put_cont,
+                                                            s_name_1)));
 
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Created record 2 \n");
-  GNUNET_asprintf(&s_name_2, "dummy2");
-  s_rd_2 = create_record(1);
+  GNUNET_asprintf (&s_name_2, "dummy2");
+  s_rd_2 = create_record (1);
   GNUNET_assert (NULL != (ns_ops[1] =
-                          GNUNET_NAMESTORE_records_store (nsh,
-                                                          privkey,
-                                                          s_name_2,
-                                                          1,
-                                                          s_rd_2,
-                                                          &put_cont,
-                                                          s_name_2)));
+                            GNUNET_NAMESTORE_records_store (nsh,
+                                                            privkey,
+                                                            s_name_2,
+                                                            1,
+                                                            s_rd_2,
+                                                            &put_cont,
+                                                            s_name_2)));
 }
 
 

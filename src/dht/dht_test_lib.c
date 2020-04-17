@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file dht/dht_test_lib.c
  * @author Christian Grothoff
@@ -59,7 +59,6 @@ struct GNUNET_DHT_TEST_Context
    * Number of peers running, size of the arrays above.
    */
   unsigned int num_peers;
-
 };
 
 
@@ -75,7 +74,7 @@ struct GNUNET_DHT_TEST_Context
  */
 static void *
 dht_connect_adapter (void *cls,
-		     const struct GNUNET_CONFIGURATION_Handle *cfg)
+                     const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   return GNUNET_DHT_connect (cfg, 16);
 }
@@ -90,7 +89,7 @@ dht_connect_adapter (void *cls,
  */
 static void
 dht_disconnect_adapter (void *cls,
-			void *op_result)
+                        void *op_result)
 {
   struct GNUNET_DHT_Handle *dht = op_result;
 
@@ -109,9 +108,9 @@ dht_disconnect_adapter (void *cls,
  */
 static void
 dht_connect_cb (void *cls,
-		struct GNUNET_TESTBED_Operation *op,
-		void *ca_result,
-		const char *emsg)
+                struct GNUNET_TESTBED_Operation *op,
+                void *ca_result,
+                const char *emsg)
 {
   struct GNUNET_DHT_TEST_Context *ctx = cls;
 
@@ -119,22 +118,23 @@ dht_connect_cb (void *cls,
   {
     fprintf (stderr,
              "Failed to connect to DHT service: %s\n",
-	     emsg);
+             emsg);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  for (unsigned int i=0;i<ctx->num_peers;i++)
+  for (unsigned int i = 0; i < ctx->num_peers; i++)
     if (op == ctx->ops[i])
       ctx->dhts[i] = ca_result;
-  for (unsigned int i=0;i<ctx->num_peers;i++)
+  for (unsigned int i = 0; i < ctx->num_peers; i++)
     if (NULL == ctx->dhts[i])
-      return; /* still some DHT connections missing */
+      return;
+  /* still some DHT connections missing */
   /* all DHT connections ready! */
   ctx->app_main (ctx->app_main_cls,
-		 ctx,
-		 ctx->num_peers,
-		 ctx->peers,
-		 ctx->dhts);
+                 ctx,
+                 ctx->num_peers,
+                 ctx->peers,
+                 ctx->dhts);
 }
 
 
@@ -146,7 +146,7 @@ dht_connect_cb (void *cls,
 void
 GNUNET_DHT_TEST_cleanup (struct GNUNET_DHT_TEST_Context *ctx)
 {
-  for (unsigned int i=0;i<ctx->num_peers;i++)
+  for (unsigned int i = 0; i < ctx->num_peers; i++)
     GNUNET_TESTBED_operation_done (ctx->ops[i]);
   GNUNET_free (ctx->ops);
   GNUNET_free (ctx->dhts);
@@ -158,8 +158,8 @@ GNUNET_DHT_TEST_cleanup (struct GNUNET_DHT_TEST_Context *ctx)
 static void
 dht_test_run (void *cls,
               struct GNUNET_TESTBED_RunHandle *h,
-	      unsigned int num_peers,
-	      struct GNUNET_TESTBED_Peer **peers,
+              unsigned int num_peers,
+              struct GNUNET_TESTBED_Peer **peers,
               unsigned int links_succeeded,
               unsigned int links_failed)
 {
@@ -167,15 +167,15 @@ dht_test_run (void *cls,
 
   GNUNET_assert (num_peers == ctx->num_peers);
   ctx->peers = peers;
-  for (unsigned int i=0;i<num_peers;i++)
+  for (unsigned int i = 0; i < num_peers; i++)
     ctx->ops[i] = GNUNET_TESTBED_service_connect (ctx,
-						  peers[i],
-						  "dht",
-						  &dht_connect_cb,
-						  ctx,
-						  &dht_connect_adapter,
-						  &dht_disconnect_adapter,
-						  ctx);
+                                                  peers[i],
+                                                  "dht",
+                                                  &dht_connect_cb,
+                                                  ctx,
+                                                  &dht_connect_adapter,
+                                                  &dht_disconnect_adapter,
+                                                  ctx);
 }
 
 
@@ -191,10 +191,10 @@ dht_test_run (void *cls,
  */
 void
 GNUNET_DHT_TEST_run (const char *testname,
-		     const char *cfgname,
-		     unsigned int num_peers,
-		     GNUNET_DHT_TEST_AppMain tmain,
-		     void *tmain_cls)
+                     const char *cfgname,
+                     unsigned int num_peers,
+                     GNUNET_DHT_TEST_AppMain tmain,
+                     void *tmain_cls)
 {
   struct GNUNET_DHT_TEST_Context *ctx;
 
@@ -212,5 +212,6 @@ GNUNET_DHT_TEST_run (const char *testname,
                                   0LL, NULL, NULL,
                                   &dht_test_run, ctx);
 }
+
 
 /* end of dht_test_lib.c */

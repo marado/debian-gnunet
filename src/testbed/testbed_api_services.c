@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -120,7 +120,6 @@ struct ServiceConnectData
    * State information
    */
   enum State state;
-
 };
 
 
@@ -149,9 +148,9 @@ configuration_receiver (void *cls, const struct GNUNET_MessageHeader *msg)
   if (GNUNET_MESSAGE_TYPE_TESTBED_OPERATION_FAIL_EVENT == mtype)
   {
     emsg =
-        GNUNET_TESTBED_parse_error_string_ ((const struct
-                                             GNUNET_TESTBED_OperationFailureEventMessage
-                                             *) msg);
+      GNUNET_TESTBED_parse_error_string_ ((const struct
+                                           GNUNET_TESTBED_OperationFailureEventMessage
+                                           *) msg);
     if (NULL == emsg)
       emsg = "Unknown error";
     info.details.operation_finished.emsg = emsg;
@@ -192,10 +191,10 @@ opstart_service_connect (void *cls)
   c = data->peer->controller;
   op_id = GNUNET_TESTBED_get_next_op_id (c);
   msg =
-      GNUNET_TESTBED_generate_peergetconfig_msg_ (data->peer->unique_id, op_id);
+    GNUNET_TESTBED_generate_peergetconfig_msg_ (data->peer->unique_id, op_id);
   data->opc =
-      GNUNET_TESTBED_forward_operation_msg_ (c, op_id, &msg->header,
-                                             &configuration_receiver, data);
+    GNUNET_TESTBED_forward_operation_msg_ (c, op_id, &msg->header,
+                                           &configuration_receiver, data);
   GNUNET_free (msg);
   data->state = CFG_REQUEST_QUEUED;
 }
@@ -216,10 +215,12 @@ oprelease_service_connect (void *cls)
   {
   case INIT:
     break;
+
   case CFG_REQUEST_QUEUED:
     GNUNET_assert (NULL != data->opc);
     GNUNET_TESTBED_forward_operation_msg_cancel_ (data->opc);
     break;
+
   case SERVICE_CONNECTED:
     GNUNET_assert (NULL != data->cfg);
     GNUNET_CONFIGURATION_destroy (data->cfg);
@@ -273,10 +274,11 @@ GNUNET_TESTBED_service_connect (void *op_cls, struct GNUNET_TESTBED_Peer *peer,
   data->cb = cb;
   data->cb_cls = cb_cls;
   data->operation =
-      GNUNET_TESTBED_operation_create_ (data, &opstart_service_connect,
-                                        &oprelease_service_connect);
+    GNUNET_TESTBED_operation_create_ (data, &opstart_service_connect,
+                                      &oprelease_service_connect);
   GNUNET_TESTBED_operation_queue_insert_ (peer->
-                                          controller->opq_parallel_service_connections,
+                                          controller->
+                                          opq_parallel_service_connections,
                                           data->operation);
   GNUNET_TESTBED_operation_queue_insert_ (peer->
                                           controller->opq_parallel_operations,
@@ -284,5 +286,6 @@ GNUNET_TESTBED_service_connect (void *op_cls, struct GNUNET_TESTBED_Peer *peer,
   GNUNET_TESTBED_operation_begin_wait_ (data->operation);
   return data->operation;
 }
+
 
 /* end of testbed_api_services.c */

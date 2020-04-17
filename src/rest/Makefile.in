@@ -151,8 +151,10 @@ LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libgnunet_plugin_rest_config_la_DEPENDENCIES = libgnunetrest.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_libgnunet_plugin_rest_config_la_OBJECTS = plugin_rest_config.lo
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_config_la_OBJECTS =  \
+	libgnunet_plugin_rest_config_la-plugin_rest_config.lo
 libgnunet_plugin_rest_config_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_config_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -161,32 +163,39 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 libgnunet_plugin_rest_config_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_config_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_config_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunet_plugin_rest_copying_la_DEPENDENCIES = libgnunetrest.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am_libgnunet_plugin_rest_copying_la_OBJECTS = plugin_rest_copying.lo
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+am_libgnunet_plugin_rest_copying_la_OBJECTS =  \
+	libgnunet_plugin_rest_copying_la-plugin_rest_copying.lo
 libgnunet_plugin_rest_copying_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_copying_la_OBJECTS)
 libgnunet_plugin_rest_copying_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) \
+	$(libgnunet_plugin_rest_copying_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_copying_la_LDFLAGS) $(LDFLAGS) -o $@
 libgnunetrest_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
-am_libgnunetrest_la_OBJECTS = rest.lo
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+am_libgnunetrest_la_OBJECTS = libgnunetrest_la-rest.lo
 libgnunetrest_la_OBJECTS = $(am_libgnunetrest_la_OBJECTS)
 libgnunetrest_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunetrest_la_LDFLAGS) $(LDFLAGS) \
-	-o $@
-am_gnunet_rest_server_OBJECTS = gnunet-rest-server.$(OBJEXT)
+	$(libgnunetrest_la_CFLAGS) $(CFLAGS) \
+	$(libgnunetrest_la_LDFLAGS) $(LDFLAGS) -o $@
+am_gnunet_rest_server_OBJECTS =  \
+	gnunet_rest_server-gnunet-rest-server.$(OBJEXT)
 gnunet_rest_server_OBJECTS = $(am_gnunet_rest_server_OBJECTS)
 gnunet_rest_server_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+gnunet_rest_server_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(gnunet_rest_server_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -202,9 +211,11 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/gnunet-rest-server.Po \
-	./$(DEPDIR)/plugin_rest_config.Plo \
-	./$(DEPDIR)/plugin_rest_copying.Plo ./$(DEPDIR)/rest.Plo
+am__depfiles_remade =  \
+	./$(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Po \
+	./$(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Plo \
+	./$(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Plo \
+	./$(DEPDIR)/libgnunetrest_la-rest.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -262,20 +273,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -283,6 +291,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -308,6 +317,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -345,11 +355,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -393,6 +407,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -412,6 +429,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -422,7 +440,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -491,7 +508,6 @@ pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
    rest.conf
 
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIBS = -lgcov
 lib_LTLIBRARIES = \
@@ -510,40 +526,44 @@ libgnunet_plugin_rest_copying_la_SOURCES = \
 libgnunet_plugin_rest_copying_la_LIBADD = \
   libgnunetrest.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -lmicrohttpd
+  $(LTLIBINTL) $(MHD_LIBS)
 
 libgnunet_plugin_rest_copying_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_copying_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunet_plugin_rest_config_la_SOURCES = \
   plugin_rest_config.c
 
 libgnunet_plugin_rest_config_la_LIBADD = \
   libgnunetrest.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -lmicrohttpd -ljansson
+  $(LTLIBINTL) $(MHD_LIBS) -ljansson
 
 libgnunet_plugin_rest_config_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_config_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 gnunet_rest_server_SOURCES = \
  gnunet-rest-server.c
 
 gnunet_rest_server_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
-  $(GN_LIBINTL) -lmicrohttpd
+  $(GN_LIBINTL) $(MHD_LIBS)
 
+gnunet_rest_server_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunetrest_la_SOURCES = \
   rest.c
 
 libgnunetrest_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIB) \
-  $(GN_LIBINTL) -lmicrohttpd 
+  $(GN_LIBINTL) $(MHD_LIBS)
 
 libgnunetrest_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
   -version-info 0:0:0
 
+libgnunetrest_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -708,7 +728,7 @@ libgnunetrest.la: $(libgnunetrest_la_OBJECTS) $(libgnunetrest_la_DEPENDENCIES) $
 
 gnunet-rest-server$(EXEEXT): $(gnunet_rest_server_OBJECTS) $(gnunet_rest_server_DEPENDENCIES) $(EXTRA_gnunet_rest_server_DEPENDENCIES) 
 	@rm -f gnunet-rest-server$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_rest_server_OBJECTS) $(gnunet_rest_server_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_rest_server_LINK) $(gnunet_rest_server_OBJECTS) $(gnunet_rest_server_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -716,10 +736,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-rest-server.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_config.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_copying.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rest.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunetrest_la-rest.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -747,6 +767,41 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libgnunet_plugin_rest_config_la-plugin_rest_config.lo: plugin_rest_config.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_config_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_config_la-plugin_rest_config.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Tpo -c -o libgnunet_plugin_rest_config_la-plugin_rest_config.lo `test -f 'plugin_rest_config.c' || echo '$(srcdir)/'`plugin_rest_config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Tpo $(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_config.c' object='libgnunet_plugin_rest_config_la-plugin_rest_config.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_config_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_config_la-plugin_rest_config.lo `test -f 'plugin_rest_config.c' || echo '$(srcdir)/'`plugin_rest_config.c
+
+libgnunet_plugin_rest_copying_la-plugin_rest_copying.lo: plugin_rest_copying.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_copying_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_copying_la-plugin_rest_copying.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Tpo -c -o libgnunet_plugin_rest_copying_la-plugin_rest_copying.lo `test -f 'plugin_rest_copying.c' || echo '$(srcdir)/'`plugin_rest_copying.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Tpo $(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_copying.c' object='libgnunet_plugin_rest_copying_la-plugin_rest_copying.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_copying_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_copying_la-plugin_rest_copying.lo `test -f 'plugin_rest_copying.c' || echo '$(srcdir)/'`plugin_rest_copying.c
+
+libgnunetrest_la-rest.lo: rest.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunetrest_la_CFLAGS) $(CFLAGS) -MT libgnunetrest_la-rest.lo -MD -MP -MF $(DEPDIR)/libgnunetrest_la-rest.Tpo -c -o libgnunetrest_la-rest.lo `test -f 'rest.c' || echo '$(srcdir)/'`rest.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunetrest_la-rest.Tpo $(DEPDIR)/libgnunetrest_la-rest.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rest.c' object='libgnunetrest_la-rest.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunetrest_la_CFLAGS) $(CFLAGS) -c -o libgnunetrest_la-rest.lo `test -f 'rest.c' || echo '$(srcdir)/'`rest.c
+
+gnunet_rest_server-gnunet-rest-server.o: gnunet-rest-server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_rest_server_CFLAGS) $(CFLAGS) -MT gnunet_rest_server-gnunet-rest-server.o -MD -MP -MF $(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Tpo -c -o gnunet_rest_server-gnunet-rest-server.o `test -f 'gnunet-rest-server.c' || echo '$(srcdir)/'`gnunet-rest-server.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Tpo $(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-rest-server.c' object='gnunet_rest_server-gnunet-rest-server.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_rest_server_CFLAGS) $(CFLAGS) -c -o gnunet_rest_server-gnunet-rest-server.o `test -f 'gnunet-rest-server.c' || echo '$(srcdir)/'`gnunet-rest-server.c
+
+gnunet_rest_server-gnunet-rest-server.obj: gnunet-rest-server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_rest_server_CFLAGS) $(CFLAGS) -MT gnunet_rest_server-gnunet-rest-server.obj -MD -MP -MF $(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Tpo -c -o gnunet_rest_server-gnunet-rest-server.obj `if test -f 'gnunet-rest-server.c'; then $(CYGPATH_W) 'gnunet-rest-server.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-rest-server.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Tpo $(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-rest-server.c' object='gnunet_rest_server-gnunet-rest-server.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_rest_server_CFLAGS) $(CFLAGS) -c -o gnunet_rest_server-gnunet-rest-server.obj `if test -f 'gnunet-rest-server.c'; then $(CYGPATH_W) 'gnunet-rest-server.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-rest-server.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -903,10 +958,10 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
 	clean-libtool clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/gnunet-rest-server.Po
-	-rm -f ./$(DEPDIR)/plugin_rest_config.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_copying.Plo
-	-rm -f ./$(DEPDIR)/rest.Plo
+		-rm -f ./$(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Po
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Plo
+	-rm -f ./$(DEPDIR)/libgnunetrest_la-rest.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -952,10 +1007,10 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/gnunet-rest-server.Po
-	-rm -f ./$(DEPDIR)/plugin_rest_config.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_copying.Plo
-	-rm -f ./$(DEPDIR)/rest.Plo
+		-rm -f ./$(DEPDIR)/gnunet_rest_server-gnunet-rest-server.Po
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_config_la-plugin_rest_config.Plo
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_copying_la-plugin_rest_copying.Plo
+	-rm -f ./$(DEPDIR)/libgnunetrest_la-rest.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

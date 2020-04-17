@@ -16,7 +16,7 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @author Philippe Buschmann
@@ -344,6 +344,7 @@ struct EgoEntry *
 get_egoentry_namestore (struct RequestHandle *handle, char *name)
 {
   struct EgoEntry *ego_entry;
+
   if (NULL != name)
   {
     for (ego_entry = handle->ego_head; NULL != ego_entry;
@@ -367,6 +368,7 @@ static void
 namestore_iteration_error (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   handle->emsg = GNUNET_strdup (GNUNET_REST_NAMESTORE_FAILED);
   GNUNET_SCHEDULER_add_now (&do_error, handle);
   return;
@@ -554,6 +556,7 @@ static void
 ns_lookup_error_cb (void *cls)
 {
   struct RequestHandle *handle = cls;
+
   handle->emsg = GNUNET_strdup (GNUNET_REST_NAMESTORE_FAILED);
   GNUNET_SCHEDULER_add_now (&do_error, handle);
 }
@@ -568,6 +571,7 @@ ns_lookup_cb (void *cls,
 {
   struct RequestHandle *handle = cls;
   struct GNUNET_GNSRECORD_Data rd_new[rd_count + handle->rd_count];
+
   for (int i = 0; i < rd_count; i++)
     rd_new[i] = rd[i];
   for (int j = 0; j < handle->rd_count; j++)
@@ -620,7 +624,9 @@ namestore_add (struct GNUNET_REST_RequestHandle *con_handle,
                  handle->rest_handle->data_size);
   data_js = json_loads (term_data, JSON_DECODE_ANY, &err);
   struct GNUNET_JSON_Specification gnsspec[] =
-    {GNUNET_JSON_spec_gnsrecord (&handle->rd, &handle->rd_count, &handle->record_name), GNUNET_JSON_spec_end ()};
+  { GNUNET_JSON_spec_gnsrecord (&handle->rd, &handle->rd_count,
+                                &handle->record_name),
+    GNUNET_JSON_spec_end () };
   if (GNUNET_OK != GNUNET_JSON_parse (data_js, gnsspec, NULL, NULL))
   {
     handle->emsg = GNUNET_strdup (GNUNET_REST_NAMESTORE_INVALID_DATA);
@@ -771,11 +777,11 @@ init_cont (struct RequestHandle *handle)
 {
   struct GNUNET_REST_RequestHandlerError err;
   static const struct GNUNET_REST_RequestHandler handlers[] =
-    {{MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_NAMESTORE, &namestore_get},
-     {MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_NAMESTORE, &namestore_add},
-     {MHD_HTTP_METHOD_DELETE, GNUNET_REST_API_NS_NAMESTORE, &namestore_delete},
-     {MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_NAMESTORE, &options_cont},
-     GNUNET_REST_HANDLER_END};
+  { { MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_NAMESTORE, &namestore_get },
+    { MHD_HTTP_METHOD_POST, GNUNET_REST_API_NS_NAMESTORE, &namestore_add },
+    { MHD_HTTP_METHOD_DELETE, GNUNET_REST_API_NS_NAMESTORE, &namestore_delete },
+    { MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_NAMESTORE, &options_cont },
+    GNUNET_REST_HANDLER_END };
 
   if (GNUNET_NO ==
       GNUNET_REST_handle_request (handle->rest_handle, handlers, &err, handle))
@@ -902,7 +908,7 @@ libgnunet_plugin_rest_namestore_init (void *cls)
   cfg = cls;
   if (NULL != plugin.cfg)
     return NULL; /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   api = GNUNET_new (struct GNUNET_REST_Plugin);
   api->cls = &plugin;
@@ -932,6 +938,7 @@ libgnunet_plugin_rest_namestore_done (void *cls)
 {
   struct GNUNET_REST_Plugin *api = cls;
   struct Plugin *plugin = api->cls;
+
   plugin->cfg = NULL;
 
   GNUNET_free_non_null (allow_methods);
@@ -940,5 +947,5 @@ libgnunet_plugin_rest_namestore_done (void *cls)
   return NULL;
 }
 
-/* end of plugin_rest_namestore.c */
 
+/* end of plugin_rest_namestore.c */

@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2013 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2013 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -44,7 +44,6 @@
  */
 struct Ego
 {
-
   /**
    * We keep egos in a DLL.
    */
@@ -64,7 +63,6 @@ struct Ego
    * String identifier for the ego.
    */
   char *identifier;
-
 };
 
 
@@ -122,12 +120,13 @@ get_ego_filename (struct Ego *ego)
   char *filename;
 
   GNUNET_asprintf (&filename,
-		   "%s%s%s",
-		   ego_directory,
-		   DIR_SEPARATOR_STR,
-		   ego->identifier);
+                   "%s%s%s",
+                   ego_directory,
+                   DIR_SEPARATOR_STR,
+                   ego->identifier);
   return filename;
 }
+
 
 /**
  * Called whenever a client is disconnected.
@@ -141,9 +140,7 @@ client_disconnect_cb (void *cls,
                       struct GNUNET_SERVICE_Client *client,
                       void *app_ctx)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Client %p disconnected\n",
-              client);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Client %p disconnected\n", client);
 }
 
 
@@ -162,6 +159,7 @@ client_connect_cb (void *cls,
 {
   return client;
 }
+
 
 /**
  * Task run during shutdown.
@@ -208,8 +206,8 @@ shutdown_task (void *cls)
  */
 static void
 send_result_code (struct GNUNET_SERVICE_Client *client,
-		  uint32_t result_code,
-		  const char *emsg)
+                  uint32_t result_code,
+                  const char *emsg)
 {
   struct ResultCodeMessage *rcm;
   struct GNUNET_MQ_Envelope *env;
@@ -219,9 +217,8 @@ send_result_code (struct GNUNET_SERVICE_Client *client,
     elen = 0;
   else
     elen = strlen (emsg) + 1;
-  env = GNUNET_MQ_msg_extra (rcm,
-                             elen,
-                             GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE);
+  env =
+    GNUNET_MQ_msg_extra (rcm, elen, GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE);
   rcm->result_code = htonl (result_code);
   if (0 < elen)
     GNUNET_memcpy (&rcm[1], emsg, elen);
@@ -247,9 +244,7 @@ create_update_message (struct Ego *ego)
   size_t name_len;
 
   name_len = (NULL == ego->identifier) ? 0 : (strlen (ego->identifier) + 1);
-  env = GNUNET_MQ_msg_extra (um,
-                             name_len,
-                             GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE);
+  env = GNUNET_MQ_msg_extra (um, name_len, GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE);
   um->name_len = htons (name_len);
   um->end_of_list = htons (GNUNET_NO);
   um->private_key = *ego->pk;
@@ -266,8 +261,7 @@ create_update_message (struct Ego *ego)
  * @return corresponding set default message
  */
 static struct GNUNET_MQ_Envelope *
-create_set_default_message (struct Ego *ego,
-                            const char *servicename)
+create_set_default_message (struct Ego *ego, const char *servicename)
 {
   struct SetDefaultMessage *sdm;
   struct GNUNET_MQ_Envelope *env;
@@ -295,31 +289,26 @@ create_set_default_message (struct Ego *ego,
  * @param message the message received
  */
 static void
-handle_start_message (void *cls,
-                      const struct GNUNET_MessageHeader *message)
+handle_start_message (void *cls, const struct GNUNET_MessageHeader *message)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   struct UpdateMessage *ume;
   struct GNUNET_MQ_Envelope *env;
   struct Ego *ego;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Received START message from client\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received START message from client\n");
   GNUNET_SERVICE_client_mark_monitor (client);
   GNUNET_SERVICE_client_disable_continue_warning (client);
-  GNUNET_notification_context_add (nc,
-                                   GNUNET_SERVICE_client_get_mq(client));
+  GNUNET_notification_context_add (nc, GNUNET_SERVICE_client_get_mq (client));
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
     env = create_update_message (ego);
-    GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq(client), env);
+    GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client), env);
   }
-  env = GNUNET_MQ_msg_extra (ume,
-                             0,
-                             GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE);
+  env = GNUNET_MQ_msg_extra (ume, 0, GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE);
   ume->end_of_list = htons (GNUNET_YES);
   ume->name_len = htons (0);
-  GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq(client), env);
+  GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client), env);
   GNUNET_SERVICE_client_continue (client);
 }
 
@@ -333,8 +322,7 @@ handle_start_message (void *cls,
  * @return #GNUNET_SYSERR if message was ill-formed
  */
 static int
-check_lookup_message (void *cls,
-                       const struct LookupMessage *message)
+check_lookup_message (void *cls, const struct LookupMessage *message)
 {
   GNUNET_MQ_check_zero_termination (message);
   return GNUNET_OK;
@@ -349,30 +337,25 @@ check_lookup_message (void *cls,
  * @param message the message received
  */
 static void
-handle_lookup_message (void *cls,
-                       const struct LookupMessage *message)
+handle_lookup_message (void *cls, const struct LookupMessage *message)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   const char *name;
   struct GNUNET_MQ_Envelope *env;
   struct Ego *ego;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Received LOOKUP message from client\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received LOOKUP message from client\n");
   name = (const char *) &message[1];
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 != strcasecmp (name,
-                         ego->identifier))
+    if (0 != strcasecmp (name, ego->identifier))
       continue;
     env = create_update_message (ego);
     GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client), env);
     GNUNET_SERVICE_client_continue (client);
     return;
   }
-  send_result_code (client,
-                    0,
-                    "ego not found");
+  send_result_code (client, 0, "ego not found");
   GNUNET_SERVICE_client_continue (client);
 }
 
@@ -386,8 +369,7 @@ handle_lookup_message (void *cls,
  * @return #GNUNET_SYSERR if message was ill-formed
  */
 static int
-check_lookup_by_suffix_message (void *cls,
-				const struct LookupMessage *message)
+check_lookup_by_suffix_message (void *cls, const struct LookupMessage *message)
 {
   GNUNET_MQ_check_zero_termination (message);
   return GNUNET_OK;
@@ -402,8 +384,7 @@ check_lookup_by_suffix_message (void *cls,
  * @param message the message received
  */
 static void
-handle_lookup_by_suffix_message (void *cls,
-				 const struct LookupMessage *message)
+handle_lookup_by_suffix_message (void *cls, const struct LookupMessage *message)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   const char *name;
@@ -416,13 +397,11 @@ handle_lookup_by_suffix_message (void *cls,
   lprefix = NULL;
   for (struct Ego *ego = ego_head; NULL != ego; ego = ego->next)
   {
-
     if ((strlen (ego->identifier) <= strlen (name)) &&
         (0 == strcmp (ego->identifier,
-		      &name[strlen (name) - strlen (ego->identifier)])) &&
+                      &name[strlen (name) - strlen (ego->identifier)])) &&
         ((strlen (name) == strlen (ego->identifier)) ||
-         ('.' == name[strlen (name) -
-		      strlen (ego->identifier) - 1])) &&
+         ('.' == name[strlen (name) - strlen (ego->identifier) - 1])) &&
         ((NULL == lprefix) ||
          (strlen (ego->identifier) > strlen (lprefix->identifier))))
     {
@@ -437,9 +416,7 @@ handle_lookup_by_suffix_message (void *cls,
     GNUNET_SERVICE_client_continue (client);
     return;
   }
-  send_result_code (client,
-                    0,
-                    "ego not found");
+  send_result_code (client, 0, "ego not found");
   GNUNET_SERVICE_client_continue (client);
 }
 
@@ -452,24 +429,22 @@ handle_lookup_by_suffix_message (void *cls,
  * @return #GNUNET_OK if @a msg is well-formed
  */
 static int
-check_get_default_message (void *cls,
-                           const struct GetDefaultMessage *msg)
+check_get_default_message (void *cls, const struct GetDefaultMessage *msg)
 {
   uint16_t size;
   uint16_t name_len;
   const char *name;
 
   size = ntohs (msg->header.size);
-  if (size <= sizeof (struct GetDefaultMessage))
+  if (size <= sizeof(struct GetDefaultMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   name = (const char *) &msg[1];
   name_len = ntohs (msg->name_len);
-  if ( (name_len + sizeof (struct GetDefaultMessage) != size) ||
-       (0 != ntohs (msg->reserved)) ||
-       ('\0' != name[name_len - 1]) )
+  if ((name_len + sizeof(struct GetDefaultMessage) != size) ||
+      (0 != ntohs (msg->reserved)) || ('\0' != name[name_len - 1]))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -487,8 +462,7 @@ check_get_default_message (void *cls,
  * @param message the message received
  */
 static void
-handle_get_default_message (void *cls,
-                            const struct GetDefaultMessage *gdm)
+handle_get_default_message (void *cls, const struct GetDefaultMessage *gdm)
 {
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_SERVICE_Client *client = cls;
@@ -502,11 +476,10 @@ handle_get_default_message (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Received GET_DEFAULT for service `%s' from client\n",
               name);
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (subsystem_cfg,
-                                             name,
-                                             "DEFAULT_IDENTIFIER",
-                                             &identifier))
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (subsystem_cfg,
+                                                          name,
+                                                          "DEFAULT_IDENTIFIER",
+                                                          &identifier))
   {
     send_result_code (client, 1, gettext_noop ("no default known"));
     GNUNET_SERVICE_client_continue (client);
@@ -515,11 +488,9 @@ handle_get_default_message (void *cls,
   }
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 == strcmp (ego->identifier,
-                     identifier))
+    if (0 == strcmp (ego->identifier, identifier))
     {
-      env = create_set_default_message (ego,
-                                        name);
+      env = create_set_default_message (ego, name);
       GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client), env);
       GNUNET_SERVICE_client_continue (client);
       GNUNET_free (identifier);
@@ -528,12 +499,12 @@ handle_get_default_message (void *cls,
     }
   }
   GNUNET_free (identifier);
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Failed to find ego `%s'\n",
-              name);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Failed to find ego `%s'\n", name);
   GNUNET_free (name);
-  send_result_code (client, 1,
-                    gettext_noop ("default configured, but ego unknown (internal error)"));
+  send_result_code (client,
+                    1,
+                    gettext_noop (
+                      "default configured, but ego unknown (internal error)"));
   GNUNET_SERVICE_client_continue (client);
 }
 
@@ -552,6 +523,7 @@ key_cmp (const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk1,
   return GNUNET_memcmp (pk1, pk2);
 }
 
+
 /**
  * Checks a #GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT message
  *
@@ -560,22 +532,21 @@ key_cmp (const struct GNUNET_CRYPTO_EcdsaPrivateKey *pk1,
  * @return #GNUNET_OK if @a msg is well-formed
  */
 static int
-check_set_default_message (void *cls,
-                           const struct SetDefaultMessage *msg)
+check_set_default_message (void *cls, const struct SetDefaultMessage *msg)
 {
   uint16_t size;
   uint16_t name_len;
   const char *str;
 
   size = ntohs (msg->header.size);
-  if (size <= sizeof (struct SetDefaultMessage))
+  if (size <= sizeof(struct SetDefaultMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   name_len = ntohs (msg->name_len);
   GNUNET_break (0 == ntohs (msg->reserved));
-  if (name_len + sizeof (struct SetDefaultMessage) != size)
+  if (name_len + sizeof(struct SetDefaultMessage) != size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -589,6 +560,7 @@ check_set_default_message (void *cls,
   return GNUNET_OK;
 }
 
+
 /**
  * Handler for SET_DEFAULT message from client, updates
  * default identity for some service.
@@ -598,8 +570,7 @@ check_set_default_message (void *cls,
  * @param message the message received
  */
 static void
-handle_set_default_message (void *cls,
-                            const struct SetDefaultMessage *sdm)
+handle_set_default_message (void *cls, const struct SetDefaultMessage *sdm)
 {
   struct Ego *ego;
   struct GNUNET_SERVICE_Client *client = cls;
@@ -613,26 +584,27 @@ handle_set_default_message (void *cls,
               str);
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 == key_cmp (ego->pk,
-                      &sdm->private_key))
+    if (0 == key_cmp (ego->pk, &sdm->private_key))
     {
       GNUNET_CONFIGURATION_set_value_string (subsystem_cfg,
                                              str,
                                              "DEFAULT_IDENTIFIER",
                                              ego->identifier);
       if (GNUNET_OK !=
-          GNUNET_CONFIGURATION_write (subsystem_cfg,
-                                      subsystem_cfg_file))
-        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    _("Failed to write subsystem default identifier map to `%s'.\n"),
-                    subsystem_cfg_file);
+          GNUNET_CONFIGURATION_write (subsystem_cfg, subsystem_cfg_file))
+        GNUNET_log (
+          GNUNET_ERROR_TYPE_ERROR,
+          _ ("Failed to write subsystem default identifier map to `%s'.\n"),
+          subsystem_cfg_file);
       send_result_code (client, 0, NULL);
       GNUNET_SERVICE_client_continue (client);
       GNUNET_free (str);
       return;
     }
   }
-  send_result_code (client, 1, _("Unknown ego specified for service (internal error)"));
+  send_result_code (client,
+                    1,
+                    _ ("Unknown ego specified for service (internal error)"));
   GNUNET_free (str);
   GNUNET_SERVICE_client_continue (client);
 }
@@ -650,18 +622,17 @@ notify_listeners (struct Ego *ego)
   size_t name_len;
 
   name_len = (NULL == ego->identifier) ? 0 : (strlen (ego->identifier) + 1);
-  um = GNUNET_malloc (sizeof (struct UpdateMessage) + name_len);
+  um = GNUNET_malloc (sizeof(struct UpdateMessage) + name_len);
   um->header.type = htons (GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE);
-  um->header.size = htons (sizeof (struct UpdateMessage) + name_len);
+  um->header.size = htons (sizeof(struct UpdateMessage) + name_len);
   um->name_len = htons (name_len);
   um->end_of_list = htons (GNUNET_NO);
   um->private_key = *ego->pk;
   GNUNET_memcpy (&um[1], ego->identifier, name_len);
-  GNUNET_notification_context_broadcast (nc,
-                                         &um->header,
-                                         GNUNET_NO);
+  GNUNET_notification_context_broadcast (nc, &um->header, GNUNET_NO);
   GNUNET_free (um);
 }
+
 
 /**
  * Checks a #GNUNET_MESSAGE_TYPE_IDENTITY_CREATE message
@@ -671,23 +642,21 @@ notify_listeners (struct Ego *ego)
  * @return #GNUNET_OK if @a msg is well-formed
  */
 static int
-check_create_message (void *cls,
-                      const struct CreateRequestMessage *msg)
+check_create_message (void *cls, const struct CreateRequestMessage *msg)
 {
-  
   uint16_t size;
   uint16_t name_len;
   const char *str;
 
   size = ntohs (msg->header.size);
-  if (size <= sizeof (struct CreateRequestMessage))
+  if (size <= sizeof(struct CreateRequestMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   name_len = ntohs (msg->name_len);
   GNUNET_break (0 == ntohs (msg->reserved));
-  if (name_len + sizeof (struct CreateRequestMessage) != size)
+  if (name_len + sizeof(struct CreateRequestMessage) != size)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -699,7 +668,8 @@ check_create_message (void *cls,
     return GNUNET_SYSERR;
   }
   return GNUNET_OK;
-} 
+}
+
 
 /**
  * Handler for CREATE message from client, creates
@@ -710,24 +680,24 @@ check_create_message (void *cls,
  * @param message the message received
  */
 static void
-handle_create_message (void *cls,
-                       const struct CreateRequestMessage *crm)
+handle_create_message (void *cls, const struct CreateRequestMessage *crm)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   struct Ego *ego;
   char *str;
   char *fn;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Received CREATE message from client\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received CREATE message from client\n");
   str = GNUNET_strdup ((const char *) &crm[1]);
   GNUNET_STRINGS_utf8_tolower ((const char *) &crm[1], str);
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 == strcmp (ego->identifier,
-                     str))
+    if (0 == strcmp (ego->identifier, str))
     {
-      send_result_code (client, 1, gettext_noop ("identifier already in use for another ego"));
+      send_result_code (client,
+                        1,
+                        gettext_noop (
+                          "identifier already in use for another ego"));
       GNUNET_SERVICE_client_continue (client);
       GNUNET_free (str);
       return;
@@ -737,20 +707,17 @@ handle_create_message (void *cls,
   ego->pk = GNUNET_new (struct GNUNET_CRYPTO_EcdsaPrivateKey);
   *ego->pk = crm->private_key;
   ego->identifier = GNUNET_strdup (str);
-  GNUNET_CONTAINER_DLL_insert (ego_head,
-                               ego_tail,
-                               ego);
+  GNUNET_CONTAINER_DLL_insert (ego_head, ego_tail, ego);
   send_result_code (client, 0, NULL);
   fn = get_ego_filename (ego);
   (void) GNUNET_DISK_directory_create_for_file (fn);
-  if (sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey) !=
+  if (sizeof(struct GNUNET_CRYPTO_EcdsaPrivateKey) !=
       GNUNET_DISK_fn_write (fn,
                             &crm->private_key,
-                            sizeof (struct GNUNET_CRYPTO_EcdsaPrivateKey),
-                            GNUNET_DISK_PERM_USER_READ |
-                            GNUNET_DISK_PERM_USER_WRITE))
-    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR,
-                              "write", fn);
+                            sizeof(struct GNUNET_CRYPTO_EcdsaPrivateKey),
+                            GNUNET_DISK_PERM_USER_READ
+                            | GNUNET_DISK_PERM_USER_WRITE))
+    GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR, "write", fn);
   GNUNET_free (fn);
   GNUNET_free (str);
   notify_listeners (ego);
@@ -782,17 +749,15 @@ struct RenameContext
  * @param section a section in the configuration to process
  */
 static void
-handle_ego_rename (void *cls,
-                   const char *section)
+handle_ego_rename (void *cls, const char *section)
 {
   struct RenameContext *rc = cls;
   char *id;
 
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (subsystem_cfg,
-                                             section,
-                                             "DEFAULT_IDENTIFIER",
-                                             &id))
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (subsystem_cfg,
+                                                          section,
+                                                          "DEFAULT_IDENTIFIER",
+                                                          &id))
     return;
   if (0 != strcmp (id, rc->old_name))
   {
@@ -806,6 +771,7 @@ handle_ego_rename (void *cls,
   GNUNET_free (id);
 }
 
+
 /**
  * Checks a #GNUNET_MESSAGE_TYPE_IDENTITY_RENAME message
  *
@@ -814,8 +780,7 @@ handle_ego_rename (void *cls,
  * @return #GNUNET_OK if @a msg is well-formed
  */
 static int
-check_rename_message (void *cls,
-                      const struct RenameMessage *msg)
+check_rename_message (void *cls, const struct RenameMessage *msg)
 {
   uint16_t size;
   uint16_t old_name_len;
@@ -824,7 +789,7 @@ check_rename_message (void *cls,
   const char *new_name;
 
   size = ntohs (msg->header.size);
-  if (size <= sizeof (struct RenameMessage))
+  if (size <= sizeof(struct RenameMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -833,9 +798,9 @@ check_rename_message (void *cls,
   new_name_len = ntohs (msg->new_name_len);
   old_name = (const char *) &msg[1];
   new_name = &old_name[old_name_len];
-  if ( (old_name_len + new_name_len + sizeof (struct RenameMessage) != size) ||
-       ('\0' != old_name[old_name_len - 1]) ||
-       ('\0' != new_name[new_name_len - 1]) )
+  if ((old_name_len + new_name_len + sizeof(struct RenameMessage) != size) ||
+      ('\0' != old_name[old_name_len - 1]) ||
+      ('\0' != new_name[new_name_len - 1]))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -843,7 +808,7 @@ check_rename_message (void *cls,
 
   return GNUNET_OK;
 }
- 
+
 
 /**
  * Handler for RENAME message from client, creates
@@ -854,8 +819,7 @@ check_rename_message (void *cls,
  * @param message the message received
  */
 static void
-handle_rename_message (void *cls,
-                       const struct RenameMessage *rm)
+handle_rename_message (void *cls, const struct RenameMessage *rm)
 {
   uint16_t old_name_len;
   struct Ego *ego;
@@ -867,8 +831,7 @@ handle_rename_message (void *cls,
   char *fn_new;
   const char *old_name_tmp;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Received RENAME message from client\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received RENAME message from client\n");
   old_name_len = ntohs (rm->old_name_len);
   old_name_tmp = (const char *) &rm[1];
   old_name = GNUNET_strdup (old_name_tmp);
@@ -879,8 +842,7 @@ handle_rename_message (void *cls,
   /* check if new name is already in use */
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 == strcmp (ego->identifier,
-                     new_name))
+    if (0 == strcmp (ego->identifier, new_name))
     {
       send_result_code (client, 1, gettext_noop ("target name already exists"));
       GNUNET_SERVICE_client_continue (client);
@@ -893,8 +855,7 @@ handle_rename_message (void *cls,
   /* locate old name and, if found, perform rename */
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 == strcmp (ego->identifier,
-                     old_name))
+    if (0 == strcmp (ego->identifier, old_name))
     {
       fn_old = get_ego_filename (ego);
       GNUNET_free (ego->identifier);
@@ -904,14 +865,14 @@ handle_rename_message (void *cls,
                                              &handle_ego_rename,
                                              &rename_ctx);
       if (GNUNET_OK !=
-          GNUNET_CONFIGURATION_write (subsystem_cfg,
-                                      subsystem_cfg_file))
-        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    _("Failed to write subsystem default identifier map to `%s'.\n"),
-                    subsystem_cfg_file);
+          GNUNET_CONFIGURATION_write (subsystem_cfg, subsystem_cfg_file))
+        GNUNET_log (
+          GNUNET_ERROR_TYPE_ERROR,
+          _ ("Failed to write subsystem default identifier map to `%s'.\n"),
+          subsystem_cfg_file);
       ego->identifier = GNUNET_strdup (new_name);
       fn_new = get_ego_filename (ego);
-      if (0 != RENAME (fn_old, fn_new))
+      if (0 != rename (fn_old, fn_new))
         GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "rename", fn_old);
       GNUNET_free (fn_old);
       GNUNET_free (fn_new);
@@ -940,17 +901,15 @@ handle_rename_message (void *cls,
  * @param section a section in the configuration to process
  */
 static void
-handle_ego_delete (void *cls,
-                   const char *section)
+handle_ego_delete (void *cls, const char *section)
 {
   const char *identifier = cls;
   char *id;
 
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_string (subsystem_cfg,
-                                             section,
-                                             "DEFAULT_IDENTIFIER",
-                                             &id))
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (subsystem_cfg,
+                                                          section,
+                                                          "DEFAULT_IDENTIFIER",
+                                                          &id))
     return;
   if (0 != strcmp (id, identifier))
   {
@@ -964,6 +923,7 @@ handle_ego_delete (void *cls,
   GNUNET_free (id);
 }
 
+
 /**
  * Checks a #GNUNET_MESSAGE_TYPE_IDENTITY_DELETE message
  *
@@ -972,24 +932,22 @@ handle_ego_delete (void *cls,
  * @return #GNUNET_OK if @a msg is well-formed
  */
 static int
-check_delete_message (void *cls,
-                      const struct DeleteMessage *msg)
+check_delete_message (void *cls, const struct DeleteMessage *msg)
 {
   uint16_t size;
   uint16_t name_len;
   const char *name;
 
   size = ntohs (msg->header.size);
-  if (size <= sizeof (struct DeleteMessage))
+  if (size <= sizeof(struct DeleteMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   name = (const char *) &msg[1];
   name_len = ntohs (msg->name_len);
-  if ( (name_len + sizeof (struct DeleteMessage) != size) ||
-       (0 != ntohs (msg->reserved)) ||
-       ('\0' != name[name_len - 1]) )
+  if ((name_len + sizeof(struct DeleteMessage) != size) ||
+      (0 != ntohs (msg->reserved)) || ('\0' != name[name_len - 1]))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -1007,38 +965,33 @@ check_delete_message (void *cls,
  * @param message the message received
  */
 static void
-handle_delete_message (void *cls,
-                       const struct DeleteMessage *dm)
+handle_delete_message (void *cls, const struct DeleteMessage *dm)
 {
   struct Ego *ego;
   char *name;
   char *fn;
   struct GNUNET_SERVICE_Client *client = cls;
 
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Received DELETE message from client\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Received DELETE message from client\n");
   name = GNUNET_strdup ((const char *) &dm[1]);
   GNUNET_STRINGS_utf8_tolower ((const char *) &dm[1], name);
 
   for (ego = ego_head; NULL != ego; ego = ego->next)
   {
-    if (0 == strcmp (ego->identifier,
-                     name))
+    if (0 == strcmp (ego->identifier, name))
     {
-      GNUNET_CONTAINER_DLL_remove (ego_head,
-                                   ego_tail,
-                                   ego);
+      GNUNET_CONTAINER_DLL_remove (ego_head, ego_tail, ego);
       GNUNET_CONFIGURATION_iterate_sections (subsystem_cfg,
                                              &handle_ego_delete,
                                              ego->identifier);
       if (GNUNET_OK !=
-          GNUNET_CONFIGURATION_write (subsystem_cfg,
-                                      subsystem_cfg_file))
-        GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                    _("Failed to write subsystem default identifier map to `%s'.\n"),
-                    subsystem_cfg_file);
+          GNUNET_CONFIGURATION_write (subsystem_cfg, subsystem_cfg_file))
+        GNUNET_log (
+          GNUNET_ERROR_TYPE_ERROR,
+          _ ("Failed to write subsystem default identifier map to `%s'.\n"),
+          subsystem_cfg_file);
       fn = get_ego_filename (ego);
-      if (0 != UNLINK (fn))
+      if (0 != unlink (fn))
         GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "unlink", fn);
       GNUNET_free (fn);
       GNUNET_free (ego->identifier);
@@ -1070,8 +1023,7 @@ handle_delete_message (void *cls,
  *  #GNUNET_SYSERR to abort iteration with error!
  */
 static int
-process_ego_file (void *cls,
-                  const char *filename)
+process_ego_file (void *cls, const char *filename)
 {
   struct Ego *ego;
   const char *fn;
@@ -1088,17 +1040,13 @@ process_ego_file (void *cls,
   {
     GNUNET_free (ego);
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                _("Failed to parse ego information in `%s'\n"),
+                _ ("Failed to parse ego information in `%s'\n"),
                 filename);
     return GNUNET_OK;
   }
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-              "Loaded ego `%s'\n",
-              fn + 1);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Loaded ego `%s'\n", fn + 1);
   ego->identifier = GNUNET_strdup (fn + 1);
-  GNUNET_CONTAINER_DLL_insert (ego_head,
-                               ego_tail,
-                               ego);
+  GNUNET_CONTAINER_DLL_insert (ego_head, ego_tail, ego);
   return GNUNET_OK;
 }
 
@@ -1117,21 +1065,24 @@ run (void *cls,
 {
   cfg = c;
   nc = GNUNET_notification_context_create (1);
-  if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (cfg, "identity",
-                                               "EGODIR",
-                                               &ego_directory))
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_filename (cfg,
+                                                            "identity",
+                                                            "EGODIR",
+                                                            &ego_directory))
   {
     GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR, "identity", "EGODIR");
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
   if (GNUNET_OK !=
-      GNUNET_CONFIGURATION_get_value_filename (cfg, "identity",
+      GNUNET_CONFIGURATION_get_value_filename (cfg,
+                                               "identity",
                                                "SUBSYSTEM_CFG",
                                                &subsystem_cfg_file))
   {
-    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR, "identity", "SUBSYSTEM_CFG");
+    GNUNET_log_config_missing (GNUNET_ERROR_TYPE_ERROR,
+                               "identity",
+                               "SUBSYSTEM_CFG");
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -1139,78 +1090,72 @@ run (void *cls,
               "Loading subsystem configuration `%s'\n",
               subsystem_cfg_file);
   subsystem_cfg = GNUNET_CONFIGURATION_create ();
-  if ( (GNUNET_YES ==
-        GNUNET_DISK_file_test (subsystem_cfg_file)) &&
-       (GNUNET_OK !=
-        GNUNET_CONFIGURATION_parse (subsystem_cfg,
-                                    subsystem_cfg_file)) )
+  if ((GNUNET_YES == GNUNET_DISK_file_test (subsystem_cfg_file)) &&
+      (GNUNET_OK !=
+       GNUNET_CONFIGURATION_parse (subsystem_cfg, subsystem_cfg_file)))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to parse subsystem identity configuration file `%s'\n"),
+                _ (
+                  "Failed to parse subsystem identity configuration file `%s'\n"),
                 subsystem_cfg_file);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
   stats = GNUNET_STATISTICS_create ("identity", cfg);
-  if (GNUNET_OK !=
-      GNUNET_DISK_directory_create (ego_directory))
+  if (GNUNET_OK != GNUNET_DISK_directory_create (ego_directory))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Failed to create directory `%s' for storing egos\n"),
+                _ ("Failed to create directory `%s' for storing egos\n"),
                 ego_directory);
   }
-  GNUNET_DISK_directory_scan (ego_directory,
-                              &process_ego_file,
-                              NULL);
-  GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-                                 NULL);
+  GNUNET_DISK_directory_scan (ego_directory, &process_ego_file, NULL);
+  GNUNET_SCHEDULER_add_shutdown (&shutdown_task, NULL);
 }
 
 
 /**
  * Define "main" method using service macro.
  */
-GNUNET_SERVICE_MAIN
-("identity",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_fixed_size (start_message,
-                          GNUNET_MESSAGE_TYPE_IDENTITY_START,
-                          struct GNUNET_MessageHeader,
-                          NULL),
- GNUNET_MQ_hd_var_size (lookup_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP,
-                        struct LookupMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (lookup_by_suffix_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX,
-                        struct LookupMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (get_default_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_GET_DEFAULT,
-                        struct GetDefaultMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (set_default_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT,
-                        struct SetDefaultMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (create_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_CREATE,
-                        struct CreateRequestMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (rename_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_RENAME,
-                        struct RenameMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (delete_message,
-                        GNUNET_MESSAGE_TYPE_IDENTITY_DELETE,
-                        struct DeleteMessage,
-                        NULL),
- GNUNET_MQ_handler_end());
-
+GNUNET_SERVICE_MAIN (
+  "identity",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_fixed_size (start_message,
+                           GNUNET_MESSAGE_TYPE_IDENTITY_START,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_hd_var_size (lookup_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP,
+                         struct LookupMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (lookup_by_suffix_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_LOOKUP_BY_SUFFIX,
+                         struct LookupMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (get_default_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_GET_DEFAULT,
+                         struct GetDefaultMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (set_default_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT,
+                         struct SetDefaultMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (create_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_CREATE,
+                         struct CreateRequestMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (rename_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_RENAME,
+                         struct RenameMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (delete_message,
+                         GNUNET_MESSAGE_TYPE_IDENTITY_DELETE,
+                         struct DeleteMessage,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-identity.c */

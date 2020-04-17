@@ -88,6 +88,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+AM_MAKEINFOHTMLFLAGS = $(AM_MAKEINFOFLAGS)
 subdir = doc/tutorial
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -159,11 +160,11 @@ am__v_texidevnull_1 =
 INFO_DEPS = $(srcdir)/gnunet-tutorial.info
 TEXINFO_TEX = $(top_srcdir)/build-aux/texinfo.tex
 am__TEXINFO_TEX_DIR = $(top_srcdir)/build-aux
-DVIS = gnunet-tutorial.dvi
-PDFS = gnunet-tutorial.pdf
-PSS = gnunet-tutorial.ps
-HTMLS = gnunet-tutorial.html
-TEXINFOS = gnunet-tutorial.texi
+DVIS = tutorial.dvi
+PDFS = tutorial.pdf
+PSS = tutorial.ps
+HTMLS = tutorial.html
+TEXINFOS = tutorial.texi
 TEXI2DVI = texi2dvi
 TEXI2PDF = $(TEXI2DVI) --pdf --batch
 MAKEINFOHTML = $(MAKEINFO) --html
@@ -204,26 +205,23 @@ am__uninstall_files_from_dir = { \
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/mdate-sh \
-	$(top_srcdir)/build-aux/texinfo.tex
+	$(top_srcdir)/build-aux/texinfo.tex $(tutorial_TEXINFOS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -231,6 +229,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -256,6 +255,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -293,11 +293,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -341,6 +345,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -360,6 +367,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -370,7 +378,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -433,41 +440,23 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+# In the 5.x version they added `--split=chapters|sections` in
+# addition to `--split=nodes`.
+# Hold on to your hats: In version 6.5 this is already removed, ffs.
+# GNU Texinfo, please be more consistent than 1 version in switches.
+# This however is compatible to version 5.2. Thanks, I hate it.
+# AM_MAKEINFOHTMLFLAGS = --split=sections --css-ref="../style.css" --css-ref="../manual.css"
+@ACTIVATE_TEXINFO4_FALSE@AM_MAKEINFOHTMLFLAGS = --split --css-ref="../style.css" --css-ref="../manual.css"
 
-#DOT_FILES = images/$(wildcard *.dot)
-
-#DOT_VECTOR_GRAPHICS =						\
-#	$(DOT_FILES:%.dot=%.eps)				\
-#	$(DOT_FILES:%.dot=%.pdf)
-
-# See ../handbook/Makefile.am comment!
-AM_MAKEINFOHTMLFLAGS = --no-split --css-include=style.css --css-include=manual.css
-
-#DOT_OPTIONS =							\
-#	-Gratio=.9 -Gnodesep=.005 -Granksep=.00005		\
-#	-Nfontsite=9 -Nheight=.1 -Nwidth=.1
-
-# .dot.png:
-# 	$(AM_V_DOT)$(DOT) -Tpng $(DOT_OPTIONS) < "$<" > "$(srcdir)/$@.tmp"; \
-# 	mv "$(srcdir)/$@.tmp" "$(srcdir)/$@"
-
-# .dot.pdf:
-# 	$(AM_V_DOT)$(DOT) -Tpdf $(DOT_OPTIONS) < "$<" > "$(srcdir)/$@.tmp"; \
-# 	mv "$(srcdir)/$@.tmp" "$(srcdir)/$@"
-
-# .dot.eps:
-# 	$(AM_V_DOT)$(DOT) -Teps $(DOT_OPTIONS) < "$<" > "$(srcdir)/$@.tmp"; \
-# 	mv "$(srcdir)/$@.tmp" "$(srcdir)/$@"
-
-# .png.eps:
-# 	$(AM_V_GEN)convert "$<" "$@-tmp.eps"; \
-# 	mv "$@-tmp.eps" "$@"
-
-# pdf-local: $(DOT_FILES=%.dot=$(top_srcdir)/%.pdf)
-# info-local: $(DOT_FILES=%.dot=$(top_srcdir)/%.png)
-# ps-local: $(DOT_FILES=%.dot=$(top_srcdir)/%.eps)                \
-# 	$(top_srcdir)/images/coreutils-size-map.eps
-# dvi-local: ps-local
+# NOTE: While GNU makeinfo 6.5 supports --css-ref=URL,
+# makeinfo 4.8 (in NetBSD 8.0, macOS, and maybe other
+# base) does only support --css-include=FILE.
+# The only difference is a shorter html output and
+# in 6.5 the ability to use refs instead of include.
+# We prefer not to break builds in this case, so
+# we use the include version which is backwards compatible
+# and upwards compatible, while the ref variant is neither.
+@ACTIVATE_TEXINFO4_TRUE@AM_MAKEINFOHTMLFLAGS = --no-split --css-include=style.css --css-include=manual.css
 gnunet_tutorial_examples = \
 	examples/001.c							\
 	examples/002.c							\
@@ -494,25 +483,38 @@ gnunet_tutorial_examples = \
 	examples/022.c							\
 	examples/023.c							\
 	examples/024.c							\
-	examples/025.Makefile.am					\
-	examples/026.c                                                  \
+	examples/025.Makefile.am				\
+	examples/026.c                          \
 	examples/testbed_test.c
 
-info_TEXINFOS = \
-	gnunet-tutorial.texi
+info_TEXINFOS = tutorial.texi
+tutorial_TEXINFOS = \
+	fdl-1.3.texi 						\
+	gpl-3.0.texi						\
+	agpl-3.0.texi						\
+	version.texi
 
 EXTRA_DIST = \
-	$(gnunet_tutorial_examples)				\
-	htmlxref.cnf						\
-	run-gendocs.sh						\
-	docstyle.css                                            \
-        manual.css                                              \
-        reset.css                                               \
-        style.css
+	$(tutorial_TEXINFOS)	\
+	$(gnunet_tutorial_examples)	\
+	htmlxref.cnf \
+	run-gendocs.sh \
+	docstyle.css \
+    manual.css \
+    reset.css \
+    style.css
 
 DISTCLEANFILES = \
-	gnunet-tutorial.cps					\
-	fdl-1.3.cps
+    tutorial.cps \
+	fdl-1.3.cps \
+	agpl-3.0.cps \
+	gpl-3.0.cps
+
+CLEANFILES = \
+    stamp-vti \
+    version.texi \
+    tutorial.t2p \
+    $(DISTCLEANFILES)
 
 all: all-am
 
@@ -597,14 +599,14 @@ clean-libtool:
 	else \
 	  rm -rf $(@:.html=.htp); exit 1; \
 	fi
-$(srcdir)/gnunet-tutorial.info: gnunet-tutorial.texi $(srcdir)/version.texi
-gnunet-tutorial.dvi: gnunet-tutorial.texi $(srcdir)/version.texi
-gnunet-tutorial.pdf: gnunet-tutorial.texi $(srcdir)/version.texi
-gnunet-tutorial.html: gnunet-tutorial.texi $(srcdir)/version.texi
+$(srcdir)/gnunet-tutorial.info: tutorial.texi $(srcdir)/version.texi $(tutorial_TEXINFOS)
+gnunet-tutorial.dvi: tutorial.texi $(srcdir)/version.texi $(tutorial_TEXINFOS)
+gnunet-tutorial.pdf: tutorial.texi $(srcdir)/version.texi $(tutorial_TEXINFOS)
+gnunet-tutorial.html: tutorial.texi $(srcdir)/version.texi $(tutorial_TEXINFOS)
 $(srcdir)/version.texi:  $(srcdir)/stamp-vti
-$(srcdir)/stamp-vti: gnunet-tutorial.texi $(top_srcdir)/configure
-	@(dir=.; test -f ./gnunet-tutorial.texi || dir=$(srcdir); \
-	set `$(SHELL) $(top_srcdir)/build-aux/mdate-sh $$dir/gnunet-tutorial.texi`; \
+$(srcdir)/stamp-vti: tutorial.texi $(top_srcdir)/configure
+	@(dir=.; test -f ./tutorial.texi || dir=$(srcdir); \
+	set `$(SHELL) $(top_srcdir)/build-aux/mdate-sh $$dir/tutorial.texi`; \
 	echo "@set UPDATED $$1 $$2 $$3"; \
 	echo "@set UPDATED-MONTH $$2 $$3"; \
 	echo "@set EDITION $(VERSION)"; \
@@ -702,7 +704,7 @@ dist-info: $(INFO_DEPS)
 	done
 
 mostlyclean-aminfo:
-	-rm -rf gnunet-tutorial.t2d gnunet-tutorial.t2p
+	-rm -rf tutorial.t2d tutorial.t2p
 
 clean-aminfo:
 	-test -z "gnunet-tutorial.dvi gnunet-tutorial.pdf gnunet-tutorial.ps \
@@ -788,6 +790,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -797,6 +800,8 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+clean: clean-am
+
 clean-am: clean-aminfo clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
@@ -976,21 +981,6 @@ uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 .PRECIOUS: Makefile
 
 
-# XXX: is this sed invocation portable enough? otherwise try tr(1).
-version.texi/replacement: version.texi/replacement/revert
-	@sed "s/GPACKAGE_VERSION/$(PACKAGE_VERSION)/g" gversion.texi > gversion.texi.tmp
-	@mv gversion.texi.tmp gversion.texi
-
-version.texi/replacement/revert:
-	@echo "@set VERSION GPACKAGE_VERSION" > gversion.texi
-	@echo "@set EDITION GPACKAGE_VERSION" >> gversion.texi
-
-# FIXME: rm *.html and *.pdf
-#doc-clean:
-#	@rm *.aux *.log *.toc *.cp *.cps
-
-all: version.texi/replacement
-
 doc-all-install:
 	@mkdir -p $(DESTDIR)/$(docdir)
 	@mkdir -p $(DESTDIR)/$(infoimagedir)
@@ -1002,37 +992,6 @@ doc-all-install:
 doc-gendoc-install:
 	@mkdir -p $(DESTDIR)/$(docdir)
 	@cp -r manual $(DESTDIR)/$(docdir)
-
-#	@cp -r images $(DESTDIR)/$(infoimagedir)
-
-dev-build: version.texi/replacement
-	@makeinfo --pdf gnunet-c-tutorial.texi
-	@makeinfo --html gnunet-c-tutorial.texi
-	@makeinfo --no-split gnunet-c-tutorial.texi
-
-# TODO: Add more to clean.
-clean: version.texi/replacement/revert
-	@rm -f gnunet-tutorial.pdf
-	@rm -f gnunet-tutorial.info
-	@rm -f gnunet-tutorial.html
-	@rm -fr gnunet-tutorial.t2p
-
-# CLEANFILES =						\
-# 	gnunet.log					\
-# 	gnunet-c-tutorial.log				\
-# 	$(wildcard *.aux)				\
-# 	$(wildcard *.toc)				\
-# 	$(wildcard *.cp)				\
-# 	$(wildcard *.cps)
-
-#.PHONY: version.texi
-# if HAVE_EXTENDED_DOCUMENTATION_BUILDING_PDF
-
-# if HAVE_EXTENDED_DOCUMENTATION_BUILDING_HTML
-
-# endif
-# endif
-# endif
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

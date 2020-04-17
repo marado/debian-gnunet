@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api_monitor_peers.c
@@ -100,14 +100,17 @@ GNUNET_TRANSPORT_is_connected (enum GNUNET_TRANSPORT_PeerState state)
   case GNUNET_TRANSPORT_PS_SYN_RECV_ATS:
   case GNUNET_TRANSPORT_PS_SYN_RECV_ACK:
     return GNUNET_NO;
+
   case GNUNET_TRANSPORT_PS_CONNECTED:
   case GNUNET_TRANSPORT_PS_RECONNECT_ATS:
   case GNUNET_TRANSPORT_PS_RECONNECT_SENT:
   case GNUNET_TRANSPORT_PS_SWITCH_SYN_SENT:
     return GNUNET_YES;
+
   case GNUNET_TRANSPORT_PS_DISCONNECT:
   case GNUNET_TRANSPORT_PS_DISCONNECT_FINISHED:
     return GNUNET_NO;
+
   default:
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Unhandled state `%s'\n",
@@ -132,26 +135,37 @@ GNUNET_TRANSPORT_ps2s (enum GNUNET_TRANSPORT_PeerState state)
   {
   case GNUNET_TRANSPORT_PS_NOT_CONNECTED:
     return "S_NOT_CONNECTED";
+
   case GNUNET_TRANSPORT_PS_INIT_ATS:
     return "S_INIT_ATS";
+
   case GNUNET_TRANSPORT_PS_SYN_SENT:
     return "S_SYN_SENT";
+
   case GNUNET_TRANSPORT_PS_SYN_RECV_ATS:
     return "S_SYN_RECV_ATS";
+
   case GNUNET_TRANSPORT_PS_SYN_RECV_ACK:
     return "S_SYN_RECV_ACK";
+
   case GNUNET_TRANSPORT_PS_CONNECTED:
     return "S_CONNECTED";
+
   case GNUNET_TRANSPORT_PS_RECONNECT_ATS:
     return "S_RECONNECT_ATS";
+
   case GNUNET_TRANSPORT_PS_RECONNECT_SENT:
     return "S_RECONNECT_SENT";
+
   case GNUNET_TRANSPORT_PS_SWITCH_SYN_SENT:
     return "S_SWITCH_SYN_SENT";
+
   case GNUNET_TRANSPORT_PS_DISCONNECT:
     return "S_DISCONNECT";
+
   case GNUNET_TRANSPORT_PS_DISCONNECT_FINISHED:
     return "S_DISCONNECT_FINISHED";
+
   default:
     GNUNET_break (0);
     return "UNDEFINED";
@@ -186,8 +200,8 @@ reconnect_peer_ctx (struct GNUNET_TRANSPORT_PeerMonitoringContext *pal_ctx)
                GNUNET_TIME_UNIT_ZERO_ABS);
   pal_ctx->backoff = GNUNET_TIME_STD_BACKOFF (pal_ctx->backoff);
   pal_ctx->reconnect_task = GNUNET_SCHEDULER_add_delayed (pal_ctx->backoff,
-							  &do_peer_connect,
-							  pal_ctx);
+                                                          &do_peer_connect,
+                                                          pal_ctx);
 }
 
 
@@ -231,7 +245,7 @@ static int
 check_response (void *cls,
                 const struct PeerIterateResponseMessage *pir_msg)
 {
-  uint16_t size = ntohs (pir_msg->header.size) - sizeof (*pir_msg);
+  uint16_t size = ntohs (pir_msg->header.size) - sizeof(*pir_msg);
   size_t alen = ntohl (pir_msg->addrlen);
   size_t tlen = ntohl (pir_msg->pluginlen);
   const char *addr;
@@ -242,11 +256,11 @@ check_response (void *cls,
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  if ( (0 == tlen) && (0 == alen) )
+  if ((0 == tlen) && (0 == alen))
     return GNUNET_OK;
   if (0 == tlen)
   {
-    GNUNET_break (0); /* This must not happen: address without plugin */
+    GNUNET_break (0);  /* This must not happen: address without plugin */
     return GNUNET_SYSERR;
   }
   addr = (const char *) &pir_msg[1];
@@ -277,14 +291,14 @@ handle_response (void *cls,
   const char *addr;
   const char *transport_name;
 
-  if ( (0 == tlen) &&
-       (0 == alen) )
+  if ((0 == tlen) &&
+      (0 == alen))
   {
     /* No address available */
     pal_ctx->cb (pal_ctx->cb_cls,
                  &pir_msg->peer,
                  NULL,
-                 ntohl(pir_msg->state),
+                 ntohl (pir_msg->state),
                  GNUNET_TIME_absolute_ntoh (pir_msg->state_timeout));
     return;
   }
@@ -304,7 +318,6 @@ handle_response (void *cls,
                GNUNET_TIME_absolute_ntoh (pir_msg->state_timeout));
   GNUNET_HELLO_address_free (address);
 }
-
 
 
 /**
@@ -406,7 +419,8 @@ struct GNUNET_TRANSPORT_PeerMonitoringContext *
 GNUNET_TRANSPORT_monitor_peers (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                 const struct GNUNET_PeerIdentity *peer,
                                 int one_shot,
-                                GNUNET_TRANSPORT_PeerIterateCallback peer_callback,
+                                GNUNET_TRANSPORT_PeerIterateCallback
+                                peer_callback,
                                 void *peer_callback_cls)
 {
   struct GNUNET_TRANSPORT_PeerMonitoringContext *pal_ctx
@@ -434,7 +448,9 @@ GNUNET_TRANSPORT_monitor_peers (const struct GNUNET_CONFIGURATION_Handle *cfg,
  * @param pic handle for the request to cancel
  */
 void
-GNUNET_TRANSPORT_monitor_peers_cancel (struct GNUNET_TRANSPORT_PeerMonitoringContext *pic)
+GNUNET_TRANSPORT_monitor_peers_cancel (struct
+                                       GNUNET_TRANSPORT_PeerMonitoringContext *
+                                       pic)
 {
   if (NULL != pic->mq)
   {

@@ -118,19 +118,11 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/gnunet_config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@am__EXEEXT_1 = test_gnunet_vpn-4_to_6$(EXEEXT) \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-4_over$(EXEEXT)
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@am__EXEEXT_1 = test_gnunet_vpn-4_to_6$(EXEEXT) \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-4_over$(EXEEXT) \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gns_vpn$(EXEEXT)
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@am__EXEEXT_1 = test_gnunet_vpn-4_to_6$(EXEEXT) \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_FALSE@@MINGW_TRUE@	test_gnunet_vpn-4_over$(EXEEXT)
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@am__EXEEXT_1 = test_gnunet_vpn-4_to_6$(EXEEXT) \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_to_4$(EXEEXT) \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@	test_gnunet_vpn-6_over$(EXEEXT) \
@@ -156,39 +148,59 @@ am__v_lt_1 =
 am_test_gns_vpn_OBJECTS = test_gns_vpn-test_gns_vpn.$(OBJEXT)
 test_gns_vpn_OBJECTS = $(am_test_gns_vpn_OBJECTS)
 test_gns_vpn_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/namestore/libgnunetnamestore.la \
 	$(top_builddir)/src/identity/libgnunetidentity.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+test_gns_vpn_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_gns_vpn_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_gnunet_vpn_4_over_OBJECTS =  \
 	test_gnunet_vpn_4_over-test_gnunet_vpn.$(OBJEXT)
 test_gnunet_vpn_4_over_OBJECTS = $(am_test_gnunet_vpn_4_over_OBJECTS)
 test_gnunet_vpn_4_over_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/vpn/libgnunetvpn.la \
+	$(am__DEPENDENCIES_1) $(top_builddir)/src/vpn/libgnunetvpn.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+test_gnunet_vpn_4_over_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_gnunet_vpn_4_over_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_test_gnunet_vpn_4_to_6_OBJECTS =  \
 	test_gnunet_vpn_4_to_6-test_gnunet_vpn.$(OBJEXT)
 test_gnunet_vpn_4_to_6_OBJECTS = $(am_test_gnunet_vpn_4_to_6_OBJECTS)
 test_gnunet_vpn_4_to_6_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/vpn/libgnunetvpn.la \
+	$(am__DEPENDENCIES_1) $(top_builddir)/src/vpn/libgnunetvpn.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+test_gnunet_vpn_4_to_6_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_gnunet_vpn_4_to_6_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_test_gnunet_vpn_6_over_OBJECTS =  \
 	test_gnunet_vpn_6_over-test_gnunet_vpn.$(OBJEXT)
 test_gnunet_vpn_6_over_OBJECTS = $(am_test_gnunet_vpn_6_over_OBJECTS)
 test_gnunet_vpn_6_over_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/vpn/libgnunetvpn.la \
+	$(am__DEPENDENCIES_1) $(top_builddir)/src/vpn/libgnunetvpn.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+test_gnunet_vpn_6_over_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_gnunet_vpn_6_over_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_test_gnunet_vpn_6_to_4_OBJECTS =  \
 	test_gnunet_vpn_6_to_4-test_gnunet_vpn.$(OBJEXT)
 test_gnunet_vpn_6_to_4_OBJECTS = $(am_test_gnunet_vpn_6_to_4_OBJECTS)
 test_gnunet_vpn_6_to_4_DEPENDENCIES = $(am__DEPENDENCIES_1) \
-	$(top_builddir)/src/vpn/libgnunetvpn.la \
+	$(am__DEPENDENCIES_1) $(top_builddir)/src/vpn/libgnunetvpn.la \
 	$(top_builddir)/src/testing/libgnunettesting.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+test_gnunet_vpn_6_to_4_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_gnunet_vpn_6_to_4_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -476,20 +488,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -497,6 +506,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -522,6 +532,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -559,11 +570,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -607,6 +622,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -626,6 +644,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -636,7 +655,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -700,7 +718,6 @@ top_srcdir = @top_srcdir@
 
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 pkgcfgdir = $(pkgdatadir)/config.d/
 plugindir = $(libdir)/gnunet
@@ -730,24 +747,12 @@ gnunet_daemon_pt_LDADD = \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_over \
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gns_vpn
 
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@VPN_TEST = \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-4_to_6 \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-6_to_4 \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-6_over \
-@HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-4_over
-
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@VPN_TEST = \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_to_6 \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-6_to_4 \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-6_over \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gnunet_vpn-4_over \
 @HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@LINUX_TRUE@ test_gns_vpn
-
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@VPN_TEST = \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-4_to_6 \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-6_to_4 \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-6_over \
-@HAVE_LIBGNURL_TRUE@@HAVE_MHD_TRUE@@HAVE_TESTING_TRUE@@MINGW_TRUE@ test_gnunet_vpn-4_over
 
 @ENABLE_TEST_RUN_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@TESTS = $(check_PROGRAMS)
@@ -758,60 +763,50 @@ EXTRA_DIST = \
 test_gns_vpn_SOURCES = \
  test_gns_vpn.c
 
-test_gns_vpn_LDADD = -lmicrohttpd $(LIB_GNURL) \
+test_gns_vpn_LDADD = $(MHD_LIBS) $(LIB_GNURL) \
  $(top_builddir)/src/namestore/libgnunetnamestore.la \
  $(top_builddir)/src/identity/libgnunetidentity.la \
  $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-test_gns_vpn_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
-
+test_gns_vpn_CFLAGS = $(MHD_CFLAGS) $(CPP_GNURL) $(AM_CFLAGS)
 test_gnunet_vpn_4_over_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_4_over_LDADD = -lmicrohttpd $(LIB_GNURL) \
+test_gnunet_vpn_4_over_LDADD = $(MHD_LIBS) $(LIB_GNURL) \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-test_gnunet_vpn_4_over_CPPFLAGS = \
- $(LIB_GNURL) $(AM_CPPFLAGS)
-
+test_gnunet_vpn_4_over_CFLAGS = $(MHD_CFLAGS) $(CPP_GNURL) $(AM_CFLAGS)
 test_gnunet_vpn_6_over_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_6_over_LDADD = -lmicrohttpd $(LIB_GNURL) \
+test_gnunet_vpn_6_over_LDADD = $(MHD_LIBS) $(LIB_GNURL) \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-test_gnunet_vpn_6_over_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
-
+test_gnunet_vpn_6_over_CFLAGS = $(MHD_CFLAGS) $(CPP_GNURL) $(AM_CFLAGS)
 test_gnunet_vpn_4_to_6_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_4_to_6_LDADD = -lmicrohttpd $(LIB_GNURL) \
+test_gnunet_vpn_4_to_6_LDADD = $(MHD_LIBS) $(LIB_GNURL) \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-test_gnunet_vpn_4_to_6_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
-
+test_gnunet_vpn_4_to_6_CFLAGS = $(MHD_CFLAGS) $(CPP_GNURL) $(AM_CFLAGS)
 test_gnunet_vpn_6_to_4_SOURCES = \
  test_gnunet_vpn.c
 
-test_gnunet_vpn_6_to_4_LDADD = -lmicrohttpd $(LIB_GNURL) \
+test_gnunet_vpn_6_to_4_LDADD = $(MHD_LIBS) $(LIB_GNURL) \
  $(top_builddir)/src/vpn/libgnunetvpn.la \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-test_gnunet_vpn_6_to_4_CPPFLAGS = \
- $(CPP_GNURL) $(AM_CPPFLAGS)
-
+test_gnunet_vpn_6_to_4_CFLAGS = $(MHD_CFLAGS) $(CPP_GNURL) $(AM_CFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -910,23 +905,23 @@ gnunet-daemon-pt$(EXEEXT): $(gnunet_daemon_pt_OBJECTS) $(gnunet_daemon_pt_DEPEND
 
 test_gns_vpn$(EXEEXT): $(test_gns_vpn_OBJECTS) $(test_gns_vpn_DEPENDENCIES) $(EXTRA_test_gns_vpn_DEPENDENCIES) 
 	@rm -f test_gns_vpn$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gns_vpn_OBJECTS) $(test_gns_vpn_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(test_gns_vpn_LINK) $(test_gns_vpn_OBJECTS) $(test_gns_vpn_LDADD) $(LIBS)
 
 test_gnunet_vpn-4_over$(EXEEXT): $(test_gnunet_vpn_4_over_OBJECTS) $(test_gnunet_vpn_4_over_DEPENDENCIES) $(EXTRA_test_gnunet_vpn_4_over_DEPENDENCIES) 
 	@rm -f test_gnunet_vpn-4_over$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gnunet_vpn_4_over_OBJECTS) $(test_gnunet_vpn_4_over_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(test_gnunet_vpn_4_over_LINK) $(test_gnunet_vpn_4_over_OBJECTS) $(test_gnunet_vpn_4_over_LDADD) $(LIBS)
 
 test_gnunet_vpn-4_to_6$(EXEEXT): $(test_gnunet_vpn_4_to_6_OBJECTS) $(test_gnunet_vpn_4_to_6_DEPENDENCIES) $(EXTRA_test_gnunet_vpn_4_to_6_DEPENDENCIES) 
 	@rm -f test_gnunet_vpn-4_to_6$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gnunet_vpn_4_to_6_OBJECTS) $(test_gnunet_vpn_4_to_6_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(test_gnunet_vpn_4_to_6_LINK) $(test_gnunet_vpn_4_to_6_OBJECTS) $(test_gnunet_vpn_4_to_6_LDADD) $(LIBS)
 
 test_gnunet_vpn-6_over$(EXEEXT): $(test_gnunet_vpn_6_over_OBJECTS) $(test_gnunet_vpn_6_over_DEPENDENCIES) $(EXTRA_test_gnunet_vpn_6_over_DEPENDENCIES) 
 	@rm -f test_gnunet_vpn-6_over$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gnunet_vpn_6_over_OBJECTS) $(test_gnunet_vpn_6_over_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(test_gnunet_vpn_6_over_LINK) $(test_gnunet_vpn_6_over_OBJECTS) $(test_gnunet_vpn_6_over_LDADD) $(LIBS)
 
 test_gnunet_vpn-6_to_4$(EXEEXT): $(test_gnunet_vpn_6_to_4_OBJECTS) $(test_gnunet_vpn_6_to_4_DEPENDENCIES) $(EXTRA_test_gnunet_vpn_6_to_4_DEPENDENCIES) 
 	@rm -f test_gnunet_vpn-6_to_4$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_gnunet_vpn_6_to_4_OBJECTS) $(test_gnunet_vpn_6_to_4_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(test_gnunet_vpn_6_to_4_LINK) $(test_gnunet_vpn_6_to_4_OBJECTS) $(test_gnunet_vpn_6_to_4_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -969,74 +964,74 @@ am--depfiles: $(am__depfiles_remade)
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
 test_gns_vpn-test_gns_vpn.o: test_gns_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gns_vpn_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gns_vpn-test_gns_vpn.o -MD -MP -MF $(DEPDIR)/test_gns_vpn-test_gns_vpn.Tpo -c -o test_gns_vpn-test_gns_vpn.o `test -f 'test_gns_vpn.c' || echo '$(srcdir)/'`test_gns_vpn.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gns_vpn_CFLAGS) $(CFLAGS) -MT test_gns_vpn-test_gns_vpn.o -MD -MP -MF $(DEPDIR)/test_gns_vpn-test_gns_vpn.Tpo -c -o test_gns_vpn-test_gns_vpn.o `test -f 'test_gns_vpn.c' || echo '$(srcdir)/'`test_gns_vpn.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gns_vpn-test_gns_vpn.Tpo $(DEPDIR)/test_gns_vpn-test_gns_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gns_vpn.c' object='test_gns_vpn-test_gns_vpn.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gns_vpn_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gns_vpn-test_gns_vpn.o `test -f 'test_gns_vpn.c' || echo '$(srcdir)/'`test_gns_vpn.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gns_vpn_CFLAGS) $(CFLAGS) -c -o test_gns_vpn-test_gns_vpn.o `test -f 'test_gns_vpn.c' || echo '$(srcdir)/'`test_gns_vpn.c
 
 test_gns_vpn-test_gns_vpn.obj: test_gns_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gns_vpn_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gns_vpn-test_gns_vpn.obj -MD -MP -MF $(DEPDIR)/test_gns_vpn-test_gns_vpn.Tpo -c -o test_gns_vpn-test_gns_vpn.obj `if test -f 'test_gns_vpn.c'; then $(CYGPATH_W) 'test_gns_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gns_vpn.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gns_vpn_CFLAGS) $(CFLAGS) -MT test_gns_vpn-test_gns_vpn.obj -MD -MP -MF $(DEPDIR)/test_gns_vpn-test_gns_vpn.Tpo -c -o test_gns_vpn-test_gns_vpn.obj `if test -f 'test_gns_vpn.c'; then $(CYGPATH_W) 'test_gns_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gns_vpn.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gns_vpn-test_gns_vpn.Tpo $(DEPDIR)/test_gns_vpn-test_gns_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gns_vpn.c' object='test_gns_vpn-test_gns_vpn.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gns_vpn_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gns_vpn-test_gns_vpn.obj `if test -f 'test_gns_vpn.c'; then $(CYGPATH_W) 'test_gns_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gns_vpn.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gns_vpn_CFLAGS) $(CFLAGS) -c -o test_gns_vpn-test_gns_vpn.obj `if test -f 'test_gns_vpn.c'; then $(CYGPATH_W) 'test_gns_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gns_vpn.c'; fi`
 
 test_gnunet_vpn_4_over-test_gnunet_vpn.o: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_over-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_over_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_over-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_4_over-test_gnunet_vpn.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_over_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 
 test_gnunet_vpn_4_over-test_gnunet_vpn.obj: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_over-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_over_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_over-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_4_over-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_4_over-test_gnunet_vpn.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_over_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 
 test_gnunet_vpn_4_to_6-test_gnunet_vpn.o: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_to_6_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_to_6-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_to_6_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_to_6-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_4_to_6-test_gnunet_vpn.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_to_6_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_to_6_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 
 test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_to_6_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_to_6_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_4_to_6-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_4_to_6_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_4_to_6_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_4_to_6-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 
 test_gnunet_vpn_6_over-test_gnunet_vpn.o: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_over-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_over_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_over-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_6_over-test_gnunet_vpn.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_over_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 
 test_gnunet_vpn_6_over-test_gnunet_vpn.obj: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_over-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_over_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_over-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_6_over-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_6_over-test_gnunet_vpn.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_over_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_over_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_over-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 
 test_gnunet_vpn_6_to_4-test_gnunet_vpn.o: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_to_4_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_to_4-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_to_4_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_to_4-test_gnunet_vpn.o -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_6_to_4-test_gnunet_vpn.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_to_4_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_to_4_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.o `test -f 'test_gnunet_vpn.c' || echo '$(srcdir)/'`test_gnunet_vpn.c
 
 test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj: test_gnunet_vpn.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_to_4_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_to_4_CFLAGS) $(CFLAGS) -MT test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj -MD -MP -MF $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Tpo -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Tpo $(DEPDIR)/test_gnunet_vpn_6_to_4-test_gnunet_vpn.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_gnunet_vpn.c' object='test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_gnunet_vpn_6_to_4_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_gnunet_vpn_6_to_4_CFLAGS) $(CFLAGS) -c -o test_gnunet_vpn_6_to_4-test_gnunet_vpn.obj `if test -f 'test_gnunet_vpn.c'; then $(CYGPATH_W) 'test_gnunet_vpn.c'; else $(CYGPATH_W) '$(srcdir)/test_gnunet_vpn.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/rps-test_util.c
@@ -32,7 +32,7 @@
 
 #include <inttypes.h>
 
-#define LOG(kind, ...) GNUNET_log_from(kind,"rps-test_util",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "rps-test_util", __VA_ARGS__)
 
 #define B2B_PAT "%c%c%c%c%c%c%c%c"
 #define B2B(byte)  \
@@ -61,7 +61,6 @@ static unsigned num_bits_buf_unaligned;
 static struct GNUNET_CONTAINER_MultiHashMap *open_files;
 
 
-
 /**
  * @brief Get file handle
  *
@@ -80,7 +79,7 @@ get_file_handle (const char *name)
   if (NULL == open_files)
   {
     open_files = GNUNET_CONTAINER_multihashmap_create (16,
-						       GNUNET_NO);
+                                                       GNUNET_NO);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Created map of open files.\n");
   }
@@ -88,27 +87,27 @@ get_file_handle (const char *name)
                       strlen (name),
                       &hash);
   if (NULL != (fh = GNUNET_CONTAINER_multihashmap_get (open_files,
-						       &hash)))
+                                                       &hash)))
     return fh;
   fh = GNUNET_DISK_file_open (name,
-			      GNUNET_DISK_OPEN_WRITE |
-			      GNUNET_DISK_OPEN_CREATE |
-			      GNUNET_DISK_OPEN_APPEND,
-			      GNUNET_DISK_PERM_USER_READ |
-			      GNUNET_DISK_PERM_USER_WRITE |
-			      GNUNET_DISK_PERM_GROUP_READ);
+                              GNUNET_DISK_OPEN_WRITE
+                              | GNUNET_DISK_OPEN_CREATE
+                              | GNUNET_DISK_OPEN_APPEND,
+                              GNUNET_DISK_PERM_USER_READ
+                              | GNUNET_DISK_PERM_USER_WRITE
+                              | GNUNET_DISK_PERM_GROUP_READ);
   if (NULL == fh)
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-	 "Opening file `%s' failed.\n",
-	 name);
+         "Opening file `%s' failed.\n",
+         name);
     GNUNET_assert (0);
   }
   GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CONTAINER_multihashmap_put (open_files,
-						    &hash,
-						    fh,
-						    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
+                 GNUNET_CONTAINER_multihashmap_put (open_files,
+                                                    &hash,
+                                                    fh,
+                                                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   return fh;
 }
 
@@ -162,7 +161,6 @@ close_all_files ()
 }
 
 
-
 void
 to_file_raw (const char *file_name, const char *buf, size_t size_buf)
 {
@@ -170,13 +168,13 @@ to_file_raw (const char *file_name, const char *buf, size_t size_buf)
   size_t size_written;
 
   if (NULL == (f = GNUNET_DISK_file_open (file_name,
-                                          GNUNET_DISK_OPEN_APPEND |
-                                          GNUNET_DISK_OPEN_WRITE |
-                                          GNUNET_DISK_OPEN_CREATE,
-                                          GNUNET_DISK_PERM_USER_READ |
-                                          GNUNET_DISK_PERM_USER_WRITE |
-                                          GNUNET_DISK_PERM_GROUP_READ |
-                                          GNUNET_DISK_PERM_OTHER_READ)))
+                                          GNUNET_DISK_OPEN_APPEND
+                                          | GNUNET_DISK_OPEN_WRITE
+                                          | GNUNET_DISK_OPEN_CREATE,
+                                          GNUNET_DISK_PERM_USER_READ
+                                          | GNUNET_DISK_PERM_USER_WRITE
+                                          | GNUNET_DISK_PERM_GROUP_READ
+                                          | GNUNET_DISK_PERM_OTHER_READ)))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          "Not able to open file %s\n",
@@ -206,6 +204,7 @@ to_file_raw (const char *file_name, const char *buf, size_t size_buf)
          "Unable to close file\n");
 }
 
+
 void
 to_file_raw_unaligned (const char *file_name,
                        const char *buf,
@@ -213,9 +212,9 @@ to_file_raw_unaligned (const char *file_name,
                        unsigned bits_needed)
 {
   // TODO endianness!
-  GNUNET_assert (size_buf >= (bits_needed/8));
-  //if (0 == num_bits_buf_unaligned)
-  //{
+  GNUNET_assert (size_buf >= (bits_needed / 8));
+  // if (0 == num_bits_buf_unaligned)
+  // {
   //  if (0 == (bits_needed % 8))
   //  {
   //    to_file_raw (file_name, buf, size_buf);
@@ -225,21 +224,21 @@ to_file_raw_unaligned (const char *file_name,
   //  buf_unaligned = buf[size_buf - 1];
   //  num_bits_buf_unaligned = bits_needed % 8;
   //  return;
-  //}
+  // }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Was asked to write %u bits\n", bits_needed);
 
   char buf_write[size_buf + 1];
-  const unsigned bytes_iter = (0 != bits_needed % 8?
-                               (bits_needed/8)+1:
-                               bits_needed/8);
+  const unsigned bytes_iter = (0 != bits_needed % 8 ?
+                               (bits_needed / 8) + 1 :
+                               bits_needed / 8);
   // TODO what if no iteration happens?
   unsigned size_buf_write = 0;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "num_bits_buf_unaligned: %u\n",
+       "num_bits_buf_unaligned: %u\n",
        num_bits_buf_unaligned);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "ua args: size_buf: %u, bits_needed: %u -> iter: %u\n",
+       "ua args: size_buf: %u, bits_needed: %u -> iter: %u\n",
        size_buf,
        bits_needed,
        bytes_iter);
@@ -271,10 +270,10 @@ to_file_raw_unaligned (const char *file_name,
     /* needed bits of the input byte that have not been moved */
     char byte_input_leftover;
     unsigned num_bits_leftover;
-    //unsigned num_bits_discard;
+    // unsigned num_bits_discard;
     char byte_unaligned_new;
 
-    if ( (bits_needed - (i * 8)) <= 8)
+    if ((bits_needed - (i * 8)) <= 8)
     {
       /* last iteration */
       num_bits_needed_iter = bits_needed - (i * 8);
@@ -284,54 +283,54 @@ to_file_raw_unaligned (const char *file_name,
       num_bits_needed_iter = 8;
     }
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "number of bits needed in this iteration: %u\n",
+         "number of bits needed in this iteration: %u\n",
          num_bits_needed_iter);
     mask_bits_needed_iter = ((char) 1 << num_bits_needed_iter) - 1;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "mask needed bits (current iter): "B2B_PAT"\n",
-         B2B(mask_bits_needed_iter));
+         "mask needed bits (current iter): "B2B_PAT "\n",
+         B2B (mask_bits_needed_iter));
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "Unaligned byte: "B2B_PAT" (%u bits)\n",
-         B2B(buf_unaligned),
+         "Unaligned byte: "B2B_PAT " (%u bits)\n",
+         B2B (buf_unaligned),
          num_bits_buf_unaligned);
     byte_input = buf[i];
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "next whole input byte: "B2B_PAT"\n",
-         B2B(byte_input));
+         "next whole input byte: "B2B_PAT "\n",
+         B2B (byte_input));
     byte_input &= mask_bits_needed_iter;
     num_bits_to_align = 8 - num_bits_buf_unaligned;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "input byte, needed bits: "B2B_PAT"\n",
-         B2B(byte_input));
+         "input byte, needed bits: "B2B_PAT "\n",
+         B2B (byte_input));
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "number of bits needed to align unaligned bit: %u\n",
+         "number of bits needed to align unaligned bit: %u\n",
          num_bits_to_align);
-    num_bits_to_move  = GNUNET_MIN (num_bits_to_align, num_bits_needed_iter);
+    num_bits_to_move = GNUNET_MIN (num_bits_to_align, num_bits_needed_iter);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "number of bits of new byte to move: %u\n",
+         "number of bits of new byte to move: %u\n",
          num_bits_to_move);
     mask_input_to_move = ((char) 1 << num_bits_to_move) - 1;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "mask of bits of new byte to take for moving: "B2B_PAT"\n",
-         B2B(mask_input_to_move));
+         "mask of bits of new byte to take for moving: "B2B_PAT "\n",
+         B2B (mask_input_to_move));
     bits_to_move = byte_input & mask_input_to_move;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "masked bits of new byte to take for moving: "B2B_PAT"\n",
-         B2B(bits_to_move));
+         "masked bits of new byte to take for moving: "B2B_PAT "\n",
+         B2B (bits_to_move));
     distance_shift_bits = num_bits_buf_unaligned;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "distance needed to shift bits to their correct spot: %u\n",
+         "distance needed to shift bits to their correct spot: %u\n",
          distance_shift_bits);
     bits_moving = bits_to_move << distance_shift_bits;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "shifted, masked bits of new byte being moved: "B2B_PAT"\n",
-         B2B(bits_moving));
+         "shifted, masked bits of new byte being moved: "B2B_PAT "\n",
+         B2B (bits_moving));
     byte_to_fill = buf_unaligned | bits_moving;
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "byte being filled: "B2B_PAT"\n",
-         B2B(byte_to_fill));
+         "byte being filled: "B2B_PAT "\n",
+         B2B (byte_to_fill));
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "pending bytes: %u\n",
+         "pending bytes: %u\n",
          num_bits_buf_unaligned + num_bits_needed_iter);
     if (num_bits_buf_unaligned + num_bits_needed_iter >= 8)
     {
@@ -341,23 +340,23 @@ to_file_raw_unaligned (const char *file_name,
       size_buf_write++;
 
       /* store the leftover, unaligned bits in buffer */
-      mask_input_leftover = mask_bits_needed_iter & (~ mask_input_to_move);
+      mask_input_leftover = mask_bits_needed_iter & (~mask_input_to_move);
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-          "mask of leftover bits of new byte: "B2B_PAT"\n",
-           B2B(mask_input_leftover));
+           "mask of leftover bits of new byte: "B2B_PAT "\n",
+           B2B (mask_input_leftover));
       byte_input_leftover = byte_input & mask_input_leftover;
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-          "masked, leftover bits of new byte: "B2B_PAT"\n",
-           B2B(byte_input_leftover));
+           "masked, leftover bits of new byte: "B2B_PAT "\n",
+           B2B (byte_input_leftover));
       num_bits_leftover = num_bits_needed_iter - num_bits_to_move;
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-          "number of unaligned bits left: %u\n",
+           "number of unaligned bits left: %u\n",
            num_bits_leftover);
-      //num_bits_discard = 8 - num_bits_needed_iter;
+      // num_bits_discard = 8 - num_bits_needed_iter;
       byte_unaligned_new = byte_input_leftover >> num_bits_to_move;
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-          "new unaligned byte: "B2B_PAT"\n",
-           B2B(byte_unaligned_new));
+           "new unaligned byte: "B2B_PAT "\n",
+           B2B (byte_unaligned_new));
       buf_unaligned = byte_unaligned_new;
       num_bits_buf_unaligned = num_bits_leftover % 8;
     }
@@ -372,6 +371,7 @@ to_file_raw_unaligned (const char *file_name,
   LOG (GNUNET_ERROR_TYPE_DEBUG, "\n");
 }
 
+
 char *
 auth_key_to_string (struct GNUNET_CRYPTO_AuthKey auth_key)
 {
@@ -380,9 +380,9 @@ auth_key_to_string (struct GNUNET_CRYPTO_AuthKey auth_key)
   char *end;
   char *buf;
   char *name_buf;
-  size_t keylen = (sizeof (struct GNUNET_CRYPTO_AuthKey)) * 8;
+  size_t keylen = (sizeof(struct GNUNET_CRYPTO_AuthKey)) * 8;
 
-  name_buf_size = 512 * sizeof (char);
+  name_buf_size = 512 * sizeof(char);
   name_buf = GNUNET_malloc (name_buf_size);
 
   if (keylen % 5 > 0)
@@ -391,9 +391,9 @@ auth_key_to_string (struct GNUNET_CRYPTO_AuthKey auth_key)
   buf = GNUNET_malloc (keylen + 1);
 
   end = GNUNET_STRINGS_data_to_string (&(auth_key.key),
-      sizeof (struct GNUNET_CRYPTO_AuthKey),
-      buf,
-      keylen);
+                                       sizeof(struct GNUNET_CRYPTO_AuthKey),
+                                       buf,
+                                       keylen);
 
   if (NULL == end)
   {
@@ -414,6 +414,7 @@ auth_key_to_string (struct GNUNET_CRYPTO_AuthKey auth_key)
   return name_buf;
 }
 
+
 #endif /* TO_FILE */
 
 
@@ -426,7 +427,7 @@ string_to_auth_key (const char *str)
       GNUNET_STRINGS_string_to_data (str,
                                      strlen (str),
                                      &auth_key.key,
-                                     sizeof (struct GNUNET_CRYPTO_AuthKey)))
+                                     sizeof(struct GNUNET_CRYPTO_AuthKey)))
   {
     LOG (GNUNET_ERROR_TYPE_WARNING, "Failed to convert string to data\n");
   }
@@ -464,36 +465,37 @@ store_prefix_file_name (const unsigned int index,
   char *file_name;
   char index_str[64];
 
-  if (GNUNET_SYSERR == ensure_folder_exist()) return NULL;
+  if (GNUNET_SYSERR == ensure_folder_exist ())
+    return NULL;
   out_size = GNUNET_snprintf (index_str,
                               64,
                               "%u",
                               index);
-  if (64 < out_size ||
-      0 > out_size)
+  if ((64 < out_size) ||
+      (0 > out_size) )
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-               "Failed to write string to buffer (size: %i, out_size: %i)\n",
-               64,
-               out_size);
+                "Failed to write string to buffer (size: %i, out_size: %i)\n",
+                64,
+                out_size);
   }
-  len_file_name = (strlen (prefix) +
-                   strlen (index_str) +
-                   11)
-                     * sizeof (char);
+  len_file_name = (strlen (prefix)
+                   + strlen (index_str)
+                   + 11)
+                  * sizeof(char);
   file_name = GNUNET_malloc (len_file_name);
   out_size = GNUNET_snprintf (file_name,
                               len_file_name,
                               "/tmp/rps/%s-%s",
                               prefix,
                               index_str);
-  if (len_file_name < out_size ||
-      0 > out_size)
+  if ((len_file_name < out_size) ||
+      (0 > out_size) )
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-               "Failed to write string to buffer (size: %i, out_size: %i)\n",
-               len_file_name,
-               out_size);
+                "Failed to write string to buffer (size: %i, out_size: %i)\n",
+                len_file_name,
+                out_size);
   }
   return file_name;
 }
@@ -506,7 +508,8 @@ store_prefix_file_name (const unsigned int index,
  *
  * @return Factorial of @a x
  */
-uint32_t fac (uint32_t x)
+uint32_t
+fac (uint32_t x)
 {
   if (1 >= x)
   {
@@ -514,6 +517,7 @@ uint32_t fac (uint32_t x)
   }
   return x * fac (x - 1);
 }
+
 
 /**
  * @brief Binomial coefficient (n choose k)
@@ -523,16 +527,19 @@ uint32_t fac (uint32_t x)
  *
  * @return Binomial coefficient of @a n and @a k
  */
-uint32_t binom (uint32_t n, uint32_t k)
+uint32_t
+binom (uint32_t n, uint32_t k)
 {
-  //GNUNET_assert (n >= k);
-  if (k > n) return 0;
+  // GNUNET_assert (n >= k);
+  if (k > n)
+    return 0;
   /* if (0 > n) return 0;  - always false */
   /* if (0 > k) return 0;  - always false */
-  if (0 == k) return 1;
+  if (0 == k)
+    return 1;
   return fac (n)
-    /
-    fac(k) * fac(n - k);
+         /
+         fac (k) * fac (n - k);
 }
 
 

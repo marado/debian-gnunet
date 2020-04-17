@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  *
@@ -74,7 +74,7 @@ GNUNET_notification_context_destroy (struct GNUNET_NotificationContext *nc);
  */
 void
 GNUNET_notification_context_add (struct GNUNET_NotificationContext *nc,
-				 struct GNUNET_MQ_Handle *mq);
+                                 struct GNUNET_MQ_Handle *mq);
 
 
 /**
@@ -86,8 +86,8 @@ GNUNET_notification_context_add (struct GNUNET_NotificationContext *nc,
  */
 void
 GNUNET_notification_context_broadcast (struct GNUNET_NotificationContext *nc,
-				       const struct GNUNET_MessageHeader *msg,
-				       int can_drop);
+                                       const struct GNUNET_MessageHeader *msg,
+                                       int can_drop);
 
 /**
  * Return active number of subscribers in this context.

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/test_regex_api.c
  * @brief base test case for regex api (and DHT functions)
@@ -31,7 +31,8 @@
 /**
  * How long until we really give up on a particular testcase portion?
  */
-#define TOTAL_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 600)
+#define TOTAL_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                     600)
 
 /**
  * How long until we give up on any particular operation (and retry)?
@@ -64,7 +65,7 @@ static void
 end_badly ()
 {
   die_task = NULL;
-  FPRINTF (stderr, "%s",  "Testcase failed (timeout).\n");
+  fprintf (stderr, "%s", "Testcase failed (timeout).\n");
   GNUNET_REGEX_announce_cancel (a);
   a = NULL;
   GNUNET_REGEX_search_cancel (s);
@@ -85,11 +86,11 @@ end_badly ()
  */
 static void
 found_cb (void *cls,
-	  const struct GNUNET_PeerIdentity *id,
-	  const struct GNUNET_PeerIdentity *get_path,
-	  unsigned int get_path_length,
-	  const struct GNUNET_PeerIdentity *put_path,
-	  unsigned int put_path_length)
+          const struct GNUNET_PeerIdentity *id,
+          const struct GNUNET_PeerIdentity *get_path,
+          unsigned int get_path_length,
+          const struct GNUNET_PeerIdentity *put_path,
+          unsigned int put_path_length)
 {
   GNUNET_SCHEDULER_cancel (die_task);
   die_task =
@@ -104,15 +105,16 @@ run (void *cls,
 {
   die_task =
     GNUNET_SCHEDULER_add_delayed (TOTAL_TIMEOUT,
-				  &end_badly, NULL);
+                                  &end_badly, NULL);
   a = GNUNET_REGEX_announce (cfg,
-			     "my long prefix - hello world(0|1)*",
-			     GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-							    5),
-			     1);
+                             "my long prefix - hello world(0|1)*",
+                             GNUNET_TIME_relative_multiply (
+                               GNUNET_TIME_UNIT_SECONDS,
+                               5),
+                             1);
   s = GNUNET_REGEX_search (cfg,
-			   "my long prefix - hello world0101",
-			   &found_cb, NULL);
+                           "my long prefix - hello world0101",
+                           &found_cb, NULL);
 }
 
 
@@ -120,10 +122,11 @@ int
 main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-regex-api",
-				    "test_regex_api_data.conf",
-				    &run, NULL))
+                                    "test_regex_api_data.conf",
+                                    &run, NULL))
     return 1;
   return ok;
 }
+
 
 /* end of test_regex_api.c */

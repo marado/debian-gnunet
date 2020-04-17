@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2015 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2015 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-service-testbed_connectionpool.c
@@ -403,12 +403,14 @@ search_waiting (const struct PooledConnection *entry,
       if (NULL == entry->handle_core)
         continue;
       if (NULL == entry->peer_identity)
-        continue; /* CORE connection isn't ready yet */
+        continue;     /* CORE connection isn't ready yet */
       break;
+
     case GST_CONNECTIONPOOL_SERVICE_TRANSPORT:
       if (NULL == entry->handle_transport)
         continue;
       break;
+
     case GST_CONNECTIONPOOL_SERVICE_ATS_CONNECTIVITY:
       if (NULL == entry->handle_ats_connectivity)
         continue;
@@ -494,7 +496,7 @@ peer_connect_notify_cb (void *cls,
       gh = gh->next;
       continue;
     }
-    if (0 != memcmp (gh->target, peer, sizeof (struct GNUNET_PeerIdentity)))
+    if (0 != memcmp (gh->target, peer, sizeof(struct GNUNET_PeerIdentity)))
     {
       gh = gh->next;
       continue;
@@ -857,11 +859,13 @@ GST_connection_pool_get_handle (
       if (NULL != handle)
         LOG_DEBUG ("Found TRANSPORT handle for peer %u\n", entry->index);
       break;
+
     case GST_CONNECTIONPOOL_SERVICE_CORE:
       handle = entry->handle_core;
       if (NULL != handle)
         LOG_DEBUG ("Found CORE handle for peer %u\n", entry->index);
       break;
+
     case GST_CONNECTIONPOOL_SERVICE_ATS_CONNECTIVITY:
       handle = entry->handle_ats_connectivity;
       if (NULL != handle)
@@ -917,23 +921,25 @@ GST_connection_pool_get_handle (
   {
   case GST_CONNECTIONPOOL_SERVICE_TRANSPORT:
     if (NULL != entry->op_transport)
-      return gh; /* Operation pending */
+      return gh;   /* Operation pending */
     op = GNUNET_TESTBED_operation_create_ (entry,
                                            &opstart_get_handle_transport,
                                            &oprelease_get_handle_transport);
     entry->op_transport = op;
     break;
+
   case GST_CONNECTIONPOOL_SERVICE_CORE:
     if (NULL != entry->op_core)
-      return gh; /* Operation pending */
+      return gh;   /* Operation pending */
     op = GNUNET_TESTBED_operation_create_ (entry,
                                            &opstart_get_handle_core,
                                            &oprelease_get_handle_core);
     entry->op_core = op;
     break;
+
   case GST_CONNECTIONPOOL_SERVICE_ATS_CONNECTIVITY:
     if (NULL != entry->op_ats_connectivity)
-      return gh; /* Operation pending */
+      return gh;   /* Operation pending */
     op =
       GNUNET_TESTBED_operation_create_ (entry,
                                         &opstart_get_handle_ats_connectivity,

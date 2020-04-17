@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -51,7 +51,6 @@ struct GNUNET_DNS_RequestHandle;
  */
 enum GNUNET_DNS_Flags
 {
-
   /**
    * Useless option: never call the client.
    */
@@ -94,9 +93,7 @@ enum GNUNET_DNS_Flags
    * not allowed for MONITOR peers.
    */
   GNUNET_DNS_FLAG_RESPONSE_MONITOR = 8
-
 };
-
 
 
 /**
@@ -162,8 +159,8 @@ GNUNET_DNS_request_drop (struct GNUNET_DNS_RequestHandle *rh);
  */
 void
 GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
-			   uint16_t reply_length,
-			   const char *reply);
+                           uint16_t reply_length,
+                           const char *reply);
 
 
 /**
@@ -177,9 +174,9 @@ GNUNET_DNS_request_answer (struct GNUNET_DNS_RequestHandle *rh,
  */
 struct GNUNET_DNS_Handle *
 GNUNET_DNS_connect (const struct GNUNET_CONFIGURATION_Handle *cfg,
-		    enum GNUNET_DNS_Flags flags,
-		    GNUNET_DNS_RequestHandler rh,
-		    void *rh_cls);
+                    enum GNUNET_DNS_Flags flags,
+                    GNUNET_DNS_RequestHandler rh,
+                    void *rh_cls);
 
 
 /**

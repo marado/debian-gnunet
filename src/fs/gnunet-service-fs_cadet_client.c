@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_cadet_client.c
@@ -56,7 +56,6 @@ struct CadetHandle;
  */
 struct GSF_CadetRequest
 {
-
   /**
    * DLL.
    */
@@ -240,7 +239,6 @@ reset_cadet_async (struct CadetHandle *mh)
  */
 struct HandleReplyClosure
 {
-
   /**
    * Reply payload.
    */
@@ -331,7 +329,7 @@ handle_reply (void *cls, const struct CadetReplyMessage *srm)
   enum GNUNET_BLOCK_Type type;
   struct GNUNET_HashCode query;
 
-  msize = ntohs (srm->header.size) - sizeof (struct CadetReplyMessage);
+  msize = ntohs (srm->header.size) - sizeof(struct CadetReplyMessage);
   type = (enum GNUNET_BLOCK_Type) ntohl (srm->type);
   if (GNUNET_YES !=
       GNUNET_BLOCK_get_key (GSF_block_ctx, type, &srm[1], msize, &query))
@@ -462,11 +460,11 @@ reset_cadet (struct CadetHandle *mh)
   GNUNET_CONTAINER_multihashmap_iterate (mh->waiting_map, &move_to_pending, mh);
   {
     struct GNUNET_MQ_MessageHandler handlers[] =
-      {GNUNET_MQ_hd_var_size (reply,
-                              GNUNET_MESSAGE_TYPE_FS_CADET_REPLY,
-                              struct CadetReplyMessage,
-                              mh),
-       GNUNET_MQ_handler_end ()};
+    { GNUNET_MQ_hd_var_size (reply,
+                             GNUNET_MESSAGE_TYPE_FS_CADET_REPLY,
+                             struct CadetReplyMessage,
+                             mh),
+      GNUNET_MQ_handler_end () };
     struct GNUNET_HashCode port;
 
     GNUNET_CRYPTO_hash (GNUNET_APPLICATION_PORT_FS_BLOCK_TRANSFER,
@@ -539,10 +537,10 @@ transmit_pending (void *cls)
     return;
   GNUNET_CONTAINER_DLL_remove (mh->pending_head, mh->pending_tail, sr);
   GNUNET_assert (GNUNET_OK == GNUNET_CONTAINER_multihashmap_put (
-                                mh->waiting_map,
-                                &sr->query,
-                                sr,
-                                GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
+                   mh->waiting_map,
+                   &sr->query,
+                   sr,
+                   GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
   sr->was_transmitted = GNUNET_YES;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sending query for %s via cadet to %s\n",
@@ -550,9 +548,9 @@ transmit_pending (void *cls)
               GNUNET_i2s (&mh->target));
   env = GNUNET_MQ_msg (sqm, GNUNET_MESSAGE_TYPE_FS_CADET_QUERY);
   GNUNET_MQ_env_set_options (env,
-                             GNUNET_MQ_PREF_GOODPUT |
-                               GNUNET_MQ_PREF_CORK_ALLOWED |
-                               GNUNET_MQ_PREF_OUT_OF_ORDER);
+                             GNUNET_MQ_PREF_GOODPUT
+                             | GNUNET_MQ_PREF_CORK_ALLOWED
+                             | GNUNET_MQ_PREF_OUT_OF_ORDER);
   sqm->type = htonl (sr->type);
   sqm->query = sr->query;
   GNUNET_MQ_notify_sent (env, &transmit_pending, mh);
@@ -596,11 +594,11 @@ get_cadet (const struct GNUNET_PeerIdentity *target)
                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   {
     struct GNUNET_MQ_MessageHandler handlers[] =
-      {GNUNET_MQ_hd_var_size (reply,
-                              GNUNET_MESSAGE_TYPE_FS_CADET_REPLY,
-                              struct CadetReplyMessage,
-                              mh),
-       GNUNET_MQ_handler_end ()};
+    { GNUNET_MQ_hd_var_size (reply,
+                             GNUNET_MESSAGE_TYPE_FS_CADET_REPLY,
+                             struct CadetReplyMessage,
+                             mh),
+      GNUNET_MQ_handler_end () };
     struct GNUNET_HashCode port;
 
     GNUNET_CRYPTO_hash (GNUNET_APPLICATION_PORT_FS_BLOCK_TRANSFER,

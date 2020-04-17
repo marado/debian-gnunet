@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -56,7 +56,8 @@ extern "C"
 /**
  * Size of each hostkey in the hostkey file (in BYTES).
  */
-#define GNUNET_TESTING_HOSTKEYFILESIZE sizeof (struct GNUNET_CRYPTO_EddsaPrivateKey)
+#define GNUNET_TESTING_HOSTKEYFILESIZE sizeof(struct \
+                                              GNUNET_CRYPTO_EddsaPrivateKey)
 
 /**
  * The environmental variable, if set, that dictates where testing should place
@@ -123,8 +124,8 @@ struct GNUNET_TESTING_SharedService
  */
 struct GNUNET_TESTING_System *
 GNUNET_TESTING_system_create (const char *testdir,
-			      const char *trusted_ip,
-			      const char *hostname,
+                              const char *trusted_ip,
+                              const char *hostname,
                               const struct GNUNET_TESTING_SharedService *
                               shared_services);
 
@@ -155,11 +156,13 @@ GNUNET_TESTING_system_create (const char *testdir,
  */
 struct GNUNET_TESTING_System *
 GNUNET_TESTING_system_create_with_portrange (const char *testdir,
-					     const char *trusted_ip,
-					     const char *hostname,
-                                             const struct GNUNET_TESTING_SharedService *shared_services,
-					     uint16_t lowport,
-					     uint16_t highport);
+                                             const char *trusted_ip,
+                                             const char *hostname,
+                                             const struct
+                                             GNUNET_TESTING_SharedService *
+                                             shared_services,
+                                             uint16_t lowport,
+                                             uint16_t highport);
 
 
 /**
@@ -171,7 +174,7 @@ GNUNET_TESTING_system_create_with_portrange (const char *testdir,
  */
 void
 GNUNET_TESTING_system_destroy (struct GNUNET_TESTING_System *system,
-			       int remove_paths);
+                               int remove_paths);
 
 
 /**
@@ -193,8 +196,8 @@ GNUNET_TESTING_system_destroy (struct GNUNET_TESTING_System *system,
  */
 struct GNUNET_CRYPTO_EddsaPrivateKey *
 GNUNET_TESTING_hostkey_get (const struct GNUNET_TESTING_System *system,
-			    uint32_t key_number,
-			    struct GNUNET_PeerIdentity *id);
+                            uint32_t key_number,
+                            struct GNUNET_PeerIdentity *id);
 
 
 /**
@@ -216,7 +219,7 @@ GNUNET_TESTING_reserve_port (struct GNUNET_TESTING_System *system);
  */
 void
 GNUNET_TESTING_release_port (struct GNUNET_TESTING_System *system,
-			     uint16_t port);
+                             uint16_t port);
 
 
 /**
@@ -238,7 +241,8 @@ GNUNET_TESTING_release_port (struct GNUNET_TESTING_System *system,
  */
 int
 GNUNET_TESTING_configuration_create (struct GNUNET_TESTING_System *system,
-				     struct GNUNET_CONFIGURATION_Handle *cfg);
+                                     struct GNUNET_CONFIGURATION_Handle *cfg);
+
 // FIXME: add dual to 'release' ports again...
 
 
@@ -257,10 +261,10 @@ GNUNET_TESTING_configuration_create (struct GNUNET_TESTING_System *system,
  */
 struct GNUNET_TESTING_Peer *
 GNUNET_TESTING_peer_configure (struct GNUNET_TESTING_System *system,
-			       struct GNUNET_CONFIGURATION_Handle *cfg,
-			       uint32_t key_number,
-			       struct GNUNET_PeerIdentity *id,
-			       char **emsg);
+                               struct GNUNET_CONFIGURATION_Handle *cfg,
+                               uint32_t key_number,
+                               struct GNUNET_PeerIdentity *id,
+                               char **emsg);
 
 
 /**
@@ -271,7 +275,7 @@ GNUNET_TESTING_peer_configure (struct GNUNET_TESTING_System *system,
  */
 void
 GNUNET_TESTING_peer_get_identity (struct GNUNET_TESTING_Peer *peer,
-				  struct GNUNET_PeerIdentity *id);
+                                  struct GNUNET_PeerIdentity *id);
 
 
 /**
@@ -407,9 +411,9 @@ typedef void
  */
 int
 GNUNET_TESTING_peer_run (const char *testdir,
-			 const char *cfgfilename,
-			 GNUNET_TESTING_TestMain tm,
-			 void *tm_cls);
+                         const char *cfgfilename,
+                         GNUNET_TESTING_TestMain tm,
+                         void *tm_cls);
 
 
 /**
@@ -435,10 +439,10 @@ GNUNET_TESTING_peer_run (const char *testdir,
  */
 int
 GNUNET_TESTING_service_run (const char *testdir,
-			    const char *service_name,
-			    const char *cfgfilename,
-			    GNUNET_TESTING_TestMain tm,
-			    void *tm_cls);
+                            const char *service_name,
+                            const char *cfgfilename,
+                            GNUNET_TESTING_TestMain tm,
+                            void *tm_cls);
 
 
 /**

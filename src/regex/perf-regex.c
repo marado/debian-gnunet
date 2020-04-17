@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/regex/perf-regex.c
@@ -43,22 +43,22 @@
  */
 static void
 print_edge (void *cls,
-	    const struct GNUNET_HashCode *key,
-	    const char *proof,
-	    int accepting,
-	    unsigned int num_edges,
-	    const struct REGEX_BLOCK_Edge *edges)
+            const struct GNUNET_HashCode *key,
+            const char *proof,
+            int accepting,
+            unsigned int num_edges,
+            const struct REGEX_BLOCK_Edge *edges)
 {
   unsigned int i;
 
   printf ("%s: %s, proof: `%s'\n",
-	  GNUNET_h2s (key),
-	  accepting ? "ACCEPTING" : "",
-	  proof);
+          GNUNET_h2s (key),
+          accepting ? "ACCEPTING" : "",
+          proof);
   for (i = 0; i < num_edges; i++)
     printf ("    `%s': %s\n",
-	    edges[i].label,
-	    GNUNET_h2s (&edges[i].destination));
+            edges[i].label,
+            GNUNET_h2s (&edges[i].destination));
 }
 
 
@@ -75,7 +75,7 @@ print_edge (void *cls,
 int
 main (int argc, char *const *argv)
 {
-  struct REGEX_INTERNAL_Automaton* dfa;
+  struct REGEX_INTERNAL_Automaton*dfa;
   char **regexes;
   char *buffer;
   char *regex;
@@ -87,16 +87,16 @@ main (int argc, char *const *argv)
   if (4 != argc)
   {
     fprintf (stderr,
-	     "Usage: %s REGEX_FILE ALPHABET_SIZE COMPRESSION\n",
-	     argv[0]);
+             "Usage: %s REGEX_FILE ALPHABET_SIZE COMPRESSION\n",
+             argv[0]);
     return 1;
   }
   regexes = REGEX_TEST_read_from_file (argv[1]);
   if (NULL == regexes)
   {
     fprintf (stderr,
-	     "Failed to read regexes from `%s'\n",
-	     argv[1]);
+             "Failed to read regexes from `%s'\n",
+             argv[1]);
     return 2;
   }
   alphabet_size = atoi (argv[2]);
@@ -104,15 +104,15 @@ main (int argc, char *const *argv)
   printf ("********* PERF-REGEX *********'\n");
   printf ("Using:\n file '%s'\n Alphabet size %u\n compression %d\n",
           argv[1], alphabet_size, compression);
-  fflush(stdout);
+  fflush (stdout);
   buffer = REGEX_TEST_combine (regexes, alphabet_size);
   GNUNET_asprintf (&regex, "GNUNET_REGEX_PROFILER_(%s)(0|1)*", buffer);
   size = strlen (regex);
 
   fprintf (stderr,
-	   "Combined regex (%ld bytes):\n%s\n",
-	   size,
-	   regex);
+           "Combined regex (%ld bytes):\n%s\n",
+           size,
+           regex);
   dfa = REGEX_INTERNAL_construct_dfa (regex, size, compression);
   printf ("********* ALL EDGES *********'\n");
   REGEX_INTERNAL_iterate_all_edges (dfa, &print_edge, NULL);
@@ -124,5 +124,6 @@ main (int argc, char *const *argv)
   GNUNET_free (regex);
   return 0;
 }
+
 
 /* end of prof-regex.c */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/gnunet-service-core.h
@@ -45,7 +45,6 @@ struct GSC_Client;
  */
 struct GSC_ClientActiveRequest
 {
-
   /**
    * Active requests are kept in a doubly-linked list of
    * the respective target peer.

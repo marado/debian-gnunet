@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/gnunet-service-core_typemap.c
@@ -82,7 +82,7 @@ rehash_typemap ()
 void
 GSC_TYPEMAP_hash (const struct GSC_TypeMap *tm, struct GNUNET_HashCode *hc)
 {
-  GNUNET_CRYPTO_hash (tm, sizeof (struct GSC_TypeMap), hc);
+  GNUNET_CRYPTO_hash (tm, sizeof(struct GSC_TypeMap), hc);
 }
 
 
@@ -100,9 +100,9 @@ GSC_TYPEMAP_check_hash (const struct GNUNET_HashCode *hc)
     GSC_TYPEMAP_hash (&my_type_map, &my_tm_hash);
     hash_current = GNUNET_YES;
   }
-  return (0 == memcmp (hc, &my_tm_hash, sizeof (struct GNUNET_HashCode)))
-           ? GNUNET_YES
-           : GNUNET_NO;
+  return (0 == memcmp (hc, &my_tm_hash, sizeof(struct GNUNET_HashCode)))
+         ? GNUNET_YES
+         : GNUNET_NO;
 }
 
 
@@ -119,24 +119,24 @@ GSC_TYPEMAP_compute_type_map_message ()
   struct GNUNET_MessageHeader *hdr;
 
 #ifdef compressBound
-  dlen = compressBound (sizeof (my_type_map));
+  dlen = compressBound (sizeof(my_type_map));
 #else
-  dlen = sizeof (my_type_map) + (sizeof (my_type_map) / 100) + 20;
+  dlen = sizeof(my_type_map) + (sizeof(my_type_map) / 100) + 20;
   /* documentation says 100.1% oldSize + 12 bytes, but we
    * should be able to overshoot by more to be safe */
 #endif
-  hdr = GNUNET_malloc (dlen + sizeof (struct GNUNET_MessageHeader));
+  hdr = GNUNET_malloc (dlen + sizeof(struct GNUNET_MessageHeader));
   tmp = (char *) &hdr[1];
   if ((Z_OK != compress2 ((Bytef *) tmp,
                           &dlen,
                           (const Bytef *) &my_type_map,
-                          sizeof (my_type_map),
+                          sizeof(my_type_map),
                           9)) ||
-      (dlen >= sizeof (my_type_map)))
+      (dlen >= sizeof(my_type_map)))
   {
     /* compression failed, use uncompressed map */
-    dlen = sizeof (my_type_map);
-    GNUNET_memcpy (tmp, &my_type_map, sizeof (my_type_map));
+    dlen = sizeof(my_type_map);
+    GNUNET_memcpy (tmp, &my_type_map, sizeof(my_type_map));
     hdr->type = htons (GNUNET_MESSAGE_TYPE_CORE_BINARY_TYPE_MAP);
   }
   else
@@ -144,7 +144,7 @@ GSC_TYPEMAP_compute_type_map_message ()
     /* compression worked, use compressed map */
     hdr->type = htons (GNUNET_MESSAGE_TYPE_CORE_COMPRESSED_TYPE_MAP);
   }
-  hdr->size = htons ((uint16_t) dlen + sizeof (struct GNUNET_MessageHeader));
+  hdr->size = htons ((uint16_t) dlen + sizeof(struct GNUNET_MessageHeader));
   return hdr;
 }
 
@@ -170,32 +170,34 @@ GSC_TYPEMAP_get_from_message (const struct GNUNET_MessageHeader *msg)
                               gettext_noop ("# type maps received"),
                               1,
                               GNUNET_NO);
-    if (size != sizeof (struct GSC_TypeMap))
+    if (size != sizeof(struct GSC_TypeMap))
     {
       GNUNET_break_op (0);
       return NULL;
     }
     ret = GNUNET_new (struct GSC_TypeMap);
-    GNUNET_memcpy (ret, &msg[1], sizeof (struct GSC_TypeMap));
+    GNUNET_memcpy (ret, &msg[1], sizeof(struct GSC_TypeMap));
     return ret;
+
   case GNUNET_MESSAGE_TYPE_CORE_COMPRESSED_TYPE_MAP:
     GNUNET_STATISTICS_update (GSC_stats,
                               gettext_noop ("# type maps received"),
                               1,
                               GNUNET_NO);
     ret = GNUNET_new (struct GSC_TypeMap);
-    dlen = sizeof (struct GSC_TypeMap);
+    dlen = sizeof(struct GSC_TypeMap);
     if ((Z_OK != uncompress ((Bytef *) ret,
                              &dlen,
                              (const Bytef *) &msg[1],
                              (uLong) size)) ||
-        (dlen != sizeof (struct GSC_TypeMap)))
+        (dlen != sizeof(struct GSC_TypeMap)))
     {
       GNUNET_break_op (0);
       GNUNET_free (ret);
       return NULL;
     }
     return ret;
+
   default:
     GNUNET_break (0);
     return NULL;
@@ -321,7 +323,7 @@ GSC_TYPEMAP_extend (const struct GSC_TypeMap *tmap,
 
   ret = GNUNET_new (struct GSC_TypeMap);
   if (NULL != tmap)
-    GNUNET_memcpy (ret, tmap, sizeof (struct GSC_TypeMap));
+    GNUNET_memcpy (ret, tmap, sizeof(struct GSC_TypeMap));
   for (unsigned int i = 0; i < tcnt; i++)
     ret->bits[types[i] / 32] |= (1 << (types[i] % 32));
   return ret;
@@ -370,5 +372,6 @@ GSC_TYPEMAP_done ()
 {
   /* nothing to do */
 }
+
 
 /* end of gnunet-service-core_typemap.c */

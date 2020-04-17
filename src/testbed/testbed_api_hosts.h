@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -27,8 +27,8 @@
 #ifndef TESTBED_API_HOSTS_H
 #define TESTBED_API_HOSTS_H
 
-//#include "gnunet_testbed_service.h"
-//#include "testbed_helper.h"
+// #include "gnunet_testbed_service.h"
+// #include "testbed_helper.h"
 #include "testbed.h"
 
 
@@ -137,7 +137,8 @@ GNUNET_TESTBED_host_get_cfg_ (const struct GNUNET_TESTBED_Host *host);
  */
 void
 GNUNET_TESTBED_host_replace_cfg_ (struct GNUNET_TESTBED_Host *host,
-                                  const struct GNUNET_CONFIGURATION_Handle *new_cfg);
+                                  const struct
+                                  GNUNET_CONFIGURATION_Handle *new_cfg);
 
 
 /**

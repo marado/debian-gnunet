@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet_connection.c
@@ -76,7 +76,6 @@ enum CadetConnectionState
    * Connection confirmed, ready to carry traffic.
    */
   CADET_CONNECTION_READY
-
 };
 
 
@@ -85,7 +84,6 @@ enum CadetConnectionState
  */
 struct CadetConnection
 {
-
   /**
    * ID of the connection.
    */
@@ -253,7 +251,7 @@ GCC_destroy (struct CadetConnection *cc)
     GNUNET_YES ==
     GNUNET_CONTAINER_multishortmap_remove (connections,
                                            &GCC_get_id (cc)
-                                              ->connection_of_tunnel,
+                                           ->connection_of_tunnel,
                                            cc));
   GNUNET_free (cc);
 }
@@ -391,7 +389,7 @@ send_keepalive (void *cls)
        GCC_2s (cc),
        GCT_2s (cc->ct->t));
   GNUNET_STATISTICS_update (stats, "# keepalives sent", 1, GNUNET_NO);
-  msg.size = htons (sizeof (msg));
+  msg.size = htons (sizeof(msg));
   msg.type = htons (GNUNET_MESSAGE_TYPE_CADET_CHANNEL_KEEPALIVE);
 
   cc->keepalive_qe = GCT_send (cc->ct->t, &msg, &keepalive_done, cc);
@@ -464,8 +462,8 @@ GCC_latency_observed (const struct GNUNET_CADET_ConnectionTunnelIdentifier *cid,
   /* Compute weighted average, giving at MOST weight 7 to the
      existing values, or less if that value is based on fewer than 7
      measurements. */
-  result = (weight * cc->metrics.aged_latency.rel_value_us) +
-           1.0 * latency.rel_value_us;
+  result = (weight * cc->metrics.aged_latency.rel_value_us)
+           + 1.0 * latency.rel_value_us;
   result /= (weight + 1.0);
   cc->metrics.aged_latency.rel_value_us = (uint64_t) result;
 }
@@ -600,9 +598,9 @@ send_create (void *cls)
   GNUNET_assert (GNUNET_YES == cc->mqm_ready);
   env =
     GNUNET_MQ_msg_extra (create_msg,
-                         (2 + cc->off) * sizeof (struct GNUNET_PeerIdentity),
+                         (2 + cc->off) * sizeof(struct GNUNET_PeerIdentity),
                          GNUNET_MESSAGE_TYPE_CADET_CONNECTION_CREATE);
-  //TODO This will be removed in a major release, because this will be a protocol breaking change. We set the deprecated 'reliable' bit here that was removed.
+  // TODO This will be removed in a major release, because this will be a protocol breaking change. We set the deprecated 'reliable' bit here that was removed.
   create_msg->options = 2;
   create_msg->cid = cc->cid;
   pids = (struct GNUNET_PeerIdentity *) &create_msg[1];
@@ -729,20 +727,24 @@ manage_first_hop_mq (void *cls, int available)
     /* Transmit immediately */
     cc->task = GNUNET_SCHEDULER_add_at (cc->create_at, &send_create, cc);
     break;
+
   case CADET_CONNECTION_SENDING_CREATE:
     /* Should not be possible to be called in this state. */
     GNUNET_assert (0);
     break;
+
   case CADET_CONNECTION_SENT:
     /* Retry a bit later... */
     cc->task = GNUNET_SCHEDULER_add_at (cc->create_at, &send_create, cc);
     break;
+
   case CADET_CONNECTION_CREATE_RECEIVED:
     /* We got the 'CREATE' (incoming connection), should send the CREATE_ACK */
     cc->metrics.age = GNUNET_TIME_absolute_get ();
     cc->task =
       GNUNET_SCHEDULER_add_at (cc->create_ack_at, &send_create_ack, cc);
     break;
+
   case CADET_CONNECTION_READY:
     if ((NULL == cc->keepalive_qe) && (GNUNET_YES == cc->mqm_ready) &&
         (NULL == cc->task))
@@ -914,7 +916,7 @@ GCC_create (struct CadetPeer *destination,
 {
   struct GNUNET_CADET_ConnectionTunnelIdentifier cid;
 
-  GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE, &cid, sizeof (cid));
+  GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_NONCE, &cid, sizeof(cid));
   return connection_create (destination,
                             path,
                             off,
@@ -999,14 +1001,14 @@ GCC_2s (const struct CadetConnection *cc)
   if (NULL != cc->ct)
   {
     GNUNET_snprintf (buf,
-                     sizeof (buf),
+                     sizeof(buf),
                      "Connection %s (%s)",
                      GNUNET_sh2s (&cc->cid.connection_of_tunnel),
                      GCT_2s (cc->ct->t));
     return buf;
   }
   GNUNET_snprintf (buf,
-                   sizeof (buf),
+                   sizeof(buf),
                    "Connection %s",
                    GNUNET_sh2s (&cc->cid.connection_of_tunnel));
   return buf;
@@ -1050,5 +1052,6 @@ GCC_debug (struct CadetConnection *cc, enum GNUNET_ErrorType level)
         (GNUNET_YES == cc->mqm_ready) ? "ready" : "busy");
 #endif
 }
+
 
 /* end of gnunet-service-cadet_connection.c */

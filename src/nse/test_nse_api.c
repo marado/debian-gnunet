@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file nse/test_nse_api.c
  * @brief testcase for nse_api.c
@@ -29,7 +29,7 @@
 
 static struct GNUNET_NSE_Handle *h;
 
-static struct GNUNET_SCHEDULER_Task * die_task;
+static struct GNUNET_SCHEDULER_Task *die_task;
 
 
 /**
@@ -47,6 +47,7 @@ end_test (void *cls)
   }
 }
 
+
 /**
  * Callback to call when network size estimate is updated.
  *
@@ -63,7 +64,7 @@ check_nse_message (void *cls, struct GNUNET_TIME_Absolute timestamp,
 {
   int *ok = cls;
 
-  FPRINTF (stderr,
+  fprintf (stderr,
            "Received NSE message, estimate %f, standard deviation %f.\n",
            estimate, std_dev);
   /* Fantastic check below. Expect NaN, the only thing not equal to itself. */
@@ -80,9 +81,9 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   die_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply
                                     (GNUNET_TIME_UNIT_MINUTES, 1), &end_test,
-                                    NULL);
+                                  NULL);
 
   h = GNUNET_NSE_connect (cfg, &check_nse_message, cls);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Connecting to NSE service.\n");
@@ -96,10 +97,11 @@ main (int argc, char *argv[])
   int ok = 1;
 
   if (0 != GNUNET_TESTING_peer_run ("test_nse_api",
-				    "test_nse.conf",
-				    &run, &ok))
+                                    "test_nse.conf",
+                                    &run, &ok))
     return 1;
   return ok;
 }
+
 
 /* end of test_nse_api.c */

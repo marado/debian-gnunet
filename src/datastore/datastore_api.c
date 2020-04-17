@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file datastore/datastore_api.c
@@ -31,7 +31,7 @@
 #include "gnunet_statistics_service.h"
 #include "datastore.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "datastore-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "datastore-api", __VA_ARGS__)
 
 #define DELAY_WARN_TIMEOUT GNUNET_TIME_UNIT_MINUTES
 
@@ -62,7 +62,6 @@ struct StatusContext
    * Closure for @e cont.
    */
   void *cont_cls;
-
 };
 
 
@@ -80,7 +79,6 @@ struct ResultContext
    * Closure for @e proc.
    */
   void *proc_cls;
-
 };
 
 
@@ -89,11 +87,9 @@ struct ResultContext
  */
 union QueueContext
 {
-
   struct StatusContext sc;
 
   struct ResultContext rc;
-
 };
 
 
@@ -102,7 +98,6 @@ union QueueContext
  */
 struct GNUNET_DATASTORE_QueueEntry
 {
-
   /**
    * This is a linked list.
    */
@@ -160,7 +155,6 @@ struct GNUNET_DATASTORE_QueueEntry
    * Expected response type.
    */
   uint16_t response_type;
-
 };
 
 
@@ -169,7 +163,6 @@ struct GNUNET_DATASTORE_QueueEntry
  */
 struct GNUNET_DATASTORE_Handle
 {
-
   /**
    * Our configuration.
    */
@@ -222,7 +215,6 @@ struct GNUNET_DATASTORE_Handle
    * We should ignore the next message(s) from the service.
    */
   unsigned int skip_next_messages;
-
 };
 
 
@@ -345,8 +337,9 @@ mq_error_handler (void *cls,
         qc.sc.cont (qc.sc.cont_cls,
                     GNUNET_SYSERR,
                     GNUNET_TIME_UNIT_ZERO_ABS,
-                    _("DATASTORE disconnected"));
+                    _ ("DATASTORE disconnected"));
       break;
+
     case GNUNET_MESSAGE_TYPE_DATASTORE_DATA:
       if (NULL != qc.rc.proc)
         qc.rc.proc (qc.rc.proc_cls,
@@ -360,6 +353,7 @@ mq_error_handler (void *cls,
                     GNUNET_TIME_UNIT_ZERO_ABS,
                     0);
       break;
+
     default:
       GNUNET_break (0);
     }
@@ -465,8 +459,9 @@ GNUNET_DATASTORE_disconnect (struct GNUNET_DATASTORE_Handle *h,
         qe->qc.sc.cont (qe->qc.sc.cont_cls,
                         GNUNET_SYSERR,
                         GNUNET_TIME_UNIT_ZERO_ABS,
-                        _("Disconnected from DATASTORE"));
+                        _ ("Disconnected from DATASTORE"));
       break;
+
     case GNUNET_MESSAGE_TYPE_DATASTORE_DATA:
       if (NULL != qe->qc.rc.proc)
         qe->qc.rc.proc (qe->qc.rc.proc_cls,
@@ -480,6 +475,7 @@ GNUNET_DATASTORE_disconnect (struct GNUNET_DATASTORE_Handle *h,
                         GNUNET_TIME_UNIT_ZERO_ABS,
                         0);
       break;
+
     default:
       GNUNET_break (0);
     }
@@ -545,8 +541,8 @@ make_queue_entry (struct GNUNET_DATASTORE_Handle *h,
   struct GNUNET_DATASTORE_QueueEntry *pos;
   unsigned int c;
 
-  if ( (NULL != h->queue_tail) &&
-       (h->queue_tail->priority >= queue_priority) )
+  if ((NULL != h->queue_tail) &&
+      (h->queue_tail->priority >= queue_priority))
   {
     c = h->queue_size;
     pos = NULL;
@@ -556,9 +552,9 @@ make_queue_entry (struct GNUNET_DATASTORE_Handle *h,
     c = 0;
     pos = h->queue_head;
   }
-  while ( (NULL != pos) &&
-          (c < max_queue_size) &&
-          (pos->priority >= queue_priority) )
+  while ((NULL != pos) &&
+         (c < max_queue_size) &&
+         (pos->priority >= queue_priority))
   {
     c++;
     pos = pos->next;
@@ -589,8 +585,8 @@ make_queue_entry (struct GNUNET_DATASTORE_Handle *h,
     pos = pos->prev;
     /* do not insert at HEAD if HEAD query was already
      * transmitted and we are still receiving replies! */
-    if ( (NULL == pos) &&
-         (NULL == h->queue_head->env) )
+    if ((NULL == pos) &&
+        (NULL == h->queue_head->env))
       pos = h->queue_head;
   }
   c++;
@@ -704,7 +700,7 @@ static int
 check_status (void *cls,
               const struct StatusMessage *sm)
 {
-  uint16_t msize = ntohs (sm->header.size) - sizeof (*sm);
+  uint16_t msize = ntohs (sm->header.size) - sizeof(*sm);
   int32_t status = ntohl (sm->status);
 
   if (msize > 0)
@@ -748,7 +744,7 @@ handle_status (void *cls,
     return;
   rc = qe->qc.sc;
   free_queue_entry (qe);
-  if (ntohs (sm->header.size) > sizeof (struct StatusMessage))
+  if (ntohs (sm->header.size) > sizeof(struct StatusMessage))
     emsg = (const char *) &sm[1];
   else
     emsg = NULL;
@@ -765,8 +761,8 @@ handle_status (void *cls,
   if (NULL != rc.cont)
     rc.cont (rc.cont_cls,
              status,
-	     GNUNET_TIME_absolute_ntoh (sm->min_expiration),
-	     emsg);
+             GNUNET_TIME_absolute_ntoh (sm->min_expiration),
+             emsg);
 }
 
 
@@ -780,7 +776,7 @@ static int
 check_data (void *cls,
             const struct DataMessage *dm)
 {
-  uint16_t msize = ntohs (dm->header.size) - sizeof (*dm);
+  uint16_t msize = ntohs (dm->header.size) - sizeof(*dm);
 
   if (msize != ntohl (dm->size))
   {
@@ -917,7 +913,8 @@ try_reconnect (void *cls)
   if (NULL == h->mq)
     return;
   GNUNET_STATISTICS_update (h->stats,
-                            gettext_noop ("# datastore connections (re)created"),
+                            gettext_noop (
+                              "# datastore connections (re)created"),
                             1,
                             GNUNET_NO);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -937,8 +934,8 @@ try_reconnect (void *cls)
 static void
 drop_status_cont (void *cls,
                   int32_t result,
-		  struct GNUNET_TIME_Absolute min_expiration,
-		  const char *emsg)
+                  struct GNUNET_TIME_Absolute min_expiration,
+                  const char *emsg)
 {
   /* do nothing */
 }
@@ -990,7 +987,7 @@ GNUNET_DATASTORE_put (struct GNUNET_DATASTORE_Handle *h,
   struct DataMessage *dm;
   union QueueContext qc;
 
-  if (size + sizeof (*dm) >= GNUNET_MAX_MESSAGE_SIZE)
+  if (size + sizeof(*dm) >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
     return NULL;
@@ -1000,8 +997,9 @@ GNUNET_DATASTORE_put (struct GNUNET_DATASTORE_Handle *h,
        "Asked to put %u bytes of data under key `%s' for %s\n",
        size,
        GNUNET_h2s (key),
-       GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (expiration),
-					       GNUNET_YES));
+       GNUNET_STRINGS_relative_time_to_string (
+         GNUNET_TIME_absolute_get_remaining (expiration),
+         GNUNET_YES));
   env = GNUNET_MQ_msg_extra (dm,
                              size,
                              GNUNET_MESSAGE_TYPE_DATASTORE_PUT);
@@ -1014,8 +1012,8 @@ GNUNET_DATASTORE_put (struct GNUNET_DATASTORE_Handle *h,
   dm->expiration = GNUNET_TIME_absolute_hton (expiration);
   dm->key = *key;
   GNUNET_memcpy (&dm[1],
-          data,
-          size);
+                 data,
+                 size);
   qc.sc.cont = cont;
   qc.sc.cont_cls = cont_cls;
   qe = make_queue_entry (h,
@@ -1157,7 +1155,7 @@ GNUNET_DATASTORE_release_reserve (struct GNUNET_DATASTORE_Handle *h,
   }
   GNUNET_STATISTICS_update (h->stats,
                             gettext_noop
-                            ("# RELEASE RESERVE requests executed"), 1,
+                              ("# RELEASE RESERVE requests executed"), 1,
                             GNUNET_NO);
   process_queue (h);
   return qe;
@@ -1199,7 +1197,7 @@ GNUNET_DATASTORE_remove (struct GNUNET_DATASTORE_Handle *h,
   struct GNUNET_MQ_Envelope *env;
   union QueueContext qc;
 
-  if (sizeof (*dm) + size >= GNUNET_MAX_MESSAGE_SIZE)
+  if (sizeof(*dm) + size >= GNUNET_MAX_MESSAGE_SIZE)
   {
     GNUNET_break (0);
     return NULL;
@@ -1216,8 +1214,8 @@ GNUNET_DATASTORE_remove (struct GNUNET_DATASTORE_Handle *h,
   dm->size = htonl (size);
   dm->key = *key;
   GNUNET_memcpy (&dm[1],
-          data,
-          size);
+                 data,
+                 size);
 
   qc.sc.cont = cont;
   qc.sc.cont_cls = cont_cls;
@@ -1241,7 +1239,6 @@ GNUNET_DATASTORE_remove (struct GNUNET_DATASTORE_Handle *h,
   process_queue (h);
   return qe;
 }
-
 
 
 /**
@@ -1295,7 +1292,7 @@ GNUNET_DATASTORE_get_for_replication (struct GNUNET_DATASTORE_Handle *h,
   }
   GNUNET_STATISTICS_update (h->stats,
                             gettext_noop
-                            ("# GET REPLICATION requests executed"), 1,
+                              ("# GET REPLICATION requests executed"), 1,
                             GNUNET_NO);
   process_queue (h);
   return qe;
@@ -1357,7 +1354,7 @@ GNUNET_DATASTORE_get_zero_anonymity (struct GNUNET_DATASTORE_Handle *h,
   }
   GNUNET_STATISTICS_update (h->stats,
                             gettext_noop
-                            ("# GET ZERO ANONYMITY requests executed"), 1,
+                              ("# GET ZERO ANONYMITY requests executed"), 1,
                             GNUNET_NO);
   process_queue (h);
   return qe;

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/crypto_mpi.c
@@ -29,14 +29,17 @@
 #include "gnunet_crypto_lib.h"
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-crypto-mpi", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-crypto-mpi", __VA_ARGS__)
 
 /**
  * Log an error message at log-level 'level' that indicates
  * a failure of the command 'cmd' with the message given
  * by gcry_strerror(rc).
  */
-#define LOG_GCRY(level, cmd, rc) do { LOG(level, _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, gcry_strerror(rc)); } while(0)
+#define LOG_GCRY(level, cmd, rc) do { LOG (level, _ ( \
+                                             "`%s' failed at %s:%d with error: %s\n"), \
+                                           cmd, __FILE__, __LINE__, \
+                                           gcry_strerror (rc)); } while (0)
 
 
 /**
@@ -49,8 +52,8 @@
  */
 static void
 adjust (void *buf,
-	size_t size,
-	size_t target)
+        size_t size,
+        size_t target)
 {
   char *p = buf;
 
@@ -87,12 +90,12 @@ GNUNET_CRYPTO_mpi_print_unsigned (void *buf,
 
     p = gcry_mpi_get_opaque (val, &nbits);
     GNUNET_assert (p);
-    rsize = (nbits+7)/8;
+    rsize = (nbits + 7) / 8;
     if (rsize > size)
       rsize = size;
     GNUNET_memcpy (buf, p, rsize);
     if (rsize < size)
-      memset (buf+rsize, 0, size - rsize);
+      memset (buf + rsize, 0, size - rsize);
   }
   else
   {
@@ -132,8 +135,8 @@ GNUNET_CRYPTO_mpi_scan_unsigned (gcry_mpi_t *result,
   int rc;
 
   if (0 != (rc = gcry_mpi_scan (result,
-				GCRYMPI_FMT_USG,
-				data, size, &size)))
+                                GCRYMPI_FMT_USG,
+                                data, size, &size)))
   {
     LOG_GCRY (GNUNET_ERROR_TYPE_ERROR,
               "gcry_mpi_scan",
@@ -141,5 +144,6 @@ GNUNET_CRYPTO_mpi_scan_unsigned (gcry_mpi_t *result,
     GNUNET_assert (0);
   }
 }
+
 
 /* end of crypto_mpi.c */

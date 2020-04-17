@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_publish_ksk.c
@@ -40,7 +40,6 @@
  */
 struct GNUNET_FS_PublishKskContext
 {
-
   /**
    * Keywords to use.
    */
@@ -74,7 +73,7 @@ struct GNUNET_FS_PublishKskContext
   /**
    * Current task.
    */
-  struct GNUNET_SCHEDULER_Task * ksk_task;
+  struct GNUNET_SCHEDULER_Task *ksk_task;
 
   /**
    * Function to call once we're done.
@@ -100,7 +99,6 @@ struct GNUNET_FS_PublishKskContext
    * Keyword that we are currently processing.
    */
   unsigned int i;
-
 };
 
 
@@ -124,7 +122,7 @@ publish_ksk_cont (void *cls);
  */
 static void
 kb_put_cont (void *cls,
-	     const char *msg)
+             const char *msg)
 {
   struct GNUNET_FS_PublishKskContext *pkc = cls;
 
@@ -132,7 +130,7 @@ kb_put_cont (void *cls,
   if (NULL != msg)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"KBlock PUT operation failed: %s\n", msg);
+                "KBlock PUT operation failed: %s\n", msg);
     pkc->cont (pkc->cont_cls, NULL, msg);
     GNUNET_FS_publish_ksk_cancel (pkc);
     return;
@@ -154,8 +152,8 @@ publish_ksk_cont (void *cls)
   const char *keyword;
 
   pkc->ksk_task = NULL;
-  if ( (pkc->i == pkc->ksk_uri->data.ksk.keywordCount) ||
-       (NULL == pkc->dsh) )
+  if ((pkc->i == pkc->ksk_uri->data.ksk.keywordCount) ||
+      (NULL == pkc->dsh))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "KSK PUT operation complete\n");
@@ -166,15 +164,15 @@ publish_ksk_cont (void *cls)
   }
   keyword = pkc->ksk_uri->data.ksk.keywords[pkc->i++];
   pkc->uc = GNUNET_FS_publish_ublock_ (pkc->h,
-				       pkc->dsh,
-				       keyword + 1 /* skip '+' */,
-				       NULL,
-				       GNUNET_CRYPTO_ecdsa_key_get_anonymous (),
-				       pkc->meta,
-				       pkc->uri,
-				       &pkc->bo,
-				       pkc->options,
-				       &kb_put_cont, pkc);
+                                       pkc->dsh,
+                                       keyword + 1 /* skip '+' */,
+                                       NULL,
+                                       GNUNET_CRYPTO_ecdsa_key_get_anonymous (),
+                                       pkc->meta,
+                                       pkc->uri,
+                                       &pkc->bo,
+                                       pkc->options,
+                                       &kb_put_cont, pkc);
 }
 
 
@@ -217,7 +215,7 @@ GNUNET_FS_publish_ksk (struct GNUNET_FS_Handle *h,
     {
       cont (cont_cls,
             NULL,
-            _("Could not connect to datastore."));
+            _ ("Could not connect to datastore."));
       GNUNET_free (pkc);
       return NULL;
     }

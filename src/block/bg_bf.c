@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file block/bg_bf.c
  * @brief implementation of a block group using a Bloom filter
@@ -48,7 +48,6 @@ struct BfGroupInternals
    * Size of @a bf.
    */
   uint32_t bf_size;
-
 };
 
 
@@ -103,7 +102,7 @@ bf_group_mark_seen_cb (struct GNUNET_BLOCK_Group *bg,
 {
   struct BfGroupInternals *gi = bg->internal_cls;
 
-  for (unsigned int i=0;i<seen_results_count;i++)
+  for (unsigned int i = 0; i < seen_results_count; i++)
   {
     struct GNUNET_HashCode mhash;
 
@@ -184,7 +183,8 @@ GNUNET_BLOCK_GROUP_bf_create (void *cls,
   struct GNUNET_BLOCK_Group *bg;
 
   gi = GNUNET_new (struct BfGroupInternals);
-  gi->bf = GNUNET_CONTAINER_bloomfilter_init ((bf_size != raw_data_size) ? NULL : raw_data,
+  gi->bf = GNUNET_CONTAINER_bloomfilter_init ((bf_size != raw_data_size) ?
+                                              NULL : raw_data,
                                               bf_size,
                                               bf_k);
   gi->bf_mutator = nonce;

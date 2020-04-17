@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/gnunet-set-profiler.c
@@ -95,7 +95,6 @@ map_remove_iterator (void *cls,
   if (GNUNET_OK != ret)
     printf ("spurious element\n");
   return GNUNET_YES;
-
 }
 
 
@@ -118,7 +117,8 @@ statistics_result (void *cls,
 {
   if (NULL != statistics_file)
   {
-    fprintf (statistics_file, "%s\t%s\t%lu\n", subsystem, name, (unsigned long) value);
+    fprintf (statistics_file, "%s\t%s\t%lu\n", subsystem, name, (unsigned
+                                                                 long) value);
   }
   return GNUNET_OK;
 }
@@ -138,14 +138,18 @@ statistics_done (void *cls,
 static void
 check_all_done (void)
 {
-  if (info1.done == GNUNET_NO || info2.done == GNUNET_NO)
+  if ((info1.done == GNUNET_NO) || (info2.done == GNUNET_NO))
     return;
 
-  GNUNET_CONTAINER_multihashmap_iterate (info1.received, map_remove_iterator, info2.sent);
-  GNUNET_CONTAINER_multihashmap_iterate (info2.received, map_remove_iterator, info1.sent);
+  GNUNET_CONTAINER_multihashmap_iterate (info1.received, map_remove_iterator,
+                                         info2.sent);
+  GNUNET_CONTAINER_multihashmap_iterate (info2.received, map_remove_iterator,
+                                         info1.sent);
 
-  printf ("set a: %d missing elements\n", GNUNET_CONTAINER_multihashmap_size (info1.sent));
-  printf ("set b: %d missing elements\n", GNUNET_CONTAINER_multihashmap_size (info2.sent));
+  printf ("set a: %d missing elements\n", GNUNET_CONTAINER_multihashmap_size (
+            info1.sent));
+  printf ("set b: %d missing elements\n", GNUNET_CONTAINER_multihashmap_size (
+            info2.sent));
 
   if (NULL == statistics_filename)
   {
@@ -172,29 +176,33 @@ set_result_cb (void *cls,
   GNUNET_assert (GNUNET_NO == info->done);
   switch (status)
   {
-    case GNUNET_SET_STATUS_DONE:
-    case GNUNET_SET_STATUS_HALF_DONE:
-      info->done = GNUNET_YES;
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO, "set %s done\n", info->id);
-      check_all_done ();
-      info->oh = NULL;
-      return;
-    case GNUNET_SET_STATUS_FAILURE:
-      info->oh = NULL;
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "failure\n");
-      GNUNET_SCHEDULER_shutdown ();
-      return;
-    case GNUNET_SET_STATUS_ADD_LOCAL:
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO, "set %s: local element\n", info->id);
-      break;
-    case GNUNET_SET_STATUS_ADD_REMOTE:
-      GNUNET_CRYPTO_hash (element->data, element->size, &hash);
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO, "set %s: remote element %s\n", info->id,
-                  GNUNET_h2s (&hash));
-      // XXX: record and check
-      return;
-    default:
-      GNUNET_assert (0);
+  case GNUNET_SET_STATUS_DONE:
+  case GNUNET_SET_STATUS_HALF_DONE:
+    info->done = GNUNET_YES;
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "set %s done\n", info->id);
+    check_all_done ();
+    info->oh = NULL;
+    return;
+
+  case GNUNET_SET_STATUS_FAILURE:
+    info->oh = NULL;
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "failure\n");
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+
+  case GNUNET_SET_STATUS_ADD_LOCAL:
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "set %s: local element\n", info->id);
+    break;
+
+  case GNUNET_SET_STATUS_ADD_REMOTE:
+    GNUNET_CRYPTO_hash (element->data, element->size, &hash);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "set %s: remote element %s\n", info->id,
+                GNUNET_h2s (&hash));
+    // XXX: record and check
+    return;
+
+  default:
+    GNUNET_assert (0);
   }
 
   if (element->size != element_size)
@@ -202,7 +210,7 @@ set_result_cb (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "wrong element size: %u, expected %u\n",
                 element->size,
-                (unsigned int) sizeof (struct GNUNET_HashCode));
+                (unsigned int) sizeof(struct GNUNET_HashCode));
     GNUNET_assert (0);
   }
 
@@ -224,7 +232,7 @@ set_listen_cb (void *cls,
                struct GNUNET_SET_Request *request)
 {
   /* max. 2 options plus terminator */
-  struct GNUNET_SET_Option opts[3] = {{0}};
+  struct GNUNET_SET_Option opts[3] = { { 0 } };
   unsigned int n_opts = 0;
 
   if (NULL == request)
@@ -238,16 +246,19 @@ set_listen_cb (void *cls,
               "set listen cb called\n");
   if (byzantine)
   {
-    opts[n_opts++] = (struct GNUNET_SET_Option) { .type = GNUNET_SET_OPTION_BYZANTINE };
+    opts[n_opts++] = (struct GNUNET_SET_Option) { .type =
+                                                    GNUNET_SET_OPTION_BYZANTINE };
   }
-  GNUNET_assert (!(force_full && force_delta));
+  GNUNET_assert (! (force_full && force_delta));
   if (force_full)
   {
-    opts[n_opts++] = (struct GNUNET_SET_Option) { .type = GNUNET_SET_OPTION_FORCE_FULL };
+    opts[n_opts++] = (struct GNUNET_SET_Option) { .type =
+                                                    GNUNET_SET_OPTION_FORCE_FULL };
   }
   if (force_delta)
   {
-    opts[n_opts++] = (struct GNUNET_SET_Option) { .type = GNUNET_SET_OPTION_FORCE_DELTA };
+    opts[n_opts++] = (struct GNUNET_SET_Option) { .type =
+                                                    GNUNET_SET_OPTION_FORCE_DELTA };
   }
 
   opts[n_opts].type = 0;
@@ -316,7 +327,7 @@ run (void *cls,
   unsigned int i;
   struct GNUNET_HashCode hash;
   /* max. 2 options plus terminator */
-  struct GNUNET_SET_Option opts[3] = {{0}};
+  struct GNUNET_SET_Option opts[3] = { { 0 } };
   unsigned int n_opts = 0;
 
   config = cfg;
@@ -337,12 +348,12 @@ run (void *cls,
   info1.id = "a";
   info2.id = "b";
 
-  info1.sent = GNUNET_CONTAINER_multihashmap_create (num_a+1, GNUNET_NO);
-  info2.sent = GNUNET_CONTAINER_multihashmap_create (num_b+1, GNUNET_NO);
-  common_sent = GNUNET_CONTAINER_multihashmap_create (num_c+1, GNUNET_NO);
+  info1.sent = GNUNET_CONTAINER_multihashmap_create (num_a + 1, GNUNET_NO);
+  info2.sent = GNUNET_CONTAINER_multihashmap_create (num_b + 1, GNUNET_NO);
+  common_sent = GNUNET_CONTAINER_multihashmap_create (num_c + 1, GNUNET_NO);
 
-  info1.received = GNUNET_CONTAINER_multihashmap_create (num_a+1, GNUNET_NO);
-  info2.received = GNUNET_CONTAINER_multihashmap_create (num_b+1, GNUNET_NO);
+  info1.received = GNUNET_CONTAINER_multihashmap_create (num_a + 1, GNUNET_NO);
+  info2.received = GNUNET_CONTAINER_multihashmap_create (num_b + 1, GNUNET_NO);
 
   for (i = 0; i < num_a; i++)
   {
@@ -377,10 +388,14 @@ run (void *cls,
   info1.set = GNUNET_SET_create (config, GNUNET_SET_OPERATION_UNION);
   info2.set = GNUNET_SET_create (config, GNUNET_SET_OPERATION_UNION);
 
-  GNUNET_CONTAINER_multihashmap_iterate (info1.sent, set_insert_iterator, info1.set);
-  GNUNET_CONTAINER_multihashmap_iterate (info2.sent, set_insert_iterator, info2.set);
-  GNUNET_CONTAINER_multihashmap_iterate (common_sent, set_insert_iterator, info1.set);
-  GNUNET_CONTAINER_multihashmap_iterate (common_sent, set_insert_iterator, info2.set);
+  GNUNET_CONTAINER_multihashmap_iterate (info1.sent, set_insert_iterator,
+                                         info1.set);
+  GNUNET_CONTAINER_multihashmap_iterate (info2.sent, set_insert_iterator,
+                                         info2.set);
+  GNUNET_CONTAINER_multihashmap_iterate (common_sent, set_insert_iterator,
+                                         info1.set);
+  GNUNET_CONTAINER_multihashmap_iterate (common_sent, set_insert_iterator,
+                                         info2.set);
 
   set_listener = GNUNET_SET_listen (config, GNUNET_SET_OPERATION_UNION,
                                     &app_id, set_listen_cb, NULL);
@@ -388,16 +403,19 @@ run (void *cls,
 
   if (byzantine)
   {
-    opts[n_opts++] = (struct GNUNET_SET_Option) { .type = GNUNET_SET_OPTION_BYZANTINE };
+    opts[n_opts++] = (struct GNUNET_SET_Option) { .type =
+                                                    GNUNET_SET_OPTION_BYZANTINE };
   }
-  GNUNET_assert (!(force_full && force_delta));
+  GNUNET_assert (! (force_full && force_delta));
   if (force_full)
   {
-    opts[n_opts++] = (struct GNUNET_SET_Option) { .type = GNUNET_SET_OPTION_FORCE_FULL };
+    opts[n_opts++] = (struct GNUNET_SET_Option) { .type =
+                                                    GNUNET_SET_OPTION_FORCE_FULL };
   }
   if (force_delta)
   {
-    opts[n_opts++] = (struct GNUNET_SET_Option) { .type = GNUNET_SET_OPTION_FORCE_DELTA };
+    opts[n_opts++] = (struct GNUNET_SET_Option) { .type =
+                                                    GNUNET_SET_OPTION_FORCE_DELTA };
   }
 
   opts[n_opts].type = 0;
@@ -426,64 +444,65 @@ pre_run (void *cls, char *const *args, const char *cfgfile,
 int
 main (int argc, char **argv)
 {
-   struct GNUNET_GETOPT_CommandLineOption options[] = {
-      GNUNET_GETOPT_option_uint ('A',
-                                     "num-first",
-                                     NULL,
-                                     gettext_noop ("number of values"),
-                                     &num_a),
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_uint ('A',
+                               "num-first",
+                               NULL,
+                               gettext_noop ("number of values"),
+                               &num_a),
 
-      GNUNET_GETOPT_option_uint ('B',
-                                     "num-second",
-                                     NULL,
-                                     gettext_noop ("number of values"),
-                                     &num_b),
+    GNUNET_GETOPT_option_uint ('B',
+                               "num-second",
+                               NULL,
+                               gettext_noop ("number of values"),
+                               &num_b),
 
-      GNUNET_GETOPT_option_flag ('b',
-                                    "byzantine",
-                                    gettext_noop ("use byzantine mode"),
-                                    &byzantine),
+    GNUNET_GETOPT_option_flag ('b',
+                               "byzantine",
+                               gettext_noop ("use byzantine mode"),
+                               &byzantine),
 
-      GNUNET_GETOPT_option_uint ('f',
-                                     "force-full",
-                                     NULL,
-                                     gettext_noop ("force sending full set"),
-                                     &force_full),
+    GNUNET_GETOPT_option_uint ('f',
+                               "force-full",
+                               NULL,
+                               gettext_noop ("force sending full set"),
+                               &force_full),
 
-      GNUNET_GETOPT_option_uint ('d',
-                                     "force-delta",
-                                     NULL,
-                                     gettext_noop ("number delta operation"),
-                                     &force_delta),
+    GNUNET_GETOPT_option_uint ('d',
+                               "force-delta",
+                               NULL,
+                               gettext_noop ("number delta operation"),
+                               &force_delta),
 
-      GNUNET_GETOPT_option_uint ('C',
-                                     "num-common",
-                                     NULL,
-                                     gettext_noop ("number of values"),
-                                     &num_c),
+    GNUNET_GETOPT_option_uint ('C',
+                               "num-common",
+                               NULL,
+                               gettext_noop ("number of values"),
+                               &num_c),
 
-      GNUNET_GETOPT_option_string ('x',
-                                   "operation",
-                                   NULL,
-                                   gettext_noop ("operation to execute"),
-                                   &op_str),
+    GNUNET_GETOPT_option_string ('x',
+                                 "operation",
+                                 NULL,
+                                 gettext_noop ("operation to execute"),
+                                 &op_str),
 
-      GNUNET_GETOPT_option_uint ('w',
-                                     "element-size",
-                                     NULL,
-                                     gettext_noop ("element size"),
-                                     &element_size),
+    GNUNET_GETOPT_option_uint ('w',
+                               "element-size",
+                               NULL,
+                               gettext_noop ("element size"),
+                               &element_size),
 
-      GNUNET_GETOPT_option_filename ('s',
-                                     "statistics",
-                                     "FILENAME",
-                                     gettext_noop ("write statistics to file"),
-                                     &statistics_filename),
+    GNUNET_GETOPT_option_filename ('s',
+                                   "statistics",
+                                   "FILENAME",
+                                   gettext_noop ("write statistics to file"),
+                                   &statistics_filename),
 
-      GNUNET_GETOPT_OPTION_END
+    GNUNET_GETOPT_OPTION_END
   };
+
   GNUNET_PROGRAM_run2 (argc, argv, "gnunet-set-profiler",
-		      "help",
-		      options, &pre_run, NULL, GNUNET_YES);
+                       "help",
+                       options, &pre_run, NULL, GNUNET_YES);
   return ret;
 }

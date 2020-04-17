@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008, 2009 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008, 2009 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/container_heap.c
@@ -28,7 +28,8 @@
 #include "platform.h"
 #include "gnunet_container_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-container-heap", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-container-heap", \
+                                        __VA_ARGS__)
 
 #define EXTRA_CHECKS 0
 
@@ -72,7 +73,6 @@ struct GNUNET_CONTAINER_HeapNode
    * (excluding this node itself).
    */
   unsigned int tree_size;
-
 };
 
 /**
@@ -80,7 +80,6 @@ struct GNUNET_CONTAINER_HeapNode
  */
 struct GNUNET_CONTAINER_Heap
 {
-
   /**
    * Root of the heap.
    */
@@ -100,7 +99,6 @@ struct GNUNET_CONTAINER_Heap
    * How is the heap sorted?
    */
   enum GNUNET_CONTAINER_HeapOrder order;
-
 };
 
 
@@ -117,15 +115,15 @@ check (const struct GNUNET_CONTAINER_HeapNode *node)
     return;
   GNUNET_assert (node->tree_size ==
                  ((node->left_child ==
-                   NULL) ? 0 : 1 + node->left_child->tree_size) +
-                 ((node->right_child ==
-                   NULL) ? 0 : 1 + node->right_child->tree_size));
+                   NULL) ? 0 : 1 + node->left_child->tree_size)
+                 + ((node->right_child ==
+                     NULL) ? 0 : 1 + node->right_child->tree_size));
   check (node->left_child);
   check (node->right_child);
 }
 
 
-#define CHECK(n) check(n)
+#define CHECK(n) check (n)
 #else
 #define CHECK(n) do {} while (0)
 #endif
@@ -294,9 +292,9 @@ GNUNET_CONTAINER_heap_walk_get_next (struct GNUNET_CONTAINER_Heap *heap)
     pos = heap->root;
   element = pos->element;
   heap->walk_pos =
-      (0 ==
-       GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                 2)) ? pos->right_child : pos->left_child;
+    (0 ==
+     GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                               2)) ? pos->right_child : pos->left_child;
   return element;
 }
 

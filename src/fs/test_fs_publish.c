@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fs/test_fs_publish.c
  * @brief simple testcase for publish operation (indexing, listing
@@ -82,39 +82,43 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
     ret = event->value.publish.cctx;
     printf ("Publish complete,  %llu kbps.\n",
-            (unsigned long long) (FILESIZE * 1000000LL /
-                                  (1 +
-                                   GNUNET_TIME_absolute_get_duration
-                                   (start).rel_value_us) / 1024));
+            (unsigned long long) (FILESIZE * 1000000LL
+                                  / (1
+                                     + GNUNET_TIME_absolute_get_duration
+                                       (start).rel_value_us) / 1024));
     if (0 == strcmp ("publish-context-dir", event->value.publish.cctx))
       GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS:
     ret = event->value.publish.cctx;
     GNUNET_assert (publish == event->value.publish.pc);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Publish is progressing (%llu/%llu at level %u off %llu)...\n",
-		(unsigned long long) event->value.publish.completed,
-		(unsigned long long) event->value.publish.size,
-		event->value.publish.specifics.progress.depth,
-		(unsigned long long) event->value.publish.specifics.
-		progress.offset);
+                "Publish is progressing (%llu/%llu at level %u off %llu)...\n",
+                (unsigned long long) event->value.publish.completed,
+                (unsigned long long) event->value.publish.size,
+                event->value.publish.specifics.progress.depth,
+                (unsigned long long) event->value.publish.specifics.
+                progress.offset);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
     ret = event->value.publish.cctx;
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_ERROR:
     ret = event->value.publish.cctx;
-    FPRINTF (stderr, "Error publishing file: %s\n",
+    fprintf (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     err = 1;
     if (0 == strcmp ("publish-context-dir", event->value.publish.cctx))
     {
-      FPRINTF (stderr, "Scheduling abort task for error on `%s'\n",
+      fprintf (stderr, "Scheduling abort task for error on `%s'\n",
                (const char *) event->value.publish.cctx);
       GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     }
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_START:
     ret = event->value.publish.cctx;
     if (0 == strcmp ("publish-context1", event->value.publish.cctx))
@@ -141,10 +145,12 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     else
       GNUNET_assert (0);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_STOPPED:
     if (0 == strcmp ("publish-context-dir", event->value.publish.cctx))
       GNUNET_assert (publish == event->value.publish.pc);
     break;
+
   default:
     printf ("Unexpected event: %d\n", event->status);
     break;
@@ -180,8 +186,8 @@ run (void *cls,
     buf[i] = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 256);
   GNUNET_assert (FILESIZE ==
                  GNUNET_DISK_fn_write (fn1, buf, FILESIZE,
-                                       GNUNET_DISK_PERM_USER_READ |
-                                       GNUNET_DISK_PERM_USER_WRITE));
+                                       GNUNET_DISK_PERM_USER_READ
+                                       | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_free (buf);
 
   fn2 = GNUNET_DISK_mktemp ("gnunet-publish-test-dst");
@@ -190,8 +196,8 @@ run (void *cls,
     buf[i] = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 256);
   GNUNET_assert (FILESIZE ==
                  GNUNET_DISK_fn_write (fn2, buf, FILESIZE,
-                                       GNUNET_DISK_PERM_USER_READ |
-                                       GNUNET_DISK_PERM_USER_WRITE));
+                                       GNUNET_DISK_PERM_USER_READ
+                                       | GNUNET_DISK_PERM_USER_WRITE));
   GNUNET_free (buf);
 
   meta = GNUNET_CONTAINER_meta_data_create ();
@@ -202,20 +208,20 @@ run (void *cls,
   bo.expiration_time = GNUNET_TIME_relative_to_absolute (LIFETIME);
 
   fi1 =
-      GNUNET_FS_file_information_create_from_file (fs, "publish-context1", fn1,
-                                                   kuri, meta, GNUNET_YES, &bo);
+    GNUNET_FS_file_information_create_from_file (fs, "publish-context1", fn1,
+                                                 kuri, meta, GNUNET_YES, &bo);
 
   GNUNET_assert (NULL != fi1);
   bo.anonymity_level = 2;
   fi2 =
-      GNUNET_FS_file_information_create_from_file (fs, "publish-context2", fn2,
-                                                   kuri, meta, GNUNET_YES, &bo);
+    GNUNET_FS_file_information_create_from_file (fs, "publish-context2", fn2,
+                                                 kuri, meta, GNUNET_YES, &bo);
   GNUNET_assert (NULL != fi2);
   bo.anonymity_level = 3;
   fidir =
-      GNUNET_FS_file_information_create_empty_directory (fs,
-                                                         "publish-context-dir",
-                                                         kuri, meta, &bo, NULL);
+    GNUNET_FS_file_information_create_empty_directory (fs,
+                                                       "publish-context-dir",
+                                                       kuri, meta, &bo, NULL);
   GNUNET_assert (GNUNET_OK == GNUNET_FS_file_information_add (fidir, fi1));
   GNUNET_assert (GNUNET_OK == GNUNET_FS_file_information_add (fidir, fi2));
   GNUNET_FS_uri_destroy (kuri);
@@ -223,8 +229,8 @@ run (void *cls,
   GNUNET_assert (NULL != fidir);
   start = GNUNET_TIME_absolute_get ();
   publish =
-      GNUNET_FS_publish_start (fs, fidir, NULL, NULL, NULL,
-                               GNUNET_FS_PUBLISH_OPTION_NONE);
+    GNUNET_FS_publish_start (fs, fidir, NULL, NULL, NULL,
+                             GNUNET_FS_PUBLISH_OPTION_NONE);
   GNUNET_assert (publish != NULL);
 }
 
@@ -233,10 +239,11 @@ int
 main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-fs-publish",
-				    "test_fs_publish_data.conf",
-				    &run, NULL))
+                                    "test_fs_publish_data.conf",
+                                    &run, NULL))
     return 1;
   return err;
 }
+
 
 /* end of test_fs_publish.c */

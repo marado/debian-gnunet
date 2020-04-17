@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/plugin_block_set_test.c
@@ -57,9 +57,9 @@ block_plugin_set_test_evaluate (void *cls,
                                 const void *reply_block,
                                 size_t reply_block_size)
 {
-  if ( (NULL == reply_block) ||
-       (reply_block_size == 0) ||
-       (0 != ((char *) reply_block)[0]) )
+  if ((NULL == reply_block) ||
+      (reply_block_size == 0) ||
+      (0 != ((char *) reply_block)[0]))
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
   return GNUNET_BLOCK_EVALUATION_OK_MORE;
 }
@@ -81,7 +81,7 @@ block_plugin_set_test_get_key (void *cls,
                                enum GNUNET_BLOCK_Type type,
                                const void *block,
                                size_t block_size,
-			       struct GNUNET_HashCode *key)
+                               struct GNUNET_HashCode *key)
 {
   return GNUNET_SYSERR;
 }
@@ -93,8 +93,7 @@ block_plugin_set_test_get_key (void *cls,
 void *
 libgnunet_plugin_block_set_test_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_SET_TEST,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -119,5 +118,6 @@ libgnunet_plugin_block_set_test_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_set_test.c */

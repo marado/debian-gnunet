@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fs/fs_tree.c
  * @brief Merkle-tree-ish-CHK file encoding for GNUnet
@@ -34,7 +34,6 @@
  */
 struct GNUNET_FS_TreeEncoder
 {
-
   /**
    * Global FS context.
    */
@@ -204,7 +203,7 @@ GNUNET_FS_tree_compute_iblock_size (unsigned int depth, uint64_t end_offset)
     if (0 != mod % bds)
       ret++;
   }
-  return (uint16_t) (ret * sizeof (struct ContentHashKey));
+  return (uint16_t) (ret * sizeof(struct ContentHashKey));
 }
 
 
@@ -245,7 +244,7 @@ GNUNET_FS_tree_calculate_block_size (uint64_t fsize, uint64_t offset,
   /* round up when computing #CHKs in our IBlock */
   chks = (epos - offset + rsize - 1) / rsize;
   GNUNET_assert (chks <= CHK_PER_INODE);
-  return chks * sizeof (struct ContentHashKey);
+  return chks * sizeof(struct ContentHashKey);
 }
 
 
@@ -269,7 +268,7 @@ GNUNET_FS_tree_calculate_block_size (uint64_t fsize, uint64_t offset,
 struct GNUNET_FS_TreeEncoder *
 GNUNET_FS_tree_encoder_create (struct GNUNET_FS_Handle *h, uint64_t size,
                                void *cls,
-			       GNUNET_FS_DataReader reader,
+                               GNUNET_FS_DataReader reader,
                                GNUNET_FS_TreeBlockProcessor proc,
                                GNUNET_FS_TreeProgressCallback progress,
                                GNUNET_SCHEDULER_TaskCallback cont)
@@ -289,9 +288,9 @@ GNUNET_FS_tree_encoder_create (struct GNUNET_FS_Handle *h, uint64_t size,
     = GNUNET_new_array (te->chk_tree_depth * CHK_PER_INODE,
                         struct ContentHashKey);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Created tree encoder for file with %llu bytes and depth %u\n",
-	      (unsigned long long) size,
-	      te->chk_tree_depth);
+              "Created tree encoder for file with %llu bytes and depth %u\n",
+              (unsigned long long) size,
+              te->chk_tree_depth);
   return te;
 }
 
@@ -371,8 +370,8 @@ GNUNET_FS_tree_encoder_next (struct GNUNET_FS_TreeEncoder *te)
   else
   {
     pt_size =
-        GNUNET_FS_tree_compute_iblock_size (te->current_depth,
-                                            te->publish_offset);
+      GNUNET_FS_tree_compute_iblock_size (te->current_depth,
+                                          te->publish_offset);
     pt_block = &te->chk_tree[(te->current_depth - 1) * CHK_PER_INODE];
   }
   off = compute_chk_offset (te->current_depth, te->publish_offset);
@@ -442,12 +441,12 @@ GNUNET_FS_tree_encoder_get_uri (struct GNUNET_FS_TreeEncoder *te)
  */
 void
 GNUNET_FS_tree_encoder_finish (struct GNUNET_FS_TreeEncoder *te,
-			       char **emsg)
+                               char **emsg)
 {
   if (NULL != te->reader)
   {
     (void) te->reader (te->cls, UINT64_MAX, 0, 0, NULL);
-    te->reader =  NULL;
+    te->reader = NULL;
   }
   GNUNET_assert (GNUNET_NO == te->in_next);
   if (NULL != te->uri)
@@ -459,5 +458,6 @@ GNUNET_FS_tree_encoder_finish (struct GNUNET_FS_TreeEncoder *te,
   GNUNET_free (te->chk_tree);
   GNUNET_free (te);
 }
+
 
 /* end of fs_tree.c */

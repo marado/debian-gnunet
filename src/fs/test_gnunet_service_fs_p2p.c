@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_gnunet_service_fs_p2p.c
@@ -63,7 +63,8 @@ do_stop (void *cls)
   GNUNET_SCHEDULER_shutdown ();
   if (0 ==
       GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_add (start_time,
-                                                                    TIMEOUT)).rel_value_us)
+                                                                    TIMEOUT)).
+      rel_value_us)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Timeout during download, shutting down with error\n");
@@ -75,9 +76,9 @@ do_stop (void *cls)
     if (0 == del.rel_value_us)
       del.rel_value_us = 1;
     fancy =
-      GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE) *
-				      1000000LL / del.rel_value_us);
-    FPRINTF (stdout,
+      GNUNET_STRINGS_byte_size_fancy (((unsigned long long) FILESIZE)
+                                      * 1000000LL / del.rel_value_us);
+    fprintf (stdout,
              "Download speed was %s/s\n",
              fancy);
     GNUNET_free (fancy);
@@ -94,7 +95,7 @@ do_stop (void *cls)
 
 static void
 do_download (void *cls, const struct GNUNET_FS_Uri *uri,
-	     const char *fn)
+             const char *fn)
 {
   if (NULL == uri)
   {
@@ -108,19 +109,19 @@ do_download (void *cls, const struct GNUNET_FS_Uri *uri,
               (unsigned long long) FILESIZE);
   start_time = GNUNET_TIME_absolute_get ();
   GNUNET_FS_TEST_download (daemons[0], TIMEOUT,
-			   anonymity_level, SEED, uri,
-			   VERBOSE, &do_stop,
+                           anonymity_level, SEED, uri,
+                           VERBOSE, &do_stop,
                            (NULL == fn)
-			   ? NULL
-			   : GNUNET_strdup (fn));
+                           ? NULL
+                           : GNUNET_strdup (fn));
 }
 
 
 static void
 do_publish (void *cls,
             struct GNUNET_TESTBED_RunHandle *h,
-	    unsigned int num_peers,
-	    struct GNUNET_TESTBED_Peer **peers,
+            unsigned int num_peers,
+            struct GNUNET_TESTBED_Peer **peers,
             unsigned int links_succeeded,
             unsigned int links_failed)
 {
@@ -131,13 +132,13 @@ do_publish (void *cls,
   else
     anonymity_level = 1;
   GNUNET_assert (NUM_DAEMONS == num_peers);
-  for (i=0;i<num_peers;i++)
+  for (i = 0; i < num_peers; i++)
     daemons[i] = peers[i];
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Publishing %llu bytes\n",
               (unsigned long long) FILESIZE);
   GNUNET_FS_TEST_publish (daemons[1], TIMEOUT,
-			  anonymity_level, GNUNET_NO,
-			  FILESIZE, SEED,
+                          anonymity_level, GNUNET_NO,
+                          FILESIZE, SEED,
                           VERBOSE, &do_download, NULL);
 }
 
@@ -160,5 +161,6 @@ main (int argc, char *argv[])
   GNUNET_DISK_directory_remove ("/tmp/gnunet-test-fs-lib/");
   return ok;
 }
+
 
 /* end of test_gnunet_service_fs_p2p.c */

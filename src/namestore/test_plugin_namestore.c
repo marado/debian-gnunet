@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file namestore/test_plugin_namestore.c
  * @brief Test for the namestore plugins
@@ -73,7 +73,7 @@ load_plugin (const struct GNUNET_CONFIGURATION_Handle *cfg)
   GNUNET_asprintf (&libname, "libgnunet_plugin_namestore_%s", plugin_name);
   if (NULL == (ret = GNUNET_PLUGIN_load (libname, (void *) cfg)))
   {
-    FPRINTF (stderr, "Failed to load plugin `%s'!\n", plugin_name);
+    fprintf (stderr, "Failed to load plugin `%s'!\n", plugin_name);
     GNUNET_free (libname);
     return NULL;
   }
@@ -96,7 +96,7 @@ test_record (void *cls,
   char tname[64];
   unsigned int trd_count = 1 + (id % 1024);
 
-  GNUNET_snprintf (tname, sizeof (tname), "a%u", (unsigned int) id);
+  GNUNET_snprintf (tname, sizeof(tname), "a%u", (unsigned int) id);
   GNUNET_assert (trd_count == rd_count);
   for (unsigned int i = 0; i < trd_count; i++)
   {
@@ -105,7 +105,7 @@ test_record (void *cls,
     GNUNET_assert (rd[i].record_type == TEST_RECORD_TYPE);
     GNUNET_assert (rd[i].flags == 0);
   }
-  memset (&tzone_private_key, (id % 241), sizeof (tzone_private_key));
+  memset (&tzone_private_key, (id % 241), sizeof(tzone_private_key));
   GNUNET_assert (0 == strcmp (label, tname));
   GNUNET_assert (0 == GNUNET_memcmp (&tzone_private_key, private_key));
 }
@@ -129,7 +129,7 @@ put_record (struct GNUNET_NAMESTORE_PluginFunctions *nsp, int id)
   struct GNUNET_GNSRECORD_Data rd[GNUNET_NZL (rd_count)];
   struct GNUNET_CRYPTO_EcdsaSignature signature;
 
-  GNUNET_snprintf (label, sizeof (label), "a%u", (unsigned int) id);
+  GNUNET_snprintf (label, sizeof(label), "a%u", (unsigned int) id);
   for (unsigned int i = 0; i < rd_count; i++)
   {
     rd[i].data = "Hello World";
@@ -139,8 +139,8 @@ put_record (struct GNUNET_NAMESTORE_PluginFunctions *nsp, int id)
     rd[i].record_type = TEST_RECORD_TYPE;
     rd[i].flags = 0;
   }
-  memset (&zone_private_key, (id % 241), sizeof (zone_private_key));
-  memset (&signature, (id % 243), sizeof (signature));
+  memset (&zone_private_key, (id % 241), sizeof(zone_private_key));
+  memset (&signature, (id % 243), sizeof(signature));
   GNUNET_assert (
     GNUNET_OK ==
     nsp->store_records (nsp->cls, &zone_private_key, label, rd_count, rd));
@@ -159,7 +159,7 @@ run (void *cls,
   nsp = load_plugin (cfg);
   if (NULL == nsp)
   {
-    FPRINTF (
+    fprintf (
       stderr,
       "%s",
       "Failed to initialize namestore.  Database likely not setup, skipping test.\n");
@@ -167,8 +167,9 @@ run (void *cls,
   }
   put_record (nsp, 1);
   get_record (nsp, 1);
-
+#ifndef DARWIN // #5582
   unload_plugin (nsp);
+#endif
 }
 
 
@@ -176,17 +177,18 @@ int
 main (int argc, char *argv[])
 {
   char cfg_name[PATH_MAX];
-  char *const xargv[] = {"test-plugin-namestore", "-c", cfg_name, NULL};
-  struct GNUNET_GETOPT_CommandLineOption options[] = {GNUNET_GETOPT_OPTION_END};
+  char *const xargv[] = { "test-plugin-namestore", "-c", cfg_name, NULL };
+  struct GNUNET_GETOPT_CommandLineOption options[] =
+  { GNUNET_GETOPT_OPTION_END };
 
   GNUNET_log_setup ("test-plugin-namestore", "WARNING", NULL);
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
-                   sizeof (cfg_name),
+                   sizeof(cfg_name),
                    "test_plugin_namestore_%s.conf",
                    plugin_name);
   GNUNET_DISK_purge_cfg_dir (cfg_name, "GNUNET_TMP");
-  GNUNET_PROGRAM_run ((sizeof (xargv) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(xargv) / sizeof(char *)) - 1,
                       xargv,
                       "test-plugin-namestore",
                       "nohelp",
@@ -195,8 +197,9 @@ main (int argc, char *argv[])
                       NULL);
   GNUNET_DISK_purge_cfg_dir (cfg_name, "GNUNET_TMP");
   if (ok != 0)
-    FPRINTF (stderr, "Missed some testcases: %d\n", ok);
+    fprintf (stderr, "Missed some testcases: %d\n", ok);
   return ok;
 }
+
 
 /* end of test_plugin_namestore.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_client.c
  * @brief tests for client.c
@@ -37,7 +37,7 @@ static struct GNUNET_MQ_Handle *client_mq;
  */
 static void
 handle_echo (void *cls,
-	     const struct GNUNET_MessageHeader *message)
+             const struct GNUNET_MessageHeader *message)
 {
   struct GNUNET_SERVICE_Client *c = cls;
   struct GNUNET_MQ_Handle *mq = GNUNET_SERVICE_client_get_mq (c);
@@ -47,7 +47,7 @@ handle_echo (void *cls,
               "Receiving message from client, bouncing back\n");
   env = GNUNET_MQ_msg_copy (message);
   GNUNET_MQ_send (mq,
-		  env);
+                  env);
   GNUNET_SERVICE_client_continue (c);
 }
 
@@ -77,7 +77,7 @@ static void
 mq_error_handler (void *cls,
                   enum GNUNET_MQ_Error error)
 {
-  GNUNET_assert (0); /* should never happen */
+  GNUNET_assert (0);  /* should never happen */
 }
 
 
@@ -98,16 +98,16 @@ task (void *cls,
 
   /* test that ill-configured client fails instantly */
   GNUNET_assert (NULL ==
-		 GNUNET_CLIENT_connect (cfg,
-					"invalid-service",
-					NULL,
-					&mq_error_handler,
-					NULL));
+                 GNUNET_CLIENT_connect (cfg,
+                                        "invalid-service",
+                                        NULL,
+                                        &mq_error_handler,
+                                        NULL));
   client_mq = GNUNET_CLIENT_connect (cfg,
-				     "test_client",
-				     chandlers,
-				     &mq_error_handler,
-				     NULL);
+                                     "test_client",
+                                     chandlers,
+                                     &mq_error_handler,
+                                     NULL);
   GNUNET_assert (NULL != client_mq);
   env = GNUNET_MQ_msg (msg,
                        MY_TYPE);
@@ -126,8 +126,8 @@ task (void *cls,
  */
 static void *
 connect_cb (void *cls,
-	    struct GNUNET_SERVICE_Client *c,
-	    struct GNUNET_MQ_Handle *mq)
+            struct GNUNET_SERVICE_Client *c,
+            struct GNUNET_MQ_Handle *mq)
 {
   return c;
 }
@@ -139,11 +139,11 @@ connect_cb (void *cls,
  * @param cls our service name
  * @param c disconnecting client
  * @param internal_cls must match @a c
- */ 
+ */
 static void
 disconnect_cb (void *cls,
-	       struct GNUNET_SERVICE_Client *c,
-	       void *internal_cls)
+               struct GNUNET_SERVICE_Client *c,
+               void *internal_cls)
 {
   if (2 == global_ret)
   {
@@ -164,7 +164,7 @@ main (int argc,
                              NULL),
     GNUNET_MQ_handler_end ()
   };
-  char * test_argv[] = {
+  char *test_argv[] = {
     (char *) "test_client",
     "-c",
     "test_client_data.conf",
@@ -175,21 +175,22 @@ main (int argc,
                     "WARNING",
                     NULL);
   if (0 != strstr (argv[0],
-		   "unix"))
+                   "unix"))
     test_argv[2] = "test_client_unix.conf";
   global_ret = 1;
   if (0 !=
       GNUNET_SERVICE_run_ (3,
-			   test_argv,
-			   "test_client",
-			   GNUNET_SERVICE_OPTION_NONE,
-			   &task,
-			   &connect_cb,
-			   &disconnect_cb,
-			   NULL,
-			   shandlers))
+                           test_argv,
+                           "test_client",
+                           GNUNET_SERVICE_OPTION_NONE,
+                           &task,
+                           &connect_cb,
+                           &disconnect_cb,
+                           NULL,
+                           shandlers))
     global_ret = 3;
   return global_ret;
 }
+
 
 /* end of test_client.c */

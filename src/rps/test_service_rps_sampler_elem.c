@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file rps/test_service_rps_sampler_elem.c
  * @brief testcase for gnunet-service-rps_sampler_elem.c
@@ -25,8 +25,9 @@
 #include "gnunet_util_lib.h"
 #include "gnunet-service-rps_sampler_elem.h"
 
-#define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); return 1; }
-#define CHECK(c) { if (! (c)) ABORT(); }
+#define ABORT() { fprintf (stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
+                  return 1; }
+#define CHECK(c) { if (! (c)) ABORT (); }
 
 
 static int
@@ -40,8 +41,8 @@ check ()
   struct GNUNET_HashCode hash_code;
   struct GNUNET_HashCode hash_code2;
 
-  memset (&pid0, 1, sizeof (pid0));
-  memset (&pid1, 0, sizeof (pid1));
+  memset (&pid0, 1, sizeof(pid0));
+  memset (&pid1, 0, sizeof(pid1));
 
   /* Check if creation and destruction of an
    * (empty) sampler element works */
@@ -60,7 +61,8 @@ check ()
   CHECK (EMPTY == s_elem->is_empty);
   CHECK (NULL != &s_elem->auth_key);
   CHECK (auth_key.key != s_elem->auth_key.key);
-  CHECK (0 != memcmp (auth_key.key, s_elem->auth_key.key, GNUNET_CRYPTO_HASH_LENGTH));
+  CHECK (0 != memcmp (auth_key.key, s_elem->auth_key.key,
+                      GNUNET_CRYPTO_HASH_LENGTH));
   auth_key = s_elem->auth_key;
 
   /* Check that reinitialisation
@@ -70,7 +72,8 @@ check ()
   CHECK (EMPTY == s_elem->is_empty);
   CHECK (NULL != &s_elem->auth_key);
   CHECK (auth_key.key != s_elem->auth_key.key);
-  CHECK (0 != memcmp (auth_key.key, s_elem->auth_key.key, GNUNET_CRYPTO_HASH_LENGTH));
+  CHECK (0 != memcmp (auth_key.key, s_elem->auth_key.key,
+                      GNUNET_CRYPTO_HASH_LENGTH));
   RPS_sampler_elem_destroy (s_elem);
 
 
@@ -81,7 +84,8 @@ check ()
   CHECK (NULL != &s_elem->auth_key);
   CHECK (auth_key.key != s_elem->auth_key.key);
   /* This fails only with minimal chance */
-  CHECK (0 != memcmp (auth_key.key, s_elem->auth_key.key, GNUNET_CRYPTO_HASH_LENGTH));
+  CHECK (0 != memcmp (auth_key.key, s_elem->auth_key.key,
+                      GNUNET_CRYPTO_HASH_LENGTH));
   auth_key = s_elem->auth_key;
 
   /* Check also that the hash of the peer id changed
@@ -90,87 +94,87 @@ check ()
   RPS_sampler_elem_next (s_elem, &pid0);
   CHECK (0 == memcmp (&pid0,
                       &s_elem->peer_id,
-                      sizeof (struct GNUNET_PeerIdentity)));
+                      sizeof(struct GNUNET_PeerIdentity)));
   CHECK (0 != memcmp (&hash_code,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   hash_code = s_elem->peer_id_hash;
 
   /* We can only check that the peer id is one of both inputs */
   RPS_sampler_elem_next (s_elem, &pid1);
-  CHECK ( (0 == memcmp (&pid0,
-                        &s_elem->peer_id,
-                        sizeof (struct GNUNET_PeerIdentity))) ||
-          (0 == memcmp (&pid1,
-                        &s_elem->peer_id,
-                        sizeof (struct GNUNET_PeerIdentity))) );
+  CHECK ((0 == memcmp (&pid0,
+                       &s_elem->peer_id,
+                       sizeof(struct GNUNET_PeerIdentity))) ||
+         (0 == memcmp (&pid1,
+                       &s_elem->peer_id,
+                       sizeof(struct GNUNET_PeerIdentity))));
 
   /* Check that hash stayed the same when peer id did not change */
   if (0 == memcmp (&pid0,
                    &s_elem->peer_id,
-                   sizeof (struct GNUNET_PeerIdentity)))
+                   sizeof(struct GNUNET_PeerIdentity)))
   {
     CHECK (0 == memcmp (&hash_code,
                         &s_elem->peer_id_hash,
-                        sizeof (struct GNUNET_HashCode)));
+                        sizeof(struct GNUNET_HashCode)));
   }
   else /* Check that hash changed */
   {
     CHECK (0 != memcmp (&hash_code,
                         &s_elem->peer_id_hash,
-                        sizeof (struct GNUNET_HashCode)));
+                        sizeof(struct GNUNET_HashCode)));
   }
 
   /* Check multiple inputs of same id
-   * hash should not change anymore */
+  * hash should not change anymore */
   hash_code2 = s_elem->peer_id_hash;
   RPS_sampler_elem_next (s_elem, &pid0);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid1);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid0);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid0);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid0);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid1);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid1);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
   RPS_sampler_elem_next (s_elem, &pid1);
   CHECK (0 == memcmp (&hash_code2,
                       &s_elem->peer_id_hash,
-                      sizeof (struct GNUNET_HashCode)));
+                      sizeof(struct GNUNET_HashCode)));
 
   /* Check whether pid stayed the same all the time */
   if (0 == memcmp (&hash_code,
                    &hash_code2,
-                   sizeof (struct GNUNET_HashCode)))
+                   sizeof(struct GNUNET_HashCode)))
   {
     CHECK (0 == memcmp (&pid0,
                         &s_elem->peer_id,
-                        sizeof (struct GNUNET_PeerIdentity)));
+                        sizeof(struct GNUNET_PeerIdentity)));
   }
   else
   {
     CHECK (0 == memcmp (&pid1,
                         &s_elem->peer_id,
-                        sizeof (struct GNUNET_PeerIdentity)));
+                        sizeof(struct GNUNET_PeerIdentity)));
   }
   RPS_sampler_elem_destroy (s_elem);
 
@@ -180,7 +184,7 @@ check ()
   CHECK (EMPTY == s_elem->is_empty);
   CHECK (NULL != &s_elem->auth_key);
   auth_key = s_elem->auth_key;
-  memset (&auth_key2, 0, sizeof (auth_key2));
+  memset (&auth_key2, 0, sizeof(auth_key2));
   RPS_sampler_elem_set (s_elem, auth_key2);
   CHECK (0 == memcmp (auth_key2.key,
                       s_elem->auth_key.key,
@@ -199,10 +203,11 @@ main (int argc, char *argv[])
   (void) argc;
   (void) argv;
 
-  GNUNET_log_setup ("test_service_rps_peers", 
-		    "WARNING",
-		    NULL);
+  GNUNET_log_setup ("test_service_rps_peers",
+                    "WARNING",
+                    NULL);
   return check ();
 }
+
 
 /* end of test_service_rps_peers.c */

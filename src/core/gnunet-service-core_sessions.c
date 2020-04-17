@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/gnunet-service-core_sessions.c
@@ -45,7 +45,6 @@
  */
 struct SessionMessageEntry
 {
-
   /**
    * We keep messages in a doubly linked list.
    */
@@ -161,7 +160,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct TypeMapConfirmationMessage
 {
-
   /**
    * Header with type #GNUNET_MESSAGE_TYPE_CORE_CONFIRM_TYPE_MAP.
    */
@@ -387,7 +385,7 @@ GSC_SESSIONS_confirm_typemap (const struct GNUNET_PeerIdentity *peer,
     GNUNET_break (0);
     return;
   }
-  if (ntohs (msg->size) != sizeof (struct TypeMapConfirmationMessage))
+  if (ntohs (msg->size) != sizeof(struct TypeMapConfirmationMessage))
   {
     GNUNET_break_op (0);
     return;
@@ -491,7 +489,7 @@ GSC_SESSIONS_queue_request (struct GSC_ClientActiveRequest *car)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Dropped client request for transmission (am disconnected)\n");
-    GNUNET_break (0); /* should have been rejected earlier */
+    GNUNET_break (0);  /* should have been rejected earlier */
     GSC_CLIENTS_reject_request (car, GNUNET_NO);
     return;
   }
@@ -523,7 +521,7 @@ GSC_SESSIONS_dequeue_request (struct GSC_ClientActiveRequest *car)
 
   if (0 == memcmp (&car->target,
                    &GSC_my_identity,
-                   sizeof (struct GNUNET_PeerIdentity)))
+                   sizeof(struct GNUNET_PeerIdentity)))
     return;
   session = find_session (&car->target);
   GNUNET_assert (NULL != session);
@@ -629,7 +627,7 @@ try_transmission (struct Session *session)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Transmission queue already very long, waiting...\n");
-    return; /* queue already too long */
+    return;   /* queue already too long */
   }
   excess = GSC_NEIGHBOURS_check_excess_bandwidth (session->kx);
   if (GNUNET_YES == excess)
@@ -705,9 +703,10 @@ try_transmission (struct Session *session)
       excess,
       maxpc,
       (unsigned int) msize,
-      GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_remaining (
-                                                min_deadline),
-                                              GNUNET_YES));
+      GNUNET_STRINGS_relative_time_to_string (
+        GNUNET_TIME_absolute_get_remaining (
+          min_deadline),
+        GNUNET_YES));
     solicit_messages (session, msize);
     if (msize > 0)
     {
@@ -805,7 +804,7 @@ do_restart_typemap_message (void *cls,
       break;
     }
   }
-  sme = GNUNET_malloc (sizeof (struct SessionMessageEntry) + size);
+  sme = GNUNET_malloc (sizeof(struct SessionMessageEntry) + size);
   sme->is_typemap = GNUNET_YES;
   GNUNET_memcpy (&sme[1], hdr, size);
   sme->size = size;
@@ -878,7 +877,7 @@ GSC_SESSIONS_transmit (struct GSC_ClientActiveRequest *car,
   if (NULL == session)
     return;
   msize = ntohs (msg->size);
-  sme = GNUNET_malloc (sizeof (struct SessionMessageEntry) + msize);
+  sme = GNUNET_malloc (sizeof(struct SessionMessageEntry) + msize);
   GNUNET_memcpy (&sme[1], msg, msize);
   sme->size = msize;
   sme->priority = priority;
@@ -925,7 +924,7 @@ GSC_SESSIONS_set_typemap (const struct GNUNET_PeerIdentity *peer,
   if (NULL == nmap)
   {
     GNUNET_break_op (0);
-    return; /* malformed */
+    return;   /* malformed */
   }
   session = find_session (peer);
   if (NULL == session)
@@ -946,14 +945,14 @@ GSC_SESSIONS_set_typemap (const struct GNUNET_PeerIdentity *peer,
       break;
     }
   }
-  sme = GNUNET_malloc (sizeof (struct SessionMessageEntry) +
-                       sizeof (struct TypeMapConfirmationMessage));
+  sme = GNUNET_malloc (sizeof(struct SessionMessageEntry)
+                       + sizeof(struct TypeMapConfirmationMessage));
   sme->deadline = GNUNET_TIME_absolute_get ();
-  sme->size = sizeof (struct TypeMapConfirmationMessage);
+  sme->size = sizeof(struct TypeMapConfirmationMessage);
   sme->priority = GNUNET_MQ_PRIO_CRITICAL_CONTROL;
   sme->is_typemap_confirm = GNUNET_YES;
   tmc = (struct TypeMapConfirmationMessage *) &sme[1];
-  tmc->header.size = htons (sizeof (struct TypeMapConfirmationMessage));
+  tmc->header.size = htons (sizeof(struct TypeMapConfirmationMessage));
   tmc->header.type = htons (GNUNET_MESSAGE_TYPE_CORE_CONFIRM_TYPE_MAP);
   tmc->reserved = htonl (0);
   GSC_TYPEMAP_hash (nmap, &tmc->tm_hash);
@@ -980,7 +979,7 @@ GSC_SESSIONS_add_to_typemap (const struct GNUNET_PeerIdentity *peer,
   struct Session *session;
   struct GSC_TypeMap *nmap;
 
-  if (0 == memcmp (peer, &GSC_my_identity, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (peer, &GSC_my_identity, sizeof(struct GNUNET_PeerIdentity)))
     return;
   session = find_session (peer);
   GNUNET_assert (NULL != session);
@@ -1039,5 +1038,6 @@ GSC_SESSIONS_done ()
     sessions = NULL;
   }
 }
+
 
 /* end of gnunet-service-core_sessions.c */

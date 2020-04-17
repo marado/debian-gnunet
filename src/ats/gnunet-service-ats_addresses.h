@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2011-2014 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2011-2014 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -221,7 +221,8 @@
 /*
  * How long will address suggestions blocked after a suggestion
  */
-#define ATS_BLOCKING_DELTA GNUNET_TIME_relative_multiply(GNUNET_TIME_UNIT_MILLISECONDS, 100)
+#define ATS_BLOCKING_DELTA GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 100)
 
 /**
  * Information provided by ATS normalization
@@ -350,11 +351,10 @@ struct ATS_Address
    */
   struct GAS_NormalizationInfo norm_utilization_in;
 
-    /**
+  /**
    * Normalized utilization outbound for this address.
    */
   struct GAS_NormalizationInfo norm_utilization_out;
-
 };
 
 
@@ -453,9 +453,12 @@ typedef void
                                  size_t plugin_addr_len,
                                  const int address_active,
                                  const struct GNUNET_ATS_Properties *prop,
-                                 enum GNUNET_HELLO_AddressInfo local_address_info,
-                                 struct GNUNET_BANDWIDTH_Value32NBO bandwidth_out,
-                                 struct GNUNET_BANDWIDTH_Value32NBO bandwidth_in);
+                                 enum GNUNET_HELLO_AddressInfo
+                                 local_address_info,
+                                 struct GNUNET_BANDWIDTH_Value32NBO
+                                 bandwidth_out,
+                                 struct GNUNET_BANDWIDTH_Value32NBO
+                                 bandwidth_in);
 
 
 /**

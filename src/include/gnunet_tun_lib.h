@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Philipp Toelke
@@ -389,7 +389,6 @@ struct GNUNET_TUN_DnsFlags
    */
   unsigned int recursion_available : 1 GNUNET_PACKED;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-
   /**
    * query:0, response:1
    */
@@ -443,7 +442,6 @@ struct GNUNET_TUN_DnsFlags
 #else
 #error byteorder undefined
 #endif
-
 } GNUNET_GCC_STRUCT_LAYOUT;
 
 
@@ -524,7 +522,6 @@ struct GNUNET_TUN_DnsSoaRecord
  */
 struct GNUNET_TUN_DnsSrvRecord
 {
-
   /**
    * Preference for this entry (lower value is higher preference).  Clients
    * will contact hosts from the lowest-priority group first and fall back
@@ -553,7 +550,6 @@ struct GNUNET_TUN_DnsSrvRecord
  */
 struct GNUNET_TUN_DnsCertRecord
 {
-
   /**
    * Certificate type
    */
@@ -579,7 +575,6 @@ struct GNUNET_TUN_DnsCertRecord
  */
 struct GNUNET_TUN_DnsTlsaRecord
 {
-
   /**
    * Certificate usage
    * 0: CA cert
@@ -740,7 +735,6 @@ struct GNUNET_TUN_IcmpHeader
      * MTU for packets that are too big (IPv6).
      */
     uint32_t packet_too_big_mtu GNUNET_PACKED;
-
   } quench;
 };
 

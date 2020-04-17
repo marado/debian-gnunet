@@ -49,16 +49,22 @@
  * a failure of the command 'cmd' on file 'filename'
  * with the message given by strerror(errno).
  */
-#define LOG_SQLITE(db, level, cmd) do { GNUNET_log_from (level, "peerstore-sqlite", _("`%s' failed at %s:%d with error: %s\n"), cmd, __FILE__, __LINE__, sqlite3_errmsg(db->dbh)); } while(0)
+#define LOG_SQLITE(db, level, cmd) do { GNUNET_log_from (level, \
+                                                         "peerstore-sqlite", _ ( \
+                                                           "`%s' failed at %s:%d with error: %s\n"), \
+                                                         cmd, \
+                                                         __FILE__, __LINE__, \
+                                                         sqlite3_errmsg ( \
+                                                           db->dbh)); \
+} while (0)
 
-#define LOG(kind,...) GNUNET_log_from (kind, "peerstore-sqlite", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "peerstore-sqlite", __VA_ARGS__)
 
 /**
  * Context for all functions in this plugin.
  */
 struct Plugin
 {
-
   /**
    * Configuration handle
    */
@@ -110,7 +116,6 @@ struct Plugin
    * with given key
    */
   sqlite3_stmt *delete_peerstoredata;
-
 };
 
 
@@ -450,7 +455,7 @@ sql_exec (sqlite3 *dbh,
        result);
   if (SQLITE_OK != result)
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Error executing SQL query: %s\n  %s\n"),
+         _ ("Error executing SQL query: %s\n  %s\n"),
          sqlite3_errmsg (dbh),
          sql);
   return result;
@@ -468,7 +473,7 @@ sql_exec (sqlite3 *dbh,
 static int
 sql_prepare (sqlite3 *dbh,
              const char *sql,
-             sqlite3_stmt ** stmt)
+             sqlite3_stmt **stmt)
 {
   char *tail;
   int result;
@@ -485,7 +490,7 @@ sql_prepare (sqlite3 *dbh,
        result);
   if (SQLITE_OK != result)
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Error preparing SQL query: %s\n  %s\n"),
+         _ ("Error preparing SQL query: %s\n  %s\n"),
          sqlite3_errmsg (dbh),
          sql);
   return result;
@@ -532,7 +537,7 @@ database_setup (struct Plugin *plugin)
                                  &plugin->dbh))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Unable to initialize SQLite: %s.\n"),
+         _ ("Unable to initialize SQLite: %s.\n"),
          sqlite3_errmsg (plugin->dbh));
     return GNUNET_SYSERR;
   }
@@ -567,7 +572,7 @@ database_setup (struct Plugin *plugin)
                     NULL))
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Unable to create indices: %s.\n"),
+         _ ("Unable to create indices: %s.\n"),
          sqlite3_errmsg (plugin->dbh));
     return GNUNET_SYSERR;
   }
@@ -655,7 +660,7 @@ libgnunet_plugin_peerstore_sqlite_init (void *cls)
     return NULL;                /* can only initialize once! */
   memset (&plugin,
           0,
-          sizeof (struct Plugin));
+          sizeof(struct Plugin));
   plugin.cfg = cfg;
   if (GNUNET_OK != database_setup (&plugin))
   {
@@ -692,5 +697,6 @@ libgnunet_plugin_peerstore_sqlite_done (void *cls)
        "Sqlite plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_peerstore_sqlite.c */

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file hostlist/test_gnunet_daemon_hostlist_reconnect.c
  * @brief test for gnunet-daemon-hostslist.c; tries to re-start the peers
@@ -213,12 +213,13 @@ run (void *cls,
 int
 main (int argcx, char *argvx[])
 {
-  static char *const argv[] = {"test-gnunet-daemon-hostlist",
-                               "-c",
-                               "test_gnunet_daemon_hostlist_data.conf",
-                               NULL};
+  static char *const argv[] = { "test-gnunet-daemon-hostlist",
+                                "-c",
+                                "test_gnunet_daemon_hostlist_data.conf",
+                                NULL };
   static struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
 
   GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_peer1.conf",
                              "GNUNET_TEST_HOME");
@@ -228,7 +229,7 @@ main (int argcx, char *argvx[])
                              "GNUNET_TEST_HOME");
   GNUNET_log_setup ("test-gnunet-daemon-hostlist", "WARNING", NULL);
   ok = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
                       argv,
                       "test-gnunet-daemon-hostlist",
                       "nohelp",
@@ -237,17 +238,17 @@ main (int argcx, char *argvx[])
                       &ok);
   if (0 == ok)
   {
-    FPRINTF (stderr, "%s", ".");
+    fprintf (stderr, "%s", ".");
     /* now do it again */
     ok = 1;
-    GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
+    GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
                         argv,
                         "test-gnunet-daemon-hostlist",
                         "nohelp",
                         options,
                         &run,
                         &ok);
-    FPRINTF (stderr, "%s", ".\n");
+    fprintf (stderr, "%s", ".\n");
   }
   GNUNET_DISK_purge_cfg_dir ("test_gnunet_daemon_hostlist_peer1.conf",
                              "GNUNET_TEST_HOME");
@@ -257,5 +258,6 @@ main (int argcx, char *argvx[])
                              "GNUNET_TEST_HOME");
   return ok;
 }
+
 
 /* end of test_gnunet_daemon_hostlist_reconnect.c */

@@ -98,6 +98,9 @@ bin_PROGRAMS = gnunet-namestore$(EXEEXT) gnunet-zoneimport$(EXEEXT)
 @HAVE_MHD_TRUE@am__append_1 = \
 @HAVE_MHD_TRUE@ gnunet-namestore-fcfsd
 
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am__append_2 = \
+@HAVE_JSON_TRUE@@HAVE_MHD_TRUE@  test_plugin_rest_namestore.sh
+
 subdir = src/namestore
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -269,14 +272,15 @@ libgnunet_plugin_rest_namestore_la_DEPENDENCIES =  \
 	$(top_builddir)/src/json/libgnunetjson.la \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am_libgnunet_plugin_rest_namestore_la_OBJECTS =  \
-	plugin_rest_namestore.lo
+	libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.lo
 libgnunet_plugin_rest_namestore_la_OBJECTS =  \
 	$(am_libgnunet_plugin_rest_namestore_la_OBJECTS)
 libgnunet_plugin_rest_namestore_la_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
-	$(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(CCLD) $(libgnunet_plugin_rest_namestore_la_CFLAGS) $(CFLAGS) \
 	$(libgnunet_plugin_rest_namestore_la_LDFLAGS) $(LDFLAGS) -o $@
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@am_libgnunet_plugin_rest_namestore_la_rpath =  \
 @HAVE_JSON_TRUE@@HAVE_MHD_TRUE@	-rpath $(plugindir)
@@ -299,14 +303,19 @@ gnunet_namestore_DEPENDENCIES =  \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	libgnunetnamestore.la $(am__DEPENDENCIES_1)
-am_gnunet_namestore_fcfsd_OBJECTS = gnunet-namestore-fcfsd.$(OBJEXT)
+am_gnunet_namestore_fcfsd_OBJECTS =  \
+	gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.$(OBJEXT)
 gnunet_namestore_fcfsd_OBJECTS = $(am_gnunet_namestore_fcfsd_OBJECTS)
-gnunet_namestore_fcfsd_DEPENDENCIES =  \
+gnunet_namestore_fcfsd_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
 	$(top_builddir)/src/identity/libgnunetidentity.la \
 	libgnunetnamestore.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
+gnunet_namestore_fcfsd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(gnunet_namestore_fcfsd_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_gnunet_service_namestore_OBJECTS =  \
 	gnunet-service-namestore.$(OBJEXT)
 gnunet_service_namestore_OBJECTS =  \
@@ -828,16 +837,17 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/gnunet-namestore-fcfsd.Po \
-	./$(DEPDIR)/gnunet-namestore.Po \
+am__depfiles_remade = ./$(DEPDIR)/gnunet-namestore.Po \
 	./$(DEPDIR)/gnunet-service-namestore.Po \
-	./$(DEPDIR)/gnunet-zoneimport.Po ./$(DEPDIR)/namestore_api.Plo \
+	./$(DEPDIR)/gnunet-zoneimport.Po \
+	./$(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Po \
+	./$(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Plo \
+	./$(DEPDIR)/namestore_api.Plo \
 	./$(DEPDIR)/namestore_api_monitor.Plo \
 	./$(DEPDIR)/perf_namestore_api_zone_iteration.Po \
 	./$(DEPDIR)/plugin_namestore_flat.Plo \
 	./$(DEPDIR)/plugin_namestore_postgres.Plo \
 	./$(DEPDIR)/plugin_namestore_sqlite.Plo \
-	./$(DEPDIR)/plugin_rest_namestore.Plo \
 	./$(DEPDIR)/test_namestore_api_lookup_nick.Po \
 	./$(DEPDIR)/test_namestore_api_lookup_private.Po \
 	./$(DEPDIR)/test_namestore_api_lookup_public.Po \
@@ -1208,20 +1218,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -1229,6 +1236,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -1254,6 +1262,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -1291,11 +1300,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -1339,6 +1352,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -1358,6 +1374,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -1368,7 +1385,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -1437,7 +1453,6 @@ pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
    namestore.conf
 
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIBS = -lgcov
 HEAP_PLUGIN = libgnunet_plugin_namestore_flat.la
@@ -1525,11 +1540,12 @@ libgnunet_plugin_rest_namestore_la_LIBADD = \
   $(top_builddir)/src/json/libgnunetjson.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 
 libgnunet_plugin_rest_namestore_la_LDFLAGS = \
  $(GN_PLUGIN_LDFLAGS)
 
+libgnunet_plugin_rest_namestore_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 libgnunetnamestore_la_SOURCES = \
   namestore_api.c \
   namestore_api_monitor.c \
@@ -1542,7 +1558,7 @@ libgnunetnamestore_la_LIBADD = \
   $(GN_LIBINTL)
 
 libgnunetnamestore_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 0:1:0
 
 gnunet_zoneimport_SOURCES = \
@@ -1569,13 +1585,14 @@ gnunet_namestore_LDADD = \
 gnunet_namestore_fcfsd_SOURCES = \
  gnunet-namestore-fcfsd.c
 
-gnunet_namestore_fcfsd_LDADD = -lmicrohttpd \
+gnunet_namestore_fcfsd_LDADD = $(MHD_LIBS) \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/identity/libgnunetidentity.la \
   libgnunetnamestore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
 
+gnunet_namestore_fcfsd_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 gnunet_service_namestore_SOURCES = \
  gnunet-service-namestore.c
 
@@ -2120,11 +2137,8 @@ test_plugin_namestore_postgres_LDADD = \
  $(top_builddir)/src/testing/libgnunettesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-check_SCRIPTS = \
-  test_namestore_put.sh \
-  test_namestore_lookup.sh \
-  test_namestore_delete.sh
-
+check_SCRIPTS = test_namestore_put.sh test_namestore_lookup.sh \
+	test_namestore_delete.sh $(am__append_2)
 EXTRA_DIST = \
   test_common.c \
   test_namestore_api.conf \
@@ -2378,7 +2392,7 @@ gnunet-namestore$(EXEEXT): $(gnunet_namestore_OBJECTS) $(gnunet_namestore_DEPEND
 
 gnunet-namestore-fcfsd$(EXEEXT): $(gnunet_namestore_fcfsd_OBJECTS) $(gnunet_namestore_fcfsd_DEPENDENCIES) $(EXTRA_gnunet_namestore_fcfsd_DEPENDENCIES) 
 	@rm -f gnunet-namestore-fcfsd$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_namestore_fcfsd_OBJECTS) $(gnunet_namestore_fcfsd_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_namestore_fcfsd_LINK) $(gnunet_namestore_fcfsd_OBJECTS) $(gnunet_namestore_fcfsd_LDADD) $(LIBS)
 
 gnunet-service-namestore$(EXEEXT): $(gnunet_service_namestore_OBJECTS) $(gnunet_service_namestore_DEPENDENCIES) $(EXTRA_gnunet_service_namestore_DEPENDENCIES) 
 	@rm -f gnunet-service-namestore$(EXEEXT)
@@ -2610,17 +2624,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-namestore-fcfsd.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-namestore.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-namestore.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-zoneimport.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namestore_api.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/namestore_api_monitor.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/perf_namestore_api_zone_iteration.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_flat.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_postgres.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_namestore_sqlite.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_rest_namestore.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_namestore_api_lookup_nick.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_namestore_api_lookup_private.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_namestore_api_lookup_public.Po@am__quote@ # am--include-marker
@@ -2665,6 +2679,27 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.lo: plugin_rest_namestore.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_namestore_la_CFLAGS) $(CFLAGS) -MT libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.lo -MD -MP -MF $(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Tpo -c -o libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.lo `test -f 'plugin_rest_namestore.c' || echo '$(srcdir)/'`plugin_rest_namestore.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Tpo $(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_rest_namestore.c' object='libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libgnunet_plugin_rest_namestore_la_CFLAGS) $(CFLAGS) -c -o libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.lo `test -f 'plugin_rest_namestore.c' || echo '$(srcdir)/'`plugin_rest_namestore.c
+
+gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.o: gnunet-namestore-fcfsd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_namestore_fcfsd_CFLAGS) $(CFLAGS) -MT gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.o -MD -MP -MF $(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Tpo -c -o gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.o `test -f 'gnunet-namestore-fcfsd.c' || echo '$(srcdir)/'`gnunet-namestore-fcfsd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Tpo $(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-namestore-fcfsd.c' object='gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_namestore_fcfsd_CFLAGS) $(CFLAGS) -c -o gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.o `test -f 'gnunet-namestore-fcfsd.c' || echo '$(srcdir)/'`gnunet-namestore-fcfsd.c
+
+gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.obj: gnunet-namestore-fcfsd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_namestore_fcfsd_CFLAGS) $(CFLAGS) -MT gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.obj -MD -MP -MF $(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Tpo -c -o gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.obj `if test -f 'gnunet-namestore-fcfsd.c'; then $(CYGPATH_W) 'gnunet-namestore-fcfsd.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-namestore-fcfsd.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Tpo $(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-namestore-fcfsd.c' object='gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_namestore_fcfsd_CFLAGS) $(CFLAGS) -c -o gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.obj `if test -f 'gnunet-namestore-fcfsd.c'; then $(CYGPATH_W) 'gnunet-namestore-fcfsd.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-namestore-fcfsd.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -3285,6 +3320,13 @@ test_namestore_delete.sh.log: test_namestore_delete.sh
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+test_plugin_rest_namestore.sh.log: test_plugin_rest_namestore.sh
+	@p='test_plugin_rest_namestore.sh'; \
+	b='test_plugin_rest_namestore.sh'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -3384,17 +3426,17 @@ clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 	clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/gnunet-namestore-fcfsd.Po
-	-rm -f ./$(DEPDIR)/gnunet-namestore.Po
+		-rm -f ./$(DEPDIR)/gnunet-namestore.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-namestore.Po
 	-rm -f ./$(DEPDIR)/gnunet-zoneimport.Po
+	-rm -f ./$(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Po
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Plo
 	-rm -f ./$(DEPDIR)/namestore_api.Plo
 	-rm -f ./$(DEPDIR)/namestore_api_monitor.Plo
 	-rm -f ./$(DEPDIR)/perf_namestore_api_zone_iteration.Po
 	-rm -f ./$(DEPDIR)/plugin_namestore_flat.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_postgres.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_sqlite.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_namestore.Plo
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_nick.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_private.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_public.Po
@@ -3458,17 +3500,17 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/gnunet-namestore-fcfsd.Po
-	-rm -f ./$(DEPDIR)/gnunet-namestore.Po
+		-rm -f ./$(DEPDIR)/gnunet-namestore.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-namestore.Po
 	-rm -f ./$(DEPDIR)/gnunet-zoneimport.Po
+	-rm -f ./$(DEPDIR)/gnunet_namestore_fcfsd-gnunet-namestore-fcfsd.Po
+	-rm -f ./$(DEPDIR)/libgnunet_plugin_rest_namestore_la-plugin_rest_namestore.Plo
 	-rm -f ./$(DEPDIR)/namestore_api.Plo
 	-rm -f ./$(DEPDIR)/namestore_api_monitor.Plo
 	-rm -f ./$(DEPDIR)/perf_namestore_api_zone_iteration.Po
 	-rm -f ./$(DEPDIR)/plugin_namestore_flat.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_postgres.Plo
 	-rm -f ./$(DEPDIR)/plugin_namestore_sqlite.Plo
-	-rm -f ./$(DEPDIR)/plugin_rest_namestore.Plo
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_nick.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_private.Po
 	-rm -f ./$(DEPDIR)/test_namestore_api_lookup_public.Po

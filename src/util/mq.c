@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Florian Dold
@@ -250,7 +250,7 @@ GNUNET_MQ_handle_message (const struct GNUNET_MQ_MessageHandler *handlers,
           ((handler->expected_size != msize) && (NULL == handler->mv)))
       {
         /* Too small, or not an exact size and
-	   no 'mv' handler to check rest */
+           no 'mv' handler to check rest */
         LOG (GNUNET_ERROR_TYPE_ERROR,
              "Received malformed message of type %u\n",
              (unsigned int) handler->type);
@@ -436,7 +436,7 @@ GNUNET_MQ_send_copy (struct GNUNET_MQ_Handle *mq,
   uint16_t msize;
 
   msize = ntohs (ev->mh->size);
-  env = GNUNET_malloc (sizeof (struct GNUNET_MQ_Envelope) + msize);
+  env = GNUNET_malloc (sizeof(struct GNUNET_MQ_Envelope) + msize);
   env->mh = (struct GNUNET_MessageHeader *) &env[1];
   env->sent_cb = ev->sent_cb;
   env->sent_cls = ev->sent_cls;
@@ -633,7 +633,7 @@ GNUNET_MQ_msg_ (struct GNUNET_MessageHeader **mhp, uint16_t size, uint16_t type)
 {
   struct GNUNET_MQ_Envelope *ev;
 
-  ev = GNUNET_malloc (size + sizeof (struct GNUNET_MQ_Envelope));
+  ev = GNUNET_malloc (size + sizeof(struct GNUNET_MQ_Envelope));
   ev->mh = (struct GNUNET_MessageHeader *) &ev[1];
   ev->mh->size = htons (size);
   ev->mh->type = htons (type);
@@ -655,7 +655,7 @@ GNUNET_MQ_msg_copy (const struct GNUNET_MessageHeader *hdr)
   struct GNUNET_MQ_Envelope *mqm;
   uint16_t size = ntohs (hdr->size);
 
-  mqm = GNUNET_malloc (sizeof (*mqm) + size);
+  mqm = GNUNET_malloc (sizeof(*mqm) + size);
   mqm->mh = (struct GNUNET_MessageHeader *) &mqm[1];
   GNUNET_memcpy (mqm->mh, hdr, size);
   return mqm;
@@ -890,7 +890,7 @@ GNUNET_MQ_extract_nested_mh_ (const struct GNUNET_MessageHeader *mh,
   nested_size = whole_size - base_size;
   if (0 == nested_size)
     return NULL;
-  if (nested_size < sizeof (struct GNUNET_MessageHeader))
+  if (nested_size < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break_op (0);
     return NULL;
@@ -1154,7 +1154,6 @@ GNUNET_MQ_dll_insert_head (struct GNUNET_MQ_Envelope **env_head,
                            struct GNUNET_MQ_Envelope **env_tail,
                            struct GNUNET_MQ_Envelope *env)
 {
-
   GNUNET_CONTAINER_DLL_insert (*env_head, *env_tail, env);
 }
 
@@ -1224,7 +1223,7 @@ GNUNET_MQ_copy_handlers (const struct GNUNET_MQ_MessageHandler *handlers)
   copy = GNUNET_new_array (count + 1, struct GNUNET_MQ_MessageHandler);
   GNUNET_memcpy (copy,
                  handlers,
-                 count * sizeof (struct GNUNET_MQ_MessageHandler));
+                 count * sizeof(struct GNUNET_MQ_MessageHandler));
   return copy;
 }
 
@@ -1255,12 +1254,12 @@ GNUNET_MQ_copy_handlers2 (const struct GNUNET_MQ_MessageHandler *handlers,
   copy = GNUNET_new_array (count + 2, struct GNUNET_MQ_MessageHandler);
   GNUNET_memcpy (copy,
                  handlers,
-                 count * sizeof (struct GNUNET_MQ_MessageHandler));
+                 count * sizeof(struct GNUNET_MQ_MessageHandler));
   copy[count].mv = NULL;
   copy[count].cb = agpl_handler;
   copy[count].cls = agpl_cls;
   copy[count].type = GNUNET_MESSAGE_TYPE_REQUEST_AGPL;
-  copy[count].expected_size = sizeof (struct GNUNET_MessageHeader);
+  copy[count].expected_size = sizeof(struct GNUNET_MessageHeader);
   return copy;
 }
 
@@ -1299,13 +1298,17 @@ GNUNET_MQ_preference_to_string (enum GNUNET_MQ_PreferenceKind type)
   {
   case GNUNET_MQ_PREFERENCE_NONE:
     return "NONE";
+
   case GNUNET_MQ_PREFERENCE_BANDWIDTH:
     return "BANDWIDTH";
+
   case GNUNET_MQ_PREFERENCE_LATENCY:
     return "LATENCY";
+
   case GNUNET_MQ_PREFERENCE_RELIABILITY:
     return "RELIABILITY";
-  };
+  }
+  ;
   return NULL;
 }
 

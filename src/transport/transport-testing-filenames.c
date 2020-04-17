@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport-testing-filenames.c
  * @brief convenience string manipulation functions for tests
@@ -40,25 +40,6 @@ extract_filename (const char *file)
   char *filename = NULL;
   char *res;
 
-#if WINDOWS
-  if ((strlen (pch) >= 3) && pch[1] == ':')
-  {
-    if (NULL != strstr (pch, "\\"))
-    {
-      pch = strtok (pch, "\\");
-      while (pch != NULL)
-      {
-        pch = strtok (NULL, "\\");
-        if (pch != NULL)
-          filename = pch;
-      }
-    }
-  }
-  if (filename != NULL)
-    pch = filename; /* If we miss the next condition, filename = pch will
-                     * not harm us.
-                     */
-#endif
   if (NULL != strstr (pch, "/"))
   {
     pch = strtok (pch, "/");

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -107,14 +107,13 @@ extern "C" {
  */
 
 /**
- * Record type for credential
+ * 65547 deleted, free to use
  */
-#define GNUNET_GNSRECORD_TYPE_CREDENTIAL 65547
 
 /**
  * Record type for policies
  */
-#define GNUNET_GNSRECORD_TYPE_POLICY 65548
+#define GNUNET_GNSRECORD_TYPE_DELEGATE 65548
 
 /**
  * Record type for reverse lookups
@@ -144,8 +143,8 @@ extern "C" {
 /**
  * Flags that can be set for a record.
  */
-enum GNUNET_GNSRECORD_Flags {
-
+enum GNUNET_GNSRECORD_Flags
+{
   /**
    * No special options.
    */
@@ -193,8 +192,8 @@ enum GNUNET_GNSRECORD_Flags {
 /**
  * A GNS record.
  */
-struct GNUNET_GNSRECORD_Data {
-
+struct GNUNET_GNSRECORD_Data
+{
   /**
    * Binary value stored in the DNS record.  Note: "data" must never
    * be individually 'malloc'ed, but instead always points into some
@@ -231,7 +230,8 @@ GNUNET_NETWORK_STRUCT_BEGIN
 /**
  * Data stored in a PLACE record.
  */
-struct GNUNET_GNSRECORD_PlaceData {
+struct GNUNET_GNSRECORD_PlaceData
+{
   /**
    * Public key of the place.
    */
@@ -254,8 +254,8 @@ struct GNUNET_GNSRECORD_PlaceData {
 /**
  * Information we have in an encrypted block with record data (i.e. in the DHT).
  */
-struct GNUNET_GNSRECORD_Block {
-
+struct GNUNET_GNSRECORD_Block
+{
   /**
    * Signature of the block.
    */
@@ -291,8 +291,8 @@ struct GNUNET_GNSRECORD_Block {
  * records do not require a separate network request, thus making TLSA
  * records inseparable from the "main" A/AAAA/VPN/etc. records.
  */
-struct GNUNET_GNSRECORD_BoxRecord {
-
+struct GNUNET_GNSRECORD_BoxRecord
+{
   /**
    * Protocol of the boxed record (6 = TCP, 17 = UDP, etc.).
    * Yes, in IP protocols are usually limited to 8 bits. In NBO.
@@ -319,7 +319,8 @@ struct GNUNET_GNSRECORD_BoxRecord {
  * the namespace the record belongs to.
  * It is exclusively found under the label ``+''.
  */
-struct GNUNET_GNSRECORD_ReverseRecord {
+struct GNUNET_GNSRECORD_ReverseRecord
+{
   /**
    * The public key of the namespace the is delegating to our namespace
    */
@@ -344,7 +345,7 @@ GNUNET_NETWORK_STRUCT_END
  * @param rd array of records with data to store
  */
 typedef void (*GNUNET_GNSRECORD_RecordCallback) (
-    void *cls, unsigned int rd_count, const struct GNUNET_GNSRECORD_Data *rd);
+  void *cls, unsigned int rd_count, const struct GNUNET_GNSRECORD_Data *rd);
 
 
 /* ***************** API related to GNSRECORD plugins ************** */
@@ -516,8 +517,8 @@ GNUNET_GNSRECORD_zkey_to_pkey (const char *zkey,
  */
 void
 GNUNET_GNSRECORD_query_from_private_key (
-    const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone, const char *label,
-    struct GNUNET_HashCode *query);
+  const struct GNUNET_CRYPTO_EcdsaPrivateKey *zone, const char *label,
+  struct GNUNET_HashCode *query);
 
 
 /**
@@ -529,8 +530,8 @@ GNUNET_GNSRECORD_query_from_private_key (
  */
 void
 GNUNET_GNSRECORD_query_from_public_key (
-    const struct GNUNET_CRYPTO_EcdsaPublicKey *pub, const char *label,
-    struct GNUNET_HashCode *query);
+  const struct GNUNET_CRYPTO_EcdsaPublicKey *pub, const char *label,
+  struct GNUNET_HashCode *query);
 
 
 /**
@@ -593,9 +594,9 @@ GNUNET_GNSRECORD_block_verify (const struct GNUNET_GNSRECORD_Block *block);
  */
 int
 GNUNET_GNSRECORD_block_decrypt (
-    const struct GNUNET_GNSRECORD_Block *block,
-    const struct GNUNET_CRYPTO_EcdsaPublicKey *zone_key, const char *label,
-    GNUNET_GNSRECORD_RecordCallback proc, void *proc_cls);
+  const struct GNUNET_GNSRECORD_Block *block,
+  const struct GNUNET_CRYPTO_EcdsaPublicKey *zone_key, const char *label,
+  GNUNET_GNSRECORD_RecordCallback proc, void *proc_cls);
 
 
 /**
@@ -621,7 +622,7 @@ GNUNET_GNSRECORD_records_cmp (const struct GNUNET_GNSRECORD_Data *a,
  */
 struct GNUNET_TIME_Absolute
 GNUNET_GNSRECORD_record_get_expiration_time (
-    unsigned int rd_count, const struct GNUNET_GNSRECORD_Data *rd);
+  unsigned int rd_count, const struct GNUNET_GNSRECORD_Data *rd);
 
 
 #if 0 /* keep Emacsens' auto-indent happy */

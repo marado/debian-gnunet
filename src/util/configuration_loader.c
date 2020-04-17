@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/util/configuration_loader.c
@@ -27,7 +27,7 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-configuration", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-configuration", __VA_ARGS__)
 
 
 /**
@@ -83,5 +83,6 @@ GNUNET_CONFIGURATION_load (struct GNUNET_CONFIGURATION_Handle *cfg,
                                            filename);
   return GNUNET_OK;
 }
+
 
 /* end of configuration_loader.c */
