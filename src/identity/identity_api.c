@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file identity/identity_api.c
@@ -38,7 +38,6 @@
  */
 struct GNUNET_IDENTITY_Operation
 {
-
   /**
    * Main identity handle.
    */
@@ -162,9 +161,9 @@ GNUNET_IDENTITY_ego_get_anonymous ()
   if (NULL != anon.pk)
     return &anon;
   anon.pk = (struct GNUNET_CRYPTO_EcdsaPrivateKey *)
-    GNUNET_CRYPTO_ecdsa_key_get_anonymous ();
+            GNUNET_CRYPTO_ecdsa_key_get_anonymous ();
   GNUNET_CRYPTO_ecdsa_key_get_public (anon.pk, &pub);
-  GNUNET_CRYPTO_hash (&pub, sizeof (pub), &anon.id);
+  GNUNET_CRYPTO_hash (&pub, sizeof(pub), &anon.id);
   return &anon;
 }
 
@@ -272,7 +271,7 @@ mq_error_handler (void *cls, enum GNUNET_MQ_Error error)
 static int
 check_identity_result_code (void *cls, const struct ResultCodeMessage *rcm)
 {
-  if (sizeof (*rcm) != htons (rcm->header.size))
+  if (sizeof(*rcm) != htons (rcm->header.size))
     GNUNET_MQ_check_zero_termination (rcm);
   return GNUNET_OK;
 }
@@ -289,7 +288,7 @@ handle_identity_result_code (void *cls, const struct ResultCodeMessage *rcm)
 {
   struct GNUNET_IDENTITY_Handle *h = cls;
   struct GNUNET_IDENTITY_Operation *op;
-  uint16_t size = ntohs (rcm->header.size) - sizeof (*rcm);
+  uint16_t size = ntohs (rcm->header.size) - sizeof(*rcm);
   const char *str = (0 == size) ? NULL : (const char *) &rcm[1];
 
   op = h->op_head;
@@ -325,7 +324,7 @@ check_identity_update (void *cls, const struct UpdateMessage *um)
   uint16_t name_len = ntohs (um->name_len);
   const char *str = (const char *) &um[1];
 
-  if ((size != name_len + sizeof (struct UpdateMessage)) ||
+  if ((size != name_len + sizeof(struct UpdateMessage)) ||
       ((0 != name_len) && ('\0' != str[name_len - 1])))
   {
     GNUNET_break (0);
@@ -359,7 +358,7 @@ handle_identity_update (void *cls, const struct UpdateMessage *um)
     return;
   }
   GNUNET_CRYPTO_ecdsa_key_get_public (&um->private_key, &pub);
-  GNUNET_CRYPTO_hash (&pub, sizeof (pub), &id);
+  GNUNET_CRYPTO_hash (&pub, sizeof(pub), &id);
   ego = GNUNET_CONTAINER_multihashmap_get (h->egos, &id);
   if (NULL == ego)
   {
@@ -420,7 +419,7 @@ handle_identity_update (void *cls, const struct UpdateMessage *um)
 static int
 check_identity_set_default (void *cls, const struct SetDefaultMessage *sdm)
 {
-  uint16_t size = ntohs (sdm->header.size) - sizeof (*sdm);
+  uint16_t size = ntohs (sdm->header.size) - sizeof(*sdm);
   uint16_t name_len = ntohs (sdm->name_len);
   const char *str = (const char *) &sdm[1];
 
@@ -451,7 +450,7 @@ handle_identity_set_default (void *cls, const struct SetDefaultMessage *sdm)
   struct GNUNET_IDENTITY_Ego *ego;
 
   GNUNET_CRYPTO_ecdsa_key_get_public (&sdm->private_key, &pub);
-  GNUNET_CRYPTO_hash (&pub, sizeof (pub), &id);
+  GNUNET_CRYPTO_hash (&pub, sizeof(pub), &id);
   ego = GNUNET_CONTAINER_multihashmap_get (h->egos, &id);
   if (NULL == ego)
   {
@@ -485,19 +484,19 @@ reconnect (void *cls)
 {
   struct GNUNET_IDENTITY_Handle *h = cls;
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_var_size (identity_result_code,
-                            GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE,
-                            struct ResultCodeMessage,
-                            h),
-     GNUNET_MQ_hd_var_size (identity_update,
-                            GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE,
-                            struct UpdateMessage,
-                            h),
-     GNUNET_MQ_hd_var_size (identity_set_default,
-                            GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT,
-                            struct SetDefaultMessage,
-                            h),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_var_size (identity_result_code,
+                           GNUNET_MESSAGE_TYPE_IDENTITY_RESULT_CODE,
+                           struct ResultCodeMessage,
+                           h),
+    GNUNET_MQ_hd_var_size (identity_update,
+                           GNUNET_MESSAGE_TYPE_IDENTITY_UPDATE,
+                           struct UpdateMessage,
+                           h),
+    GNUNET_MQ_hd_var_size (identity_set_default,
+                           GNUNET_MESSAGE_TYPE_IDENTITY_SET_DEFAULT,
+                           struct SetDefaultMessage,
+                           h),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_MessageHeader *msg;
 
@@ -598,7 +597,7 @@ GNUNET_IDENTITY_get (struct GNUNET_IDENTITY_Handle *h,
     return NULL;
   GNUNET_assert (NULL != h->cb);
   slen = strlen (service_name) + 1;
-  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof (struct GetDefaultMessage))
+  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof(struct GetDefaultMessage))
   {
     GNUNET_break (0);
     return NULL;
@@ -644,7 +643,7 @@ GNUNET_IDENTITY_set (struct GNUNET_IDENTITY_Handle *h,
     return NULL;
   GNUNET_assert (NULL != h->cb);
   slen = strlen (service_name) + 1;
-  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof (struct SetDefaultMessage))
+  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof(struct SetDefaultMessage))
   {
     GNUNET_break (0);
     return NULL;
@@ -689,7 +688,7 @@ GNUNET_IDENTITY_create (struct GNUNET_IDENTITY_Handle *h,
   if (NULL == h->mq)
     return NULL;
   slen = strlen (name) + 1;
-  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof (struct CreateRequestMessage))
+  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof(struct CreateRequestMessage))
   {
     GNUNET_break (0);
     return NULL;
@@ -742,7 +741,7 @@ GNUNET_IDENTITY_rename (struct GNUNET_IDENTITY_Handle *h,
   if ((slen_old >= GNUNET_MAX_MESSAGE_SIZE) ||
       (slen_new >= GNUNET_MAX_MESSAGE_SIZE) ||
       (slen_old + slen_new >=
-       GNUNET_MAX_MESSAGE_SIZE - sizeof (struct RenameMessage)))
+       GNUNET_MAX_MESSAGE_SIZE - sizeof(struct RenameMessage)))
   {
     GNUNET_break (0);
     return NULL;
@@ -788,7 +787,7 @@ GNUNET_IDENTITY_delete (struct GNUNET_IDENTITY_Handle *h,
   if (NULL == h->mq)
     return NULL;
   slen = strlen (name) + 1;
-  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof (struct DeleteMessage))
+  if (slen >= GNUNET_MAX_MESSAGE_SIZE - sizeof(struct DeleteMessage))
   {
     GNUNET_break (0);
     return NULL;
@@ -865,5 +864,6 @@ GNUNET_IDENTITY_disconnect (struct GNUNET_IDENTITY_Handle *h)
   }
   GNUNET_free (h);
 }
+
 
 /* end of identity_api.c */

@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -31,7 +31,7 @@
 #include "gnunet_protocols.h"
 #include "scalarproduct.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "scalarproduct-api",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "scalarproduct-api", __VA_ARGS__)
 
 
 /**
@@ -42,9 +42,14 @@
  * @param status processing status code
  */
 typedef void
-(*GNUNET_SCALARPRODUCT_ResponseMessageHandler) (struct GNUNET_SCALARPRODUCT_ComputationHandle *h,
-                                                const struct ClientResponseMessage *msg,
-                                                enum GNUNET_SCALARPRODUCT_ResponseStatus status);
+(*GNUNET_SCALARPRODUCT_ResponseMessageHandler) (struct
+                                                GNUNET_SCALARPRODUCT_ComputationHandle
+                                                *h,
+                                                const struct
+                                                ClientResponseMessage *msg,
+                                                enum
+                                                GNUNET_SCALARPRODUCT_ResponseStatus
+                                                status);
 
 
 /**
@@ -87,7 +92,6 @@ struct GNUNET_SCALARPRODUCT_ComputationHandle
    * The shared session key identifying this computation
    */
   struct GNUNET_HashCode key;
-
 };
 
 
@@ -101,10 +105,10 @@ struct GNUNET_SCALARPRODUCT_ComputationHandle
  */
 static int
 check_response (void *cls,
-                 const struct ClientResponseMessage *message)
+                const struct ClientResponseMessage *message)
 {
   if (ntohs (message->header.size) !=
-      ntohl (message->product_length) + sizeof (struct ClientResponseMessage))
+      ntohl (message->product_length) + sizeof(struct ClientResponseMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -174,7 +178,7 @@ check_unique (const struct GNUNET_SCALARPRODUCT_Element *elements,
   ok = GNUNET_OK;
   map = GNUNET_CONTAINER_multihashmap_create (2 * element_count,
                                               GNUNET_YES);
-  for (i=0;i<element_count;i++)
+  for (i = 0; i < element_count; i++)
     if (GNUNET_OK !=
         GNUNET_CONTAINER_multihashmap_put (map,
                                            &elements[i].key,
@@ -182,7 +186,7 @@ check_unique (const struct GNUNET_SCALARPRODUCT_Element *elements,
                                            GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Keys given to SCALARPRODUCT not unique!\n"));
+                  _ ("Keys given to SCALARPRODUCT not unique!\n"));
       ok = GNUNET_SYSERR;
     }
   GNUNET_CONTAINER_multihashmap_destroy (map);
@@ -223,11 +227,15 @@ mq_error_handler (void *cls,
  * @return a new handle for this computation
  */
 struct GNUNET_SCALARPRODUCT_ComputationHandle *
-GNUNET_SCALARPRODUCT_accept_computation (const struct GNUNET_CONFIGURATION_Handle *cfg,
-                                         const struct GNUNET_HashCode *session_key,
-                                         const struct GNUNET_SCALARPRODUCT_Element *elements,
+GNUNET_SCALARPRODUCT_accept_computation (const struct
+                                         GNUNET_CONFIGURATION_Handle *cfg,
+                                         const struct
+                                         GNUNET_HashCode *session_key,
+                                         const struct
+                                         GNUNET_SCALARPRODUCT_Element *elements,
                                          uint32_t element_count,
-                                         GNUNET_SCALARPRODUCT_ContinuationWithStatus cont,
+                                         GNUNET_SCALARPRODUCT_ContinuationWithStatus
+                                         cont,
                                          void *cont_cls)
 {
   struct GNUNET_SCALARPRODUCT_ComputationHandle *h
@@ -268,11 +276,12 @@ GNUNET_SCALARPRODUCT_accept_computation (const struct GNUNET_CONFIGURATION_Handl
     GNUNET_free (h);
     return NULL;
   }
-  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof (struct BobComputationMessage))
-    / sizeof (struct GNUNET_SCALARPRODUCT_Element);
+  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof(struct
+                                                   BobComputationMessage))
+             / sizeof(struct GNUNET_SCALARPRODUCT_Element);
   todo = GNUNET_MIN (possible,
                      element_count);
-  size = todo * sizeof (struct GNUNET_SCALARPRODUCT_Element);
+  size = todo * sizeof(struct GNUNET_SCALARPRODUCT_Element);
   env = GNUNET_MQ_msg_extra (msg,
                              size,
                              GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_TO_BOB);
@@ -280,25 +289,25 @@ GNUNET_SCALARPRODUCT_accept_computation (const struct GNUNET_CONFIGURATION_Handl
   msg->element_count_contained = htonl (todo);
   msg->session_key = *session_key;
   GNUNET_memcpy (&msg[1],
-          elements,
-          size);
+                 elements,
+                 size);
   element_count_transfered = todo;
   GNUNET_MQ_send (h->mq,
                   env);
-  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof (*mmsg))
-    / sizeof (struct GNUNET_SCALARPRODUCT_Element);
+  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof(*mmsg))
+             / sizeof(struct GNUNET_SCALARPRODUCT_Element);
   while (element_count_transfered < element_count)
   {
     todo = GNUNET_MIN (possible,
                        element_count - element_count_transfered);
-    size = todo * sizeof (struct GNUNET_SCALARPRODUCT_Element);
+    size = todo * sizeof(struct GNUNET_SCALARPRODUCT_Element);
     env = GNUNET_MQ_msg_extra (mmsg,
                                size,
                                GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_MULTIPART_BOB);
     mmsg->element_count_contained = htonl (todo);
     GNUNET_memcpy (&mmsg[1],
-            &elements[element_count_transfered],
-            size);
+                   &elements[element_count_transfered],
+                   size);
     element_count_transfered += todo;
     GNUNET_MQ_send (h->mq,
                     env);
@@ -380,10 +389,13 @@ process_result_message (struct GNUNET_SCALARPRODUCT_ComputationHandle *h,
  * @return a new handle for this computation
  */
 struct GNUNET_SCALARPRODUCT_ComputationHandle *
-GNUNET_SCALARPRODUCT_start_computation (const struct GNUNET_CONFIGURATION_Handle *cfg,
-                                        const struct GNUNET_HashCode *session_key,
+GNUNET_SCALARPRODUCT_start_computation (const struct
+                                        GNUNET_CONFIGURATION_Handle *cfg,
+                                        const struct
+                                        GNUNET_HashCode *session_key,
                                         const struct GNUNET_PeerIdentity *peer,
-                                        const struct GNUNET_SCALARPRODUCT_Element *elements,
+                                        const struct
+                                        GNUNET_SCALARPRODUCT_Element *elements,
                                         uint32_t element_count,
                                         GNUNET_SCALARPRODUCT_DatumProcessor cont,
                                         void *cont_cls)
@@ -426,11 +438,12 @@ GNUNET_SCALARPRODUCT_start_computation (const struct GNUNET_CONFIGURATION_Handle
   h->cfg = cfg;
   h->key = *session_key;
 
-  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof (struct AliceComputationMessage))
-      / sizeof (struct GNUNET_SCALARPRODUCT_Element);
+  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof(struct
+                                                   AliceComputationMessage))
+             / sizeof(struct GNUNET_SCALARPRODUCT_Element);
   todo = GNUNET_MIN (possible,
                      element_count);
-  size = todo * sizeof (struct GNUNET_SCALARPRODUCT_Element);
+  size = todo * sizeof(struct GNUNET_SCALARPRODUCT_Element);
   env = GNUNET_MQ_msg_extra (msg,
                              size,
                              GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_TO_ALICE);
@@ -440,25 +453,25 @@ GNUNET_SCALARPRODUCT_start_computation (const struct GNUNET_CONFIGURATION_Handle
   msg->peer = *peer;
   msg->session_key = *session_key;
   GNUNET_memcpy (&msg[1],
-          elements,
-          size);
+                 elements,
+                 size);
   GNUNET_MQ_send (h->mq,
                   env);
   element_count_transfered = todo;
-  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof (*mmsg))
-    / sizeof (struct GNUNET_SCALARPRODUCT_Element);
+  possible = (GNUNET_MAX_MESSAGE_SIZE - 1 - sizeof(*mmsg))
+             / sizeof(struct GNUNET_SCALARPRODUCT_Element);
   while (element_count_transfered < element_count)
   {
     todo = GNUNET_MIN (possible,
                        element_count - element_count_transfered);
-    size = todo * sizeof (struct GNUNET_SCALARPRODUCT_Element);
+    size = todo * sizeof(struct GNUNET_SCALARPRODUCT_Element);
     env = GNUNET_MQ_msg_extra (mmsg,
                                size,
                                GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_MULTIPART_ALICE);
     mmsg->element_count_contained = htonl (todo);
     GNUNET_memcpy (&mmsg[1],
-            &elements[element_count_transfered],
-            size);
+                   &elements[element_count_transfered],
+                   size);
     element_count_transfered += todo;
     GNUNET_MQ_send (h->mq,
                     env);

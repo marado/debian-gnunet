@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file regex/test_regex_graph_api.c
  * @brief test for regex_graph.c
@@ -61,7 +61,7 @@ filecheck (const char *filename)
 
   GNUNET_assert (0 == fclose (fp));
 
-  if (!KEEP_FILES)
+  if (! KEEP_FILES)
   {
     if (0 != unlink (filename))
       GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_ERROR, "unlink", filename);
@@ -105,23 +105,23 @@ main (int argc, char *argv[])
 
     a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
     REGEX_TEST_automaton_save_graph (a, filename,
-                                       REGEX_TEST_GRAPH_DEFAULT |
-                                       REGEX_TEST_GRAPH_VERBOSE);
+                                     REGEX_TEST_GRAPH_DEFAULT
+                                     | REGEX_TEST_GRAPH_VERBOSE);
     REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
     a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
     REGEX_TEST_automaton_save_graph (a, filename,
-                                       REGEX_TEST_GRAPH_DEFAULT |
-                                       REGEX_TEST_GRAPH_COLORING);
+                                     REGEX_TEST_GRAPH_DEFAULT
+                                     | REGEX_TEST_GRAPH_COLORING);
     REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
     a = REGEX_INTERNAL_construct_nfa (regex[i], strlen (regex[i]));
     REGEX_TEST_automaton_save_graph (a, filename,
-                                       REGEX_TEST_GRAPH_DEFAULT |
-                                       REGEX_TEST_GRAPH_VERBOSE |
-                                       REGEX_TEST_GRAPH_COLORING);
+                                     REGEX_TEST_GRAPH_DEFAULT
+                                     | REGEX_TEST_GRAPH_VERBOSE
+                                     | REGEX_TEST_GRAPH_COLORING);
     REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
@@ -134,15 +134,15 @@ main (int argc, char *argv[])
 
     a = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 0);
     REGEX_TEST_automaton_save_graph (a, filename,
-                                       REGEX_TEST_GRAPH_DEFAULT |
-                                       REGEX_TEST_GRAPH_VERBOSE);
+                                     REGEX_TEST_GRAPH_DEFAULT
+                                     | REGEX_TEST_GRAPH_VERBOSE);
     REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
     a = REGEX_INTERNAL_construct_dfa (regex[i], strlen (regex[i]), 0);
     REGEX_TEST_automaton_save_graph (a, filename,
-                                       REGEX_TEST_GRAPH_DEFAULT |
-                                       REGEX_TEST_GRAPH_COLORING);
+                                     REGEX_TEST_GRAPH_DEFAULT
+                                     | REGEX_TEST_GRAPH_COLORING);
     REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
 
@@ -151,7 +151,6 @@ main (int argc, char *argv[])
     REGEX_TEST_automaton_save_graph (a, filename, REGEX_TEST_GRAPH_DEFAULT);
     REGEX_INTERNAL_automaton_destroy (a);
     error += filecheck (filename);
-
   }
 
   return error;

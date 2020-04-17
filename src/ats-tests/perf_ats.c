@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2010-2013, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2013, 2016 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -31,15 +31,20 @@
 #include "ats-testing.h"
 
 
-#define TEST_ATS_PREFRENCE_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
+#define TEST_ATS_PREFRENCE_FREQUENCY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 1)
 #define TEST_ATS_PREFRENCE_START 1.0
 #define TEST_ATS_PREFRENCE_DELTA 1.0
 
-#define TEST_MESSAGE_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
+#define TEST_MESSAGE_FREQUENCY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 1)
 
-#define TEST_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 120)
-#define BENCHMARK_DURATION GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 10)
-#define LOGGING_FREQUENCY GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MILLISECONDS, 500)
+#define TEST_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                    120)
+#define BENCHMARK_DURATION GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 10)
+#define LOGGING_FREQUENCY GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_MILLISECONDS, 500)
 #define TESTNAME_PREFIX "perf_ats_"
 #define DEFAULT_SLAVES_NUM 2
 #define DEFAULT_MASTERS_NUM 1
@@ -143,10 +148,10 @@ evaluate ()
     mp = &mps[c_m];
     fprintf (stderr,
              "Master [%u]: sent: %u KiB in %u sec. = %u KiB/s, received: %u KiB in %u sec. = %u KiB/s\n",
-        mp->no, mp->total_bytes_sent / 1024, duration,
-        (mp->total_bytes_sent / 1024) / duration,
-        mp->total_bytes_received / 1024, duration,
-        (mp->total_bytes_received / 1024) / duration);
+             mp->no, mp->total_bytes_sent / 1024, duration,
+             (mp->total_bytes_sent / 1024) / duration,
+             mp->total_bytes_received / 1024, duration,
+             (mp->total_bytes_received / 1024) / duration);
 
     for (c_s = 0; c_s < num_slaves; c_s++)
     {
@@ -159,16 +164,17 @@ evaluate ()
 
       if (duration > 0)
       {
-    	  kb_sent_sec = (p->bytes_sent / 1024) / duration;
-    	  kb_recv_sec = (p->bytes_received / 1024) / duration;
+        kb_sent_sec = (p->bytes_sent / 1024) / duration;
+        kb_recv_sec = (p->bytes_received / 1024) / duration;
       }
 
       if (mp->total_bytes_sent > 0)
-    	  kb_sent_percent = ((double) p->bytes_sent * 100) / mp->total_bytes_sent;
+        kb_sent_percent = ((double) p->bytes_sent * 100) / mp->total_bytes_sent;
       if (mp->total_bytes_received > 0)
-    	  kb_recv_percent = ((double) p->bytes_received * 100) / mp->total_bytes_received;
+        kb_recv_percent = ((double) p->bytes_received * 100)
+                          / mp->total_bytes_received;
       if (1000 * p->messages_sent > 0)
-    	  rtt = p->total_app_rtt / (1000 * p->messages_sent);
+        rtt = p->total_app_rtt / (1000 * p->messages_sent);
       fprintf (stderr,
                "%c Master [%u] -> Slave [%u]: sent %u KiB/s (%.2f %%), received %u KiB/s (%.2f %%)\n",
                (mp->pref_partner == p->dest) ? '*' : ' ',
@@ -193,7 +199,7 @@ static void
 do_shutdown (void *cls)
 {
   if (GNUNET_YES == logging)
-    GNUNET_ATS_TEST_logging_clean_up(l);
+    GNUNET_ATS_TEST_logging_clean_up (l);
   if (NULL != timeout_task)
   {
     GNUNET_SCHEDULER_cancel (timeout_task);
@@ -235,7 +241,8 @@ print_progress (void *cls)
   progress_task = NULL;
   fprintf (stderr,
            "%llu..",
-           (long long unsigned) perf_duration.rel_value_us / (1000 * 1000) - calls);
+           (long long unsigned) perf_duration.rel_value_us / (1000 * 1000)
+           - calls);
   calls++;
 
   progress_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
@@ -251,14 +258,16 @@ ats_pref_task (void *cls)
 
   me->ats_task = NULL;
 
-  GNUNET_log(GNUNET_ERROR_TYPE_DEBUG, " Master [%u] set preference for slave [%u] to %f\n",
-      me->no, me->pref_partner->no, me->pref_value);
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+              " Master [%u] set preference for slave [%u] to %f\n",
+              me->no, me->pref_partner->no, me->pref_value);
   GNUNET_ATS_performance_change_preference (me->ats_perf_handle,
-      &me->pref_partner->id,
-      pref_val, me->pref_value, GNUNET_ATS_PREFERENCE_END);
+                                            &me->pref_partner->id,
+                                            pref_val, me->pref_value,
+                                            GNUNET_ATS_PREFERENCE_END);
   me->pref_value += TEST_ATS_PREFRENCE_DELTA;
   me->ats_task = GNUNET_SCHEDULER_add_delayed (TEST_ATS_PREFRENCE_FREQUENCY,
-      &ats_pref_task, cls);
+                                               &ats_pref_task, cls);
 }
 
 
@@ -271,8 +280,8 @@ start_benchmark (void *cls)
   progress_task = GNUNET_SCHEDULER_add_now (&print_progress,
                                             NULL);
 
-  GNUNET_log(GNUNET_ERROR_TYPE_INFO,
-             "Topology connected, start benchmarking...\n");
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+              "Topology connected, start benchmarking...\n");
 
   /* Start sending test messages */
   for (c_m = 0; c_m < num_masters; c_m++)
@@ -322,6 +331,7 @@ find_partner (struct BenchmarkPeer *me,
               const struct GNUNET_PeerIdentity *peer)
 {
   int c_m;
+
   GNUNET_assert (NULL != me);
   GNUNET_assert (NULL != peer);
 
@@ -361,7 +371,7 @@ log_request_cb (void *cls,
 
   if ((p->bandwidth_in != ntohl (bandwidth_in.value__)) ||
       (p->bandwidth_out != ntohl (bandwidth_out.value__)))
-  p->bandwidth_in = ntohl (bandwidth_in.value__);
+    p->bandwidth_in = ntohl (bandwidth_in.value__);
   p->bandwidth_out = ntohl (bandwidth_out.value__);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -410,7 +420,7 @@ main (int argc, char *argv[])
   /* Determine solver name */
   solver = GNUNET_strdup (tmp);
   /* Remove .exe prefix */
-  if (NULL != (dotexe = strstr (solver, ".exe")) && dotexe[4] == '\0')
+  if ((NULL != (dotexe = strstr (solver, ".exe"))) && (dotexe[4] == '\0'))
     dotexe[0] = '\0';
 
   /* Determine first '_' after solver */
@@ -418,7 +428,7 @@ main (int argc, char *argv[])
   if (NULL == tmp_sep)
   {
     fprintf (stderr, "Unable to parse test name `%s'\n", argv[0]);
-    GNUNET_free(solver);
+    GNUNET_free (solver);
     return GNUNET_SYSERR;
   }
   tmp_sep[0] = '\0';
@@ -427,7 +437,7 @@ main (int argc, char *argv[])
   if (NULL == tmp_sep)
   {
     fprintf (stderr, "Unable to parse test name `%s'\n", argv[0]);
-    GNUNET_free(solver);
+    GNUNET_free (solver);
     return GNUNET_SYSERR;
   }
   tmp_sep[0] = '\0';
@@ -444,10 +454,10 @@ main (int argc, char *argv[])
     return GNUNET_SYSERR;
   }
 
-  pref_str = GNUNET_strdup(tmp_sep + 1);
+  pref_str = GNUNET_strdup (tmp_sep + 1);
 
   GNUNET_asprintf (&conf_name, "%s%s_%s.conf", TESTNAME_PREFIX, solver,
-      pref_str);
+                   pref_str);
   GNUNET_asprintf (&test_name, "%s%s_%s", TESTNAME_PREFIX, solver, pref_str);
 
   for (c = 0; c <= strlen (pref_str); c++)
@@ -473,8 +483,8 @@ main (int argc, char *argv[])
   if (-1 == pref_val)
   {
     fprintf (stderr, "Unknown preference: `%s'\n", pref_str);
-    GNUNET_free(solver);
-    GNUNET_free(pref_str);
+    GNUNET_free (solver);
+    GNUNET_free (pref_str);
     GNUNET_free (comm_name);
     return -1;
   }
@@ -486,14 +496,18 @@ main (int argc, char *argv[])
   }
   if (c < argc - 1)
   {
-    if (GNUNET_OK != GNUNET_STRINGS_fancy_time_to_relative (argv[c + 1], &perf_duration))
-        fprintf (stderr, "Failed to parse duration `%s'\n", argv[c + 1]);
+    if (GNUNET_OK != GNUNET_STRINGS_fancy_time_to_relative (argv[c + 1],
+                                                            &perf_duration))
+      fprintf (stderr, "Failed to parse duration `%s'\n", argv[c + 1]);
   }
   else
   {
     perf_duration = BENCHMARK_DURATION;
   }
-  fprintf (stderr, "Running benchmark for %llu secs\n", (unsigned long long) (perf_duration.rel_value_us) / (1000 * 1000));
+  fprintf (stderr, "Running benchmark for %llu secs\n", (unsigned long
+                                                         long) (perf_duration.
+                                                                rel_value_us)
+           / (1000 * 1000));
 
   for (c = 0; c < (argc - 1); c++)
   {
@@ -543,26 +557,27 @@ main (int argc, char *argv[])
     }
     if (c < argc - 1)
     {
-      if (GNUNET_OK != GNUNET_STRINGS_fancy_time_to_relative (argv[c + 1], &log_frequency))
-          fprintf (stderr, "Failed to parse duration `%s'\n", argv[c + 1]);
+      if (GNUNET_OK != GNUNET_STRINGS_fancy_time_to_relative (argv[c + 1],
+                                                              &log_frequency))
+        fprintf (stderr, "Failed to parse duration `%s'\n", argv[c + 1]);
     }
     else
     {
       log_frequency = LOGGING_FREQUENCY;
     }
     fprintf (stderr, "Using log frequency %llu ms\n",
-        (unsigned long long) (log_frequency.rel_value_us) / (1000));
+             (unsigned long long) (log_frequency.rel_value_us) / (1000));
   }
 
-  GNUNET_asprintf (&testname, "%s_%s_%s",solver, comm_name, pref_str);
+  GNUNET_asprintf (&testname, "%s_%s_%s", solver, comm_name, pref_str);
 
   if (num_slaves < num_masters)
   {
     fprintf (stderr,
              "Number of master peers is lower than slaves! exit...\n");
-    GNUNET_free(test_name);
-    GNUNET_free(solver);
-    GNUNET_free(pref_str);
+    GNUNET_free (test_name);
+    GNUNET_free (solver);
+    GNUNET_free (pref_str);
     GNUNET_free (comm_name);
     return GNUNET_SYSERR;
   }
@@ -573,7 +588,7 @@ main (int argc, char *argv[])
   GNUNET_ATS_TEST_create_topology ("perf-ats",
                                    conf_name,
                                    num_slaves,
-				   num_masters,
+                                   num_masters,
                                    test_core,
                                    &do_benchmark,
                                    NULL,
@@ -581,5 +596,6 @@ main (int argc, char *argv[])
 
   return result;
 }
+
 
 /* end of file perf_ats.c */

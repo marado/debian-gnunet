@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file peerstore/test_peerstore_api_store.c
  * @brief testcase for peerstore store operation
@@ -129,7 +129,7 @@ test2_cont (void *cls, int success)
                             subsystem,
                             &pid, key,
                             &test2_cont2,
-			    NULL);
+                            NULL);
 }
 
 
@@ -212,7 +212,7 @@ run (void *cls, const struct GNUNET_CONFIGURATION_Handle *cfg,
 {
   h = GNUNET_PEERSTORE_connect (cfg);
   GNUNET_assert (NULL != h);
-  memset (&pid, 1, sizeof (pid));
+  memset (&pid, 1, sizeof(pid));
   test1 ();
 }
 
@@ -228,5 +228,6 @@ main (int argc, char *argv[])
     return 1;
   return ok;
 }
+
 
 /* end of test_peerstore_api_store.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file datastore/datastore.h
@@ -78,7 +78,6 @@ struct StatusMessage
    * by the datacache at this time, zero for unknown or no limit.
    */
   struct GNUNET_TIME_AbsoluteNBO min_expiration;
-
 };
 
 
@@ -98,7 +97,6 @@ struct ReleaseReserveMessage
    * Reservation id.
    */
   int32_t rid GNUNET_PACKED;
-
 };
 
 
@@ -132,7 +130,6 @@ struct GetKeyMessage
    * Desired key.
    */
   struct GNUNET_HashCode key;
-
 };
 
 
@@ -161,7 +158,6 @@ struct GetMessage
    * If true return a random result
    */
   uint32_t random GNUNET_PACKED;
-
 };
 
 
@@ -185,7 +181,6 @@ struct GetZeroAnonymityMessage
    * UID at which to start the search
    */
   uint64_t next_uid GNUNET_PACKED;
-
 };
 
 
@@ -255,10 +250,8 @@ struct DataMessage
    * Key under which the item can be found.
    */
   struct GNUNET_HashCode key;
-
 };
 GNUNET_NETWORK_STRUCT_END
-
 
 
 #endif

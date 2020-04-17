@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file dht/test_dht_api.c
  * @brief base test case for dht api
@@ -34,7 +34,8 @@
 /**
  * How long until we really give up on a particular testcase portion?
  */
-#define TOTAL_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 60)
+#define TOTAL_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                     60)
 
 static struct GNUNET_DHT_Handle *dht_handle;
 
@@ -74,7 +75,7 @@ static void
 end_badly (void *cls)
 {
   die_task = NULL;
-  FPRINTF (stderr,
+  fprintf (stderr,
            "%s",
            "Ending on an unhappy note.\n");
   GNUNET_SCHEDULER_shutdown ();
@@ -114,7 +115,7 @@ test_get (void *cls)
   put_handle = NULL;
   memset (&hash,
           42,
-          sizeof (struct GNUNET_HashCode));
+          sizeof(struct GNUNET_HashCode));
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Called test_get!\n");
   GNUNET_assert (dht_handle != NULL);
@@ -155,7 +156,7 @@ run (void *cls,
                                            NULL);
   memset (&hash,
           42,
-          sizeof (struct GNUNET_HashCode));
+          sizeof(struct GNUNET_HashCode));
   data = GNUNET_malloc (data_size);
   memset (data, 43, data_size);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -182,10 +183,11 @@ main (int argc,
       char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-dht-api",
-				    "test_dht_api_data.conf",
-				    &run, NULL))
+                                    "test_dht_api_data.conf",
+                                    &run, NULL))
     return 1;
   return ok;
 }
+
 
 /* end of test_dht_api.c */

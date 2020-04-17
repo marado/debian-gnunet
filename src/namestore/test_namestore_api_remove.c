@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api.c
  * @brief testcase for namestore_api.c to: remove record
@@ -37,7 +37,7 @@
 
 static struct GNUNET_NAMESTORE_Handle *nsh;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -95,23 +95,23 @@ end (void *cls)
 
 static void
 remove_cont (void *cls,
-	     int32_t success,
-	     const char *emsg)
+             int32_t success,
+             const char *emsg)
 {
   nsqe = NULL;
   if (GNUNET_YES != success)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Records could not be removed: `%s'\n"),
+                _ ("Records could not be removed: `%s'\n"),
                 emsg);
     if (NULL != endbadly_task)
       GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task =  GNUNET_SCHEDULER_add_now (&endbadly,
-                                               NULL);
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly,
+                                              NULL);
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-	      "Records were removed, perform lookup\n");
+              "Records were removed, perform lookup\n");
   removed = GNUNET_YES;
   if (NULL != endbadly_task)
     GNUNET_SCHEDULER_cancel (endbadly_task);
@@ -122,7 +122,7 @@ remove_cont (void *cls,
 static void
 put_cont (void *cls,
           int32_t success,
-	  const char *emsg)
+          const char *emsg)
 {
   const char *name = cls;
 
@@ -132,22 +132,22 @@ put_cont (void *cls,
   {
     GNUNET_break (0);
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		"Namestore could not store record: `%s'\n",
-		emsg);
+                "Namestore could not store record: `%s'\n",
+                emsg);
     if (endbadly_task != NULL)
       GNUNET_SCHEDULER_cancel (endbadly_task);
-    endbadly_task =  GNUNET_SCHEDULER_add_now (&endbadly, NULL);
+    endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
   }
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store added record for `%s': %s\n",
-	      name,
-	      (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
+              "Name store added record for `%s': %s\n",
+              name,
+              (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
   nsqe = GNUNET_NAMESTORE_records_store (nsh,
                                          privkey,
                                          name,
-					 0, NULL,
+                                         0, NULL,
                                          &remove_cont, (void *) name);
 }
 
@@ -158,10 +158,10 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   struct GNUNET_GNSRECORD_Data rd;
-  const char * name = "dummy.dummy.gnunet";
+  const char *name = "dummy.dummy.gnunet";
 
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
+                                                &endbadly,
                                                 NULL);
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
@@ -170,7 +170,7 @@ run (void *cls,
 
   removed = GNUNET_NO;
 
-  rd.expiration_time = GNUNET_TIME_absolute_get().abs_value_us;
+  rd.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us;
   rd.record_type = TEST_RECORD_TYPE;
   rd.data_size = TEST_RECORD_DATALEN;
   rd.data = GNUNET_malloc (TEST_RECORD_DATALEN);
@@ -191,9 +191,9 @@ run (void *cls,
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore cannot store no block\n"));
+                _ ("Namestore cannot store no block\n"));
   }
-  GNUNET_free ((void *)rd.data);
+  GNUNET_free ((void *) rd.data);
 }
 
 
@@ -221,5 +221,6 @@ main (int argc, char *argv[])
   GNUNET_free (cfg_name);
   return res;
 }
+
 
 /* end of test_namestore_api_remove.c */

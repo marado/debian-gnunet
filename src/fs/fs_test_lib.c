@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_test_lib.c
@@ -39,7 +39,6 @@
  */
 struct TestPublishOperation
 {
-
   /**
    * Handle for the operation to connect to the peer's 'fs' service.
    */
@@ -63,7 +62,7 @@ struct TestPublishOperation
   /**
    * Task to abort publishing (timeout).
    */
-  struct GNUNET_SCHEDULER_Task * publish_timeout_task;
+  struct GNUNET_SCHEDULER_Task *publish_timeout_task;
 
   /**
    * Seed for file generation.
@@ -112,7 +111,6 @@ struct TestPublishOperation
  */
 struct TestDownloadOperation
 {
-
   /**
    * Handle for the operation to connect to the peer's 'fs' service.
    */
@@ -146,7 +144,7 @@ struct TestDownloadOperation
   /**
    * Task to abort downloading (timeout).
    */
-  struct GNUNET_SCHEDULER_Task * download_timeout_task;
+  struct GNUNET_SCHEDULER_Task *download_timeout_task;
 
   /**
    * Context for current download operation.
@@ -172,7 +170,6 @@ struct TestDownloadOperation
    * Verbosity level of the current operation.
    */
   unsigned int verbose;
-
 };
 
 
@@ -190,13 +187,13 @@ report_uri (void *cls)
   GNUNET_FS_publish_stop (po->publish_context);
   GNUNET_TESTBED_operation_done (po->fs_op);
   po->publish_cont (po->publish_cont_cls,
-		    po->publish_uri,
-		    (GNUNET_YES == po->do_index)
-		    ? po->publish_tmp_file
-		    : NULL);
+                    po->publish_uri,
+                    (GNUNET_YES == po->do_index)
+                    ? po->publish_tmp_file
+                    : NULL);
   GNUNET_FS_uri_destroy (po->publish_uri);
-  if ( (GNUNET_YES != po->do_index) &&
-       (NULL != po->publish_tmp_file) )
+  if ((GNUNET_YES != po->do_index) &&
+      (NULL != po->publish_tmp_file))
     (void) GNUNET_DISK_directory_remove (po->publish_tmp_file);
   GNUNET_free_non_null (po->publish_tmp_file);
   GNUNET_free (po);
@@ -242,24 +239,28 @@ publish_progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
     GNUNET_SCHEDULER_cancel (po->publish_timeout_task);
     po->publish_timeout_task = NULL;
     po->publish_uri =
-        GNUNET_FS_uri_dup (info->value.publish.specifics.completed.chk_uri);
+      GNUNET_FS_uri_dup (info->value.publish.specifics.completed.chk_uri);
     GNUNET_SCHEDULER_add_now (&report_uri,
                               po);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS:
     if (po->verbose)
       GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Publishing at %llu/%llu bytes\n",
                   (unsigned long long) info->value.publish.completed,
                   (unsigned long long) info->value.publish.size);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_PROGRESS:
     if (po->verbose)
       GNUNET_log (GNUNET_ERROR_TYPE_INFO, "Download at %llu/%llu bytes\n",
                   (unsigned long long) info->value.download.completed,
                   (unsigned long long) info->value.download.size);
     break;
+
   default:
     break;
   }
@@ -279,10 +280,10 @@ publish_progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *info)
  */
 static size_t
 file_generator (void *cls,
-		uint64_t offset,
-		size_t max,
-		void *buf,
-		char **emsg)
+                uint64_t offset,
+                size_t max,
+                void *buf,
+                char **emsg)
 {
   uint32_t *publish_seed = cls;
   uint64_t pos;
@@ -317,15 +318,15 @@ file_generator (void *cls,
  */
 static void *
 publish_connect_adapter (void *cls,
-			 const struct GNUNET_CONFIGURATION_Handle *cfg)
+                         const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct TestPublishOperation *po = cls;
 
   return GNUNET_FS_start (cfg,
-			  "fs-test-publish",
-			  &publish_progress_cb, po,
-			  GNUNET_FS_FLAGS_NONE,
-			  GNUNET_FS_OPTIONS_END);
+                          "fs-test-publish",
+                          &publish_progress_cb, po,
+                          GNUNET_FS_FLAGS_NONE,
+                          GNUNET_FS_OPTIONS_END);
 }
 
 
@@ -337,7 +338,7 @@ publish_connect_adapter (void *cls,
  */
 static void
 fs_disconnect_adapter (void *cls,
-		       void *op_result)
+                       void *op_result)
 {
   struct GNUNET_FS_Handle *fs = op_result;
 
@@ -356,9 +357,9 @@ fs_disconnect_adapter (void *cls,
  */
 static void
 publish_fs_connect_complete_cb (void *cls,
-				struct GNUNET_TESTBED_Operation *op,
-				void *ca_result,
-				const char *emsg)
+                                struct GNUNET_TESTBED_Operation *op,
+                                void *ca_result,
+                                const char *emsg)
 {
   struct TestPublishOperation *po = cls;
   struct GNUNET_FS_FileInformation *fi;
@@ -370,14 +371,15 @@ publish_fs_connect_complete_cb (void *cls,
   struct GNUNET_FS_BlockOptions bo;
 
   if (NULL == ca_result)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Failed to connect to FS for publishing: %s\n", emsg);
-      po->publish_cont (po->publish_cont_cls,
-			NULL, NULL);
-      GNUNET_TESTBED_operation_done (po->fs_op);
-      GNUNET_free (po);
-      return;
-    }
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failed to connect to FS for publishing: %s\n", emsg);
+    po->publish_cont (po->publish_cont_cls,
+                      NULL, NULL);
+    GNUNET_TESTBED_operation_done (po->fs_op);
+    GNUNET_free (po);
+    return;
+  }
   po->fs = ca_result;
 
   bo.expiration_time = GNUNET_TIME_relative_to_absolute (CONTENT_LIFETIME);
@@ -389,17 +391,18 @@ publish_fs_connect_complete_cb (void *cls,
     po->publish_tmp_file = GNUNET_DISK_mktemp ("fs-test-publish-index");
     GNUNET_assert (po->publish_tmp_file != NULL);
     fh = GNUNET_DISK_file_open (po->publish_tmp_file,
-                                GNUNET_DISK_OPEN_WRITE |
-                                GNUNET_DISK_OPEN_CREATE,
-                                GNUNET_DISK_PERM_USER_READ |
-                                GNUNET_DISK_PERM_USER_WRITE);
+                                GNUNET_DISK_OPEN_WRITE
+                                | GNUNET_DISK_OPEN_CREATE,
+                                GNUNET_DISK_PERM_USER_READ
+                                | GNUNET_DISK_PERM_USER_WRITE);
     GNUNET_assert (NULL != fh);
     off = 0;
     while (off < po->size)
     {
-      bsize = GNUNET_MIN (sizeof (buf), po->size - off);
+      bsize = GNUNET_MIN (sizeof(buf), po->size - off);
       emsg = NULL;
-      GNUNET_assert (bsize == file_generator (&po->publish_seed, off, bsize, buf, &em));
+      GNUNET_assert (bsize == file_generator (&po->publish_seed, off, bsize,
+                                              buf, &em));
       GNUNET_assert (em == NULL);
       GNUNET_assert (bsize == GNUNET_DISK_file_write (fh, buf, bsize));
       off += bsize;
@@ -415,14 +418,15 @@ publish_fs_connect_complete_cb (void *cls,
   {
     fi = GNUNET_FS_file_information_create_from_reader (po->fs, po,
                                                         po->size,
-							&file_generator, &po->publish_seed,
-							NULL, NULL,
+                                                        &file_generator,
+                                                        &po->publish_seed,
+                                                        NULL, NULL,
                                                         po->do_index, &bo);
     GNUNET_assert (NULL != fi);
   }
   po->publish_context =
     GNUNET_FS_publish_start (po->fs, fi, NULL, NULL, NULL,
-			     GNUNET_FS_PUBLISH_OPTION_NONE);
+                             GNUNET_FS_PUBLISH_OPTION_NONE);
 }
 
 
@@ -459,15 +463,15 @@ GNUNET_FS_TEST_publish (struct GNUNET_TESTBED_Peer *peer,
   po->verbose = verbose;
   po->do_index = do_index;
   po->fs_op = GNUNET_TESTBED_service_connect (po,
-					      peer,
-					      "fs",
-					      &publish_fs_connect_complete_cb,
-					      po,
-					      &publish_connect_adapter,
-					      &fs_disconnect_adapter,
-					      po);
+                                              peer,
+                                              "fs",
+                                              &publish_fs_connect_complete_cb,
+                                              po,
+                                              &publish_connect_adapter,
+                                              &fs_disconnect_adapter,
+                                              po);
   po->publish_timeout_task =
-      GNUNET_SCHEDULER_add_delayed (timeout, &publish_timeout, po);
+    GNUNET_SCHEDULER_add_delayed (timeout, &publish_timeout, po);
 }
 
 
@@ -538,17 +542,20 @@ download_progress_cb (void *cls,
                   (unsigned long long) info->value.download.completed,
                   (unsigned long long) info->value.download.size);
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_COMPLETED:
     GNUNET_SCHEDULER_cancel (dop->download_timeout_task);
     dop->download_timeout_task = NULL;
     GNUNET_SCHEDULER_add_now (&report_success, dop);
     break;
+
   case GNUNET_FS_STATUS_DOWNLOAD_ACTIVE:
   case GNUNET_FS_STATUS_DOWNLOAD_INACTIVE:
     break;
-    /* FIXME: monitor data correctness during download progress */
-    /* FIXME: do performance reports given sufficient verbosity */
-    /* FIXME: advance timeout task to "immediate" on error */
+
+  /* FIXME: monitor data correctness during download progress */
+  /* FIXME: do performance reports given sufficient verbosity */
+  /* FIXME: advance timeout task to "immediate" on error */
   default:
     break;
   }
@@ -567,15 +574,15 @@ download_progress_cb (void *cls,
  */
 static void *
 download_connect_adapter (void *cls,
-			 const struct GNUNET_CONFIGURATION_Handle *cfg)
+                          const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   struct TestPublishOperation *po = cls;
 
   return GNUNET_FS_start (cfg,
-			  "fs-test-download",
-			  &download_progress_cb, po,
-			  GNUNET_FS_FLAGS_NONE,
-			  GNUNET_FS_OPTIONS_END);
+                          "fs-test-download",
+                          &download_progress_cb, po,
+                          GNUNET_FS_FLAGS_NONE,
+                          GNUNET_FS_OPTIONS_END);
 }
 
 
@@ -590,9 +597,9 @@ download_connect_adapter (void *cls,
  */
 static void
 download_fs_connect_complete_cb (void *cls,
-				 struct GNUNET_TESTBED_Operation *op,
-				 void *ca_result,
-				 const char *emsg)
+                                 struct GNUNET_TESTBED_Operation *op,
+                                 void *ca_result,
+                                 const char *emsg)
 {
   struct TestDownloadOperation *dop = cls;
 
@@ -600,8 +607,8 @@ download_fs_connect_complete_cb (void *cls,
   GNUNET_assert (NULL != dop->fs);
   dop->download_context =
     GNUNET_FS_download_start (dop->fs, dop->uri, NULL, NULL, NULL, 0, dop->size,
-			      dop->anonymity, GNUNET_FS_DOWNLOAD_OPTION_NONE,
-			      NULL, NULL);
+                              dop->anonymity, GNUNET_FS_DOWNLOAD_OPTION_NONE,
+                              NULL, NULL);
 }
 
 
@@ -637,15 +644,15 @@ GNUNET_FS_TEST_download (struct GNUNET_TESTBED_Peer *peer,
   dop->download_seed = seed;
 
   dop->fs_op = GNUNET_TESTBED_service_connect (dop,
-					       peer,
-					       "fs",
-					       &download_fs_connect_complete_cb,
-					       dop,
-					       &download_connect_adapter,
-					       &fs_disconnect_adapter,
-					       dop);
+                                               peer,
+                                               "fs",
+                                               &download_fs_connect_complete_cb,
+                                               dop,
+                                               &download_connect_adapter,
+                                               &fs_disconnect_adapter,
+                                               dop);
   dop->download_timeout_task =
-      GNUNET_SCHEDULER_add_delayed (timeout, &download_timeout, dop);
+    GNUNET_SCHEDULER_add_delayed (timeout, &download_timeout, dop);
 }
 
 

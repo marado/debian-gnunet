@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport_api2_communication.c
@@ -231,7 +231,6 @@ struct GNUNET_TRANSPORT_CommunicatorHandle
  */
 struct GNUNET_TRANSPORT_QueueHandle
 {
-
   /**
    * Kept in a DLL.
    */
@@ -290,7 +289,6 @@ struct GNUNET_TRANSPORT_QueueHandle
  */
 struct GNUNET_TRANSPORT_AddressIdentifier
 {
-
   /**
    * Kept in a DLL.
    */
@@ -501,7 +499,7 @@ handle_incoming_ack (
     if ((fc->id == incoming_ack->fc_id) &&
         (0 == memcmp (&fc->sender,
                       &incoming_ack->sender,
-                      sizeof (struct GNUNET_PeerIdentity))))
+                      sizeof(struct GNUNET_PeerIdentity))))
     {
       GNUNET_CONTAINER_DLL_remove (ch->fc_head, ch->fc_tail, fc);
       fc->cb (fc->cb_cls, GNUNET_OK);
@@ -643,7 +641,7 @@ handle_send_msg (void *cls, const struct GNUNET_TRANSPORT_SendMessageTo *smt)
     if ((qh->queue_id == smt->qid) &&
         (0 == memcmp (&qh->peer,
                       &smt->receiver,
-                      sizeof (struct GNUNET_PeerIdentity))))
+                      sizeof(struct GNUNET_PeerIdentity))))
       break;
   if (NULL == qh)
   {
@@ -717,24 +715,24 @@ static void
 reconnect (struct GNUNET_TRANSPORT_CommunicatorHandle *ch)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (incoming_ack,
-                              GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG_ACK,
-                              struct GNUNET_TRANSPORT_IncomingMessageAck,
-                              ch),
-     GNUNET_MQ_hd_var_size (create_queue,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE,
-                            struct GNUNET_TRANSPORT_CreateQueue,
-                            ch),
-     GNUNET_MQ_hd_var_size (send_msg,
-                            GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG,
-                            struct GNUNET_TRANSPORT_SendMessageTo,
-                            ch),
-     GNUNET_MQ_hd_var_size (
-       backchannel_incoming,
-       GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL_INCOMING,
-       struct GNUNET_TRANSPORT_CommunicatorBackchannelIncoming,
-       ch),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (incoming_ack,
+                             GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG_ACK,
+                             struct GNUNET_TRANSPORT_IncomingMessageAck,
+                             ch),
+    GNUNET_MQ_hd_var_size (create_queue,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE,
+                           struct GNUNET_TRANSPORT_CreateQueue,
+                           ch),
+    GNUNET_MQ_hd_var_size (send_msg,
+                           GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG,
+                           struct GNUNET_TRANSPORT_SendMessageTo,
+                           ch),
+    GNUNET_MQ_hd_var_size (
+      backchannel_incoming,
+      GNUNET_MESSAGE_TYPE_TRANSPORT_COMMUNICATOR_BACKCHANNEL_INCOMING,
+      struct GNUNET_TRANSPORT_CommunicatorBackchannelIncoming,
+      ch),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_TRANSPORT_CommunicatorAvailableMessage *cam;
   struct GNUNET_MQ_Envelope *env;
 
@@ -825,7 +823,7 @@ GNUNET_TRANSPORT_communicator_disconnect (
   disconnect (ch);
   while (NULL != ch->ai_head)
   {
-    GNUNET_break (0); /* communicator forgot to remove address, warn! */
+    GNUNET_break (0);  /* communicator forgot to remove address, warn! */
     GNUNET_TRANSPORT_communicator_address_remove (ch->ai_head);
   }
   GNUNET_free (ch);
@@ -1052,7 +1050,7 @@ GNUNET_TRANSPORT_communicator_notify (
   size_t slen = strlen (comm) + 1;
   uint16_t mlen = ntohs (header->size);
 
-  GNUNET_assert (mlen + slen + sizeof (*cb) < UINT16_MAX);
+  GNUNET_assert (mlen + slen + sizeof(*cb) < UINT16_MAX);
   env =
     GNUNET_MQ_msg_extra (cb,
                          slen + mlen,

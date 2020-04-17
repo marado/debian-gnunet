@@ -11,12 +11,12 @@
    WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Affero General Public License for more details.
-  
+
    You should have received a copy of the GNU Affero General Public License
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-   */
+ */
 /**
  * @author Martin Schanzenbach
  * @file gns/plugin_rest_copying.c
@@ -30,7 +30,8 @@
 
 #define GNUNET_REST_API_NS_COPYING "/copying"
 
-#define GNUNET_REST_COPYING_TEXT "GNU Affero General Public License version 3 or later. See also: <http://www.gnu.org/licenses/>"
+#define GNUNET_REST_COPYING_TEXT \
+  "GNU Affero General Public License version 3 or later. See also: <http://www.gnu.org/licenses/>"
 
 /**
  * @brief struct returned by the initialization function of the plugin
@@ -63,7 +64,6 @@ struct RequestHandle
    * HTTP response code
    */
   int response_code;
-
 };
 
 
@@ -106,8 +106,8 @@ do_error (void *cls)
  */
 static void
 get_cont (struct GNUNET_REST_RequestHandle *con_handle,
-              const char* url,
-              void *cls)
+          const char*url,
+          void *cls)
 {
   struct MHD_Response *resp;
   struct RequestHandle *handle = cls;
@@ -120,7 +120,6 @@ get_cont (struct GNUNET_REST_RequestHandle *con_handle,
 }
 
 
-
 /**
  * Handle rest request
  *
@@ -128,7 +127,7 @@ get_cont (struct GNUNET_REST_RequestHandle *con_handle,
  */
 static void
 options_cont (struct GNUNET_REST_RequestHandle *con_handle,
-              const char* url,
+              const char*url,
               void *cls)
 {
   struct MHD_Response *resp;
@@ -162,8 +161,8 @@ rest_copying_process_request (struct GNUNET_REST_RequestHandle *conndata_handle,
                               void *proc_cls)
 {
   static const struct GNUNET_REST_RequestHandler handlers[] = {
-    {MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_COPYING, &get_cont},
-    {MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_COPYING, &options_cont},
+    { MHD_HTTP_METHOD_GET, GNUNET_REST_API_NS_COPYING, &get_cont },
+    { MHD_HTTP_METHOD_OPTIONS, GNUNET_REST_API_NS_COPYING, &options_cont },
     GNUNET_REST_HANDLER_END
   };
   struct RequestHandle *handle = GNUNET_new (struct RequestHandle);
@@ -194,19 +193,20 @@ void *
 libgnunet_plugin_rest_copying_init (void *cls)
 {
   static struct Plugin plugin;
+
   cfg = cls;
   struct GNUNET_REST_Plugin *api;
 
   if (NULL != plugin.cfg)
     return NULL;                /* can only initialize once! */
-  memset (&plugin, 0, sizeof (struct Plugin));
+  memset (&plugin, 0, sizeof(struct Plugin));
   plugin.cfg = cfg;
   api = GNUNET_new (struct GNUNET_REST_Plugin);
   api->cls = &plugin;
   api->name = GNUNET_REST_API_NS_COPYING;
   api->process_request = &rest_copying_process_request;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("COPYING REST API initialized\n"));
+              _ ("COPYING REST API initialized\n"));
   return api;
 }
 
@@ -229,5 +229,6 @@ libgnunet_plugin_rest_copying_done (void *cls)
               "COPYING REST plugin is finished\n");
   return NULL;
 }
+
 
 /* end of plugin_rest_copying.c */

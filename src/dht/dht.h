@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -61,7 +61,6 @@ struct GNUNET_DHT_ClientGetStopMessage
    * Key of this request
    */
   struct GNUNET_HashCode key;
-
 };
 
 
@@ -104,7 +103,6 @@ struct GNUNET_DHT_ClientGetMessage
   uint64_t unique_id GNUNET_PACKED;
 
   /* Possibly followed by xquery, copied to end of this dealy do */
-
 };
 
 
@@ -136,9 +134,7 @@ struct GNUNET_DHT_ClientGetResultSeenMessage
   uint64_t unique_id GNUNET_PACKED;
 
   /* Followed by an array of the hash codes of known results */
-
 };
-
 
 
 /**
@@ -184,7 +180,6 @@ struct GNUNET_DHT_ClientResultMessage
   struct GNUNET_HashCode key GNUNET_PACKED;
 
   /* put path, get path and actual data are copied to end of this dealy do */
-
 };
 
 
@@ -224,7 +219,6 @@ struct GNUNET_DHT_ClientPutMessage
   struct GNUNET_HashCode key GNUNET_PACKED;
 
   /* DATA copied to end of this message */
-
 };
 
 
@@ -277,7 +271,6 @@ struct GNUNET_DHT_MonitorPutMessage
   /* put path (if tracked) */
 
   /* Payload */
-
 };
 
 
@@ -366,7 +359,6 @@ struct GNUNET_DHT_MonitorGetMessage
   struct GNUNET_HashCode key GNUNET_PACKED;
 
   /* get path (if tracked) */
-
 };
 
 /**
@@ -409,7 +401,6 @@ struct GNUNET_DHT_MonitorGetRespMessage
   /* get path (if tracked) */
 
   /* Payload */
-
 };
 
 GNUNET_NETWORK_STRUCT_END

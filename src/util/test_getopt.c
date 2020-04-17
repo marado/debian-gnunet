@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/test_getopt.c
  * @brief testcase for util/getopt.c
@@ -28,10 +28,7 @@
 static int
 testMinimal ()
 {
-  char *const emptyargv[] = {
-    "test",
-    NULL
-  };
+  char *const emptyargv[] = { "test", NULL };
   const struct GNUNET_GETOPT_CommandLineOption emptyoptionlist[] = {
     GNUNET_GETOPT_OPTION_END
   };
@@ -46,19 +43,11 @@ testMinimal ()
 static int
 testVerbose ()
 {
-  char *const myargv[] = {
-    "test",
-    "-V",
-    "-V",
-    "more",
-    NULL
-  };
+  char *const myargv[] = { "test", "-V", "-V", "more", NULL };
   unsigned int vflags = 0;
 
-  const struct GNUNET_GETOPT_CommandLineOption verboseoptionlist[] = {
-    GNUNET_GETOPT_option_verbose (&vflags),
-    GNUNET_GETOPT_OPTION_END
-  };
+  const struct GNUNET_GETOPT_CommandLineOption verboseoptionlist[] =
+  { GNUNET_GETOPT_option_verbose (&vflags), GNUNET_GETOPT_OPTION_END };
 
   if (3 != GNUNET_GETOPT_run ("test", verboseoptionlist, 4, myargv))
   {
@@ -77,15 +66,10 @@ testVerbose ()
 static int
 testVersion ()
 {
-  char *const myargv[] = {
-    "test_getopt",
-    "-v",
-    NULL
-  };
-  const struct GNUNET_GETOPT_CommandLineOption versionoptionlist[] = {
-    GNUNET_GETOPT_option_version (PACKAGE_VERSION " " VCS_VERSION),
-    GNUNET_GETOPT_OPTION_END
-  };
+  char *const myargv[] = { "test_getopt", "-v", NULL };
+  const struct GNUNET_GETOPT_CommandLineOption versionoptionlist[] =
+  { GNUNET_GETOPT_option_version (PACKAGE_VERSION " " VCS_VERSION),
+    GNUNET_GETOPT_OPTION_END };
 
   if (0 != GNUNET_GETOPT_run ("test_getopt", versionoptionlist, 2, myargv))
   {
@@ -99,15 +83,9 @@ testVersion ()
 static int
 testAbout ()
 {
-  char *const myargv[] = {
-    "test_getopt",
-    "-h",
-    NULL
-  };
-  const struct GNUNET_GETOPT_CommandLineOption aboutoptionlist[] = {
-    GNUNET_GETOPT_option_help ("Testing"),
-    GNUNET_GETOPT_OPTION_END
-  };
+  char *const myargv[] = { "test_getopt", "-h", NULL };
+  const struct GNUNET_GETOPT_CommandLineOption aboutoptionlist[] =
+  { GNUNET_GETOPT_option_help ("Testing"), GNUNET_GETOPT_OPTION_END };
 
   if (0 != GNUNET_GETOPT_run ("test_getopt", aboutoptionlist, 2, myargv))
   {
@@ -121,31 +99,23 @@ testAbout ()
 static int
 testLogOpts ()
 {
-  char *const myargv[] = {
-    "test_getopt",
-    "-l", "filename",
-    "-L", "WARNING",
-    NULL
-  };
+  char *const myargv[] =
+  { "test_getopt", "-l", "filename", "-L", "WARNING", NULL };
   char *level = GNUNET_strdup ("stuff");
   char *fn = NULL;
 
-  const struct GNUNET_GETOPT_CommandLineOption logoptionlist[] = {
-    GNUNET_GETOPT_option_logfile (&fn),
+  const struct GNUNET_GETOPT_CommandLineOption logoptionlist[] =
+  { GNUNET_GETOPT_option_logfile (&fn),
     GNUNET_GETOPT_option_loglevel (&level),
-    GNUNET_GETOPT_OPTION_END
-  };
+    GNUNET_GETOPT_OPTION_END };
 
-  if (5 != GNUNET_GETOPT_run ("test_getopt",
-                              logoptionlist,
-                              5, myargv))
+  if (5 != GNUNET_GETOPT_run ("test_getopt", logoptionlist, 5, myargv))
   {
     GNUNET_break (0);
     return 1;
   }
   GNUNET_assert (NULL != fn);
-  if ( (0 != strcmp (level, "WARNING")) ||
-       (NULL == strstr (fn, "/filename")) )
+  if ((0 != strcmp (level, "WARNING")) || (NULL == strstr (fn, "/filename")))
   {
     GNUNET_break (0);
     GNUNET_free (level);
@@ -161,47 +131,23 @@ testLogOpts ()
 static int
 testFlagNum ()
 {
-  char *const myargv[] = {
-    "test_getopt",
-    "-f",
-    "-n", "42",
-    "-N", "42",
-    NULL
-  };
+  char *const myargv[] = { "test_getopt", "-f", "-n", "42", "-N", "42", NULL };
   int flag = 0;
   unsigned int num = 0;
   unsigned long long lnum = 0;
 
-  const struct GNUNET_GETOPT_CommandLineOption logoptionlist[] = {
-    GNUNET_GETOPT_option_flag ('f',
-                                  "--flag",
-                                  "helptext",
-                                  &flag),
-    GNUNET_GETOPT_option_uint ('n',
-                                   "--num",
-                                   "ARG",
-                                   "helptext",
-                                   &num),
-    GNUNET_GETOPT_option_ulong ('N',
-                                    "--lnum",
-                                    "ARG",
-                                    "helptext",
-                                    &lnum),
-    GNUNET_GETOPT_OPTION_END
-  };
+  const struct GNUNET_GETOPT_CommandLineOption logoptionlist[] =
+  { GNUNET_GETOPT_option_flag ('f', "--flag", "helptext", &flag),
+    GNUNET_GETOPT_option_uint ('n', "--num", "ARG", "helptext", &num),
+    GNUNET_GETOPT_option_ulong ('N', "--lnum", "ARG", "helptext", &lnum),
+    GNUNET_GETOPT_OPTION_END };
 
-  if (6 !=
-      GNUNET_GETOPT_run ("test_getopt",
-                         logoptionlist,
-                         6,
-                         myargv))
+  if (6 != GNUNET_GETOPT_run ("test_getopt", logoptionlist, 6, myargv))
   {
     GNUNET_break (0);
     return 1;
   }
-  if ( (1 != flag) ||
-       (42 != num) ||
-       (42 != lnum))
+  if ((1 != flag) || (42 != num) || (42 != lnum))
   {
     GNUNET_break (0);
     return 1;
@@ -215,13 +161,11 @@ main (int argc, char *argv[])
 {
   int errCnt = 0;
 
-  GNUNET_log_setup ("test_getopt",
-                    "WARNING",
-                    NULL);
+  GNUNET_log_setup ("test_getopt", "WARNING", NULL);
   /* suppress output from -h, -v options */
-#ifndef MINGW
-  GNUNET_break (0 == CLOSE (1));
-#endif
+
+  GNUNET_break (0 == close (1));
+
   if (0 != testMinimal ())
     errCnt++;
   if (0 != testVerbose ())

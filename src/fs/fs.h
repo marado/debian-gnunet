@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs.h
@@ -73,7 +73,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct RequestLocSignatureMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGN.
    */
@@ -107,7 +106,6 @@ struct RequestLocSignatureMessage
  */
 struct ResponseLocSignatureMessage
 {
-
   /**
    * Message type will be
    * #GNUNET_MESSAGE_TYPE_FS_REQUEST_LOC_SIGNATURE.
@@ -152,7 +150,6 @@ struct ResponseLocSignatureMessage
  */
 struct IndexStartMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_INDEX_START.
    */
@@ -188,7 +185,6 @@ struct IndexStartMessage
   /* this is followed by a 0-terminated
    * filename of a file with the hash
    * "file_id" as seen by the client */
-
 };
 
 
@@ -217,7 +213,6 @@ struct IndexInfoMessage
   /* this is followed by a 0-terminated
    * filename of a file with the hash
    * "file_id" as seen by the client */
-
 };
 
 
@@ -230,7 +225,6 @@ struct IndexInfoMessage
  */
 struct UnindexMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_UNINDEX.
    */
@@ -245,7 +239,6 @@ struct UnindexMessage
    * Hash of the file that we will unindex.
    */
   struct GNUNET_HashCode file_id;
-
 };
 
 
@@ -274,7 +267,6 @@ struct UnindexMessage
  */
 struct SearchMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_START_SEARCH.
    */
@@ -335,7 +327,6 @@ struct SearchMessage
  */
 struct PutMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_PUT.
    */
@@ -352,7 +343,6 @@ struct PutMessage
   struct GNUNET_TIME_AbsoluteNBO expiration;
 
   /* this is followed by the actual encrypted content */
-
 };
 
 /**
@@ -363,7 +353,6 @@ struct PutMessage
  */
 struct ClientPutMessage
 {
-
   /**
    * Message type will be #GNUNET_MESSAGE_TYPE_FS_PUT.
    */
@@ -398,7 +387,6 @@ struct ClientPutMessage
   uint32_t respect_offered;
 
   /* this is followed by the actual encrypted content */
-
 };
 GNUNET_NETWORK_STRUCT_END
 

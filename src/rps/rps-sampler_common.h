@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/rps-sampler_common.h
@@ -69,7 +69,7 @@ typedef void
  * @param ids the PeerIDs that were returned
  *        to be freed
  */
-  typedef void
+typedef void
 (*RPS_sampler_n_rand_peers_ready_cb) (const struct GNUNET_PeerIdentity *ids,
                                       uint32_t num_peers,
                                       void *cls);
@@ -84,7 +84,7 @@ typedef void
  * @param ids the PeerIDs that were returned
  *        to be freed
  */
-  typedef void
+typedef void
 (*RPS_sampler_sinlge_info_ready_cb) (const struct GNUNET_PeerIdentity *ids,
                                      void *cls,
                                      double probability,
@@ -157,7 +157,7 @@ struct RPS_Sampler
    * Number of sampler elements we hold.
    */
   unsigned int sampler_size;
-  //size_t size;
+  // size_t size;
 
   /**
    * All sampler elements in one array.
@@ -277,7 +277,7 @@ sampler_notify_on_update (struct RPS_Sampler *sampler,
  * @param sampler the sampler to update.
  * @param id the PeerID that is put in the sampler
  */
-  void
+void
 RPS_sampler_update (struct RPS_Sampler *sampler,
                     const struct GNUNET_PeerIdentity *id);
 
@@ -290,7 +290,7 @@ RPS_sampler_update (struct RPS_Sampler *sampler,
  * @param sampler the sampler to reinitialise a sampler element in.
  * @param id the id of the sampler elements to update.
  */
-  void
+void
 RPS_sampler_reinitialise_by_value (struct RPS_Sampler *sampler,
                                    const struct GNUNET_PeerIdentity *id);
 
@@ -357,7 +357,7 @@ RPS_sampler_get_rand_peer_info (struct RPS_Sampler *sampler,
  *
  * @return the number of occurrences of id.
  */
-  uint32_t
+uint32_t
 RPS_sampler_count_id (struct RPS_Sampler *sampler,
                       const struct GNUNET_PeerIdentity *id);
 
@@ -378,13 +378,13 @@ RPS_sampler_request_cancel (struct RPS_SamplerRequestHandle *req_handle);
  */
 void
 RPS_sampler_request_single_info_cancel (
-    struct RPS_SamplerRequestHandleSingleInfo *req_single_info_handle);
+  struct RPS_SamplerRequestHandleSingleInfo *req_single_info_handle);
 
 
 /**
  * Cleans the sampler.
  */
-  void
+void
 RPS_sampler_destroy (struct RPS_Sampler *sampler);
 
 #endif /* RPS_SAMPLER_COMMON_H */

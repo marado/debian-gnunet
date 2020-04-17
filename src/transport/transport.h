@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/transport.h
@@ -90,7 +90,6 @@ GNUNET_NETWORK_STRUCT_BEGIN
  */
 struct StartMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_START
    */
@@ -117,22 +116,19 @@ struct StartMessage
  */
 struct ConnectInfoMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT
    */
   struct GNUNET_MessageHeader header;
 
 #if (defined(GNUNET_TRANSPORT_COMMUNICATION_VERSION) || \
-     defined(GNUNET_TRANSPORT_CORE_VERSION))
+  defined(GNUNET_TRANSPORT_CORE_VERSION))
 
   /**
    * Always zero, for alignment.
    */
   uint32_t reserved GNUNET_PACKED;
-
 #else
-
   /**
    * Current outbound quota for this peer
    */
@@ -152,7 +148,6 @@ struct ConnectInfoMessage
  */
 struct DisconnectInfoMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_DISCONNECT
    */
@@ -179,7 +174,6 @@ struct DisconnectInfoMessage
  */
 struct QuotaSetMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_SET_QUOTA
    */
@@ -203,7 +197,6 @@ struct QuotaSetMessage
  */
 struct InboundMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_RECV
    */
@@ -222,19 +215,16 @@ struct InboundMessage
  */
 struct SendOkMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_OK
    */
   struct GNUNET_MessageHeader header;
 
 #if (defined(GNUNET_TRANSPORT_COMMUNICATION_VERSION) || \
-     defined(GNUNET_TRANSPORT_CORE_VERSION))
+  defined(GNUNET_TRANSPORT_CORE_VERSION))
 
   uint32_t reserved GNUNET_PACKED;
-
 #else
-
   /**
    * #GNUNET_OK if the transmission succeeded,
    * #GNUNET_SYSERR if it failed (i.e. network disconnect);
@@ -253,7 +243,6 @@ struct SendOkMessage
    * Includes plugin and protocol specific overheads.
    */
   uint32_t bytes_physical GNUNET_PACKED;
-
 #endif
 
   /**
@@ -270,7 +259,6 @@ struct SendOkMessage
  */
 struct RecvOkMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_RECV_OK
    */
@@ -295,7 +283,6 @@ struct RecvOkMessage
  */
 struct OutboundMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_SEND
    */
@@ -307,7 +294,7 @@ struct OutboundMessage
   uint32_t priority GNUNET_PACKED;
 
 #if ! (defined(GNUNET_TRANSPORT_COMMUNICATION_VERSION) || \
-       defined(GNUNET_TRANSPORT_CORE_VERSION))
+  defined(GNUNET_TRANSPORT_CORE_VERSION))
 
   /**
    * Allowed delay.
@@ -323,7 +310,7 @@ struct OutboundMessage
 
 
 #if ! (defined(GNUNET_TRANSPORT_COMMUNICATION_VERSION) || \
-       defined(GNUNET_TRANSPORT_CORE_VERSION))
+  defined(GNUNET_TRANSPORT_CORE_VERSION))
 
 
 /**
@@ -335,7 +322,6 @@ struct OutboundMessage
  */
 struct AddressToStringResultMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_TO_STRING_REPLY
    */
@@ -361,7 +347,6 @@ struct AddressToStringResultMessage
  */
 struct AddressLookupMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_TO_STRING
    */
@@ -599,7 +584,6 @@ struct PeerIterateResponseMessage
  */
 struct BlacklistMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_BLACKLIST_QUERY or
    * #GNUNET_MESSAGE_TYPE_TRANSPORT_BLACKLIST_REPLY.
@@ -624,7 +608,6 @@ struct BlacklistMessage
  */
 struct TransportPluginMonitorMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_PLUGIN_EVENT.
    */
@@ -699,7 +682,6 @@ struct TransportPluginMonitorMessage
  */
 struct GNUNET_TRANSPORT_CommunicatorAvailableMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_NEW_COMMUNICATOR.
    */
@@ -719,7 +701,6 @@ struct GNUNET_TRANSPORT_CommunicatorAvailableMessage
  */
 struct GNUNET_TRANSPORT_AddAddressMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_ADD_ADDRESS.
    */
@@ -749,7 +730,6 @@ struct GNUNET_TRANSPORT_AddAddressMessage
  */
 struct GNUNET_TRANSPORT_DelAddressMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_DEL_ADDRESS.
    */
@@ -767,7 +747,6 @@ struct GNUNET_TRANSPORT_DelAddressMessage
  */
 struct GNUNET_TRANSPORT_IncomingMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG.
    */
@@ -804,7 +783,6 @@ struct GNUNET_TRANSPORT_IncomingMessage
  */
 struct GNUNET_TRANSPORT_IncomingMessageAck
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_INCOMING_MSG_ACK.
    */
@@ -832,7 +810,6 @@ struct GNUNET_TRANSPORT_IncomingMessageAck
  */
 struct GNUNET_TRANSPORT_AddQueueMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_SETUP.
    */
@@ -872,7 +849,6 @@ struct GNUNET_TRANSPORT_AddQueueMessage
  */
 struct GNUNET_TRANSPORT_DelQueueMessage
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_TEARDOWN.
    */
@@ -895,7 +871,6 @@ struct GNUNET_TRANSPORT_DelQueueMessage
  */
 struct GNUNET_TRANSPORT_CreateQueue
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE.
    */
@@ -920,7 +895,6 @@ struct GNUNET_TRANSPORT_CreateQueue
  */
 struct GNUNET_TRANSPORT_CreateQueueResponse
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE_OK or
    * #GNUNET_MESSAGE_TYPE_TRANSPORT_QUEUE_CREATE_FAIL.
@@ -939,7 +913,6 @@ struct GNUNET_TRANSPORT_CreateQueueResponse
  */
 struct GNUNET_TRANSPORT_SendMessageTo
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG.
    */
@@ -969,7 +942,6 @@ struct GNUNET_TRANSPORT_SendMessageTo
  */
 struct GNUNET_TRANSPORT_SendMessageToAck
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_MSG_ACK.
    */
@@ -1054,7 +1026,6 @@ struct GNUNET_TRANSPORT_CommunicatorBackchannelIncoming
  */
 struct GNUNET_TRANSPORT_MonitorStart
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_START.
    */
@@ -1077,7 +1048,6 @@ struct GNUNET_TRANSPORT_MonitorStart
  */
 struct GNUNET_TRANSPORT_MonitorData
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_MONITOR_DATA.
    */
@@ -1129,7 +1099,6 @@ struct GNUNET_TRANSPORT_MonitorData
  */
 struct GNUNET_TRANSPORT_AddressToVerify
 {
-
   /**
    * Type will be #GNUNET_MESSAGE_TYPE_TRANSPORT_ADDRESS_CONSIDER_VERIFY.
    */
@@ -1186,7 +1155,6 @@ struct ExpressPreferenceMessage
  */
 struct RequestHelloValidationMessage
 {
-
   /**
    * Type is #GNUNET_MESSAGE_TYPE_TRANSPORT_REQUEST_HELLO_VALIDATION.
    */

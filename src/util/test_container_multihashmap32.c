@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_container_multihashmap32.c
@@ -28,8 +28,10 @@
 #include "platform.h"
 #include "gnunet_util_lib.h"
 
-#define ABORT() { fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); if (m != NULL) GNUNET_CONTAINER_multihashmap32_destroy(m); return 1; }
-#define CHECK(c) { if (! (c)) ABORT(); }
+#define ABORT() { fprintf (stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
+                  if (m != NULL) GNUNET_CONTAINER_multihashmap32_destroy (m); \
+                  return 1; }
+#define CHECK(c) { if (! (c)) ABORT (); }
 
 static int
 testMap (int i)
@@ -63,14 +65,14 @@ testMap (int i)
   CHECK (0 == strcmp ("v1", ret));
   CHECK (GNUNET_NO ==
          GNUNET_CONTAINER_multihashmap32_put (m, k1, "v1",
-                                            GNUNET_CONTAINER_MULTIHASHMAPOPTION_REPLACE));
+                                              GNUNET_CONTAINER_MULTIHASHMAPOPTION_REPLACE));
   CHECK (1 == GNUNET_CONTAINER_multihashmap32_size (m));
   CHECK (GNUNET_OK ==
          GNUNET_CONTAINER_multihashmap32_put (m, k1, "v2",
-                                            GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
+                                              GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
   CHECK (GNUNET_OK ==
          GNUNET_CONTAINER_multihashmap32_put (m, k1, "v3",
-                                            GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
+                                              GNUNET_CONTAINER_MULTIHASHMAPOPTION_MULTIPLE));
   CHECK (3 == GNUNET_CONTAINER_multihashmap32_size (m));
   CHECK (GNUNET_OK == GNUNET_CONTAINER_multihashmap32_remove (m, k1, "v3"));
   CHECK (2 == GNUNET_CONTAINER_multihashmap32_size (m));
@@ -88,6 +90,7 @@ testMap (int i)
   return 0;
 }
 
+
 int
 main (int argc, char *argv[])
 {
@@ -101,5 +104,6 @@ main (int argc, char *argv[])
     return 1;
   return 0;
 }
+
 
 /* end of test_container_multihashmap.c */

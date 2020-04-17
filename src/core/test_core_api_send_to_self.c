@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/test_core_api_send_to_self.c
@@ -88,7 +88,7 @@ do_timeout (void *cls)
 
 static void
 handle_test (void *cls,
-	     const struct GNUNET_MessageHeader *message)
+             const struct GNUNET_MessageHeader *message)
 {
   GNUNET_SCHEDULER_shutdown ();
   ret = 0;
@@ -108,22 +108,22 @@ init (void *cls,
               "Correctly connected to CORE; we are the peer %s.\n",
               GNUNET_i2s (my_identity));
   GNUNET_memcpy (&myself,
-		 my_identity,
-		 sizeof (struct GNUNET_PeerIdentity));
+                 my_identity,
+                 sizeof(struct GNUNET_PeerIdentity));
 }
 
 
 static void *
 connect_cb (void *cls,
             const struct GNUNET_PeerIdentity *peer,
-	    struct GNUNET_MQ_Handle *mq)
+            struct GNUNET_MQ_Handle *mq)
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Connected to peer %s.\n",
               GNUNET_i2s (peer));
   if (0 == memcmp (peer,
                    &myself,
-                   sizeof (struct GNUNET_PeerIdentity)))
+                   sizeof(struct GNUNET_PeerIdentity)))
   {
     struct GNUNET_MQ_Envelope *env;
     struct GNUNET_MessageHeader *msg;
@@ -131,9 +131,9 @@ connect_cb (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Connected to myself; sending message!\n");
     env = GNUNET_MQ_msg (msg,
-			 GNUNET_MESSAGE_TYPE_DUMMY);
+                         GNUNET_MESSAGE_TYPE_DUMMY);
     GNUNET_MQ_send (mq,
-		    env);
+                    env);
   }
   return NULL;
 }
@@ -160,11 +160,11 @@ run (void *cls,
 
   core =
     GNUNET_CORE_connect (cfg,
-			 NULL,
-			 &init,
+                         NULL,
+                         &init,
                          &connect_cb,
-			 NULL,
-			 handlers);
+                         NULL,
+                         handlers);
   GNUNET_SCHEDULER_add_shutdown (&cleanup,
                                  NULL);
   die_task = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
@@ -185,10 +185,11 @@ main (int argc, char *argv[])
 {
   ret = 1;
   if (0 != GNUNET_TESTING_peer_run ("test-core-api-send-to-self",
-				    "test_core_api_peer1.conf",
-				    &run, NULL))
+                                    "test_core_api_peer1.conf",
+                                    &run, NULL))
     return 1;
   return ret;
 }
+
 
 /* end of test_core_api_send_to_self.c */

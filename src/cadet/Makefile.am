@@ -1,10 +1,6 @@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
-if MINGW
-  WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -38,13 +34,13 @@ libgnunetcadet_la_SOURCES = \
   cadet_api_get_path.c \
   cadet_api_list_peers.c \
   cadet_api_list_tunnels.c \
-  cadet_api_helper.c 
+  cadet_api_helper.c
 libgnunetcadet_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(XLIB) \
   $(LTLIBINTL)
 libgnunetcadet_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 7:0:0
 
 gnunet_cadet_SOURCES = \
@@ -52,6 +48,8 @@ gnunet_cadet_SOURCES = \
 gnunet_cadet_LDADD = \
   libgnunetcadet.la \
   $(top_builddir)/src/util/libgnunetutil.la
+gnunet_cadet_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_service_cadet_SOURCES = \
  gnunet-service-cadet.c gnunet-service-cadet.h \
@@ -74,7 +72,8 @@ gnunet_service_cadet_LDADD = \
   $(top_builddir)/src/hello/libgnunethello.la \
   $(top_builddir)/src/block/libgnunetblock.la
 if LINUX
-  gnunet_service_cadet_LDFLAGS = -lrt
+  gnunet_service_cadet_LDFLAGS = -lrt \
+    $(GN_LIBINTL)
 endif
 
 

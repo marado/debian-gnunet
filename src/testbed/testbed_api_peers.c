@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -85,7 +85,6 @@ GNUNET_TESTBED_cleanup_peers_ (void)
 }
 
 
-
 /**
  * Function to call to start a peer_create type operation once all
  * queues the operation is part of declare that the
@@ -123,8 +122,8 @@ opstart_peer_create (void *cls)
   msg->peer_id = htonl (data->peer->unique_id);
   msg->config_size = htons ((uint16_t) c_size);
   GNUNET_memcpy (&msg[1],
-          xconfig,
-          xc_size);
+                 xconfig,
+                 xc_size);
   GNUNET_MQ_send (opc->c->mq,
                   env);
   GNUNET_free (xconfig);
@@ -146,11 +145,13 @@ oprelease_peer_create (void *cls)
   {
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
-    /* No break we continue flow */
+
+  /* No break we continue flow */
   case OPC_STATE_INIT:
     GNUNET_free (((struct PeerCreateData *) opc->data)->peer);
     GNUNET_free (opc->data);
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -198,9 +199,11 @@ oprelease_peer_destroy (void *cls)
   {
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
-    /* no break; continue */
+
+  /* no break; continue */
   case OPC_STATE_INIT:
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -225,7 +228,8 @@ opstart_peer_start (void *cls)
   GNUNET_assert (OP_PEER_START == opc->type);
   GNUNET_assert (NULL != (data = opc->data));
   GNUNET_assert (NULL != (peer = data->peer));
-  GNUNET_assert ((TESTBED_PS_CREATED == peer->state) || (TESTBED_PS_STOPPED == peer->state));
+  GNUNET_assert ((TESTBED_PS_CREATED == peer->state) || (TESTBED_PS_STOPPED ==
+                                                         peer->state));
   opc->state = OPC_STATE_STARTED;
   env = GNUNET_MQ_msg (msg,
                        GNUNET_MESSAGE_TYPE_TESTBED_START_PEER);
@@ -251,10 +255,12 @@ oprelease_peer_start (void *cls)
   {
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
-    /* no break; continue */
+
+  /* no break; continue */
   case OPC_STATE_INIT:
     GNUNET_free (opc->data);
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -304,10 +310,12 @@ oprelease_peer_stop (void *cls)
   {
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
-    /* no break; continue */
+
+  /* no break; continue */
   case OPC_STATE_INIT:
     GNUNET_free (opc->data);
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -330,10 +338,10 @@ GNUNET_TESTBED_generate_peergetconfig_msg_ (uint32_t peer_id,
   struct GNUNET_TESTBED_PeerGetConfigurationMessage *msg;
 
   msg =
-      GNUNET_malloc (sizeof
-                     (struct GNUNET_TESTBED_PeerGetConfigurationMessage));
+    GNUNET_malloc (sizeof
+                   (struct GNUNET_TESTBED_PeerGetConfigurationMessage));
   msg->header.size =
-      htons (sizeof (struct GNUNET_TESTBED_PeerGetConfigurationMessage));
+    htons (sizeof(struct GNUNET_TESTBED_PeerGetConfigurationMessage));
   msg->header.type = htons (GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_INFORMATION);
   msg->peer_id = htonl (peer_id);
   msg->operation_id = GNUNET_htonll (operation_id);
@@ -356,8 +364,8 @@ opstart_peer_getinfo (void *cls)
   GNUNET_assert (NULL != data);
   opc->state = OPC_STATE_STARTED;
   msg =
-      GNUNET_TESTBED_generate_peergetconfig_msg_ (data->peer->unique_id,
-                                                  opc->id);
+    GNUNET_TESTBED_generate_peergetconfig_msg_ (data->peer->unique_id,
+                                                opc->id);
   GNUNET_TESTBED_insert_opc_ (opc->c, opc);
   GNUNET_TESTBED_queue_message_ (opc->c, &msg->header);
 }
@@ -378,10 +386,12 @@ oprelease_peer_getinfo (void *cls)
   {
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
-    /* no break; continue */
+
+  /* no break; continue */
   case OPC_STATE_INIT:
     GNUNET_free (opc->data);
     break;
+
   case OPC_STATE_FINISHED:
     data = opc->data;
     GNUNET_assert (NULL != data);
@@ -391,9 +401,11 @@ oprelease_peer_getinfo (void *cls)
       if (NULL != data->result.cfg)
         GNUNET_CONFIGURATION_destroy (data->result.cfg);
       break;
+
     case GNUNET_TESTBED_PIT_IDENTITY:
       GNUNET_free (data->result.id);
       break;
+
     default:
       GNUNET_assert (0);        /* We should never reach here */
     }
@@ -449,9 +461,11 @@ oprelease_overlay_connect (void *cls)
   {
   case OPC_STATE_INIT:
     break;
+
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -482,7 +496,7 @@ opstart_peer_reconfigure (void *cls)
                                              &xconfig);
   GNUNET_free (data->config);
   data->config = NULL;
-  GNUNET_assert (xc_size < UINT16_MAX - sizeof (*msg));
+  GNUNET_assert (xc_size < UINT16_MAX - sizeof(*msg));
   env = GNUNET_MQ_msg_extra (msg,
                              xc_size,
                              GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER);
@@ -490,8 +504,8 @@ opstart_peer_reconfigure (void *cls)
   msg->operation_id = GNUNET_htonll (opc->id);
   msg->config_size = htons (data->cfg_size);
   GNUNET_memcpy (&msg[1],
-          xconfig,
-          xc_size);
+                 xconfig,
+                 xc_size);
   GNUNET_free (xconfig);
   GNUNET_free (data);
   opc->data = NULL;
@@ -518,9 +532,11 @@ oprelease_peer_reconfigure (void *cls)
     GNUNET_free (data->config);
     GNUNET_free (data);
     break;
+
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -577,7 +593,6 @@ GNUNET_TESTBED_peer_create (struct GNUNET_TESTBED_Controller *controller,
                             const struct GNUNET_CONFIGURATION_Handle *cfg,
                             GNUNET_TESTBED_PeerCreateCallback cb, void *cls)
 {
-
   struct GNUNET_TESTBED_Peer *peer;
   struct PeerCreateData *data;
   struct OperationContext *opc;
@@ -600,8 +615,8 @@ GNUNET_TESTBED_peer_create (struct GNUNET_TESTBED_Controller *controller,
   opc->id = GNUNET_TESTBED_get_next_op_id (controller);
   opc->type = OP_PEER_CREATE;
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_create,
-                                        &oprelease_peer_create);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_create,
+                                      &oprelease_peer_create);
   GNUNET_TESTBED_operation_queue_insert_ (controller->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
@@ -637,8 +652,8 @@ GNUNET_TESTBED_peer_start (void *op_cls, struct GNUNET_TESTBED_Peer *peer,
   opc->id = GNUNET_TESTBED_get_next_op_id (opc->c);
   opc->type = OP_PEER_START;
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_start,
-                                        &oprelease_peer_start);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_start,
+                                      &oprelease_peer_start);
   GNUNET_TESTBED_operation_queue_insert_ (opc->c->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
@@ -677,8 +692,8 @@ GNUNET_TESTBED_peer_stop (void *op_cls,
   opc->id = GNUNET_TESTBED_get_next_op_id (opc->c);
   opc->type = OP_PEER_STOP;
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_stop,
-                                        &oprelease_peer_stop);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_stop,
+                                      &oprelease_peer_stop);
   GNUNET_TESTBED_operation_queue_insert_ (opc->c->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
@@ -722,8 +737,8 @@ GNUNET_TESTBED_peer_get_information (struct GNUNET_TESTBED_Peer *peer,
   opc->type = OP_PEER_INFO;
   opc->id = GNUNET_TESTBED_get_next_op_id (opc->c);
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_getinfo,
-                                        &oprelease_peer_getinfo);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_getinfo,
+                                      &oprelease_peer_getinfo);
   GNUNET_TESTBED_operation_queue_insert_ (opc->c->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
@@ -772,8 +787,8 @@ GNUNET_TESTBED_peer_update_configuration (struct GNUNET_TESTBED_Peer *peer,
   opc->type = OP_PEER_RECONFIGURE;
   opc->id = GNUNET_TESTBED_get_next_op_id (opc->c);
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_reconfigure,
-                                        &oprelease_peer_reconfigure);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_reconfigure,
+                                      &oprelease_peer_reconfigure);
   GNUNET_TESTBED_operation_queue_insert_ (opc->c->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
@@ -799,8 +814,8 @@ GNUNET_TESTBED_peer_destroy (struct GNUNET_TESTBED_Peer *peer)
   opc->id = GNUNET_TESTBED_get_next_op_id (peer->controller);
   opc->type = OP_PEER_DESTROY;
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_destroy,
-                                        &oprelease_peer_destroy);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_peer_destroy,
+                                      &oprelease_peer_destroy);
   GNUNET_TESTBED_operation_queue_insert_ (opc->c->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
@@ -855,7 +870,8 @@ GNUNET_TESTBED_overlay_connect (void *op_cls,
   struct OperationContext *opc;
   struct OverlayConnectData *data;
 
-  GNUNET_assert ((TESTBED_PS_STARTED == p1->state) && (TESTBED_PS_STARTED == p2->state));
+  GNUNET_assert ((TESTBED_PS_STARTED == p1->state) && (TESTBED_PS_STARTED ==
+                                                       p2->state));
   data = GNUNET_new (struct OverlayConnectData);
   data->p1 = p1;
   data->p2 = p2;
@@ -868,8 +884,8 @@ GNUNET_TESTBED_overlay_connect (void *op_cls,
   opc->type = OP_OVERLAY_CONNECT;
   opc->op_cls = op_cls;
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_overlay_connect,
-                                        &oprelease_overlay_connect);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_overlay_connect,
+                                      &oprelease_overlay_connect);
   GNUNET_TESTBED_host_queue_oc_ (p1->host, opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
   return opc->op;
@@ -891,7 +907,7 @@ opstart_manage_service (void *cls)
   size_t xlen;
 
   GNUNET_assert (NULL != data);
-  xlen = data->msize - sizeof (struct GNUNET_TESTBED_ManagePeerServiceMessage);
+  xlen = data->msize - sizeof(struct GNUNET_TESTBED_ManagePeerServiceMessage);
   env = GNUNET_MQ_msg_extra (msg,
                              xlen,
                              GNUNET_MESSAGE_TYPE_TESTBED_MANAGE_PEER_SERVICE);
@@ -899,8 +915,8 @@ opstart_manage_service (void *cls)
   msg->operation_id = GNUNET_htonll (opc->id);
   msg->start = (uint8_t) data->start;
   GNUNET_memcpy (&msg[1],
-          data->service_name,
-          xlen);
+                 data->service_name,
+                 xlen);
   GNUNET_free (data->service_name);
   data->service_name = NULL;
   opc->state = OPC_STATE_STARTED;
@@ -927,10 +943,12 @@ oprelease_manage_service (void *cls)
   case OPC_STATE_STARTED:
     GNUNET_TESTBED_remove_opc_ (opc->c, opc);
     break;
+
   case OPC_STATE_INIT:
     GNUNET_assert (NULL != data);
     GNUNET_free (data->service_name);
     break;
+
   case OPC_STATE_FINISHED:
     break;
   }
@@ -958,7 +976,8 @@ struct GNUNET_TESTBED_Operation *
 GNUNET_TESTBED_peer_manage_service (void *op_cls,
                                     struct GNUNET_TESTBED_Peer *peer,
                                     const char *service_name,
-                                    GNUNET_TESTBED_OperationCompletionCallback cb,
+                                    GNUNET_TESTBED_OperationCompletionCallback
+                                    cb,
                                     void *cb_cls,
                                     unsigned int start)
 {
@@ -966,9 +985,9 @@ GNUNET_TESTBED_peer_manage_service (void *op_cls,
   struct OperationContext *opc;
   size_t msize;
 
-  GNUNET_assert (TESTBED_PS_STARTED == peer->state); /* peer is not running? */
+  GNUNET_assert (TESTBED_PS_STARTED == peer->state);  /* peer is not running? */
   msize = strlen (service_name) + 1;
-  msize += sizeof (struct GNUNET_TESTBED_ManagePeerServiceMessage);
+  msize += sizeof(struct GNUNET_TESTBED_ManagePeerServiceMessage);
   if (GNUNET_MAX_MESSAGE_SIZE < msize)
     return NULL;
   data = GNUNET_new (struct ManageServiceData);
@@ -985,14 +1004,13 @@ GNUNET_TESTBED_peer_manage_service (void *op_cls,
   opc->type = OP_MANAGE_SERVICE;
   opc->op_cls = op_cls;
   opc->op =
-      GNUNET_TESTBED_operation_create_ (opc, &opstart_manage_service,
-                                        &oprelease_manage_service);
+    GNUNET_TESTBED_operation_create_ (opc, &opstart_manage_service,
+                                      &oprelease_manage_service);
   GNUNET_TESTBED_operation_queue_insert_ (opc->c->opq_parallel_operations,
                                           opc->op);
   GNUNET_TESTBED_operation_begin_wait_ (opc->op);
   return opc->op;
 }
-
 
 
 /* end of testbed_api_peers.c */

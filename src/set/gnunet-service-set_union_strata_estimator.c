@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file set/gnunet-service-set_union_strata_estimator.c
  * @brief invertible bloom filter
@@ -110,7 +110,7 @@ strata_estimator_read (const void *buf,
                               osize);
     if (NULL == dbuf)
     {
-      GNUNET_break_op (0); /* bad compressed input data */
+      GNUNET_break_op (0);    /* bad compressed input data */
       return GNUNET_SYSERR;
     }
     buf = dbuf;
@@ -119,7 +119,7 @@ strata_estimator_read (const void *buf,
 
   if (buf_len != se->strata_count * se->ibf_size * IBF_BUCKET_SIZE)
   {
-    GNUNET_break (0); /* very odd error */
+    GNUNET_break (0);  /* very odd error */
     GNUNET_free_non_null (dbuf);
     return GNUNET_SYSERR;
   }
@@ -149,7 +149,7 @@ strata_estimator_insert (struct StrataEstimator *se,
 
   v = key.key_val;
   /* count trailing '1'-bits of v */
-  for (i = 0; v & 1; v>>=1, i++)
+  for (i = 0; v &1; v >>= 1, i++)
     /* empty */;
   ibf_insert (se->strata[i], key);
 }
@@ -170,7 +170,7 @@ strata_estimator_remove (struct StrataEstimator *se,
 
   v = key.key_val;
   /* count trailing '1'-bits of v */
-  for (i = 0; v & 1; v>>=1, i++)
+  for (i = 0; v &1; v >>= 1, i++)
     /* empty */;
   ibf_remove (se->strata[i], key);
 }

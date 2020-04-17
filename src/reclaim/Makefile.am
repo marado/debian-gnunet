@@ -3,10 +3,6 @@ AM_CPPFLAGS = -I$(top_srcdir)/src/include
 
  plugindir = $(libdir)/gnunet
 
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
-endif
-
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
   XLIB = -lgcov
@@ -58,9 +54,10 @@ libgnunet_plugin_rest_reclaim_la_LIBADD = \
   $(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
   $(top_builddir)/src/namestore/libgnunetnamestore.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS)
 libgnunet_plugin_rest_reclaim_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
+libgnunet_plugin_rest_reclaim_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 
 
 libgnunet_plugin_rest_openid_connect_la_SOURCES = \
@@ -76,9 +73,11 @@ libgnunet_plugin_rest_openid_connect_la_LIBADD = \
   $(top_builddir)/src/gns/libgnunetgns.la \
   $(top_builddir)/src/gnsrecord/libgnunetgnsrecord.la \
   $(top_builddir)/src/util/libgnunetutil.la $(XLIBS) \
-  $(LTLIBINTL) -ljansson -lmicrohttpd
+  $(LTLIBINTL) -ljansson $(MHD_LIBS) \
+	$(LIBGCRYPT_LIBS)
 libgnunet_plugin_rest_openid_connect_la_LDFLAGS = \
   $(GN_PLUGIN_LDFLAGS)
+libgnunet_plugin_rest_openid_connect_la_CFLAGS = $(MHD_CFLAGS) $(AM_CFLAGS)
 
 
 libgnunet_plugin_gnsrecord_reclaim_la_SOURCES = \
@@ -112,7 +111,7 @@ libgnunetreclaim_la_LIBADD = \
   $(top_builddir)/src/reclaim-attribute/libgnunetreclaimattribute.la \
   $(GN_LIBINTL) $(XLIB)
 libgnunetreclaim_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 gnunet_reclaim_SOURCES = \

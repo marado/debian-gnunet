@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file src/regex/regex_internal.h
  * @brief common internal definitions for regex library.
@@ -39,7 +39,8 @@ extern "C"
  * char array of literals that are allowed inside a regex (apart from the
  * operators)
  */
-#define ALLOWED_LITERALS "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+#define ALLOWED_LITERALS \
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 
 /**
@@ -340,8 +341,9 @@ REGEX_INTERNAL_construct_nfa (const char *regex, const size_t len);
  * @return GNUNET_YES to proceed traversal, GNUNET_NO to stop.
  */
 typedef int (*REGEX_INTERNAL_traverse_check) (void *cls,
-                                            struct REGEX_INTERNAL_State * s,
-                                            struct REGEX_INTERNAL_Transition * t);
+                                              struct REGEX_INTERNAL_State *s,
+                                              struct REGEX_INTERNAL_Transition *
+                                              t);
 
 
 /**
@@ -352,8 +354,8 @@ typedef int (*REGEX_INTERNAL_traverse_check) (void *cls,
  * @param s state.
  */
 typedef void (*REGEX_INTERNAL_traverse_action) (void *cls,
-                                              const unsigned int count,
-                                              struct REGEX_INTERNAL_State * s);
+                                                const unsigned int count,
+                                                struct REGEX_INTERNAL_State *s);
 
 
 /**
@@ -371,11 +373,11 @@ typedef void (*REGEX_INTERNAL_traverse_action) (void *cls,
  */
 void
 REGEX_INTERNAL_automaton_traverse (const struct REGEX_INTERNAL_Automaton *a,
-                                 struct REGEX_INTERNAL_State *start,
-                                 REGEX_INTERNAL_traverse_check check,
-                                 void *check_cls,
-                                 REGEX_INTERNAL_traverse_action action,
-                                 void *action_cls);
+                                   struct REGEX_INTERNAL_State *start,
+                                   REGEX_INTERNAL_traverse_check check,
+                                   void *check_cls,
+                                   REGEX_INTERNAL_traverse_action action,
+                                   void *action_cls);
 
 /**
  * Get the canonical regex of the given automaton.
@@ -440,9 +442,8 @@ struct REGEX_INTERNAL_Context
  */
 void
 REGEX_INTERNAL_dfa_add_multi_strides (struct REGEX_INTERNAL_Context *regex_ctx,
-                                    struct REGEX_INTERNAL_Automaton *dfa,
-                                    const unsigned int stride_len);
-
+                                      struct REGEX_INTERNAL_Automaton *dfa,
+                                      const unsigned int stride_len);
 
 
 #if 0                           /* keep Emacsens' auto-indent happy */

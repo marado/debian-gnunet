@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet
- Copyright (C) 2002-2013 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2002-2013 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -34,16 +34,16 @@ http_clean_splitted (struct SplittedHTTPAddress *spa)
 {
   if (NULL != spa)
   {
-    GNUNET_free_non_null(spa->protocol);
-    GNUNET_free_non_null(spa->host);
-    GNUNET_free_non_null(spa->path);
-    GNUNET_free_non_null(spa);
+    GNUNET_free_non_null (spa->protocol);
+    GNUNET_free_non_null (spa->host);
+    GNUNET_free_non_null (spa->path);
+    GNUNET_free_non_null (spa);
   }
 }
 
 
 struct SplittedHTTPAddress *
-http_split_address (const char * addr)
+http_split_address (const char *addr)
 {
   struct SplittedHTTPAddress *sp;
   char *src = GNUNET_strdup (addr);
@@ -52,6 +52,7 @@ http_split_address (const char * addr)
   char *v6_end = NULL;
   char *port_start = NULL;
   char *path_start = NULL;
+
   protocol_start = src;
 
   sp = GNUNET_new (struct SplittedHTTPAddress);
@@ -60,9 +61,9 @@ http_split_address (const char * addr)
   host_start = strstr (src, "://");
   if (NULL == host_start)
   {
-    GNUNET_free(src);
-    GNUNET_free(sp);
-    return NULL ;
+    GNUNET_free (src);
+    GNUNET_free (sp);
+    return NULL;
   }
   host_start[0] = '\0';
   sp->protocol = GNUNET_strdup (protocol_start);
@@ -70,10 +71,10 @@ http_split_address (const char * addr)
   host_start += strlen ("://");
   if (strlen (host_start) == 0)
   {
-    GNUNET_free(src);
-    GNUNET_free(sp->protocol);
-    GNUNET_free(sp);
-    return NULL ;
+    GNUNET_free (src);
+    GNUNET_free (sp->protocol);
+    GNUNET_free (sp);
+    return NULL;
   }
 
   /* Find path start */
@@ -88,11 +89,11 @@ http_split_address (const char * addr)
 
   if (strlen (host_start) < 1)
   {
-    GNUNET_free(src);
-    GNUNET_free(sp->protocol);
-    GNUNET_free(sp->path);
-    GNUNET_free(sp);
-    return NULL ;
+    GNUNET_free (src);
+    GNUNET_free (sp->protocol);
+    GNUNET_free (sp->path);
+    GNUNET_free (sp);
+    return NULL;
   }
 
   if (NULL != (port_start = strrchr (host_start, ':')))
@@ -108,11 +109,11 @@ http_split_address (const char * addr)
         sp->port = atoi (port_start);
         if ((0 == sp->port) || (65535 < sp->port))
         {
-          GNUNET_free(src);
-          GNUNET_free(sp->protocol);
-          GNUNET_free(sp->path);
-          GNUNET_free(sp);
-          return NULL ;
+          GNUNET_free (src);
+          GNUNET_free (sp->protocol);
+          GNUNET_free (sp->path);
+          GNUNET_free (sp);
+          return NULL;
         }
       }
       else
@@ -132,11 +133,11 @@ http_split_address (const char * addr)
       sp->port = atoi (port_start);
       if ((0 == sp->port) || (65535 < sp->port))
       {
-        GNUNET_free(src);
-        GNUNET_free(sp->protocol);
-        GNUNET_free(sp->path);
-        GNUNET_free(sp);
-        return NULL ;
+        GNUNET_free (src);
+        GNUNET_free (sp->protocol);
+        GNUNET_free (sp->path);
+        GNUNET_free (sp);
+        return NULL;
       }
     }
   }
@@ -149,28 +150,29 @@ http_split_address (const char * addr)
       sp->port = HTTP_DEFAULT_PORT;
     else
     {
-      GNUNET_break(0);
-      GNUNET_free(src);
-      GNUNET_free(sp->protocol);
-      GNUNET_free(sp->path);
-      GNUNET_free(sp);
-      return NULL ;
+      GNUNET_break (0);
+      GNUNET_free (src);
+      GNUNET_free (sp->protocol);
+      GNUNET_free (sp->path);
+      GNUNET_free (sp);
+      return NULL;
     }
   }
   if (strlen (host_start) > 0)
     sp->host = GNUNET_strdup (host_start);
   else
   {
-    GNUNET_break(0);
-    GNUNET_free(src);
-    GNUNET_free(sp->protocol);
-    GNUNET_free(sp->path);
-    GNUNET_free(sp);
-    return NULL ;
+    GNUNET_break (0);
+    GNUNET_free (src);
+    GNUNET_free (sp->protocol);
+    GNUNET_free (sp->path);
+    GNUNET_free (sp);
+    return NULL;
   }
-  GNUNET_free(src);
+  GNUNET_free (src);
   return sp;
 }
+
 
 /**
  * Closure for #append_port().
@@ -205,7 +207,7 @@ struct PrettyPrinterContext
   /**
    * Timeout task
    */
-  struct GNUNET_SCHEDULER_Task * timeout_task;
+  struct GNUNET_SCHEDULER_Task *timeout_task;
 
   /**
    * Splitted Address
@@ -252,24 +254,25 @@ static struct PrettyPrinterContext *dll_ppc_tail;
  */
 static const char *
 http_common_plugin_dnsresult_to_address (const char *plugin,
-    const struct SplittedHTTPAddress *saddr,
-    uint32_t options,
-    const char *dnsresult)
+                                         const struct
+                                         SplittedHTTPAddress *saddr,
+                                         uint32_t options,
+                                         const char *dnsresult)
 {
   static char rbuf[1024];
   char *res;
 
   GNUNET_asprintf (&res, "%s.%u.%s://%s:%u%s", plugin, options, saddr->protocol,
-      dnsresult, saddr->port, saddr->path);
+                   dnsresult, saddr->port, saddr->path);
   if (strlen (res) + 1 < 500)
   {
     GNUNET_memcpy (rbuf, res, strlen (res) + 1);
-    GNUNET_free(res);
+    GNUNET_free (res);
     return rbuf;
   }
-  GNUNET_break(0);
-  GNUNET_free(res);
-  return NULL ;
+  GNUNET_break (0);
+  GNUNET_free (res);
+  return NULL;
 }
 
 
@@ -281,20 +284,20 @@ http_common_dns_reverse_lookup_cb (void *cls, const char *hostname)
   if (NULL != hostname)
   {
     ppc->asc (ppc->asc_cls,
-        http_common_plugin_dnsresult_to_address (ppc->plugin, ppc->saddr, ppc->options,
-            hostname), GNUNET_OK);
+              http_common_plugin_dnsresult_to_address (ppc->plugin, ppc->saddr,
+                                                       ppc->options,
+                                                       hostname), GNUNET_OK);
     ppc->sucess = GNUNET_YES;
-
   }
   else
   {
     ppc->asc (ppc->asc_cls, NULL,
-        (GNUNET_NO == ppc->sucess) ? GNUNET_SYSERR : GNUNET_OK);
+              (GNUNET_NO == ppc->sucess) ? GNUNET_SYSERR : GNUNET_OK);
 
-    GNUNET_CONTAINER_DLL_remove(dll_ppc_head, dll_ppc_tail, ppc);
+    GNUNET_CONTAINER_DLL_remove (dll_ppc_head, dll_ppc_tail, ppc);
     http_clean_splitted (ppc->saddr);
-    GNUNET_free(ppc->plugin);
-    GNUNET_free(ppc);
+    GNUNET_free (ppc->plugin);
+    GNUNET_free (ppc);
   }
 }
 
@@ -321,12 +324,13 @@ http_common_dns_reverse_lookup (const struct sockaddr *sockaddr,
                                                        sockaddr_len,
                                                        GNUNET_YES,
                                                        timeout,
-                                                       &http_common_dns_reverse_lookup_cb,
+                                                       &
+                                                       http_common_dns_reverse_lookup_cb,
                                                        ppc);
   if (NULL == ppc->resolver_handle)
   {
-    GNUNET_free(ppc->plugin);
-    GNUNET_free(ppc);
+    GNUNET_free (ppc->plugin);
+    GNUNET_free (ppc);
     return GNUNET_SYSERR;
   }
   GNUNET_CONTAINER_DLL_insert (dll_ppc_head,
@@ -346,20 +350,23 @@ http_common_dns_ip_lookup_cb (void *cls,
   if (NULL != addr)
   {
     ppc->asc (ppc->asc_cls,
-        http_common_plugin_dnsresult_to_address (ppc->plugin, ppc->saddr, ppc->options,
-            GNUNET_a2s (addr, addrlen)), GNUNET_OK);
+              http_common_plugin_dnsresult_to_address (ppc->plugin, ppc->saddr,
+                                                       ppc->options,
+                                                       GNUNET_a2s (addr,
+                                                                   addrlen)),
+              GNUNET_OK);
     ppc->sucess = GNUNET_YES;
     ppc->asc (ppc->asc_cls, GNUNET_a2s (addr, addrlen), GNUNET_OK);
   }
   else
   {
     ppc->asc (ppc->asc_cls, NULL,
-        (GNUNET_NO == ppc->sucess) ? GNUNET_SYSERR : GNUNET_OK);
+              (GNUNET_NO == ppc->sucess) ? GNUNET_SYSERR : GNUNET_OK);
 
-    GNUNET_CONTAINER_DLL_remove(dll_ppc_head, dll_ppc_tail, ppc);
-    GNUNET_free(ppc->plugin);
+    GNUNET_CONTAINER_DLL_remove (dll_ppc_head, dll_ppc_tail, ppc);
+    GNUNET_free (ppc->plugin);
     http_clean_splitted (ppc->saddr);
-    GNUNET_free(ppc);
+    GNUNET_free (ppc);
   }
 }
 
@@ -370,7 +377,8 @@ http_common_dns_ip_lookup (const char *name,
                            struct SplittedHTTPAddress *saddr,
                            uint32_t options,
                            struct GNUNET_TIME_Relative timeout,
-                           GNUNET_TRANSPORT_AddressStringCallback asc, void *asc_cls)
+                           GNUNET_TRANSPORT_AddressStringCallback asc,
+                           void *asc_cls)
 {
   struct PrettyPrinterContext *ppc;
 
@@ -388,8 +396,8 @@ http_common_dns_ip_lookup (const char *name,
                                                  ppc);
   if (NULL == ppc->resolver_handle)
   {
-    GNUNET_free(ppc->plugin);
-    GNUNET_free(ppc);
+    GNUNET_free (ppc->plugin);
+    GNUNET_free (ppc);
     return GNUNET_SYSERR;
   }
   GNUNET_CONTAINER_DLL_insert (dll_ppc_head,
@@ -419,7 +427,8 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
                                            size_t addrlen,
                                            int numeric,
                                            struct GNUNET_TIME_Relative timeout,
-                                           GNUNET_TRANSPORT_AddressStringCallback asc,
+                                           GNUNET_TRANSPORT_AddressStringCallback
+                                           asc,
                                            void *asc_cls)
 {
   const struct HttpAddress *address = addr;
@@ -432,24 +441,24 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
 
   saddr = NULL;
   sock_addr = NULL;
-  if ( (addrlen < sizeof(struct HttpAddress)) ||
-       (addrlen != http_common_address_get_size (address)) )
+  if ((addrlen < sizeof(struct HttpAddress)) ||
+      (addrlen != http_common_address_get_size (address)))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     goto handle_error;
   }
 
   addr_str = (char *) &address[1];
   if (addr_str[ntohl (address->urlen) - 1] != '\0')
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     goto handle_error;
   }
 
   saddr = http_split_address (addr_str);
   if (NULL == saddr)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     goto handle_error;
   }
 
@@ -477,8 +486,8 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
     goto handle_error;
   }
 
-  if ( (GNUNET_YES == numeric) &&
-       (GNUNET_YES == have_ip) )
+  if ((GNUNET_YES == numeric) &&
+      (GNUNET_YES == have_ip))
   {
     /* No lookup required */
     ret = http_common_plugin_address_to_string (type, address, addrlen);
@@ -488,8 +497,8 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
     GNUNET_free_non_null (sock_addr);
     return;
   }
-  if ( (GNUNET_YES == numeric) &&
-       (GNUNET_NO == have_ip) )
+  if ((GNUNET_YES == numeric) &&
+      (GNUNET_NO == have_ip))
   {
     /* Forward lookup */
     if (GNUNET_SYSERR ==
@@ -497,15 +506,15 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
                                    address->options, timeout,
                                    asc, asc_cls))
     {
-      GNUNET_break(0);
+      GNUNET_break (0);
       goto handle_error;
     }
     /* Wait for resolver callback */
     GNUNET_free_non_null (sock_addr);
     return;
   }
-  if ( (GNUNET_NO == numeric) &&
-       (GNUNET_YES == have_ip) )
+  if ((GNUNET_NO == numeric) &&
+      (GNUNET_YES == have_ip))
   {
     /* Reverse lookup */
     if (GNUNET_SYSERR ==
@@ -518,15 +527,15 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
                                         address->options, timeout,
                                         asc, asc_cls))
     {
-      GNUNET_break(0);
+      GNUNET_break (0);
       goto handle_error;
     }
     /* Wait for resolver callback */
     GNUNET_free_non_null (sock_addr);
     return;
   }
-  if ( (GNUNET_NO == numeric) &&
-       (GNUNET_NO == have_ip) )
+  if ((GNUNET_NO == numeric) &&
+      (GNUNET_NO == have_ip))
   {
     /* No lookup required */
     ret = http_common_plugin_address_to_string (type, address, addrlen);
@@ -540,7 +549,7 @@ http_common_plugin_address_pretty_printer (void *cls, const char *type,
   GNUNET_break (0);
   goto handle_error;
 
- handle_error:
+handle_error:
   /* Report error */
   asc (asc_cls, NULL, GNUNET_SYSERR);
   asc (asc_cls, NULL, GNUNET_OK);
@@ -560,21 +569,21 @@ http_common_plugin_address_to_url (void *cls,
 {
   static char rbuf[1024];
   const struct HttpAddress *address = addr;
-  const char * addr_str;
+  const char *addr_str;
 
   if (NULL == addr)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return NULL;
   }
   if (0 == addrlen)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return NULL;
   }
   if (addrlen != http_common_address_get_size (address))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return NULL;
   }
   addr_str = (char *) &address[1];
@@ -582,8 +591,8 @@ http_common_plugin_address_to_url (void *cls,
     return NULL;
 
   GNUNET_memcpy (rbuf,
-          &address[1],
-          ntohl (address->urlen));
+                 &address[1],
+                 ntohl (address->urlen));
   return rbuf;
 }
 
@@ -606,10 +615,10 @@ http_common_plugin_address_to_string (const char *plugin,
 {
   static char rbuf[1024];
   const struct HttpAddress *address = addr;
-  const char * addr_str;
+  const char *addr_str;
   char *res;
 
-  GNUNET_assert(NULL != plugin);
+  GNUNET_assert (NULL != plugin);
   if (NULL == addr)
     return NULL;
   if (0 == addrlen)
@@ -620,17 +629,18 @@ http_common_plugin_address_to_string (const char *plugin,
   if (addr_str[ntohl (address->urlen) - 1] != '\0')
     return NULL;
   GNUNET_asprintf (&res, "%s.%u.%s", plugin, ntohl (address->options),
-      &address[1]);
+                   &address[1]);
   if (strlen (res) + 1 < 500)
   {
     GNUNET_memcpy (rbuf, res, strlen (res) + 1);
-    GNUNET_free(res);
+    GNUNET_free (res);
     return rbuf;
   }
-  GNUNET_break(0);
-  GNUNET_free(res);
+  GNUNET_break (0);
+  GNUNET_free (res);
   return NULL;
 }
+
 
 /**
  * Function called to convert a string address to
@@ -664,49 +674,49 @@ http_common_plugin_string_to_address (void *cls,
   optionstr = NULL;
   if ((NULL == addr) || (addrlen == 0))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if ('\0' != addr[addrlen - 1])
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   if (strlen (addr) != addrlen - 1)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   plugin = GNUNET_strdup (addr);
   optionstr = strchr (plugin, '.');
   if (NULL == optionstr)
   {
-    GNUNET_break(0);
-    GNUNET_free(plugin);
+    GNUNET_break (0);
+    GNUNET_free (plugin);
     return GNUNET_SYSERR;
   }
   optionstr[0] = '\0';
   optionstr++;
-  options = atol (optionstr); /* 0 on conversion error, that's ok */
+  options = atol (optionstr);  /* 0 on conversion error, that's ok */
   address = strchr (optionstr, '.');
   if (NULL == address)
   {
-    GNUNET_break(0);
-    GNUNET_free(plugin);
+    GNUNET_break (0);
+    GNUNET_free (plugin);
     return GNUNET_SYSERR;
   }
   address[0] = '\0';
   address++;
   urlen = strlen (address) + 1;
 
-  a = GNUNET_malloc (sizeof (struct HttpAddress) + urlen);
+  a = GNUNET_malloc (sizeof(struct HttpAddress) + urlen);
   a->options = htonl (options);
   a->urlen = htonl (urlen);
   GNUNET_memcpy (&a[1], address, urlen);
 
   (*buf) = a;
   (*added) = sizeof(struct HttpAddress) + urlen;
-  GNUNET_free(plugin);
+  GNUNET_free (plugin);
   return GNUNET_OK;
 }
 
@@ -734,11 +744,11 @@ http_common_address_from_socket (const char *protocol,
                    GNUNET_a2s (addr,
                                addrlen));
   len = strlen (res) + 1;
-  address = GNUNET_malloc (sizeof (struct HttpAddress) + len);
+  address = GNUNET_malloc (sizeof(struct HttpAddress) + len);
   address->options = htonl (HTTP_OPTIONS_NONE);
   address->urlen = htonl (len);
   GNUNET_memcpy (&address[1], res, len);
-  GNUNET_free(res);
+  GNUNET_free (res);
   return address;
 }
 
@@ -760,9 +770,9 @@ http_common_socket_from_address (const void *addr,
                                  int *res)
 {
   const struct HttpAddress *ha;
-  struct SplittedHTTPAddress * spa;
+  struct SplittedHTTPAddress *spa;
   struct sockaddr_storage *s;
-  char * to_conv;
+  char *to_conv;
   size_t urlen;
 
   (*res) = GNUNET_SYSERR;
@@ -811,7 +821,7 @@ http_common_socket_from_address (const void *addr,
       == GNUNET_STRINGS_to_address_ip (to_conv, strlen (to_conv), s))
   {
     /* could be a hostname */
-    GNUNET_free(s);
+    GNUNET_free (s);
     (*res) = GNUNET_NO;
     s = NULL;
   }
@@ -838,7 +848,7 @@ http_common_socket_from_address (const void *addr,
  * @return the size
  */
 size_t
-http_common_address_get_size (const struct HttpAddress * addr)
+http_common_address_get_size (const struct HttpAddress *addr)
 {
   return sizeof(struct HttpAddress) + ntohl (addr->urlen);
 }
@@ -863,6 +873,7 @@ http_common_cmp_addresses (const void *addr1,
   const char *a2 = addr2;
   const struct HttpAddress *ha1;
   const struct HttpAddress *ha2;
+
   ha1 = (const struct HttpAddress *) a1;
   ha2 = (const struct HttpAddress *) a2;
 
@@ -899,10 +910,10 @@ http_common_cmp_addresses (const void *addr1,
  * @return the network type
  */
 enum GNUNET_NetworkType
-http_common_get_network_for_address (struct GNUNET_TRANSPORT_PluginEnvironment *env,
+http_common_get_network_for_address (struct
+                                     GNUNET_TRANSPORT_PluginEnvironment *env,
                                      const struct GNUNET_HELLO_Address *address)
 {
-
   struct sockaddr *sa;
   enum GNUNET_NetworkType net_type;
   size_t salen = 0;
@@ -919,11 +930,11 @@ http_common_get_network_for_address (struct GNUNET_TRANSPORT_PluginEnvironment *
     GNUNET_assert (NULL != sa);
     if (AF_INET == sa->sa_family)
     {
-      salen = sizeof (struct sockaddr_in);
+      salen = sizeof(struct sockaddr_in);
     }
     else if (AF_INET6 == sa->sa_family)
     {
-      salen = sizeof (struct sockaddr_in6);
+      salen = sizeof(struct sockaddr_in6);
     }
     net_type = env->get_address_type (env->cls,
                                       sa,
@@ -932,7 +943,6 @@ http_common_get_network_for_address (struct GNUNET_TRANSPORT_PluginEnvironment *
   }
   return net_type;
 }
-
 
 
 /* end of plugin_transport_http_common.c */

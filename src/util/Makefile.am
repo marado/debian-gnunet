@@ -13,27 +13,7 @@ dist_pkgcfg_DATA = \
 pkgcfg_DATA = \
   resolver.conf
 
-if MINGW
-noinst_LTLIBRARIES = \
-  libgnunetutilwin.la
-libgnunetutilwin_la_SOURCES = \
-  win.c \
-  winproc.c
-libgnunetutilwin_la_LDFLAGS = \
-  -no-undefined -Wl,--export-all-symbols
-libgnunetutilwin_la_LIBADD = \
-  -lshell32 -liconv -lstdc++ \
-  -lcomdlg32 -lgdi32 -liphlpapi
-WINLIB = libgnunetutilwin.la
-W32CAT = w32cat
-W32CONSOLEHELPER = gnunet-helper-w32-console
-endif
-
-if !MINGW
- TEST_CLIENT_UNIX_NC = test_client_unix.nc
-else
- TEST_CLIENT_UNIX_NC =
-endif
+TEST_CLIENT_UNIX_NC = test_client_unix.nc
 
 if USE_COVERAGE
   AM_CFLAGS = --coverage -O0
@@ -44,14 +24,6 @@ if ENABLE_BENCHMARK
   BENCHMARK = benchmark.c benchmark.h
   PTHREAD = -lpthread
 endif
-
-w32cat_SOURCES = w32cat.c
-
-gnunet_helper_w32_console_SOURCES = \
-  gnunet-helper-w32-console.c \
-  gnunet-helper-w32-console.h
-gnunet_helper_w32_console_LDADD = \
-  libgnunetutil.la
 
 gnunet_config_diff_SOURCES = \
  gnunet-config-diff.c
@@ -92,6 +64,7 @@ libgnunetutil_la_SOURCES = \
   crypto_kdf.c \
   crypto_mpi.c \
   crypto_paillier.c \
+  crypto_pow.c \
   crypto_random.c \
   crypto_rsa.c \
   disk.c \
@@ -121,6 +94,8 @@ libgnunetutil_la_SOURCES = \
   strings.c \
   time.c \
   tun.c \
+  tweetnacl-gnunet.c \
+  tweetnacl-gnunet.h \
   speedup.c speedup.h \
   proc_compat.c
 
@@ -161,7 +136,7 @@ libgnunetutil_la_LIBADD = \
 
 libgnunetutil_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
-  -version-info 13:1:0
+  -version-info 13:2:0
 
 libgnunetutil_taler_wallet_la_SOURCES = \
   common_allocation.c \
@@ -202,8 +177,7 @@ lib_LTLIBRARIES = libgnunetutil.la
 
 libexec_PROGRAMS = \
  gnunet-service-resolver \
- gnunet-timeout \
- $(W32CONSOLEHELPER)
+ gnunet-timeout
 
 bin_PROGRAMS = \
  gnunet-resolver \
@@ -217,7 +191,6 @@ endif
 
 noinst_PROGRAMS = \
  gnunet-config-diff \
- $(W32CAT) \
  test_common_logging_dummy
 
 
@@ -228,14 +201,8 @@ endif
 
 endif
 
-
-if !MINGW
 gnunet_timeout_SOURCES = \
  gnunet-timeout.c
-else
-gnunet_timeout_SOURCES = \
- gnunet-timeout-w32.c
-endif
 
 gnunet_service_resolver_SOURCES = \
  gnunet-service-resolver.c
@@ -285,8 +252,7 @@ gnunet_qr_SOURCES = \
 gnunet_qr_LDADD = \
   libgnunetutil.la \
   $(GN_LIBINTL)
-gnunet_qr_LDFLAGS= \
-  -lzbar
+gnunet_qr_LDFLAGS= -lzbar
 
 plugin_LTLIBRARIES = \
   libgnunet_plugin_test.la
@@ -393,8 +359,7 @@ test_os_start_process_SOURCES = \
 test_os_start_process_LDADD = \
  libgnunetutil.la
 test_os_start_process_DEPENDENCIES = \
- libgnunetutil.la \
- $(WINCAT)
+ libgnunetutil.la
 
 test_client_nc_SOURCES = \
  test_client.c

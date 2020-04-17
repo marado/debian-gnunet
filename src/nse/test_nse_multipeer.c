@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file nse/test_nse_multipeer.c
  * @brief Testcase for the network size estimation service.  Starts
@@ -76,7 +76,7 @@ shutdown_task (void *cls)
 {
   unsigned int i;
 
-  for (i=0;i<NUM_PEERS;i++)
+  for (i = 0; i < NUM_PEERS; i++)
     GNUNET_TESTBED_operation_done (nse_peers[i].op);
   GNUNET_SCHEDULER_shutdown ();
 }
@@ -98,12 +98,12 @@ handle_estimate (void *cls, struct GNUNET_TIME_Absolute timestamp,
 {
   struct NSEPeer *peer = cls;
 
-  FPRINTF (stderr,
+  fprintf (stderr,
            "Received network size estimate from peer %u. logSize: %f std.dev. %f (%f/%u)\n",
            (unsigned int) (peer - nse_peers),
-	   estimate, std_dev,
+           estimate, std_dev,
            GNUNET_NSE_log_estimate_to_n (estimate),
-	   NUM_PEERS);
+           NUM_PEERS);
   ok = 0;
 }
 
@@ -119,23 +119,23 @@ handle_estimate (void *cls, struct GNUNET_TIME_Absolute timestamp,
  */
 static void
 nse_connect_complete_cb (void *cls,
-			 struct GNUNET_TESTBED_Operation *op,
-			 void *ca_result,
-			 const char *emsg)
+                         struct GNUNET_TESTBED_Operation *op,
+                         void *ca_result,
+                         const char *emsg)
 {
   struct NSEPeer *peer = cls;
   struct GNUNET_NSE_Handle *nse = ca_result;
 
   GNUNET_assert (op == peer->op);
   if (NULL != emsg)
-    {
-      GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  "Failed to connect to NSE service: %s\n",
-		  emsg);
-      ok = 1;
-      GNUNET_SCHEDULER_shutdown ();
-      return;
-    }
+  {
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Failed to connect to NSE service: %s\n",
+                emsg);
+    ok = 1;
+    GNUNET_SCHEDULER_shutdown ();
+    return;
+  }
   peer->nse_handle = nse;
 }
 
@@ -152,11 +152,11 @@ nse_connect_complete_cb (void *cls,
  */
 static void *
 nse_connect_adapter (void *cls,
-		     const struct GNUNET_CONFIGURATION_Handle *cfg)
+                     const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   return GNUNET_NSE_connect (cfg,
-			     &handle_estimate,
-			     cls);
+                             &handle_estimate,
+                             cls);
 }
 
 
@@ -169,7 +169,7 @@ nse_connect_adapter (void *cls,
  */
 static void
 nse_disconnect_adapter (void *cls,
-			void *op_result)
+                        void *op_result)
 {
   GNUNET_NSE_disconnect (op_result);
 }
@@ -198,17 +198,17 @@ run (void *cls,
   unsigned int i;
 
   GNUNET_assert (NUM_PEERS == num_peers);
-  for (i=0;i<num_peers;i++)
+  for (i = 0; i < num_peers; i++)
     nse_peers[i].op = GNUNET_TESTBED_service_connect (&nse_peers[i],
-						      peers[i],
-						      "nse",
-						      &nse_connect_complete_cb,
-						      &nse_peers[i],
-						      &nse_connect_adapter,
-						      &nse_disconnect_adapter,
-						      &nse_peers[i]);
+                                                      peers[i],
+                                                      "nse",
+                                                      &nse_connect_complete_cb,
+                                                      &nse_peers[i],
+                                                      &nse_connect_adapter,
+                                                      &nse_disconnect_adapter,
+                                                      &nse_peers[i]);
   GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-				&shutdown_task, NULL);
+                                &shutdown_task, NULL);
 }
 
 
@@ -230,5 +230,6 @@ main (int argc, char *argv[])
                                   &run, NULL);
   return ok;
 }
+
 
 /* end of test_nse_multipeer.c */

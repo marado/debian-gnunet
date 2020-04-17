@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file core/test_core_quota_compliance.c
  * @brief testcase for core_api.c focusing quota compliance on core level
@@ -51,11 +51,13 @@
 /**
  * What delay do we request from the core service for transmission?
  */
-#define FAST_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 150)
+#define FAST_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, \
+                                                    150)
 
 #define MTYPE 12345
 #define MESSAGESIZE (1024 - 8)
-#define MEASUREMENT_LENGTH GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30)
+#define MEASUREMENT_LENGTH GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 30)
 
 static unsigned long long total_bytes_sent;
 static unsigned long long total_bytes_recv;
@@ -99,7 +101,9 @@ static int running;
 
 
 #if VERBOSE
-#define OKPP do { ok++; GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Now at stage %u at %s:%u\n", ok, __FILE__, __LINE__); } while (0)
+#define OKPP do { ok++; GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, \
+                                    "Now at stage %u at %s:%u\n", ok, __FILE__, \
+                                    __LINE__); } while (0)
 #else
 #define OKPP do { ok++; } while (0)
 #endif
@@ -176,7 +180,7 @@ terminate_task_error (void *cls)
 {
   err_task = NULL;
   GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-	      "Testcase failed (timeout)!\n");
+              "Testcase failed (timeout)!\n");
   GNUNET_SCHEDULER_shutdown ();
   ok = 42;
 }
@@ -225,7 +229,7 @@ measurement_stop (void *cls)
   enum GNUNET_ErrorType kind = GNUNET_ERROR_TYPE_DEBUG;
 
   measure_task = NULL;
-  FPRINTF (stdout, "%s",  "\n");
+  fprintf (stdout, "%s", "\n");
   running = GNUNET_NO;
 
   delta = GNUNET_TIME_absolute_get_duration (start_time).rel_value_us;
@@ -247,54 +251,54 @@ measurement_stop (void *cls)
   else
     ok = 0; /* pass */
   GNUNET_STATISTICS_get (p1.stats,
-			 "core",
-			 "# discarded CORE_SEND requests",
+                         "core",
+                         "# discarded CORE_SEND requests",
                          NULL,
-			 &print_stat,
-			 &p1);
+                         &print_stat,
+                         &p1);
   GNUNET_STATISTICS_get (p1.stats,
-			 "core",
+                         "core",
                          "# discarded CORE_SEND request bytes",
                          NULL,
-			 &print_stat,
-			 &p1);
+                         &print_stat,
+                         &p1);
   GNUNET_STATISTICS_get (p1.stats,
-			 "core",
+                         "core",
                          "# discarded lower priority CORE_SEND requests",
                          NULL,
-			 &print_stat,
-			 NULL);
+                         &print_stat,
+                         NULL);
   GNUNET_STATISTICS_get (p1.stats,
-			 "core",
+                         "core",
                          "# discarded lower priority CORE_SEND request bytes",
                          NULL,
-			 &print_stat,
-			 &p1);
+                         &print_stat,
+                         &p1);
   GNUNET_STATISTICS_get (p2.stats,
-			 "core",
-			 "# discarded CORE_SEND requests",
+                         "core",
+                         "# discarded CORE_SEND requests",
                          NULL,
-			 &print_stat,
-			 &p2);
+                         &print_stat,
+                         &p2);
 
   GNUNET_STATISTICS_get (p2.stats,
-			 "core",
+                         "core",
                          "# discarded CORE_SEND request bytes",
                          NULL,
-			 &print_stat,
-			 &p2);
+                         &print_stat,
+                         &p2);
   GNUNET_STATISTICS_get (p2.stats,
-			 "core",
+                         "core",
                          "# discarded lower priority CORE_SEND requests",
                          NULL,
-			 &print_stat,
-			 &p2);
+                         &print_stat,
+                         &p2);
   GNUNET_STATISTICS_get (p2.stats,
-			 "core",
+                         "core",
                          "# discarded lower priority CORE_SEND request bytes",
                          NULL,
-			 &print_stat,
-			 &p2);
+                         &print_stat,
+                         &p2);
 
   if (ok != 0)
     kind = GNUNET_ERROR_TYPE_ERROR;
@@ -302,40 +306,43 @@ measurement_stop (void *cls)
   {
   case SYMMETRIC:
     GNUNET_log (kind,
-		"Core quota compliance test with symmetric quotas: %s\n",
+                "Core quota compliance test with symmetric quotas: %s\n",
                 (0 == ok) ? "PASSED" : "FAILED");
     break;
+
   case ASYMMETRIC_SEND_LIMITED:
     GNUNET_log (kind,
                 "Core quota compliance test with limited sender quota: %s\n",
                 (0 == ok) ? "PASSED" : "FAILED");
     break;
+
   case ASYMMETRIC_RECV_LIMITED:
     GNUNET_log (kind,
                 "Core quota compliance test with limited receiver quota: %s\n",
                 (0 == ok) ? "PASSED" : "FAILED");
     break;
-  };
+  }
+  ;
   GNUNET_log (kind,
-	      "Peer 1 send  rate: %llu b/s (%llu bytes in %llu ms)\n",
+              "Peer 1 send  rate: %llu b/s (%llu bytes in %llu ms)\n",
               throughput_out,
-	      total_bytes_sent,
-	      delta);
+              total_bytes_sent,
+              delta);
   GNUNET_log (kind,
-	      "Peer 1 send quota: %llu b/s\n",
-	      current_quota_p1_out);
+              "Peer 1 send quota: %llu b/s\n",
+              current_quota_p1_out);
   GNUNET_log (kind,
-	      "Peer 2 receive  rate: %llu b/s (%llu bytes in %llu ms)\n",
+              "Peer 2 receive  rate: %llu b/s (%llu bytes in %llu ms)\n",
               throughput_in,
-	      total_bytes_recv,
-	      delta);
+              total_bytes_recv,
+              delta);
   GNUNET_log (kind,
-	      "Peer 2 receive quota: %llu b/s\n",
-	      current_quota_p2_in);
+              "Peer 2 receive quota: %llu b/s\n",
+              current_quota_p2_in);
 /*
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,"Max. inbound  quota allowed: %llu b/s\n",max_quota_in );
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,"Max. outbound quota allowed: %llu b/s\n",max_quota_out);
-*/
+   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,"Max. inbound  quota allowed: %llu b/s\n",max_quota_in );
+   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,"Max. outbound quota allowed: %llu b/s\n",max_quota_out);
+ */
   GNUNET_SCHEDULER_shutdown ();
 }
 
@@ -355,10 +362,10 @@ do_transmit (void *cls)
   tr_n++;
   GNUNET_SCHEDULER_cancel (err_task);
   err_task =
-      GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-				    &terminate_task_error,
-				    NULL);
-  total_bytes_sent += sizeof (struct TestMessage);
+    GNUNET_SCHEDULER_add_delayed (TIMEOUT,
+                                  &terminate_task_error,
+                                  NULL);
+  total_bytes_sent += sizeof(struct TestMessage);
   GNUNET_MQ_send (p1.mq,
                   env);
 }
@@ -366,14 +373,14 @@ do_transmit (void *cls)
 
 static void *
 connect_notify (void *cls,
-		const struct GNUNET_PeerIdentity *peer,
+                const struct GNUNET_PeerIdentity *peer,
                 struct GNUNET_MQ_Handle *mq)
 {
   struct PeerContext *pc = cls;
 
   if (0 == memcmp (&pc->id,
-		   peer,
-		   sizeof (struct GNUNET_PeerIdentity)))
+                   peer,
+                   sizeof(struct GNUNET_PeerIdentity)))
     return NULL;                     /* loopback */
   GNUNET_assert (0 == pc->connect_status);
   pc->connect_status = 1;
@@ -388,15 +395,15 @@ connect_notify (void *cls,
                 GNUNET_i2s (&p2.id));
     GNUNET_SCHEDULER_cancel (err_task);
     err_task =
-        GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-				      &terminate_task_error,
-				      NULL);
+      GNUNET_SCHEDULER_add_delayed (TIMEOUT,
+                                    &terminate_task_error,
+                                    NULL);
     start_time = GNUNET_TIME_absolute_get ();
     running = GNUNET_YES;
     measure_task =
-        GNUNET_SCHEDULER_add_delayed (MEASUREMENT_LENGTH,
-				      &measurement_stop,
-                                      NULL);
+      GNUNET_SCHEDULER_add_delayed (MEASUREMENT_LENGTH,
+                                    &measurement_stop,
+                                    NULL);
     do_transmit (NULL);
   }
   return pc;
@@ -405,7 +412,7 @@ connect_notify (void *cls,
 
 static void
 disconnect_notify (void *cls,
-		   const struct GNUNET_PeerIdentity *peer,
+                   const struct GNUNET_PeerIdentity *peer,
                    void *internal_cls)
 {
   struct PeerContext *pc = cls;
@@ -422,10 +429,9 @@ disconnect_notify (void *cls,
     measure_task = NULL;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Encrypted connection to `%s' cut\n",
+              "Encrypted connection to `%s' cut\n",
               GNUNET_i2s (peer));
 }
-
 
 
 static void
@@ -434,24 +440,24 @@ handle_test (void *cls,
 {
   static int n;
 
-  total_bytes_recv += sizeof (struct TestMessage);
+  total_bytes_recv += sizeof(struct TestMessage);
   if (ntohl (hdr->num) != n)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Expected message %u, got message %u\n",
                 n,
-		ntohl (hdr->num));
+                ntohl (hdr->num));
     GNUNET_SCHEDULER_cancel (err_task);
     err_task = GNUNET_SCHEDULER_add_now (&terminate_task_error,
-					 NULL);
+                                         NULL);
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Got message %u\n",
+              "Got message %u\n",
               ntohl (hdr->num));
   n++;
   if (0 == (n % 10))
-    FPRINTF (stderr, "%s",  ".");
+    fprintf (stderr, "%s", ".");
 
   if (GNUNET_YES == running)
     do_transmit (NULL);
@@ -517,7 +523,7 @@ offer_hello_done (void *cls)
 
 static void
 process_hello (void *cls,
-	       const struct GNUNET_MessageHeader *message)
+               const struct GNUNET_MessageHeader *message)
 {
   struct PeerContext *p = cls;
 
@@ -526,28 +532,28 @@ process_hello (void *cls,
   GNUNET_assert (message != NULL);
   p->hello = GNUNET_malloc (ntohs (message->size));
   GNUNET_memcpy (p->hello, message, ntohs (message->size));
-  if ( (p == &p1) &&
-       (NULL == p2.oh) )
+  if ((p == &p1) &&
+      (NULL == p2.oh))
     p2.oh = GNUNET_TRANSPORT_offer_hello (p2.cfg,
                                           message,
                                           &offer_hello_done,
                                           &p2);
-  if ( (p == &p2) &&
-       (NULL == p1.oh) )
+  if ((p == &p2) &&
+      (NULL == p1.oh))
     p1.oh = GNUNET_TRANSPORT_offer_hello (p1.cfg, message,
                                           &offer_hello_done,
                                           &p1);
 
-  if ( (p == &p1) &&
-       (NULL != p2.hello) &&
-       (NULL == p1.oh) )
+  if ((p == &p1) &&
+      (NULL != p2.hello) &&
+      (NULL == p1.oh))
     p1.oh = GNUNET_TRANSPORT_offer_hello (p1.cfg,
                                           p2.hello,
                                           &offer_hello_done,
                                           &p1);
-  if ( (p == &p2) &&
-       (NULL != p1.hello) &&
-       (NULL == p2.oh) )
+  if ((p == &p2) &&
+      (NULL != p1.hello) &&
+      (NULL == p2.oh))
     p2.oh = GNUNET_TRANSPORT_offer_hello (p2.cfg,
                                           p1.hello,
                                           &offer_hello_done,
@@ -557,7 +563,7 @@ process_hello (void *cls,
 
 static void
 setup_peer (struct PeerContext *p,
-	    const char *cfgname)
+            const char *cfgname)
 {
   char *binary;
 
@@ -565,25 +571,25 @@ setup_peer (struct PeerContext *p,
   p->cfg = GNUNET_CONFIGURATION_create ();
   p->arm_proc =
     GNUNET_OS_start_process (GNUNET_YES,
-			     GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                             GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
                              NULL, NULL, NULL,
                              binary,
                              "gnunet-service-arm",
                              "-c",
-			     cfgname,
-			     NULL);
+                             cfgname,
+                             NULL);
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CONFIGURATION_load (p->cfg,
-					    cfgname));
+                 GNUNET_CONFIGURATION_load (p->cfg,
+                                            cfgname));
   p->stats = GNUNET_STATISTICS_create ("core",
-				       p->cfg);
+                                       p->cfg);
   GNUNET_assert (NULL != p->stats);
   p->ats = GNUNET_ATS_connectivity_init (p->cfg);
   GNUNET_assert (NULL != p->ats);
   p->ghh = GNUNET_TRANSPORT_hello_get (p->cfg,
-				       GNUNET_TRANSPORT_AC_ANY,
-				       &process_hello,
-				       p);
+                                       GNUNET_TRANSPORT_AC_ANY,
+                                       &process_hello,
+                                       p);
   GNUNET_free (binary);
 }
 
@@ -605,52 +611,52 @@ run (void *cls,
   GNUNET_assert (ok == 1);
   OKPP;
   err_task =
-      GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-				    &terminate_task_error,
-				    NULL);
+    GNUNET_SCHEDULER_add_delayed (TIMEOUT,
+                                  &terminate_task_error,
+                                  NULL);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   if (test == SYMMETRIC)
   {
     setup_peer (&p1,
-		"test_core_quota_peer1.conf");
+                "test_core_quota_peer1.conf");
     setup_peer (&p2,
-		"test_core_quota_peer2.conf");
+                "test_core_quota_peer2.conf");
   }
   else if (test == ASYMMETRIC_SEND_LIMITED)
   {
     setup_peer (&p1,
-		"test_core_quota_asymmetric_send_limit_peer1.conf");
+                "test_core_quota_asymmetric_send_limit_peer1.conf");
     setup_peer (&p2,
-		"test_core_quota_asymmetric_send_limit_peer2.conf");
+                "test_core_quota_asymmetric_send_limit_peer2.conf");
   }
   else if (test == ASYMMETRIC_RECV_LIMITED)
   {
     setup_peer (&p1,
-		"test_core_quota_asymmetric_recv_limited_peer1.conf");
+                "test_core_quota_asymmetric_recv_limited_peer1.conf");
     setup_peer (&p2,
-		"test_core_quota_asymmetric_recv_limited_peer2.conf");
+                "test_core_quota_asymmetric_recv_limited_peer2.conf");
   }
 
   GNUNET_assert (test != -1);
   GNUNET_assert (GNUNET_SYSERR !=
                  GNUNET_CONFIGURATION_get_value_size (p1.cfg,
-						      "ATS",
+                                                      "ATS",
                                                       "WAN_QUOTA_IN",
                                                       &current_quota_p1_in));
   GNUNET_assert (GNUNET_SYSERR !=
                  GNUNET_CONFIGURATION_get_value_size (p2.cfg,
-						      "ATS",
+                                                      "ATS",
                                                       "WAN_QUOTA_IN",
                                                       &current_quota_p2_in));
   GNUNET_assert (GNUNET_SYSERR !=
                  GNUNET_CONFIGURATION_get_value_size (p1.cfg,
-						      "ATS",
+                                                      "ATS",
                                                       "WAN_QUOTA_OUT",
                                                       &current_quota_p1_out));
   GNUNET_assert (GNUNET_SYSERR !=
                  GNUNET_CONFIGURATION_get_value_size (p2.cfg,
-						      "ATS",
+                                                      "ATS",
                                                       "WAN_QUOTA_OUT",
                                                       &current_quota_p2_out));
 
@@ -667,15 +673,15 @@ static void
 stop_arm (struct PeerContext *p)
 {
   if (0 != GNUNET_OS_process_kill (p->arm_proc,
-				   GNUNET_TERM_SIG))
+                                   GNUNET_TERM_SIG))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-			 "kill");
+                         "kill");
   if (GNUNET_OK !=
       GNUNET_OS_process_wait (p->arm_proc))
     GNUNET_log_strerror (GNUNET_ERROR_TYPE_WARNING,
-			 "waitpid");
+                         "waitpid");
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "ARM process %u stopped\n",
+              "ARM process %u stopped\n",
               GNUNET_OS_process_get_pid (p->arm_proc));
   GNUNET_OS_process_destroy (p->arm_proc);
   p->arm_proc = NULL;
@@ -695,13 +701,14 @@ check ()
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
+
   ok = 1;
-  GNUNET_PROGRAM_run ((sizeof (argv) / sizeof (char *)) - 1,
-		      argv,
+  GNUNET_PROGRAM_run ((sizeof(argv) / sizeof(char *)) - 1,
+                      argv,
                       "test-core-quota-compliance",
-		      "nohelp",
-		      options,
-		      &run,
+                      "nohelp",
+                      options,
+                      &run,
                       &ok);
   stop_arm (&p1);
   stop_arm (&p2);
@@ -712,22 +719,25 @@ check ()
 static void
 cleanup_directory (int test)
 {
-  switch (test) {
+  switch (test)
+  {
   case SYMMETRIC:
     GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-quota-sym-peer-1/");
     GNUNET_DISK_directory_remove ("/tmp/test-gnunet-core-quota-sym-peer-2/");
     break;
+
   case ASYMMETRIC_SEND_LIMITED:
     GNUNET_DISK_directory_remove
-        ("/tmp/test-gnunet-core-quota-asym-send-lim-peer-1/");
+      ("/tmp/test-gnunet-core-quota-asym-send-lim-peer-1/");
     GNUNET_DISK_directory_remove
-        ("/tmp/test-gnunet-core-quota-asym-send-lim-peer-2/");
+      ("/tmp/test-gnunet-core-quota-asym-send-lim-peer-2/");
     break;
+
   case ASYMMETRIC_RECV_LIMITED:
     GNUNET_DISK_directory_remove
-        ("/tmp/test-gnunet-core-quota-asym-recv-lim-peer-1/");
+      ("/tmp/test-gnunet-core-quota-asym-recv-lim-peer-1/");
     GNUNET_DISK_directory_remove
-        ("/tmp/test-gnunet-core-quota-asym-recv-lim-peer-2/");
+      ("/tmp/test-gnunet-core-quota-asym-recv-lim-peer-2/");
     break;
   }
 }
@@ -741,17 +751,17 @@ main (int argc,
 
   test = -1;
   if (NULL != strstr (argv[0],
-		      "_symmetric"))
+                      "_symmetric"))
   {
     test = SYMMETRIC;
   }
   else if (NULL != strstr (argv[0],
-			   "_asymmetric_send"))
+                           "_asymmetric_send"))
   {
     test = ASYMMETRIC_SEND_LIMITED;
   }
   else if (NULL != strstr (argv[0],
-			   "_asymmetric_recv"))
+                           "_asymmetric_recv"))
   {
     test = ASYMMETRIC_RECV_LIMITED;
   }

@@ -209,22 +209,38 @@ gnunet_dht_get_OBJECTS = $(am_gnunet_dht_get_OBJECTS)
 gnunet_dht_get_DEPENDENCIES = libgnunetdht.la \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_dht_get_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_dht_get_LDFLAGS) $(LDFLAGS) -o \
+	$@
 am_gnunet_dht_monitor_OBJECTS = gnunet-dht-monitor.$(OBJEXT)
 gnunet_dht_monitor_OBJECTS = $(am_gnunet_dht_monitor_OBJECTS)
 gnunet_dht_monitor_DEPENDENCIES = libgnunetdht.la \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_dht_monitor_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_dht_monitor_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_gnunet_dht_profiler_OBJECTS = gnunet_dht_profiler.$(OBJEXT)
 gnunet_dht_profiler_OBJECTS = $(am_gnunet_dht_profiler_OBJECTS)
 gnunet_dht_profiler_DEPENDENCIES = libgnunetdht.la \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(top_builddir)/src/testbed/libgnunettestbed.la
+gnunet_dht_profiler_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_dht_profiler_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_gnunet_dht_put_OBJECTS = gnunet-dht-put.$(OBJEXT)
 gnunet_dht_put_OBJECTS = $(am_gnunet_dht_put_OBJECTS)
 gnunet_dht_put_DEPENDENCIES = libgnunetdht.la \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_dht_put_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_dht_put_LDFLAGS) $(LDFLAGS) -o \
+	$@
 am_gnunet_service_dht_OBJECTS = gnunet-service-dht.$(OBJEXT) \
 	gnunet-service-dht_datacache.$(OBJEXT) \
 	gnunet-service-dht_hello.$(OBJEXT) \
@@ -243,6 +259,10 @@ gnunet_service_dht_DEPENDENCIES =  \
 	$(top_builddir)/src/block/libgnunetblock.la \
 	$(top_builddir)/src/datacache/libgnunetdatacache.la \
 	$(top_builddir)/src/util/libgnunetutil.la
+gnunet_service_dht_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_service_dht_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_test_dht_2dtorus_OBJECTS = test_dht_topo.$(OBJEXT)
 test_dht_2dtorus_OBJECTS = $(am_test_dht_2dtorus_OBJECTS)
 test_dht_2dtorus_DEPENDENCIES = libgnunetdhttest.a \
@@ -554,20 +574,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -575,6 +592,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -600,6 +618,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -637,11 +656,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -685,6 +708,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -704,6 +730,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -714,7 +741,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -778,7 +804,6 @@ top_srcdir = @top_srcdir@
 
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -liconv -lstdc++ -lcomdlg32 -lgdi32
 plugindir = $(libdir)/gnunet
 pkgcfgdir = $(pkgdatadir)/config.d/
 pkgcfg_DATA = \
@@ -798,7 +823,7 @@ libgnunetdht_la_LIBADD = \
   $(LTLIBINTL)
 
 libgnunetdht_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 3:0:0
 
 plugin_LTLIBRARIES = \
@@ -838,6 +863,9 @@ gnunet_service_dht_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lm
 
+gnunet_service_dht_LDFLAGS = \
+  $(GN_LIBINTL)
+
 gnunet_dht_get_SOURCES = \
  gnunet-dht-get.c
 
@@ -845,6 +873,9 @@ gnunet_dht_get_LDADD = \
   libgnunetdht.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_dht_get_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_dht_put_SOURCES = \
  gnunet-dht-put.c
@@ -854,6 +885,9 @@ gnunet_dht_put_LDADD = \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
 
+gnunet_dht_put_LDFLAGS = \
+  $(GN_LIBINTL)
+
 gnunet_dht_monitor_SOURCES = \
  gnunet-dht-monitor.c
 
@@ -861,6 +895,9 @@ gnunet_dht_monitor_LDADD = \
   libgnunetdht.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_dht_monitor_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_dht_profiler_SOURCES = \
   gnunet_dht_profiler.c
@@ -870,6 +907,9 @@ gnunet_dht_profiler_LDADD = \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la
+
+gnunet_dht_profiler_LDFLAGS = \
+  $(GN_LIBINTL)
 
 @HAVE_TESTING_TRUE@noinst_LIBRARIES = libgnunetdhttest.a
 libgnunetdhttest_a_SOURCES = \
@@ -957,7 +997,6 @@ EXTRA_DIST = \
 @HAVE_PYTHON_TRUE@check_SCRIPTS = \
 @HAVE_PYTHON_TRUE@  test_dht_tools.py
 
-do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g' -e 's,[@]bindir[@],$(bindir),g'
 SUFFIXES = .py.in .py
 all: all-am
 
@@ -1197,23 +1236,23 @@ libgnunetdht.la: $(libgnunetdht_la_OBJECTS) $(libgnunetdht_la_DEPENDENCIES) $(EX
 
 gnunet-dht-get$(EXEEXT): $(gnunet_dht_get_OBJECTS) $(gnunet_dht_get_DEPENDENCIES) $(EXTRA_gnunet_dht_get_DEPENDENCIES) 
 	@rm -f gnunet-dht-get$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_dht_get_OBJECTS) $(gnunet_dht_get_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_dht_get_LINK) $(gnunet_dht_get_OBJECTS) $(gnunet_dht_get_LDADD) $(LIBS)
 
 gnunet-dht-monitor$(EXEEXT): $(gnunet_dht_monitor_OBJECTS) $(gnunet_dht_monitor_DEPENDENCIES) $(EXTRA_gnunet_dht_monitor_DEPENDENCIES) 
 	@rm -f gnunet-dht-monitor$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_dht_monitor_OBJECTS) $(gnunet_dht_monitor_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_dht_monitor_LINK) $(gnunet_dht_monitor_OBJECTS) $(gnunet_dht_monitor_LDADD) $(LIBS)
 
 gnunet-dht-profiler$(EXEEXT): $(gnunet_dht_profiler_OBJECTS) $(gnunet_dht_profiler_DEPENDENCIES) $(EXTRA_gnunet_dht_profiler_DEPENDENCIES) 
 	@rm -f gnunet-dht-profiler$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_dht_profiler_OBJECTS) $(gnunet_dht_profiler_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_dht_profiler_LINK) $(gnunet_dht_profiler_OBJECTS) $(gnunet_dht_profiler_LDADD) $(LIBS)
 
 gnunet-dht-put$(EXEEXT): $(gnunet_dht_put_OBJECTS) $(gnunet_dht_put_DEPENDENCIES) $(EXTRA_gnunet_dht_put_DEPENDENCIES) 
 	@rm -f gnunet-dht-put$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_dht_put_OBJECTS) $(gnunet_dht_put_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_dht_put_LINK) $(gnunet_dht_put_OBJECTS) $(gnunet_dht_put_LDADD) $(LIBS)
 
 gnunet-service-dht$(EXEEXT): $(gnunet_service_dht_OBJECTS) $(gnunet_service_dht_DEPENDENCIES) $(EXTRA_gnunet_service_dht_DEPENDENCIES) 
 	@rm -f gnunet-service-dht$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_service_dht_OBJECTS) $(gnunet_service_dht_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_service_dht_LINK) $(gnunet_service_dht_OBJECTS) $(gnunet_service_dht_LDADD) $(LIBS)
 
 test_dht_2dtorus$(EXEEXT): $(test_dht_2dtorus_OBJECTS) $(test_dht_2dtorus_DEPENDENCIES) $(EXTRA_test_dht_2dtorus_DEPENDENCIES) 
 	@rm -f test_dht_2dtorus$(EXEEXT)
@@ -1782,12 +1821,8 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES \
 .PRECIOUS: Makefile
 
 .py.in.py:
-	$(do_subst) < $(srcdir)/$< > $@
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/$< > $@
 	chmod +x $@
-
-test_dht_tools.py: test_dht_tools.py.in Makefile
-	$(do_subst) < $(srcdir)/test_dht_tools.py.in > test_dht_tools.py
-	chmod +x test_dht_tools.py
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

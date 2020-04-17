@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/ats_api_connectivity.c
  * @brief enable clients to ask ATS about establishing connections to peers
@@ -28,7 +28,8 @@
 #include "ats.h"
 
 
-#define LOG(kind,...) GNUNET_log_from(kind, "ats-connectivity-api", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "ats-connectivity-api", \
+                                        __VA_ARGS__)
 
 
 /**
@@ -58,7 +59,6 @@ struct GNUNET_ATS_ConnectivitySuggestHandle
  */
 struct GNUNET_ATS_ConnectivityHandle
 {
-
   /**
    * Our configuration.
    */
@@ -190,7 +190,7 @@ static void
 reconnect (struct GNUNET_ATS_ConnectivityHandle *ch)
 {
   static const struct GNUNET_MQ_MessageHandler handlers[] =
-    { { NULL, 0, 0 } };
+  { { NULL, 0, 0 } };
   struct GNUNET_MQ_Envelope *ev;
   struct ClientStartMessage *init;
 
@@ -336,7 +336,8 @@ GNUNET_ATS_connectivity_suggest (struct GNUNET_ATS_ConnectivityHandle *ch,
  * @param sh handle to stop
  */
 void
-GNUNET_ATS_connectivity_suggest_cancel (struct GNUNET_ATS_ConnectivitySuggestHandle *sh)
+GNUNET_ATS_connectivity_suggest_cancel (struct
+                                        GNUNET_ATS_ConnectivitySuggestHandle *sh)
 {
   struct GNUNET_ATS_ConnectivityHandle *ch = sh->ch;
   struct GNUNET_MQ_Envelope *ev;
@@ -355,7 +356,7 @@ GNUNET_ATS_connectivity_suggest_cancel (struct GNUNET_ATS_ConnectivitySuggestHan
     return;
   }
   ev = GNUNET_MQ_msg (m,
-		      GNUNET_MESSAGE_TYPE_ATS_REQUEST_ADDRESS_CANCEL);
+                      GNUNET_MESSAGE_TYPE_ATS_REQUEST_ADDRESS_CANCEL);
   m->strength = htonl (0);
   m->peer = sh->id;
   GNUNET_MQ_send (ch->mq, ev);

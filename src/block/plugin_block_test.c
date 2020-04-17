@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file block/plugin_block_test.c
@@ -67,7 +67,8 @@ block_plugin_test_create_group (void *cls,
   guard = va_arg (va, const char *);
   if (0 == strcmp (guard,
                    "seen-set-size"))
-    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned int),
+    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned
+                                                                   int),
                                                            BLOOMFILTER_K);
   else if (0 == strcmp (guard,
                         "filter-size"))
@@ -118,7 +119,7 @@ block_plugin_test_evaluate (void *cls,
 {
   struct GNUNET_HashCode chash;
 
-  if ( GNUNET_BLOCK_TYPE_TEST != type)
+  if (GNUNET_BLOCK_TYPE_TEST != type)
   {
     GNUNET_break (0);
     return GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED;
@@ -174,8 +175,7 @@ block_plugin_test_get_key (void *cls,
 void *
 libgnunet_plugin_block_test_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_TEST,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -204,5 +204,6 @@ libgnunet_plugin_block_test_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_test.c */

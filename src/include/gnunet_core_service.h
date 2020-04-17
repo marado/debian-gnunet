@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @author Christian Grothoff
  *
@@ -228,7 +228,6 @@ enum GNUNET_CORE_KxState
    * crashed and thus all connection state should be assumed lost.
    */
   GNUNET_CORE_KX_CORE_DISCONNECT
-
 };
 
 

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file statistics/test_statistics_api_watch_zero_value.c
  * @brief testcase for statistics_api.c watch functions with initial 0 value
@@ -147,9 +147,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_STATISTICS_set (h2, "test-2", 42, GNUNET_NO);
 
   shutdown_task =
-      GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
-                                    &force_shutdown,
-                                    NULL);
+    GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_MINUTES,
+                                  &force_shutdown,
+                                  NULL);
 }
 
 
@@ -157,10 +157,9 @@ int
 main (int argc, char *argv_ign[])
 {
   char *const argv[] = { "test-statistics-api",
-    "-c",
-    "test_statistics_api_data.conf",
-    NULL
-  };
+                         "-c",
+                         "test_statistics_api_data.conf",
+                         NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
@@ -171,9 +170,9 @@ main (int argc, char *argv_ign[])
   proc =
     GNUNET_OS_start_process (GNUNET_YES, GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
                              NULL, NULL, NULL,
-			     binary,
-			     "gnunet-service-statistics",
-			     "-c", "test_statistics_api_data.conf", NULL);
+                             binary,
+                             "gnunet-service-statistics",
+                             "-c", "test_statistics_api_data.conf", NULL);
   GNUNET_assert (NULL != proc);
   ok = 3;
   ok2 = 1;
@@ -192,5 +191,6 @@ main (int argc, char *argv_ign[])
     return 0;
   return 1;
 }
+
 
 /* end of test_statistics_api_watch_zero_value.c */

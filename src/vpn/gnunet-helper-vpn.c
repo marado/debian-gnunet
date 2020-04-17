@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file vpn/gnunet-helper-vpn.c
@@ -33,7 +33,9 @@
  * - Philipp Tölke
  */
 #include "platform.h"
-#include <linux/if_tun.h>
+#ifdef IF_TUN_HDR
+#include IF_TUN_HDR
+#endif
 
 /**
  * Need 'struct GNUNET_MessageHeader'.
@@ -107,7 +109,7 @@ init_tun (char *dev)
     return -1;
   }
 
-  memset (&ifr, 0, sizeof (ifr));
+  memset (&ifr, 0, sizeof(ifr));
   ifr.ifr_flags = IFF_TUN;
 
   if ('\0' != *dev)
@@ -151,7 +153,7 @@ set_address6 (const char *dev,
   /*
    * parse the new address
    */
-  memset (&sa6, 0, sizeof (struct sockaddr_in6));
+  memset (&sa6, 0, sizeof(struct sockaddr_in6));
   sa6.sin6_family = AF_INET6;
   if (1 != inet_pton (AF_INET6, address, sa6.sin6_addr.s6_addr))
   {
@@ -169,7 +171,7 @@ set_address6 (const char *dev,
     exit (1);
   }
 
-  memset (&ifr, 0, sizeof (struct ifreq));
+  memset (&ifr, 0, sizeof(struct ifreq));
   /*
    * Get the index of the if
    */
@@ -188,7 +190,7 @@ set_address6 (const char *dev,
     exit (1);
   }
 
-  memset (&ifr6, 0, sizeof (struct in6_ifreq));
+  memset (&ifr6, 0, sizeof(struct in6_ifreq));
   ifr6.ifr6_addr = sa6.sin6_addr;
   ifr6.ifr6_ifindex = ifr.ifr_ifindex;
   ifr6.ifr6_prefixlen = prefix_len;
@@ -265,7 +267,7 @@ set_address4 (const char *dev,
   struct sockaddr_in *addr;
   struct ifreq ifr;
 
-  memset (&ifr, 0, sizeof (struct ifreq));
+  memset (&ifr, 0, sizeof(struct ifreq));
   addr = (struct sockaddr_in *) &(ifr.ifr_addr);
   addr->sin_family = AF_INET;
 
@@ -453,8 +455,8 @@ run (int fd_tun)
       if (FD_ISSET (fd_tun, &fds_r))
       {
         buftun_size =
-            read (fd_tun, buftun + sizeof (struct GNUNET_MessageHeader),
-                  MAX_SIZE - sizeof (struct GNUNET_MessageHeader));
+          read (fd_tun, buftun + sizeof(struct GNUNET_MessageHeader),
+                MAX_SIZE - sizeof(struct GNUNET_MessageHeader));
         if (-1 == buftun_size)
         {
           fprintf (stderr,
@@ -477,8 +479,8 @@ run (int fd_tun)
         {
           buftun_read = buftun;
           struct GNUNET_MessageHeader *hdr =
-              (struct GNUNET_MessageHeader *) buftun;
-          buftun_size += sizeof (struct GNUNET_MessageHeader);
+            (struct GNUNET_MessageHeader *) buftun;
+          buftun_size += sizeof(struct GNUNET_MessageHeader);
           hdr->type = htons (GNUNET_MESSAGE_TYPE_VPN_HELPER);
           hdr->size = htons (buftun_size);
         }
@@ -491,12 +493,12 @@ run (int fd_tun)
 
         if (-1 == written)
         {
-#if !DEBUG
-	  if (errno != EPIPE)
+#if ! DEBUG
+          if (errno != EPIPE)
 #endif
-	    fprintf (stderr,
-                     "write-error to stdout: %s\n",
-                     strerror (errno));
+          fprintf (stderr,
+                   "write-error to stdout: %s\n",
+                   strerror (errno));
           shutdown (fd_tun, SHUT_RD);
           shutdown (1, SHUT_WR);
           read_open = 0;
@@ -544,7 +546,7 @@ run (int fd_tun)
 
 PROCESS_BUFFER:
           bufin_rpos += bufin_size;
-          if (bufin_rpos < sizeof (struct GNUNET_MessageHeader))
+          if (bufin_rpos < sizeof(struct GNUNET_MessageHeader))
             continue;
           hdr = (struct GNUNET_MessageHeader *) bufin;
           if (ntohs (hdr->type) != GNUNET_MESSAGE_TYPE_VPN_HELPER)
@@ -555,9 +557,9 @@ PROCESS_BUFFER:
           }
           if (ntohs (hdr->size) > bufin_rpos)
             continue;
-          bufin_read = bufin + sizeof (struct GNUNET_MessageHeader);
-          bufin_size = ntohs (hdr->size) - sizeof (struct GNUNET_MessageHeader);
-          bufin_rpos -= bufin_size + sizeof (struct GNUNET_MessageHeader);
+          bufin_read = bufin + sizeof(struct GNUNET_MessageHeader);
+          bufin_size = ntohs (hdr->size) - sizeof(struct GNUNET_MessageHeader);
+          bufin_rpos -= bufin_size + sizeof(struct GNUNET_MessageHeader);
         }
       }
       else if (FD_ISSET (fd_tun, &fds_w))
@@ -588,7 +590,7 @@ PROCESS_BUFFER:
           if (0 == bufin_size)
           {
             memmove (bufin, bufin_read, bufin_rpos);
-            bufin_read = NULL;  /* start reading again */
+            bufin_read = NULL;           /* start reading again */
             bufin_size = 0;
             goto PROCESS_BUFFER;
           }
@@ -632,11 +634,11 @@ main (int argc, char **argv)
   {
     fprintf (stderr,
              "Fatal: could not initialize tun-interface `%s'  with IPv6 %s/%s and IPv4 %s/%s\n",
-	     dev,
-	     argv[2],
-	     argv[3],
-	     argv[4],
-	     argv[5]);
+             dev,
+             argv[2],
+             argv[3],
+             argv[4],
+             argv[5]);
     return 1;
   }
 
@@ -696,7 +698,7 @@ main (int argc, char **argv)
   }
   run (fd_tun);
   global_ret = 0;
- cleanup:
+cleanup:
   close (fd_tun);
   return global_ret;
 }

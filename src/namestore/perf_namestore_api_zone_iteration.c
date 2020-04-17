@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/perf_namestore_api_zone_iteration.c
  * @brief testcase for zone iteration functionality: iterate all zones
@@ -142,8 +142,9 @@ create_record (unsigned int count)
 {
   struct GNUNET_GNSRECORD_Data *rd;
 
-  rd = GNUNET_malloc (count + sizeof (struct GNUNET_GNSRECORD_Data));
-  rd->expiration_time = GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_HOURS).abs_value_us;
+  rd = GNUNET_malloc (count + sizeof(struct GNUNET_GNSRECORD_Data));
+  rd->expiration_time = GNUNET_TIME_relative_to_absolute (
+    GNUNET_TIME_UNIT_HOURS).abs_value_us;
   rd->record_type = TEST_RECORD_TYPE;
   rd->data_size = count;
   rd->data = (void *) &rd[1];
@@ -210,8 +211,8 @@ zone_proc (void *cls,
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  if ( (xoff > BENCHMARK_SIZE) ||
-       (0 != (seen[xoff / 8] & (1U << (xoff % 8)))) )
+  if ((xoff > BENCHMARK_SIZE) ||
+      (0 != (seen[xoff / 8] & (1U << (xoff % 8)))))
   {
     res = 3;
     GNUNET_break (0);
@@ -220,9 +221,9 @@ zone_proc (void *cls,
   }
   seen[xoff / 8] |= (1U << (xoff % 8));
   wrd = create_record (xoff % MAX_REC_SIZE);
-  if ( (rd->record_type != wrd->record_type) ||
-       (rd->data_size != wrd->data_size) ||
-       (rd->flags != wrd->flags) )
+  if ((rd->record_type != wrd->record_type) ||
+      (rd->data_size != wrd->data_size) ||
+      (rd->flags != wrd->flags))
   {
     res = 4;
     GNUNET_break (0);
@@ -242,7 +243,7 @@ zone_proc (void *cls,
   }
   GNUNET_free (wrd);
   if (0 != GNUNET_memcmp (zone,
-                   privkey))
+                          privkey))
   {
     res = 5;
     GNUNET_break (0);

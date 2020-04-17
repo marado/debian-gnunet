@@ -1,4 +1,3 @@
-
 /*
      This file is part of GNUnet.
      Copyright (C) 2001-2017 GNUnet e.V.
@@ -12,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet.h
@@ -99,7 +98,6 @@ struct CadetPeerPathEntry
    * against overflows.
    */
   int score;
-
 };
 
 /**
@@ -149,7 +147,6 @@ struct CadetTConnection
  */
 struct OpenPort
 {
-
   /**
    * Client that opened the port.
    */
@@ -164,7 +161,6 @@ struct OpenPort
    * Port hashed with our PID (matches incoming OPEN messages).
    */
   struct GNUNET_HashCode h_port;
-  
 };
 
 

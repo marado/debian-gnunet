@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -35,7 +35,6 @@
  */
 struct GNUNET_REVOCATION_Query
 {
-
   /**
    * Message queue to the service.
    */
@@ -50,7 +49,6 @@ struct GNUNET_REVOCATION_Query
    * Closure for @e func.
    */
   void *func_cls;
-
 };
 
 
@@ -109,8 +107,8 @@ handle_revocation_query_response (void *cls,
  */
 struct GNUNET_REVOCATION_Query *
 GNUNET_REVOCATION_query (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			 const struct GNUNET_CRYPTO_EcdsaPublicKey *key,
-			 GNUNET_REVOCATION_Callback func,
+                         const struct GNUNET_CRYPTO_EcdsaPublicKey *key,
+                         GNUNET_REVOCATION_Callback func,
                          void *func_cls)
 {
   struct GNUNET_REVOCATION_Query *q
@@ -169,7 +167,6 @@ GNUNET_REVOCATION_query_cancel (struct GNUNET_REVOCATION_Query *q)
  */
 struct GNUNET_REVOCATION_Handle
 {
-
   /**
    * Message queue to the service.
    */
@@ -184,7 +181,6 @@ struct GNUNET_REVOCATION_Handle
    * Closure for @e func.
    */
   void *func_cls;
-
 };
 
 
@@ -249,10 +245,10 @@ handle_revocation_response (void *cls,
  */
 struct GNUNET_REVOCATION_Handle *
 GNUNET_REVOCATION_revoke (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			  const struct GNUNET_CRYPTO_EcdsaPublicKey *key,
-			  const struct GNUNET_CRYPTO_EcdsaSignature *sig,
-			  uint64_t pow,
-			  GNUNET_REVOCATION_Callback func,
+                          const struct GNUNET_CRYPTO_EcdsaPublicKey *key,
+                          const struct GNUNET_CRYPTO_EcdsaSignature *sig,
+                          uint64_t pow,
+                          GNUNET_REVOCATION_Callback func,
                           void *func_cls)
 {
   struct GNUNET_REVOCATION_Handle *h
@@ -268,15 +264,15 @@ GNUNET_REVOCATION_revoke (const struct GNUNET_CONFIGURATION_Handle *cfg,
   struct RevokeMessage *rm;
   struct GNUNET_MQ_Envelope *env;
 
-  if ( (GNUNET_OK ==
-        GNUNET_CONFIGURATION_get_value_number (cfg,
-                                               "REVOCATION",
-                                               "WORKBITS",
-                                               &matching_bits)) &&
-       (GNUNET_YES !=
-        GNUNET_REVOCATION_check_pow (key,
-                                     pow,
-                                     (unsigned int) matching_bits)) )
+  if ((GNUNET_OK ==
+       GNUNET_CONFIGURATION_get_value_number (cfg,
+                                              "REVOCATION",
+                                              "WORKBITS",
+                                              &matching_bits)) &&
+      (GNUNET_YES !=
+       GNUNET_REVOCATION_check_pow (key,
+                                    pow,
+                                    (unsigned int) matching_bits)))
   {
     GNUNET_break (0);
     GNUNET_free (h);
@@ -300,8 +296,8 @@ GNUNET_REVOCATION_revoke (const struct GNUNET_CONFIGURATION_Handle *cfg,
   rm->reserved = htonl (0);
   rm->proof_of_work = pow;
   rm->purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_REVOCATION);
-  rm->purpose.size = htonl (sizeof (struct GNUNET_CRYPTO_EccSignaturePurpose) +
-                            sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
+  rm->purpose.size = htonl (sizeof(struct GNUNET_CRYPTO_EccSignaturePurpose)
+                            + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey));
   rm->public_key = *key;
   rm->signature = *sig;
   GNUNET_MQ_send (h->mq,
@@ -324,29 +320,6 @@ GNUNET_REVOCATION_revoke_cancel (struct GNUNET_REVOCATION_Handle *h)
     h->mq = NULL;
   }
   GNUNET_free (h);
-}
-
-
-/**
- * Calculate the 'proof-of-work' hash (an expensive hash).
- *
- * @param buf data to hash
- * @param buf_len number of bytes in @a buf
- * @param result where to write the resulting hash
- */
-static void
-pow_hash (const void *buf,
-	  size_t buf_len,
-	  struct GNUNET_HashCode *result)
-{
-  GNUNET_break (0 ==
-		gcry_kdf_derive (buf, buf_len,
-				 GCRY_KDF_SCRYPT,
-				 1 /* subalgo */,
-				 "gnunet-revocation-proof-of-work",
-				 strlen ("gnunet-revocation-proof-of-work"),
-				 2 /* iterations; keep cost of individual op small */,
-				 sizeof (struct GNUNET_HashCode), result));
 }
 
 
@@ -379,17 +352,20 @@ count_leading_zeroes (const struct GNUNET_HashCode *hash)
  */
 int
 GNUNET_REVOCATION_check_pow (const struct GNUNET_CRYPTO_EcdsaPublicKey *key,
-			     uint64_t pow,
-			     unsigned int matching_bits)
+                             uint64_t pow,
+                             unsigned int matching_bits)
 {
-  char buf[sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey) +
-           sizeof (pow)] GNUNET_ALIGN;
+  char buf[sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey)
+           + sizeof(pow)] GNUNET_ALIGN;
   struct GNUNET_HashCode result;
 
-  GNUNET_memcpy (buf, &pow, sizeof (pow));
-  GNUNET_memcpy (&buf[sizeof (pow)], key,
-          sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
-  pow_hash (buf, sizeof (buf), &result);
+  GNUNET_memcpy (buf, &pow, sizeof(pow));
+  GNUNET_memcpy (&buf[sizeof(pow)], key,
+                 sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey));
+  GNUNET_CRYPTO_pow_hash ("gnunet-revocation-proof-of-work",
+                          buf,
+                          sizeof(buf),
+                          &result);
   return (count_leading_zeroes (&result) >=
           matching_bits) ? GNUNET_YES : GNUNET_NO;
 }
@@ -402,19 +378,20 @@ GNUNET_REVOCATION_check_pow (const struct GNUNET_CRYPTO_EcdsaPublicKey *key,
  * @param sig where to write the revocation signature
  */
 void
-GNUNET_REVOCATION_sign_revocation (const struct GNUNET_CRYPTO_EcdsaPrivateKey *key,
-				   struct GNUNET_CRYPTO_EcdsaSignature *sig)
+GNUNET_REVOCATION_sign_revocation (const struct
+                                   GNUNET_CRYPTO_EcdsaPrivateKey *key,
+                                   struct GNUNET_CRYPTO_EcdsaSignature *sig)
 {
   struct RevokeMessage rm;
 
   rm.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_REVOCATION);
-  rm.purpose.size = htonl (sizeof (struct GNUNET_CRYPTO_EccSignaturePurpose) +
-			   sizeof (struct GNUNET_CRYPTO_EcdsaPublicKey));
+  rm.purpose.size = htonl (sizeof(struct GNUNET_CRYPTO_EccSignaturePurpose)
+                           + sizeof(struct GNUNET_CRYPTO_EcdsaPublicKey));
   GNUNET_CRYPTO_ecdsa_key_get_public (key, &rm.public_key);
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_CRYPTO_ecdsa_sign (key,
-					 &rm.purpose,
-					 sig));
+                 GNUNET_CRYPTO_ecdsa_sign (key,
+                                           &rm.purpose,
+                                           sig));
 }
 
 

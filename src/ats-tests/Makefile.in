@@ -90,7 +90,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-check_PROGRAMS = $(am__EXEEXT_2)
+check_PROGRAMS = $(am__EXEEXT_1)
 noinst_PROGRAMS = gnunet-ats-sim$(EXEEXT) gnunet-solver-eval$(EXEEXT)
 subdir = src/ats-tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -117,19 +117,12 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/gnunet_config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@am__EXEEXT_1 = perf_ats_mlp_transport_none$(EXEEXT) \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@	perf_ats_mlp_transport_bandwidth$(EXEEXT) \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@	perf_ats_mlp_transport_latency$(EXEEXT) \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@	perf_ats_mlp_core_none$(EXEEXT) \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@	perf_ats_mlp_core_bandwidth$(EXEEXT) \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@	perf_ats_mlp_core_latency$(EXEEXT)
-@HAVE_TESTING_TRUE@am__EXEEXT_2 = perf_ats_proportional_transport_none$(EXEEXT) \
+@HAVE_TESTING_TRUE@am__EXEEXT_1 = perf_ats_proportional_transport_none$(EXEEXT) \
 @HAVE_TESTING_TRUE@	perf_ats_proportional_transport_bandwidth$(EXEEXT) \
 @HAVE_TESTING_TRUE@	perf_ats_proportional_transport_latency$(EXEEXT) \
 @HAVE_TESTING_TRUE@	perf_ats_proportional_core_none$(EXEEXT) \
 @HAVE_TESTING_TRUE@	perf_ats_proportional_core_bandwidth$(EXEEXT) \
-@HAVE_TESTING_TRUE@	perf_ats_proportional_core_latency$(EXEEXT) \
-@HAVE_TESTING_TRUE@	$(am__EXEEXT_1)
+@HAVE_TESTING_TRUE@	perf_ats_proportional_core_latency$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -175,32 +168,16 @@ libgnunetatstesting_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(LDFLAGS) -o $@
 am_gnunet_ats_sim_OBJECTS = gnunet-ats-sim.$(OBJEXT)
 gnunet_ats_sim_OBJECTS = $(am_gnunet_ats_sim_OBJECTS)
+gnunet_ats_sim_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_ats_sim_LDFLAGS) $(LDFLAGS) -o \
+	$@
 am_gnunet_solver_eval_OBJECTS = gnunet-solver-eval.$(OBJEXT)
 gnunet_solver_eval_OBJECTS = $(am_gnunet_solver_eval_OBJECTS)
-am_perf_ats_mlp_core_bandwidth_OBJECTS = perf_ats.$(OBJEXT)
-perf_ats_mlp_core_bandwidth_OBJECTS =  \
-	$(am_perf_ats_mlp_core_bandwidth_OBJECTS)
-am_perf_ats_mlp_core_latency_OBJECTS = perf_ats.$(OBJEXT)
-perf_ats_mlp_core_latency_OBJECTS =  \
-	$(am_perf_ats_mlp_core_latency_OBJECTS)
-am_perf_ats_mlp_core_none_OBJECTS = perf_ats.$(OBJEXT)
-perf_ats_mlp_core_none_OBJECTS = $(am_perf_ats_mlp_core_none_OBJECTS)
-am_perf_ats_mlp_transport_bandwidth_OBJECTS = perf_ats.$(OBJEXT)
-perf_ats_mlp_transport_bandwidth_OBJECTS =  \
-	$(am_perf_ats_mlp_transport_bandwidth_OBJECTS)
-am_perf_ats_mlp_transport_latency_OBJECTS = perf_ats.$(OBJEXT)
-perf_ats_mlp_transport_latency_OBJECTS =  \
-	$(am_perf_ats_mlp_transport_latency_OBJECTS)
-perf_ats_mlp_transport_latency_DEPENDENCIES =  \
-	$(top_builddir)/src/util/libgnunetutil.la \
-	$(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-	$(top_builddir)/src/testbed/libgnunettestbed.la \
-	$(top_builddir)/src/ats/libgnunetats.la \
-	$(top_builddir)/src/core/libgnunetcore.la \
-	$(top_builddir)/src/transport/libgnunettransport.la
-am_perf_ats_mlp_transport_none_OBJECTS = perf_ats.$(OBJEXT)
-perf_ats_mlp_transport_none_OBJECTS =  \
-	$(am_perf_ats_mlp_transport_none_OBJECTS)
+gnunet_solver_eval_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(gnunet_solver_eval_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_perf_ats_proportional_core_bandwidth_OBJECTS = perf_ats.$(OBJEXT)
 perf_ats_proportional_core_bandwidth_OBJECTS =  \
 	$(am_perf_ats_proportional_core_bandwidth_OBJECTS)
@@ -263,12 +240,6 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(libgnunetatstesting_la_SOURCES) $(gnunet_ats_sim_SOURCES) \
 	$(gnunet_solver_eval_SOURCES) \
-	$(perf_ats_mlp_core_bandwidth_SOURCES) \
-	$(perf_ats_mlp_core_latency_SOURCES) \
-	$(perf_ats_mlp_core_none_SOURCES) \
-	$(perf_ats_mlp_transport_bandwidth_SOURCES) \
-	$(perf_ats_mlp_transport_latency_SOURCES) \
-	$(perf_ats_mlp_transport_none_SOURCES) \
 	$(perf_ats_proportional_core_bandwidth_SOURCES) \
 	$(perf_ats_proportional_core_latency_SOURCES) \
 	$(perf_ats_proportional_core_none_SOURCES) \
@@ -277,12 +248,6 @@ SOURCES = $(libgnunetatstesting_la_SOURCES) $(gnunet_ats_sim_SOURCES) \
 	$(perf_ats_proportional_transport_none_SOURCES)
 DIST_SOURCES = $(libgnunetatstesting_la_SOURCES) \
 	$(gnunet_ats_sim_SOURCES) $(gnunet_solver_eval_SOURCES) \
-	$(perf_ats_mlp_core_bandwidth_SOURCES) \
-	$(perf_ats_mlp_core_latency_SOURCES) \
-	$(perf_ats_mlp_core_none_SOURCES) \
-	$(perf_ats_mlp_transport_bandwidth_SOURCES) \
-	$(perf_ats_mlp_transport_latency_SOURCES) \
-	$(perf_ats_mlp_transport_none_SOURCES) \
 	$(perf_ats_proportional_core_bandwidth_SOURCES) \
 	$(perf_ats_proportional_core_latency_SOURCES) \
 	$(perf_ats_proportional_core_none_SOURCES) \
@@ -498,20 +463,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -519,6 +481,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -544,6 +507,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -581,11 +545,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -629,6 +597,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -648,6 +619,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -658,7 +630,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -723,16 +694,7 @@ top_srcdir = @top_srcdir@
 #t This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
 pkgcfgdir = $(pkgdatadir)/config.d/
-@MINGW_TRUE@WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols
 @USE_COVERAGE_TRUE@AM_CFLAGS = -fprofile-arcs -ftest-coverage
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@PERF_MLP = \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@ perf_ats_mlp_transport_none \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@ perf_ats_mlp_transport_bandwidth \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@ perf_ats_mlp_transport_latency \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@ perf_ats_mlp_core_none \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@ perf_ats_mlp_core_bandwidth \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBGLPK_TRUE@ perf_ats_mlp_core_latency
-
 @HAVE_TESTING_TRUE@TESTING_TESTS = \
 @HAVE_TESTING_TRUE@ perf_ats_proportional_transport_none \
 @HAVE_TESTING_TRUE@ perf_ats_proportional_transport_bandwidth \
@@ -742,9 +704,6 @@ pkgcfgdir = $(pkgdatadir)/config.d/
 @HAVE_TESTING_TRUE@ perf_ats_proportional_core_latency \
 @HAVE_TESTING_TRUE@ $(PERF_MLP)
 
-
-# RIL-tests commented out as RIL is currently badly broken.
-# perf_ats_ril_transport_none  perf_ats_ril_core_none perf_ats_ril_transport_bandwidth perf_ats_ril_core_bandwidth perf_ats_ril_transport_latency perf_ats_ril_core_latency
 lib_LTLIBRARIES = \
   libgnunetatstesting.la
 
@@ -758,7 +717,7 @@ libgnunetatstesting_la_SOURCES = \
 libgnunetatstesting_la_LIBADD = \
   $(top_builddir)/src/testbed/libgnunettestbed.la \
   $(top_builddir)/src/core/libgnunetcore.la \
-	$(top_builddir)/src/transport/libgnunettransport.la \
+  $(top_builddir)/src/transport/libgnunettransport.la \
   $(top_builddir)/src/ats/libgnunetats.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(GN_LIBINTL)
@@ -785,6 +744,9 @@ gnunet_ats_sim_DEPENDENCIES = \
  libgnunetatstesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
+gnunet_ats_sim_LDFLAGS = \
+ $(GN_LIBINTL)
+
 gnunet_solver_eval_SOURCES = \
  gnunet-solver-eval.c
 
@@ -796,6 +758,9 @@ gnunet_solver_eval_LDADD = \
 
 gnunet_solver_eval_DEPENDENCIES = \
  $(top_builddir)/src/util/libgnunetutil.la
+
+gnunet_solver_eval_LDFLAGS = \
+ $(GN_LIBINTL)
 
 perf_ats_proportional_core_none_SOURCES = \
   perf_ats.c
@@ -887,120 +852,11 @@ perf_ats_proportional_transport_latency_DEPENDENCIES = \
  libgnunetatstesting.la \
  $(top_builddir)/src/util/libgnunetutil.la
 
-perf_ats_mlp_core_none_SOURCES = \
-  perf_ats.c
-
-perf_ats_mlp_core_none_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/ats/libgnunetats.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/transport/libgnunettransport.la
-
-perf_ats_mlp_core_none_DEPENDENCIES = \
- libgnunetatstesting.la \
- $(top_builddir)/src/util/libgnunetutil.la
-
-perf_ats_mlp_transport_none_SOURCES = \
-  perf_ats.c
-
-perf_ats_mlp_transport_none_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/ats/libgnunetats.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/transport/libgnunettransport.la
-
-perf_ats_mlp_transport_none_DEPENDENCIES = \
- libgnunetatstesting.la \
- $(top_builddir)/src/util/libgnunetutil.la
-
-perf_ats_mlp_core_bandwidth_SOURCES = \
-  perf_ats.c
-
-perf_ats_mlp_core_bandwidth_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/ats/libgnunetats.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/transport/libgnunettransport.la
-
-perf_ats_mlp_core_bandwidth_DEPENDENCIES = \
- libgnunetatstesting.la \
- $(top_builddir)/src/util/libgnunetutil.la
-
-perf_ats_mlp_transport_bandwidth_SOURCES = \
-  perf_ats.c
-
-perf_ats_mlp_transport_bandwidth_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/ats/libgnunetats.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/transport/libgnunettransport.la
-
-perf_ats_mlp_transport_bandwidth_DEPENDENCIES = \
- libgnunetatstesting.la \
- $(top_builddir)/src/util/libgnunetutil.la
-
-perf_ats_mlp_core_latency_SOURCES = \
-  perf_ats.c
-
-perf_ats_mlp_core_latency_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/ats/libgnunetats.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/transport/libgnunettransport.la
-
-perf_ats_mlp_core_latency_DEPENDENCIES = \
- libgnunetatstesting.la \
- $(top_builddir)/src/util/libgnunetutil.la
-
-perf_ats_mlp_transport_latency_SOURCES = \
-  perf_ats.c
-
-perf_ats_mlp_transport_latency_LDADD = \
-  $(top_builddir)/src/util/libgnunetutil.la \
-  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-  $(top_builddir)/src/testbed/libgnunettestbed.la \
-  $(top_builddir)/src/ats/libgnunetats.la \
-  $(top_builddir)/src/core/libgnunetcore.la \
-  $(top_builddir)/src/transport/libgnunettransport.la
-
-perf_ats_mlp_transport_latencyDEPENDENCIES = \
- $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
- $(top_builddir)/src/util/libgnunetutil.la
-
-
-#perf_ats_ril_core_none_SOURCES = \
-#  perf_ats.c
-#perf_ats_ril_core_none_LDADD = \
-#  $(top_builddir)/src/util/libgnunetutil.la \
-#  $(top_builddir)/src/ats-tests/libgnunetatstesting.la \
-#  $(top_builddir)/src/testbed/libgnunettestbed.la \
-#  $(top_builddir)/src/ats/libgnunetats.la \
-#  $(top_builddir)/src/core/libgnunetcore.la \
-#  $(top_builddir)/src/transport/libgnunettransport.la
-#perf_ats_ril_core_none_DEPENDENCIES = \
-# libgnunetatstesting.la \
-# $(top_builddir)/src/util/libgnunetutil.la
 EXTRA_DIST = \
   gnunet_ats_sim_default.conf \
   perf_ats_proportional_none.conf \
   perf_ats_proportional_bandwidth.conf \
-  perf_ats_proportional_latency.conf \
-  perf_ats_mlp_none.conf \
-  perf_ats_mlp_bandwidth.conf \
-  perf_ats_mlp_latency.conf \
-  perf_ats_ril_none.conf \
-  perf_ats_ril_bandwidth.conf \
-  perf_ats_ril_latency.conf
+  perf_ats_proportional_latency.conf
 
 all: all-am
 
@@ -1094,35 +950,11 @@ libgnunetatstesting.la: $(libgnunetatstesting_la_OBJECTS) $(libgnunetatstesting_
 
 gnunet-ats-sim$(EXEEXT): $(gnunet_ats_sim_OBJECTS) $(gnunet_ats_sim_DEPENDENCIES) $(EXTRA_gnunet_ats_sim_DEPENDENCIES) 
 	@rm -f gnunet-ats-sim$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_ats_sim_OBJECTS) $(gnunet_ats_sim_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_ats_sim_LINK) $(gnunet_ats_sim_OBJECTS) $(gnunet_ats_sim_LDADD) $(LIBS)
 
 gnunet-solver-eval$(EXEEXT): $(gnunet_solver_eval_OBJECTS) $(gnunet_solver_eval_DEPENDENCIES) $(EXTRA_gnunet_solver_eval_DEPENDENCIES) 
 	@rm -f gnunet-solver-eval$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_solver_eval_OBJECTS) $(gnunet_solver_eval_LDADD) $(LIBS)
-
-perf_ats_mlp_core_bandwidth$(EXEEXT): $(perf_ats_mlp_core_bandwidth_OBJECTS) $(perf_ats_mlp_core_bandwidth_DEPENDENCIES) $(EXTRA_perf_ats_mlp_core_bandwidth_DEPENDENCIES) 
-	@rm -f perf_ats_mlp_core_bandwidth$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_ats_mlp_core_bandwidth_OBJECTS) $(perf_ats_mlp_core_bandwidth_LDADD) $(LIBS)
-
-perf_ats_mlp_core_latency$(EXEEXT): $(perf_ats_mlp_core_latency_OBJECTS) $(perf_ats_mlp_core_latency_DEPENDENCIES) $(EXTRA_perf_ats_mlp_core_latency_DEPENDENCIES) 
-	@rm -f perf_ats_mlp_core_latency$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_ats_mlp_core_latency_OBJECTS) $(perf_ats_mlp_core_latency_LDADD) $(LIBS)
-
-perf_ats_mlp_core_none$(EXEEXT): $(perf_ats_mlp_core_none_OBJECTS) $(perf_ats_mlp_core_none_DEPENDENCIES) $(EXTRA_perf_ats_mlp_core_none_DEPENDENCIES) 
-	@rm -f perf_ats_mlp_core_none$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_ats_mlp_core_none_OBJECTS) $(perf_ats_mlp_core_none_LDADD) $(LIBS)
-
-perf_ats_mlp_transport_bandwidth$(EXEEXT): $(perf_ats_mlp_transport_bandwidth_OBJECTS) $(perf_ats_mlp_transport_bandwidth_DEPENDENCIES) $(EXTRA_perf_ats_mlp_transport_bandwidth_DEPENDENCIES) 
-	@rm -f perf_ats_mlp_transport_bandwidth$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_ats_mlp_transport_bandwidth_OBJECTS) $(perf_ats_mlp_transport_bandwidth_LDADD) $(LIBS)
-
-perf_ats_mlp_transport_latency$(EXEEXT): $(perf_ats_mlp_transport_latency_OBJECTS) $(perf_ats_mlp_transport_latency_DEPENDENCIES) $(EXTRA_perf_ats_mlp_transport_latency_DEPENDENCIES) 
-	@rm -f perf_ats_mlp_transport_latency$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_ats_mlp_transport_latency_OBJECTS) $(perf_ats_mlp_transport_latency_LDADD) $(LIBS)
-
-perf_ats_mlp_transport_none$(EXEEXT): $(perf_ats_mlp_transport_none_OBJECTS) $(perf_ats_mlp_transport_none_DEPENDENCIES) $(EXTRA_perf_ats_mlp_transport_none_DEPENDENCIES) 
-	@rm -f perf_ats_mlp_transport_none$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(perf_ats_mlp_transport_none_OBJECTS) $(perf_ats_mlp_transport_none_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_solver_eval_LINK) $(gnunet_solver_eval_OBJECTS) $(gnunet_solver_eval_LDADD) $(LIBS)
 
 perf_ats_proportional_core_bandwidth$(EXEEXT): $(perf_ats_proportional_core_bandwidth_OBJECTS) $(perf_ats_proportional_core_bandwidth_DEPENDENCIES) $(EXTRA_perf_ats_proportional_core_bandwidth_DEPENDENCIES) 
 	@rm -f perf_ats_proportional_core_bandwidth$(EXEEXT)
@@ -1427,48 +1259,6 @@ perf_ats_proportional_core_bandwidth.log: perf_ats_proportional_core_bandwidth$(
 perf_ats_proportional_core_latency.log: perf_ats_proportional_core_latency$(EXEEXT)
 	@p='perf_ats_proportional_core_latency$(EXEEXT)'; \
 	b='perf_ats_proportional_core_latency'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_ats_mlp_transport_none.log: perf_ats_mlp_transport_none$(EXEEXT)
-	@p='perf_ats_mlp_transport_none$(EXEEXT)'; \
-	b='perf_ats_mlp_transport_none'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_ats_mlp_transport_bandwidth.log: perf_ats_mlp_transport_bandwidth$(EXEEXT)
-	@p='perf_ats_mlp_transport_bandwidth$(EXEEXT)'; \
-	b='perf_ats_mlp_transport_bandwidth'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_ats_mlp_transport_latency.log: perf_ats_mlp_transport_latency$(EXEEXT)
-	@p='perf_ats_mlp_transport_latency$(EXEEXT)'; \
-	b='perf_ats_mlp_transport_latency'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_ats_mlp_core_none.log: perf_ats_mlp_core_none$(EXEEXT)
-	@p='perf_ats_mlp_core_none$(EXEEXT)'; \
-	b='perf_ats_mlp_core_none'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_ats_mlp_core_bandwidth.log: perf_ats_mlp_core_bandwidth$(EXEEXT)
-	@p='perf_ats_mlp_core_bandwidth$(EXEEXT)'; \
-	b='perf_ats_mlp_core_bandwidth'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-perf_ats_mlp_core_latency.log: perf_ats_mlp_core_latency$(EXEEXT)
-	@p='perf_ats_mlp_core_latency$(EXEEXT)'; \
-	b='perf_ats_mlp_core_latency'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

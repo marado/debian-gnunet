@@ -11,7 +11,7 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -36,7 +36,7 @@
 #include "scalarproduct.h"
 #include "gnunet-service-scalarproduct-ecc.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "scalarproduct-bob", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "scalarproduct-bob", __VA_ARGS__)
 
 
 /**
@@ -64,7 +64,6 @@ struct MpiElement
  */
 struct BobServiceSession
 {
-
   /**
    * The client this request is related to.
    */
@@ -168,7 +167,6 @@ struct BobServiceSession
    * The message queue for this channel.
    */
   struct GNUNET_MQ_Handle *cadet_mq;
-
 };
 
 
@@ -247,7 +245,7 @@ destroy_service_session (struct BobServiceSession *s)
   }
   if (NULL != s->sorted_elements)
   {
-    for (i=0;i<s->used_element_count;i++)
+    for (i = 0; i < s->used_element_count; i++)
       gcry_mpi_release (s->sorted_elements[i].value);
     GNUNET_free (s->sorted_elements);
     s->sorted_elements = NULL;
@@ -454,7 +452,7 @@ check_alices_cryptodata_message (void *cls,
   unsigned int max;
 
   msize = ntohs (msg->header.size);
-  if (msize <= sizeof (struct EccAliceCryptodataMessage))
+  if (msize <= sizeof(struct EccAliceCryptodataMessage))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -463,12 +461,12 @@ check_alices_cryptodata_message (void *cls,
   /* Our intersection may still be ongoing, but this is nevertheless
      an upper bound on the required array size */
   max = GNUNET_CONTAINER_multihashmap_size (s->intersected_elements);
-  msg_length = sizeof (struct EccAliceCryptodataMessage)
-    + contained_elements * sizeof (struct GNUNET_CRYPTO_EccPoint) * 2;
-  if ( (msize != msg_length) ||
-       (0 == contained_elements) ||
-       (contained_elements > UINT16_MAX) ||
-       (max < contained_elements + s->cadet_received_element_count) )
+  msg_length = sizeof(struct EccAliceCryptodataMessage)
+               + contained_elements * sizeof(struct GNUNET_CRYPTO_EccPoint) * 2;
+  if ((msize != msg_length) ||
+      (0 == contained_elements) ||
+      (contained_elements > UINT16_MAX) ||
+      (max < contained_elements + s->cadet_received_element_count))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -506,7 +504,8 @@ handle_alices_cryptodata_message (void *cls,
   if (NULL == s->sorted_elements)
   {
     s->sorted_elements
-      = GNUNET_new_array (GNUNET_CONTAINER_multihashmap_size (s->intersected_elements),
+      = GNUNET_new_array (GNUNET_CONTAINER_multihashmap_size (
+                            s->intersected_elements),
                           struct MpiElement);
     s->used_element_count = 0;
     GNUNET_CONTAINER_multihashmap_iterate (s->intersected_elements,
@@ -514,7 +513,7 @@ handle_alices_cryptodata_message (void *cls,
                                            s);
     qsort (s->sorted_elements,
            s->used_element_count,
-           sizeof (struct MpiElement),
+           sizeof(struct MpiElement),
            &element_cmp);
   }
 
@@ -523,7 +522,7 @@ handle_alices_cryptodata_message (void *cls,
               (unsigned int) contained_elements);
   payload = (const struct GNUNET_CRYPTO_EccPoint *) &msg[1];
 
-  for (i=0;i<contained_elements;i++)
+  for (i = 0; i < contained_elements; i++)
   {
     b_i = &s->sorted_elements[i + s->cadet_received_element_count];
     g_i = GNUNET_CRYPTO_ecc_bin_to_point (edc,
@@ -562,8 +561,8 @@ handle_alices_cryptodata_message (void *cls,
     }
   }
   s->cadet_received_element_count += contained_elements;
-  if ( (s->cadet_received_element_count == max) &&
-       (NULL == s->intersection_op) )
+  if ((s->cadet_received_element_count == max) &&
+      (NULL == s->intersection_op))
   {
     /* intersection has finished also on our side, and
        we got the full set, so we can proceed with the
@@ -604,11 +603,13 @@ cb_intersection_element_removed (void *cls,
          GNUNET_h2s (&se->key),
          (long long) GNUNET_ntohll (se->value));
     GNUNET_assert (GNUNET_YES ==
-                   GNUNET_CONTAINER_multihashmap_remove (s->intersected_elements,
-                                                         element->data,
-                                                         se));
+                   GNUNET_CONTAINER_multihashmap_remove (
+                     s->intersected_elements,
+                     element->data,
+                     se));
     GNUNET_free (se);
     return;
+
   case GNUNET_SET_STATUS_DONE:
     s->intersection_op = NULL;
     GNUNET_break (NULL == s->intersection_set);
@@ -624,10 +625,12 @@ cb_intersection_element_removed (void *cls,
       transmit_bobs_cryptodata_message (s);
     }
     return;
+
   case GNUNET_SET_STATUS_HALF_DONE:
     /* unexpected for intersection */
     GNUNET_break (0);
     return;
+
   case GNUNET_SET_STATUS_FAILURE:
     /* unhandled status code */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -641,6 +644,7 @@ cb_intersection_element_removed (void *cls,
     s->status = GNUNET_SCALARPRODUCT_STATUS_FAILURE;
     prepare_client_end_notification (s);
     return;
+
   default:
     GNUNET_break (0);
     return;
@@ -660,7 +664,7 @@ start_intersection (struct BobServiceSession *s)
   struct GNUNET_HashCode set_sid;
 
   GNUNET_CRYPTO_hash (&s->session_id,
-                      sizeof (struct GNUNET_HashCode),
+                      sizeof(struct GNUNET_HashCode),
                       &set_sid);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Got session with key %s and %u elements, starting intersection.\n",
@@ -672,7 +676,7 @@ start_intersection (struct BobServiceSession *s)
                           &set_sid,
                           NULL,
                           GNUNET_SET_RESULT_REMOVED,
-                          (struct GNUNET_SET_Option[]) {{ 0 }},
+                          (struct GNUNET_SET_Option[]) { { 0 } },
                           &cb_intersection_element_removed,
                           s);
   if (GNUNET_OK !=
@@ -752,7 +756,9 @@ cb_channel_incoming (void *cls,
  */
 static int
 check_bob_client_message_multipart (void *cls,
-				    const struct ComputationBobCryptodataMultipartMessage *msg)
+                                    const struct
+                                    ComputationBobCryptodataMultipartMessage *
+                                    msg)
 {
   struct BobServiceSession *s = cls;
   uint32_t contained_count;
@@ -760,12 +766,13 @@ check_bob_client_message_multipart (void *cls,
 
   msize = ntohs (msg->header.size);
   contained_count = ntohl (msg->element_count_contained);
-  if ( (msize != (sizeof (struct ComputationBobCryptodataMultipartMessage) +
-                  contained_count * sizeof (struct GNUNET_SCALARPRODUCT_Element))) ||
-       (0 == contained_count) ||
-       (UINT16_MAX < contained_count) ||
-       (s->total == s->client_received_element_count) ||
-       (s->total < s->client_received_element_count + contained_count) )
+  if ((msize != (sizeof(struct ComputationBobCryptodataMultipartMessage)
+                 + contained_count * sizeof(struct
+                                            GNUNET_SCALARPRODUCT_Element))) ||
+      (0 == contained_count) ||
+      (UINT16_MAX < contained_count) ||
+      (s->total == s->client_received_element_count) ||
+      (s->total < s->client_received_element_count + contained_count))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -783,7 +790,9 @@ check_bob_client_message_multipart (void *cls,
  */
 static void
 handle_bob_client_message_multipart (void *cls,
-				     const struct ComputationBobCryptodataMultipartMessage *msg)
+                                     const struct
+                                     ComputationBobCryptodataMultipartMessage *
+                                     msg)
 {
   struct BobServiceSession *s = cls;
   uint32_t contained_count;
@@ -797,8 +806,8 @@ handle_bob_client_message_multipart (void *cls,
   {
     elem = GNUNET_new (struct GNUNET_SCALARPRODUCT_Element);
     GNUNET_memcpy (elem,
-		   &elements[i],
-		   sizeof (struct GNUNET_SCALARPRODUCT_Element));
+                   &elements[i],
+                   sizeof(struct GNUNET_SCALARPRODUCT_Element));
     if (GNUNET_SYSERR ==
         GNUNET_CONTAINER_multihashmap_put (s->intersected_elements,
                                            &elem->key,
@@ -810,7 +819,7 @@ handle_bob_client_message_multipart (void *cls,
       continue;
     }
     set_elem.data = &elem->key;
-    set_elem.size = sizeof (elem->key);
+    set_elem.size = sizeof(elem->key);
     set_elem.element_type = 0;
     GNUNET_SET_add_element (s->intersection_set,
                             &set_elem,
@@ -848,7 +857,7 @@ handle_bob_client_message_multipart (void *cls,
  */
 static int
 check_bob_client_message (void *cls,
-			  const struct BobComputationMessage *msg)
+                          const struct BobComputationMessage *msg)
 {
   struct BobServiceSession *s = cls;
   uint32_t contained_count;
@@ -863,11 +872,12 @@ check_bob_client_message (void *cls,
   msize = ntohs (msg->header.size);
   total_count = ntohl (msg->element_count_total);
   contained_count = ntohl (msg->element_count_contained);
-  if ( (0 == total_count) ||
-       (0 == contained_count) ||
-       (UINT16_MAX < contained_count) ||
-       (msize != (sizeof (struct BobComputationMessage) +
-                  contained_count * sizeof (struct GNUNET_SCALARPRODUCT_Element))) )
+  if ((0 == total_count) ||
+      (0 == contained_count) ||
+      (UINT16_MAX < contained_count) ||
+      (msize != (sizeof(struct BobComputationMessage)
+                 + contained_count * sizeof(struct
+                                            GNUNET_SCALARPRODUCT_Element))))
   {
     GNUNET_break_op (0);
     return GNUNET_SYSERR;
@@ -886,7 +896,7 @@ check_bob_client_message (void *cls,
  */
 static void
 handle_bob_client_message (void *cls,
-			   const struct BobComputationMessage *msg)
+                           const struct BobComputationMessage *msg)
 {
   struct BobServiceSession *s = cls;
   struct GNUNET_MQ_MessageHandler cadet_handlers[] = {
@@ -916,18 +926,18 @@ handle_bob_client_message (void *cls,
   elements = (const struct GNUNET_SCALARPRODUCT_Element *) &msg[1];
   s->intersected_elements
     = GNUNET_CONTAINER_multihashmap_create (s->total,
-					    GNUNET_YES);
+                                            GNUNET_YES);
   s->intersection_set
     = GNUNET_SET_create (cfg,
-			 GNUNET_SET_OPERATION_INTERSECTION);
+                         GNUNET_SET_OPERATION_INTERSECTION);
   for (uint32_t i = 0; i < contained_count; i++)
   {
     if (0 == GNUNET_ntohll (elements[i].value))
       continue;
     elem = GNUNET_new (struct GNUNET_SCALARPRODUCT_Element);
     GNUNET_memcpy (elem,
-            &elements[i],
-            sizeof (struct GNUNET_SCALARPRODUCT_Element));
+                   &elements[i],
+                   sizeof(struct GNUNET_SCALARPRODUCT_Element));
     if (GNUNET_SYSERR ==
         GNUNET_CONTAINER_multihashmap_put (s->intersected_elements,
                                            &elem->key,
@@ -939,7 +949,7 @@ handle_bob_client_message (void *cls,
       continue;
     }
     set_elem.data = &elem->key;
-    set_elem.size = sizeof (elem->key);
+    set_elem.size = sizeof(elem->key);
     set_elem.element_type = 0;
     GNUNET_SET_add_element (s->intersection_set,
                             &set_elem,
@@ -1002,8 +1012,8 @@ shutdown_task (void *cls)
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *client,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *client,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct BobServiceSession *s;
 
@@ -1026,8 +1036,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *client,
-		      void *app_cls)
+                      struct GNUNET_SERVICE_Client *client,
+                      void *app_cls)
 {
   struct BobServiceSession *s = app_cls;
 
@@ -1056,11 +1066,11 @@ run (void *cls,
                                         2 /* RAM */);
   my_cadet = GNUNET_CADET_connect (cfg);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   if (NULL == my_cadet)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Connect to CADET failed\n"));
+                _ ("Connect to CADET failed\n"));
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -1071,21 +1081,21 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("scalarproduct-bob",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (bob_client_message,
-			GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_TO_BOB,
-			struct BobComputationMessage,
-			NULL),
- GNUNET_MQ_hd_var_size (bob_client_message_multipart,
-                        GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_MULTIPART_BOB,
-                        struct ComputationBobCryptodataMultipartMessage,
-                        NULL),
- GNUNET_MQ_handler_end ());
+  ("scalarproduct-bob",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (bob_client_message,
+                         GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_TO_BOB,
+                         struct BobComputationMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (bob_client_message_multipart,
+                         GNUNET_MESSAGE_TYPE_SCALARPRODUCT_CLIENT_MULTIPART_BOB,
+                         struct ComputationBobCryptodataMultipartMessage,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-scalarproduct-ecc_bob.c */

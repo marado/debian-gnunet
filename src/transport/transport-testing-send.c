@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport-testing-send.c
  * @brief convenience transmission function for tests
@@ -27,15 +27,16 @@
 /**
  * Acceptable transmission delay.
  */
-#define TIMEOUT_TRANSMIT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30)
+#define TIMEOUT_TRANSMIT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 30)
 
 
 /**
  * Return @a cx in @a cls.
  */
 static void
-find_cr (void *cls,   
-	 struct GNUNET_TRANSPORT_TESTING_ConnectRequest *cx)
+find_cr (void *cls,
+         struct GNUNET_TRANSPORT_TESTING_ConnectRequest *cx)
 {
   struct GNUNET_TRANSPORT_TESTING_ConnectRequest **cr = cls;
 
@@ -62,39 +63,41 @@ find_cr (void *cls,
  *         #GNUNET_SYSERR if @a msize is illegal
  */
 int
-GNUNET_TRANSPORT_TESTING_send (struct GNUNET_TRANSPORT_TESTING_PeerContext *sender,
-			       struct GNUNET_TRANSPORT_TESTING_PeerContext *receiver,
-			       uint16_t mtype,
-			       uint16_t msize,
-			       uint32_t num,
-			       GNUNET_SCHEDULER_TaskCallback cont,
-			       void *cont_cls)
+GNUNET_TRANSPORT_TESTING_send (struct
+                               GNUNET_TRANSPORT_TESTING_PeerContext *sender,
+                               struct GNUNET_TRANSPORT_TESTING_PeerContext *
+                               receiver,
+                               uint16_t mtype,
+                               uint16_t msize,
+                               uint32_t num,
+                               GNUNET_SCHEDULER_TaskCallback cont,
+                               void *cont_cls)
 {
   struct GNUNET_TRANSPORT_TESTING_ConnectRequest *cr;
   struct GNUNET_MQ_Envelope *env;
   struct GNUNET_TRANSPORT_TESTING_TestMessage *test;
-  
-  if (msize < sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage))
+
+  if (msize < sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   cr = NULL;
   GNUNET_TRANSPORT_TESTING_find_connecting_context (sender,
-						    receiver,
-						    &find_cr,
-						    &cr);
+                                                    receiver,
+                                                    &find_cr,
+                                                    &cr);
   if (NULL == cr)
     GNUNET_TRANSPORT_TESTING_find_connecting_context (receiver,
-						      sender,
-						      &find_cr,
-						      &cr);
+                                                      sender,
+                                                      &find_cr,
+                                                      &cr);
   if (NULL == cr)
   {
     GNUNET_break (0);
     return GNUNET_NO;
   }
-  if (NULL == cr->mq) 
+  if (NULL == cr->mq)
   {
     GNUNET_break (0);
     return GNUNET_NO;
@@ -111,23 +114,23 @@ GNUNET_TRANSPORT_TESTING_send (struct GNUNET_TRANSPORT_TESTING_PeerContext *send
     GNUNET_free (receiver_s);
   }
   env = GNUNET_MQ_msg_extra (test,
-			     msize - sizeof (*test),
-			     mtype);
+                             msize - sizeof(*test),
+                             mtype);
   test->num = htonl (num);
   memset (&test[1],
-	  num,
-	  msize - sizeof (*test));
+          num,
+          msize - sizeof(*test));
   GNUNET_MQ_notify_sent (env,
-			 cont,
-			 cont_cls);
+                         cont,
+                         cont_cls);
   GNUNET_MQ_send (cr->mq,
-		  env);
+                  env);
   return GNUNET_OK;
 }
 
 
 /**
- * Task that sends a test message from the 
+ * Task that sends a test message from the
  * first peer to the second peer.
  *
  * @param ccc context which should contain at least two peers, the
@@ -138,20 +141,20 @@ GNUNET_TRANSPORT_TESTING_send (struct GNUNET_TRANSPORT_TESTING_PeerContext *send
  */
 static void
 do_send (struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext *ccc,
-	 uint16_t size,
-	 GNUNET_SCHEDULER_TaskCallback cont,
-	 void *cont_cls)
+         uint16_t size,
+         GNUNET_SCHEDULER_TaskCallback cont,
+         void *cont_cls)
 {
   int ret;
 
   ccc->global_ret = GNUNET_SYSERR;
   ret = GNUNET_TRANSPORT_TESTING_send (ccc->p[0],
-				       ccc->p[1],
-				       GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE,
-				       size,
-				       ccc->send_num_gen++,
-				       cont,
-				       cont_cls);
+                                       ccc->p[1],
+                                       GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE,
+                                       size,
+                                       ccc->send_num_gen++,
+                                       cont,
+                                       cont_cls);
   GNUNET_assert (GNUNET_SYSERR != ret);
   if (GNUNET_NO == ret)
   {
@@ -163,7 +166,7 @@ do_send (struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext *ccc,
 
 
 /**
- * Task that sends a minimalistic test message from the 
+ * Task that sends a minimalistic test message from the
  * first peer to the second peer.
  *
  * @param cls the `struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext`
@@ -184,22 +187,22 @@ GNUNET_TRANSPORT_TESTING_simple_send (void *cls)
   }
   else
   {
-    done = 0; /* infinite loop */
+    done = 0;   /* infinite loop */
   }
-  msize = sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage);
+  msize = sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage);
   if (NULL != sc->get_size_cb)
     msize = sc->get_size_cb (sc->num_messages);
   /* if this was the last message, call the continuation,
      otherwise call this function again */
   do_send (sc->ccc,
-	   msize,
-	   done ? sc->cont : &GNUNET_TRANSPORT_TESTING_simple_send,
-	   done ? sc->cont_cls : sc);
+           msize,
+           done ? sc->cont : &GNUNET_TRANSPORT_TESTING_simple_send,
+           done ? sc->cont_cls : sc);
 }
 
 
 /**
- * Task that sends a large test message from the 
+ * Task that sends a large test message from the
  * first peer to the second peer.
  *
  * @param cls the `struct GNUNET_TRANSPORT_TESTING_ConnectCheckContext`
@@ -220,7 +223,7 @@ GNUNET_TRANSPORT_TESTING_large_send (void *cls)
   }
   else
   {
-    done = 0; /* infinite loop */
+    done = 0;   /* infinite loop */
   }
   msize = 2600;
   if (NULL != sc->get_size_cb)
@@ -228,9 +231,10 @@ GNUNET_TRANSPORT_TESTING_large_send (void *cls)
   /* if this was the last message, call the continuation,
      otherwise call this function again */
   do_send (sc->ccc,
-	   msize,
-	   done ? sc->cont : &GNUNET_TRANSPORT_TESTING_large_send,
-	   done ? sc->cont_cls : sc);
+           msize,
+           done ? sc->cont : &GNUNET_TRANSPORT_TESTING_large_send,
+           done ? sc->cont_cls : sc);
 }
+
 
 /* end of transport-testing-send.c */

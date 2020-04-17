@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /*
  * @file datastore/perf_datastore_api.c
  * @brief performance measurement for the datastore implementation
@@ -211,7 +211,7 @@ check_success (void *cls,
   struct CpsRunContext *crc = cls;
 
 #if REPORT_ID
-  FPRINTF (stderr, "%s",  (GNUNET_OK == success) ? "I" : "i");
+  fprintf (stderr, "%s", (GNUNET_OK == success) ? "I" : "i");
 #endif
   if (GNUNET_OK != success)
   {
@@ -240,6 +240,7 @@ check_success (void *cls,
         crc->phase = RP_CUT;
     }
     break;
+
   case RP_PUT_QUOTA:
     if (crc->j >= QUOTA_PUTS)
     {
@@ -247,6 +248,7 @@ check_success (void *cls,
       crc->phase = RP_DONE;
     }
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -285,7 +287,7 @@ remove_next (void *cls,
     return;
   }
 #if REPORT_ID
-  FPRINTF (stderr, "%s",  "D");
+  fprintf (stderr, "%s", "D");
 #endif
   GNUNET_assert (GNUNET_OK == success);
   GNUNET_SCHEDULER_add_now (&run_continuation,
@@ -359,17 +361,17 @@ run_continuation (void *cls)
   case RP_PUT:
     memset (&key,
             256 - crc->i,
-            sizeof (struct GNUNET_HashCode));
+            sizeof(struct GNUNET_HashCode));
     /* most content is 32k */
     size = 32 * 1024;
     if (0 ==
         GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                  16)) /* but some of it is less! */
+                                  16))  /* but some of it is less! */
       size = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
                                        32 * 1024);
     crc->size = size = size - (size & 7);       /* always multiple of 8 */
     GNUNET_CRYPTO_hash (&key,
-                        sizeof (struct GNUNET_HashCode),
+                        sizeof(struct GNUNET_HashCode),
                         &key);
     memset (data,
             (int) crc->j,
@@ -387,18 +389,20 @@ run_continuation (void *cls)
                                          data,
                                          crc->j + 1,
                                          GNUNET_CRYPTO_random_u32
-                                         (GNUNET_CRYPTO_QUALITY_WEAK, 100),
+                                           (GNUNET_CRYPTO_QUALITY_WEAK, 100),
                                          crc->j,
                                          0,
                                          GNUNET_TIME_relative_to_absolute
-                                         (GNUNET_TIME_relative_multiply
-                                          (GNUNET_TIME_UNIT_SECONDS,
-                                           GNUNET_CRYPTO_random_u32
-                                           (GNUNET_CRYPTO_QUALITY_WEAK, 1000))),
+                                           (GNUNET_TIME_relative_multiply
+                                             (GNUNET_TIME_UNIT_SECONDS,
+                                             GNUNET_CRYPTO_random_u32
+                                               (GNUNET_CRYPTO_QUALITY_WEAK,
+                                               1000))),
                                          1,
                                          1,
                                          &check_success, crc));
     break;
+
   case RP_CUT:
     /* trim down below MAX_SIZE again */
     GNUNET_assert (NULL !=
@@ -407,36 +411,38 @@ run_continuation (void *cls)
                                                          &delete_value,
                                                          crc));
     break;
+
   case RP_REPORT:
     printf (
 #if REPORT_ID
-             "\n"
+      "\n"
 #endif
-             "Stored %llu kB / %lluk ops / %llu ops/s\n",
-             stored_bytes / 1024,  /* used size in k */
-             stored_ops / 1024, /* total operations (in k) */
-             1000LL * 1000LL * stored_ops / (1 +
-					     GNUNET_TIME_absolute_get_duration
-					     (start_time).rel_value_us));
+      "Stored %llu kB / %lluk ops / %llu ops/s\n",
+      stored_bytes / 1024,         /* used size in k */
+      stored_ops / 1024,        /* total operations (in k) */
+      1000LL * 1000LL * stored_ops / (1
+                                      + GNUNET_TIME_absolute_get_duration
+                                        (start_time).rel_value_us));
     crc->phase = RP_PUT;
     crc->j = 0;
     GNUNET_SCHEDULER_add_now (&run_continuation,
                               crc);
     break;
+
   case RP_PUT_QUOTA:
     memset (&key,
             256 - crc->i,
-            sizeof (struct GNUNET_HashCode));
+            sizeof(struct GNUNET_HashCode));
     /* most content is 32k */
     size = 32 * 1024;
     if (0 ==
         GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                  16)) /* but some of it is less! */
+                                  16))  /* but some of it is less! */
       size = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
                                        32 * 1024);
     crc->size = size = size - (size & 7);       /* always multiple of 8 */
     GNUNET_CRYPTO_hash (&key,
-                        sizeof (struct GNUNET_HashCode),
+                        sizeof(struct GNUNET_HashCode),
                         &key);
     memset (data,
             (int) crc->j,
@@ -454,15 +460,16 @@ run_continuation (void *cls)
                                          data,
                                          crc->j + 1, /* type */
                                          GNUNET_CRYPTO_random_u32
-                                         (GNUNET_CRYPTO_QUALITY_WEAK,
-                                          100), /* priority */
+                                           (GNUNET_CRYPTO_QUALITY_WEAK,
+                                           100), /* priority */
                                          crc->j, /* anonymity */
                                          0, /* replication */
                                          GNUNET_TIME_relative_to_absolute
-                                         (GNUNET_TIME_relative_multiply
-                                          (GNUNET_TIME_UNIT_SECONDS,
-                                           GNUNET_CRYPTO_random_u32
-                                           (GNUNET_CRYPTO_QUALITY_WEAK, 1000))),
+                                           (GNUNET_TIME_relative_multiply
+                                             (GNUNET_TIME_UNIT_SECONDS,
+                                             GNUNET_CRYPTO_random_u32
+                                               (GNUNET_CRYPTO_QUALITY_WEAK,
+                                               1000))),
                                          1,
                                          1,
                                          &check_success, crc));
@@ -470,36 +477,41 @@ run_continuation (void *cls)
 
   case RP_DONE:
     GNUNET_snprintf (gstr,
-                     sizeof (gstr),
+                     sizeof(gstr),
                      "DATASTORE-%s",
                      plugin_name);
     if ((crc->i == ITERATIONS) && (stored_ops > 0))
     {
       GAUGER (gstr,
               "PUT operation duration",
-              GNUNET_TIME_absolute_get_duration (start_time).rel_value_us / 1000LL /
-              stored_ops,
+              GNUNET_TIME_absolute_get_duration (start_time).rel_value_us
+              / 1000LL
+              / stored_ops,
               "ms/operation");
       fprintf (stdout,
                "\nPUT performance: %s for %llu operations\n",
-               GNUNET_STRINGS_relative_time_to_string (GNUNET_TIME_absolute_get_duration (start_time),
-                                                       GNUNET_YES),
+               GNUNET_STRINGS_relative_time_to_string (
+                 GNUNET_TIME_absolute_get_duration (start_time),
+                 GNUNET_YES),
                stored_ops);
       fprintf (stdout,
                "PUT performance: %llu ms/operation\n",
-               GNUNET_TIME_absolute_get_duration (start_time).rel_value_us / 1000LL /
-               stored_ops);
+               GNUNET_TIME_absolute_get_duration (start_time).rel_value_us
+               / 1000LL
+               / stored_ops);
     }
     GNUNET_DATASTORE_disconnect (datastore,
                                  GNUNET_YES);
     GNUNET_free (crc);
     ok = 0;
     break;
+
   case RP_ERROR:
     GNUNET_DATASTORE_disconnect (datastore, GNUNET_YES);
     GNUNET_free (crc);
     ok = 1;
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -528,7 +540,7 @@ run_tests (void *cls,
 
   if (success != GNUNET_YES)
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "Test 'put' operation failed with error `%s' database likely not setup, skipping test.\n",
              msg);
     GNUNET_DATASTORE_disconnect (datastore,
@@ -569,11 +581,12 @@ run (void *cls,
                             4, "TEST",
                             GNUNET_BLOCK_TYPE_TEST,
                             0, 0, 0,
-                            GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_SECONDS),
+                            GNUNET_TIME_relative_to_absolute (
+                              GNUNET_TIME_UNIT_SECONDS),
                             0, 1,
                             &run_tests, crc))
   {
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
              "Test 'put' operation failed.\n");
     ok = 1;
@@ -599,17 +612,18 @@ main (int argc,
 
   plugin_name = GNUNET_TESTING_get_testname_from_underscore (argv[0]);
   GNUNET_snprintf (cfg_name,
-                   sizeof (cfg_name),
+                   sizeof(cfg_name),
                    "test_datastore_api_data_%s.conf",
                    plugin_name);
   if (0 !=
       GNUNET_TESTING_peer_run ("perf-gnunet-datastore",
-			       cfg_name,
-			       &run,
-			       NULL))
+                               cfg_name,
+                               &run,
+                               NULL))
     return 1;
-  FPRINTF (stderr, "%s", "\n");
+  fprintf (stderr, "%s", "\n");
   return ok;
 }
+
 
 /* end of perf_datastore_api.c */

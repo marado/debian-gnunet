@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/test_cadet_local_mq.c
@@ -131,6 +131,7 @@ do_abort (void *cls)
   GNUNET_SCHEDULER_shutdown ();
 }
 
+
 /**
  * Method called whenever a peer connects to a port in MQ-based CADET.
  *
@@ -150,10 +151,11 @@ connected (void *cls,
 {
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "connected %s, cls: %p\n",
-              GNUNET_i2s(source),
+              GNUNET_i2s (source),
               cls);
   return channel;
 }
+
 
 /**
  * Function called whenever an MQ-channel is destroyed, even if the destruction
@@ -239,14 +241,14 @@ do_connect (void *cls)
   GNUNET_TESTING_peer_get_identity (me, &id);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "creating channel\n");
-  ch = GNUNET_CADET_channel_create (cadet_peer_1, /* cadet handle */
+  ch = GNUNET_CADET_channel_create (cadet_peer_1,  /* cadet handle */
                                     NULL,         /* channel cls */
                                     &id,          /* destination */
                                     GC_u2h (TEST_MESSAGE_TYPE), /* port */
                                     NULL,          /* window change */
                                     &disconnected, /* disconnect handler */
                                     handlers       /* traffic handlers */
-                                   );
+                                    );
   env = GNUNET_MQ_msg (msg, TEST_MESSAGE_TYPE);
   msg->payload = GNUNET_htonll (42);
   mq = GNUNET_CADET_get_mq (ch);
@@ -288,8 +290,8 @@ run (void *cls,
   cadet_peer_1 = GNUNET_CADET_connect (cfg);
   cadet_peer_2 = GNUNET_CADET_connect (cfg);
 
-  if ( (NULL == cadet_peer_1) ||
-       (NULL == cadet_peer_2) )
+  if ((NULL == cadet_peer_1) ||
+      (NULL == cadet_peer_2))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Couldn't connect to cadet\n");
@@ -300,7 +302,7 @@ run (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "CADET 1: %p\n", cadet_peer_1);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "CADET 2: %p\n", cadet_peer_2);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "handlers 2: %p\n", handlers);
-  GNUNET_CADET_open_port (cadet_peer_2,          /* cadet handle */
+  GNUNET_CADET_open_port (cadet_peer_2,           /* cadet handle */
                           GC_u2h (TEST_PORT_ID), /* port id */
                           &connected,            /* connect handler */
                           (void *) 2L,           /* handle for #connected */
@@ -323,7 +325,7 @@ main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-cadet-local",
                                     "test_cadet.conf",
-                                &run, NULL))
+                                    &run, NULL))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "run failed\n");
     return 2;
@@ -331,5 +333,6 @@ main (int argc, char *argv[])
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Final result: %d\n", result);
   return (result == GNUNET_OK) ? 0 : 1;
 }
+
 
 /* end of test_cadet_local_1.c */

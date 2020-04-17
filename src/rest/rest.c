@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,18 +33,19 @@
  * REST Utilities
  */
 
-  /**
-   * Check if namespace is in URL.
-   *
-   * @param url URL to check
-   * @param namespace namespace to check against
-   * @retun GNUNET_YES if namespace matches
-   */
+/**
+ * Check if namespace is in URL.
+ *
+ * @param url URL to check
+ * @param namespace namespace to check against
+ * @retun GNUNET_YES if namespace matches
+ */
 int
 GNUNET_REST_namespace_match (const char *url, const char *namespace)
 {
   return 0 == strncmp (namespace, url, strlen (namespace));
 }
+
 
 /**
  * Create MHD response
@@ -66,11 +67,11 @@ GNUNET_REST_create_response (const char *data)
   else
     len = strlen (data);
   resp = MHD_create_response_from_buffer (len,
-                                          (void*)data,
+                                          (void *) data,
                                           MHD_RESPMEM_MUST_COPY);
   return resp;
-
 }
+
 
 int
 GNUNET_REST_handle_request (struct GNUNET_REST_RequestHandle *conn,
@@ -87,8 +88,8 @@ GNUNET_REST_handle_request (struct GNUNET_REST_RequestHandle *conn,
     count++;
 
   GNUNET_asprintf (&url, "%s", conn->url);
-  if (url[strlen (url)-1] == '/')
-    url[strlen (url)-1] = '\0';
+  if (url[strlen (url) - 1] == '/')
+    url[strlen (url) - 1] = '\0';
   for (i = 0; i < count; i++)
   {
     if (0 != strcasecmp (conn->method, handlers[i].method))
@@ -97,8 +98,8 @@ GNUNET_REST_handle_request (struct GNUNET_REST_RequestHandle *conn,
       continue;
     if (GNUNET_NO == GNUNET_REST_namespace_match (url, handlers[i].namespace))
       continue;
-    //Match
-    handlers[i].proc (conn, (const char*)url, cls);
+    // Match
+    handlers[i].proc (conn, (const char *) url, cls);
     GNUNET_free (url);
     return GNUNET_YES;
   }
@@ -106,5 +107,6 @@ GNUNET_REST_handle_request (struct GNUNET_REST_RequestHandle *conn,
   err->error_code = MHD_HTTP_BAD_REQUEST;
   return GNUNET_NO;
 }
+
 
 /* end of rest.c */

@@ -1,23 +1,22 @@
-
 /*
-  This file is part of GNUnet
-  Copyright (C) 2017 GNUnet e.V.
+   This file is part of GNUnet
+   Copyright (C) 2017 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file sq/sq_result_helper.c
  * @brief helper functions for queries
@@ -118,7 +117,7 @@ clean_var_blob (void *cls)
  */
 struct GNUNET_SQ_ResultSpec
 GNUNET_SQ_result_spec_variable_size (void **dst,
-				     size_t *sptr)
+                                     size_t *sptr)
 {
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_var_blob,
@@ -155,10 +154,10 @@ extract_fixed_blob (void *cls,
   int have;
   const void *ret;
 
-  if ( (0 == *dst_size) &&
-       (SQLITE_NULL ==
-        sqlite3_column_type (result,
-                             column)) )
+  if ((0 == *dst_size) &&
+      (SQLITE_NULL ==
+       sqlite3_column_type (result,
+                            column)))
   {
     return GNUNET_YES;
   }
@@ -197,7 +196,7 @@ extract_fixed_blob (void *cls,
  */
 struct GNUNET_SQ_ResultSpec
 GNUNET_SQ_result_spec_fixed_size (void *dst,
-				  size_t dst_size)
+                                  size_t dst_size)
 {
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_fixed_blob,
@@ -343,7 +342,7 @@ extract_rsa_pub (void *cls,
   }
 
   *pk = GNUNET_CRYPTO_rsa_public_key_decode (ret,
-					     have);
+                                             have);
   if (NULL == *pk)
   {
     GNUNET_break (0);
@@ -436,7 +435,7 @@ extract_rsa_sig (void *cls,
   }
 
   *sig = GNUNET_CRYPTO_rsa_signature_decode (ret,
-					     have);
+                                             have);
   if (NULL == *sig)
   {
     GNUNET_break (0);
@@ -508,7 +507,7 @@ extract_abs_time (void *cls,
   struct GNUNET_TIME_Absolute *u = dst;
   struct GNUNET_TIME_Absolute t;
 
-  GNUNET_assert (sizeof (uint64_t) == *dst_size);
+  GNUNET_assert (sizeof(uint64_t) == *dst_size);
   if (SQLITE_INTEGER !=
       sqlite3_column_type (result,
                            column))
@@ -537,7 +536,7 @@ GNUNET_SQ_result_spec_absolute_time (struct GNUNET_TIME_Absolute *at)
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_abs_time,
     .dst = at,
-    .dst_size = sizeof (struct GNUNET_TIME_Absolute),
+    .dst_size = sizeof(struct GNUNET_TIME_Absolute),
     .num_params = 1
   };
 
@@ -567,7 +566,7 @@ extract_abs_time_nbo (void *cls,
   struct GNUNET_TIME_AbsoluteNBO *u = dst;
   struct GNUNET_TIME_Absolute t;
 
-  GNUNET_assert (sizeof (uint64_t) == *dst_size);
+  GNUNET_assert (sizeof(uint64_t) == *dst_size);
   if (SQLITE_INTEGER !=
       sqlite3_column_type (result,
                            column))
@@ -596,7 +595,7 @@ GNUNET_SQ_result_spec_absolute_time_nbo (struct GNUNET_TIME_AbsoluteNBO *at)
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_abs_time_nbo,
     .dst = at,
-    .dst_size = sizeof (struct GNUNET_TIME_AbsoluteNBO),
+    .dst_size = sizeof(struct GNUNET_TIME_AbsoluteNBO),
     .num_params = 1
   };
 
@@ -626,7 +625,7 @@ extract_uint16 (void *cls,
   uint64_t v;
   uint16_t *u = dst;
 
-  GNUNET_assert (sizeof (uint16_t) == *dst_size);
+  GNUNET_assert (sizeof(uint16_t) == *dst_size);
   if (SQLITE_INTEGER !=
       sqlite3_column_type (result,
                            column))
@@ -658,7 +657,7 @@ GNUNET_SQ_result_spec_uint16 (uint16_t *u16)
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_uint16,
     .dst = u16,
-    .dst_size = sizeof (uint16_t),
+    .dst_size = sizeof(uint16_t),
     .num_params = 1
   };
 
@@ -688,7 +687,7 @@ extract_uint32 (void *cls,
   uint64_t v;
   uint32_t *u = dst;
 
-  GNUNET_assert (sizeof (uint32_t) == *dst_size);
+  GNUNET_assert (sizeof(uint32_t) == *dst_size);
   if (SQLITE_INTEGER !=
       sqlite3_column_type (result,
                            column))
@@ -720,7 +719,7 @@ GNUNET_SQ_result_spec_uint32 (uint32_t *u32)
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_uint32,
     .dst = u32,
-    .dst_size = sizeof (uint32_t),
+    .dst_size = sizeof(uint32_t),
     .num_params = 1
   };
 
@@ -749,7 +748,7 @@ extract_uint64 (void *cls,
 {
   uint64_t *u = dst;
 
-  GNUNET_assert (sizeof (uint64_t) == *dst_size);
+  GNUNET_assert (sizeof(uint64_t) == *dst_size);
   if (SQLITE_INTEGER !=
       sqlite3_column_type (result,
                            column))
@@ -775,7 +774,7 @@ GNUNET_SQ_result_spec_uint64 (uint64_t *u64)
   struct GNUNET_SQ_ResultSpec rs = {
     .conv = &extract_uint64,
     .dst = u64,
-    .dst_size = sizeof (uint64_t),
+    .dst_size = sizeof(uint64_t),
     .num_params = 1
   };
 

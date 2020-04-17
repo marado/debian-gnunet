@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2010-2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2016 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -47,7 +47,7 @@
  * How many messages can we have pending for a given client process
  * before we start to drop incoming messages?  We typically should
  * have only one client and so this would be the primary buffer for
-  * messages, so the number should be chosen rather generously.
+ * messages, so the number should be chosen rather generously.
  *
  * The expectation here is that most of the time the queue is large
  * enough so that a drop is virtually never required.  Note that
@@ -132,7 +132,6 @@ struct GST_BlacklistCheck;
  */
 struct TransportClient
 {
-
   /**
    * This is a doubly-linked list.
    */
@@ -160,7 +159,6 @@ struct TransportClient
 
   union
   {
-
     /**
      * Peer identity to monitor the addresses of.
      * Zero to monitor all neighbours.  Valid if
@@ -173,7 +171,6 @@ struct TransportClient
      */
     struct
     {
-
       /**
        * Blacklist check that we're currently performing (or NULL
        * if we're performing one that has been cancelled).
@@ -189,9 +186,7 @@ struct TransportClient
        * #GNUNET_YES if we have to call receive_done for this client
        */
       int call_receive_done;
-
     } blacklist;
-
   } details;
 };
 
@@ -201,7 +196,6 @@ struct TransportClient
  */
 struct GST_BlacklistCheck
 {
-
   /**
    * This is a linked list.
    */
@@ -276,7 +270,6 @@ struct AddressToStringContext
  */
 struct SendTransmitContinuationContext
 {
-
   /**
    * Client that made the request.
    */
@@ -548,10 +541,13 @@ client_disconnect_cb (void *cls,
   {
   case CT_NONE:
     break;
+
   case CT_CORE:
     break;
+
   case CT_MONITOR:
     break;
+
   case CT_BLACKLIST:
     for (bc = bc_head; NULL != bc; bc = bc->next)
     {
@@ -562,6 +558,7 @@ client_disconnect_cb (void *cls,
         bc->task = GNUNET_SCHEDULER_add_now (&do_blacklist_check, bc);
     }
     break;
+
   case CT_CORE_NO_HANDLERS:
     break;
   }
@@ -595,7 +592,7 @@ notify_client_about_neighbour (void *cls,
 
   if (GNUNET_NO == GST_neighbours_test_connected (peer))
     return;
-  cim.header.size = htons (sizeof (struct ConnectInfoMessage));
+  cim.header.size = htons (sizeof(struct ConnectInfoMessage));
   cim.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_CONNECT);
   cim.id = *peer;
   cim.quota_out = bandwidth_out;
@@ -623,7 +620,7 @@ handle_client_start (void *cls, const struct StartMessage *start)
   if ((0 != (1 & options)) &&
       (0 != memcmp (&start->self,
                     &GST_my_identity,
-                    sizeof (struct GNUNET_PeerIdentity))))
+                    sizeof(struct GNUNET_PeerIdentity))))
   {
     /* client thinks this is a different peer, reject */
     GNUNET_break (0);
@@ -725,7 +722,7 @@ handle_send_transmit_continuation (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Sending SEND_OK for transmission request %llu\n",
                 stcc->uuid);
-    send_ok_msg.header.size = htons (sizeof (send_ok_msg));
+    send_ok_msg.header.size = htons (sizeof(send_ok_msg));
     send_ok_msg.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_SEND_OK);
     send_ok_msg.bytes_msg = htonl (bytes_payload);
     send_ok_msg.bytes_physical = htonl (bytes_on_wire);
@@ -752,8 +749,8 @@ check_client_send (void *cls, const struct OutboundMessage *obm)
   uint16_t size;
   const struct GNUNET_MessageHeader *obmm;
 
-  size = ntohs (obm->header.size) - sizeof (struct OutboundMessage);
-  if (size < sizeof (struct GNUNET_MessageHeader))
+  size = ntohs (obm->header.size) - sizeof(struct OutboundMessage);
+  if (size < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -905,15 +902,15 @@ check_client_address_to_string (void *cls,
 
   size = ntohs (alum->header.size);
   address_len = ntohs (alum->addrlen);
-  if (size <= sizeof (struct AddressLookupMessage) + address_len)
+  if (size <= sizeof(struct AddressLookupMessage) + address_len)
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
   address = (const char *) &alum[1];
   plugin_name = (const char *) &address[address_len];
-  if ('\0' != plugin_name[size - sizeof (struct AddressLookupMessage) -
-                          address_len - 1])
+  if ('\0' != plugin_name[size - sizeof(struct AddressLookupMessage)
+                          - address_len - 1])
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -1014,7 +1011,7 @@ compose_address_iterate_response_message (
     tlen = 0;
     alen = 0;
   }
-  size = (sizeof (struct PeerIterateResponseMessage) + alen + tlen);
+  size = (sizeof(struct PeerIterateResponseMessage) + alen + tlen);
   msg = GNUNET_malloc (size);
   msg->header.size = htons (size);
   msg->header.type =
@@ -1082,7 +1079,7 @@ send_peer_information (void *cls,
   struct GNUNET_MQ_Envelope *env;
   struct PeerIterateResponseMessage *msg;
 
-  if ((GNUNET_YES != pc->all) && (0 != memcmp (peer, &pc->id, sizeof (pc->id))))
+  if ((GNUNET_YES != pc->all) && (0 != memcmp (peer, &pc->id, sizeof(pc->id))))
     return;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Sending information about `%s' using address `%s' in state `%s'\n",
@@ -1122,7 +1119,7 @@ handle_client_monitor_peers (void *cls, const struct PeerMonitorMessage *msg)
 
   /* Send initial list */
   pc.tc = tc;
-  if (0 == memcmp (&msg->peer, &all_zeros, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (&msg->peer, &all_zeros, sizeof(struct GNUNET_PeerIdentity)))
   {
     /* iterate over all neighbours */
     pc.all = GNUNET_YES;
@@ -1141,7 +1138,7 @@ handle_client_monitor_peers (void *cls, const struct PeerMonitorMessage *msg)
     tc->details.monitor_peer = msg->peer;
     tc->type = CT_MONITOR;
     if (0 !=
-        memcmp (&msg->peer, &all_zeros, sizeof (struct GNUNET_PeerIdentity)))
+        memcmp (&msg->peer, &all_zeros, sizeof(struct GNUNET_PeerIdentity)))
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "Client %p started monitoring of the peer `%s'\n",
                   tc,
@@ -1214,7 +1211,7 @@ plugin_session_info_cb (void *cls,
               info->address->transport_name);
   slen = strlen (info->address->transport_name) + 1;
   alen = info->address->address_length;
-  size = sizeof (struct TransportPluginMonitorMessage) + slen + alen;
+  size = sizeof(struct TransportPluginMonitorMessage) + slen + alen;
   if (size > UINT16_MAX)
   {
     GNUNET_break (0);
@@ -1292,9 +1289,9 @@ GST_clients_broadcast (const struct GNUNET_MessageHeader *msg, int may_drop)
   for (struct TransportClient *tc = clients_head; NULL != tc; tc = tc->next)
   {
     if (CT_NONE == tc->type)
-      continue; /* client not yet ready */
+      continue;   /* client not yet ready */
     if ((GNUNET_YES == may_drop) && (CT_CORE != tc->type))
-      continue; /* skip, this client does not care about payload */
+      continue;   /* skip, this client does not care about payload */
     unicast (tc, msg, may_drop);
     done = GNUNET_YES;
   }
@@ -1332,10 +1329,10 @@ GST_clients_broadcast_peer_notification (
       continue;
     if ((0 == memcmp (&tc->details.monitor_peer,
                       &all_zeros,
-                      sizeof (struct GNUNET_PeerIdentity))) ||
+                      sizeof(struct GNUNET_PeerIdentity))) ||
         (0 == memcmp (&tc->details.monitor_peer,
                       peer,
-                      sizeof (struct GNUNET_PeerIdentity))))
+                      sizeof(struct GNUNET_PeerIdentity))))
     {
       env = GNUNET_MQ_msg_copy (&msg->header);
       GNUNET_MQ_send (tc->mq, env);
@@ -1379,7 +1376,7 @@ GST_clients_broadcast_disconnect (const struct GNUNET_PeerIdentity *peer)
                                               peer,
                                               &mark_peer_down,
                                               NULL);
-  disconnect_msg.header.size = htons (sizeof (struct DisconnectInfoMessage));
+  disconnect_msg.header.size = htons (sizeof(struct DisconnectInfoMessage));
   disconnect_msg.header.type = htons (GNUNET_MESSAGE_TYPE_TRANSPORT_DISCONNECT);
   disconnect_msg.reserved = htonl (0);
   disconnect_msg.peer = *peer;
@@ -1409,7 +1406,7 @@ transmit_our_hello (void *cls,
 {
   const struct GNUNET_MessageHeader *hello = cls;
 
-  if (0 == memcmp (peer, &GST_my_identity, sizeof (struct GNUNET_PeerIdentity)))
+  if (0 == memcmp (peer, &GST_my_identity, sizeof(struct GNUNET_PeerIdentity)))
     return; /* not to ourselves */
   if (GNUNET_NO == GST_neighbours_test_connected (peer))
     return;
@@ -1458,7 +1455,7 @@ process_payload (const struct GNUNET_HELLO_Address *address,
   int do_forward;
   struct InboundMessage *im;
   size_t msg_size = ntohs (message->size);
-  size_t size = sizeof (struct InboundMessage) + msg_size;
+  size_t size = sizeof(struct InboundMessage) + msg_size;
   char buf[size] GNUNET_ALIGN;
 
   do_forward = GNUNET_SYSERR;
@@ -1628,6 +1625,7 @@ GST_receive_callback (void *cls,
   case GNUNET_MESSAGE_TYPE_HELLO_LEGACY:
     /* Legacy HELLO message, discard  */
     return ret;
+
   case GNUNET_MESSAGE_TYPE_HELLO:
     if (GNUNET_OK != GST_validation_handle_hello (message))
     {
@@ -1635,6 +1633,7 @@ GST_receive_callback (void *cls,
       GST_blacklist_abort_matching (address, session);
     }
     return ret;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_PING:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Processing PING from `%s'\n",
@@ -1646,6 +1645,7 @@ GST_receive_callback (void *cls,
       kill_session (plugin_name, session);
     }
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_PONG:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Processing PONG from `%s'\n",
@@ -1657,6 +1657,7 @@ GST_receive_callback (void *cls,
       kill_session (plugin_name, session);
     }
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_SYN:
     /* Do blacklist check if communication with this peer is allowed */
     (void) GST_blacklist_test_allowed (&address->peer,
@@ -1666,6 +1667,7 @@ GST_receive_callback (void *cls,
                                        address,
                                        session);
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_SYN_ACK:
     if (GNUNET_OK !=
         GST_neighbours_handle_session_syn_ack (message, address, session))
@@ -1674,6 +1676,7 @@ GST_receive_callback (void *cls,
       kill_session (plugin_name, session);
     }
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_ACK:
     if (GNUNET_OK !=
         GST_neighbours_handle_session_ack (message, address, session))
@@ -1683,18 +1686,23 @@ GST_receive_callback (void *cls,
       kill_session (plugin_name, session);
     }
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_DISCONNECT:
     GST_neighbours_handle_disconnect_message (&address->peer, message);
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_QUOTA:
     GST_neighbours_handle_quota_message (&address->peer, message);
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_KEEPALIVE:
     GST_neighbours_keepalive (&address->peer, message);
     break;
+
   case GNUNET_MESSAGE_TYPE_TRANSPORT_SESSION_KEEPALIVE_RESPONSE:
     GST_neighbours_keepalive_response (&address->peer, message);
     break;
+
   default:
     /* should be payload */
     GNUNET_STATISTICS_update (GST_stats,
@@ -1889,7 +1897,7 @@ plugin_env_session_start (void *cls,
        for example for UNIX, we have symmetric connections and thus we
        may not know the address yet; add if necessary! */
     /* FIXME: maybe change API here so we just pass scope? */
-    memset (&prop, 0, sizeof (prop));
+    memset (&prop, 0, sizeof(prop));
     GNUNET_break (GNUNET_NT_UNSPECIFIED != scope);
     prop.scope = scope;
     GST_ats_add_inbound_address (address, session, &prop);
@@ -1916,9 +1924,9 @@ plugin_env_session_start (void *cls,
  * @param address address to use (for peer given in address)
  * @param session session to use (if available)
  * @param bandwidth_out assigned outbound bandwidth for the connection in NBO,
- * 	0 to disconnect from peer
+ *      0 to disconnect from peer
  * @param bandwidth_in assigned inbound bandwidth for the connection in NBO,
- * 	0 to disconnect from peer
+ *      0 to disconnect from peer
  * @param ats ATS information
  * @param ats_count number of @a ats elements
  */
@@ -2263,8 +2271,8 @@ handle_client_blacklist_reply (void *cls, const struct BlacklistMessage *msg)
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "Blacklist check failed, peer not allowed\n");
       /* For the duration of the continuation, make the ongoing
-	 check invisible (to avoid double-cancellation); then
-	 add it back again so we can re-use GST_blacklist_test_cancel() */
+         check invisible (to avoid double-cancellation); then
+         add it back again so we can re-use GST_blacklist_test_cancel() */
       GNUNET_CONTAINER_DLL_remove (bc_head, bc_tail, bc);
       bc->cont (bc->cont_cls, &bc->peer, bc->address, bc->session, GNUNET_NO);
       GNUNET_CONTAINER_DLL_insert (bc_head, bc_tail, bc);
@@ -2382,9 +2390,7 @@ test_blacklisted (void *cls, const struct GNUNET_PeerIdentity *key, void *value)
    * If (NULL != transport_name) we look for a transport specific entry:
    *  if (transport_name == be) forbidden
    *
-   */
-
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+   */GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Comparing BL request for peer `%4s':`%s' with BL entry: `%s'\n",
               GNUNET_i2s (key),
               (NULL == transport_name) ? "unspecified" : transport_name,
@@ -2397,7 +2403,7 @@ test_blacklisted (void *cls, const struct GNUNET_PeerIdentity *key, void *value)
   if ((NULL != transport_name) && (NULL != value))
   {
     if (0 == strcmp (transport_name, be))
-      return GNUNET_NO; /* plugin is blacklisted! */
+      return GNUNET_NO;   /* plugin is blacklisted! */
   }
   return GNUNET_OK;
 }
@@ -2576,7 +2582,7 @@ read_blacklist_configuration (const struct GNUNET_CONFIGURATION_Handle *cfg,
   unsigned int res = 0;
 
   GNUNET_snprintf (cfg_sect,
-                   sizeof (cfg_sect),
+                   sizeof(cfg_sect),
                    "transport-blacklist-%s",
                    GNUNET_i2s_full (my_id));
   GNUNET_CONFIGURATION_iterate_section_values (cfg,

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/util/os_installation.c
@@ -39,14 +39,17 @@
 #if DARWIN
 #include <mach-o/ldsyms.h>
 #include <mach-o/dyld.h>
-#elif WINDOWS
-#include <windows.h>
 #endif
 
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-os-installation", __VA_ARGS__)
+#define LOG(kind, ...) \
+  GNUNET_log_from (kind, "util-os-installation", __VA_ARGS__)
 
-#define LOG_STRERROR_FILE(kind,syscall,filename) GNUNET_log_from_strerror_file (kind, "util-os-installation", syscall, filename)
+#define LOG_STRERROR_FILE(kind, syscall, filename)       \
+  GNUNET_log_from_strerror_file (kind,                   \
+                                 "util-os-installation", \
+                                 syscall,                \
+                                 filename)
 
 
 /**
@@ -57,12 +60,16 @@ static const struct GNUNET_OS_ProjectData default_pd = {
   .libname = "libgnunetutil",
   .project_dirname = "gnunet",
   .binary_name = "gnunet-arm",
+  .version = PACKAGE_VERSION " " VCS_VERSION,
   .env_varname = "GNUNET_PREFIX",
   .base_config_varname = "GNUNET_BASE_CONFIG",
   .bug_email = "gnunet-developers@gnu.org",
   .homepage = "http://www.gnu.org/s/gnunet/",
   .config_file = "gnunet.conf",
   .user_config_file = "~/.config/gnunet.conf",
+  .is_gnu = 1,
+  .gettext_domain = PACKAGE,
+  .gettext_path = NULL,
 };
 
 /**
@@ -70,6 +77,13 @@ static const struct GNUNET_OS_ProjectData default_pd = {
  * path detection? Never NULL.
  */
 static const struct GNUNET_OS_ProjectData *current_pd = &default_pd;
+
+/**
+ * Wether or not gettext has been initialized for the library.
+ * Note that the gettext initialization done within
+ * GNUNET_PROGRAM_run2 is for the specific application.
+ */
+static int gettextinit = 0;
 
 /**
  * Return default project data used by 'libgnunetutil' for GNUnet.
@@ -87,6 +101,14 @@ GNUNET_OS_project_data_default (void)
 const struct GNUNET_OS_ProjectData *
 GNUNET_OS_project_data_get ()
 {
+  if (0 == gettextinit)
+  {
+    char *path = GNUNET_OS_installation_get_path (GNUNET_OS_IPK_LOCALEDIR);
+    if (NULL != path)
+      bindtextdomain (PACKAGE, path);
+    GNUNET_free (path);
+    gettextinit = 1;
+  }
   return current_pd;
 }
 
@@ -99,12 +121,20 @@ GNUNET_OS_project_data_get ()
 void
 GNUNET_OS_init (const struct GNUNET_OS_ProjectData *pd)
 {
+  if (0 == gettextinit)
+  {
+    char *path = GNUNET_OS_installation_get_path (GNUNET_OS_IPK_LOCALEDIR);
+    if (NULL != path)
+      bindtextdomain (PACKAGE, path);
+    GNUNET_free (path);
+    gettextinit = 1;
+  }
   GNUNET_assert (NULL != pd);
   current_pd = pd;
 }
 
 
-#if LINUX
+#ifdef __linux__
 /**
  * Try to determine path by reading /proc/PID/exe
  *
@@ -119,22 +149,22 @@ get_path_from_proc_maps ()
   FILE *f;
   char *lgu;
 
-  GNUNET_snprintf (fn, sizeof (fn), "/proc/%u/maps", getpid ());
-  if (NULL == (f = FOPEN (fn, "r")))
+  GNUNET_snprintf (fn, sizeof(fn), "/proc/%u/maps", getpid ());
+  if (NULL == (f = fopen (fn, "r")))
     return NULL;
-  while (NULL != fgets (line, sizeof (line), f))
+  while (NULL != fgets (line, sizeof(line), f))
   {
-    if ((1 ==
-         SSCANF (line, "%*x-%*x %*c%*c%*c%*c %*x %*2x:%*2x %*u%*[ ]%1023s", dir)) &&
-        (NULL != (lgu = strstr (dir,
-                                current_pd->libname))))
+    if ((1 == sscanf (line,
+                      "%*x-%*x %*c%*c%*c%*c %*x %*2x:%*2x %*u%*[ ]%1023s",
+                      dir)) &&
+        (NULL != (lgu = strstr (dir, current_pd->libname))))
     {
       lgu[0] = '\0';
-      FCLOSE (f);
+      fclose (f);
       return GNUNET_strdup (dir);
     }
   }
-  FCLOSE (f);
+  fclose (f);
   return NULL;
 }
 
@@ -152,35 +182,24 @@ get_path_from_proc_exe ()
   ssize_t size;
   char *lep;
 
-  GNUNET_snprintf (fn,
-		   sizeof (fn),
-		   "/proc/%u/exe",
-		   getpid ());
-  size = readlink (fn,
-		   lnk,
-		   sizeof (lnk) - 1);
+  GNUNET_snprintf (fn, sizeof(fn), "/proc/%u/exe", getpid ());
+  size = readlink (fn, lnk, sizeof(lnk) - 1);
   if (size <= 0)
   {
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR,
-		       "readlink",
-		       fn);
+    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_ERROR, "readlink", fn);
     return NULL;
   }
-  GNUNET_assert ( ((size_t) size) < sizeof (lnk));
+  GNUNET_assert (((size_t) size) < sizeof(lnk));
   lnk[size] = '\0';
   while ((lnk[size] != '/') && (size > 0))
     size--;
-  GNUNET_asprintf (&lep,
-                   "/%s/libexec/",
-                   current_pd->project_dirname);
+  GNUNET_asprintf (&lep, "/%s/libexec/", current_pd->project_dirname);
   /* test for being in lib/gnunet/libexec/ or lib/MULTIARCH/gnunet/libexec */
-  if ( (((size_t) size) > strlen (lep)) &&
-       (0 == strcmp (lep,
-		     &lnk[size - strlen (lep)])) )
+  if ((((size_t) size) > strlen (lep)) &&
+      (0 == strcmp (lep, &lnk[size - strlen (lep)])))
     size -= strlen (lep) - 1;
   GNUNET_free (lep);
-  if ( (size < 4) ||
-       (lnk[size - 4] != '/') )
+  if ((size < 4) || (lnk[size - 4] != '/'))
   {
     /* not installed in "/bin/" -- binary path probably useless */
     return NULL;
@@ -188,123 +207,8 @@ get_path_from_proc_exe ()
   lnk[size] = '\0';
   return GNUNET_strdup (lnk);
 }
-#endif
 
 
-#if WINDOWS
-static HINSTANCE dll_instance;
-
-
-/**
- * GNUNET_util_cl_init() in common_logging.c is preferred.
- * This function is only for thread-local storage (not used in GNUnet)
- * and hInstance saving.
- */
-BOOL WINAPI
-DllMain (HINSTANCE hinstDLL,
-         DWORD fdwReason,
-         LPVOID lpvReserved)
-{
-  switch (fdwReason)
-  {
-    case DLL_PROCESS_ATTACH:
-      dll_instance = hinstDLL;
-      break;
-    case DLL_THREAD_ATTACH:
-      break;
-    case DLL_THREAD_DETACH:
-      break;
-    case DLL_PROCESS_DETACH:
-      break;
-  }
-  return TRUE;
-}
-
-
-/**
- * Try to determine path with win32-specific function
- *
- * @return NULL on error
- */
-static char *
-get_path_from_module_filename ()
-{
-  size_t pathlen = 512;
-  DWORD real_pathlen;
-  wchar_t *idx;
-  wchar_t *modulepath = NULL;
-  char *upath;
-  uint8_t *u8_string;
-  size_t u8_string_length;
-
-  /* This braindead function won't tell us how much space it needs, so
-   * we start at 1024 and double the space up if it doesn't fit, until
-   * it fits, or we exceed the threshold.
-   */
-  do
-  {
-    pathlen = pathlen * 2;
-    modulepath = GNUNET_realloc (modulepath,
-                                 pathlen * sizeof (wchar_t));
-    SetLastError (0);
-    real_pathlen = GetModuleFileNameW (dll_instance,
-                                       modulepath,
-                                       pathlen * sizeof (wchar_t));
-  } while (real_pathlen >= pathlen && pathlen < 16*1024);
-  if (real_pathlen >= pathlen)
-    GNUNET_assert (0);
-  /* To be safe */
-  modulepath[real_pathlen] = '\0';
-
-  idx = modulepath + real_pathlen;
-  while ((idx > modulepath) && (*idx != L'\\') && (*idx != L'/'))
-    idx--;
-  *idx = L'\0';
-
-  /* Now modulepath holds full path to the directory where libgnunetutil is.
-   * This directory should look like <GNUNET_PREFIX>/bin or <GNUNET_PREFIX>.
-   */
-  if (wcschr (modulepath, L'/') || wcschr (modulepath, L'\\'))
-  {
-    /* At least one directory component (i.e. we're not in a root directory) */
-    wchar_t *dirname = idx;
-    while ((dirname > modulepath) && (*dirname != L'\\') && (*dirname != L'/'))
-      dirname--;
-    *dirname = L'\0';
-    if (dirname > modulepath)
-    {
-      dirname++;
-      /* Now modulepath holds full path to the parent directory of the directory
-       * where libgnunetutil is.
-       * dirname holds the name of the directory where libgnunetutil is.
-       */
-      if (wcsicmp (dirname, L"bin") == 0)
-      {
-        /* pass */
-      }
-      else
-      {
-        /* Roll back our changes to modulepath */
-        dirname--;
-        *dirname = L'/';
-      }
-    }
-  }
-
-  /* modulepath is GNUNET_PREFIX */
-  u8_string = u16_to_u8 (modulepath, wcslen (modulepath), NULL, &u8_string_length);
-  if (NULL == u8_string)
-    GNUNET_assert (0);
-
-  upath = GNUNET_malloc (u8_string_length + 1);
-  GNUNET_memcpy (upath, u8_string, u8_string_length);
-  upath[u8_string_length] = '\0';
-
-  free (u8_string);
-  GNUNET_free (modulepath);
-
-  return upath;
-}
 #endif
 
 
@@ -316,9 +220,7 @@ get_path_from_module_filename ()
  * @param number of bytes available in @a buf
  * @return 0 on success, otherwise desired number of bytes is stored in 'bufsize'
  */
-typedef int
-(*MyNSGetExecutablePathProto) (char *buf,
-                               size_t *bufsize);
+typedef int (*MyNSGetExecutablePathProto) (char *buf, size_t *bufsize);
 
 
 /**
@@ -335,8 +237,9 @@ get_path_from_NSGetExecutablePath ()
   MyNSGetExecutablePathProto func;
 
   path = NULL;
-  if (NULL == (func =
-	       (MyNSGetExecutablePathProto) dlsym (RTLD_DEFAULT, "_NSGetExecutablePath")))
+  if (NULL ==
+      (func = (MyNSGetExecutablePathProto) dlsym (RTLD_DEFAULT,
+                                                  "_NSGetExecutablePath")))
     return NULL;
   path = &zero;
   len = 0;
@@ -376,10 +279,10 @@ get_path_from_dyld_image ()
   for (i = 0; i < c; i++)
   {
     if (((const void *) _dyld_get_image_header (i)) !=
-        ((const void *) &_mh_dylib_header) )
+        ((const void *) &_mh_dylib_header))
       continue;
     path = _dyld_get_image_name (i);
-    if ( (NULL == path) || (0 == strlen (path)) )
+    if ((NULL == path) || (0 == strlen (path)))
       continue;
     p = GNUNET_strdup (path);
     s = p + strlen (p);
@@ -391,6 +294,8 @@ get_path_from_dyld_image ()
   }
   return NULL;
 }
+
+
 #endif
 
 
@@ -412,12 +317,9 @@ get_path_from_PATH (const char *binary)
 
   if (NULL == (p = getenv ("PATH")))
     return NULL;
-#if WINDOWS
-  /* On W32 look in CWD first. */
-  GNUNET_asprintf (&path, ".%c%s", PATH_SEPARATOR, p);
-#else
-  path = GNUNET_strdup (p);     /* because we write on it */
-#endif
+
+  path = GNUNET_strdup (p);  /* because we write on it */
+
   buf = GNUNET_malloc (strlen (path) + strlen (binary) + 1 + 1);
   pos = path;
   while (NULL != (end = strchr (pos, PATH_SEPARATOR)))
@@ -458,11 +360,11 @@ get_path_from_GNUNET_PREFIX ()
 {
   const char *p;
 
-  if ( (NULL != current_pd->env_varname) &&
-       (NULL != (p = getenv (current_pd->env_varname))) )
+  if ((NULL != current_pd->env_varname) &&
+      (NULL != (p = getenv (current_pd->env_varname))))
     return GNUNET_strdup (p);
-  if ( (NULL != current_pd->env_varname_alt) &&
-       (NULL != (p = getenv (current_pd->env_varname_alt))) )
+  if ((NULL != current_pd->env_varname_alt) &&
+      (NULL != (p = getenv (current_pd->env_varname_alt))))
     return GNUNET_strdup (p);
   return NULL;
 }
@@ -481,18 +383,14 @@ os_get_gnunet_path ()
 
   if (NULL != (ret = get_path_from_GNUNET_PREFIX ()))
     return ret;
-#if LINUX
+#ifdef __linux__
   if (NULL != (ret = get_path_from_proc_maps ()))
     return ret;
   /* try path *first*, before /proc/exe, as /proc/exe can be wrong */
-  if ( (NULL != current_pd->binary_name) &&
-       (NULL != (ret = get_path_from_PATH (current_pd->binary_name))) )
+  if ((NULL != current_pd->binary_name) &&
+      (NULL != (ret = get_path_from_PATH (current_pd->binary_name))))
     return ret;
   if (NULL != (ret = get_path_from_proc_exe ()))
-    return ret;
-#endif
-#if WINDOWS
-  if (NULL != (ret = get_path_from_module_filename ()))
     return ret;
 #endif
 #if DARWIN
@@ -501,12 +399,13 @@ os_get_gnunet_path ()
   if (NULL != (ret = get_path_from_NSGetExecutablePath ()))
     return ret;
 #endif
-  if ( (NULL != current_pd->binary_name) &&
-       (NULL != (ret = get_path_from_PATH (current_pd->binary_name))) )
+  if ((NULL != current_pd->binary_name) &&
+      (NULL != (ret = get_path_from_PATH (current_pd->binary_name))))
     return ret;
   /* other attempts here */
   LOG (GNUNET_ERROR_TYPE_ERROR,
-       _("Could not determine installation path for %s.  Set `%s' environment variable.\n"),
+       _ (
+         "Could not determine installation path for %s.  Set `%s' environment variable.\n"),
        current_pd->project_dirname,
        current_pd->env_varname);
   return NULL;
@@ -522,12 +421,8 @@ os_get_exec_path ()
 {
   char *ret = NULL;
 
-#if LINUX
+#ifdef __linux__
   if (NULL != (ret = get_path_from_proc_exe ()))
-    return ret;
-#endif
-#if WINDOWS
-  if (NULL != (ret = get_path_from_module_filename ()))
     return ret;
 #endif
 #if DARWIN
@@ -579,12 +474,11 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
     execpath[--n] = '\0';
 
   isbasedir = 1;
-  if ((n > 6) &&
-      ((0 == strcasecmp (&execpath[n - 6], "/lib32")) ||
-       (0 == strcasecmp (&execpath[n - 6], "/lib64"))))
+  if ((n > 6) && ((0 == strcasecmp (&execpath[n - 6], "/lib32")) ||
+                  (0 == strcasecmp (&execpath[n - 6], "/lib64"))))
   {
-    if ( (GNUNET_OS_IPK_LIBDIR != dirkind) &&
-	 (GNUNET_OS_IPK_LIBEXECDIR != dirkind) )
+    if ((GNUNET_OS_IPK_LIBDIR != dirkind) &&
+        (GNUNET_OS_IPK_LIBEXECDIR != dirkind))
     {
       /* strip '/lib32' or '/lib64' */
       execpath[n - 6] = '\0';
@@ -593,9 +487,8 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
     else
       isbasedir = 0;
   }
-  else if ((n > 4) &&
-           ((0 == strcasecmp (&execpath[n - 4], "/bin")) ||
-            (0 == strcasecmp (&execpath[n - 4], "/lib"))))
+  else if ((n > 4) && ((0 == strcasecmp (&execpath[n - 4], "/bin")) ||
+                       (0 == strcasecmp (&execpath[n - 4], "/lib"))))
   {
     /* strip '/bin' or '/lib' */
     execpath[n - 4] = '\0';
@@ -608,9 +501,11 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
        here we need to re-add 'multiarch' to lib and libexec paths later! */
     multiarch = &libdir[5];
     if (NULL == strchr (multiarch, '/'))
-      libdir[0] = '\0'; /* Debian multiarch format, cut of from 'execpath' but preserve in multicarch */
+      libdir[0] =
+        '\0';   /* Debian multiarch format, cut of from 'execpath' but preserve in multicarch */
     else
-      multiarch = NULL; /* maybe not, multiarch still has a '/', which is not OK */
+      multiarch =
+        NULL;   /* maybe not, multiarch still has a '/', which is not OK */
   }
   /* in case this was a directory named foo-bin, remove "foo-" */
   while ((n > 1) && (execpath[n - 1] == DIR_SEPARATOR))
@@ -621,9 +516,11 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
   case GNUNET_OS_IPK_SELF_PREFIX:
     dirname = GNUNET_strdup (DIR_SEPARATOR_STR);
     break;
+
   case GNUNET_OS_IPK_BINDIR:
     dirname = GNUNET_strdup (DIR_SEPARATOR_STR "bin" DIR_SEPARATOR_STR);
     break;
+
   case GNUNET_OS_IPK_LIBDIR:
     if (isbasedir)
     {
@@ -636,8 +533,7 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
                        DIR_SEPARATOR_STR,
                        current_pd->project_dirname,
                        DIR_SEPARATOR_STR);
-      if (GNUNET_YES ==
-          GNUNET_DISK_directory_test (tmp, GNUNET_YES))
+      if (GNUNET_YES == GNUNET_DISK_directory_test (tmp, GNUNET_YES))
       {
         GNUNET_free (execpath);
         return tmp;
@@ -645,30 +541,25 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
       GNUNET_free (tmp);
       tmp = NULL;
       dirname = NULL;
-      if (4 == sizeof (void *))
-      {
-	GNUNET_asprintf (&dirname,
-                         DIR_SEPARATOR_STR "lib32" DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR,
-                         current_pd->project_dirname);
-	GNUNET_asprintf (&tmp,
-                         "%s%s",
-                         execpath,
-                         dirname);
-      }
-      if (8 == sizeof (void *))
+      if (4 == sizeof(void *))
       {
         GNUNET_asprintf (&dirname,
-                         DIR_SEPARATOR_STR "lib64" DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR,
+                         DIR_SEPARATOR_STR "lib32" DIR_SEPARATOR_STR
+                         "%s" DIR_SEPARATOR_STR,
                          current_pd->project_dirname);
-	GNUNET_asprintf (&tmp,
-                         "%s%s",
-                         execpath,
-                         dirname);
+        GNUNET_asprintf (&tmp, "%s%s", execpath, dirname);
+      }
+      if (8 == sizeof(void *))
+      {
+        GNUNET_asprintf (&dirname,
+                         DIR_SEPARATOR_STR "lib64" DIR_SEPARATOR_STR
+                         "%s" DIR_SEPARATOR_STR,
+                         current_pd->project_dirname);
+        GNUNET_asprintf (&tmp, "%s%s", execpath, dirname);
       }
 
-      if ( (NULL != tmp) &&
-           (GNUNET_YES ==
-            GNUNET_DISK_directory_test (tmp, GNUNET_YES)) )
+      if ((NULL != tmp) &&
+          (GNUNET_YES == GNUNET_DISK_directory_test (tmp, GNUNET_YES)))
       {
         GNUNET_free (execpath);
         GNUNET_free_non_null (dirname);
@@ -681,27 +572,38 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
                      DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR,
                      current_pd->project_dirname);
     break;
+
   case GNUNET_OS_IPK_DATADIR:
     GNUNET_asprintf (&dirname,
-                     DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR,
+                     DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR
+                     "%s" DIR_SEPARATOR_STR,
                      current_pd->project_dirname);
     break;
+
   case GNUNET_OS_IPK_LOCALEDIR:
-    dirname = GNUNET_strdup (DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "locale" DIR_SEPARATOR_STR);
+    dirname = GNUNET_strdup (DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR
+                             "locale" DIR_SEPARATOR_STR);
     break;
+
   case GNUNET_OS_IPK_ICONDIR:
-    dirname = GNUNET_strdup (DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "icons" DIR_SEPARATOR_STR);
+    dirname = GNUNET_strdup (DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR
+                             "icons" DIR_SEPARATOR_STR);
     break;
+
   case GNUNET_OS_IPK_DOCDIR:
     GNUNET_asprintf (&dirname,
-                     DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR "doc" DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR,
+                     DIR_SEPARATOR_STR "share" DIR_SEPARATOR_STR
+                     "doc" DIR_SEPARATOR_STR
+                     "%s" DIR_SEPARATOR_STR,
                      current_pd->project_dirname);
     break;
+
   case GNUNET_OS_IPK_LIBEXECDIR:
     if (isbasedir)
     {
       GNUNET_asprintf (&dirname,
-                       DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR "libexec" DIR_SEPARATOR_STR,
+                       DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR
+                       "libexec" DIR_SEPARATOR_STR,
                        current_pd->project_dirname);
       GNUNET_asprintf (&tmp,
                        "%s%s%s%s",
@@ -709,8 +611,7 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
                        DIR_SEPARATOR_STR "lib" DIR_SEPARATOR_STR,
                        (NULL != multiarch) ? multiarch : "",
                        dirname);
-      if (GNUNET_YES ==
-          GNUNET_DISK_directory_test (tmp, GNUNET_YES))
+      if (GNUNET_YES == GNUNET_DISK_directory_test (tmp, GNUNET_YES))
       {
         GNUNET_free (execpath);
         GNUNET_free (dirname);
@@ -719,29 +620,26 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
       GNUNET_free (tmp);
       tmp = NULL;
       dirname = NULL;
-      if (4 == sizeof (void *))
+      if (4 == sizeof(void *))
       {
         GNUNET_asprintf (&dirname,
-                         DIR_SEPARATOR_STR "lib32" DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR "libexec" DIR_SEPARATOR_STR,
+                         DIR_SEPARATOR_STR "lib32" DIR_SEPARATOR_STR
+                         "%s" DIR_SEPARATOR_STR
+                         "libexec" DIR_SEPARATOR_STR,
                          current_pd->project_dirname);
-	GNUNET_asprintf (&tmp,
-                         "%s%s",
-                         execpath,
-                         dirname);
+        GNUNET_asprintf (&tmp, "%s%s", execpath, dirname);
       }
-      if (8 == sizeof (void *))
+      if (8 == sizeof(void *))
       {
-	GNUNET_asprintf (&dirname,
-                         DIR_SEPARATOR_STR "lib64" DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR "libexec" DIR_SEPARATOR_STR,
+        GNUNET_asprintf (&dirname,
+                         DIR_SEPARATOR_STR "lib64" DIR_SEPARATOR_STR
+                         "%s" DIR_SEPARATOR_STR
+                         "libexec" DIR_SEPARATOR_STR,
                          current_pd->project_dirname);
-	GNUNET_asprintf (&tmp,
-                         "%s%s",
-                         execpath,
-                         dirname);
+        GNUNET_asprintf (&tmp, "%s%s", execpath, dirname);
       }
-      if ( (NULL != tmp) &&
-           (GNUNET_YES ==
-            GNUNET_DISK_directory_test (tmp, GNUNET_YES)) )
+      if ((NULL != tmp) &&
+          (GNUNET_YES == GNUNET_DISK_directory_test (tmp, GNUNET_YES)))
       {
         GNUNET_free (execpath);
         GNUNET_free_non_null (dirname);
@@ -751,17 +649,16 @@ GNUNET_OS_installation_get_path (enum GNUNET_OS_InstallationPathKind dirkind)
       GNUNET_free_non_null (dirname);
     }
     GNUNET_asprintf (&dirname,
-                     DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR "libexec" DIR_SEPARATOR_STR,
+                     DIR_SEPARATOR_STR "%s" DIR_SEPARATOR_STR
+                     "libexec" DIR_SEPARATOR_STR,
                      current_pd->project_dirname);
     break;
+
   default:
     GNUNET_free (execpath);
     return NULL;
   }
-  GNUNET_asprintf (&tmp,
-                   "%s%s",
-                   execpath,
-                   dirname);
+  GNUNET_asprintf (&tmp, "%s%s", execpath, dirname);
   GNUNET_free (dirname);
   GNUNET_free (execpath);
   return tmp;
@@ -783,11 +680,9 @@ GNUNET_OS_get_libexec_binary_path (const char *progname)
   char *libexecdir;
   char *binary;
 
-  if ( (DIR_SEPARATOR == progname[0]) ||
-       (GNUNET_YES ==
-        GNUNET_STRINGS_path_is_absolute (progname,
-                                         GNUNET_NO,
-                                         NULL, NULL)) )
+  if ((DIR_SEPARATOR == progname[0]) ||
+      (GNUNET_YES ==
+       GNUNET_STRINGS_path_is_absolute (progname, GNUNET_NO, NULL, NULL)))
     return GNUNET_strdup (progname);
   if (NULL != cache)
     libexecdir = cache;
@@ -795,10 +690,7 @@ GNUNET_OS_get_libexec_binary_path (const char *progname)
     libexecdir = GNUNET_OS_installation_get_path (GNUNET_OS_IPK_LIBEXECDIR);
   if (NULL == libexecdir)
     return GNUNET_strdup (progname);
-  GNUNET_asprintf (&binary,
-		   "%s%s",
-		   libexecdir,
-		   progname);
+  GNUNET_asprintf (&binary, "%s%s", libexecdir, progname);
   cache = libexecdir;
   return binary;
 }
@@ -826,9 +718,7 @@ GNUNET_OS_get_suid_binary_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
   size_t path_len;
 
   if (GNUNET_YES ==
-       GNUNET_STRINGS_path_is_absolute (progname,
-                                        GNUNET_NO,
-                                        NULL, NULL))
+      GNUNET_STRINGS_path_is_absolute (progname, GNUNET_NO, NULL, NULL))
   {
     return GNUNET_strdup (progname);
   }
@@ -839,14 +729,15 @@ GNUNET_OS_get_suid_binary_path (const struct GNUNET_CONFIGURATION_Handle *cfg,
                                            "PATHS",
                                            "SUID_BINARY_PATH",
                                            &path);
-  if (NULL == path || 0 == strlen (path))
+  if ((NULL == path) || (0 == strlen (path)))
     return GNUNET_OS_get_libexec_binary_path (progname);
   path_len = strlen (path);
   GNUNET_asprintf (&binary,
-		   "%s%s%s",
-		   path,
-                   (path[path_len - 1] == DIR_SEPARATOR) ? "" : DIR_SEPARATOR_STR,
-		   progname);
+                   "%s%s%s",
+                   path,
+                   (path[path_len - 1] == DIR_SEPARATOR) ? ""
+                   : DIR_SEPARATOR_STR,
+                   progname);
   cache = path;
   return binary;
 }
@@ -876,36 +767,10 @@ GNUNET_OS_check_helper_binary (const char *binary,
   struct stat statbuf;
   char *p;
   char *pf;
-#ifdef MINGW
-  char *binaryexe;
 
-  GNUNET_asprintf (&binaryexe,
-                   "%s.exe",
-                   binary);
-  if ( (GNUNET_YES ==
-        GNUNET_STRINGS_path_is_absolute (binaryexe,
-                                         GNUNET_NO,
-                                         NULL, NULL)) ||
-       (0 == strncmp (binary, "./", 2)) )
-    p = GNUNET_strdup (binaryexe);
-  else
-  {
-    p = get_path_from_PATH (binaryexe);
-    if (NULL != p)
-    {
-      GNUNET_asprintf (&pf, "%s/%s", p, binaryexe);
-      GNUNET_free (p);
-      p = pf;
-    }
-  }
-  GNUNET_free (binaryexe);
-#else
-  if ( (GNUNET_YES ==
-        GNUNET_STRINGS_path_is_absolute (binary,
-                                         GNUNET_NO,
-                                         NULL,
-                                         NULL)) ||
-       (0 == strncmp (binary, "./", 2)) )
+  if ((GNUNET_YES ==
+       GNUNET_STRINGS_path_is_absolute (binary, GNUNET_NO, NULL, NULL)) ||
+      (0 == strncmp (binary, "./", 2)))
   {
     p = GNUNET_strdup (binary);
   }
@@ -914,112 +779,52 @@ GNUNET_OS_check_helper_binary (const char *binary,
     p = get_path_from_PATH (binary);
     if (NULL != p)
     {
-      GNUNET_asprintf (&pf,
-                       "%s/%s",
-                       p,
-                       binary);
+      GNUNET_asprintf (&pf, "%s/%s", p, binary);
       GNUNET_free (p);
       p = pf;
     }
   }
-#endif
+
   if (NULL == p)
   {
     LOG (GNUNET_ERROR_TYPE_INFO,
-         _("Could not find binary `%s' in PATH!\n"),
+         _ ("Could not find binary `%s' in PATH!\n"),
          binary);
     return GNUNET_SYSERR;
   }
-  if (0 != ACCESS (p,
-                   X_OK))
+  if (0 != access (p, X_OK))
   {
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING,
-                       "access",
-                       p);
+    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "access", p);
     GNUNET_free (p);
     return GNUNET_SYSERR;
   }
-#ifndef MINGW
+
   if (0 == getuid ())
   {
     /* as we run as root, we don't insist on SUID */
     GNUNET_free (p);
     return GNUNET_YES;
   }
-#endif
-  if (0 != STAT (p,
-                 &statbuf))
+
+  if (0 != stat (p, &statbuf))
   {
-    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING,
-                       "stat",
-                       p);
+    LOG_STRERROR_FILE (GNUNET_ERROR_TYPE_WARNING, "stat", p);
     GNUNET_free (p);
     return GNUNET_SYSERR;
   }
   if (check_suid)
   {
-#ifndef MINGW
     (void) params;
-    if ( (0 != (statbuf.st_mode & S_ISUID)) &&
-         (0 == statbuf.st_uid) )
+    if ((0 != (statbuf.st_mode & S_ISUID)) && (0 == statbuf.st_uid))
     {
       GNUNET_free (p);
       return GNUNET_YES;
     }
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                _("Binary `%s' exists, but is not SUID\n"),
+                _ ("Binary `%s' exists, but is not SUID\n"),
                 p);
     /* binary exists, but not SUID */
-#else
-    STARTUPINFO start;
-    char parameters[512];
-    PROCESS_INFORMATION proc;
-    DWORD exit_value;
-
-    GNUNET_snprintf (parameters,
-		     sizeof (parameters),
-		     "-d %s", params);
-    memset (&start, 0, sizeof (start));
-    start.cb = sizeof (start);
-    memset (&proc, 0, sizeof (proc));
-
-
-    // Start the child process.
-    if ( ! (CreateProcess( p,   // current windows (2k3 and up can handle / instead of \ in paths))
-        parameters,           // execute dryrun/priviliege checking mode
-        NULL,           // Process handle not inheritable
-        NULL,           // Thread handle not inheritable
-        FALSE,          // Set handle inheritance to FALSE
-        CREATE_DEFAULT_ERROR_MODE, // No creation flags
-        NULL,           // Use parent's environment block
-        NULL,           // Use parent's starting directory
-        &start,            // Pointer to STARTUPINFO structure
-        &proc )           // Pointer to PROCESS_INFORMATION structure
-                               ))
-      {
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("CreateProcess failed for binary %s (%d).\n"),
-             p, GetLastError());
-        return GNUNET_SYSERR;
-    }
-
-    // Wait until child process exits.
-    WaitForSingleObject( proc.hProcess, INFINITE );
-
-    if ( ! GetExitCodeProcess (proc.hProcess, &exit_value)){
-        LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("GetExitCodeProcess failed for binary %s (%d).\n"),
-             p, GetLastError() );
-        return GNUNET_SYSERR;
-      }
-    // Close process and thread handles.
-    CloseHandle( proc.hProcess );
-    CloseHandle( proc.hThread );
-
-    if (!exit_value)
-      return GNUNET_YES;
-#endif
-    }
+  }
   GNUNET_free (p);
   return GNUNET_NO;
 }

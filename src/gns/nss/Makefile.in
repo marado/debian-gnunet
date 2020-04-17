@@ -174,7 +174,6 @@ am__v_lt_1 =
 libnss_gns_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libnss_gns_la_CFLAGS) \
 	$(CFLAGS) $(libnss_gns_la_LDFLAGS) $(LDFLAGS) -o $@
-@MINGW_FALSE@am_libnss_gns_la_rpath = -rpath $(nssdir)
 libnss_gns4_la_LIBADD =
 am__objects_2 = libnss_gns4_la-nss_gns_query.lo
 am__objects_3 = $(am__objects_2) libnss_gns4_la-nss_gns.lo
@@ -184,7 +183,6 @@ libnss_gns4_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libnss_gns4_la_CFLAGS) $(CFLAGS) $(libnss_gns4_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-@MINGW_FALSE@am_libnss_gns4_la_rpath = -rpath $(nssdir)
 libnss_gns6_la_LIBADD =
 am__objects_4 = libnss_gns6_la-nss_gns_query.lo
 am__objects_5 = $(am__objects_4) libnss_gns6_la-nss_gns.lo
@@ -194,7 +192,6 @@ libnss_gns6_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(libnss_gns6_la_CFLAGS) $(CFLAGS) $(libnss_gns6_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-@MINGW_FALSE@am_libnss_gns6_la_rpath = -rpath $(nssdir)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -270,20 +267,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -291,6 +285,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -316,6 +311,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -353,11 +349,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -401,6 +401,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -420,6 +423,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -430,7 +434,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -491,13 +494,13 @@ target_vendor = @target_vendor@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-EXTRA_DIST = map-file 
+EXTRA_DIST = map-file
 AM_LDFLAGS = -avoid-version -module -export-dynamic
 nssdir = $(libdir)/gnunet/nss
-@MINGW_FALSE@nss_LTLIBRARIES = \
-@MINGW_FALSE@	libnss_gns.la \
-@MINGW_FALSE@	libnss_gns4.la \
-@MINGW_FALSE@	libnss_gns6.la
+nss_LTLIBRARIES = \
+	libnss_gns.la \
+	libnss_gns4.la \
+	libnss_gns6.la
 
 sources = nss_gns_query.h nss_gns_query.c
 
@@ -581,13 +584,13 @@ clean-nssLTLIBRARIES:
 	}
 
 libnss_gns.la: $(libnss_gns_la_OBJECTS) $(libnss_gns_la_DEPENDENCIES) $(EXTRA_libnss_gns_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libnss_gns_la_LINK) $(am_libnss_gns_la_rpath) $(libnss_gns_la_OBJECTS) $(libnss_gns_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnss_gns_la_LINK) -rpath $(nssdir) $(libnss_gns_la_OBJECTS) $(libnss_gns_la_LIBADD) $(LIBS)
 
 libnss_gns4.la: $(libnss_gns4_la_OBJECTS) $(libnss_gns4_la_DEPENDENCIES) $(EXTRA_libnss_gns4_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libnss_gns4_la_LINK) $(am_libnss_gns4_la_rpath) $(libnss_gns4_la_OBJECTS) $(libnss_gns4_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnss_gns4_la_LINK) -rpath $(nssdir) $(libnss_gns4_la_OBJECTS) $(libnss_gns4_la_LIBADD) $(LIBS)
 
 libnss_gns6.la: $(libnss_gns6_la_OBJECTS) $(libnss_gns6_la_DEPENDENCIES) $(EXTRA_libnss_gns6_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libnss_gns6_la_LINK) $(am_libnss_gns6_la_rpath) $(libnss_gns6_la_OBJECTS) $(libnss_gns6_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libnss_gns6_la_LINK) -rpath $(nssdir) $(libnss_gns6_la_OBJECTS) $(libnss_gns6_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

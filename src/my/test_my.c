@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file my/test_my.c
  * @brief Tests for convenience MySQL database
@@ -30,11 +30,11 @@
 
 
 /**
-  * Run actual test queries.
-  *
-  * @param contexte the current context of mysql
-  * @return 0 on succes
-  */
+ * Run actual test queries.
+ *
+ * @param contexte the current context of mysql
+ * @return 0 on succes
+ */
 static int
 run_queries (struct GNUNET_MYSQL_Context *context)
 {
@@ -46,7 +46,8 @@ run_queries (struct GNUNET_MYSQL_Context *context)
   struct GNUNET_TIME_Absolute abs_time2;
   struct GNUNET_TIME_Absolute forever = GNUNET_TIME_UNIT_FOREVER_ABS;
   struct GNUNET_TIME_Absolute forever2;
-  const struct GNUNET_TIME_AbsoluteNBO abs_time_nbo = GNUNET_TIME_absolute_hton (abs_time);
+  const struct GNUNET_TIME_AbsoluteNBO abs_time_nbo =
+    GNUNET_TIME_absolute_hton (abs_time);
   struct GNUNET_HashCode hc;
   struct GNUNET_HashCode hc2;
   const char msg[] = "hello";
@@ -72,7 +73,7 @@ run_queries (struct GNUNET_MYSQL_Context *context)
   struct GNUNET_HashCode hmsg;
 
   priv = GNUNET_CRYPTO_rsa_private_key_create (1024);
-  pub =  GNUNET_CRYPTO_rsa_private_key_get_public (priv);
+  pub = GNUNET_CRYPTO_rsa_private_key_get_public (priv);
   memset (&hmsg, 42, sizeof(hmsg));
   sig = GNUNET_CRYPTO_rsa_sign_fdh (priv,
                                     &hmsg);
@@ -124,15 +125,15 @@ run_queries (struct GNUNET_MYSQL_Context *context)
     GNUNET_MY_query_param_end
   };
 
-  if (GNUNET_OK != GNUNET_MY_exec_prepared(context,
-                                          statements_handle_insert,
-                                          params_insert))
+  if (GNUNET_OK != GNUNET_MY_exec_prepared (context,
+                                            statements_handle_insert,
+                                            params_insert))
   {
-      fprintf (stderr, "Failed to execute prepared statement INSERT\n");
-      GNUNET_CRYPTO_rsa_signature_free (sig);
-      GNUNET_CRYPTO_rsa_private_key_free (priv);
-      GNUNET_CRYPTO_rsa_public_key_free (pub);
-      return 1;
+    fprintf (stderr, "Failed to execute prepared statement INSERT\n");
+    GNUNET_CRYPTO_rsa_signature_free (sig);
+    GNUNET_CRYPTO_rsa_private_key_free (priv);
+    GNUNET_CRYPTO_rsa_public_key_free (pub);
+    return 1;
   }
 
   statements_handle_select
@@ -152,7 +153,7 @@ run_queries (struct GNUNET_MYSQL_Context *context)
 
   if (NULL == statements_handle_select)
   {
-    fprintf(stderr, "Failed to prepared statement SELECT\n");
+    fprintf (stderr, "Failed to prepared statement SELECT\n");
     GNUNET_CRYPTO_rsa_signature_free (sig);
     GNUNET_CRYPTO_rsa_private_key_free (priv);
     GNUNET_CRYPTO_rsa_public_key_free (pub);
@@ -195,9 +196,9 @@ run_queries (struct GNUNET_MYSQL_Context *context)
   GNUNET_break (abs_time.abs_value_us == abs_time2.abs_value_us);
   GNUNET_break (forever.abs_value_us == forever2.abs_value_us);
   GNUNET_break (0 ==
-                  memcmp (&hc,
-                            &hc2,
-                            sizeof (struct GNUNET_HashCode)));
+                memcmp (&hc,
+                        &hc2,
+                        sizeof(struct GNUNET_HashCode)));
 
   GNUNET_assert (NULL != sig2);
   GNUNET_assert (NULL != pub2);
@@ -214,7 +215,7 @@ run_queries (struct GNUNET_MYSQL_Context *context)
                          msg2,
                          msg2_len));
 
-  GNUNET_break (strlen (msg3) == strlen(msg4));
+  GNUNET_break (strlen (msg3) == strlen (msg4));
   GNUNET_break (0 ==
                 strcmp (msg3,
                         msg4));
@@ -259,7 +260,7 @@ main (int argc, const char *const argv[])
                                          "datastore-mysql");
   if (NULL == context)
   {
-    fprintf(stderr, "Failed to connect to database\n");
+    fprintf (stderr, "Failed to connect to database\n");
     return 77;
   }
 
@@ -283,7 +284,7 @@ main (int argc, const char *const argv[])
                                   ")"))
   {
     fprintf (stderr,
-            "Failed to create table. Database likely not setup correctly.\n");
+             "Failed to create table. Database likely not setup correctly.\n");
     GNUNET_MYSQL_statements_invalidate (context);
     GNUNET_MYSQL_context_destroy (context);
 

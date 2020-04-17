@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/gnunet-uri.c
@@ -145,7 +145,7 @@ sighandler_child_death ()
     GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle (sigpipe,
                                                      GNUNET_DISK_PIPE_END_WRITE),
                             &c,
-                            sizeof (c)));
+                            sizeof(c)));
   errno = old_errno; /* restore errno */
 }
 
@@ -161,7 +161,8 @@ int
 main (int argc, char *const *argv)
 {
   static const struct GNUNET_GETOPT_CommandLineOption options[] = {
-    GNUNET_GETOPT_OPTION_END};
+    GNUNET_GETOPT_OPTION_END
+  };
   struct GNUNET_SIGNAL_Context *shc_chld;
   int ret;
 
@@ -186,5 +187,6 @@ main (int argc, char *const *argv)
   GNUNET_free ((void *) argv);
   return ((GNUNET_OK == ret) && (0 == exit_code)) ? 0 : 1;
 }
+
 
 /* end of gnunet-uri.c */

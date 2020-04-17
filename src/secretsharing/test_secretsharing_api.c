@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file secretsharing/test_secretsharing_api.c
@@ -85,16 +85,14 @@ run (void *cls,
                                                 start, deadline,
                                                 1,
                                                 secret_ready_cb, NULL);
-
-
 }
 
 
 int
 main (int argc, char **argv)
 {
-
   int ret;
+
   ret = GNUNET_TESTING_peer_run ("test_secretsharing_api",
                                  "test_secretsharing.conf",
                                  &run, NULL);

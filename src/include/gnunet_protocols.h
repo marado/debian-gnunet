@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -85,8 +85,8 @@ extern "C" {
 #define GNUNET_MESSAGE_TYPE_RESOLVER_RESPONSE 5
 
 /*******************************************************************************
- * AGPL source code download
- * *****************************************************************************/
+* AGPL source code download
+* *****************************************************************************/
 
 /**
  * Message to request source code link.
@@ -2716,15 +2716,17 @@ extern "C" {
 
 /**************************************************
  *
- * CREDENTIAL MESSAGE TYPES
+ * ABD MESSAGE TYPES
  */
-#define GNUNET_MESSAGE_TYPE_CREDENTIAL_VERIFY 981
+#define GNUNET_MESSAGE_TYPE_ABD_VERIFY 981
 
-#define GNUNET_MESSAGE_TYPE_CREDENTIAL_VERIFY_RESULT 982
+#define GNUNET_MESSAGE_TYPE_ABD_VERIFY_RESULT 982
 
-#define GNUNET_MESSAGE_TYPE_CREDENTIAL_COLLECT 983
+#define GNUNET_MESSAGE_TYPE_ABD_COLLECT 983
 
-#define GNUNET_MESSAGE_TYPE_CREDENTIAL_COLLECT_RESULT 984
+#define GNUNET_MESSAGE_TYPE_ABD_COLLECT_RESULT 984
+
+#define GNUNET_MESSAGE_TYPE_ABD_INTERMEDIATE_RESULT 985
 
 /******************************************************************************/
 
@@ -3048,8 +3050,8 @@ extern "C" {
 
 
 /*******************************************************
-  NEW (TNG) Transport service
-  ******************************************************* */
+   NEW (TNG) Transport service
+ ******************************************************* */
 
 /**
  * @brief inform transport to add an address of this peer

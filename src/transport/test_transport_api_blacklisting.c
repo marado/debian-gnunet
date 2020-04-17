@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/test_transport_api_blacklisting.c
@@ -53,7 +53,7 @@ end (void *cls)
               "Stopping\n");
   if ((GNUNET_YES == blacklist_request_p1) &&
       (GNUNET_YES == blacklist_request_p2) &&
-      (GNUNET_NO == connected) )
+      (GNUNET_NO == connected))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Peers were never connected, success\n");
@@ -143,12 +143,13 @@ blacklist_cb (void *cls,
     res = GNUNET_SYSERR;
   }
 
-  if ( (GNUNET_YES == blacklist_request_p2) &&
-       (GNUNET_YES == blacklist_request_p1) &&
-       (NULL == shutdown_task) )
+  if ((GNUNET_YES == blacklist_request_p2) &&
+      (GNUNET_YES == blacklist_request_p1) &&
+      (NULL == shutdown_task))
   {
     shutdown_task
-      = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 3),
+      = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                        GNUNET_TIME_UNIT_SECONDS, 3),
                                       &end,
                                       NULL);
   }

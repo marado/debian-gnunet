@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -29,7 +29,7 @@
 #include "gnunet_util_lib.h"
 #include "gnunet_testing_lib.h"
 
-#define LOG(kind,...) \
+#define LOG(kind, ...) \
   GNUNET_log (kind, __VA_ARGS__)
 
 /**
@@ -54,12 +54,12 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_assert (NULL != system);
   new_port1 = GNUNET_TESTING_reserve_port (system);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-                "Reserved TCP port %u\n", new_port1);
+       "Reserved TCP port %u\n", new_port1);
   if (0 == new_port1)
     goto end;
   new_port2 = GNUNET_TESTING_reserve_port (system);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-                "Reserved TCP port %u\n", new_port2);
+       "Reserved TCP port %u\n", new_port2);
   if (0 == new_port2)
     goto end;
   GNUNET_assert (new_port1 != new_port2);
@@ -75,12 +75,13 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_TESTING_release_port (system, new_port2);
   status = GNUNET_OK;
 
- end:
+end:
   GNUNET_TESTING_system_destroy (system, GNUNET_YES);
 }
 
 
-int main (int argc, char *argv[])
+int
+main (int argc, char *argv[])
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
@@ -99,5 +100,6 @@ int main (int argc, char *argv[])
     return 1;
   return (GNUNET_OK == status) ? 0 : 1;
 }
+
 
 /* end of test_testing_portreservation.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file statistics/test_statistics_api.c
  * @brief testcase for statistics_api.c
@@ -145,17 +145,17 @@ run (void *cls,
     return;
   }
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
-				 NULL);
+                                 NULL);
   GNUNET_STATISTICS_set (h, "test-1", 1, GNUNET_NO);
   GNUNET_STATISTICS_set (h, "test-2", 2, GNUNET_NO);
   GNUNET_STATISTICS_set (h, "test-3", 2, GNUNET_NO);
   GNUNET_STATISTICS_update (h, "test-3", 1, GNUNET_YES);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Issuing GET request\n");
+              "Issuing GET request\n");
   GNUNET_break (NULL !=
                 (g = GNUNET_STATISTICS_get (h, NULL, "test-1",
-					    &next,
-					    &check_1, cls)));
+                                            &next,
+                                            &check_1, cls)));
 }
 
 
@@ -168,12 +168,12 @@ run_more (void *cls,
   h = GNUNET_STATISTICS_create ("test-statistics-api",
                                 cfg);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
-				 NULL);
+                                 NULL);
   GNUNET_break (NULL !=
                 (g = GNUNET_STATISTICS_get (h, NULL,
-					    "test-3",
-					    &next_fin,
-					    &check_3, cls)));
+                                            "test-3",
+                                            &next_fin,
+                                            &check_3, cls)));
 }
 
 
@@ -182,11 +182,10 @@ main (int argc, char *argv_ign[])
 {
   int ok = 1;
   char *const argv[] = { "test-statistics-api",
-    "-c",
-    "test_statistics_api_data.conf",
-    "-L", "WARNING",
-    NULL
-  };
+                         "-c",
+                         "test_statistics_api_data.conf",
+                         "-L", "WARNING",
+                         NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
@@ -198,12 +197,12 @@ main (int argc, char *argv_ign[])
                     NULL);
   binary = GNUNET_OS_get_libexec_binary_path ("gnunet-service-statistics");
   proc =
-      GNUNET_OS_start_process (GNUNET_YES,
-                               GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-                               NULL, NULL, NULL,
-			       binary,
-                               "gnunet-service-statistics",
-                               "-c", "test_statistics_api_data.conf", NULL);
+    GNUNET_OS_start_process (GNUNET_YES,
+                             GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                             NULL, NULL, NULL,
+                             binary,
+                             "gnunet-service-statistics",
+                             "-c", "test_statistics_api_data.conf", NULL);
   GNUNET_assert (NULL != proc);
   GNUNET_PROGRAM_run (5, argv,
                       "test-statistics-api", "nohelp",
@@ -226,13 +225,13 @@ main (int argc, char *argv_ign[])
   ok = 1;
   /* restart to check persistence! */
   proc =
-      GNUNET_OS_start_process (GNUNET_YES,
-                               GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-                               NULL, NULL, NULL,
-			       binary,
-                               "gnunet-service-statistics",
-                               "-c", "test_statistics_api_data.conf",
-                               NULL);
+    GNUNET_OS_start_process (GNUNET_YES,
+                             GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                             NULL, NULL, NULL,
+                             binary,
+                             "gnunet-service-statistics",
+                             "-c", "test_statistics_api_data.conf",
+                             NULL);
   GNUNET_PROGRAM_run (5, argv,
                       "test-statistics-api", "nohelp",
                       options,
@@ -249,5 +248,6 @@ main (int argc, char *argv_ign[])
   GNUNET_free (binary);
   return ok;
 }
+
 
 /* end of test_statistics_api.c */

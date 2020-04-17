@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file ats/gnunet-service-ats_reservations.c
  * @brief ats service, inbound bandwidth reservation management
@@ -76,8 +76,8 @@ reservations_reserve (const struct GNUNET_PeerIdentity *peer,
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "Delay to satisfy reservation for %d bytes is %s\n",
                   (int) amount,
-		  GNUNET_STRINGS_relative_time_to_string (ret,
-							  GNUNET_YES));
+                  GNUNET_STRINGS_relative_time_to_string (ret,
+                                                          GNUNET_YES));
       return ret;
     }
   }
@@ -157,7 +157,7 @@ GAS_handle_reservation_request (struct GNUNET_SERVICE_Client *client,
   if (res_delay.rel_value_us > 0)
     amount = 0;
   env = GNUNET_MQ_msg (result,
-		       GNUNET_MESSAGE_TYPE_ATS_RESERVATION_RESULT);
+                       GNUNET_MESSAGE_TYPE_ATS_RESERVATION_RESULT);
   result->amount = htonl (amount);
   result->peer = msg->peer;
   result->res_delay = GNUNET_TIME_relative_hton (res_delay);
@@ -166,7 +166,7 @@ GAS_handle_reservation_request (struct GNUNET_SERVICE_Client *client,
                             1,
                             GNUNET_NO);
   GNUNET_MQ_send (GNUNET_SERVICE_client_get_mq (client),
-		  env);
+                  env);
 }
 
 
@@ -191,8 +191,8 @@ GAS_reservations_init ()
  */
 static int
 free_tracker (void *cls,
-	      const struct GNUNET_PeerIdentity *key,
-	      void *value)
+              const struct GNUNET_PeerIdentity *key,
+              void *value)
 {
   struct GNUNET_BANDWIDTH_Tracker *tracker = value;
 
@@ -212,5 +212,6 @@ GAS_reservations_done ()
                                          NULL);
   GNUNET_CONTAINER_multipeermap_destroy (trackers);
 }
+
 
 /* end of gnunet-service-ats_reservations.c */

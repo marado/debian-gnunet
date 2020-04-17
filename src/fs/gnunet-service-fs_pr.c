@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_pr.c
@@ -259,8 +259,9 @@ refresh_bloomfilter (enum GNUNET_BLOCK_Type type, struct GSF_PendingRequest *pr)
   pr->bg =
     GNUNET_BLOCK_group_create (GSF_block_ctx,
                                type,
-                               GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                                         UINT32_MAX),
+                               GNUNET_CRYPTO_random_u32 (
+                                 GNUNET_CRYPTO_QUALITY_WEAK,
+                                 UINT32_MAX),
                                NULL,
                                0,
                                "seen-set-size",
@@ -331,14 +332,14 @@ GSF_pending_request_create_ (enum GSF_PendingRequestOptions options,
 #endif
   extra = 0;
   if (NULL != target)
-    extra += sizeof (struct GNUNET_PeerIdentity);
-  pr = GNUNET_malloc (sizeof (struct GSF_PendingRequest) + extra);
+    extra += sizeof(struct GNUNET_PeerIdentity);
+  pr = GNUNET_malloc (sizeof(struct GSF_PendingRequest) + extra);
   pr->public_data.query = *query;
   eptr = (struct GNUNET_HashCode *) &pr[1];
   if (NULL != target)
   {
     pr->public_data.target = (struct GNUNET_PeerIdentity *) eptr;
-    GNUNET_memcpy (eptr, target, sizeof (struct GNUNET_PeerIdentity));
+    GNUNET_memcpy (eptr, target, sizeof(struct GNUNET_PeerIdentity));
   }
   pr->public_data.anonymity_level = anonymity_level;
   pr->public_data.priority = priority;
@@ -366,7 +367,7 @@ GSF_pending_request_create_ (enum GSF_PendingRequestOptions options,
       GNUNET_new_array (pr->replies_seen_size, struct GNUNET_HashCode);
     GNUNET_memcpy (pr->replies_seen,
                    replies_seen,
-                   replies_seen_count * sizeof (struct GNUNET_HashCode));
+                   replies_seen_count * sizeof(struct GNUNET_HashCode));
     pr->replies_seen_count = replies_seen_count;
   }
   if ((NULL != bf_data) &&
@@ -402,7 +403,7 @@ GSF_pending_request_create_ (enum GSF_PendingRequestOptions options,
       dpr = GNUNET_CONTAINER_heap_peek (requests_by_expiration_heap);
       GNUNET_assert (NULL != dpr);
       if (pr == dpr)
-        break; /* let the request live briefly... */
+        break;     /* let the request live briefly... */
       if (NULL != dpr->rh)
         dpr->rh (dpr->rh_cls,
                  GNUNET_BLOCK_EVALUATION_REQUEST_VALID,
@@ -422,6 +423,7 @@ GSF_pending_request_create_ (enum GSF_PendingRequestOptions options,
                             GNUNET_NO);
   return pr;
 }
+
 
 /**
  * Obtain the public data associated with a pending request
@@ -452,7 +454,7 @@ GSF_pending_request_is_compatible_ (struct GSF_PendingRequest *pra,
   if ((pra->public_data.type != prb->public_data.type) ||
       (0 != memcmp (&pra->public_data.query,
                     &prb->public_data.query,
-                    sizeof (struct GNUNET_HashCode))))
+                    sizeof(struct GNUNET_HashCode))))
     return GNUNET_NO;
   return GNUNET_OK;
 }
@@ -482,7 +484,7 @@ GSF_pending_request_update_ (struct GSF_PendingRequest *pr,
                          replies_seen_count + pr->replies_seen_count);
     GNUNET_memcpy (&pr->replies_seen[pr->replies_seen_count],
                    replies_seen,
-                   sizeof (struct GNUNET_HashCode) * replies_seen_count);
+                   sizeof(struct GNUNET_HashCode) * replies_seen_count);
     pr->replies_seen_count += replies_seen_count;
     refresh_bloomfilter (pr->public_data.type, pr);
   }
@@ -561,7 +563,7 @@ GSF_pending_request_get_message_ (struct GSF_PendingRequest *pr)
     bf_data = NULL;
   }
   env = GNUNET_MQ_msg_extra (gm,
-                             bf_size + k * sizeof (struct GNUNET_PeerIdentity),
+                             bf_size + k * sizeof(struct GNUNET_PeerIdentity),
                              GNUNET_MESSAGE_TYPE_FS_GET);
   gm->type = htonl (pr->public_data.type);
   if (do_route)
@@ -844,16 +846,17 @@ process_reply (void *cls, const struct GNUNET_HashCode *key, void *value)
   case GNUNET_BLOCK_EVALUATION_OK_MORE:
     update_request_performance_data (prq, pr);
     break;
+
   case GNUNET_BLOCK_EVALUATION_OK_LAST:
     /* short cut: stop processing early, no BF-update, etc. */
     update_request_performance_data (prq, pr);
     GNUNET_LOAD_update (GSF_rt_entry_lifetime,
                         GNUNET_TIME_absolute_get_duration (
                           pr->public_data.start_time)
-                          .rel_value_us);
+                        .rel_value_us);
     if (GNUNET_YES !=
         GSF_request_plan_reference_get_last_transmission_ (pr->public_data
-                                                             .pr_head,
+                                                           .pr_head,
                                                            prq->sender,
                                                            &last_transmission))
       last_transmission.abs_value_us =
@@ -869,6 +872,7 @@ process_reply (void *cls, const struct GNUNET_HashCode *key, void *value)
             prq->data,
             prq->size);
     return GNUNET_YES;
+
   case GNUNET_BLOCK_EVALUATION_OK_DUPLICATE:
 #if INSANE_STATISTICS
     GNUNET_STATISTICS_update (GSF_stats,
@@ -878,7 +882,8 @@ process_reply (void *cls, const struct GNUNET_HashCode *key, void *value)
                               GNUNET_NO);
 #endif
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Duplicate response, discarding.\n");
-    return GNUNET_YES; /* duplicate */
+    return GNUNET_YES;   /* duplicate */
+
   case GNUNET_BLOCK_EVALUATION_RESULT_IRRELEVANT:
     GNUNET_STATISTICS_update (GSF_stats,
                               gettext_noop ("# irrelevant replies discarded"),
@@ -886,14 +891,18 @@ process_reply (void *cls, const struct GNUNET_HashCode *key, void *value)
                               GNUNET_NO);
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Irrelevant response, ignoring.\n");
     return GNUNET_YES;
+
   case GNUNET_BLOCK_EVALUATION_RESULT_INVALID:
-    return GNUNET_YES; /* wrong namespace */
+    return GNUNET_YES;   /* wrong namespace */
+
   case GNUNET_BLOCK_EVALUATION_REQUEST_VALID:
     GNUNET_break (0);
     return GNUNET_YES;
+
   case GNUNET_BLOCK_EVALUATION_REQUEST_INVALID:
     GNUNET_break (0);
     return GNUNET_YES;
+
   case GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED:
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 _ ("Unsupported block type %u\n"),
@@ -924,7 +933,7 @@ process_reply (void *cls, const struct GNUNET_HashCode *key, void *value)
   prq->request_found = GNUNET_YES;
   /* finally, pass on to other peer / local client */
   if (! GSF_request_plan_reference_get_last_transmission_ (pr->public_data
-                                                             .pr_head,
+                                                           .pr_head,
                                                            prq->sender,
                                                            &last_transmission))
     last_transmission.abs_value_us = GNUNET_TIME_UNIT_FOREVER_ABS.abs_value_us;
@@ -946,7 +955,6 @@ process_reply (void *cls, const struct GNUNET_HashCode *key, void *value)
  */
 struct PutMigrationContext
 {
-
   /**
    * Start time for the operation.
    */
@@ -991,7 +999,7 @@ put_migration_continuation (void *cls,
     {
       GNUNET_LOAD_update (datastore_put_load,
                           GNUNET_TIME_absolute_get_duration (pmc->start)
-                            .rel_value_us);
+                          .rel_value_us);
     }
     else
     {
@@ -1115,7 +1123,7 @@ handle_dht_reply (void *cls,
                             gettext_noop ("# Replies received from DHT"),
                             1,
                             GNUNET_NO);
-  memset (&prq, 0, sizeof (prq));
+  memset (&prq, 0, sizeof(prq));
   prq.data = data;
   prq.expiration = exp;
   /* do not allow migrated content to live longer than 1 year */
@@ -1171,7 +1179,7 @@ GSF_dht_lookup_ (struct GSF_PendingRequest *pr)
   const void *xquery;
   size_t xquery_size;
   struct GNUNET_PeerIdentity pi;
-  char buf[sizeof (struct GNUNET_HashCode) * 2] GNUNET_ALIGN;
+  char buf[sizeof(struct GNUNET_HashCode) * 2] GNUNET_ALIGN;
 
   if (0 != pr->public_data.anonymity_level)
     return;
@@ -1186,8 +1194,8 @@ GSF_dht_lookup_ (struct GSF_PendingRequest *pr)
   {
     GNUNET_assert (0 != pr->sender_pid);
     GNUNET_PEER_resolve (pr->sender_pid, &pi);
-    GNUNET_memcpy (&buf[xquery_size], &pi, sizeof (struct GNUNET_PeerIdentity));
-    xquery_size += sizeof (struct GNUNET_PeerIdentity);
+    GNUNET_memcpy (&buf[xquery_size], &pi, sizeof(struct GNUNET_PeerIdentity));
+    xquery_size += sizeof(struct GNUNET_PeerIdentity);
   }
   pr->gh = GNUNET_DHT_get_start (GSF_dht,
                                  pr->public_data.type,
@@ -1232,7 +1240,7 @@ cadet_reply_proc (void *cls,
     GNUNET_break (0 == data_size);
     pr->cadet_retry_count++;
     if (pr->cadet_retry_count >= CADET_RETRY_MAX)
-      return; /* give up on cadet */
+      return;   /* give up on cadet */
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Error retrieiving block via cadet\n");
     /* retry -- without delay, as this is non-anonymous
        and cadet/cadet connect will take some time anyway */
@@ -1256,7 +1264,7 @@ cadet_reply_proc (void *cls,
                             gettext_noop ("# Replies received from CADET"),
                             1,
                             GNUNET_NO);
-  memset (&prq, 0, sizeof (prq));
+  memset (&prq, 0, sizeof(prq));
   prq.data = data;
   prq.expiration = expiration;
   /* do not allow migrated content to live longer than 1 year */
@@ -1428,18 +1436,18 @@ start_local_query (struct GSF_PendingRequest *pr,
                                      random,
                                      &pr->public_data.query,
                                      pr->public_data.type ==
-                                         GNUNET_BLOCK_TYPE_FS_DBLOCK
-                                       ? GNUNET_BLOCK_TYPE_ANY
-                                       : pr->public_data.type,
-                                     (0 != (GSF_PRO_PRIORITY_UNLIMITED &
-                                            pr->public_data.options))
-                                       ? UINT_MAX
-                                       : 1
+                                     GNUNET_BLOCK_TYPE_FS_DBLOCK
+                                     ? GNUNET_BLOCK_TYPE_ANY
+                                     : pr->public_data.type,
+                                     (0 != (GSF_PRO_PRIORITY_UNLIMITED
+                                            & pr->public_data.options))
+                                     ? UINT_MAX
+                                     : 1
                                      /* queue priority */,
-                                     (0 != (GSF_PRO_PRIORITY_UNLIMITED &
-                                            pr->public_data.options))
-                                       ? UINT_MAX
-                                       : GSF_datastore_queue_size
+                                     (0 != (GSF_PRO_PRIORITY_UNLIMITED
+                                            & pr->public_data.options))
+                                     ? UINT_MAX
+                                     : GSF_datastore_queue_size
                                      /* max queue size */,
                                      &process_local_reply,
                                      pr);
@@ -1502,7 +1510,7 @@ process_local_reply (void *cls,
   pr->qe = NULL;
   if (
     (NULL == key) && pr->seen_null &&
-    ! pr->have_first_uid) /* We have hit the end for the 2nd time with no results */
+    ! pr->have_first_uid)  /* We have hit the end for the 2nd time with no results */
   {
     /* No results */
 #if INSANE_STATISTICS
@@ -1587,7 +1595,7 @@ process_local_reply (void *cls,
                                   "# on-demand lookups performed successfully"),
                                 1,
                                 GNUNET_NO);
-      return; /* we're done */
+      return;     /* we're done */
     }
     GNUNET_STATISTICS_update (GSF_stats,
                               gettext_noop ("# on-demand lookups failed"),
@@ -1599,7 +1607,7 @@ process_local_reply (void *cls,
   }
 called_from_on_demand:
   old_rf = pr->public_data.results_found;
-  memset (&prq, 0, sizeof (prq));
+  memset (&prq, 0, sizeof(prq));
   prq.data = data;
   prq.expiration = expiration;
   prq.size = size;
@@ -1670,9 +1678,9 @@ GSF_pending_request_test_target_ (struct GSF_PendingRequest *pr,
   if (0 == pr->origin_pid)
     return GNUNET_YES;
   GNUNET_PEER_resolve (pr->origin_pid, &pi);
-  return (0 == memcmp (&pi, target, sizeof (struct GNUNET_PeerIdentity)))
-           ? GNUNET_NO
-           : GNUNET_YES;
+  return (0 == memcmp (&pi, target, sizeof(struct GNUNET_PeerIdentity)))
+         ? GNUNET_NO
+         : GNUNET_YES;
 }
 
 
@@ -1731,7 +1739,7 @@ handle_p2p_put (void *cls, const struct PutMessage *put)
               GNUNET_i2s (GSF_get_peer_performance_data_ (cp)->peer));
   GSF_cover_content_count++;
   msize = ntohs (put->header.size);
-  dsize = msize - sizeof (struct PutMessage);
+  dsize = msize - sizeof(struct PutMessage);
   type = ntohl (put->type);
   expiration = GNUNET_TIME_absolute_ntoh (put->expiration);
   /* do not allow migrated content to live longer than 1 year */
@@ -1765,8 +1773,8 @@ handle_p2p_put (void *cls, const struct PutMessage *put)
   if (NULL != cp)
   {
     GSF_connected_peer_change_preference_ (cp,
-                                           CONTENT_BANDWIDTH_VALUE +
-                                             1000 * prq.priority);
+                                           CONTENT_BANDWIDTH_VALUE
+                                           + 1000 * prq.priority);
     GSF_get_peer_performance_data_ (cp)->respect += prq.priority;
   }
   if ((GNUNET_YES == active_to_migration) && (NULL != cp) &&

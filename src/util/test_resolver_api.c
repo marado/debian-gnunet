@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2009 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2009 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -36,7 +36,7 @@ static int disable_rootserver_check;
  * For more information have a look at IANA's website http://www.root-servers.org/
  */
 #define ROOTSERVER_NAME "a.root-servers.net"
-#define ROOTSERVER_IP 	"198.41.0.4"
+#define ROOTSERVER_IP   "198.41.0.4"
 
 
 static void
@@ -114,7 +114,7 @@ check_127 (void *cls, const struct sockaddr *sa, socklen_t salen)
 
   if (NULL == sa)
     return;
-  GNUNET_assert (sizeof (struct sockaddr_in) == salen);
+  GNUNET_assert (sizeof(struct sockaddr_in) == salen);
   if (sai->sin_addr.s_addr == htonl (INADDR_LOOPBACK))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
@@ -127,10 +127,10 @@ check_127 (void *cls, const struct sockaddr *sa, socklen_t salen)
 
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Received incorrect address `%s'.\n",
-		inet_ntop (AF_INET,
+                inet_ntop (AF_INET,
                            &sai->sin_addr,
                            buf,
-                           sizeof (buf)));
+                           sizeof(buf)));
     GNUNET_break (0);
   }
 }
@@ -144,7 +144,7 @@ check_rootserver_ip (void *cls, const struct sockaddr *sa, socklen_t salen)
 
   if (NULL == sa)
     return;
-  GNUNET_assert (sizeof (struct sockaddr_in) == salen);
+  GNUNET_assert (sizeof(struct sockaddr_in) == salen);
 
   if (0 == strcmp (inet_ntoa (sai->sin_addr), ROOTSERVER_IP))
   {
@@ -195,17 +195,17 @@ run (void *cls, char *const *args, const char *cfgfile,
   int *ok = cls;
   struct sockaddr_in sa;
   struct GNUNET_TIME_Relative timeout =
-      GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30);
+    GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 30);
   int count_ips = 0;
   char *own_fqdn;
   const char *rootserver_name = ROOTSERVER_NAME;
   struct hostent *rootserver;
   struct in_addr rootserver_addr;
 
-  memset (&sa, 0, sizeof (sa));
+  memset (&sa, 0, sizeof(sa));
   sa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  sa.sin_len = (u_char) sizeof (sa);
+  sa.sin_len = (u_char) sizeof(sa);
 #endif
   sa.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
 
@@ -227,9 +227,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   {
     /* Error: resolving ip addresses does not work */
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("gethostbyname() could not lookup IP address: %s\n"),
+                _ ("gethostbyname() could not lookup IP address: %s\n"),
                 hstrerror (h_errno));
-    FPRINTF (stderr,
+    fprintf (stderr,
              "%s",
              "System seems to be off-line, will not run all DNS tests\n");
     *ok = 0;                    /* mark test as passing anyway */
@@ -277,9 +277,9 @@ run (void *cls, char *const *args, const char *cfgfile,
   }
 
   rootserver =
-      gethostbyaddr ((const void *) &rootserver_addr,
-                     sizeof (rootserver_addr),
-                     AF_INET);
+    gethostbyaddr ((const void *) &rootserver_addr,
+                   sizeof(rootserver_addr),
+                   AF_INET);
   if (NULL == rootserver)
   {
     /* Error: resolving IP addresses does not work */
@@ -302,37 +302,33 @@ run (void *cls, char *const *args, const char *cfgfile,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "System's own reverse name resolution is working\n");
   /* Resolve the same using GNUNET */
-  memset (&sa, 0, sizeof (sa));
+  memset (&sa, 0, sizeof(sa));
   sa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  sa.sin_len = (u_char) sizeof (sa);
+  sa.sin_len = (u_char) sizeof(sa);
 #endif
-#ifndef MINGW
   inet_aton (ROOTSERVER_IP, &sa.sin_addr);
-#else
-  sa.sin_addr.S_un.S_addr = inet_addr (ROOTSERVER_IP);
-#endif
+
   GNUNET_RESOLVER_hostname_get ((const struct sockaddr *) &sa,
-                                sizeof (struct sockaddr), GNUNET_YES, timeout,
+                                sizeof(struct sockaddr), GNUNET_YES, timeout,
                                 &check_rootserver_name, cls);
 
-  memset (&sa, 0, sizeof (sa));
+  memset (&sa, 0, sizeof(sa));
   sa.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  sa.sin_len = (u_char) sizeof (sa);
+  sa.sin_len = (u_char) sizeof(sa);
 #endif
   sa.sin_addr.s_addr = htonl (INADDR_LOOPBACK);
 
   GNUNET_RESOLVER_ip_get ("localhost", AF_INET, timeout, &check_127, cls);
   GNUNET_RESOLVER_hostname_get ((const struct sockaddr *) &sa,
-                                sizeof (struct sockaddr), GNUNET_YES, timeout,
+                                sizeof(struct sockaddr), GNUNET_YES, timeout,
                                 &check_localhost, cls);
 
   GNUNET_RESOLVER_hostname_get ((const struct sockaddr *) &sa,
-                                sizeof (struct sockaddr), GNUNET_NO, timeout,
+                                sizeof(struct sockaddr), GNUNET_NO, timeout,
                                 &check_localhost_num, cls);
   GNUNET_RESOLVER_hostname_resolve (AF_UNSPEC, timeout, &check_hostname, cls);
-
 }
 
 
@@ -346,22 +342,22 @@ main (int argc, char *argv[])
     "test-resolver-api", "-c", "test_resolver_api_data.conf", NULL
   };
   struct GNUNET_GETOPT_CommandLineOption options[] =
-      { GNUNET_GETOPT_OPTION_END };
+  { GNUNET_GETOPT_OPTION_END };
 
   GNUNET_log_setup ("test-resolver-api",
                     "WARNING",
                     NULL);
   fn = GNUNET_OS_get_libexec_binary_path ("gnunet-service-resolver");
   proc = GNUNET_OS_start_process (GNUNET_YES,
-				  GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
-				  NULL, NULL, NULL,
+                                  GNUNET_OS_INHERIT_STD_OUT_AND_ERR,
+                                  NULL, NULL, NULL,
                                   fn,
-				  "gnunet-service-resolver",
+                                  "gnunet-service-resolver",
                                   "-c", "test_resolver_api_data.conf", NULL);
   GNUNET_assert (NULL != proc);
   GNUNET_free (fn);
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_PROGRAM_run ((sizeof (argvx) / sizeof (char *)) - 1,
+                 GNUNET_PROGRAM_run ((sizeof(argvx) / sizeof(char *)) - 1,
                                      argvx, "test-resolver-api", "nohelp",
                                      options, &run, &ok));
   if (0 != GNUNET_OS_process_kill (proc, GNUNET_TERM_SIG))
@@ -373,7 +369,7 @@ main (int argc, char *argv[])
   GNUNET_OS_process_destroy (proc);
   proc = NULL;
   if (0 != ok)
-    FPRINTF (stderr, "Missed some resolutions: %u\n", ok);
+    fprintf (stderr, "Missed some resolutions: %u\n", ok);
   return ok;
 }
 

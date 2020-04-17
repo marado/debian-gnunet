@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file conversation/test_conversation_api_reject.c
  * @brief testcase for conversation_api.c
@@ -90,11 +90,11 @@ destroy_speaker (void *cls)
 }
 
 
-static struct GNUNET_SPEAKER_Handle call_speaker = {&enable_speaker,
-                                                    &play,
-                                                    &disable_speaker,
-                                                    &destroy_speaker,
-                                                    "caller"};
+static struct GNUNET_SPEAKER_Handle call_speaker = { &enable_speaker,
+                                                     &play,
+                                                     &disable_speaker,
+                                                     &destroy_speaker,
+                                                     "caller" };
 
 
 static int
@@ -125,10 +125,10 @@ destroy_mic (void *cls)
 }
 
 
-static struct GNUNET_MICROPHONE_Handle call_mic = {&enable_mic,
-                                                   &disable_mic,
-                                                   &destroy_mic,
-                                                   "caller"};
+static struct GNUNET_MICROPHONE_Handle call_mic = { &enable_mic,
+                                                    &disable_mic,
+                                                    &destroy_mic,
+                                                    "caller" };
 
 
 /**
@@ -192,6 +192,7 @@ phone_event_handler (void *cls,
   case GNUNET_CONVERSATION_EC_PHONE_RING:
     GNUNET_CONVERSATION_caller_hang_up (caller);
     break;
+
   default:
     fprintf (stderr, "Unexpected phone code: %d\n", code);
     break;
@@ -212,18 +213,21 @@ call_event_handler (void *cls, enum GNUNET_CONVERSATION_CallEventCode code)
   case GNUNET_CONVERSATION_EC_CALL_RINGING:
     expect = GNUNET_CONVERSATION_EC_CALL_HUNG_UP;
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_HUNG_UP:
     call = NULL;
     ok = 0;
     GNUNET_SCHEDULER_shutdown ();
     expect = -1;
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_PICKED_UP:
   case GNUNET_CONVERSATION_EC_CALL_GNS_FAIL:
   case GNUNET_CONVERSATION_EC_CALL_SUSPENDED:
   case GNUNET_CONVERSATION_EC_CALL_RESUMED:
     fprintf (stderr, "Unexpected call code: %d\n", code);
     break;
+
   case GNUNET_CONVERSATION_EC_CALL_ERROR:
     fprintf (stderr, "Unexpected call code: %d\n", code);
     call = NULL;
@@ -279,7 +283,7 @@ identity_cb (void *cls,
     phone =
       GNUNET_CONVERSATION_phone_create (cfg, ego, &phone_event_handler, NULL);
     GNUNET_assert (NULL != phone);
-    memset (&rd, 0, sizeof (rd));
+    memset (&rd, 0, sizeof(rd));
     GNUNET_CONVERSATION_phone_get_record (phone, &rd);
     GNUNET_assert (rd.record_type == GNUNET_GNSRECORD_TYPE_PHONE);
     rd.expiration_time = UINT64_MAX;
@@ -349,5 +353,6 @@ main (int argc, char *argv[])
     return 1;
   return ok;
 }
+
 
 /* end of test_conversation_api_reject.c */

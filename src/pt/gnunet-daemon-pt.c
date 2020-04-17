@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file pt/gnunet-daemon-pt.c
  * @brief tool to manipulate DNS and VPN services to perform protocol translation (IPvX over GNUnet)
@@ -116,7 +116,6 @@ struct ReplyContext
    * Group that is being modified
    */
   enum RequestGroup group;
-
 };
 
 
@@ -127,7 +126,6 @@ struct ReplyContext
  */
 struct CadetExit
 {
-
   /**
    * Kept in a DLL.
    */
@@ -178,9 +176,7 @@ struct CadetExit
    * Size of the window, 0 if we are busy.
    */
   /* unsigned */ int idle;
-
 };
-
 
 
 /**
@@ -227,7 +223,6 @@ struct RequestContext
    * ID of the original DNS request (used to match the reply).
    */
   uint16_t dns_id;
-
 };
 
 
@@ -335,12 +330,12 @@ get_channel_weight (struct CadetExit *exit)
     drop_percent = (uint32_t) ((100LL * dropped) / exit->num_transmitted);
   else
     drop_percent = 50; /* no data */
-  if ( (exit->num_transmitted > 20) &&
-       (drop_percent > 25) )
+  if ((exit->num_transmitted > 20) &&
+      (drop_percent > 25))
     return 0; /* statistically significant, and > 25% loss, die */
   good_percent = 100 - drop_percent;
   GNUNET_assert (0 != good_percent);
-  if ( UINT32_MAX / good_percent / good_percent < exit->num_transmitted)
+  if (UINT32_MAX / good_percent / good_percent < exit->num_transmitted)
     return UINT32_MAX; /* formula below would overflow */
   return 1 + good_percent * good_percent * exit->num_transmitted;
 }
@@ -382,7 +377,7 @@ choose_exit ()
     return exit_head;
   }
   selected_offset = GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
-					      total_transmitted);
+                                              total_transmitted);
   total_transmitted = 0;
   for (pos = exit_head; NULL != pos; pos = pos->next)
   {
@@ -415,21 +410,21 @@ finish_request (struct ReplyContext *rc)
 
   if (GNUNET_SYSERR ==
       GNUNET_DNSPARSER_pack (rc->dns,
-			     MAX_DNS_SIZE,
-			     &buf,
-			     &buf_len))
+                             MAX_DNS_SIZE,
+                             &buf,
+                             &buf_len))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Failed to pack DNS request.  Dropping.\n"));
+                _ ("Failed to pack DNS request.  Dropping.\n"));
     GNUNET_DNS_request_drop (rc->rh);
   }
   else
   {
     GNUNET_STATISTICS_update (stats,
-			      gettext_noop ("# DNS requests mapped to VPN"),
-			      1, GNUNET_NO);
+                              gettext_noop ("# DNS requests mapped to VPN"),
+                              1, GNUNET_NO);
     GNUNET_DNS_request_answer (rc->rh,
-			       buf_len,
+                               buf_len,
                                buf);
     GNUNET_free (buf);
   }
@@ -466,8 +461,8 @@ submit_request (struct ReplyContext *rc);
  */
 static void
 vpn_allocation_callback (void *cls,
-			 int af,
-			 const void *address)
+                         int af,
+                         const void *address)
 {
   struct ReplyContext *rc = cls;
 
@@ -480,8 +475,8 @@ vpn_allocation_callback (void *cls,
     return;
   }
   GNUNET_STATISTICS_update (stats,
-			    gettext_noop ("# DNS records modified"),
-			    1,
+                            gettext_noop ("# DNS records modified"),
+                            1,
                             GNUNET_NO);
   switch (rc->rec->type)
   {
@@ -489,14 +484,16 @@ vpn_allocation_callback (void *cls,
     GNUNET_assert (AF_INET == af);
     GNUNET_memcpy (rc->rec->data.raw.data,
                    address,
-                   sizeof (struct in_addr));
+                   sizeof(struct in_addr));
     break;
+
   case GNUNET_DNSPARSER_TYPE_AAAA:
     GNUNET_assert (AF_INET6 == af);
     GNUNET_memcpy (rc->rec->data.raw.data,
                    address,
-                   sizeof (struct in6_addr));
+                   sizeof(struct in6_addr));
     break;
+
   default:
     GNUNET_assert (0);
     return;
@@ -517,7 +514,7 @@ vpn_allocation_callback (void *cls,
  */
 static void
 modify_address (struct ReplyContext *rc,
-		struct GNUNET_DNSPARSER_Record *rec)
+                struct GNUNET_DNSPARSER_Record *rec)
 {
   int af;
 
@@ -525,24 +522,27 @@ modify_address (struct ReplyContext *rc,
   {
   case GNUNET_DNSPARSER_TYPE_A:
     af = AF_INET;
-    GNUNET_assert (rec->data.raw.data_len == sizeof (struct in_addr));
+    GNUNET_assert (rec->data.raw.data_len == sizeof(struct in_addr));
     break;
+
   case GNUNET_DNSPARSER_TYPE_AAAA:
     af = AF_INET6;
-    GNUNET_assert (rec->data.raw.data_len == sizeof (struct in6_addr));
+    GNUNET_assert (rec->data.raw.data_len == sizeof(struct in6_addr));
     break;
+
   default:
     GNUNET_assert (0);
     return;
   }
   rc->rec = rec;
   rc->rr = GNUNET_VPN_redirect_to_ip (vpn_handle,
-				      af,
                                       af,
-				      rec->data.raw.data,
-				      GNUNET_TIME_relative_to_absolute (TIMEOUT),
-				      &vpn_allocation_callback,
-				      rc);
+                                      af,
+                                      rec->data.raw.data,
+                                      GNUNET_TIME_relative_to_absolute (
+                                        TIMEOUT),
+                                      &vpn_allocation_callback,
+                                      rc);
 }
 
 
@@ -568,42 +568,47 @@ submit_request (struct ReplyContext *rc)
       ra = rc->dns->answers;
       ra_len = rc->dns->num_answers;
       break;
+
     case AUTHORITY_RECORDS:
       ra = rc->dns->authority_records;
       ra_len = rc->dns->num_authority_records;
       break;
+
     case ADDITIONAL_RECORDS:
       ra = rc->dns->additional_records;
       ra_len = rc->dns->num_additional_records;
       break;
+
     case END:
       finish_request (rc);
       return;
+
     default:
       GNUNET_assert (0);
     }
-    for (i=rc->offset;i<ra_len;i++)
+    for (i = rc->offset; i < ra_len; i++)
     {
       switch (ra[i].type)
       {
       case GNUNET_DNSPARSER_TYPE_A:
-	if (ipv4_pt)
-	{
-	  rc->offset = i + 1;
-	  modify_address (rc,
+        if (ipv4_pt)
+        {
+          rc->offset = i + 1;
+          modify_address (rc,
                           &ra[i]);
-	  return;
-	}
-	break;
+          return;
+        }
+        break;
+
       case GNUNET_DNSPARSER_TYPE_AAAA:
-	if (ipv6_pt)
-	{
-	  rc->offset = i + 1;
-	  modify_address (rc,
+        if (ipv6_pt)
+        {
+          rc->offset = i + 1;
+          modify_address (rc,
                           &ra[i]);
-	  return;
-	}
-	break;
+          return;
+        }
+        break;
       }
     }
     rc->group++;
@@ -620,21 +625,22 @@ submit_request (struct ReplyContext *rc)
  */
 static int
 work_test (const struct GNUNET_DNSPARSER_Record *ra,
-	   unsigned int ra_len)
+           unsigned int ra_len)
 {
   unsigned int i;
 
-  for (i=0;i<ra_len;i++)
+  for (i = 0; i < ra_len; i++)
   {
     switch (ra[i].type)
     {
     case GNUNET_DNSPARSER_TYPE_A:
       if (ipv4_pt)
-	return GNUNET_YES;
+        return GNUNET_YES;
       break;
+
     case GNUNET_DNSPARSER_TYPE_AAAA:
       if (ipv6_pt)
-	return GNUNET_YES;
+        return GNUNET_YES;
       break;
     }
   }
@@ -655,23 +661,23 @@ work_test (const struct GNUNET_DNSPARSER_Record *ra,
  */
 static void
 dns_post_request_handler (void *cls,
-			  struct GNUNET_DNS_RequestHandle *rh,
-			  size_t request_length,
-			  const char *request)
+                          struct GNUNET_DNS_RequestHandle *rh,
+                          size_t request_length,
+                          const char *request)
 {
   struct GNUNET_DNSPARSER_Packet *dns;
   struct ReplyContext *rc;
   int work;
 
   GNUNET_STATISTICS_update (stats,
-			    gettext_noop ("# DNS replies intercepted"),
-			    1, GNUNET_NO);
+                            gettext_noop ("# DNS replies intercepted"),
+                            1, GNUNET_NO);
   dns = GNUNET_DNSPARSER_parse (request,
                                 request_length);
   if (NULL == dns)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Failed to parse DNS request.  Dropping.\n"));
+                _ ("Failed to parse DNS request.  Dropping.\n"));
     GNUNET_DNS_request_drop (rh);
     return;
   }
@@ -709,30 +715,29 @@ timeout_request (void *cls)
   struct CadetExit *exit = rc->exit;
 
   GNUNET_STATISTICS_update (stats,
-			    gettext_noop ("# DNS requests dropped (timeout)"),
-			    1,
+                            gettext_noop ("# DNS requests dropped (timeout)"),
+                            1,
                             GNUNET_NO);
   GNUNET_DNS_request_drop (rc->rh);
   GNUNET_free (rc);
-  if ( (0 == get_channel_weight (exit)) &&
-       (NULL == exit->receive_queue_head) )
+  if ((0 == get_channel_weight (exit)) &&
+      (NULL == exit->receive_queue_head))
   {
     /* this straw broke the camel's back: this channel now has
        such a low score that it will not be used; close it! */
     GNUNET_CADET_channel_destroy (exit->cadet_channel);
     exit->cadet_channel = NULL;
     GNUNET_CONTAINER_DLL_remove (exit_head,
-				 exit_tail,
-				 exit);
+                                 exit_tail,
+                                 exit);
     GNUNET_CONTAINER_DLL_insert_tail (exit_head,
-				      exit_tail,
-				      exit);
+                                      exit_tail,
+                                      exit);
     /* go back to semi-innocent: mark as not great, but
        avoid a prohibitively negative score (see
-       #get_channel_weight(), which checks for a certain
+     #get_channel_weight(), which checks for a certain
        minimum number of transmissions before making
-       up an opinion) */
-    exit->num_transmitted = 5;
+       up an opinion) */exit->num_transmitted = 5;
     exit->num_answered = 0;
     dns_exit_available--;
     /* now try to open an alternative exit */
@@ -754,9 +759,9 @@ timeout_request (void *cls)
  */
 static void
 dns_pre_request_handler (void *cls,
-			 struct GNUNET_DNS_RequestHandle *rh,
-			 size_t request_length,
-			 const char *request)
+                         struct GNUNET_DNS_RequestHandle *rh,
+                         size_t request_length,
+                         const char *request)
 {
   struct RequestContext *rc;
   struct GNUNET_MQ_Envelope *env;
@@ -765,21 +770,23 @@ dns_pre_request_handler (void *cls,
   struct CadetExit *exit;
 
   GNUNET_STATISTICS_update (stats,
-			    gettext_noop ("# DNS requests intercepted"),
-			    1, GNUNET_NO);
+                            gettext_noop ("# DNS requests intercepted"),
+                            1, GNUNET_NO);
   if (0 == dns_exit_available)
   {
     GNUNET_STATISTICS_update (stats,
-			      gettext_noop ("# DNS requests dropped (DNS cadet channel down)"),
-			      1, GNUNET_NO);
+                              gettext_noop (
+                                "# DNS requests dropped (DNS cadet channel down)"),
+                              1, GNUNET_NO);
     GNUNET_DNS_request_drop (rh);
     return;
   }
-  if (request_length < sizeof (dns))
+  if (request_length < sizeof(dns))
   {
     GNUNET_STATISTICS_update (stats,
-			      gettext_noop ("# DNS requests dropped (malformed)"),
-			      1, GNUNET_NO);
+                              gettext_noop (
+                                "# DNS requests dropped (malformed)"),
+                              1, GNUNET_NO);
     GNUNET_DNS_request_drop (rh);
     return;
   }
@@ -797,11 +804,11 @@ dns_pre_request_handler (void *cls,
   rc->exit = exit;
   rc->rh = rh;
   rc->timeout_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						   &timeout_request,
-						   rc);
+                                                   &timeout_request,
+                                                   rc);
   GNUNET_memcpy (&dns,
                  request,
-                 sizeof (dns));
+                 sizeof(dns));
   rc->dns_id = dns.id;
   rc->env = env;
   GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
@@ -847,7 +854,7 @@ GNUNET_NETWORK_STRUCT_END
  */
 static int
 check_dns_response (void *cls,
-                     const struct DnsResponseMessage *msg)
+                    const struct DnsResponseMessage *msg)
 {
   return GNUNET_OK; /* all OK */
 }
@@ -867,21 +874,21 @@ handle_dns_response (void *cls,
   size_t mlen;
   struct RequestContext *rc;
 
-  mlen = ntohs (msg->header.size) - sizeof (*msg);
+  mlen = ntohs (msg->header.size) - sizeof(*msg);
   for (rc = exit->receive_queue_head; NULL != rc; rc = rc->next)
   {
     if (msg->dns.id == rc->dns_id)
     {
       GNUNET_STATISTICS_update (stats,
-				gettext_noop ("# DNS replies received"),
-				1,
+                                gettext_noop ("# DNS replies received"),
+                                1,
                                 GNUNET_NO);
       GNUNET_DNS_request_answer (rc->rh,
-				 mlen + sizeof (struct GNUNET_TUN_DnsHeader),
-				 (const void*) &msg->dns);
+                                 mlen + sizeof(struct GNUNET_TUN_DnsHeader),
+                                 (const void *) &msg->dns);
       GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
-				   exit->receive_queue_tail,
-				   rc);
+                                   exit->receive_queue_tail,
+                                   rc);
       GNUNET_SCHEDULER_cancel (rc->timeout_task);
       GNUNET_MQ_discard (rc->env);
       GNUNET_free (rc);
@@ -890,8 +897,8 @@ handle_dns_response (void *cls,
     }
   }
   GNUNET_STATISTICS_update (stats,
-			    gettext_noop ("# DNS replies dropped (too late?)"),
-			    1, GNUNET_NO);
+                            gettext_noop ("# DNS replies dropped (too late?)"),
+                            1, GNUNET_NO);
 }
 
 
@@ -908,8 +915,8 @@ abort_all_requests (struct CadetExit *exit)
   while (NULL != (rc = exit->receive_queue_head))
   {
     GNUNET_CONTAINER_DLL_remove (exit->receive_queue_head,
-				 exit->receive_queue_tail,
-				 rc);
+                                 exit->receive_queue_tail,
+                                 rc);
     GNUNET_DNS_request_drop (rc->rh);
     GNUNET_SCHEDULER_cancel (rc->timeout_task);
     GNUNET_MQ_discard (rc->env);
@@ -929,7 +936,7 @@ cleanup (void *cls)
   struct CadetExit *exit;
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Protocol translation daemon is shutting down now\n");
+              "Protocol translation daemon is shutting down now\n");
   if (NULL != vpn_handle)
   {
     GNUNET_VPN_disconnect (vpn_handle);
@@ -938,8 +945,8 @@ cleanup (void *cls)
   while (NULL != (exit = exit_head))
   {
     GNUNET_CONTAINER_DLL_remove (exit_head,
-				 exit_tail,
-				 exit);
+                                 exit_tail,
+                                 exit);
     if (NULL != exit->cadet_channel)
     {
       GNUNET_CADET_channel_destroy (exit->cadet_channel);
@@ -1065,7 +1072,7 @@ try_open_exit ()
     return;
   }
   candidate_selected = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-						 candidate_count);
+                                                 candidate_count);
   candidate_count = 0;
   for (pos = exit_head; NULL != pos; pos = pos->next)
     if (NULL == pos->cadet_channel)
@@ -1083,7 +1090,7 @@ try_open_exit ()
 
 
         /* move to the head of the DLL */
-	pos->cadet_channel
+        pos->cadet_channel
           = GNUNET_CADET_channel_create (cadet_handle,
                                          pos,
                                          &pos->peer,
@@ -1091,19 +1098,19 @@ try_open_exit ()
                                          &channel_idle_notify_cb,
                                          &cadet_channel_end_cb,
                                          cadet_handlers);
-	if (NULL == pos->cadet_channel)
-	{
-	  GNUNET_break (0);
-	  continue;
-	}
-	GNUNET_CONTAINER_DLL_remove (exit_head,
-				     exit_tail,
-				     pos);
-	GNUNET_CONTAINER_DLL_insert (exit_head,
-				     exit_tail,
-				     pos);
-	dns_exit_available++;
-	return;
+        if (NULL == pos->cadet_channel)
+        {
+          GNUNET_break (0);
+          continue;
+        }
+        GNUNET_CONTAINER_DLL_remove (exit_head,
+                                     exit_tail,
+                                     pos);
+        GNUNET_CONTAINER_DLL_insert (exit_head,
+                                     exit_tail,
+                                     pos);
+        dns_exit_available++;
+        return;
       }
     }
   GNUNET_assert (NULL == exit_head);
@@ -1131,19 +1138,19 @@ try_open_exit ()
  */
 static void
 handle_dht_result (void *cls,
-		   struct GNUNET_TIME_Absolute exp,
-		   const struct GNUNET_HashCode *key,
-		   const struct GNUNET_PeerIdentity *get_path,
-		   unsigned int get_path_length,
-		   const struct GNUNET_PeerIdentity *put_path,
-		   unsigned int put_path_length,
-		   enum GNUNET_BLOCK_Type type,
-		   size_t size, const void *data)
+                   struct GNUNET_TIME_Absolute exp,
+                   const struct GNUNET_HashCode *key,
+                   const struct GNUNET_PeerIdentity *get_path,
+                   unsigned int get_path_length,
+                   const struct GNUNET_PeerIdentity *put_path,
+                   unsigned int put_path_length,
+                   enum GNUNET_BLOCK_Type type,
+                   size_t size, const void *data)
 {
   const struct GNUNET_DNS_Advertisement *ad;
   struct CadetExit *exit;
 
-  if (sizeof (struct GNUNET_DNS_Advertisement) != size)
+  if (sizeof(struct GNUNET_DNS_Advertisement) != size)
   {
     GNUNET_break (0);
     return;
@@ -1151,7 +1158,7 @@ handle_dht_result (void *cls,
   ad = data;
   for (exit = exit_head; NULL != exit; exit = exit->next)
     if (0 == GNUNET_memcmp (&ad->peer,
-		     &exit->peer))
+                            &exit->peer))
       break;
   if (NULL == exit)
   {
@@ -1159,11 +1166,12 @@ handle_dht_result (void *cls,
     exit->peer = ad->peer;
     /* channel is closed, so insert at the end */
     GNUNET_CONTAINER_DLL_insert_tail (exit_head,
-				      exit_tail,
-				      exit);
+                                      exit_tail,
+                                      exit);
   }
   exit->expiration = GNUNET_TIME_absolute_max (exit->expiration,
-					       GNUNET_TIME_absolute_ntoh (ad->expiration_time));
+                                               GNUNET_TIME_absolute_ntoh (
+                                                 ad->expiration_time));
   if (dns_exit_available < MAX_OPEN_TUNNELS)
     try_open_exit ();
 }
@@ -1199,7 +1207,7 @@ run (void *cls, char *const *args GNUNET_UNUSED,
   if (! (ipv4_pt || ipv6_pt || dns_channel))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("No useful service enabled.  Exiting.\n"));
+                _ ("No useful service enabled.  Exiting.\n"));
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -1208,14 +1216,14 @@ run (void *cls, char *const *args GNUNET_UNUSED,
   {
     dns_post_handle
       = GNUNET_DNS_connect (cfg,
-			    GNUNET_DNS_FLAG_POST_RESOLUTION,
-			    &dns_post_request_handler,
+                            GNUNET_DNS_FLAG_POST_RESOLUTION,
+                            &dns_post_request_handler,
                             NULL);
     if (NULL == dns_post_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to connect to %s service.  Exiting.\n"),
-		  "DNS");
+                  _ ("Failed to connect to %s service.  Exiting.\n"),
+                  "DNS");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -1223,8 +1231,8 @@ run (void *cls, char *const *args GNUNET_UNUSED,
     if (NULL == vpn_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to connect to %s service.  Exiting.\n"),
-		  "VPN");
+                  _ ("Failed to connect to %s service.  Exiting.\n"),
+                  "VPN");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -1233,14 +1241,14 @@ run (void *cls, char *const *args GNUNET_UNUSED,
   {
     dns_pre_handle
       = GNUNET_DNS_connect (cfg,
-			    GNUNET_DNS_FLAG_PRE_RESOLUTION,
-			    &dns_pre_request_handler,
+                            GNUNET_DNS_FLAG_PRE_RESOLUTION,
+                            &dns_pre_request_handler,
                             NULL);
     if (NULL == dns_pre_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to connect to %s service.  Exiting.\n"),
-		  "DNS");
+                  _ ("Failed to connect to %s service.  Exiting.\n"),
+                  "DNS");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -1248,8 +1256,8 @@ run (void *cls, char *const *args GNUNET_UNUSED,
     if (NULL == cadet_handle)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to connect to %s service.  Exiting.\n"),
-		  "CADET");
+                  _ ("Failed to connect to %s service.  Exiting.\n"),
+                  "CADET");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -1257,8 +1265,8 @@ run (void *cls, char *const *args GNUNET_UNUSED,
     if (NULL == dht)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		  _("Failed to connect to %s service.  Exiting.\n"),
-		  "DHT");
+                  _ ("Failed to connect to %s service.  Exiting.\n"),
+                  "DHT");
       GNUNET_SCHEDULER_shutdown ();
       return;
     }
@@ -1266,12 +1274,12 @@ run (void *cls, char *const *args GNUNET_UNUSED,
                         strlen ("dns"),
                         &dns_key);
     dht_get = GNUNET_DHT_get_start (dht,
-				    GNUNET_BLOCK_TYPE_DNS,
-				    &dns_key,
-				    1,
-				    GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
-				    NULL, 0,
-				    &handle_dht_result,
+                                    GNUNET_BLOCK_TYPE_DNS,
+                                    &dns_key,
+                                    1,
+                                    GNUNET_DHT_RO_DEMULTIPLEX_EVERYWHERE,
+                                    NULL, 0,
+                                    &handle_dht_result,
                                     NULL);
   }
 }
@@ -1299,16 +1307,17 @@ main (int argc,
                                                  &argv))
     return 2;
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc,
+         GNUNET_PROGRAM_run (argc,
                              argv,
                              "gnunet-daemon-pt",
-			     gettext_noop ("Daemon to run to perform IP protocol translation to GNUnet"),
-			     options,
+                             gettext_noop (
+                               "Daemon to run to perform IP protocol translation to GNUnet"),
+                             options,
                              &run,
                              NULL))
-    ? 0
-    : 1;
-  GNUNET_free ((void*) argv);
+        ? 0
+        : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }
 

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/test_namestore_api_store.c
  * @brief testcase for namestore_api.c: store a record
@@ -36,7 +36,7 @@
 
 static struct GNUNET_NAMESTORE_Handle *nsh;
 
-static struct GNUNET_SCHEDULER_Task * endbadly_task;
+static struct GNUNET_SCHEDULER_Task *endbadly_task;
 
 static struct GNUNET_CRYPTO_EcdsaPrivateKey *privkey;
 
@@ -46,8 +46,8 @@ static int res;
 
 static struct GNUNET_NAMESTORE_QueueEntry *nsqe;
 
-//static const char * name = "dummy.dummy.gnunet";
-static const char * name = "d";
+// static const char * name = "dummy.dummy.gnunet";
+static const char *name = "d";
 
 
 static void
@@ -104,9 +104,9 @@ lookup_it (void *cls,
   nsqe = NULL;
 
   if (0 != GNUNET_memcmp (privkey,
-                   zone))
+                          zone))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
@@ -115,7 +115,7 @@ lookup_it (void *cls,
 
   if (NULL == label)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
@@ -123,7 +123,7 @@ lookup_it (void *cls,
 
   if (0 != strcmp (label, name))
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
@@ -131,7 +131,7 @@ lookup_it (void *cls,
 
   if (1 != rd_count)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     GNUNET_SCHEDULER_cancel (endbadly_task);
     endbadly_task = GNUNET_SCHEDULER_add_now (&endbadly, NULL);
     return;
@@ -161,9 +161,9 @@ put_cont (void *cls,
   nsqe = NULL;
   GNUNET_assert (NULL != cls);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Name store added record for `%s': %s\n",
-	      name,
-	      (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
+              "Name store added record for `%s': %s\n",
+              name,
+              (success == GNUNET_OK) ? "SUCCESS" : "FAIL");
 
   if (GNUNET_OK != success)
   {
@@ -190,13 +190,13 @@ run (void *cls,
   struct GNUNET_GNSRECORD_Data rd;
 
   endbadly_task = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
-						&endbadly,
+                                                &endbadly,
                                                 NULL);
   privkey = GNUNET_CRYPTO_ecdsa_key_create ();
   GNUNET_assert (privkey != NULL);
   GNUNET_CRYPTO_ecdsa_key_get_public (privkey, &pubkey);
 
-  rd.expiration_time = GNUNET_TIME_absolute_get().abs_value_us;
+  rd.expiration_time = GNUNET_TIME_absolute_get ().abs_value_us;
   rd.record_type = TEST_RECORD_TYPE;
   rd.data_size = TEST_RECORD_DATALEN;
   rd.data = GNUNET_malloc (TEST_RECORD_DATALEN);
@@ -215,10 +215,10 @@ run (void *cls,
   if (NULL == nsqe)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-  	      _("Namestore cannot store no block\n"));
+                _ ("Namestore cannot store no block\n"));
   }
 
-  GNUNET_free ((void *)rd.data);
+  GNUNET_free ((void *) rd.data);
 }
 
 
@@ -231,7 +231,7 @@ main (int argc, char *argv[])
   const char *plugin_name;
   char *cfg_name;
 
-  SETUP_CFG(plugin_name, cfg_name);
+  SETUP_CFG (plugin_name, cfg_name);
   res = 1;
   if (0 !=
       GNUNET_TESTING_peer_run ("test-namestore-api-lookup-private",

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -69,9 +69,19 @@ enum GNUNET_SERVICE_Options
    * Trigger a SOFT server shutdown on signals, allowing active
    * non-monitor clients to complete their transactions.
    */
-  GNUNET_SERVICE_OPTION_SOFT_SHUTDOWN = 2
-};
+  GNUNET_SERVICE_OPTION_SOFT_SHUTDOWN = 2,
 
+  /**
+   * Bitmask over the shutdown options.
+   */
+  GNUNET_SERVICE_OPTION_SHUTDOWN_BITMASK = 3,
+
+  /**
+   * Instead of listening on lsocks passed by the parent,
+   * close them *after* opening our own listen socket(s).
+   */
+  GNUNET_SERVICE_OPTION_CLOSE_LSOCKS = 4
+};
 
 
 /* **************** NEW SERVICE API ********************** */
@@ -286,20 +296,21 @@ GNUNET_SERVICE_run_ (int argc,
  *  &disconnect_cb,
  *  closure_for_cb,
  *  GNUNET_MQ_hd_var_size (get,
- *	 		   GNUNET_MESSAGE_TYPE_RESOLVER_REQUEST,
- * 			   struct GNUNET_RESOLVER_GetMessage,
+ *	                   GNUNET_MESSAGE_TYPE_RESOLVER_REQUEST,
+ *                         struct GNUNET_RESOLVER_GetMessage,
  *			   NULL),
  *  GNUNET_MQ_handler_end ());
  * </code>
  */
-#define GNUNET_SERVICE_MAIN(service_name,service_options,init_cb,connect_cb,disconnect_cb,cls,...) \
+#define GNUNET_SERVICE_MAIN(service_name, service_options, init_cb, connect_cb, \
+                            disconnect_cb, cls, ...) \
   int \
-  main (int argc,\
-        char *const *argv)\
+  main (int argc, \
+        char *const *argv) \
   { \
     struct GNUNET_MQ_MessageHandler mh[] = { \
       __VA_ARGS__ \
-    };			      \
+    };                        \
     return GNUNET_SERVICE_run_ (argc, \
                                 argv, \
                                 service_name, \
@@ -360,7 +371,8 @@ GNUNET_SERVICE_client_get_mq (struct GNUNET_SERVICE_Client *c);
  * @param c client for which to disable the warning
  */
 void
-GNUNET_SERVICE_client_disable_continue_warning (struct GNUNET_SERVICE_Client *c);
+GNUNET_SERVICE_client_disable_continue_warning (struct
+                                                GNUNET_SERVICE_Client *c);
 
 
 /**

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/gnunet-service-transport_hello.c
@@ -36,7 +36,8 @@
 /**
  * How often do we refresh our HELLO (due to expiration concerns)?
  */
-#define HELLO_REFRESH_PERIOD GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_HOURS, 6)
+#define HELLO_REFRESH_PERIOD GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_HOURS, 6)
 
 /**
  * Hello address expiration
@@ -82,7 +83,6 @@ struct OwnAddressList
    * multiple origins.
    */
   unsigned int rc;
-
 };
 
 
@@ -184,8 +184,8 @@ refresh_hello_task (void *cls)
 
   GNUNET_free_non_null (our_hello);
   our_hello = GNUNET_HELLO_create (&GST_my_identity.public_key,
-				   &address_generator,
-				   &gc,
+                                   &address_generator,
+                                   &gc,
                                    friend_option);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Refreshed my %s HELLO, new size is %d\n",
@@ -203,9 +203,9 @@ refresh_hello_task (void *cls)
                             NULL,
                             NULL);
   hello_task =
-      GNUNET_SCHEDULER_add_delayed (HELLO_REFRESH_PERIOD,
-                                    &refresh_hello_task,
-                                    NULL);
+    GNUNET_SCHEDULER_add_delayed (HELLO_REFRESH_PERIOD,
+                                  &refresh_hello_task,
+                                  NULL);
 }
 
 
@@ -309,7 +309,7 @@ GST_hello_modify_addresses (int addremove,
     }
     al->rc--;
     if (0 != al->rc)
-      return; /* RC not yet zero */
+      return;   /* RC not yet zero */
     GNUNET_CONTAINER_DLL_remove (oal_head,
                                  oal_tail,
                                  al);

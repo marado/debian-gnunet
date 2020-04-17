@@ -92,14 +92,13 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 @TALER_ONLY_FALSE@libexec_PROGRAMS = gnunet-service-resolver$(EXEEXT) \
-@TALER_ONLY_FALSE@	gnunet-timeout$(EXEEXT) $(am__EXEEXT_6)
+@TALER_ONLY_FALSE@	gnunet-timeout$(EXEEXT)
 @TALER_ONLY_FALSE@bin_PROGRAMS = gnunet-resolver$(EXEEXT) \
 @TALER_ONLY_FALSE@	gnunet-config$(EXEEXT) $(am__EXEEXT_1) \
 @TALER_ONLY_FALSE@	$(am__EXEEXT_2) gnunet-uri$(EXEEXT) \
 @TALER_ONLY_FALSE@	$(am__EXEEXT_3)
 @HAVE_ZBAR_TRUE@@TALER_ONLY_FALSE@am__append_1 = gnunet-qr
 @TALER_ONLY_FALSE@noinst_PROGRAMS = gnunet-config-diff$(EXEEXT) \
-@TALER_ONLY_FALSE@	$(am__EXEEXT_7) \
 @TALER_ONLY_FALSE@	test_common_logging_dummy$(EXEEXT)
 @HAVE_GETADDRINFO_A_TRUE@am__append_2 = -lanl
 check_PROGRAMS = test_bio$(EXEEXT) test_client.nc$(EXEEXT) \
@@ -160,7 +159,7 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(libdir)" "$(DESTDIR)$(plugindir)" \
 	"$(DESTDIR)$(pkgcfgdir)" "$(DESTDIR)$(pkgcfgdir)"
-@MINGW_FALSE@am__EXEEXT_4 = test_client_unix.nc$(EXEEXT)
+am__EXEEXT_4 = test_client_unix.nc$(EXEEXT)
 @HAVE_BENCHMARKS_TRUE@am__EXEEXT_5 = perf_crypto_hash$(EXEEXT) \
 @HAVE_BENCHMARKS_TRUE@	perf_crypto_ecc_dlog$(EXEEXT) \
 @HAVE_BENCHMARKS_TRUE@	perf_crypto_rsa$(EXEEXT) \
@@ -168,8 +167,6 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 @HAVE_BENCHMARKS_TRUE@	perf_crypto_symmetric$(EXEEXT) \
 @HAVE_BENCHMARKS_TRUE@	perf_crypto_asymmetric$(EXEEXT) \
 @HAVE_BENCHMARKS_TRUE@	perf_malloc$(EXEEXT)
-@MINGW_TRUE@am__EXEEXT_6 = gnunet-helper-w32-console$(EXEEXT)
-@MINGW_TRUE@am__EXEEXT_7 = w32cat$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS) $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -198,8 +195,7 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-LTLIBRARIES = $(lib_LTLIBRARIES) $(noinst_LTLIBRARIES) \
-	$(plugin_LTLIBRARIES)
+LTLIBRARIES = $(lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 libgnunet_plugin_test_la_LIBADD =
 am_libgnunet_plugin_test_la_OBJECTS = test_plugin_plug.lo
 libgnunet_plugin_test_la_OBJECTS =  \
@@ -213,7 +209,7 @@ libgnunet_plugin_test_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunet_plugin_test_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am__DEPENDENCIES_1 =
-libgnunetutil_la_DEPENDENCIES = $(WINLIB) $(am__DEPENDENCIES_1) \
+libgnunetutil_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -227,12 +223,13 @@ am__libgnunetutil_la_SOURCES_DIST = bandwidth.c benchmark.c \
 	container_multihashmap32.c crypto_symmetric.c crypto_crc.c \
 	crypto_ecc.c crypto_ecc_dlog.c crypto_ecc_setup.c \
 	crypto_hash.c crypto_hash_file.c crypto_hkdf.c crypto_kdf.c \
-	crypto_mpi.c crypto_paillier.c crypto_random.c crypto_rsa.c \
-	disk.c disk.h dnsparser.c dnsstub.c getopt.c getopt_helpers.c \
-	helper.c load.c mst.c mq.c nc.c network.c op.c \
-	os_installation.c os_network.c os_priority.c peer.c plugin.c \
-	program.c regex.c resolver_api.c resolver.h scheduler.c \
-	service.c signal.c strings.c time.c tun.c speedup.c speedup.h \
+	crypto_mpi.c crypto_paillier.c crypto_pow.c crypto_random.c \
+	crypto_rsa.c disk.c disk.h dnsparser.c dnsstub.c getopt.c \
+	getopt_helpers.c helper.c load.c mst.c mq.c nc.c network.c \
+	op.c os_installation.c os_network.c os_priority.c peer.c \
+	plugin.c program.c regex.c resolver_api.c resolver.h \
+	scheduler.c service.c signal.c strings.c time.c tun.c \
+	tweetnacl-gnunet.c tweetnacl-gnunet.h speedup.c speedup.h \
 	proc_compat.c
 @ENABLE_BENCHMARK_TRUE@am__objects_1 = benchmark.lo
 am_libgnunetutil_la_OBJECTS = bandwidth.lo $(am__objects_1) bio.lo \
@@ -245,12 +242,13 @@ am_libgnunetutil_la_OBJECTS = bandwidth.lo $(am__objects_1) bio.lo \
 	crypto_symmetric.lo crypto_crc.lo crypto_ecc.lo \
 	crypto_ecc_dlog.lo crypto_ecc_setup.lo crypto_hash.lo \
 	crypto_hash_file.lo crypto_hkdf.lo crypto_kdf.lo crypto_mpi.lo \
-	crypto_paillier.lo crypto_random.lo crypto_rsa.lo disk.lo \
-	dnsparser.lo dnsstub.lo getopt.lo getopt_helpers.lo helper.lo \
-	load.lo mst.lo mq.lo nc.lo network.lo op.lo os_installation.lo \
-	os_network.lo os_priority.lo peer.lo plugin.lo program.lo \
-	regex.lo resolver_api.lo scheduler.lo service.lo signal.lo \
-	strings.lo time.lo tun.lo speedup.lo proc_compat.lo
+	crypto_paillier.lo crypto_pow.lo crypto_random.lo \
+	crypto_rsa.lo disk.lo dnsparser.lo dnsstub.lo getopt.lo \
+	getopt_helpers.lo helper.lo load.lo mst.lo mq.lo nc.lo \
+	network.lo op.lo os_installation.lo os_network.lo \
+	os_priority.lo peer.lo plugin.lo program.lo regex.lo \
+	resolver_api.lo scheduler.lo service.lo signal.lo strings.lo \
+	time.lo tun.lo tweetnacl-gnunet.lo speedup.lo proc_compat.lo
 libgnunetutil_la_OBJECTS = $(am_libgnunetutil_la_OBJECTS)
 libgnunetutil_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -272,15 +270,6 @@ libgnunetutil_taler_wallet_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(libgnunetutil_taler_wallet_la_LDFLAGS) $(LDFLAGS) -o $@
 @TALER_ONLY_TRUE@am_libgnunetutil_taler_wallet_la_rpath = -rpath \
 @TALER_ONLY_TRUE@	$(libdir)
-libgnunetutilwin_la_DEPENDENCIES =
-am__libgnunetutilwin_la_SOURCES_DIST = win.c winproc.c
-@MINGW_TRUE@am_libgnunetutilwin_la_OBJECTS = win.lo winproc.lo
-libgnunetutilwin_la_OBJECTS = $(am_libgnunetutilwin_la_OBJECTS)
-libgnunetutilwin_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(libgnunetutilwin_la_LDFLAGS) \
-	$(LDFLAGS) -o $@
-@MINGW_TRUE@am_libgnunetutilwin_la_rpath =
 am_gnunet_config_OBJECTS = gnunet-config.$(OBJEXT)
 gnunet_config_OBJECTS = $(am_gnunet_config_OBJECTS)
 gnunet_config_DEPENDENCIES = libgnunetutil.la $(am__DEPENDENCIES_1)
@@ -290,11 +279,6 @@ gnunet_config_diff_DEPENDENCIES = libgnunetutil.la
 am_gnunet_ecc_OBJECTS = gnunet-ecc.$(OBJEXT)
 gnunet_ecc_OBJECTS = $(am_gnunet_ecc_OBJECTS)
 gnunet_ecc_DEPENDENCIES = libgnunetutil.la $(am__DEPENDENCIES_1)
-am_gnunet_helper_w32_console_OBJECTS =  \
-	gnunet-helper-w32-console.$(OBJEXT)
-gnunet_helper_w32_console_OBJECTS =  \
-	$(am_gnunet_helper_w32_console_OBJECTS)
-gnunet_helper_w32_console_DEPENDENCIES = libgnunetutil.la
 am_gnunet_qr_OBJECTS = gnunet-qr.$(OBJEXT)
 gnunet_qr_OBJECTS = $(am_gnunet_qr_OBJECTS)
 gnunet_qr_DEPENDENCIES = libgnunetutil.la $(am__DEPENDENCIES_1)
@@ -313,10 +297,7 @@ gnunet_service_resolver_OBJECTS =  \
 	$(am_gnunet_service_resolver_OBJECTS)
 gnunet_service_resolver_DEPENDENCIES = libgnunetutil.la \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am__gnunet_timeout_SOURCES_DIST = gnunet-timeout.c \
-	gnunet-timeout-w32.c
-@MINGW_FALSE@am_gnunet_timeout_OBJECTS = gnunet-timeout.$(OBJEXT)
-@MINGW_TRUE@am_gnunet_timeout_OBJECTS = gnunet-timeout-w32.$(OBJEXT)
+am_gnunet_timeout_OBJECTS = gnunet-timeout.$(OBJEXT)
 gnunet_timeout_OBJECTS = $(am_gnunet_timeout_OBJECTS)
 gnunet_timeout_LDADD = $(LDADD)
 am_gnunet_uri_OBJECTS = gnunet-uri.$(OBJEXT)
@@ -511,9 +492,6 @@ test_time_DEPENDENCIES = libgnunetutil.la
 am_test_tun_OBJECTS = test_tun.$(OBJEXT)
 test_tun_OBJECTS = $(am_test_tun_OBJECTS)
 test_tun_DEPENDENCIES = libgnunetutil.la
-am_w32cat_OBJECTS = w32cat.$(OBJEXT)
-w32cat_OBJECTS = $(am_w32cat_OBJECTS)
-w32cat_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -548,18 +526,15 @@ am__depfiles_remade = ./$(DEPDIR)/bandwidth.Plo \
 	./$(DEPDIR)/crypto_ecc_setup.Plo ./$(DEPDIR)/crypto_hash.Plo \
 	./$(DEPDIR)/crypto_hash_file.Plo ./$(DEPDIR)/crypto_hkdf.Plo \
 	./$(DEPDIR)/crypto_kdf.Plo ./$(DEPDIR)/crypto_mpi.Plo \
-	./$(DEPDIR)/crypto_paillier.Plo ./$(DEPDIR)/crypto_random.Plo \
-	./$(DEPDIR)/crypto_rsa.Plo ./$(DEPDIR)/crypto_symmetric.Plo \
-	./$(DEPDIR)/disk.Plo ./$(DEPDIR)/dnsparser.Plo \
-	./$(DEPDIR)/dnsstub.Plo ./$(DEPDIR)/getopt.Plo \
-	./$(DEPDIR)/getopt_helpers.Plo \
+	./$(DEPDIR)/crypto_paillier.Plo ./$(DEPDIR)/crypto_pow.Plo \
+	./$(DEPDIR)/crypto_random.Plo ./$(DEPDIR)/crypto_rsa.Plo \
+	./$(DEPDIR)/crypto_symmetric.Plo ./$(DEPDIR)/disk.Plo \
+	./$(DEPDIR)/dnsparser.Plo ./$(DEPDIR)/dnsstub.Plo \
+	./$(DEPDIR)/getopt.Plo ./$(DEPDIR)/getopt_helpers.Plo \
 	./$(DEPDIR)/gnunet-config-diff.Po ./$(DEPDIR)/gnunet-config.Po \
-	./$(DEPDIR)/gnunet-ecc.Po \
-	./$(DEPDIR)/gnunet-helper-w32-console.Po \
-	./$(DEPDIR)/gnunet-qr.Po ./$(DEPDIR)/gnunet-resolver.Po \
-	./$(DEPDIR)/gnunet-scrypt.Po \
+	./$(DEPDIR)/gnunet-ecc.Po ./$(DEPDIR)/gnunet-qr.Po \
+	./$(DEPDIR)/gnunet-resolver.Po ./$(DEPDIR)/gnunet-scrypt.Po \
 	./$(DEPDIR)/gnunet-service-resolver.Po \
-	./$(DEPDIR)/gnunet-timeout-w32.Po \
 	./$(DEPDIR)/gnunet-timeout.Po ./$(DEPDIR)/gnunet-uri.Po \
 	./$(DEPDIR)/helper.Plo ./$(DEPDIR)/load.Plo ./$(DEPDIR)/mq.Plo \
 	./$(DEPDIR)/mst.Plo ./$(DEPDIR)/nc.Plo ./$(DEPDIR)/network.Plo \
@@ -615,8 +590,7 @@ am__depfiles_remade = ./$(DEPDIR)/bandwidth.Plo \
 	./$(DEPDIR)/test_strings.Po \
 	./$(DEPDIR)/test_strings_to_data.Po ./$(DEPDIR)/test_time.Po \
 	./$(DEPDIR)/test_tun.Po ./$(DEPDIR)/time.Plo \
-	./$(DEPDIR)/tun.Plo ./$(DEPDIR)/w32cat.Po ./$(DEPDIR)/win.Plo \
-	./$(DEPDIR)/winproc.Plo
+	./$(DEPDIR)/tun.Plo ./$(DEPDIR)/tweetnacl-gnunet.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -639,9 +613,8 @@ am__v_CCLD_1 =
 SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(libgnunetutil_la_SOURCES) \
 	$(libgnunetutil_taler_wallet_la_SOURCES) \
-	$(libgnunetutilwin_la_SOURCES) $(gnunet_config_SOURCES) \
-	$(gnunet_config_diff_SOURCES) $(gnunet_ecc_SOURCES) \
-	$(gnunet_helper_w32_console_SOURCES) $(gnunet_qr_SOURCES) \
+	$(gnunet_config_SOURCES) $(gnunet_config_diff_SOURCES) \
+	$(gnunet_ecc_SOURCES) $(gnunet_qr_SOURCES) \
 	$(gnunet_resolver_SOURCES) $(gnunet_scrypt_SOURCES) \
 	$(gnunet_service_resolver_SOURCES) $(gnunet_timeout_SOURCES) \
 	$(gnunet_uri_SOURCES) $(perf_crypto_asymmetric_SOURCES) \
@@ -678,17 +651,15 @@ SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(test_scheduler_delay_SOURCES) $(test_service_SOURCES) \
 	$(test_speedup_SOURCES) $(test_strings_SOURCES) \
 	$(test_strings_to_data_SOURCES) $(test_time_SOURCES) \
-	$(test_tun_SOURCES) $(w32cat_SOURCES)
+	$(test_tun_SOURCES)
 DIST_SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(am__libgnunetutil_la_SOURCES_DIST) \
 	$(libgnunetutil_taler_wallet_la_SOURCES) \
-	$(am__libgnunetutilwin_la_SOURCES_DIST) \
 	$(gnunet_config_SOURCES) $(gnunet_config_diff_SOURCES) \
-	$(gnunet_ecc_SOURCES) $(gnunet_helper_w32_console_SOURCES) \
-	$(gnunet_qr_SOURCES) $(gnunet_resolver_SOURCES) \
-	$(gnunet_scrypt_SOURCES) $(gnunet_service_resolver_SOURCES) \
-	$(am__gnunet_timeout_SOURCES_DIST) $(gnunet_uri_SOURCES) \
-	$(perf_crypto_asymmetric_SOURCES) \
+	$(gnunet_ecc_SOURCES) $(gnunet_qr_SOURCES) \
+	$(gnunet_resolver_SOURCES) $(gnunet_scrypt_SOURCES) \
+	$(gnunet_service_resolver_SOURCES) $(gnunet_timeout_SOURCES) \
+	$(gnunet_uri_SOURCES) $(perf_crypto_asymmetric_SOURCES) \
 	$(perf_crypto_ecc_dlog_SOURCES) $(perf_crypto_hash_SOURCES) \
 	$(perf_crypto_paillier_SOURCES) $(perf_crypto_rsa_SOURCES) \
 	$(perf_crypto_symmetric_SOURCES) $(perf_malloc_SOURCES) \
@@ -722,7 +693,7 @@ DIST_SOURCES = $(libgnunet_plugin_test_la_SOURCES) \
 	$(test_scheduler_delay_SOURCES) $(test_service_SOURCES) \
 	$(test_speedup_SOURCES) $(test_strings_SOURCES) \
 	$(test_strings_to_data_SOURCES) $(test_time_SOURCES) \
-	$(test_tun_SOURCES) $(w32cat_SOURCES)
+	$(test_tun_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -931,20 +902,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -952,6 +920,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -977,6 +946,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -1014,11 +984,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -1062,6 +1036,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -1081,6 +1058,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -1091,7 +1069,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -1163,37 +1140,11 @@ dist_pkgcfg_DATA = \
 pkgcfg_DATA = \
   resolver.conf
 
-@MINGW_TRUE@noinst_LTLIBRARIES = \
-@MINGW_TRUE@  libgnunetutilwin.la
-
-@MINGW_TRUE@libgnunetutilwin_la_SOURCES = \
-@MINGW_TRUE@  win.c \
-@MINGW_TRUE@  winproc.c
-
-@MINGW_TRUE@libgnunetutilwin_la_LDFLAGS = \
-@MINGW_TRUE@  -no-undefined -Wl,--export-all-symbols
-
-@MINGW_TRUE@libgnunetutilwin_la_LIBADD = \
-@MINGW_TRUE@  -lshell32 -liconv -lstdc++ \
-@MINGW_TRUE@  -lcomdlg32 -lgdi32 -liphlpapi
-
-@MINGW_TRUE@WINLIB = libgnunetutilwin.la
-@MINGW_TRUE@W32CAT = w32cat
-@MINGW_TRUE@W32CONSOLEHELPER = gnunet-helper-w32-console
-@MINGW_FALSE@TEST_CLIENT_UNIX_NC = test_client_unix.nc
-@MINGW_TRUE@TEST_CLIENT_UNIX_NC = 
+TEST_CLIENT_UNIX_NC = test_client_unix.nc
 @USE_COVERAGE_TRUE@AM_CFLAGS = --coverage -O0
 @USE_COVERAGE_TRUE@XLIB = -lgcov
 @ENABLE_BENCHMARK_TRUE@BENCHMARK = benchmark.c benchmark.h
 @ENABLE_BENCHMARK_TRUE@PTHREAD = -lpthread
-w32cat_SOURCES = w32cat.c
-gnunet_helper_w32_console_SOURCES = \
-  gnunet-helper-w32-console.c \
-  gnunet-helper-w32-console.h
-
-gnunet_helper_w32_console_LDADD = \
-  libgnunetutil.la
-
 gnunet_config_diff_SOURCES = \
  gnunet-config-diff.c
 
@@ -1235,6 +1186,7 @@ libgnunetutil_la_SOURCES = \
   crypto_kdf.c \
   crypto_mpi.c \
   crypto_paillier.c \
+  crypto_pow.c \
   crypto_random.c \
   crypto_rsa.c \
   disk.c \
@@ -1264,6 +1216,8 @@ libgnunetutil_la_SOURCES = \
   strings.c \
   time.c \
   tun.c \
+  tweetnacl-gnunet.c \
+  tweetnacl-gnunet.h \
   speedup.c speedup.h \
   proc_compat.c
 
@@ -1288,7 +1242,7 @@ libgnunetutil_la_LIBADD = \
 
 libgnunetutil_la_LDFLAGS = \
   $(GN_LIB_LDFLAGS) \
-  -version-info 13:1:0
+  -version-info 13:2:0
 
 libgnunetutil_taler_wallet_la_SOURCES = \
   common_allocation.c \
@@ -1323,11 +1277,8 @@ libgnunetutil_taler_wallet_la_LDFLAGS = \
 @TALER_ONLY_TRUE@lib_LTLIBRARIES = libgnunetutil_taler_wallet.la
 @ENABLE_TEST_RUN_TRUE@@TALER_ONLY_FALSE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@@TALER_ONLY_FALSE@TESTS = $(check_PROGRAMS)
-@MINGW_FALSE@gnunet_timeout_SOURCES = \
-@MINGW_FALSE@ gnunet-timeout.c
-
-@MINGW_TRUE@gnunet_timeout_SOURCES = \
-@MINGW_TRUE@ gnunet-timeout-w32.c
+gnunet_timeout_SOURCES = \
+ gnunet-timeout.c
 
 gnunet_service_resolver_SOURCES = \
  gnunet-service-resolver.c
@@ -1376,9 +1327,7 @@ gnunet_qr_LDADD = \
   libgnunetutil.la \
   $(GN_LIBINTL)
 
-gnunet_qr_LDFLAGS = \
-  -lzbar
-
+gnunet_qr_LDFLAGS = -lzbar
 plugin_LTLIBRARIES = \
   libgnunet_plugin_test.la
 
@@ -1432,8 +1381,7 @@ test_os_start_process_LDADD = \
  libgnunetutil.la
 
 test_os_start_process_DEPENDENCIES = \
- libgnunetutil.la \
- $(WINCAT)
+ libgnunetutil.la
 
 test_client_nc_SOURCES = \
  test_client.c
@@ -1944,17 +1892,6 @@ clean-libLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-clean-noinstLTLIBRARIES:
-	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
-	@list='$(noinst_LTLIBRARIES)'; \
-	locs=`for p in $$list; do echo $$p; done | \
-	      sed 's|^[^/]*$$|.|; s|/[^/]*$$||; s|$$|/so_locations|' | \
-	      sort -u`; \
-	test -z "$$locs" || { \
-	  echo rm -f $${locs}; \
-	  rm -f $${locs}; \
-	}
-
 install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	@list='$(plugin_LTLIBRARIES)'; test -n "$(plugindir)" || list=; \
@@ -1999,9 +1936,6 @@ libgnunetutil.la: $(libgnunetutil_la_OBJECTS) $(libgnunetutil_la_DEPENDENCIES) $
 libgnunetutil_taler_wallet.la: $(libgnunetutil_taler_wallet_la_OBJECTS) $(libgnunetutil_taler_wallet_la_DEPENDENCIES) $(EXTRA_libgnunetutil_taler_wallet_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libgnunetutil_taler_wallet_la_LINK) $(am_libgnunetutil_taler_wallet_la_rpath) $(libgnunetutil_taler_wallet_la_OBJECTS) $(libgnunetutil_taler_wallet_la_LIBADD) $(LIBS)
 
-libgnunetutilwin.la: $(libgnunetutilwin_la_OBJECTS) $(libgnunetutilwin_la_DEPENDENCIES) $(EXTRA_libgnunetutilwin_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetutilwin_la_LINK) $(am_libgnunetutilwin_la_rpath) $(libgnunetutilwin_la_OBJECTS) $(libgnunetutilwin_la_LIBADD) $(LIBS)
-
 gnunet-config$(EXEEXT): $(gnunet_config_OBJECTS) $(gnunet_config_DEPENDENCIES) $(EXTRA_gnunet_config_DEPENDENCIES) 
 	@rm -f gnunet-config$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_config_OBJECTS) $(gnunet_config_LDADD) $(LIBS)
@@ -2013,10 +1947,6 @@ gnunet-config-diff$(EXEEXT): $(gnunet_config_diff_OBJECTS) $(gnunet_config_diff_
 gnunet-ecc$(EXEEXT): $(gnunet_ecc_OBJECTS) $(gnunet_ecc_DEPENDENCIES) $(EXTRA_gnunet_ecc_DEPENDENCIES) 
 	@rm -f gnunet-ecc$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_ecc_OBJECTS) $(gnunet_ecc_LDADD) $(LIBS)
-
-gnunet-helper-w32-console$(EXEEXT): $(gnunet_helper_w32_console_OBJECTS) $(gnunet_helper_w32_console_DEPENDENCIES) $(EXTRA_gnunet_helper_w32_console_DEPENDENCIES) 
-	@rm -f gnunet-helper-w32-console$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_helper_w32_console_OBJECTS) $(gnunet_helper_w32_console_LDADD) $(LIBS)
 
 gnunet-qr$(EXEEXT): $(gnunet_qr_OBJECTS) $(gnunet_qr_DEPENDENCIES) $(EXTRA_gnunet_qr_DEPENDENCIES) 
 	@rm -f gnunet-qr$(EXEEXT)
@@ -2266,10 +2196,6 @@ test_tun$(EXEEXT): $(test_tun_OBJECTS) $(test_tun_DEPENDENCIES) $(EXTRA_test_tun
 	@rm -f test_tun$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(test_tun_OBJECTS) $(test_tun_LDADD) $(LIBS)
 
-w32cat$(EXEEXT): $(w32cat_OBJECTS) $(w32cat_DEPENDENCIES) $(EXTRA_w32cat_DEPENDENCIES) 
-	@rm -f w32cat$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(w32cat_OBJECTS) $(w32cat_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -2303,6 +2229,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_kdf.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_mpi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_paillier.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_pow.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_random.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_rsa.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crypto_symmetric.Plo@am__quote@ # am--include-marker
@@ -2314,12 +2241,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-config-diff.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-config.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-ecc.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-helper-w32-console.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-qr.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-resolver.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-scrypt.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-service-resolver.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-timeout-w32.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gnunet-uri.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/helper.Plo@am__quote@ # am--include-marker
@@ -2401,9 +2326,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_tun.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tun.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/w32cat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/winproc.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tweetnacl-gnunet.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -3133,8 +3056,7 @@ clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-checkPROGRAMS clean-generic \
 	clean-libLTLIBRARIES clean-libexecPROGRAMS clean-libtool \
-	clean-noinstLTLIBRARIES clean-noinstPROGRAMS \
-	clean-pluginLTLIBRARIES mostlyclean-am
+	clean-noinstPROGRAMS clean-pluginLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/bandwidth.Plo
@@ -3164,6 +3086,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/crypto_kdf.Plo
 	-rm -f ./$(DEPDIR)/crypto_mpi.Plo
 	-rm -f ./$(DEPDIR)/crypto_paillier.Plo
+	-rm -f ./$(DEPDIR)/crypto_pow.Plo
 	-rm -f ./$(DEPDIR)/crypto_random.Plo
 	-rm -f ./$(DEPDIR)/crypto_rsa.Plo
 	-rm -f ./$(DEPDIR)/crypto_symmetric.Plo
@@ -3175,12 +3098,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/gnunet-config-diff.Po
 	-rm -f ./$(DEPDIR)/gnunet-config.Po
 	-rm -f ./$(DEPDIR)/gnunet-ecc.Po
-	-rm -f ./$(DEPDIR)/gnunet-helper-w32-console.Po
 	-rm -f ./$(DEPDIR)/gnunet-qr.Po
 	-rm -f ./$(DEPDIR)/gnunet-resolver.Po
 	-rm -f ./$(DEPDIR)/gnunet-scrypt.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-resolver.Po
-	-rm -f ./$(DEPDIR)/gnunet-timeout-w32.Po
 	-rm -f ./$(DEPDIR)/gnunet-timeout.Po
 	-rm -f ./$(DEPDIR)/gnunet-uri.Po
 	-rm -f ./$(DEPDIR)/helper.Plo
@@ -3262,9 +3183,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/test_tun.Po
 	-rm -f ./$(DEPDIR)/time.Plo
 	-rm -f ./$(DEPDIR)/tun.Plo
-	-rm -f ./$(DEPDIR)/w32cat.Po
-	-rm -f ./$(DEPDIR)/win.Plo
-	-rm -f ./$(DEPDIR)/winproc.Plo
+	-rm -f ./$(DEPDIR)/tweetnacl-gnunet.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -3339,6 +3258,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/crypto_kdf.Plo
 	-rm -f ./$(DEPDIR)/crypto_mpi.Plo
 	-rm -f ./$(DEPDIR)/crypto_paillier.Plo
+	-rm -f ./$(DEPDIR)/crypto_pow.Plo
 	-rm -f ./$(DEPDIR)/crypto_random.Plo
 	-rm -f ./$(DEPDIR)/crypto_rsa.Plo
 	-rm -f ./$(DEPDIR)/crypto_symmetric.Plo
@@ -3350,12 +3270,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/gnunet-config-diff.Po
 	-rm -f ./$(DEPDIR)/gnunet-config.Po
 	-rm -f ./$(DEPDIR)/gnunet-ecc.Po
-	-rm -f ./$(DEPDIR)/gnunet-helper-w32-console.Po
 	-rm -f ./$(DEPDIR)/gnunet-qr.Po
 	-rm -f ./$(DEPDIR)/gnunet-resolver.Po
 	-rm -f ./$(DEPDIR)/gnunet-scrypt.Po
 	-rm -f ./$(DEPDIR)/gnunet-service-resolver.Po
-	-rm -f ./$(DEPDIR)/gnunet-timeout-w32.Po
 	-rm -f ./$(DEPDIR)/gnunet-timeout.Po
 	-rm -f ./$(DEPDIR)/gnunet-uri.Po
 	-rm -f ./$(DEPDIR)/helper.Plo
@@ -3437,9 +3355,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/test_tun.Po
 	-rm -f ./$(DEPDIR)/time.Plo
 	-rm -f ./$(DEPDIR)/tun.Plo
-	-rm -f ./$(DEPDIR)/w32cat.Po
-	-rm -f ./$(DEPDIR)/win.Plo
-	-rm -f ./$(DEPDIR)/winproc.Plo
+	-rm -f ./$(DEPDIR)/tweetnacl-gnunet.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -3465,24 +3381,24 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_pkgcfgDATA \
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
 	check-am clean clean-binPROGRAMS clean-checkPROGRAMS \
 	clean-generic clean-libLTLIBRARIES clean-libexecPROGRAMS \
-	clean-libtool clean-noinstLTLIBRARIES clean-noinstPROGRAMS \
-	clean-pluginLTLIBRARIES cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dist_pkgcfgDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-libexecPROGRAMS install-man \
-	install-pdf install-pdf-am install-pkgcfgDATA \
-	install-pluginLTLIBRARIES install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS uninstall-dist_pkgcfgDATA \
-	uninstall-libLTLIBRARIES uninstall-libexecPROGRAMS \
-	uninstall-pkgcfgDATA uninstall-pluginLTLIBRARIES
+	clean-libtool clean-noinstPROGRAMS clean-pluginLTLIBRARIES \
+	cscopelist-am ctags ctags-am distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am \
+	install-dist_pkgcfgDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
+	install-pkgcfgDATA install-pluginLTLIBRARIES install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags tags-am \
+	uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_pkgcfgDATA uninstall-libLTLIBRARIES \
+	uninstall-libexecPROGRAMS uninstall-pkgcfgDATA \
+	uninstall-pluginLTLIBRARIES
 
 .PRECIOUS: Makefile
 

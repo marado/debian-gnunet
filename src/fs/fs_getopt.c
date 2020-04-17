@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_getopt.c
@@ -44,9 +44,9 @@
  */
 static int
 getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
-		     void *scls,
-		     const char *option,
-		     const char *value)
+                     void *scls,
+                     const char *option,
+                     const char *value)
 {
   struct GNUNET_FS_Uri **uri = scls;
   struct GNUNET_FS_Uri *u = *uri;
@@ -79,8 +79,8 @@ getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
       val = GNUNET_malloc (slen - 1);
       val[0] = '+';
       GNUNET_memcpy (&val[1],
-		     &value[2],
-		     slen - 3);
+                     &value[2],
+                     slen - 3);
       val[slen - 2] = '\0';
     }
     else
@@ -97,8 +97,8 @@ getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
       val = GNUNET_malloc (slen);
       val[0] = ' ';
       GNUNET_memcpy (&val[1],
-		     &value[1],
-		     slen - 2);
+                     &value[1],
+                     slen - 2);
       val[slen - 1] = '\0';
     }
     else
@@ -110,8 +110,8 @@ getopt_set_keywords (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
     }
   }
   GNUNET_array_append (u->data.ksk.keywords,
-		       u->data.ksk.keywordCount,
-		       val);
+                       u->data.ksk.keywordCount,
+                       val);
   return GNUNET_OK;
 }
 
@@ -139,7 +139,7 @@ GNUNET_FS_GETOPT_KEYWORDS (char shortName,
     .description = description,
     .require_argument = 1,
     .processor = &getopt_set_keywords,
-    .scls = (void *) topKeywords  
+    .scls = (void *) topKeywords
   };
 
   return clo;
@@ -165,6 +165,7 @@ getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
                      const char *value)
 {
   struct GNUNET_CONTAINER_MetaData **mm = scls;
+
 #if HAVE_EXTRACTOR_H && HAVE_LIBEXTRACTOR
   enum EXTRACTOR_MetaType type;
   const char *typename;
@@ -200,8 +201,8 @@ getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
                                          EXTRACTOR_METAFORMAT_UTF8,
                                          "text/plain",
                                          &tmp[strlen (typename) + 1],
-                                         strlen (&tmp[strlen (typename) + 1]) +
-                                         1);
+                                         strlen (&tmp[strlen (typename) + 1])
+                                         + 1);
       GNUNET_free (tmp);
       tmp = NULL;
       break;
@@ -215,8 +216,8 @@ getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
                                          "text/plain",
                                          &tmp[strlen (typename_i18n) + 1],
                                          strlen (&tmp
-                                                 [strlen (typename_i18n) + 1]) +
-                                         1);
+                                                 [strlen (typename_i18n) + 1])
+                                         + 1);
       GNUNET_free (tmp);
       tmp = NULL;
       break;
@@ -232,11 +233,13 @@ getopt_set_metadata (struct GNUNET_GETOPT_CommandLineProcessorContext *ctx,
                                        tmp, strlen (tmp) + 1);
     GNUNET_free (tmp);
     printf (_
-            ("Unknown metadata type in metadata option `%s'.  Using metadata type `unknown' instead.\n"),
+            (
+              "Unknown metadata type in metadata option `%s'.  Using metadata type `unknown' instead.\n"),
             value);
   }
   return GNUNET_OK;
 }
+
 
 /**
  * Allow user to specify metadata.
@@ -266,8 +269,6 @@ GNUNET_FS_GETOPT_METADATA (char shortName,
 
   return clo;
 }
-
-
 
 
 /* end of fs_getopt.c */

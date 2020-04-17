@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -44,6 +44,23 @@ extern "C"
 #endif
 
 #include "gnunet_mq_lib.h"
+
+
+/**
+ * Test if the port or UNIXPATH of the given @a service_name
+ * is in use and thus (most likely) the respective service is up.
+ *
+ * @param cfg our configuration
+ * @param service_name name of the service to connect to
+ * @return #GNUNET_YES if the service is (likely) up (or running remotely),
+ *         #GNUNET_NO if the service is (definitively) down,
+ *         #GNUNET_SYSERR if the configuration does not give us
+ *          the necessary information about the service, or if
+ *          we could not check (i.e. socket() failed)
+ */
+int
+GNUNET_CLIENT_test (const struct GNUNET_CONFIGURATION_Handle *cfg,
+                    const char *service_name);
 
 
 /**

@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file secretsharing/gnunet-service-secretsharing.c
@@ -119,7 +119,6 @@ struct ClientState;
  */
 struct KeygenSession
 {
-
   /**
    * Current consensus, used for both DKG rounds.
    */
@@ -214,7 +213,6 @@ struct KeygenSession
  */
 struct DecryptSession
 {
-
   /**
    * Handle to the consensus over partial decryptions.
    */
@@ -279,7 +277,6 @@ struct ClientState
    * MQ to talk to @a client.
    */
   struct GNUNET_MQ_Handle *mq;
-
 };
 
 
@@ -329,6 +326,7 @@ get_keygen_peer_info (const struct KeygenSession *ks,
                       const struct GNUNET_PeerIdentity *peer)
 {
   unsigned int i;
+
   for (i = 0; i < ks->num_peers; i++)
     if (0 == GNUNET_memcmp (peer, &ks->info[i].peer))
       return &ks->info[i];
@@ -348,6 +346,7 @@ get_decrypt_peer_info (const struct DecryptSession *ds,
                        const struct GNUNET_PeerIdentity *peer)
 {
   unsigned int i;
+
   for (i = 0; i < ds->share->num_peers; i++)
     if (0 == GNUNET_memcmp (peer, &ds->info[i].peer))
       return &ds->info[i];
@@ -391,7 +390,7 @@ peer_id_cmp (const void *p1, const void *p2)
 {
   return memcmp (p1,
                  p2,
-                 sizeof (struct GNUNET_PeerIdentity));
+                 sizeof(struct GNUNET_PeerIdentity));
 }
 
 
@@ -412,7 +411,7 @@ peer_find (const struct GNUNET_PeerIdentity *haystack, unsigned int n,
 
   for (i = 0; i < n; i++)
     if (0 == GNUNET_memcmp (&haystack[i],
-                     needle))
+                            needle))
       return i;
   return -1;
 }
@@ -454,11 +453,11 @@ normalize_peers (struct GNUNET_PeerIdentity *listed,
     normalized[n - 1] = my_peer;
 
   GNUNET_memcpy (normalized,
-          listed,
-          num_listed * sizeof (struct GNUNET_PeerIdentity));
+                 listed,
+                 num_listed * sizeof(struct GNUNET_PeerIdentity));
   qsort (normalized,
          n,
-         sizeof (struct GNUNET_PeerIdentity),
+         sizeof(struct GNUNET_PeerIdentity),
          &peer_id_cmp);
 
   if (NULL != my_peer_idx)
@@ -663,7 +662,6 @@ cleanup_task (void *cls)
 }
 
 
-
 /**
  * Generate the random coefficients of our pre-secret polynomial
  *
@@ -680,14 +678,17 @@ generate_presecret_polynomial (struct KeygenSession *ks)
                                                gcry_mpi_t);
   for (i = 0; i < ks->threshold; i++)
   {
-    v = ks->presecret_polynomial[i] = gcry_mpi_new (GNUNET_SECRETSHARING_ELGAMAL_BITS);
+    v = ks->presecret_polynomial[i] = gcry_mpi_new (
+          GNUNET_SECRETSHARING_ELGAMAL_BITS);
     GNUNET_assert (NULL != v);
     // Randomize v such that 0 < v < elgamal_q.
     // The '- 1' is necessary as bitlength(q) = bitlength(p) - 1.
     do
     {
-      gcry_mpi_randomize (v, GNUNET_SECRETSHARING_ELGAMAL_BITS - 1, GCRY_WEAK_RANDOM);
-    } while ((gcry_mpi_cmp_ui (v, 0) == 0) || (gcry_mpi_cmp (v, elgamal_q) >= 0));
+      gcry_mpi_randomize (v, GNUNET_SECRETSHARING_ELGAMAL_BITS - 1,
+                          GCRY_WEAK_RANDOM);
+    }
+    while ((gcry_mpi_cmp_ui (v, 0) == 0) || (gcry_mpi_cmp (v, elgamal_q) >= 0));
   }
 }
 
@@ -715,12 +716,13 @@ keygen_round1_new_element (void *cls,
   }
 
   /* elements have fixed size */
-  if (element->size != sizeof (struct GNUNET_SECRETSHARING_KeygenCommitData))
+  if (element->size != sizeof(struct GNUNET_SECRETSHARING_KeygenCommitData))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
                 "keygen commit data with wrong size (%u) in consensus, %u expected\n",
                 (unsigned int) element->size,
-                (unsigned int) sizeof (struct GNUNET_SECRETSHARING_KeygenCommitData));
+                (unsigned int) sizeof(struct
+                                      GNUNET_SECRETSHARING_KeygenCommitData));
     return;
   }
 
@@ -731,27 +733,35 @@ keygen_round1_new_element (void *cls,
 
   if (NULL == info)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "keygen commit data with wrong peer identity (%s) in consensus\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "keygen commit data with wrong peer identity (%s) in consensus\n",
                 GNUNET_i2s (&d->peer));
     return;
   }
 
   /* Check that the right amount of data has been signed. */
   if (d->purpose.size !=
-      htonl (element->size - offsetof (struct GNUNET_SECRETSHARING_KeygenCommitData, purpose)))
+      htonl (element->size - offsetof (struct
+                                       GNUNET_SECRETSHARING_KeygenCommitData,
+                                       purpose)))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "keygen commit data with wrong signature purpose size in consensus\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "keygen commit data with wrong signature purpose size in consensus\n");
     return;
   }
 
-  if (GNUNET_OK != GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG1,
-                                               &d->purpose, &d->signature, &d->peer.public_key))
+  if (GNUNET_OK != GNUNET_CRYPTO_eddsa_verify (
+        GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG1,
+        &d->purpose, &d->signature,
+        &d->peer.public_key))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "keygen commit data with invalid signature in consensus\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "keygen commit data with invalid signature in consensus\n");
     return;
   }
   info->paillier_public_key = d->pubkey;
-  GNUNET_CRYPTO_mpi_scan_unsigned (&info->presecret_commitment, &d->commitment, 512 / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&info->presecret_commitment, &d->commitment,
+                                   512 / 8);
   info->round1_valid = GNUNET_YES;
 }
 
@@ -767,7 +777,8 @@ keygen_round1_new_element (void *cls,
  * @param m what group are we operating in?
  */
 static void
-horner_eval (gcry_mpi_t z, gcry_mpi_t *coeff, unsigned int num_coeff, gcry_mpi_t x, gcry_mpi_t m)
+horner_eval (gcry_mpi_t z, gcry_mpi_t *coeff, unsigned int num_coeff, gcry_mpi_t
+             x, gcry_mpi_t m)
 {
   unsigned int i;
 
@@ -808,8 +819,8 @@ keygen_round2_conclude (void *cls)
   share->peers = GNUNET_new_array (share->num_peers,
                                    struct GNUNET_PeerIdentity);
   share->sigmas =
-      GNUNET_new_array (share->num_peers,
-                        struct GNUNET_SECRETSHARING_FieldElement);
+    GNUNET_new_array (share->num_peers,
+                      struct GNUNET_SECRETSHARING_FieldElement);
   share->original_indices = GNUNET_new_array (share->num_peers,
                                               uint16_t);
 
@@ -834,20 +845,25 @@ keygen_round2_conclude (void *cls)
 
   if (share->my_peer == share->num_peers)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "P%u: peer identity not in share\n", ks->local_peer_idx);
+    GNUNET_log (GNUNET_ERROR_TYPE_INFO, "P%u: peer identity not in share\n",
+                ks->local_peer_idx);
   }
 
-  GNUNET_CRYPTO_mpi_print_unsigned (&share->my_share, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8,
+  GNUNET_CRYPTO_mpi_print_unsigned (&share->my_share,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8,
                                     ks->my_share);
-  GNUNET_CRYPTO_mpi_print_unsigned (&share->public_key, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8,
+  GNUNET_CRYPTO_mpi_print_unsigned (&share->public_key,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8,
                                     ks->public_key);
 
-  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "keygen completed with %u peers\n", share->num_peers);
+  GNUNET_log (GNUNET_ERROR_TYPE_INFO, "keygen completed with %u peers\n",
+              share->num_peers);
 
   /* Write the share. If 0 peers completed the dkg, an empty
    * share will be sent. */
 
-  GNUNET_assert (GNUNET_OK == GNUNET_SECRETSHARING_share_write (share, NULL, 0, &share_size));
+  GNUNET_assert (GNUNET_OK == GNUNET_SECRETSHARING_share_write (share, NULL, 0,
+                                                                &share_size));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "writing share of size %u\n",
               (unsigned int) share_size);
@@ -855,7 +871,9 @@ keygen_round2_conclude (void *cls)
   ev = GNUNET_MQ_msg_extra (m, share_size,
                             GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_SECRET_READY);
 
-  GNUNET_assert (GNUNET_OK == GNUNET_SECRETSHARING_share_write (share, &m[1], share_size, NULL));
+  GNUNET_assert (GNUNET_OK == GNUNET_SECRETSHARING_share_write (share, &m[1],
+                                                                share_size,
+                                                                NULL));
 
   GNUNET_SECRETSHARING_share_destroy (share);
   share = NULL;
@@ -863,7 +881,6 @@ keygen_round2_conclude (void *cls)
   GNUNET_MQ_send (ks->cs->mq,
                   ev);
 }
-
 
 
 static void
@@ -899,7 +916,8 @@ restore_fair (const struct GNUNET_CRYPTO_PaillierPublicKey *ppub,
   // a = (N,0)^T
   GNUNET_CRYPTO_mpi_scan_unsigned (&a_1,
                                    ppub,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
   GNUNET_assert (NULL != (a_2 = gcry_mpi_new (0)));
   gcry_mpi_set_ui (a_2, 0);
   // b = (x,1)^T
@@ -979,10 +997,12 @@ restore_fair (const struct GNUNET_CRYPTO_PaillierPublicKey *ppub,
 
 
 static void
-get_fair_encryption_challenge (const struct GNUNET_SECRETSHARING_FairEncryption *fe,
+get_fair_encryption_challenge (const struct
+                               GNUNET_SECRETSHARING_FairEncryption *fe,
                                gcry_mpi_t *e)
 {
-  struct {
+  struct
+  {
     struct GNUNET_CRYPTO_PaillierCiphertext c;
     char h[GNUNET_SECRETSHARING_ELGAMAL_BITS / 8];
     char t1[GNUNET_SECRETSHARING_ELGAMAL_BITS / 8];
@@ -992,18 +1012,19 @@ get_fair_encryption_challenge (const struct GNUNET_SECRETSHARING_FairEncryption 
 
   memset (&hash_data,
           0,
-          sizeof (hash_data));
-  GNUNET_memcpy (&hash_data.c, &fe->c, sizeof (struct GNUNET_CRYPTO_PaillierCiphertext));
+          sizeof(hash_data));
+  GNUNET_memcpy (&hash_data.c, &fe->c, sizeof(struct
+                                              GNUNET_CRYPTO_PaillierCiphertext));
   GNUNET_memcpy (&hash_data.h, &fe->h, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
   GNUNET_memcpy (&hash_data.t1, &fe->t1, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
   GNUNET_memcpy (&hash_data.t2, &fe->t2, GNUNET_CRYPTO_PAILLIER_BITS * 2 / 8);
   GNUNET_CRYPTO_hash (&hash_data,
-                      sizeof (hash_data),
+                      sizeof(hash_data),
                       &e_hash);
   /* This allocates "e" */
   GNUNET_CRYPTO_mpi_scan_unsigned (e,
                                    &e_hash,
-                                   sizeof (struct GNUNET_HashCode));
+                                   sizeof(struct GNUNET_HashCode));
   gcry_mpi_mod (*e, *e, elgamal_q);
 }
 
@@ -1034,13 +1055,19 @@ verify_fair (const struct GNUNET_CRYPTO_PaillierPublicKey *ppub,
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&n,
                                    ppub,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
-  GNUNET_CRYPTO_mpi_scan_unsigned (&t1, fe->t1, GNUNET_CRYPTO_PAILLIER_BITS / 8);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&z, fe->z, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&y, fe->h, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
+  GNUNET_CRYPTO_mpi_scan_unsigned (&t1, fe->t1, GNUNET_CRYPTO_PAILLIER_BITS
+                                   / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&z, fe->z,
+                                   GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&y, fe->h,
+                                   GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
   GNUNET_CRYPTO_mpi_scan_unsigned (&w, fe->w, GNUNET_CRYPTO_PAILLIER_BITS / 8);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&big_y, fe->c.bits, GNUNET_CRYPTO_PAILLIER_BITS * 2 / 8);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&t2, fe->t2, GNUNET_CRYPTO_PAILLIER_BITS * 2 / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&big_y, fe->c.bits,
+                                   GNUNET_CRYPTO_PAILLIER_BITS * 2 / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&t2, fe->t2, GNUNET_CRYPTO_PAILLIER_BITS
+                                   * 2 / 8);
   gcry_mpi_mul (n_sq, n, n);
 
   // tmp1 = g^z
@@ -1135,11 +1162,13 @@ encrypt_fair (gcry_mpi_t v,
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&n,
                                    ppub,
-                                   sizeof (struct GNUNET_CRYPTO_PaillierPublicKey));
+                                   sizeof(struct
+                                          GNUNET_CRYPTO_PaillierPublicKey));
   gcry_mpi_mul (n_sq, n, n);
   gcry_mpi_add_ui (G, n, 1);
 
-  do {
+  do
+  {
     gcry_mpi_randomize (u, GNUNET_CRYPTO_PAILLIER_BITS, GCRY_WEAK_RANDOM);
   }
   while (gcry_mpi_cmp (u, n) >= 0);
@@ -1154,7 +1183,8 @@ encrypt_fair (gcry_mpi_t v,
 
 
   gcry_mpi_randomize (r, 2048, GCRY_WEAK_RANDOM);
-  do {
+  do
+  {
     gcry_mpi_randomize (s, GNUNET_CRYPTO_PAILLIER_BITS, GCRY_WEAK_RANDOM);
   }
   while (gcry_mpi_cmp (s, n) >= 0);
@@ -1240,14 +1270,17 @@ insert_round2_element (struct KeygenSession *ks)
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "P%u: Inserting round2 element\n",
               ks->local_peer_idx);
 
-  GNUNET_assert (NULL != (v = gcry_mpi_new (GNUNET_SECRETSHARING_ELGAMAL_BITS)));
-  GNUNET_assert (NULL != (idx = gcry_mpi_new (GNUNET_SECRETSHARING_ELGAMAL_BITS)));
+  GNUNET_assert (NULL != (v = gcry_mpi_new (
+                            GNUNET_SECRETSHARING_ELGAMAL_BITS)));
+  GNUNET_assert (NULL != (idx = gcry_mpi_new (
+                            GNUNET_SECRETSHARING_ELGAMAL_BITS)));
 
-  element_size = (sizeof (struct GNUNET_SECRETSHARING_KeygenRevealData) +
-                  sizeof (struct GNUNET_SECRETSHARING_FairEncryption) * ks->num_peers +
-                  GNUNET_SECRETSHARING_ELGAMAL_BITS / 8 * ks->threshold);
+  element_size = (sizeof(struct GNUNET_SECRETSHARING_KeygenRevealData)
+                  + sizeof(struct GNUNET_SECRETSHARING_FairEncryption)
+                  * ks->num_peers
+                  + GNUNET_SECRETSHARING_ELGAMAL_BITS / 8 * ks->threshold);
 
-  element = GNUNET_malloc (sizeof (struct GNUNET_SET_Element) + element_size);
+  element = GNUNET_malloc (sizeof(struct GNUNET_SET_Element) + element_size);
   element->size = element_size;
   element->data = (void *) &element[1];
 
@@ -1276,7 +1309,8 @@ insert_round2_element (struct KeygenSession *ks)
       {
         gcry_mpi_set_ui (idx, i + 1);
         // evaluate the polynomial
-        horner_eval (v, ks->presecret_polynomial, ks->threshold, idx, elgamal_q);
+        horner_eval (v, ks->presecret_polynomial, ks->threshold, idx,
+                     elgamal_q);
         // encrypt the result
         encrypt_fair (v, &ks->info[i].paillier_public_key, fe);
       }
@@ -1293,7 +1327,8 @@ insert_round2_element (struct KeygenSession *ks)
     ptrdiff_t remaining = last_pos - pos;
     GNUNET_assert (remaining > 0);
     gcry_mpi_powm (v, elgamal_g, ks->presecret_polynomial[i], elgamal_p);
-    GNUNET_CRYPTO_mpi_print_unsigned (pos, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, v);
+    GNUNET_CRYPTO_mpi_print_unsigned (pos, GNUNET_SECRETSHARING_ELGAMAL_BITS
+                                      / 8, v);
     pos += GNUNET_SECRETSHARING_ELGAMAL_BITS / 8;
   }
 
@@ -1301,7 +1336,9 @@ insert_round2_element (struct KeygenSession *ks)
               ks->local_peer_idx);
 
 
-  d->purpose.size = htonl (element_size - offsetof (struct GNUNET_SECRETSHARING_KeygenRevealData, purpose));
+  d->purpose.size = htonl (element_size - offsetof (struct
+                                                    GNUNET_SECRETSHARING_KeygenRevealData,
+                                                    purpose));
   d->purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG2);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CRYPTO_eddsa_sign (my_peer_private_key,
@@ -1309,7 +1346,7 @@ insert_round2_element (struct KeygenSession *ks)
                                            &d->signature));
 
   GNUNET_CONSENSUS_insert (ks->consensus, element, NULL, NULL);
-  GNUNET_free (element); /* FIXME: maybe stack-allocate instead? */
+  GNUNET_free (element);  /* FIXME: maybe stack-allocate instead? */
 
   gcry_mpi_release (v);
   gcry_mpi_release (idx);
@@ -1318,7 +1355,8 @@ insert_round2_element (struct KeygenSession *ks)
 
 static gcry_mpi_t
 keygen_reveal_get_exp_coeff (struct KeygenSession *ks,
-                             const struct GNUNET_SECRETSHARING_KeygenRevealData *d,
+                             const struct
+                             GNUNET_SECRETSHARING_KeygenRevealData *d,
                              unsigned int idx)
 {
   unsigned char *pos;
@@ -1328,18 +1366,20 @@ keygen_reveal_get_exp_coeff (struct KeygenSession *ks,
 
   pos = (void *) &d[1];
   // skip encrypted pre-shares
-  pos += sizeof (struct GNUNET_SECRETSHARING_FairEncryption) * ks->num_peers;
+  pos += sizeof(struct GNUNET_SECRETSHARING_FairEncryption) * ks->num_peers;
   // skip exp. coeffs we are not interested in
   pos += GNUNET_SECRETSHARING_ELGAMAL_BITS / 8 * idx;
   // the first exponentiated coefficient is the public key share
-  GNUNET_CRYPTO_mpi_scan_unsigned (&exp_coeff, pos, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&exp_coeff, pos,
+                                   GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
   return exp_coeff;
 }
 
 
 static struct GNUNET_SECRETSHARING_FairEncryption *
 keygen_reveal_get_enc_preshare (struct KeygenSession *ks,
-                                const struct GNUNET_SECRETSHARING_KeygenRevealData *d,
+                                const struct
+                                GNUNET_SECRETSHARING_KeygenRevealData *d,
                                 unsigned int idx)
 {
   unsigned char *pos;
@@ -1348,14 +1388,15 @@ keygen_reveal_get_enc_preshare (struct KeygenSession *ks,
 
   pos = (void *) &d[1];
   // skip encrypted pre-shares we're not interested in
-  pos += sizeof (struct GNUNET_SECRETSHARING_FairEncryption) * idx;
+  pos += sizeof(struct GNUNET_SECRETSHARING_FairEncryption) * idx;
   return (struct GNUNET_SECRETSHARING_FairEncryption *) pos;
 }
 
 
 static gcry_mpi_t
 keygen_reveal_get_exp_preshare (struct KeygenSession *ks,
-                                const struct GNUNET_SECRETSHARING_KeygenRevealData *d,
+                                const struct
+                                GNUNET_SECRETSHARING_KeygenRevealData *d,
                                 unsigned int idx)
 {
   gcry_mpi_t exp_preshare;
@@ -1363,7 +1404,8 @@ keygen_reveal_get_exp_preshare (struct KeygenSession *ks,
 
   GNUNET_assert (idx < ks->num_peers);
   fe = keygen_reveal_get_enc_preshare (ks, d, idx);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&exp_preshare, fe->h, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&exp_preshare, fe->h,
+                                   GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
   return exp_preshare;
 }
 
@@ -1388,9 +1430,12 @@ keygen_round2_new_element (void *cls,
     return;
   }
 
-  expected_element_size = (sizeof (struct GNUNET_SECRETSHARING_KeygenRevealData) +
-                  sizeof (struct GNUNET_SECRETSHARING_FairEncryption) * ks->num_peers +
-                  GNUNET_SECRETSHARING_ELGAMAL_BITS / 8 * ks->threshold);
+  expected_element_size = (sizeof(struct GNUNET_SECRETSHARING_KeygenRevealData)
+                           + sizeof(struct
+                                    GNUNET_SECRETSHARING_FairEncryption)
+                           * ks->num_peers
+                           + GNUNET_SECRETSHARING_ELGAMAL_BITS / 8
+                           * ks->threshold);
 
   if (element->size != expected_element_size)
   {
@@ -1407,7 +1452,8 @@ keygen_round2_new_element (void *cls,
 
   if (NULL == info)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "keygen commit data with wrong peer identity (%s) in consensus\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "keygen commit data with wrong peer identity (%s) in consensus\n",
                 GNUNET_i2s (&d->peer));
     return;
   }
@@ -1431,21 +1477,27 @@ keygen_round2_new_element (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO, "got round2 element\n");
 
   if (ntohl (d->purpose.size) !=
-      element->size - offsetof (struct GNUNET_SECRETSHARING_KeygenRevealData, purpose))
+      element->size - offsetof (struct GNUNET_SECRETSHARING_KeygenRevealData,
+                                purpose))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "keygen reveal data with wrong signature purpose size in consensus\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "keygen reveal data with wrong signature purpose size in consensus\n");
     return;
   }
 
-  if (GNUNET_OK != GNUNET_CRYPTO_eddsa_verify (GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG2,
-                                               &d->purpose, &d->signature, &d->peer.public_key))
+  if (GNUNET_OK != GNUNET_CRYPTO_eddsa_verify (
+        GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG2,
+        &d->purpose, &d->signature,
+        &d->peer.public_key))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "keygen reveal data with invalid signature in consensus\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "keygen reveal data with invalid signature in consensus\n");
     return;
   }
 
   public_key_share = keygen_reveal_get_exp_coeff (ks, d, 0);
-  info->preshare_commitment = keygen_reveal_get_exp_preshare (ks, d, ks->local_peer_idx);
+  info->preshare_commitment = keygen_reveal_get_exp_preshare (ks, d,
+                                                              ks->local_peer_idx);
 
   if (NULL == ks->public_key)
   {
@@ -1458,10 +1510,12 @@ keygen_round2_new_element (void *cls,
   public_key_share = NULL;
 
   {
-    struct GNUNET_SECRETSHARING_FairEncryption *fe = keygen_reveal_get_enc_preshare (ks, d, ks->local_peer_idx);
+    struct GNUNET_SECRETSHARING_FairEncryption *fe =
+      keygen_reveal_get_enc_preshare (ks, d, ks->local_peer_idx);
     GNUNET_assert (NULL != (preshare = gcry_mpi_new (0)));
     GNUNET_CRYPTO_paillier_decrypt (&ks->paillier_private_key,
-                                    &ks->info[ks->local_peer_idx].paillier_public_key,
+                                    &ks->info[ks->local_peer_idx].
+                                    paillier_public_key,
                                     &fe->c,
                                     preshare);
 
@@ -1480,8 +1534,10 @@ keygen_round2_new_element (void *cls,
   tmp = NULL;
   if (0 != cmp_result)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "P%u: Got invalid presecret from P%u\n",
-                (unsigned int) ks->local_peer_idx, (unsigned int) (info - ks->info));
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "P%u: Got invalid presecret from P%u\n",
+                (unsigned int) ks->local_peer_idx, (unsigned int) (info
+                                                                   - ks->info));
     return;
   }
 
@@ -1520,7 +1576,7 @@ keygen_round2_new_element (void *cls,
       // Using pow(double,double) is a bit sketchy.
       // We count players from 1, but shares from 0.
       gcry_mpi_t tmp;
-      gcry_mpi_set_ui (j_to_k, (unsigned int) pow(j+1, k));
+      gcry_mpi_set_ui (j_to_k, (unsigned int) pow (j + 1, k));
       tmp = keygen_reveal_get_exp_coeff (ks, d, k);
       gcry_mpi_powm (tmp, tmp, j_to_k, elgamal_p);
       gcry_mpi_mulm (prod, prod, tmp, elgamal_p);
@@ -1533,7 +1589,8 @@ keygen_round2_new_element (void *cls,
     exp_preshare = NULL;
     if (0 != cmp_result)
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "P%u: reveal data from P%u incorrect\n",
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  "P%u: reveal data from P%u incorrect\n",
                   ks->local_peer_idx, j);
       /* no need for further verification, round2 stays invalid ... */
       return;
@@ -1543,14 +1600,15 @@ keygen_round2_new_element (void *cls,
   // TODO: verify proof of fair encryption (once implemented)
   for (j = 0; j < ks->num_peers; j++)
   {
-    struct GNUNET_SECRETSHARING_FairEncryption *fe = keygen_reveal_get_enc_preshare (ks, d, j);
+    struct GNUNET_SECRETSHARING_FairEncryption *fe =
+      keygen_reveal_get_enc_preshare (ks, d, j);
     if (GNUNET_YES != verify_fair (&ks->info[j].paillier_public_key, fe))
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "P%u: reveal data from P%u incorrect (fair encryption)\n",
+      GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                  "P%u: reveal data from P%u incorrect (fair encryption)\n",
                   ks->local_peer_idx, j);
       return;
     }
-
   }
 
   info->round2_valid = GNUNET_YES;
@@ -1574,8 +1632,10 @@ keygen_round1_conclude (void *cls)
 
   GNUNET_CONSENSUS_destroy (ks->consensus);
 
-  ks->consensus = GNUNET_CONSENSUS_create (cfg, ks->num_peers, ks->peers, &ks->session_id,
-                                           time_between (ks->start_time, ks->deadline, 1, 2),
+  ks->consensus = GNUNET_CONSENSUS_create (cfg, ks->num_peers, ks->peers,
+                                           &ks->session_id,
+                                           time_between (ks->start_time,
+                                                         ks->deadline, 1, 2),
                                            ks->deadline,
                                            keygen_round2_new_element, ks);
 
@@ -1614,13 +1674,17 @@ insert_round1_element (struct KeygenSession *ks)
 
   gcry_mpi_powm (v, elgamal_g, ks->presecret_polynomial[0], elgamal_p);
 
-  GNUNET_CRYPTO_mpi_print_unsigned (v_data, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, v);
+  GNUNET_CRYPTO_mpi_print_unsigned (v_data, GNUNET_SECRETSHARING_ELGAMAL_BITS
+                                    / 8, v);
 
-  GNUNET_CRYPTO_hash (v_data, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, &d->commitment);
+  GNUNET_CRYPTO_hash (v_data, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8,
+                      &d->commitment);
 
   d->pubkey = ks->info[ks->local_peer_idx].paillier_public_key;
 
-  d->purpose.size = htonl ((sizeof *d) - offsetof (struct GNUNET_SECRETSHARING_KeygenCommitData, purpose));
+  d->purpose.size = htonl ((sizeof *d) - offsetof (struct
+                                                   GNUNET_SECRETSHARING_KeygenCommitData,
+                                                   purpose));
   d->purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DKG1);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CRYPTO_eddsa_sign (my_peer_private_key,
@@ -1647,8 +1711,8 @@ check_client_keygen (void *cls,
 {
   unsigned int num_peers = ntohs (msg->num_peers);
 
-  if (ntohs (msg->header.size) - sizeof (*msg) !=
-      num_peers * sizeof (struct GNUNET_PeerIdentity))
+  if (ntohs (msg->header.size) - sizeof(*msg) !=
+      num_peers * sizeof(struct GNUNET_PeerIdentity))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -1699,8 +1763,10 @@ handle_client_keygen (void *cls,
                                            ks->num_peers,
                                            ks->peers,
                                            &msg->session_id,
-                                           GNUNET_TIME_absolute_ntoh (msg->start),
-                                           GNUNET_TIME_absolute_ntoh (msg->deadline),
+                                           GNUNET_TIME_absolute_ntoh (
+                                             msg->start),
+                                           GNUNET_TIME_absolute_ntoh (
+                                             msg->deadline),
                                            keygen_round1_new_element,
                                            ks);
 
@@ -1710,8 +1776,9 @@ handle_client_keygen (void *cls,
   for (unsigned int i = 0; i < ks->num_peers; i++)
     ks->info[i].peer = ks->peers[i];
 
-  GNUNET_CRYPTO_paillier_create (&ks->info[ks->local_peer_idx].paillier_public_key,
-                                 &ks->paillier_private_key);
+  GNUNET_CRYPTO_paillier_create (
+    &ks->info[ks->local_peer_idx].paillier_public_key,
+    &ks->paillier_private_key);
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "P%u: Generated paillier key pair\n",
@@ -1781,24 +1848,27 @@ decrypt_conclude (void *cls)
   gcry_mpi_set_ui (prod, 1);
   for (i = 0; i < num; i++)
   {
-
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
                 "P%u: index of %u: %u\n",
                 ds->share->my_peer, i, indices[i]);
     compute_lagrange_coefficient (lagrange, indices[i], indices, num);
     // w_i^{\lambda_i}
-    gcry_mpi_powm (tmp, ds->info[indices[i]].partial_decryption, lagrange, elgamal_p);
+    gcry_mpi_powm (tmp, ds->info[indices[i]].partial_decryption, lagrange,
+                   elgamal_p);
 
     // product of all exponentiated partiel decryptions ...
     gcry_mpi_mulm (prod, prod, tmp, elgamal_p);
   }
 
-  GNUNET_CRYPTO_mpi_scan_unsigned (&c_2, ds->ciphertext.c2_bits, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
+  GNUNET_CRYPTO_mpi_scan_unsigned (&c_2, ds->ciphertext.c2_bits,
+                                   GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
 
   GNUNET_assert (0 != gcry_mpi_invm (prod, prod, elgamal_p));
   gcry_mpi_mulm (m, c_2, prod, elgamal_p);
-  ev = GNUNET_MQ_msg (msg, GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_DECRYPT_DONE);
-  GNUNET_CRYPTO_mpi_print_unsigned (&msg->plaintext, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, m);
+  ev = GNUNET_MQ_msg (msg,
+                      GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_DECRYPT_DONE);
+  GNUNET_CRYPTO_mpi_print_unsigned (&msg->plaintext,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, m);
   msg->success = htonl (1);
   GNUNET_MQ_send (ds->cs->mq,
                   ev);
@@ -1807,11 +1877,11 @@ decrypt_conclude (void *cls)
 
   GNUNET_free (indices);
 
-  gcry_mpi_release(lagrange);
-  gcry_mpi_release(m);
-  gcry_mpi_release(tmp);
-  gcry_mpi_release(prod);
-  gcry_mpi_release(c_2);
+  gcry_mpi_release (lagrange);
+  gcry_mpi_release (m);
+  gcry_mpi_release (tmp);
+  gcry_mpi_release (prod);
+  gcry_mpi_release (c_2);
 
   // FIXME: what if not enough peers participated?
 }
@@ -1875,7 +1945,8 @@ decrypt_new_element (void *cls,
 
   if (element->size != sizeof *d)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "element of wrong size in decrypt consensus\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "element of wrong size in decrypt consensus\n");
     return;
   }
 
@@ -1885,7 +1956,8 @@ decrypt_new_element (void *cls,
 
   if (NULL == info)
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "decrypt element from invalid peer (%s)\n",
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "decrypt element from invalid peer (%s)\n",
                 GNUNET_i2s (&d->peer));
     return;
   }
@@ -1898,38 +1970,53 @@ decrypt_new_element (void *cls,
 
   if (0 != GNUNET_memcmp (&d->ciphertext, &session->ciphertext))
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "P%u: got decrypt element with non-matching ciphertext from P%u\n",
-                (unsigned int) session->share->my_peer, (unsigned int) (info - session->info));
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "P%u: got decrypt element with non-matching ciphertext from P%u\n",
+                (unsigned int) session->share->my_peer, (unsigned int) (info
+                                                                        -
+                                                                        session
+                                                                        ->info));
 
     return;
   }
 
 
-  GNUNET_CRYPTO_hash (offsetof (struct GNUNET_SECRETSHARING_DecryptData, ciphertext) + (char *) d,
-                      offsetof (struct GNUNET_SECRETSHARING_DecryptData, nizk_response) -
-                          offsetof (struct GNUNET_SECRETSHARING_DecryptData, ciphertext),
+  GNUNET_CRYPTO_hash (offsetof (struct GNUNET_SECRETSHARING_DecryptData,
+                                ciphertext) + (char *) d,
+                      offsetof (struct GNUNET_SECRETSHARING_DecryptData,
+                                nizk_response)
+                      - offsetof (struct GNUNET_SECRETSHARING_DecryptData,
+                                  ciphertext),
                       &challenge_hash);
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&challenge, &challenge_hash,
-                                   sizeof (struct GNUNET_HashCode));
+                                   sizeof(struct GNUNET_HashCode));
 
-  GNUNET_CRYPTO_mpi_scan_unsigned (&sigma, &session->share->sigmas[info - session->info],
-                                   sizeof (struct GNUNET_SECRETSHARING_FieldElement));
+  GNUNET_CRYPTO_mpi_scan_unsigned (&sigma, &session->share->sigmas[info
+                                                                   - session->
+                                                                   info],
+                                   sizeof(struct
+                                          GNUNET_SECRETSHARING_FieldElement));
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&c1, session->ciphertext.c1_bits,
-                                   sizeof (struct GNUNET_SECRETSHARING_FieldElement));
+                                   sizeof(struct
+                                          GNUNET_SECRETSHARING_FieldElement));
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&commit1, &d->nizk_commit1,
-                                   sizeof (struct GNUNET_SECRETSHARING_FieldElement));
+                                   sizeof(struct
+                                          GNUNET_SECRETSHARING_FieldElement));
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&commit2, &d->nizk_commit2,
-                                   sizeof (struct GNUNET_SECRETSHARING_FieldElement));
+                                   sizeof(struct
+                                          GNUNET_SECRETSHARING_FieldElement));
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&r, &d->nizk_response,
-                                   sizeof (struct GNUNET_SECRETSHARING_FieldElement));
+                                   sizeof(struct
+                                          GNUNET_SECRETSHARING_FieldElement));
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&w, &d->partial_decryption,
-                                   sizeof (struct GNUNET_SECRETSHARING_FieldElement));
+                                   sizeof(struct
+                                          GNUNET_SECRETSHARING_FieldElement));
 
   GNUNET_assert (NULL != (tmp1 = gcry_mpi_new (0)));
   GNUNET_assert (NULL != (tmp2 = gcry_mpi_new (0)));
@@ -1976,7 +2063,8 @@ decrypt_new_element (void *cls,
   }
 
 
-  GNUNET_CRYPTO_mpi_scan_unsigned (&info->partial_decryption, &d->partial_decryption,
+  GNUNET_CRYPTO_mpi_scan_unsigned (&info->partial_decryption,
+                                   &d->partial_decryption,
                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
 cleanup:
   gcry_mpi_release (tmp1);
@@ -2021,7 +2109,8 @@ insert_decrypt_element (struct DecryptSession *ds)
                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
   GNUNET_CRYPTO_mpi_scan_unsigned (&s, &ds->share->my_share,
                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
-  GNUNET_CRYPTO_mpi_scan_unsigned (&sigma, &ds->share->sigmas[ds->share->my_peer],
+  GNUNET_CRYPTO_mpi_scan_unsigned (&sigma,
+                                   &ds->share->sigmas[ds->share->my_peer],
                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8);
 
   GNUNET_assert (NULL != (w = gcry_mpi_new (0)));
@@ -2035,7 +2124,8 @@ insert_decrypt_element (struct DecryptSession *ds)
     char *sigma_str = mpi_to_str (sigma);
     char *tmp_str = mpi_to_str (tmp);
     char *s_str = mpi_to_str (s);
-    GNUNET_log (GNUNET_ERROR_TYPE_ERROR, "Share of P%u is invalid, ref sigma %s, "
+    GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
+                "Share of P%u is invalid, ref sigma %s, "
                 "computed sigma %s, s %s\n",
                 ds->share->my_peer,
                 sigma_str, tmp_str, s_str);
@@ -2047,43 +2137,55 @@ insert_decrypt_element (struct DecryptSession *ds)
   gcry_mpi_powm (w, c1, s, elgamal_p);
 
   element.data = (void *) &d;
-  element.size = sizeof (struct GNUNET_SECRETSHARING_DecryptData);
+  element.size = sizeof(struct GNUNET_SECRETSHARING_DecryptData);
   element.element_type = 0;
 
   d.ciphertext = ds->ciphertext;
   d.peer = my_peer;
-  GNUNET_CRYPTO_mpi_print_unsigned (&d.partial_decryption, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, w);
+  GNUNET_CRYPTO_mpi_print_unsigned (&d.partial_decryption,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, w);
 
   // create the zero knowledge proof
   // randomly choose beta such that 0 < beta < q
   do
   {
-    gcry_mpi_randomize (beta, GNUNET_SECRETSHARING_ELGAMAL_BITS - 1, GCRY_WEAK_RANDOM);
-  } while ((gcry_mpi_cmp_ui (beta, 0) == 0) || (gcry_mpi_cmp (beta, elgamal_q) >= 0));
+    gcry_mpi_randomize (beta, GNUNET_SECRETSHARING_ELGAMAL_BITS - 1,
+                        GCRY_WEAK_RANDOM);
+  }
+  while ((gcry_mpi_cmp_ui (beta, 0) == 0) || (gcry_mpi_cmp (beta, elgamal_q) >=
+                                              0));
   // tmp = g^beta
   gcry_mpi_powm (tmp, elgamal_g, beta, elgamal_p);
-  GNUNET_CRYPTO_mpi_print_unsigned (&d.nizk_commit1, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, tmp);
+  GNUNET_CRYPTO_mpi_print_unsigned (&d.nizk_commit1,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, tmp);
   // tmp = (c_1)^beta
   gcry_mpi_powm (tmp, c1, beta, elgamal_p);
-  GNUNET_CRYPTO_mpi_print_unsigned (&d.nizk_commit2, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, tmp);
+  GNUNET_CRYPTO_mpi_print_unsigned (&d.nizk_commit2,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, tmp);
 
   // the challenge is the hash of everything up to the response
-  GNUNET_CRYPTO_hash (offsetof (struct GNUNET_SECRETSHARING_DecryptData, ciphertext) + (char *) &d,
-                      offsetof (struct GNUNET_SECRETSHARING_DecryptData, nizk_response) -
-                          offsetof (struct GNUNET_SECRETSHARING_DecryptData, ciphertext),
+  GNUNET_CRYPTO_hash (offsetof (struct GNUNET_SECRETSHARING_DecryptData,
+                                ciphertext) + (char *) &d,
+                      offsetof (struct GNUNET_SECRETSHARING_DecryptData,
+                                nizk_response)
+                      - offsetof (struct GNUNET_SECRETSHARING_DecryptData,
+                                  ciphertext),
                       &challenge_hash);
 
   GNUNET_CRYPTO_mpi_scan_unsigned (&challenge, &challenge_hash,
-                                   sizeof (struct GNUNET_HashCode));
+                                   sizeof(struct GNUNET_HashCode));
 
   // compute the response in tmp,
   // tmp = (c * s + beta) mod q
   gcry_mpi_mulm (tmp, challenge, s, elgamal_q);
   gcry_mpi_addm (tmp, tmp, beta, elgamal_q);
 
-  GNUNET_CRYPTO_mpi_print_unsigned (&d.nizk_response, GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, tmp);
+  GNUNET_CRYPTO_mpi_print_unsigned (&d.nizk_response,
+                                    GNUNET_SECRETSHARING_ELGAMAL_BITS / 8, tmp);
 
-  d.purpose.size = htonl (element.size - offsetof (struct GNUNET_SECRETSHARING_DecryptData, purpose));
+  d.purpose.size = htonl (element.size - offsetof (struct
+                                                   GNUNET_SECRETSHARING_DecryptData,
+                                                   purpose));
   d.purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_SECRETSHARING_DECRYPTION);
 
   GNUNET_assert (GNUNET_OK ==
@@ -2115,7 +2217,8 @@ insert_decrypt_element (struct DecryptSession *ds)
  */
 static int
 check_client_decrypt (void *cls,
-                      const struct GNUNET_SECRETSHARING_DecryptRequestMessage *msg)
+                      const struct
+                      GNUNET_SECRETSHARING_DecryptRequestMessage *msg)
 {
   /* we check later, it's complicated */
   return GNUNET_OK;
@@ -2131,7 +2234,8 @@ check_client_decrypt (void *cls,
  */
 static void
 handle_client_decrypt (void *cls,
-                       const struct GNUNET_SECRETSHARING_DecryptRequestMessage *msg)
+                       const struct
+                       GNUNET_SECRETSHARING_DecryptRequestMessage *msg)
 {
   struct ClientState *cs = cls;
   struct DecryptSession *ds;
@@ -2151,7 +2255,8 @@ handle_client_decrypt (void *cls,
   ds->ciphertext = msg->ciphertext;
 
   ds->share = GNUNET_SECRETSHARING_share_read (&msg[1],
-                                               ntohs (msg->header.size) - sizeof (*msg),
+                                               ntohs (msg->header.size)
+                                               - sizeof(*msg),
                                                NULL);
   if (NULL == ds->share)
   {
@@ -2162,7 +2267,7 @@ handle_client_decrypt (void *cls,
 
   /* FIXME: this is probably sufficient, but kdf/hash with all values would be nicer ... */
   GNUNET_CRYPTO_hash (&msg->ciphertext,
-                      sizeof (struct GNUNET_SECRETSHARING_Ciphertext),
+                      sizeof(struct GNUNET_SECRETSHARING_Ciphertext),
                       &session_id);
   ds->consensus = GNUNET_CONSENSUS_create (cfg,
                                            ds->share->num_peers,
@@ -2196,11 +2301,14 @@ static void
 init_crypto_constants (void)
 {
   GNUNET_assert (0 == gcry_mpi_scan (&elgamal_q, GCRYMPI_FMT_HEX,
-                                     GNUNET_SECRETSHARING_ELGAMAL_Q_HEX, 0, NULL));
+                                     GNUNET_SECRETSHARING_ELGAMAL_Q_HEX, 0,
+                                     NULL));
   GNUNET_assert (0 == gcry_mpi_scan (&elgamal_p, GCRYMPI_FMT_HEX,
-                                     GNUNET_SECRETSHARING_ELGAMAL_P_HEX, 0, NULL));
+                                     GNUNET_SECRETSHARING_ELGAMAL_P_HEX, 0,
+                                     NULL));
   GNUNET_assert (0 == gcry_mpi_scan (&elgamal_g, GCRYMPI_FMT_HEX,
-                                     GNUNET_SECRETSHARING_ELGAMAL_G_HEX, 0, NULL));
+                                     GNUNET_SECRETSHARING_ELGAMAL_G_HEX, 0,
+                                     NULL));
 }
 
 
@@ -2238,7 +2346,7 @@ run (void *cls,
     return;
   }
   GNUNET_SCHEDULER_add_shutdown (&cleanup_task,
-				 NULL);
+                                 NULL);
 }
 
 
@@ -2252,8 +2360,8 @@ run (void *cls,
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *c,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct ClientState *cs = GNUNET_new (struct ClientState);;
 
@@ -2272,8 +2380,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *c,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
 {
   struct ClientState *cs = internal_cls;
 
@@ -2290,18 +2398,18 @@ client_disconnect_cb (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("secretsharing",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (client_keygen,
-                        GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_GENERATE,
-                        struct GNUNET_SECRETSHARING_CreateMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (client_decrypt,
-                        GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_DECRYPT,
-                        struct GNUNET_SECRETSHARING_DecryptRequestMessage,
-                        NULL),
- GNUNET_MQ_handler_end ());
+  ("secretsharing",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (client_keygen,
+                         GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_GENERATE,
+                         struct GNUNET_SECRETSHARING_CreateMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (client_decrypt,
+                         GNUNET_MESSAGE_TYPE_SECRETSHARING_CLIENT_DECRYPT,
+                         struct GNUNET_SECRETSHARING_DecryptRequestMessage,
+                         NULL),
+  GNUNET_MQ_handler_end ());

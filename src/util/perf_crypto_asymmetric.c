@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Bart Polot
@@ -49,7 +49,7 @@ log_duration (const char *cryptosystem,
   sprintf (s, "%6s %15s", cryptosystem, description);
   t = GNUNET_TIME_absolute_get_duration (start);
   t = GNUNET_TIME_relative_divide (t, l);
-  FPRINTF (stdout,
+  fprintf (stdout,
            "%s: %10s\n",
            s,
            GNUNET_STRINGS_relative_time_to_string (t,
@@ -68,29 +68,29 @@ main (int argc, char *argv[])
   struct GNUNET_CRYPTO_EddsaPublicKey dspub[l];
   struct TestSig sig[l];
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
   {
     sig[i].purp.purpose = 0;
-    sig[i].purp.size = htonl (sizeof (struct GNUNET_CRYPTO_EccSignaturePurpose)
-                              + sizeof (struct GNUNET_HashCode));
+    sig[i].purp.size = htonl (sizeof(struct GNUNET_CRYPTO_EccSignaturePurpose)
+                              + sizeof(struct GNUNET_HashCode));
     GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_WEAK,
                                 &sig[i].h,
-                                sizeof (sig[i].h));
+                                sizeof(sig[i].h));
   }
   log_duration ("", "Init");
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
-    eddsa[i] = GNUNET_CRYPTO_eddsa_key_create();
+    eddsa[i] = GNUNET_CRYPTO_eddsa_key_create ();
   log_duration ("EdDSA", "create key");
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
     GNUNET_CRYPTO_eddsa_key_get_public (eddsa[i], &dspub[i]);
   log_duration ("EdDSA", "get public");
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
     GNUNET_assert (GNUNET_OK ==
                    GNUNET_CRYPTO_eddsa_sign (eddsa[i],
@@ -98,7 +98,7 @@ main (int argc, char *argv[])
                                              &sig[i].sig));
   log_duration ("EdDSA", "sign HashCode");
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
     GNUNET_assert (GNUNET_OK ==
                    GNUNET_CRYPTO_eddsa_verify (0,
@@ -107,25 +107,26 @@ main (int argc, char *argv[])
                                                &dspub[i]));
   log_duration ("EdDSA", "verify HashCode");
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
-    ecdhe[i] = GNUNET_CRYPTO_ecdhe_key_create();
+    ecdhe[i] = GNUNET_CRYPTO_ecdhe_key_create ();
   log_duration ("ECDH", "create key");
 
-  start = GNUNET_TIME_absolute_get();
+  start = GNUNET_TIME_absolute_get ();
   for (i = 0; i < l; i++)
     GNUNET_CRYPTO_ecdhe_key_get_public (ecdhe[i], &dhpub[i]);
   log_duration ("ECDH", "get public");
 
-  start = GNUNET_TIME_absolute_get();
-  for (i = 0; i < l - 1; i+=2)
+  start = GNUNET_TIME_absolute_get ();
+  for (i = 0; i < l - 1; i += 2)
   {
-    GNUNET_CRYPTO_ecc_ecdh (ecdhe[i], &dhpub[i+1], &sig[i].h);
-    GNUNET_CRYPTO_ecc_ecdh (ecdhe[i+1], &dhpub[i], &sig[i+1].h);
+    GNUNET_CRYPTO_ecc_ecdh (ecdhe[i], &dhpub[i + 1], &sig[i].h);
+    GNUNET_CRYPTO_ecc_ecdh (ecdhe[i + 1], &dhpub[i], &sig[i + 1].h);
   }
   log_duration ("ECDH", "do DH");
 
   return 0;
 }
+
 
 /* end of perf_crypto_asymmetric.c */

@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2010-2014 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2010-2014 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/gnunet-service-transport_plugins.c
@@ -65,7 +65,6 @@ struct TransportPlugin
    * for this plugin.
    */
   struct GNUNET_TRANSPORT_PluginEnvironment env;
-
 };
 
 /**
@@ -113,12 +112,12 @@ plugin_env_address_to_type (void *cls,
 {
   if (NULL == GST_is)
   {
-    GNUNET_break(0);
+    GNUNET_break (0);
     return GNUNET_NT_UNSPECIFIED;
   }
   return GNUNET_NT_scanner_get_type (GST_is,
-                                              addr,
-                                              addrlen);
+                                     addr,
+                                     addrlen);
 }
 
 
@@ -155,7 +154,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
                                              &tneigh))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                _("Transport service is lacking NEIGHBOUR_LIMIT option.\n"));
+                _ ("Transport service is lacking NEIGHBOUR_LIMIT option.\n"));
     return;
   }
   if (GNUNET_OK !=
@@ -165,12 +164,12 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
                                              &plugs))
     return;
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-              _("Starting transport plugins `%s'\n"),
+              _ ("Starting transport plugins `%s'\n"),
               plugs);
   for (pos = strtok (plugs, " "); pos != NULL; pos = strtok (NULL, " "))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                _("Loading `%s' transport plugin\n"),
+                _ ("Loading `%s' transport plugin\n"),
                 pos);
     GNUNET_asprintf (&libname,
                      "libgnunet_plugin_transport_%s",
@@ -205,7 +204,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     if (NULL == plug->api)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Failed to load transport plugin for `%s'\n"),
+                  _ ("Failed to load transport plugin for `%s'\n"),
                   plug->lib_name);
       GNUNET_CONTAINER_DLL_remove (plugins_head,
                                    plugins_tail,
@@ -218,25 +217,25 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     fail = GNUNET_NO;
     if (NULL == plug->api->address_pretty_printer)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "address_pretty_printer",
                   plug->lib_name);
     }
     if (NULL == plug->api->address_to_string)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "address_to_string",
                   plug->lib_name);
     }
     if (NULL == plug->api->string_to_address)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "string_to_address",
                   plug->lib_name);
     }
@@ -244,7 +243,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     {
       fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "check_address",
                   plug->lib_name);
     }
@@ -252,7 +251,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     {
       fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "get_session",
                   plug->lib_name);
     }
@@ -260,7 +259,7 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     {
       fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "get_network",
                   plug->lib_name);
     }
@@ -268,23 +267,23 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     {
       fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "send",
                   plug->lib_name);
     }
     if (NULL == plug->api->disconnect_peer)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "disconnect_peer",
                   plug->lib_name);
     }
     if (NULL == plug->api->disconnect_session)
     {
-    	fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "disconnect_session",
                   plug->lib_name);
     }
@@ -292,22 +291,22 @@ GST_plugins_load (GNUNET_TRANSPORT_PluginReceiveCallback recv_cb,
     {
       fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "query_keepalive_factor",
                   plug->lib_name);
     }
     if (NULL == plug->api->update_session_timeout)
     {
-        fail = GNUNET_YES;
+      fail = GNUNET_YES;
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Missing function `%s' in transport plugin for `%s'\n"),
+                  _ ("Missing function `%s' in transport plugin for `%s'\n"),
                   "update_session_timeout",
                   plug->lib_name);
     }
     if (GNUNET_YES == fail)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("Did not load plugin `%s' due to missing functions\n"),
+                  _ ("Did not load plugin `%s' due to missing functions\n"),
                   plug->lib_name);
       GNUNET_break (NULL == GNUNET_PLUGIN_unload (plug->lib_name, plug->api));
       GNUNET_CONTAINER_DLL_remove (plugins_head,
@@ -381,7 +380,7 @@ GST_plugins_printer_find (const char *name)
     sep[0] = '\0';
   for (pos = plugins_head; NULL != pos; pos = pos->next)
     if (pos->short_name == strstr (pos->short_name, stripped))
-        break;
+      break;
   GNUNET_free (stripped);
   if (NULL == pos)
     return NULL;
@@ -418,17 +417,17 @@ GST_plugins_a2s (const struct GNUNET_HELLO_Address *address)
   if (0 == address->address_length)
   {
     GNUNET_snprintf (unable_to_show,
-                     sizeof (unable_to_show),
+                     sizeof(unable_to_show),
                      "<unable to stringify %u-byte long address of %s transport>",
                      (unsigned int) address->address_length,
                      address->transport_name);
     return unable_to_show;
   }
-  return (NULL != (s = api->address_to_string (NULL,
-                                               address->address,
-                                               address->address_length))
-          ? s
-          : "<invalid>");
+  return(NULL != (s = api->address_to_string (NULL,
+                                              address->address,
+                                              address->address_length))
+         ? s
+         : "<invalid>");
 }
 
 
@@ -440,7 +439,7 @@ GST_plugins_a2s (const struct GNUNET_HELLO_Address *address)
  */
 void
 GST_plugins_monitor_subscribe (GNUNET_TRANSPORT_SessionInfoCallback cb,
-			       void *cb_cls)
+                               void *cb_cls)
 {
   struct TransportPlugin *pos;
 
@@ -449,8 +448,8 @@ GST_plugins_monitor_subscribe (GNUNET_TRANSPORT_SessionInfoCallback cb,
       GNUNET_break (0);
     else
       pos->api->setup_monitor (pos->api->cls,
-			       cb,
-			       cb_cls);
+                               cb,
+                               cb_cls);
 }
 
 

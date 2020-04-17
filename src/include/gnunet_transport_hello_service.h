@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -60,7 +60,6 @@ extern "C" {
  */
 enum GNUNET_TRANSPORT_AddressClass
 {
-
   /**
    * No address.
    */
@@ -108,7 +107,6 @@ enum GNUNET_TRANSPORT_AddressClass
    * Bitmask for "any" address.
    */
   GNUNET_TRANSPORT_AC_ANY = 65535
-
 };
 
 

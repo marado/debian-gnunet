@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/plugin_transport_http_common.c
  * @brief functionality shared by http client and server transport service plugin
@@ -33,10 +33,14 @@
 #define TESTING GNUNET_NO
 
 #if TESTING
-#define HTTP_SERVER_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 3)
-#define HTTP_CLIENT_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 3)
-#define HTTP_CLIENT_SESSION_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 7)
-#define SERVER_SESSION_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 7)
+#define HTTP_SERVER_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 3)
+#define HTTP_CLIENT_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 3)
+#define HTTP_CLIENT_SESSION_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 7)
+#define SERVER_SESSION_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 7)
 #define TIMEOUT_LOG GNUNET_ERROR_TYPE_DEBUG
 
 #else
@@ -47,8 +51,10 @@
 #define PROTOCOL "http"
 #endif
 
-#define HTTP_SERVER_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 15)
-#define HTTP_CLIENT_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 15)
+#define HTTP_SERVER_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 15)
+#define HTTP_CLIENT_NOT_VALIDATED_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 15)
 #define HTTP_CLIENT_SESSION_TIMEOUT GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT
 #define HTTP_SERVER_SESSION_TIMEOUT GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT
 #define TIMEOUT_LOG GNUNET_ERROR_TYPE_DEBUG
@@ -144,7 +150,8 @@ http_common_plugin_address_pretty_printer (void *cls,
                                            size_t addrlen,
                                            int numeric,
                                            struct GNUNET_TIME_Relative timeout,
-                                           GNUNET_TRANSPORT_AddressStringCallback asc,
+                                           GNUNET_TRANSPORT_AddressStringCallback
+                                           asc,
                                            void *asc_cls);
 
 
@@ -229,7 +236,7 @@ http_common_plugin_address_to_url (void *cls,
  * @return the size
  */
 size_t
-http_common_address_get_size (const struct HttpAddress * addr);
+http_common_address_get_size (const struct HttpAddress *addr);
 
 
 /**
@@ -256,8 +263,10 @@ http_common_cmp_addresses (const void *addr1,
  * @return the network type
  */
 enum GNUNET_NetworkType
-http_common_get_network_for_address (struct GNUNET_TRANSPORT_PluginEnvironment *env,
-                                     const struct GNUNET_HELLO_Address *address);
+http_common_get_network_for_address (struct
+                                     GNUNET_TRANSPORT_PluginEnvironment *env,
+                                     const struct
+                                     GNUNET_HELLO_Address *address);
 
 
 /* end of plugin_transport_http_common.h */

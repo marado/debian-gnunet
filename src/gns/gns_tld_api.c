@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file gns/gns_tld_api.c
  * @brief library to access the GNS service, including TLD lookup
@@ -43,7 +43,6 @@
  */
 struct GNUNET_GNS_LookupWithTldRequest
 {
-
   /**
    * handle to gns
    */
@@ -191,8 +190,8 @@ lookup_with_public_key (struct GNUNET_GNS_LookupWithTldRequest *ltr,
  */
 static void
 identity_zone_cb (void *cls,
-		  const struct GNUNET_CRYPTO_EcdsaPrivateKey *priv,
-		  const char *ego_name)
+                  const struct GNUNET_CRYPTO_EcdsaPrivateKey *priv,
+                  const char *ego_name)
 {
   struct GNUNET_GNS_LookupWithTldRequest *ltr = cls;
   struct GNUNET_CRYPTO_EcdsaPublicKey pkey;
@@ -231,7 +230,7 @@ identity_zone_cb (void *cls,
  * and the current configuration to resolve TLDs to zones.
  *
  * @param handle handle to the GNS service
- * @param name the name to look up, including TLD
+ * @param name the name to look up, including TLD (in UTF-8 encoding)
  * @param type the record type to look up
  * @param options local options for the lookup
  * @param proc processor to call on result
@@ -307,9 +306,9 @@ GNUNET_GNS_lookup_with_tld (struct GNUNET_GNS_Handle *handle,
   }
   ltr->id_co =
     GNUNET_IDENTITY_ego_lookup_by_suffix (ltr->gns_handle->cfg,
-					  ltr->name,
-					  &identity_zone_cb,
-					  ltr);
+                                          ltr->name,
+                                          &identity_zone_cb,
+                                          ltr);
   if (NULL == ltr->id_co)
   {
     GNUNET_free (ltr->name);
@@ -346,5 +345,6 @@ GNUNET_GNS_lookup_with_tld_cancel (struct GNUNET_GNS_LookupWithTldRequest *ltr)
   GNUNET_free (ltr);
   return ret;
 }
+
 
 /* end of gns_tld_api.c */

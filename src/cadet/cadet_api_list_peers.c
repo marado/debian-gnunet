@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/cadet_api_list_peers.c
  * @brief cadet api: client implementation of cadet service
@@ -36,7 +36,6 @@
  */
 struct GNUNET_CADET_PeersLister
 {
-
   /**
    * Monitor callback
    */
@@ -66,7 +65,6 @@ struct GNUNET_CADET_PeersLister
    * Backoff for reconnect attempts.
    */
   struct GNUNET_TIME_Relative backoff;
-  
 };
 
 
@@ -88,7 +86,7 @@ handle_get_peers (void *cls,
   ple.n_paths = (unsigned int) ntohs (info->paths);
   ple.best_path_length = (unsigned int) ntohl (info->best_path_length);
   pl->peers_cb (pl->peers_cb_cls,
-		&ple);
+                &ple);
 }
 
 
@@ -100,13 +98,14 @@ handle_get_peers (void *cls,
  */
 static void
 handle_get_peers_end (void *cls,
-		      const struct GNUNET_MessageHeader *msg)
+                      const struct GNUNET_MessageHeader *msg)
 {
   struct GNUNET_CADET_PeersLister *pl = cls;
+
   (void) msg;
 
   pl->peers_cb (pl->peers_cb_cls,
-		NULL);
+                NULL);
   GNUNET_CADET_list_peers_cancel (pl);
 }
 
@@ -128,17 +127,17 @@ reconnect (void *cls);
  */
 static void
 error_handler (void *cls,
-	       enum GNUNET_MQ_Error error)
+               enum GNUNET_MQ_Error error)
 {
   struct GNUNET_CADET_PeersLister *pl = cls;
 
   GNUNET_MQ_destroy (pl->mq);
   pl->mq = NULL;
   pl->backoff = GNUNET_TIME_randomized_backoff (pl->backoff,
-						GNUNET_TIME_UNIT_MINUTES);
+                                                GNUNET_TIME_UNIT_MINUTES);
   pl->reconnect_task = GNUNET_SCHEDULER_add_delayed (pl->backoff,
-						     &reconnect,
-						     pl);
+                                                     &reconnect,
+                                                     pl);
 }
 
 
@@ -153,13 +152,13 @@ reconnect (void *cls)
   struct GNUNET_CADET_PeersLister *pl = cls;
   struct GNUNET_MQ_MessageHandler handlers[] = {
     GNUNET_MQ_hd_fixed_size (get_peers,
-			     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS,
-			     struct GNUNET_CADET_LocalInfoPeers,
-			     pl),
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS,
+                             struct GNUNET_CADET_LocalInfoPeers,
+                             pl),
     GNUNET_MQ_hd_fixed_size (get_peers_end,
-			     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS_END,
-			     struct GNUNET_MessageHeader,
-			     pl),
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PEERS_END,
+                             struct GNUNET_MessageHeader,
+                             pl),
     GNUNET_MQ_handler_end ()
   };
   struct GNUNET_MessageHeader *msg;
@@ -167,14 +166,14 @@ reconnect (void *cls)
 
   pl->reconnect_task = NULL;
   pl->mq = GNUNET_CLIENT_connect (pl->cfg,
-				  "cadet",
-				  handlers,
-				  &error_handler,
-				  pl);	
+                                  "cadet",
+                                  handlers,
+                                  &error_handler,
+                                  pl);
   if (NULL == pl->mq)
     return;
   env = GNUNET_MQ_msg (msg,
-		       GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PEERS);
+                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PEERS);
   GNUNET_MQ_send (pl->mq,
                   env);
 }
@@ -192,8 +191,8 @@ reconnect (void *cls)
  */
 struct GNUNET_CADET_PeersLister *
 GNUNET_CADET_list_peers (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			 GNUNET_CADET_PeersCB callback,
-			 void *callback_cls)
+                         GNUNET_CADET_PeersCB callback,
+                         void *callback_cls)
 {
   struct GNUNET_CADET_PeersLister *pl;
 
@@ -234,5 +233,6 @@ GNUNET_CADET_list_peers_cancel (struct GNUNET_CADET_PeersLister *pl)
   GNUNET_free (pl);
   return ret;
 }
+
 
 /* end of cadet_api_list_peers.c */

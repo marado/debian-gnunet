@@ -9,10 +9,20 @@ noinst_SCRIPTS = \
  removetrailingwhitespace.py \
  gnunet_pyexpect.py \
  gnunet_janitor.py \
- gnunet-chk.py
+ gnunet-chk.py \
+ $(awkSCRIPTS)
+
+# FIXME: read into AWK_SCRIPTS autotools builtin.
+if HAVE_AWK
+awkSCRIPTS = \
+ check-texinfo.awk
+else
+awkSCRIPTS =
+endif
 
 bin_SCRIPTS = \
- gnunet-bugreport
+ gnunet-bugreport \
+ gnunet-suidfix
 
 EXTRA_DIST = \
  coverage.sh \
@@ -22,12 +32,12 @@ EXTRA_DIST = \
  gnunet-chk.py.in \
  $(SCRIPTS) \
  removetrailingwhitespace.py.in \
- pydiffer.py.in
+ pydiffer.py.in \
+ gnunet-suidfix \
+ check-texinfo.awk.in
 
 CLEANFILES = \
   $(noinst_SCRIPTS)
-
-do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 
 # Use SUFFIX Extension rules, they are more portable for every
 # implementation of 'make'.
@@ -42,5 +52,11 @@ do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g'
 SUFFIXES = .py.in .py
 
 .py.in.py:
-	$(do_subst) < $< > $@
+	$(AWK) -v py="$(PYTHON)" -f $(top_srcdir)/bin/dosubst.awk < $< > $@
 	chmod +x $@
+
+if HAVE_AWK
+check-texinfo.awk: check-texinfo.awk.in Makefile
+	$(AWK) -v awkay="$(AWK_BINARY)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/check-texinfo.awk.in > check-texinfo.awk
+	chmod +x check-texinfo.awk
+endif

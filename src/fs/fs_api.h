@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_api.h
@@ -92,7 +92,6 @@
  */
 struct FileIdentifier
 {
-
   /**
    * Total size of the file in bytes. (network byte order (!))
    */
@@ -102,7 +101,6 @@ struct FileIdentifier
    * Query and key of the top GNUNET_EC_IBlock.
    */
   struct ContentHashKey chk;
-
 };
 
 
@@ -132,7 +130,6 @@ struct Location
    * peer identity and expiration time.
    */
   struct GNUNET_CRYPTO_EddsaSignature contentSignature;
-
 };
 
 /**
@@ -205,7 +202,6 @@ struct GNUNET_FS_Uri
        * namespace.
        */
       char *identifier;
-
     } sks;
 
     /**
@@ -220,7 +216,6 @@ struct GNUNET_FS_Uri
      */
     struct Location loc;
   } data;
-
 };
 
 
@@ -230,7 +225,6 @@ struct GNUNET_FS_Uri
  */
 struct GNUNET_FS_FileInformation
 {
-
   /**
    * Files in a directory are kept as a linked list.
    */
@@ -311,13 +305,11 @@ struct GNUNET_FS_FileInformation
    */
   union
   {
-
     /**
      * Data for a file.
      */
     struct
     {
-
       /**
        * Function that can be used to read the data for the file.
        */
@@ -356,7 +348,6 @@ struct GNUNET_FS_FileInformation
        * #GNUNET_YES if this step has been completed.
        */
       int index_start_confirmed;
-
     } file;
 
     /**
@@ -364,7 +355,6 @@ struct GNUNET_FS_FileInformation
      */
     struct
     {
-
       /**
        * Linked list of entries in the directory.
        */
@@ -391,9 +381,7 @@ struct GNUNET_FS_FileInformation
        * Sum of all of the sizes of all of the files in the directory.
        */
       uint64_t contents_size;
-
     } dir;
-
   } data;
 
   /**
@@ -405,7 +393,6 @@ struct GNUNET_FS_FileInformation
    * Are we done publishing this file?
    */
   int is_published;
-
 };
 
 
@@ -501,7 +488,6 @@ struct GNUNET_FS_QueueEntry
    * #GNUNET_YES if the job is active now.
    */
   int active;
-
 };
 
 
@@ -510,7 +496,6 @@ struct GNUNET_FS_QueueEntry
  */
 struct GNUNET_FS_SearchResult
 {
-
   /**
    * File-sharing context this result belongs to.
    */
@@ -585,7 +570,7 @@ struct GNUNET_FS_SearchResult
    * complete on time (and that will need to be cancelled if we clean
    * up the search result before then).
    */
-  struct GNUNET_SCHEDULER_Task * probe_cancel_task;
+  struct GNUNET_SCHEDULER_Task *probe_cancel_task;
 
   /**
    * When did the current probe become active?
@@ -625,7 +610,6 @@ struct GNUNET_FS_SearchResult
    * search result.
    */
   uint32_t availability_trials;
-
 };
 
 
@@ -646,7 +630,7 @@ GNUNET_FS_queue_ (struct GNUNET_FS_Handle *h,
                   GNUNET_SCHEDULER_TaskCallback stop,
                   void *cls,
                   unsigned int blocks,
-		  enum GNUNET_FS_QueuePriority priority);
+                  enum GNUNET_FS_QueuePriority priority);
 
 
 /**
@@ -690,7 +674,6 @@ GNUNET_FS_data_reader_file_ (void *cls,
  */
 void *
 GNUNET_FS_make_file_reader_context_ (const char *filename);
-
 
 
 /**
@@ -815,7 +798,6 @@ void
 GNUNET_FS_download_start_task_ (void *cls);
 
 
-
 /**
  * Fill in all of the generic fields for
  * an unindex event and call the callback.
@@ -840,7 +822,7 @@ GNUNET_FS_unindex_make_status_ (struct GNUNET_FS_ProgressInfo *pi,
  */
 void *
 GNUNET_FS_search_make_status_ (struct GNUNET_FS_ProgressInfo *pi,
-			       struct GNUNET_FS_Handle *h,
+                               struct GNUNET_FS_Handle *h,
                                struct GNUNET_FS_SearchContext *sc);
 
 
@@ -1080,7 +1062,6 @@ GNUNET_FS_end_top (struct GNUNET_FS_Handle *h,
                    struct TopLevelActivity *top);
 
 
-
 /**
  * Master context for most FS operations.
  */
@@ -1150,13 +1131,13 @@ struct GNUNET_FS_Handle
    * Task that processes the jobs in the running and pending queues
    * (and moves jobs around as needed).
    */
-  struct GNUNET_SCHEDULER_Task * queue_job;
+  struct GNUNET_SCHEDULER_Task *queue_job;
 
   /**
    * Task we use to report periodically to the application that
    * certain search probes (from @e probes_head) are still running.
    */
-  struct GNUNET_SCHEDULER_Task * probe_ping_task;
+  struct GNUNET_SCHEDULER_Task *probe_ping_task;
 
   /**
    * Average time we take for a single request to be satisfied.
@@ -1188,7 +1169,6 @@ struct GNUNET_FS_Handle
    * Maximum number of parallel requests.
    */
   unsigned int max_parallel_requests;
-
 };
 
 
@@ -1275,7 +1255,7 @@ struct GNUNET_FS_PublishContext
    * ID of the task performing the upload. NO_TASK if the upload has
    * completed.
    */
-  struct GNUNET_SCHEDULER_Task * upload_task;
+  struct GNUNET_SCHEDULER_Task *upload_task;
 
   /**
    * Storage space to reserve for the operation.
@@ -1368,7 +1348,6 @@ enum UnindexState
  */
 struct GNUNET_FS_UnindexContext
 {
-
   /**
    * The content hash key of the last block we processed, will in the
    * end be set to the CHK from the URI.  Used to remove the KBlocks.
@@ -1482,7 +1461,6 @@ struct GNUNET_FS_UnindexContext
    * Current operatinonal phase.
    */
   enum UnindexState state;
-
 };
 
 
@@ -1491,7 +1469,6 @@ struct GNUNET_FS_UnindexContext
  */
 struct SearchRequestEntry
 {
-
   /**
    * Hash of the public key, also known as the query.
    */
@@ -1523,7 +1500,6 @@ struct SearchRequestEntry
    * (started with '+')?
    */
   int mandatory;
-
 };
 
 
@@ -1697,7 +1673,6 @@ enum BlockRequestState
  */
 struct DownloadRequest
 {
-
   /**
    * Parent in the CHK-tree.
    */
@@ -1740,7 +1715,6 @@ struct DownloadRequest
    * State in the FSM.
    */
   enum BlockRequestState state;
-
 };
 
 
@@ -1767,7 +1741,6 @@ GNUNET_FS_stop_probe_ping_task_ (struct GNUNET_FS_SearchResult *sr);
  */
 struct GNUNET_FS_DownloadContext
 {
-
   /**
    * Global FS context.
    */
@@ -1959,7 +1932,6 @@ struct GNUNET_FS_DownloadContext
    * Are we ready to issue requests (reconstructions are finished)?
    */
   int issue_requests;
-
 };
 
 

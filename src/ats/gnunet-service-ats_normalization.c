@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2011-2015 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2011-2015 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -31,7 +31,7 @@
 #include "gnunet-service-ats_normalization.h"
 #include "gnunet-service-ats_plugins.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "ats-normalization",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "ats-normalization", __VA_ARGS__)
 
 
 /**
@@ -164,8 +164,8 @@ update_norm (uint64_t min,
  */
 static int
 normalize_address (void *cls,
-		   const struct GNUNET_PeerIdentity *key,
-		   void *value)
+                   const struct GNUNET_PeerIdentity *key,
+                   void *value)
 {
   struct ATS_Address *address = value;
 
@@ -214,7 +214,7 @@ notify_change (void *cls,
 static void
 init_range (struct PropertyRange *pr)
 {
-  memset (pr, 0, sizeof (struct PropertyRange));
+  memset (pr, 0, sizeof(struct PropertyRange));
   pr->min.utilization_out = UINT32_MAX;
   pr->min.utilization_in = UINT32_MAX;
   pr->min.distance = UINT32_MAX;
@@ -251,7 +251,7 @@ GAS_normalization_update_property (struct ATS_Address *address)
                                          &find_min_max_it,
                                          &range);
   if (0 != GNUNET_memcmp (&range,
-                   &property_range))
+                          &property_range))
   {
     /* limits changed, (re)normalize all addresses */
     property_range = range;

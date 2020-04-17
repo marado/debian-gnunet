@@ -91,13 +91,16 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-bin_PROGRAMS = gnunet-conversation-test$(EXEEXT) \
-	gnunet-conversation$(EXEEXT)
-libexec_PROGRAMS = gnunet-service-conversation$(EXEEXT) \
-	$(am__EXEEXT_1) $(am__EXEEXT_2)
-check_PROGRAMS = test_conversation_api$(EXEEXT) \
-	test_conversation_api_reject$(EXEEXT) \
-	test_conversation_api_twocalls$(EXEEXT)
+@BUILD_CONVERSATION_TRUE@bin_PROGRAMS =  \
+@BUILD_CONVERSATION_TRUE@	gnunet-conversation-test$(EXEEXT) \
+@BUILD_CONVERSATION_TRUE@	gnunet-conversation$(EXEEXT)
+@BUILD_CONVERSATION_TRUE@libexec_PROGRAMS =  \
+@BUILD_CONVERSATION_TRUE@	gnunet-service-conversation$(EXEEXT) \
+@BUILD_CONVERSATION_TRUE@	$(am__EXEEXT_1) $(am__EXEEXT_2)
+@BUILD_CONVERSATION_TRUE@check_PROGRAMS =  \
+@BUILD_CONVERSATION_TRUE@	test_conversation_api$(EXEEXT) \
+@BUILD_CONVERSATION_TRUE@	test_conversation_api_reject$(EXEEXT) \
+@BUILD_CONVERSATION_TRUE@	test_conversation_api_twocalls$(EXEEXT)
 subdir = src/conversation
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/absolute-header.m4 \
@@ -193,6 +196,8 @@ libgnunetconversation_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetconversation_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@BUILD_CONVERSATION_TRUE@am_libgnunetconversation_la_rpath = -rpath \
+@BUILD_CONVERSATION_TRUE@	$(libdir)
 libgnunetmicrophone_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_libgnunetmicrophone_la_OBJECTS = microphone.lo
@@ -201,6 +206,8 @@ libgnunetmicrophone_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetmicrophone_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@BUILD_CONVERSATION_TRUE@am_libgnunetmicrophone_la_rpath = -rpath \
+@BUILD_CONVERSATION_TRUE@	$(libdir)
 libgnunetspeaker_la_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
 am_libgnunetspeaker_la_OBJECTS = speaker.lo
@@ -209,6 +216,8 @@ libgnunetspeaker_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(AM_CFLAGS) $(CFLAGS) $(libgnunetspeaker_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@BUILD_CONVERSATION_TRUE@am_libgnunetspeaker_la_rpath = -rpath \
+@BUILD_CONVERSATION_TRUE@	$(libdir)
 am_gnunet_conversation_OBJECTS = gnunet-conversation.$(OBJEXT)
 gnunet_conversation_OBJECTS = $(am_gnunet_conversation_OBJECTS)
 gnunet_conversation_DEPENDENCIES = libgnunetmicrophone.la \
@@ -219,10 +228,6 @@ gnunet_conversation_DEPENDENCIES = libgnunetmicrophone.la \
 	$(top_builddir)/src/identity/libgnunetidentity.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
-gnunet_conversation_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(gnunet_conversation_LDFLAGS) \
-	$(LDFLAGS) -o $@
 am_gnunet_conversation_test_OBJECTS =  \
 	gnunet-conversation-test.$(OBJEXT)
 gnunet_conversation_test_OBJECTS =  \
@@ -230,10 +235,6 @@ gnunet_conversation_test_OBJECTS =  \
 gnunet_conversation_test_DEPENDENCIES = libgnunetmicrophone.la \
 	libgnunetspeaker.la $(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
-gnunet_conversation_test_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(gnunet_conversation_test_LDFLAGS) \
-	$(LDFLAGS) -o $@
 am__gnunet_helper_audio_playback_SOURCES_DIST = gnunet_gst_test.c \
 	gnunet_gst.c gnunet-helper-audio-playback-gst.c \
 	gnunet-helper-audio-playback.c
@@ -285,10 +286,6 @@ gnunet_service_conversation_DEPENDENCIES = libgnunetconversation.la \
 	$(top_builddir)/src/cadet/libgnunetcadet.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
 	$(am__DEPENDENCIES_1)
-gnunet_service_conversation_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
-	$(AM_CFLAGS) $(CFLAGS) $(gnunet_service_conversation_LDFLAGS) \
-	$(LDFLAGS) -o $@
 am_test_conversation_api_OBJECTS = test_conversation_api.$(OBJEXT)
 test_conversation_api_OBJECTS = $(am_test_conversation_api_OBJECTS)
 test_conversation_api_DEPENDENCIES = libgnunetconversation.la \
@@ -658,20 +655,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -679,6 +673,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -704,6 +699,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -741,11 +737,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -789,6 +789,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -808,6 +811,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -818,7 +822,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -883,17 +886,17 @@ top_srcdir = @top_srcdir@
 # This Makefile.am is in the public domain
 SUBDIRS = .
 plugindir = $(libdir)/gnunet
-@MINGW_TRUE@WINFLAGS = -no-undefined -Wl,--export-all-symbols
 AM_CPPFLAGS = \
   $(GNUNET_CPPFLAGS) \
   -I$(top_srcdir)/src/include \
   -I$(top_srcdir)
 
-lib_LTLIBRARIES = \
- libgnunetmicrophone.la \
- libgnunetspeaker.la \
- libgnunetconversation.la
+@BUILD_CONVERSATION_TRUE@lib_LTLIBRARIES = \
+@BUILD_CONVERSATION_TRUE@ libgnunetmicrophone.la \
+@BUILD_CONVERSATION_TRUE@ libgnunetspeaker.la \
+@BUILD_CONVERSATION_TRUE@ libgnunetconversation.la
 
+@BUILD_CONVERSATION_TRUE@pkgcfg_DATA = conversation.conf
 pkgcfgdir = $(pkgdatadir)/config.d/
 plugin_LTLIBRARIES = \
   libgnunet_plugin_gnsrecord_conversation.la
@@ -915,7 +918,7 @@ libgnunetmicrophone_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunetmicrophone_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 libgnunetspeaker_la_SOURCES = \
@@ -925,7 +928,7 @@ libgnunetspeaker_la_LIBADD = \
  $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunetspeaker_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 libgnunetconversation_la_SOURCES = \
@@ -941,7 +944,7 @@ libgnunetconversation_la_LIBADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 libgnunetconversation_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS)  $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)   \
   -version-info 0:0:0
 
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@AUDIO_HELPER_RECD = gnunet-helper-audio-record
@@ -958,6 +961,8 @@ AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export P
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_SOURCES = \
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@  gnunet_gst_test.c gnunet_gst.c
 
+#gnunet_helper_audio_playback_LDFLAGS = \
+#  
 @BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_SOURCES = \
 @BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@  gnunet-helper-audio-record-gst.c
 
@@ -979,21 +984,14 @@ AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export P
 @BUILD_PULSE_HELPERS_TRUE@  -lpulse  -lopus -logg \
 @BUILD_PULSE_HELPERS_TRUE@  $(INTLLIBS)
 
-@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_LDFLAGS = \
-@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@  $(WINFLAGS) $(GST_LDFLAGS)
-
-@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_LDFLAGS = \
-@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@  $(WINFLAGS) $(GST_LDFLAGS)
-
-@BUILD_PULSE_HELPERS_TRUE@gnunet_helper_audio_record_LDFLAGS = \
-@BUILD_PULSE_HELPERS_TRUE@  $(WINFLAGS)
-
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_SOURCES = \
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@    gnunet_gst_test.c gnunet_gst.c
 
 @BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_SOURCES = \
 @BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@    gnunet-helper-audio-playback-gst.c
 
+#gnunet_helper_audio_record_LDFLAGS = \
+#  
 @BUILD_PULSE_HELPERS_TRUE@gnunet_helper_audio_playback_SOURCES = \
 @BUILD_PULSE_HELPERS_TRUE@  gnunet-helper-audio-playback.c
 
@@ -1012,20 +1010,23 @@ AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export P
 @BUILD_PULSE_HELPERS_TRUE@  -lpulse -lopus -logg \
 @BUILD_PULSE_HELPERS_TRUE@  $(INTLLIBS)
 
-@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_LDFLAGS = \
-@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@  $(WINFLAGS) $(GST_LDFLAGS)
+@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_LDFLAGS = \
+@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@   $(GST_LDFLAGS)
 
-@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_LDFLAGS = \
-@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@  $(WINFLAGS) $(GST_LDFLAGS)
-
-@BUILD_PULSE_HELPERS_TRUE@gnunet_helper_audio_playback_LDFLAGS = \
-@BUILD_PULSE_HELPERS_TRUE@  $(WINFLAGS)
+@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_LDFLAGS = \
+@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@   $(GST_LDFLAGS)
 
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_CFLAGS = \
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@ $(GST_CFLAGS) -DIS_MIC
 
 @BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_record_CFLAGS = \
 @BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@ $(GST_CFLAGS)
+
+@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_LDFLAGS = \
+@BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@   $(GST_LDFLAGS)
+
+@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_LDFLAGS = \
+@BUILD_GST_HELPERS_TRUE@@BUILD_PULSE_HELPERS_FALSE@   $(GST_LDFLAGS)
 
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@gnunet_helper_audio_playback_CFLAGS = \
 @BUILD_EXPERIMENTAL_HELPERS_TRUE@@BUILD_GST_HELPERS_FALSE@@BUILD_PULSE_HELPERS_FALSE@ $(GST_CFLAGS) -DIS_SPEAKER
@@ -1044,9 +1045,8 @@ gnunet_service_conversation_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(INTLLIBS)
 
-gnunet_service_conversation_LDFLAGS = \
-  $(WINFLAGS)
-
+#gnunet_service_conversation_LDFLAGS = \
+#  
 gnunet_conversation_SOURCES = \
   gnunet-conversation.c
 
@@ -1061,9 +1061,8 @@ gnunet_conversation_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la \
   $(INTLLIBS)
 
-gnunet_conversation_LDFLAGS = \
- $(WINFLAGS)
-
+#gnunet_conversation_LDFLAGS = \
+# 
 gnunet_conversation_test_SOURCES = \
   gnunet-conversation-test.c
 
@@ -1073,9 +1072,8 @@ gnunet_conversation_test_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la  \
   $(INTLLIBS)
 
-gnunet_conversation_test_LDFLAGS = \
- $(WINFLAGS)
-
+#gnunet_conversation_test_LDFLAGS = \
+# 
 test_conversation_api_SOURCES = \
  test_conversation_api.c
 
@@ -1090,7 +1088,7 @@ test_conversation_api_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 test_conversation_api_LDFLAGS = \
- $(WINFLAGS) -export-dynamic
+  -export-dynamic
 
 test_conversation_api_twocalls_SOURCES = \
  test_conversation_api_twocalls.c
@@ -1106,7 +1104,7 @@ test_conversation_api_twocalls_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 test_conversation_api_twocalls_LDFLAGS = \
- $(WINFLAGS) -export-dynamic
+  -export-dynamic
 
 test_conversation_api_reject_SOURCES = \
  test_conversation_api_reject.c
@@ -1122,9 +1120,8 @@ test_conversation_api_reject_LDADD = \
   $(top_builddir)/src/util/libgnunetutil.la
 
 test_conversation_api_reject_LDFLAGS = \
- $(WINFLAGS) -export-dynamic
+  -export-dynamic
 
-pkgcfg_DATA = conversation.conf
 EXTRA_DIST = test_conversation.conf
 all: all-recursive
 
@@ -1343,21 +1340,21 @@ libgnunet_plugin_gnsrecord_conversation.la: $(libgnunet_plugin_gnsrecord_convers
 	$(AM_V_CCLD)$(libgnunet_plugin_gnsrecord_conversation_la_LINK) -rpath $(plugindir) $(libgnunet_plugin_gnsrecord_conversation_la_OBJECTS) $(libgnunet_plugin_gnsrecord_conversation_la_LIBADD) $(LIBS)
 
 libgnunetconversation.la: $(libgnunetconversation_la_OBJECTS) $(libgnunetconversation_la_DEPENDENCIES) $(EXTRA_libgnunetconversation_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetconversation_la_LINK) -rpath $(libdir) $(libgnunetconversation_la_OBJECTS) $(libgnunetconversation_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libgnunetconversation_la_LINK) $(am_libgnunetconversation_la_rpath) $(libgnunetconversation_la_OBJECTS) $(libgnunetconversation_la_LIBADD) $(LIBS)
 
 libgnunetmicrophone.la: $(libgnunetmicrophone_la_OBJECTS) $(libgnunetmicrophone_la_DEPENDENCIES) $(EXTRA_libgnunetmicrophone_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetmicrophone_la_LINK) -rpath $(libdir) $(libgnunetmicrophone_la_OBJECTS) $(libgnunetmicrophone_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libgnunetmicrophone_la_LINK) $(am_libgnunetmicrophone_la_rpath) $(libgnunetmicrophone_la_OBJECTS) $(libgnunetmicrophone_la_LIBADD) $(LIBS)
 
 libgnunetspeaker.la: $(libgnunetspeaker_la_OBJECTS) $(libgnunetspeaker_la_DEPENDENCIES) $(EXTRA_libgnunetspeaker_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgnunetspeaker_la_LINK) -rpath $(libdir) $(libgnunetspeaker_la_OBJECTS) $(libgnunetspeaker_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libgnunetspeaker_la_LINK) $(am_libgnunetspeaker_la_rpath) $(libgnunetspeaker_la_OBJECTS) $(libgnunetspeaker_la_LIBADD) $(LIBS)
 
 gnunet-conversation$(EXEEXT): $(gnunet_conversation_OBJECTS) $(gnunet_conversation_DEPENDENCIES) $(EXTRA_gnunet_conversation_DEPENDENCIES) 
 	@rm -f gnunet-conversation$(EXEEXT)
-	$(AM_V_CCLD)$(gnunet_conversation_LINK) $(gnunet_conversation_OBJECTS) $(gnunet_conversation_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gnunet_conversation_OBJECTS) $(gnunet_conversation_LDADD) $(LIBS)
 
 gnunet-conversation-test$(EXEEXT): $(gnunet_conversation_test_OBJECTS) $(gnunet_conversation_test_DEPENDENCIES) $(EXTRA_gnunet_conversation_test_DEPENDENCIES) 
 	@rm -f gnunet-conversation-test$(EXEEXT)
-	$(AM_V_CCLD)$(gnunet_conversation_test_LINK) $(gnunet_conversation_test_OBJECTS) $(gnunet_conversation_test_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gnunet_conversation_test_OBJECTS) $(gnunet_conversation_test_LDADD) $(LIBS)
 
 gnunet-helper-audio-playback$(EXEEXT): $(gnunet_helper_audio_playback_OBJECTS) $(gnunet_helper_audio_playback_DEPENDENCIES) $(EXTRA_gnunet_helper_audio_playback_DEPENDENCIES) 
 	@rm -f gnunet-helper-audio-playback$(EXEEXT)
@@ -1369,7 +1366,7 @@ gnunet-helper-audio-record$(EXEEXT): $(gnunet_helper_audio_record_OBJECTS) $(gnu
 
 gnunet-service-conversation$(EXEEXT): $(gnunet_service_conversation_OBJECTS) $(gnunet_service_conversation_DEPENDENCIES) $(EXTRA_gnunet_service_conversation_DEPENDENCIES) 
 	@rm -f gnunet-service-conversation$(EXEEXT)
-	$(AM_V_CCLD)$(gnunet_service_conversation_LINK) $(gnunet_service_conversation_OBJECTS) $(gnunet_service_conversation_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(LINK) $(gnunet_service_conversation_OBJECTS) $(gnunet_service_conversation_LDADD) $(LIBS)
 
 test_conversation_api$(EXEEXT): $(test_conversation_api_OBJECTS) $(test_conversation_api_DEPENDENCIES) $(EXTRA_test_conversation_api_DEPENDENCIES) 
 	@rm -f test_conversation_api$(EXEEXT)

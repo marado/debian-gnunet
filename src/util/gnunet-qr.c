@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file util/gnunet-qr.c
  * @author Hartmut Goebel (original implementation)
@@ -30,8 +30,8 @@
 #include "gnunet_util_lib.h"
 
 #define LOG(fmt, ...)  \
-  if (verbose == true) \
-  printf (fmt, ##__VA_ARGS__)
+  if (verbose) \
+    printf (fmt, ## __VA_ARGS__)
 
 /**
  * Video device to capture from. Sane default for GNU/Linux systems.
@@ -41,7 +41,7 @@ static char *device = "/dev/video0";
 /**
  * --verbose option
  */
-static int verbose = false;
+static unsigned int verbose;
 
 /**
  * --silent option
@@ -58,12 +58,21 @@ static long unsigned int exit_code = 1;
  */
 static struct GNUNET_OS_Process *p;
 
+/**
+ * Child signal handler.
+ */
+static struct GNUNET_SIGNAL_Context *shc_chld;
 
 /**
  * Pipe used to communicate child death via signal.
  */
 static struct GNUNET_DISK_PipeHandle *sigpipe;
 
+/**
+ * Process ID of this process at the time we installed the various
+ * signal handlers.
+ */
+static pid_t my_pid;
 
 /**
  * Task triggered whenever we receive a SIGCHLD (child
@@ -79,7 +88,33 @@ maint_child_death (void *cls)
   if ((GNUNET_OK != GNUNET_OS_process_status (p, &type, &exit_code)) ||
       (type != GNUNET_OS_PROCESS_EXITED))
     GNUNET_break (0 == GNUNET_OS_process_kill (p, GNUNET_TERM_SIG));
+  GNUNET_SIGNAL_handler_uninstall (shc_chld);
+  shc_chld = NULL;
+  if (NULL != sigpipe)
+  {
+    GNUNET_DISK_pipe_close (sigpipe);
+    sigpipe = NULL;
+  }
   GNUNET_OS_process_destroy (p);
+}
+
+
+/**
+ * Signal handler called for signals that causes us to wait for the child process.
+ */
+static void
+sighandler_chld ()
+{
+  static char c;
+  int old_errno = errno;        /* backup errno */
+
+  if (getpid () != my_pid)
+    _exit (1);                   /* we have fork'ed since the signal handler was created,
+                                  * ignore the signal, see https://gnunet.org/vfork discussion */
+  GNUNET_DISK_file_write (GNUNET_DISK_pipe_handle
+                            (sigpipe, GNUNET_DISK_PIPE_END_WRITE),
+                          &c, sizeof(c));
+  errno = old_errno;
 }
 
 
@@ -126,23 +161,54 @@ gnunet_uri (void *cls,
     return;
   }
   GNUNET_free (subsystem);
+  sigpipe = GNUNET_DISK_pipe (GNUNET_NO,
+                              GNUNET_NO,
+                              GNUNET_NO,
+                              GNUNET_NO);
+  GNUNET_assert (NULL != sigpipe);
   rt = GNUNET_SCHEDULER_add_read_file (
     GNUNET_TIME_UNIT_FOREVER_REL,
     GNUNET_DISK_pipe_handle (sigpipe, GNUNET_DISK_PIPE_END_READ),
     &maint_child_death,
     NULL);
-  p = GNUNET_OS_start_process (GNUNET_NO,
-                               0,
-                               NULL,
-                               NULL,
-                               NULL,
-                               program,
-                               program,
-                               orig_uri,
-                               NULL);
-  GNUNET_free (program);
+  my_pid = getpid ();
+  shc_chld = GNUNET_SIGNAL_handler_install (SIGCHLD,
+                                            &sighandler_chld);
+
+  {
+    char **argv = NULL;
+    unsigned int argc = 0;
+    char *u = GNUNET_strdup (program);
+
+    for (const char *tok = strtok (u, " ");
+         NULL != tok;
+         tok = strtok (NULL, " "))
+      GNUNET_array_append (argv,
+                           argc,
+                           GNUNET_strdup (tok));
+    GNUNET_array_append (argv,
+                         argc,
+                         GNUNET_strdup (orig_uri));
+    GNUNET_array_append (argv,
+                         argc,
+                         NULL);
+    p = GNUNET_OS_start_process_vap (GNUNET_NO,
+                                     GNUNET_OS_INHERIT_STD_ALL,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     argv[0],
+                                     argv);
+    for (unsigned int i = 0; i<argc - 1; i++)
+      GNUNET_free (argv[i]);
+    GNUNET_array_grow (argv,
+                       argc,
+                       0);
+    GNUNET_free (u);
+  }
   if (NULL == p)
     GNUNET_SCHEDULER_cancel (rt);
+  GNUNET_free (program);
 }
 
 
@@ -284,22 +350,20 @@ int
 main (int argc, char *const *argv)
 {
   int ret;
-  struct GNUNET_GETOPT_CommandLineOption options[] =
-    {GNUNET_GETOPT_option_string (
-       'd',
-       "device",
-       "DEVICE",
-       gettext_noop ("use video-device DEVICE (default: /dev/video0"),
-       &device),
-     GNUNET_GETOPT_option_flag ('\0',
-                                "verbose",
-                                gettext_noop ("be verbose"),
-                                &verbose),
-     GNUNET_GETOPT_option_flag ('s',
-                                "silent",
-                                gettext_noop ("do not show preview windows"),
-                                &silent),
-     GNUNET_GETOPT_OPTION_END};
+  struct GNUNET_GETOPT_CommandLineOption options[] = {
+    GNUNET_GETOPT_option_string (
+      'd',
+      "device",
+      "DEVICE",
+      gettext_noop ("use video-device DEVICE (default: /dev/video0"),
+      &device),
+    GNUNET_GETOPT_option_verbose (&verbose),
+    GNUNET_GETOPT_option_flag ('s',
+                               "silent",
+                               gettext_noop ("do not show preview windows"),
+                               &silent),
+    GNUNET_GETOPT_OPTION_END
+  };
 
   ret = GNUNET_PROGRAM_run (
     argc,

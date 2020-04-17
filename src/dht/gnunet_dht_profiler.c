@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet_dht_profiler.c
@@ -76,7 +76,6 @@ struct Context
    * Active context; NULL if this peer is not an active peer
    */
   struct ActiveContext *ac;
-
 };
 
 
@@ -295,7 +294,7 @@ do_shutdown (void *cls)
   in_shutdown = GNUNET_YES;
   if (NULL != a_ctx)
   {
-    for (unsigned int cnt=0; cnt < num_peers; cnt++)
+    for (unsigned int cnt = 0; cnt < num_peers; cnt++)
     {
       /* Cleanup active context if this peer is an active peer */
       ac = a_ctx[cnt].ac;
@@ -318,7 +317,7 @@ do_shutdown (void *cls)
     GNUNET_free (a_ctx);
     a_ctx = NULL;
   }
-  //FIXME: Should we collect stats only for put/get not for other messages.
+  // FIXME: Should we collect stats only for put/get not for other messages.
   if (NULL != bandwidth_stats_op)
   {
     GNUNET_TESTBED_operation_done (bandwidth_stats_op);
@@ -377,7 +376,7 @@ bandwidth_stats_iterator (void *cls,
 
   if (0 == strncmp (s_sent, name, strlen (s_sent)))
     outgoing_bandwidth = outgoing_bandwidth + value;
-  else if (0 == strncmp(s_recv, name, strlen (s_recv)))
+  else if (0 == strncmp (s_recv, name, strlen (s_recv)))
     incoming_bandwidth = incoming_bandwidth + value;
   return GNUNET_OK;
 }
@@ -387,19 +386,19 @@ static void
 summarize ()
 {
   MESSAGE ("# PUTS started: %llu\n",
-        n_puts);
+           n_puts);
   MESSAGE ("# PUTS succeeded: %llu\n",
-        n_puts_ok);
+           n_puts_ok);
   MESSAGE ("# GETS made: %u\n",
-        n_gets);
+           n_gets);
   MESSAGE ("# GETS succeeded: %u\n",
-        n_gets_ok);
+           n_gets_ok);
   MESSAGE ("# GETS failed: %u\n",
-        n_gets_fail);
+           n_gets_fail);
   MESSAGE ("# average_put_path_length: %f\n",
-        average_put_path_length);
+           average_put_path_length);
   MESSAGE ("# average_get_path_length: %f\n",
-        average_get_path_length);
+           average_get_path_length);
 
   if (NULL == testbed_handles)
   {
@@ -440,8 +439,10 @@ cancel_get (void *cls)
   /* If profiling is complete, summarize */
   if (n_active == n_gets_fail + n_gets_ok)
   {
-    average_put_path_length = (double)total_put_path_length/(double)n_active;
-    average_get_path_length = (double)total_get_path_length/(double )n_gets_ok;
+    average_put_path_length = (double) total_put_path_length
+                              / (double) n_active;
+    average_get_path_length = (double) total_get_path_length
+                              / (double ) n_gets_ok;
     summarize ();
   }
 }
@@ -481,7 +482,7 @@ get_iter (void *cls,
 
   /* we found the data we are looking for */
   DEBUG ("We found a GET request; %u remaining\n",
-         n_gets - (n_gets_fail + n_gets_ok)); //FIXME: It always prints 1.
+         n_gets - (n_gets_fail + n_gets_ok)); // FIXME: It always prints 1.
   n_gets_ok++;
   get_ac->nrefs--;
   GNUNET_DHT_get_stop (ac->dht_get);
@@ -493,15 +494,17 @@ get_iter (void *cls,
   GNUNET_TESTBED_operation_done (ctx->op);
   ctx->op = NULL;
 
-  total_put_path_length = total_put_path_length + (double)put_path_length;
-  total_get_path_length = total_get_path_length + (double)get_path_length;
+  total_put_path_length = total_put_path_length + (double) put_path_length;
+  total_get_path_length = total_get_path_length + (double) get_path_length;
   DEBUG ("total_put_path_length = %u,put_path \n",
          total_put_path_length);
   /* Summarize if profiling is complete */
   if (n_active == n_gets_fail + n_gets_ok)
   {
-    average_put_path_length = (double)total_put_path_length/(double)n_active;
-    average_get_path_length = (double)total_get_path_length/(double )n_gets_ok;
+    average_put_path_length = (double) total_put_path_length
+                              / (double) n_active;
+    average_get_path_length = (double) total_get_path_length
+                              / (double ) n_gets_ok;
     summarize ();
   }
 }
@@ -534,7 +537,7 @@ delayed_get (void *cls)
   r = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
                                 num_puts_per_peer);
   DEBUG ("GET_REQUEST_START key %s \n",
-         GNUNET_h2s(&get_ac->hash[r]));
+         GNUNET_h2s (&get_ac->hash[r]));
   ac->dht_get = GNUNET_DHT_get_start (ac->dht,
                                       GNUNET_BLOCK_TYPE_TEST,
                                       &get_ac->hash[r],
@@ -614,7 +617,8 @@ delayed_put (void *cls)
   block_size = 16; /* minimum */
   /* make random payload, reserve 512 - 16 bytes for DHT headers */
   block_size += GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                          GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE - 512);
+                                          GNUNET_CONSTANTS_MAX_ENCRYPTED_MESSAGE_SIZE
+                                          - 512);
   GNUNET_CRYPTO_random_block (GNUNET_CRYPTO_QUALITY_WEAK,
                               block,
                               block_size);
@@ -656,7 +660,7 @@ dht_connected (void *cls,
   struct ActiveContext *ac = cls;
   struct Context *ctx = ac->ctx;
 
-  GNUNET_assert (NULL != ctx); //FIXME: Fails
+  GNUNET_assert (NULL != ctx);  // FIXME: Fails
   GNUNET_assert (NULL != ctx->op);
   GNUNET_assert (ctx->op == op);
   ac->dht = (struct GNUNET_DHT_Handle *) ca_result;
@@ -665,7 +669,7 @@ dht_connected (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
                 "Connection to DHT service failed: %s\n",
                 emsg);
-    GNUNET_TESTBED_operation_done (ctx->op); /* Calls dht_disconnect() */
+    GNUNET_TESTBED_operation_done (ctx->op);  /* Calls dht_disconnect() */
     ctx->op = NULL;
     return;
   }
@@ -680,7 +684,7 @@ dht_connected (void *cls,
                                   delay_put.rel_value_us);
       ac->put_count = num_puts_per_peer;
       ac->hash = calloc (ac->put_count,
-                         sizeof (struct GNUNET_HashCode));
+                         sizeof(struct GNUNET_HashCode));
       if (NULL == ac->hash)
       {
         GNUNET_log_strerror (GNUNET_ERROR_TYPE_ERROR,
@@ -693,14 +697,15 @@ dht_connected (void *cls,
                                                      ac);
       break;
     }
+
   case MODE_GET:
     {
       struct GNUNET_TIME_Relative peer_delay_get;
 
       peer_delay_get.rel_value_us =
-        delay_get.rel_value_us +
-        GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                  delay_get.rel_value_us);
+        delay_get.rel_value_us
+        + GNUNET_CRYPTO_random_u64 (GNUNET_CRYPTO_QUALITY_WEAK,
+                                    delay_get.rel_value_us);
       ac->delay_task = GNUNET_SCHEDULER_add_delayed (peer_delay_get,
                                                      &delayed_get,
                                                      ac);
@@ -760,6 +765,7 @@ dht_disconnect (void *cls,
     mode = MODE_GET;
     start_profiling ();
     return;
+
   case MODE_GET:
     if ((n_gets_ok + n_gets_fail) != n_active)
       return;
@@ -772,7 +778,7 @@ dht_disconnect (void *cls,
  * Connect to DHT services of active peers
  */
 static void
-start_profiling()
+start_profiling ()
 {
   struct Context *ctx;
 
@@ -913,7 +919,7 @@ run (void *cls,
   if (0 == num_peers)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-		_("Exiting as the number of peers is %u\n"),
+                _ ("Exiting as the number of peers is %u\n"),
                 num_peers);
     return;
   }
@@ -928,7 +934,7 @@ run (void *cls,
                       &test_run,
                       NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
-				 NULL);
+                                 NULL);
 }
 
 
@@ -951,27 +957,32 @@ main (int argc,
     GNUNET_GETOPT_option_uint ('p',
                                "peer-put-count",
                                "COUNT",
-                               gettext_noop ("number of PUTs to perform per peer"),
+                               gettext_noop (
+                                 "number of PUTs to perform per peer"),
                                &num_puts_per_peer),
     GNUNET_GETOPT_option_string ('H',
                                  "hosts",
                                  "FILENAME",
-                                 gettext_noop ("name of the file with the login information for the testbed"),
+                                 gettext_noop (
+                                   "name of the file with the login information for the testbed"),
                                  &hosts_file),
     GNUNET_GETOPT_option_relative_time ('D',
                                         "delay",
                                         "DELAY",
-                                        gettext_noop ("delay between rounds for collecting statistics (default: 30 sec)"),
+                                        gettext_noop (
+                                          "delay between rounds for collecting statistics (default: 30 sec)"),
                                         &delay_stats),
     GNUNET_GETOPT_option_relative_time ('P',
                                         "PUT-delay",
                                         "DELAY",
-                                        gettext_noop ("delay to start doing PUTs (default: 1 sec)"),
+                                        gettext_noop (
+                                          "delay to start doing PUTs (default: 1 sec)"),
                                         &delay_put),
     GNUNET_GETOPT_option_relative_time ('G',
                                         "GET-delay",
                                         "DELAY",
-                                        gettext_noop ("delay to start doing GETs (default: 5 min)"),
+                                        gettext_noop (
+                                          "delay to start doing GETs (default: 5 min)"),
                                         &delay_get),
     GNUNET_GETOPT_option_uint ('r',
                                "replication",
@@ -981,12 +992,14 @@ main (int argc,
     GNUNET_GETOPT_option_uint ('R',
                                "random-chance",
                                "PROBABILITY",
-                               gettext_noop ("chance that a peer is selected at random for PUTs"),
+                               gettext_noop (
+                                 "chance that a peer is selected at random for PUTs"),
                                &put_probability),
     GNUNET_GETOPT_option_relative_time ('t',
                                         "timeout",
                                         "TIMEOUT",
-                                        gettext_noop ("timeout for DHT PUT and GET requests (default: 1 min)"),
+                                        gettext_noop (
+                                          "timeout for DHT PUT and GET requests (default: 1 min)"),
                                         &timeout),
     GNUNET_GETOPT_OPTION_END
   };
@@ -1006,8 +1019,9 @@ main (int argc,
       GNUNET_PROGRAM_run (argc,
                           argv,
                           "gnunet-dht-profiler",
-			  gettext_noop ("Measure quality and performance of the DHT service."),
-			  options,
+                          gettext_noop (
+                            "Measure quality and performance of the DHT service."),
+                          options,
                           &run,
                           NULL))
     rc = 1;

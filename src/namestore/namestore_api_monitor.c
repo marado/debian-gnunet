@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file namestore/namestore_api_monitor.c
  * @brief API to monitor changes in the NAMESTORE
@@ -153,7 +153,7 @@ check_result (void *cls, const struct RecordResultMessage *lrm)
     GNUNET_break (0);
     return GNUNET_SYSERR;
   }
-  exp_lrm_len = sizeof (struct RecordResultMessage) + name_len + rd_len;
+  exp_lrm_len = sizeof(struct RecordResultMessage) + name_len + rd_len;
   if (lrm_len != exp_lrm_len)
   {
     GNUNET_break (0);
@@ -245,15 +245,15 @@ static void
 reconnect (struct GNUNET_NAMESTORE_ZoneMonitor *zm)
 {
   struct GNUNET_MQ_MessageHandler handlers[] =
-    {GNUNET_MQ_hd_fixed_size (sync,
-                              GNUNET_MESSAGE_TYPE_NAMESTORE_MONITOR_SYNC,
-                              struct GNUNET_MessageHeader,
-                              zm),
-     GNUNET_MQ_hd_var_size (result,
-                            GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT,
-                            struct RecordResultMessage,
-                            zm),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (sync,
+                             GNUNET_MESSAGE_TYPE_NAMESTORE_MONITOR_SYNC,
+                             struct GNUNET_MessageHeader,
+                             zm),
+    GNUNET_MQ_hd_var_size (result,
+                           GNUNET_MESSAGE_TYPE_NAMESTORE_RECORD_RESULT,
+                           struct RecordResultMessage,
+                           zm),
+    GNUNET_MQ_handler_end () };
   struct GNUNET_MQ_Envelope *env;
   struct ZoneMonitorStartMessage *sm;
 
@@ -383,5 +383,6 @@ GNUNET_NAMESTORE_zone_monitor_stop (struct GNUNET_NAMESTORE_ZoneMonitor *zm)
   }
   GNUNET_free (zm);
 }
+
 
 /* end of namestore_api_monitor.c */

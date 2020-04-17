@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2013, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2013, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/gnunet-service-testbed.c
@@ -337,11 +337,12 @@ parse_shared_services (char *ss_str,
   char service[256];
   char *arg;
   unsigned int n;
+
 #define GROW_SS                                 \
   do {                                          \
-    GNUNET_array_grow (slist, n, n+1);                                  \
+    GNUNET_array_grow (slist, n, n + 1);                                  \
     GNUNET_memcpy (&slist[n - 1], &ss,                                  \
-                   sizeof (struct GNUNET_TESTING_SharedService));       \
+                   sizeof(struct GNUNET_TESTING_SharedService));       \
   } while (0)
 
   slist = NULL;
@@ -371,7 +372,7 @@ parse_shared_services (char *ss_str,
     /* Add trailing NULL block */
     (void) memset (&ss,
                    0,
-                   sizeof (struct GNUNET_TESTING_SharedService));
+                   sizeof(struct GNUNET_TESTING_SharedService));
     GROW_SS;
   }
   return slist;
@@ -393,7 +394,7 @@ check_init (void *cls,
   const char *controller_hostname;
   uint16_t msize;
 
-  msize = ntohs (msg->header.size) - sizeof (struct GNUNET_TESTBED_InitMessage);
+  msize = ntohs (msg->header.size) - sizeof(struct GNUNET_TESTBED_InitMessage);
   controller_hostname = (const char *) &msg[1];
   if ('\0' != controller_hostname[msize - 1])
   {
@@ -463,11 +464,11 @@ handle_init (void *cls,
     ss = NULL;
   }
   host =
-      GNUNET_TESTBED_host_create_with_id (GST_context->host_id,
-                                          GST_context->master_ip,
-                                          NULL,
-                                          GST_config,
-                                          0);
+    GNUNET_TESTBED_host_create_with_id (GST_context->host_id,
+                                        GST_context->master_ip,
+                                        NULL,
+                                        GST_config,
+                                        0);
   host_list_add (host);
   LOG_DEBUG ("Created master context with host ID: %u\n",
              GST_context->host_id);
@@ -484,18 +485,19 @@ handle_init (void *cls,
  */
 static int
 check_add_host (void *cls,
-                 const struct GNUNET_TESTBED_AddHostMessage *msg)
+                const struct GNUNET_TESTBED_AddHostMessage *msg)
 {
   uint16_t username_length;
   uint16_t hostname_length;
   uint16_t msize;
 
-  msize = ntohs (msg->header.size) - sizeof (struct GNUNET_TESTBED_AddHostMessage);
+  msize = ntohs (msg->header.size) - sizeof(struct
+                                            GNUNET_TESTBED_AddHostMessage);
   username_length = ntohs (msg->username_length);
   hostname_length = ntohs (msg->hostname_length);
   /* msg must contain hostname */
-  if ( (msize <= username_length) ||
-       (0 == hostname_length) )
+  if ((msize <= username_length) ||
+      (0 == hostname_length))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -615,7 +617,8 @@ handle_add_host (void *cls,
  */
 static void
 handle_slave_get_config (void *cls,
-                         const struct GNUNET_TESTBED_SlaveGetConfigurationMessage *msg)
+                         const struct
+                         GNUNET_TESTBED_SlaveGetConfigurationMessage *msg)
 {
   struct GNUNET_SERVICE_Client *client = cls;
   struct Slave *slave;
@@ -631,8 +634,8 @@ handle_slave_get_config (void *cls,
 
   slave_id = ntohl (msg->slave_id);
   op_id = GNUNET_ntohll (msg->operation_id);
-  if ( (GST_slave_list_size <= slave_id) ||
-       (NULL == GST_slave_list[slave_id]) )
+  if ((GST_slave_list_size <= slave_id) ||
+      (NULL == GST_slave_list[slave_id]))
   {
     /* FIXME: Add forwardings for this type of message here.. */
     GST_send_operation_fail_msg (client,
@@ -642,7 +645,8 @@ handle_slave_get_config (void *cls,
     return;
   }
   slave = GST_slave_list[slave_id];
-  GNUNET_assert (NULL != (cfg = GNUNET_TESTBED_host_get_cfg_ (GST_host_list[slave->host_id])));
+  GNUNET_assert (NULL != (cfg = GNUNET_TESTBED_host_get_cfg_ (
+                            GST_host_list[slave->host_id])));
   config = GNUNET_CONFIGURATION_serialize (cfg,
                                            &config_size);
   /* FIXME: maybe we want to transmit the delta to the default here? */
@@ -650,7 +654,9 @@ handle_slave_get_config (void *cls,
                                                   config_size,
                                                   &xconfig);
   GNUNET_free (config);
-  GNUNET_assert (xconfig_size + sizeof (struct GNUNET_TESTBED_SlaveConfiguration) <= UINT16_MAX);
+  GNUNET_assert (xconfig_size + sizeof(struct
+                                       GNUNET_TESTBED_SlaveConfiguration) <=
+                 UINT16_MAX);
   GNUNET_assert (xconfig_size <= UINT16_MAX);
   env = GNUNET_MQ_msg_extra (reply,
                              xconfig_size,
@@ -689,6 +695,7 @@ GST_clear_fopcq ()
     case OP_PEER_CREATE:
       GNUNET_free (fopc->cls);
       break;
+
     case OP_SHUTDOWN_PEERS:
       {
         struct HandlerContext_ShutdownPeers *hc = fopc->cls;
@@ -699,6 +706,7 @@ GST_clear_fopcq ()
           GNUNET_free (hc);
       }
       break;
+
     case OP_PEER_START:
     case OP_PEER_STOP:
     case OP_PEER_DESTROY:
@@ -709,9 +717,11 @@ GST_clear_fopcq ()
     case OP_MANAGE_SERVICE:
     case OP_PEER_RECONFIGURE:
       break;
+
     case OP_FORWARDED:
       GNUNET_assert (0);
-    };
+    }
+    ;
     GNUNET_free (fopc);
   }
 }
@@ -735,7 +745,7 @@ shutdown_task (void *cls)
   GST_free_occq ();
   GST_free_roccq ();
   GST_free_nccq ();
-  GST_neighbour_list_clean();
+  GST_neighbour_list_clean ();
   GST_free_prcq ();
   /* Clear peer list */
   GST_destroy_peers ();
@@ -826,8 +836,7 @@ client_disconnect_cb (void *cls,
      * from stdin, but if stdin fails for some reason, this shouldn't
      * hurt for now --- might need to revise this later if we ever
      * decide that master connections might be temporarily down
-     * for some reason */
-    //GNUNET_SCHEDULER_shutdown ();
+     * for some reason */// GNUNET_SCHEDULER_shutdown ();
   }
 }
 
@@ -870,8 +879,9 @@ testbed_run (void *cls,
                                                         "testbed",
                                                         "MAX_OPEN_FDS",
                                                         &num));
-  GST_opq_openfds = GNUNET_TESTBED_operation_queue_create_ (OPERATION_QUEUE_TYPE_FIXED,
-                                                            (unsigned int) num);
+  GST_opq_openfds = GNUNET_TESTBED_operation_queue_create_ (
+    OPERATION_QUEUE_TYPE_FIXED,
+    (unsigned int) num);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CONFIGURATION_get_value_time (cfg,
                                                       "testbed",
@@ -895,81 +905,81 @@ testbed_run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("testbed",
- GNUNET_SERVICE_OPTION_NONE,
- &testbed_run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (init,
-                        GNUNET_MESSAGE_TYPE_TESTBED_INIT,
-                        struct GNUNET_TESTBED_InitMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (add_host,
-                        GNUNET_MESSAGE_TYPE_TESTBED_ADD_HOST,
-                        struct GNUNET_TESTBED_AddHostMessage,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (slave_get_config,
-                          GNUNET_MESSAGE_TYPE_TESTBED_GET_SLAVE_CONFIGURATION,
-                          struct GNUNET_TESTBED_SlaveGetConfigurationMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (link_controllers,
-                          GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS,
-                          struct GNUNET_TESTBED_ControllerLinkRequest,
-                          NULL),
- GNUNET_MQ_hd_var_size (remote_overlay_connect,
-                        GNUNET_MESSAGE_TYPE_TESTBED_REMOTE_OVERLAY_CONNECT,
-                        struct GNUNET_TESTBED_RemoteOverlayConnectMessage,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (overlay_connect,
-                          GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT,
-                          struct GNUNET_TESTBED_OverlayConnectMessage,
-                          NULL),
- GNUNET_MQ_hd_var_size (peer_create,
-                        GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER,
-                        struct GNUNET_TESTBED_PeerCreateMessage,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (peer_destroy,
-                          GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER,
-                          struct GNUNET_TESTBED_PeerDestroyMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (peer_start,
-                          GNUNET_MESSAGE_TYPE_TESTBED_START_PEER,
-                          struct GNUNET_TESTBED_PeerStartMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (peer_stop,
-                          GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER,
-                          struct GNUNET_TESTBED_PeerStopMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (peer_get_config,
-                          GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_INFORMATION,
-                          struct GNUNET_TESTBED_PeerGetConfigurationMessage,
-                          NULL),
- GNUNET_MQ_hd_var_size (manage_peer_service,
-                        GNUNET_MESSAGE_TYPE_TESTBED_MANAGE_PEER_SERVICE,
-                        struct GNUNET_TESTBED_ManagePeerServiceMessage,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (shutdown_peers,
-                          GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS,
-                          struct GNUNET_TESTBED_ShutdownPeersMessage,
-                          NULL),
- GNUNET_MQ_hd_var_size (peer_reconfigure,
-                        GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER,
-                        struct GNUNET_TESTBED_PeerReconfigureMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (barrier_init,
-                        GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT,
-                        struct GNUNET_TESTBED_BarrierInit,
-                        NULL),
- GNUNET_MQ_hd_var_size (barrier_cancel,
-                        GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL,
-                        struct GNUNET_TESTBED_BarrierCancel,
-                        NULL),
- GNUNET_MQ_hd_var_size (barrier_status,
-                        GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS,
-                        struct GNUNET_TESTBED_BarrierStatusMsg,
-                        NULL),
- GNUNET_MQ_handler_end ());
+  ("testbed",
+  GNUNET_SERVICE_OPTION_NONE,
+  &testbed_run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (init,
+                         GNUNET_MESSAGE_TYPE_TESTBED_INIT,
+                         struct GNUNET_TESTBED_InitMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (add_host,
+                         GNUNET_MESSAGE_TYPE_TESTBED_ADD_HOST,
+                         struct GNUNET_TESTBED_AddHostMessage,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (slave_get_config,
+                           GNUNET_MESSAGE_TYPE_TESTBED_GET_SLAVE_CONFIGURATION,
+                           struct GNUNET_TESTBED_SlaveGetConfigurationMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (link_controllers,
+                           GNUNET_MESSAGE_TYPE_TESTBED_LINK_CONTROLLERS,
+                           struct GNUNET_TESTBED_ControllerLinkRequest,
+                           NULL),
+  GNUNET_MQ_hd_var_size (remote_overlay_connect,
+                         GNUNET_MESSAGE_TYPE_TESTBED_REMOTE_OVERLAY_CONNECT,
+                         struct GNUNET_TESTBED_RemoteOverlayConnectMessage,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (overlay_connect,
+                           GNUNET_MESSAGE_TYPE_TESTBED_OVERLAY_CONNECT,
+                           struct GNUNET_TESTBED_OverlayConnectMessage,
+                           NULL),
+  GNUNET_MQ_hd_var_size (peer_create,
+                         GNUNET_MESSAGE_TYPE_TESTBED_CREATE_PEER,
+                         struct GNUNET_TESTBED_PeerCreateMessage,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (peer_destroy,
+                           GNUNET_MESSAGE_TYPE_TESTBED_DESTROY_PEER,
+                           struct GNUNET_TESTBED_PeerDestroyMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (peer_start,
+                           GNUNET_MESSAGE_TYPE_TESTBED_START_PEER,
+                           struct GNUNET_TESTBED_PeerStartMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (peer_stop,
+                           GNUNET_MESSAGE_TYPE_TESTBED_STOP_PEER,
+                           struct GNUNET_TESTBED_PeerStopMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (peer_get_config,
+                           GNUNET_MESSAGE_TYPE_TESTBED_GET_PEER_INFORMATION,
+                           struct GNUNET_TESTBED_PeerGetConfigurationMessage,
+                           NULL),
+  GNUNET_MQ_hd_var_size (manage_peer_service,
+                         GNUNET_MESSAGE_TYPE_TESTBED_MANAGE_PEER_SERVICE,
+                         struct GNUNET_TESTBED_ManagePeerServiceMessage,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (shutdown_peers,
+                           GNUNET_MESSAGE_TYPE_TESTBED_SHUTDOWN_PEERS,
+                           struct GNUNET_TESTBED_ShutdownPeersMessage,
+                           NULL),
+  GNUNET_MQ_hd_var_size (peer_reconfigure,
+                         GNUNET_MESSAGE_TYPE_TESTBED_RECONFIGURE_PEER,
+                         struct GNUNET_TESTBED_PeerReconfigureMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (barrier_init,
+                         GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_INIT,
+                         struct GNUNET_TESTBED_BarrierInit,
+                         NULL),
+  GNUNET_MQ_hd_var_size (barrier_cancel,
+                         GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_CANCEL,
+                         struct GNUNET_TESTBED_BarrierCancel,
+                         NULL),
+  GNUNET_MQ_hd_var_size (barrier_status,
+                         GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_STATUS,
+                         struct GNUNET_TESTBED_BarrierStatusMsg,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 
 /* end of gnunet-service-testbed.c */

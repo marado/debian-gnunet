@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file set/test_set_intersection_result_full.c
@@ -69,10 +69,12 @@ result_cb_set1 (void *cls,
   case GNUNET_SET_STATUS_OK:
     count++;
     break;
+
   case GNUNET_SET_STATUS_FAILURE:
     oh1 = NULL;
     ret = 1;
     break;
+
   case GNUNET_SET_STATUS_DONE:
     oh1 = NULL;
     GNUNET_assert (1 == count);
@@ -81,6 +83,7 @@ result_cb_set1 (void *cls,
     if (NULL == set2)
       GNUNET_SCHEDULER_shutdown ();
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -103,10 +106,12 @@ result_cb_set2 (void *cls,
   case GNUNET_SET_STATUS_OK:
     count++;
     break;
+
   case GNUNET_SET_STATUS_FAILURE:
     oh2 = NULL;
     ret = 1;
     break;
+
   case GNUNET_SET_STATUS_DONE:
     oh2 = NULL;
     GNUNET_assert (1 == count);
@@ -115,6 +120,7 @@ result_cb_set2 (void *cls,
     if (NULL == set1)
       GNUNET_SCHEDULER_shutdown ();
     break;
+
   default:
     GNUNET_assert (0);
   }
@@ -186,19 +192,19 @@ init_set2 (void *cls)
               "initializing set 2\n");
   element.element_type = 0;
   element.data = "hello";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set2,
                           &element,
                           NULL,
                           NULL);
   element.data = "quux";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set2,
                           &element,
                           NULL,
                           NULL);
   element.data = "baz";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set2,
                           &element,
                           &start,
@@ -218,13 +224,13 @@ init_set1 (void)
               "initializing set 1\n");
   element.element_type = 0;
   element.data = "hello";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set1,
                           &element,
                           NULL,
                           NULL);
   element.data = "bar";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (set1,
                           &element,
                           &init_set2,
@@ -257,19 +263,19 @@ test_iter ()
                                 GNUNET_SET_OPERATION_INTERSECTION);
   element.element_type = 0;
   element.data = "hello";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (iter_set,
                           &element,
                           NULL,
                           NULL);
   element.data = "bar";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (iter_set,
                           &element,
                           NULL,
                           NULL);
   element.data = "quux";
-  element.size = strlen(element.data);
+  element.size = strlen (element.data);
   GNUNET_SET_add_element (iter_set,
                           &element,
                           NULL,
@@ -356,8 +362,9 @@ run (void *cls,
   if (0)
     test_iter ();
 
-  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5),
-				     &timeout_fail,
+  tt = GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                       GNUNET_TIME_UNIT_SECONDS, 5),
+                                     &timeout_fail,
                                      NULL);
   GNUNET_SCHEDULER_add_shutdown (&do_shutdown,
                                  NULL);

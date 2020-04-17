@@ -140,6 +140,7 @@ am_gnunet_daemon_hostlist_OBJECTS =  \
 	$(am__objects_1)
 gnunet_daemon_hostlist_OBJECTS = $(am_gnunet_daemon_hostlist_OBJECTS)
 am__DEPENDENCIES_1 =
+@HAVE_MHD_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 gnunet_daemon_hostlist_DEPENDENCIES =  \
 	$(top_builddir)/src/core/libgnunetcore.la \
 	$(top_builddir)/src/hello/libgnunethello.la \
@@ -147,12 +148,16 @@ gnunet_daemon_hostlist_DEPENDENCIES =  \
 	$(top_builddir)/src/statistics/libgnunetstatistics.la \
 	$(top_builddir)/src/transport/libgnunettransport.la \
 	$(top_builddir)/src/util/libgnunetutil.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_2) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+gnunet_daemon_hostlist_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am_test_gnunet_daemon_hostlist_OBJECTS =  \
 	test_gnunet_daemon_hostlist.$(OBJEXT)
 test_gnunet_daemon_hostlist_OBJECTS =  \
@@ -463,20 +468,17 @@ ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
-AS = @AS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+AWK_BINARY = @AWK_BINARY@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECKBASHISMS_BINARY = @CHECKBASHISMS_BINARY@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
-CXXDEPMODE = @CXXDEPMODE@
-CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DATAROOTDIR = @DATAROOTDIR@
 DEFAULT_INTERFACE = @DEFAULT_INTERFACE@
@@ -484,6 +486,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLDIR = @DLLDIR@
 DLLTOOL = @DLLTOOL@
+DOAS_BINARY = @DOAS_BINARY@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -509,6 +512,7 @@ GST_CFLAGS = @GST_CFLAGS@
 GST_LIBS = @GST_LIBS@
 HAVE_BLUETOOTH = @HAVE_BLUETOOTH@
 HAVE_JANSSON = @HAVE_JANSSON@
+HAVE_LIBOGG = @HAVE_LIBOGG@
 HAVE_LIBOPUS = @HAVE_LIBOPUS@
 HAVE_LIBPULSE = @HAVE_LIBPULSE@
 HAVE_LIBUNISTRING = @HAVE_LIBUNISTRING@
@@ -546,11 +550,15 @@ LTLIBOBJS = @LTLIBOBJS@
 LTLIBUNISTRING = @LTLIBUNISTRING@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
 MAKEINFO = @MAKEINFO@
+MANDOC_BINARY = @MANDOC_BINARY@
 MANIFEST_TOOL = @MANIFEST_TOOL@
+MHD_CFLAGS = @MHD_CFLAGS@
+MHD_LIBS = @MHD_LIBS@
 MKDIR_P = @MKDIR_P@
 MSGFMT = @MSGFMT@
 MSGFMT_015 = @MSGFMT_015@
 MSGMERGE = @MSGMERGE@
+MSG_USER_SETUP = @MSG_USER_SETUP@
 MYSQL_CPPFLAGS = @MYSQL_CPPFLAGS@
 MYSQL_LDFLAGS = @MYSQL_LDFLAGS@
 NM = @NM@
@@ -594,6 +602,9 @@ SQLITE_LDFLAGS = @SQLITE_LDFLAGS@
 START_ON_DEMAND = @START_ON_DEMAND@
 STRIP = @STRIP@
 SUDO_BINARY = @SUDO_BINARY@
+TEXI2MAN_SCRIPT = @TEXI2MAN_SCRIPT@
+TEXI2MDOC_BINARY = @TEXI2MDOC_BINARY@
+UNCRUSTIFY_BINARY = @UNCRUSTIFY_BINARY@
 UNIXONLY = @UNIXONLY@
 USE_NLS = @USE_NLS@
 VAR_GETOPT_BINARY = @VAR_GETOPT_BINARY@
@@ -613,6 +624,7 @@ X_CFLAGS = @X_CFLAGS@
 X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_LIBS = @X_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
+YAPF_BINARY = @YAPF_BINARY@
 Z_CFLAGS = @Z_CFLAGS@
 Z_LIBS = @Z_LIBS@
 _libcurl_config = @_libcurl_config@
@@ -623,7 +635,6 @@ abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 ac_ct_OBJC = @ac_ct_OBJC@
 am__include = @am__include@
@@ -692,7 +703,8 @@ pkgcfgdir = $(pkgdatadir)/config.d/
 @HAVE_MHD_TRUE@HOSTLIST_SERVER_SOURCES = \
 @HAVE_MHD_TRUE@   gnunet-daemon-hostlist_server.c gnunet-daemon-hostlist_server.h
 
-@HAVE_MHD_TRUE@GN_LIBMHD = -lmicrohttpd
+@HAVE_MHD_TRUE@GN_LIBMHD = $(MHD_LIBS)
+@HAVE_MHD_TRUE@GN_CPPMHD = $(MHD_CFLAGS)
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@LIB_GNURL = @LIBCURL@
 @HAVE_LIBGNURL_TRUE@LIB_GNURL = @LIBGNURL@
 @HAVE_LIBCURL_TRUE@@HAVE_LIBGNURL_FALSE@CPP_GNURL = @LIBCURL_CPPFLAGS@
@@ -719,9 +731,10 @@ gnunet_daemon_hostlist_LDADD = \
   $(LIB_GNURL) \
   $(GN_LIBINTL)
 
-gnunet_daemon_hostlist_CPPFLAGS = \
- $(CPP_GNURL) \
- $(AM_CPPFLAGS)
+gnunet_daemon_hostlist_CFLAGS = \
+  $(GN_CPPMHD) \
+  $(CPP_GNURL) \
+  $(AM_CFLAGS)
 
 @ENABLE_TEST_RUN_TRUE@@HAVE_MHD_TRUE@AM_TESTS_ENVIRONMENT = export GNUNET_PREFIX=$${GNUNET_PREFIX:-@libdir@};export PATH=$${GNUNET_PREFIX:-@prefix@}/bin:$$PATH;unset XDG_DATA_HOME;unset XDG_CONFIG_HOME;
 @ENABLE_TEST_RUN_TRUE@@HAVE_MHD_TRUE@TESTS = \
@@ -854,7 +867,7 @@ clean-libexecPROGRAMS:
 
 gnunet-daemon-hostlist$(EXEEXT): $(gnunet_daemon_hostlist_OBJECTS) $(gnunet_daemon_hostlist_DEPENDENCIES) $(EXTRA_gnunet_daemon_hostlist_DEPENDENCIES) 
 	@rm -f gnunet-daemon-hostlist$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(gnunet_daemon_hostlist_OBJECTS) $(gnunet_daemon_hostlist_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(gnunet_daemon_hostlist_LINK) $(gnunet_daemon_hostlist_OBJECTS) $(gnunet_daemon_hostlist_LDADD) $(LIBS)
 
 test_gnunet_daemon_hostlist$(EXEEXT): $(test_gnunet_daemon_hostlist_OBJECTS) $(test_gnunet_daemon_hostlist_DEPENDENCIES) $(EXTRA_test_gnunet_daemon_hostlist_DEPENDENCIES) 
 	@rm -f test_gnunet_daemon_hostlist$(EXEEXT)
@@ -909,46 +922,46 @@ am--depfiles: $(am__depfiles_remade)
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
 gnunet_daemon_hostlist-gnunet-daemon-hostlist.o: gnunet-daemon-hostlist.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist.o -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.o `test -f 'gnunet-daemon-hostlist.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist.o -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.o `test -f 'gnunet-daemon-hostlist.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Tpo $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-daemon-hostlist.c' object='gnunet_daemon_hostlist-gnunet-daemon-hostlist.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.o `test -f 'gnunet-daemon-hostlist.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.o `test -f 'gnunet-daemon-hostlist.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist.c
 
 gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj: gnunet-daemon-hostlist.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj `if test -f 'gnunet-daemon-hostlist.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj `if test -f 'gnunet-daemon-hostlist.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Tpo $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-daemon-hostlist.c' object='gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj `if test -f 'gnunet-daemon-hostlist.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist.obj `if test -f 'gnunet-daemon-hostlist.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist.c'; fi`
 
 gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o: gnunet-daemon-hostlist_client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o `test -f 'gnunet-daemon-hostlist_client.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_client.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o `test -f 'gnunet-daemon-hostlist_client.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_client.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Tpo $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-daemon-hostlist_client.c' object='gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o `test -f 'gnunet-daemon-hostlist_client.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_client.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.o `test -f 'gnunet-daemon-hostlist_client.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_client.c
 
 gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj: gnunet-daemon-hostlist_client.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj `if test -f 'gnunet-daemon-hostlist_client.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_client.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_client.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj `if test -f 'gnunet-daemon-hostlist_client.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_client.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_client.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Tpo $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-daemon-hostlist_client.c' object='gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj `if test -f 'gnunet-daemon-hostlist_client.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_client.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_client.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_client.obj `if test -f 'gnunet-daemon-hostlist_client.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_client.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_client.c'; fi`
 
 gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o: gnunet-daemon-hostlist_server.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o `test -f 'gnunet-daemon-hostlist_server.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_server.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o `test -f 'gnunet-daemon-hostlist_server.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_server.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Tpo $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-daemon-hostlist_server.c' object='gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o `test -f 'gnunet-daemon-hostlist_server.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_server.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.o `test -f 'gnunet-daemon-hostlist_server.c' || echo '$(srcdir)/'`gnunet-daemon-hostlist_server.c
 
 gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj: gnunet-daemon-hostlist_server.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj `if test -f 'gnunet-daemon-hostlist_server.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_server.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_server.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -MT gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj -MD -MP -MF $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Tpo -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj `if test -f 'gnunet-daemon-hostlist_server.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_server.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_server.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Tpo $(DEPDIR)/gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gnunet-daemon-hostlist_server.c' object='gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gnunet_daemon_hostlist_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj `if test -f 'gnunet-daemon-hostlist_server.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_server.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_server.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(gnunet_daemon_hostlist_CFLAGS) $(CFLAGS) -c -o gnunet_daemon_hostlist-gnunet-daemon-hostlist_server.obj `if test -f 'gnunet-daemon-hostlist_server.c'; then $(CYGPATH_W) 'gnunet-daemon-hostlist_server.c'; else $(CYGPATH_W) '$(srcdir)/gnunet-daemon-hostlist_server.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

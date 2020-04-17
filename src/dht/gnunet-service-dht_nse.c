@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet-service-dht_nse.c
@@ -83,15 +83,15 @@ GDS_NSE_init ()
 {
   unsigned long long hops;
 
-  if ( (GNUNET_YES ==
-	GNUNET_CONFIGURATION_have_value (GDS_cfg,
-					 "dht",
-					 "FORCE_NSE")) &&
-       (GNUNET_OK ==
-	GNUNET_CONFIGURATION_get_value_number (GDS_cfg,
-					       "dht",
-					       "FORCE_NSE",
-					       &hops)) )
+  if ((GNUNET_YES ==
+       GNUNET_CONFIGURATION_have_value (GDS_cfg,
+                                        "dht",
+                                        "FORCE_NSE")) &&
+      (GNUNET_OK ==
+       GNUNET_CONFIGURATION_get_value_number (GDS_cfg,
+                                              "dht",
+                                              "FORCE_NSE",
+                                              &hops)))
   {
     log_of_network_size_estimate = (double) hops;
     return;
@@ -112,5 +112,6 @@ GDS_NSE_done ()
     nse = NULL;
   }
 }
+
 
 /* end of gnunet-service-dht_nse.c */

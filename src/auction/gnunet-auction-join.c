@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file auction/gnunet-auction.c
@@ -65,20 +65,22 @@ main (int argc, char *const *argv)
     /* FIMXE: add options here */
     GNUNET_GETOPT_OPTION_END
   };
+
   if (GNUNET_OK !=
       GNUNET_STRINGS_get_utf8_args (argc, argv,
-				    &argc, &argv))
+                                    &argc, &argv))
     return 2;
 
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv,
-			     "gnunet-auction",
-			     gettext_noop ("help text"),
-			     options,
-			     &run,
-			     NULL)) ? ret : 1;
-  GNUNET_free ((void*) argv);
+         GNUNET_PROGRAM_run (argc, argv,
+                             "gnunet-auction",
+                             gettext_noop ("help text"),
+                             options,
+                             &run,
+                             NULL)) ? ret : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }
+
 
 /* end of gnunet-auction.c */

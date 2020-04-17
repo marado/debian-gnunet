@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file core/gnunet-service-core_kx.h
@@ -46,7 +46,7 @@ struct GSC_KeyExchangeInfo;
 void
 GSC_KX_encrypt_and_transmit (struct GSC_KeyExchangeInfo *kx,
                              const void *payload,
-			     size_t payload_size);
+                             size_t payload_size);
 
 
 /**
@@ -73,7 +73,8 @@ GSC_KX_done (void);
  * @return #GNUNET_YES if excess bandwidth is available, #GNUNET_NO if not
  */
 int
-GSC_NEIGHBOURS_check_excess_bandwidth (const struct GSC_KeyExchangeInfo *target);
+GSC_NEIGHBOURS_check_excess_bandwidth (const struct
+                                       GSC_KeyExchangeInfo *target);
 
 
 /**

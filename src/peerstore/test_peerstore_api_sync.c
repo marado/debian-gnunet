@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file peerstore/test_peerstore_api_sync.c
  * @brief testcase for peerstore sync-on-disconnect feature. Stores
@@ -81,7 +81,7 @@ static const char *val = "test_peerstore_api_store_val";
  */
 static void
 iterate_cb (void *cls,
-	    const struct GNUNET_PEERSTORE_Record *record,
+            const struct GNUNET_PEERSTORE_Record *record,
             const char *emsg)
 {
   const char *rec_val;
@@ -90,7 +90,7 @@ iterate_cb (void *cls,
   if (NULL == record)
   {
     GNUNET_PEERSTORE_disconnect (h,
-				 GNUNET_NO);
+                                 GNUNET_NO);
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
@@ -111,10 +111,34 @@ test_cont (void *cls)
 {
   h = GNUNET_PEERSTORE_connect (cfg);
   GNUNET_PEERSTORE_iterate (h,
-			    subsystem,
-			    &pid, key,
-			    &iterate_cb,
-			    NULL);
+                            subsystem,
+                            &pid, key,
+                            &iterate_cb,
+                            NULL);
+}
+
+
+static void
+disc_cont (void *cls)
+{
+  GNUNET_PEERSTORE_disconnect (h, GNUNET_YES);
+  h = NULL;
+  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
+                                &test_cont,
+                                NULL);
+}
+
+
+static void
+store_cont (void *cls, int success)
+{
+  ok = success;
+  /* We need to wait a little bit to give the disconnect
+     a chance to actually finish the operation; otherwise,
+     the test may fail non-deterministically if the new
+     connection is faster than the cleanup routine of the
+     old one. */GNUNET_SCHEDULER_add_now (&disc_cont,
+                            NULL);
 }
 
 
@@ -126,24 +150,13 @@ test1 ()
 {
   h = GNUNET_PEERSTORE_connect (cfg);
   GNUNET_PEERSTORE_store (h,
-			  subsystem,
-			  &pid,
-			  key,
-			  val, strlen (val) + 1,
+                          subsystem,
+                          &pid,
+                          key,
+                          val, strlen (val) + 1,
                           GNUNET_TIME_UNIT_FOREVER_ABS,
                           GNUNET_PEERSTORE_STOREOPTION_REPLACE,
-			  NULL, NULL);
-  GNUNET_PEERSTORE_disconnect (h,
-			       GNUNET_YES);
-  h = NULL;
-  /* We need to wait a little bit to give the disconnect
-     a chance to actually finish the operation; otherwise,
-     the test may fail non-deterministically if the new
-     connection is faster than the cleanup routine of the
-     old one. */
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_UNIT_SECONDS,
-				&test_cont,
-				NULL);
+                          &store_cont, NULL);
 }
 
 
@@ -160,7 +173,7 @@ run (void *cls,
      struct GNUNET_TESTING_Peer *peer)
 {
   cfg = c;
-  memset (&pid, 1, sizeof (pid));
+  memset (&pid, 1, sizeof(pid));
   test1 ();
 }
 
@@ -170,15 +183,16 @@ main (int argc, char *argv[])
 {
   if (0 !=
       GNUNET_TESTING_service_run ("test-gnunet-peerstore-sync",
-				  "peerstore",
-                                  "test_peerstore_api_data.conf",
-				  &run, NULL))
+                                  "peerstore",
+                                  "peerstore.conf",
+                                  &run, NULL))
     return 1;
   if (0 != ok)
     fprintf (stderr,
-	     "Test failed: %d\n",
-	     ok);
+             "Test failed: %d\n",
+             ok);
   return ok;
 }
+
 
 /* end of test_peerstore_api_sync.c */

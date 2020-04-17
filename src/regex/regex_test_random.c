@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file src/regex/regex_test_random.c
  * @brief functions for creating random regular expressions and strings
@@ -39,8 +39,8 @@ get_random_literal ()
   uint32_t ridx;
 
   ridx =
-      GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
-                                (uint32_t) strlen (ALLOWED_LITERALS));
+    GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK,
+                              (uint32_t) strlen (ALLOWED_LITERALS));
 
   return ALLOWED_LITERALS[ridx];
 }
@@ -89,7 +89,7 @@ REGEX_TEST_generate_random_regex (size_t rx_length, char *matching_str)
   {
     char_op_switch = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 2);
 
-    if (0 == char_op_switch && !last_was_op)
+    if ((0 == char_op_switch) && ! last_was_op)
     {
       last_was_op = 1;
       rx_op = GNUNET_CRYPTO_random_u32 (GNUNET_CRYPTO_QUALITY_WEAK, 4);
@@ -99,14 +99,17 @@ REGEX_TEST_generate_random_regex (size_t rx_length, char *matching_str)
       case 0:
         current_char = '+';
         break;
+
       case 1:
         current_char = '*';
         break;
+
       case 2:
         current_char = '?';
         break;
+
       case 3:
-        if (i < rx_length - 1)  /* '|' cannot be at the end */
+        if (i < rx_length - 1)       /* '|' cannot be at the end */
           current_char = '|';
         else
           current_char = get_random_literal ();
@@ -119,9 +122,10 @@ REGEX_TEST_generate_random_regex (size_t rx_length, char *matching_str)
       last_was_op = 0;
     }
 
-    if (NULL != matching_strp &&
-        (current_char != '+' && current_char != '*' && current_char != '?' &&
-         current_char != '|'))
+    if ((NULL != matching_strp) &&
+        ((current_char != '+') && (current_char != '*') && (current_char !=
+                                                            '?') &&
+         (current_char != '|') ))
     {
       *matching_strp = current_char;
       matching_strp++;

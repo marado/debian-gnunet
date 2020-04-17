@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/test_fs_namespace_list_updateable.c
@@ -120,7 +120,6 @@ sks_cont_this (void *cls, const struct GNUNET_FS_Uri *uri, const char *emsg)
   GNUNET_FS_namespace_list_updateable (fs, ns, NULL, &check_this, NULL);
   GNUNET_FS_publish_sks (fs, ns, "next", "future", meta, uri_next, &bo,
                          GNUNET_FS_PUBLISH_OPTION_NONE, &sks_cont_next, NULL);
-
 }
 
 
@@ -133,17 +132,19 @@ testNamespace ()
   bo.anonymity_level = 1;
   bo.replication_level = 0;
   bo.expiration_time =
-      GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES);
+    GNUNET_TIME_relative_to_absolute (GNUNET_TIME_UNIT_MINUTES);
   meta = GNUNET_CONTAINER_meta_data_create ();
 
   uri_this =
-      GNUNET_FS_uri_parse
-      ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42",
-       NULL);
+    GNUNET_FS_uri_parse
+    (
+      "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.42",
+      NULL);
   uri_next =
-      GNUNET_FS_uri_parse
-      ("gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.43",
-       NULL);
+    GNUNET_FS_uri_parse
+    (
+      "gnunet://fs/chk/C282GG70GKK41O4551011DO413KFBVTVMQG1OG30I0K4045N0G41HAPB82G680A02JRVVFO8URVRU2F159011DO41000000022RG820.RNVVVVOOLCLK065B5D04HTNVNSIB2AI022RG8200HSLK1CO1000ATQ98824DMA2032LIMG50CG0K057NVUVG200000H000004400000.43",
+      NULL);
   GNUNET_FS_publish_sks (fs, ns, "this", "next", meta, uri_this, &bo,
                          GNUNET_FS_PUBLISH_OPTION_NONE, &sks_cont_this, NULL);
 }
@@ -164,8 +165,8 @@ int
 main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-fs-namespace-list-updateable",
-				    "test_fs_namespace_data.conf",
-				    &run, NULL))
+                                    "test_fs_namespace_data.conf",
+                                    &run, NULL))
     return 1;
   do_shutdown ();
   return err;

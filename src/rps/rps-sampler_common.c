@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file rps/rps-sampler_common.c
@@ -35,7 +35,7 @@
 
 #include "rps-test_util.h"
 
-#define LOG(kind, ...) GNUNET_log_from(kind,"rps-sampler_common",__VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "rps-sampler_common", __VA_ARGS__)
 
 /**
  * @brief Context for a callback. Contains callback and closure.
@@ -226,7 +226,7 @@ sampler_notify_on_update (struct RPS_Sampler *sampler,
   struct SamplerNotifyUpdateCTX *notify_ctx;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Inserting new context for notification\n");
+       "Inserting new context for notification\n");
   notify_ctx = GNUNET_new (struct SamplerNotifyUpdateCTX);
   notify_ctx->notify_cb = notify_cb;
   notify_ctx->cls = cls;
@@ -265,7 +265,7 @@ notify_update (struct RPS_Sampler *sampler)
   struct SamplerNotifyUpdateCTX *tmp_notify_tail;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Calling callbacks waiting for update notification.\n");
+       "Calling callbacks waiting for update notification.\n");
   tmp_notify_head = sampler->notify_ctx_head;
   tmp_notify_tail = sampler->notify_ctx_tail;
   sampler->notify_ctx_head = NULL;
@@ -290,7 +290,7 @@ notify_update (struct RPS_Sampler *sampler)
  * @param sampler the sampler to update.
  * @param id the PeerID that is put in the sampler
  */
-  void
+void
 RPS_sampler_update (struct RPS_Sampler *sampler,
                     const struct GNUNET_PeerIdentity *id)
 {
@@ -317,7 +317,7 @@ RPS_sampler_update (struct RPS_Sampler *sampler,
  * @param sampler the sampler to reinitialise a sampler element in.
  * @param id the id of the sampler elements to update.
  */
-  void
+void
 RPS_sampler_reinitialise_by_value (struct RPS_Sampler *sampler,
                                    const struct GNUNET_PeerIdentity *id)
 {
@@ -325,8 +325,8 @@ RPS_sampler_reinitialise_by_value (struct RPS_Sampler *sampler,
 
   for (i = 0; i < sampler->sampler_size; i++)
   {
-    if (0 == GNUNET_memcmp(id,
-          &(sampler->sampler_elements[i]->peer_id)) )
+    if (0 == GNUNET_memcmp (id,
+                            &(sampler->sampler_elements[i]->peer_id)))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG, "Reinitialising sampler\n");
       RPS_sampler_elem_reinit (sampler->sampler_elements[i]);
@@ -343,7 +343,7 @@ RPS_sampler_reinitialise_by_value (struct RPS_Sampler *sampler,
  *
  * @return the number of occurrences of id.
  */
-  uint32_t
+uint32_t
 RPS_sampler_count_id (struct RPS_Sampler *sampler,
                       const struct GNUNET_PeerIdentity *id)
 {
@@ -351,10 +351,10 @@ RPS_sampler_count_id (struct RPS_Sampler *sampler,
   uint32_t i;
 
   count = 0;
-  for ( i = 0 ; i < sampler->sampler_size ; i++ )
+  for (i = 0; i < sampler->sampler_size; i++)
   {
-    if ( 0 == GNUNET_memcmp (&sampler->sampler_elements[i]->peer_id, id)
-        && EMPTY != sampler->sampler_elements[i]->is_empty)
+    if ((0 == GNUNET_memcmp (&sampler->sampler_elements[i]->peer_id, id))
+        && (EMPTY != sampler->sampler_elements[i]->is_empty) )
       count++;
   }
   return count;
@@ -378,14 +378,13 @@ sampler_resize (struct RPS_Sampler *sampler, unsigned int new_size)
   old_size = sampler->sampler_size;
 
   if (old_size > new_size)
-  { /* Shrinking */
-
+  {   /* Shrinking */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Shrinking sampler %d -> %d\n",
          old_size,
          new_size);
 
-    for (i = new_size ; i < old_size ; i++)
+    for (i = new_size; i < old_size; i++)
     {
       RPS_sampler_elem_destroy (sampler->sampler_elements[i]);
     }
@@ -396,21 +395,20 @@ sampler_resize (struct RPS_Sampler *sampler, unsigned int new_size)
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "sampler->sampler_elements now points to %p\n",
          sampler->sampler_elements);
-
   }
   else if (old_size < new_size)
-  { /* Growing */
+  {   /* Growing */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Growing sampler %d -> %d\n",
          old_size,
          new_size);
 
     GNUNET_array_grow (sampler->sampler_elements,
-        sampler->sampler_size,
-        new_size);
+                       sampler->sampler_size,
+                       new_size);
 
-    for (i = old_size ; i < new_size ; i++)
-    { /* Add new sampler elements */
+    for (i = old_size; i < new_size; i++)
+    {     /* Add new sampler elements */
       sampler->sampler_elements[i] = RPS_sampler_elem_create ();
     }
   }
@@ -470,6 +468,7 @@ check_n_peers_ready (void *cls,
                      uint32_t num_observed)
 {
   struct RPS_SamplerRequestHandle *req_handle = cls;
+
   (void) id;
   RPS_sampler_n_rand_peers_ready_cb tmp_cb;
   struct GNUNET_PeerIdentity *peers;
@@ -480,25 +479,25 @@ check_n_peers_ready (void *cls,
 
   req_handle->cur_num_peers++;
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Got %" PRIX32 ". of %" PRIX32 " peers\n",
-      req_handle->cur_num_peers, req_handle->num_peers);
+       "Got %" PRIX32 ". of %" PRIX32 " peers\n",
+       req_handle->cur_num_peers, req_handle->num_peers);
 
   if (req_handle->num_peers == req_handle->cur_num_peers)
-  { /* All peers are ready -- return those to the client */
+  {   /* All peers are ready -- return those to the client */
     GNUNET_assert (NULL != req_handle->callback);
 
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-        "returning %" PRIX32 " peers to the client\n",
-        req_handle->num_peers);
+         "returning %" PRIX32 " peers to the client\n",
+         req_handle->num_peers);
 
     /* Copy pointers and peers temporarily as they
-     * might be deleted from within the callback */
+    * might be deleted from within the callback */
     tmp_cb = req_handle->callback;
     num_peers = req_handle->num_peers;
     peers = GNUNET_new_array (num_peers, struct GNUNET_PeerIdentity);
     GNUNET_memcpy (peers,
                    req_handle->ids,
-                   num_peers * sizeof (struct GNUNET_PeerIdentity));
+                   num_peers * sizeof(struct GNUNET_PeerIdentity));
     cb_cls = req_handle->cls;
     RPS_sampler_request_cancel (req_handle);
     req_handle = NULL;
@@ -525,6 +524,7 @@ check_peer_info_ready (void *cls,
                        uint32_t num_observed)
 {
   struct RPS_SamplerRequestHandleSingleInfo *req_handle = cls;
+
   (void) id;
   RPS_sampler_sinlge_info_ready_cb tmp_cb;
   struct GNUNET_PeerIdentity *peer;
@@ -533,20 +533,20 @@ check_peer_info_ready (void *cls,
   (void) num_observed;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Got single peer with additional info\n");
+       "Got single peer with additional info\n");
 
   GNUNET_assert (NULL != req_handle->callback);
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "returning single peer with info to the client\n");
+       "returning single peer with info to the client\n");
 
   /* Copy pointers and peers temporarily as they
-   * might be deleted from within the callback */
+  * might be deleted from within the callback */
   tmp_cb = req_handle->callback;
   peer = GNUNET_new (struct GNUNET_PeerIdentity);
   GNUNET_memcpy (peer,
                  req_handle->id,
-                 sizeof (struct GNUNET_PeerIdentity));
+                 sizeof(struct GNUNET_PeerIdentity));
   cb_cls = req_handle->cls;
   RPS_sampler_request_single_info_cancel (req_handle);
   req_handle = NULL;
@@ -594,7 +594,7 @@ RPS_sampler_get_n_rand_peers (struct RPS_Sampler *sampler,
                                req_handle);
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-      "Scheduling requests for %" PRIu32 " peers\n", num_peers);
+       "Scheduling requests for %" PRIu32 " peers\n", num_peers);
 
   for (i = 0; i < num_peers; i++)
   {
@@ -635,7 +635,7 @@ RPS_sampler_get_rand_peer_info (struct RPS_Sampler *sampler,
 
   // TODO check if we have too much (distinct) sampled peers
   req_handle = GNUNET_new (struct RPS_SamplerRequestHandleSingleInfo);
-  req_handle->id = GNUNET_malloc (sizeof (struct GNUNET_PeerIdentity));
+  req_handle->id = GNUNET_malloc (sizeof(struct GNUNET_PeerIdentity));
   req_handle->sampler = sampler;
   req_handle->callback = cb;
   req_handle->cls = cls;
@@ -670,7 +670,7 @@ RPS_sampler_request_cancel (struct RPS_SamplerRequestHandle *req_handle)
 {
   struct GetPeerCls *i;
 
-  while (NULL != (i = req_handle->gpc_head) )
+  while (NULL != (i = req_handle->gpc_head))
   {
     GNUNET_CONTAINER_DLL_remove (req_handle->gpc_head,
                                  req_handle->gpc_tail,
@@ -705,11 +705,11 @@ RPS_sampler_request_cancel (struct RPS_SamplerRequestHandle *req_handle)
  */
 void
 RPS_sampler_request_single_info_cancel (
-    struct RPS_SamplerRequestHandleSingleInfo *req_single_info_handle)
+  struct RPS_SamplerRequestHandleSingleInfo *req_single_info_handle)
 {
   struct GetPeerCls *i;
 
-  while (NULL != (i = req_single_info_handle->gpc_head) )
+  while (NULL != (i = req_single_info_handle->gpc_head))
   {
     GNUNET_CONTAINER_DLL_remove (req_single_info_handle->gpc_head,
                                  req_single_info_handle->gpc_tail,
@@ -720,9 +720,11 @@ RPS_sampler_request_single_info_cancel (
     }
     if (NULL != i->notify_ctx)
     {
-      GNUNET_CONTAINER_DLL_remove (req_single_info_handle->sampler->notify_ctx_head,
-                                   req_single_info_handle->sampler->notify_ctx_tail,
-                                   i->notify_ctx);
+      GNUNET_CONTAINER_DLL_remove (
+        req_single_info_handle->sampler->notify_ctx_head,
+        req_single_info_handle->sampler->
+        notify_ctx_tail,
+        i->notify_ctx);
       GNUNET_free (i->notify_ctx);
       i->notify_ctx = NULL;
     }
@@ -730,9 +732,11 @@ RPS_sampler_request_single_info_cancel (
   }
   GNUNET_free (req_single_info_handle->id);
   req_single_info_handle->id = NULL;
-  GNUNET_CONTAINER_DLL_remove (req_single_info_handle->sampler->req_handle_single_head,
-                               req_single_info_handle->sampler->req_handle_single_tail,
-                               req_single_info_handle);
+  GNUNET_CONTAINER_DLL_remove (
+    req_single_info_handle->sampler->req_handle_single_head,
+    req_single_info_handle->sampler->
+    req_handle_single_tail,
+    req_single_info_handle);
   GNUNET_free (req_single_info_handle);
 }
 
@@ -740,13 +744,13 @@ RPS_sampler_request_single_info_cancel (
 /**
  * Cleans the sampler.
  */
-  void
+void
 RPS_sampler_destroy (struct RPS_Sampler *sampler)
 {
   if (NULL != sampler->req_handle_head)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
-        "There are still pending requests. Going to remove them.\n");
+         "There are still pending requests. Going to remove them.\n");
     while (NULL != sampler->req_handle_head)
     {
       RPS_sampler_request_cancel (sampler->req_handle_head);

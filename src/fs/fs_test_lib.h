@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/fs_test_lib.h
@@ -97,7 +97,6 @@ GNUNET_FS_TEST_download (struct GNUNET_TESTBED_Peer *peer,
                          unsigned int verbose,
                          GNUNET_SCHEDULER_TaskCallback cont,
                          void *cont_cls);
-
 
 
 #endif

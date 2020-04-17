@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/time.c
@@ -37,7 +37,7 @@
 #endif
 #endif
 
-#define LOG(kind,...) GNUNET_log_from (kind, "util-time", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "util-time", __VA_ARGS__)
 
 /**
  * Variable used to simulate clock skew.  Used for testing, never in production.
@@ -120,10 +120,10 @@ GNUNET_TIME_absolute_get ()
   struct GNUNET_TIME_Absolute ret;
   struct timeval tv;
 
-  GETTIMEOFDAY (&tv, NULL);
-  ret.abs_value_us =
-      (uint64_t) (((uint64_t) tv.tv_sec * 1000LL * 1000LL) +
-                  ((uint64_t) tv.tv_usec)) + timestamp_offset;
+  gettimeofday (&tv, NULL);
+  ret.abs_value_us = (uint64_t) (((uint64_t) tv.tv_sec * 1000LL * 1000LL)
+                                 + ((uint64_t) tv.tv_usec))
+                     + timestamp_offset;
   return ret;
 }
 
@@ -231,6 +231,7 @@ struct GNUNET_TIME_Absolute
 GNUNET_TIME_absolute_get_forever_ ()
 {
   static struct GNUNET_TIME_Absolute forever = { UINT64_MAX };
+
   return forever;
 }
 
@@ -252,7 +253,7 @@ GNUNET_TIME_relative_to_absolute (struct GNUNET_TIME_Relative rel)
 
   if (rel.rel_value_us + now.abs_value_us < rel.rel_value_us)
   {
-    GNUNET_break (0);           /* overflow... */
+    GNUNET_break (0);  /* overflow... */
     return GNUNET_TIME_UNIT_FOREVER_ABS;
   }
   ret.abs_value_us = rel.rel_value_us + now.abs_value_us;
@@ -288,7 +289,6 @@ GNUNET_TIME_relative_max (struct GNUNET_TIME_Relative t1,
 {
   return (t1.rel_value_us > t2.rel_value_us) ? t1 : t2;
 }
-
 
 
 /**
@@ -342,6 +342,7 @@ GNUNET_TIME_absolute_get_remaining (struct GNUNET_TIME_Absolute future)
   return ret;
 }
 
+
 /**
  * Compute the time difference between the given start and end times.
  * Use this function instead of actual subtraction to ensure that
@@ -362,6 +363,7 @@ GNUNET_TIME_absolute_get_difference (struct GNUNET_TIME_Absolute start,
   ret.rel_value_us = end.abs_value_us - start.abs_value_us;
   return ret;
 }
+
 
 /**
  * Get the duration of an operation as the
@@ -395,7 +397,8 @@ GNUNET_TIME_absolute_add (struct GNUNET_TIME_Absolute start,
 {
   struct GNUNET_TIME_Absolute ret;
 
-  if ((start.abs_value_us == UINT64_MAX) || (duration.rel_value_us == UINT64_MAX))
+  if ((start.abs_value_us == UINT64_MAX) ||
+      (duration.rel_value_us == UINT64_MAX))
     return GNUNET_TIME_UNIT_FOREVER_ABS;
   if (start.abs_value_us + duration.rel_value_us < start.abs_value_us)
   {
@@ -462,8 +465,7 @@ GNUNET_TIME_relative_multiply (struct GNUNET_TIME_Relative rel,
  * @return FOREVER if rel=FOREVER or on overflow; otherwise rel*factor
  */
 struct GNUNET_TIME_Relative
-relative_multiply_double (struct GNUNET_TIME_Relative rel,
-                          double factor)
+relative_multiply_double (struct GNUNET_TIME_Relative rel, double factor)
 {
   struct GNUNET_TIME_Relative out;
   double m;
@@ -546,7 +548,8 @@ GNUNET_TIME_relative_divide (struct GNUNET_TIME_Relative rel,
  *        assuming it continues at the same speed
  */
 struct GNUNET_TIME_Relative
-GNUNET_TIME_calculate_eta (struct GNUNET_TIME_Absolute start, uint64_t finished,
+GNUNET_TIME_calculate_eta (struct GNUNET_TIME_Absolute start,
+                           uint64_t finished,
                            uint64_t total)
 {
   struct GNUNET_TIME_Relative dur;
@@ -673,7 +676,6 @@ GNUNET_TIME_absolute_ntoh (struct GNUNET_TIME_AbsoluteNBO a)
 
   ret.abs_value_us = GNUNET_ntohll (a.abs_value_us__);
   return ret;
-
 }
 
 
@@ -706,12 +708,11 @@ GNUNET_TIME_time_to_year (struct GNUNET_TIME_Absolute at)
   struct tm *t;
   time_t tp;
 
-  tp = at.abs_value_us / 1000LL / 1000LL;    /* microseconds to seconds */
+  tp = at.abs_value_us / 1000LL / 1000LL; /* microseconds to seconds */
   t = gmtime (&tp);
   if (t == NULL)
     return 0;
   return t->tm_year + 1900;
-
 }
 
 
@@ -728,11 +729,11 @@ GNUNET_TIME_year_to_time (unsigned int year)
   time_t tp;
   struct tm t;
 
-  memset (&t, 0, sizeof (t));
+  memset (&t, 0, sizeof(t));
   if (year < 1900)
   {
     GNUNET_break (0);
-    return GNUNET_TIME_absolute_get (); /* now */
+    return GNUNET_TIME_absolute_get ();  /* now */
   }
   t.tm_year = year - 1900;
   t.tm_mday = 1;
@@ -740,8 +741,8 @@ GNUNET_TIME_year_to_time (unsigned int year)
   t.tm_wday = 1;
   t.tm_yday = 1;
   tp = mktime (&t);
-  GNUNET_break (tp != (time_t) - 1);
-  ret.abs_value_us = tp * 1000LL * 1000LL;  /* seconds to microseconds */
+  GNUNET_break (tp != (time_t) -1);
+  ret.abs_value_us = tp * 1000LL * 1000LL; /* seconds to microseconds */
   return ret;
 }
 
@@ -756,16 +757,16 @@ GNUNET_TIME_year_to_time (unsigned int year)
  * @return the next backoff time
  */
 struct GNUNET_TIME_Relative
-GNUNET_TIME_randomized_backoff(struct GNUNET_TIME_Relative rt, struct GNUNET_TIME_Relative threshold)
+GNUNET_TIME_randomized_backoff (struct GNUNET_TIME_Relative rt,
+                                struct GNUNET_TIME_Relative threshold)
 {
-  double r = (rand() % 500) / 1000.0;
+  double r = (rand () % 500) / 1000.0;
   struct GNUNET_TIME_Relative t;
 
-  t = relative_multiply_double (GNUNET_TIME_relative_max (GNUNET_TIME_UNIT_MILLISECONDS,
-                                                          rt),
-                                2 + r);
-  return GNUNET_TIME_relative_min (threshold,
-                                   t);
+  t = relative_multiply_double (
+    GNUNET_TIME_relative_max (GNUNET_TIME_UNIT_MILLISECONDS, rt),
+    2 + r);
+  return GNUNET_TIME_relative_min (threshold, t);
 }
 
 
@@ -778,10 +779,9 @@ GNUNET_TIME_randomized_backoff(struct GNUNET_TIME_Relative rt, struct GNUNET_TIM
 struct GNUNET_TIME_Relative
 GNUNET_TIME_randomize (struct GNUNET_TIME_Relative r)
 {
-  double d = ((rand() % 1001) - 500) / 1000.0;
+  double d = ((rand () % 1001) - 500) / 1000.0;
 
-  return relative_multiply_double (r,
-                                   d);
+  return relative_multiply_double (r, d);
 }
 
 
@@ -804,7 +804,8 @@ GNUNET_TIME_randomize (struct GNUNET_TIME_Relative r)
  * @return monotonically increasing time
  */
 struct GNUNET_TIME_Absolute
-GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cfg)
+GNUNET_TIME_absolute_get_monotonic (
+  const struct GNUNET_CONFIGURATION_Handle *cfg)
 {
   static const struct GNUNET_CONFIGURATION_Handle *last_cfg;
   static struct GNUNET_TIME_Absolute last_time;
@@ -825,23 +826,26 @@ GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cf
     map = NULL;
 
     last_cfg = cfg;
-    if ( (NULL != cfg) &&
-	 (GNUNET_OK ==
-	  GNUNET_CONFIGURATION_get_value_filename (cfg,
-						   "util",
-						   "MONOTONIC_TIME_FILENAME",
-						   &filename)) )
+    if ((NULL != cfg) &&
+        (GNUNET_OK ==
+         GNUNET_CONFIGURATION_get_value_filename (cfg,
+                                                  "util",
+                                                  "MONOTONIC_TIME_FILENAME",
+                                                  &filename)))
     {
       struct GNUNET_DISK_FileHandle *fh;
 
       fh = GNUNET_DISK_file_open (filename,
-                                  GNUNET_DISK_OPEN_READWRITE | GNUNET_DISK_OPEN_CREATE,
-                                  GNUNET_DISK_PERM_USER_WRITE | GNUNET_DISK_PERM_GROUP_WRITE |
-                                  GNUNET_DISK_PERM_USER_READ  | GNUNET_DISK_PERM_GROUP_READ);
+                                  GNUNET_DISK_OPEN_READWRITE
+                                  | GNUNET_DISK_OPEN_CREATE,
+                                  GNUNET_DISK_PERM_USER_WRITE
+                                  | GNUNET_DISK_PERM_GROUP_WRITE
+                                  | GNUNET_DISK_PERM_USER_READ
+                                  | GNUNET_DISK_PERM_GROUP_READ);
       if (NULL == fh)
       {
         GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                    _("Failed to map `%s', cannot assure monotonic time!\n"),
+                    _ ("Failed to map `%s', cannot assure monotonic time!\n"),
                     filename);
       }
       else
@@ -849,38 +853,36 @@ GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cf
         off_t size;
 
         size = 0;
-        GNUNET_break (GNUNET_OK ==
-                      GNUNET_DISK_file_handle_size (fh,
-                                                    &size));
-        if (size < (off_t) sizeof (*map))
+        GNUNET_break (GNUNET_OK == GNUNET_DISK_file_handle_size (fh, &size));
+        if (size < (off_t) sizeof(*map))
         {
           struct GNUNET_TIME_AbsoluteNBO o;
-          
+
           o = GNUNET_TIME_absolute_hton (now);
-          if (sizeof (o) !=
-              GNUNET_DISK_file_write (fh,
-                                      &o,
-                                      sizeof (o)))
+          if (sizeof(o) != GNUNET_DISK_file_write (fh, &o, sizeof(o)))
             size = 0;
           else
-            size = sizeof (o);
+            size = sizeof(o);
         }
-        if (size == sizeof (*map))
+        if (size == sizeof(*map))
         {
           map = GNUNET_DISK_file_map (fh,
                                       &map_handle,
                                       GNUNET_DISK_MAP_TYPE_READWRITE,
-                                      sizeof (*map));
+                                      sizeof(*map));
           if (NULL == map)
             GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                        _("Failed to map `%s', cannot assure monotonic time!\n"),
+                        _ (
+                          "Failed to map `%s', cannot assure monotonic time!\n"),
                         filename);
         }
         else
         {
-          GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
-                      _("Failed to setup monotonic time file `%s', cannot assure monotonic time!\n"),
-                      filename);
+          GNUNET_log (
+            GNUNET_ERROR_TYPE_WARNING,
+            _ (
+              "Failed to setup monotonic time file `%s', cannot assure monotonic time!\n"),
+            filename);
         }
       }
       GNUNET_DISK_file_close (fh);
@@ -895,16 +897,16 @@ GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cf
 #if __GNUC__
     mt.abs_value_us__ = __sync_fetch_and_or (map, 0);
 #else
-    mt.abs_value_us__ = *map; /* godspeed, pray this is atomic */
+    mt.abs_value_us__ = *map;   /* godspeed, pray this is atomic */
 #endif
 #else
     mt.abs_value_us__ = atomic_load (map);
 #endif
-    last_time = GNUNET_TIME_absolute_max (GNUNET_TIME_absolute_ntoh (mt),
-					  last_time);
+    last_time =
+      GNUNET_TIME_absolute_max (GNUNET_TIME_absolute_ntoh (mt), last_time);
   }
   if (now.abs_value_us <= last_time.abs_value_us)
-    now.abs_value_us = last_time.abs_value_us+1;
+    now.abs_value_us = last_time.abs_value_us + 1;
   last_time = now;
   if (NULL != map)
   {
@@ -913,11 +915,10 @@ GNUNET_TIME_absolute_get_monotonic (const struct GNUNET_CONFIGURATION_Handle *cf
 #if __GNUC__
     (void) __sync_lock_test_and_set (map, val);
 #else
-    *map = val;  /* godspeed, pray this is atomic */
+    *map = val;   /* godspeed, pray this is atomic */
 #endif
 #else
-    atomic_store (map,
-		  val);
+    atomic_store (map, val);
 #endif
   }
   return now;
@@ -932,5 +933,6 @@ GNUNET_util_time_fini ()
 {
   (void) GNUNET_TIME_absolute_get_monotonic (NULL);
 }
+
 
 /* end of time.c */

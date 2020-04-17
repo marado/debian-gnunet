@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2009, 2010, 2011, 2012, 2013, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2009, 2010, 2011, 2012, 2013, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -72,10 +72,10 @@
  * required. Corking OK.
  */
 #define NSE_PRIORITY                                       \
-  (GNUNET_MQ_PRIO_BACKGROUND | GNUNET_MQ_PREF_UNRELIABLE | \
-   GNUNET_MQ_PREF_CORK_ALLOWED)
+  (GNUNET_MQ_PRIO_BACKGROUND | GNUNET_MQ_PREF_UNRELIABLE   \
+   | GNUNET_MQ_PREF_CORK_ALLOWED)
 
-#if FREEBSD
+#ifdef BSD
 #define log2(a) (log (a) / log (2))
 #endif
 
@@ -119,7 +119,6 @@ static struct GNUNET_BIO_WriteHandle *histogram;
  */
 struct NSEPeerEntry
 {
-
   /**
    * Core handle for sending messages to this peer.
    */
@@ -143,7 +142,6 @@ struct NSEPeerEntry
   int previous_round;
 
 #if ENABLE_NSE_HISTOGRAM
-
   /**
    * Amount of messages received from this peer on this round.
    */
@@ -158,7 +156,6 @@ struct NSEPeerEntry
    * Which size did we tell the peer the network is?
    */
   unsigned int last_transmitted_size;
-
 #endif
 };
 
@@ -381,8 +378,8 @@ setup_estimate_message (struct GNUNET_NSE_ClientMessage *em)
   if (0 != estimate_count)
   {
     mean = sum / estimate_count;
-    variance = (vsq - mean * sum) /
-               (estimate_count - 1.0); // terrible for numerical stability...
+    variance = (vsq - mean * sum)
+               / (estimate_count - 1.0); // terrible for numerical stability...
   }
 #endif
   if (variance >= 0)
@@ -392,7 +389,7 @@ setup_estimate_message (struct GNUNET_NSE_ClientMessage *em)
   current_std_dev = std_dev;
   current_size_estimate = mean;
 
-  em->header.size = htons (sizeof (struct GNUNET_NSE_ClientMessage));
+  em->header.size = htons (sizeof(struct GNUNET_NSE_ClientMessage));
   em->header.type = htons (GNUNET_MESSAGE_TYPE_NSE_ESTIMATE);
   em->reserved = htonl (0);
   em->timestamp = GNUNET_TIME_absolute_hton (GNUNET_TIME_absolute_get ());
@@ -401,7 +398,7 @@ setup_estimate_message (struct GNUNET_NSE_ClientMessage *em)
     unsigned int j = GNUNET_CONTAINER_multipeermap_size (peers);
     if (0 == j)
       j = 1; /* Avoid log2(0); can only happen if CORE didn't report
-		connection to self yet */
+                connection to self yet */
     nsize = log2 (j);
     em->size_estimate = GNUNET_hton_double (GNUNET_MAX (se, nsize));
     em->std_deviation = GNUNET_hton_double (std_dev);
@@ -455,9 +452,9 @@ get_matching_bits_delay (uint32_t matching_bits)
   // f is frequency (gnunet_nse_interval)
   // x is matching_bits
   // p' is current_size_estimate
-  return ((double) gnunet_nse_interval.rel_value_us / (double) 2.0) -
-         ((gnunet_nse_interval.rel_value_us / M_PI) *
-          atan (matching_bits - current_size_estimate));
+  return ((double) gnunet_nse_interval.rel_value_us / (double) 2.0)
+         - ((gnunet_nse_interval.rel_value_us / M_PI)
+            * atan (matching_bits - current_size_estimate));
 }
 
 
@@ -491,29 +488,6 @@ get_delay_randomization (uint32_t matching_bits)
 
 
 /**
- * Calculate the 'proof-of-work' hash (an expensive hash).
- *
- * @param buf data to hash
- * @param buf_len number of bytes in @a buf
- * @param result where to write the resulting hash
- */
-static void
-pow_hash (const void *buf, size_t buf_len, struct GNUNET_HashCode *result)
-{
-  GNUNET_break (
-    0 == gcry_kdf_derive (buf,
-                          buf_len,
-                          GCRY_KDF_SCRYPT,
-                          1 /* subalgo */,
-                          "gnunet-proof-of-work",
-                          strlen ("gnunet-proof-of-work"),
-                          2 /* iterations; keep cost of individual op small */,
-                          sizeof (struct GNUNET_HashCode),
-                          result));
-}
-
-
-/**
  * Get the number of matching bits that the given timestamp has to the given peer ID.
  *
  * @param timestamp time to generate key
@@ -528,9 +502,9 @@ get_matching_bits (struct GNUNET_TIME_Absolute timestamp,
   struct GNUNET_HashCode pid_hash;
 
   GNUNET_CRYPTO_hash (&timestamp.abs_value_us,
-                      sizeof (timestamp.abs_value_us),
+                      sizeof(timestamp.abs_value_us),
                       &timestamp_hash);
-  GNUNET_CRYPTO_hash (id, sizeof (struct GNUNET_PeerIdentity), &pid_hash);
+  GNUNET_CRYPTO_hash (id, sizeof(struct GNUNET_PeerIdentity), &pid_hash);
   return GNUNET_CRYPTO_hash_matching_bits (&timestamp_hash, &pid_hash);
 }
 
@@ -565,6 +539,7 @@ get_transmit_delay (int round_offset)
                 "Transmitting previous round behind schedule in %s\n",
                 GNUNET_STRINGS_relative_time_to_string (ret, GNUNET_YES));
     return ret;
+
   case 0:
     /* current round is based on best-known matching_bits */
     matching_bits =
@@ -680,14 +655,14 @@ setup_flood_message (unsigned int slot, struct GNUNET_TIME_Absolute ts)
 
   matching_bits = get_matching_bits (ts, &my_identity);
   fm = &size_estimate_messages[slot];
-  fm->header.size = htons (sizeof (struct GNUNET_NSE_FloodMessage));
+  fm->header.size = htons (sizeof(struct GNUNET_NSE_FloodMessage));
   fm->header.type = htons (GNUNET_MESSAGE_TYPE_NSE_P2P_FLOOD);
   fm->hop_count = htonl (0);
   fm->purpose.purpose = htonl (GNUNET_SIGNATURE_PURPOSE_NSE_SEND);
   fm->purpose.size =
-    htonl (sizeof (struct GNUNET_NSE_FloodMessage) -
-           sizeof (struct GNUNET_MessageHeader) - sizeof (uint32_t) -
-           sizeof (struct GNUNET_CRYPTO_EddsaSignature));
+    htonl (sizeof(struct GNUNET_NSE_FloodMessage)
+           - sizeof(struct GNUNET_MessageHeader) - sizeof(uint32_t)
+           - sizeof(struct GNUNET_CRYPTO_EddsaSignature));
   fm->matching_bits = htonl (matching_bits);
   fm->timestamp = GNUNET_TIME_absolute_hton (ts);
   fm->origin = my_identity;
@@ -697,7 +672,7 @@ setup_flood_message (unsigned int slot, struct GNUNET_TIME_Absolute ts)
                                                           &fm->purpose,
                                                           &fm->signature));
   else
-    memset (&fm->signature, 0, sizeof (fm->signature));
+    memset (&fm->signature, 0, sizeof(fm->signature));
 }
 
 
@@ -781,7 +756,7 @@ update_flood_message (void *cls)
   }
   else
     setup_flood_message (estimate_index, current_timestamp);
-  next_message.matching_bits = htonl (0); /* reset for 'next' round */
+  next_message.matching_bits = htonl (0);  /* reset for 'next' round */
   hop_count_max = 0;
   for (unsigned int i = 0; i < HISTORY_SIZE; i++)
     hop_count_max =
@@ -822,17 +797,20 @@ static int
 check_proof_of_work (const struct GNUNET_CRYPTO_EddsaPublicKey *pkey,
                      uint64_t val)
 {
-  char buf[sizeof (struct GNUNET_CRYPTO_EddsaPublicKey) +
-           sizeof (val)] GNUNET_ALIGN;
+  char buf[sizeof(struct GNUNET_CRYPTO_EddsaPublicKey)
+           + sizeof(val)] GNUNET_ALIGN;
   struct GNUNET_HashCode result;
 
-  GNUNET_memcpy (buf, &val, sizeof (val));
-  GNUNET_memcpy (&buf[sizeof (val)],
+  GNUNET_memcpy (buf, &val, sizeof(val));
+  GNUNET_memcpy (&buf[sizeof(val)],
                  pkey,
-                 sizeof (struct GNUNET_CRYPTO_EddsaPublicKey));
-  pow_hash (buf, sizeof (buf), &result);
+                 sizeof(struct GNUNET_CRYPTO_EddsaPublicKey));
+  GNUNET_CRYPTO_pow_hash ("gnunet-nse-proof-of-work",
+                          buf,
+                          sizeof(buf),
+                          &result);
   return (count_leading_zeroes (&result) >= nse_work_required) ? GNUNET_YES
-                                                               : GNUNET_NO;
+         : GNUNET_NO;
 }
 
 
@@ -847,11 +825,11 @@ write_proof ()
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_get_value_filename (cfg, "NSE", "PROOFFILE", &proof))
     return;
-  if (sizeof (my_proof) != GNUNET_DISK_fn_write (proof,
-                                                 &my_proof,
-                                                 sizeof (my_proof),
-                                                 GNUNET_DISK_PERM_USER_READ |
-                                                   GNUNET_DISK_PERM_USER_WRITE))
+  if (sizeof(my_proof) != GNUNET_DISK_fn_write (proof,
+                                                &my_proof,
+                                                sizeof(my_proof),
+                                                GNUNET_DISK_PERM_USER_READ
+                                                | GNUNET_DISK_PERM_USER_WRITE))
     GNUNET_log_strerror_file (GNUNET_ERROR_TYPE_WARNING, "write", proof);
   GNUNET_free (proof);
 }
@@ -867,22 +845,25 @@ find_proof (void *cls)
 {
 #define ROUND_SIZE 10
   uint64_t counter;
-  char buf[sizeof (struct GNUNET_CRYPTO_EddsaPublicKey) +
-           sizeof (uint64_t)] GNUNET_ALIGN;
+  char buf[sizeof(struct GNUNET_CRYPTO_EddsaPublicKey)
+           + sizeof(uint64_t)] GNUNET_ALIGN;
   struct GNUNET_HashCode result;
   unsigned int i;
 
   (void) cls;
   proof_task = NULL;
-  GNUNET_memcpy (&buf[sizeof (uint64_t)],
+  GNUNET_memcpy (&buf[sizeof(uint64_t)],
                  &my_identity,
-                 sizeof (struct GNUNET_PeerIdentity));
+                 sizeof(struct GNUNET_PeerIdentity));
   i = 0;
   counter = my_proof;
   while ((counter != UINT64_MAX) && (i < ROUND_SIZE))
   {
-    GNUNET_memcpy (buf, &counter, sizeof (uint64_t));
-    pow_hash (buf, sizeof (buf), &result);
+    GNUNET_memcpy (buf, &counter, sizeof(uint64_t));
+    GNUNET_CRYPTO_pow_hash ("gnunet-nse-proof-of-work",
+                            buf,
+                            sizeof(buf),
+                            &result);
     if (nse_work_required <= count_leading_zeroes (&result))
     {
       my_proof = counter;
@@ -1017,7 +998,7 @@ handle_p2p_estimate (void *cls,
 
     t = GNUNET_TIME_absolute_get ().abs_value_us;
     if (NULL != lh)
-      GNUNET_TESTBED_LOGGER_write (lh, &t, sizeof (uint64_t));
+      GNUNET_TESTBED_LOGGER_write (lh, &t, sizeof(uint64_t));
     if (NULL != histogram)
       GNUNET_BIO_write_int64 (histogram, t);
   }
@@ -1031,10 +1012,10 @@ handle_p2p_estimate (void *cls,
     struct GNUNET_PeerIdentity os;
 
     GNUNET_snprintf (origin,
-                     sizeof (origin),
+                     sizeof(origin),
                      "%s",
                      GNUNET_i2s (&incoming_flood->origin));
-    GNUNET_snprintf (pred, sizeof (pred), "%s", GNUNET_i2s (peer_entry->id));
+    GNUNET_snprintf (pred, sizeof(pred), "%s", GNUNET_i2s (peer_entry->id));
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "Flood at %s from `%s' via `%s' at `%s' with bits %u\n",
                 GNUNET_STRINGS_absolute_time_to_string (
@@ -1048,8 +1029,8 @@ handle_p2p_estimate (void *cls,
 
 #if ENABLE_NSE_HISTOGRAM
   peer_entry->received_messages++;
-  if (peer_entry->transmitted_messages > 0 &&
-      peer_entry->last_transmitted_size >= matching_bits)
+  if ((peer_entry->transmitted_messages > 0) &&
+      (peer_entry->last_transmitted_size >= matching_bits) )
     GNUNET_STATISTICS_update (stats, "# cross messages", 1, GNUNET_NO);
 #endif
 
@@ -1062,7 +1043,7 @@ handle_p2p_estimate (void *cls,
   else if (ts.abs_value_us == next_timestamp.abs_value_us)
   {
     if (matching_bits <= ntohl (next_message.matching_bits))
-      return; /* ignore, simply too early/late */
+      return;   /* ignore, simply too early/late */
     if (GNUNET_YES != verify_message_crypto (incoming_flood))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -1255,6 +1236,8 @@ flush_comp_cb (void *cls, size_t size)
   GNUNET_TESTBED_LOGGER_disconnect (lh);
   lh = NULL;
 }
+
+
 #endif
 
 
@@ -1276,7 +1259,7 @@ shutdown_task (void *cls)
   {
     GNUNET_SCHEDULER_cancel (proof_task);
     proof_task = NULL;
-    write_proof (); /* remember progress */
+    write_proof ();  /* remember progress */
   }
   if (NULL != nc)
   {
@@ -1344,8 +1327,8 @@ core_init (void *cls, const struct GNUNET_PeerIdentity *identity)
   GNUNET_assert (0 == GNUNET_memcmp (&my_identity, identity));
   now = GNUNET_TIME_absolute_get ();
   current_timestamp.abs_value_us =
-    (now.abs_value_us / gnunet_nse_interval.rel_value_us) *
-    gnunet_nse_interval.rel_value_us;
+    (now.abs_value_us / gnunet_nse_interval.rel_value_us)
+    * gnunet_nse_interval.rel_value_us;
   next_timestamp =
     GNUNET_TIME_absolute_add (current_timestamp, gnunet_nse_interval);
   estimate_index = HISTORY_SIZE - 1;
@@ -1390,6 +1373,8 @@ status_cb (void *cls, int status)
     GNUNET_SCHEDULER_shutdown ();
   }
 }
+
+
 #endif
 
 
@@ -1406,11 +1391,11 @@ run (void *cls,
      struct GNUNET_SERVICE_Handle *service)
 {
   struct GNUNET_MQ_MessageHandler core_handlers[] =
-    {GNUNET_MQ_hd_fixed_size (p2p_estimate,
-                              GNUNET_MESSAGE_TYPE_NSE_P2P_FLOOD,
-                              struct GNUNET_NSE_FloodMessage,
-                              NULL),
-     GNUNET_MQ_handler_end ()};
+  { GNUNET_MQ_hd_fixed_size (p2p_estimate,
+                             GNUNET_MESSAGE_TYPE_NSE_P2P_FLOOD,
+                             struct GNUNET_NSE_FloodMessage,
+                             NULL),
+    GNUNET_MQ_handler_end () };
   char *proof;
   struct GNUNET_CRYPTO_EddsaPrivateKey *pk;
 
@@ -1444,7 +1429,7 @@ run (void *cls,
     GNUNET_SCHEDULER_shutdown ();
     return;
   }
-  if (nse_work_required >= sizeof (struct GNUNET_HashCode) * 8)
+  if (nse_work_required >= sizeof(struct GNUNET_HashCode) * 8)
   {
     GNUNET_log_config_invalid (GNUNET_ERROR_TYPE_ERROR,
                                "NSE",
@@ -1497,8 +1482,8 @@ run (void *cls,
     return;
   }
   if ((GNUNET_YES != GNUNET_DISK_file_test (proof)) ||
-      (sizeof (my_proof) !=
-       GNUNET_DISK_fn_read (proof, &my_proof, sizeof (my_proof))))
+      (sizeof(my_proof) !=
+       GNUNET_DISK_fn_read (proof, &my_proof, sizeof(my_proof))))
     my_proof = 0;
   GNUNET_free (proof);
   proof_task =
@@ -1510,7 +1495,7 @@ run (void *cls,
   nc = GNUNET_notification_context_create (1);
   /* Connect to core service and register core handlers */
   core_api =
-    GNUNET_CORE_connect (cfg, /* Main configuration */
+    GNUNET_CORE_connect (cfg,  /* Main configuration */
                          NULL, /* Closure passed to functions */
                          &core_init, /* Call core_init once connected */
                          &handle_core_connect, /* Handle connects */
@@ -1577,18 +1562,21 @@ GNUNET_SERVICE_MAIN ("nse",
                      GNUNET_MQ_handler_end ());
 
 
-#if defined(LINUX) && defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 #include <malloc.h>
 
 /**
  * MINIMIZE heap size (way below 128k) since this process doesn't need much.
  */
-void __attribute__ ((constructor)) GNUNET_ARM_memory_init ()
+void __attribute__ ((constructor))
+GNUNET_ARM_memory_init ()
 {
   mallopt (M_TRIM_THRESHOLD, 4 * 1024);
   mallopt (M_TOP_PAD, 1 * 1024);
   malloc_trim (0);
 }
+
+
 #endif
 
 

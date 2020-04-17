@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -103,7 +103,8 @@ GNUNET_DATASTORE_disconnect (struct GNUNET_DATASTORE_Handle *h,
 typedef void
 (*GNUNET_DATASTORE_ContinuationWithStatus) (void *cls,
                                             int32_t success,
-                                            struct GNUNET_TIME_Absolute min_expiration,
+                                            struct GNUNET_TIME_Absolute
+                                            min_expiration,
                                             const char *msg);
 
 
@@ -338,7 +339,6 @@ GNUNET_DATASTORE_get_for_replication (struct GNUNET_DATASTORE_Handle *h,
                                       unsigned int max_queue_size,
                                       GNUNET_DATASTORE_DatumProcessor proc,
                                       void *proc_cls);
-
 
 
 /**

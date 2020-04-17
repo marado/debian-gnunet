@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -104,7 +104,6 @@ typedef void
                                             const char *emsg);
 
 
-
 /**
  * Store an item in the namecache.  If the item is already present,
  * it is replaced with the new record.
@@ -117,9 +116,9 @@ typedef void
  */
 struct GNUNET_NAMECACHE_QueueEntry *
 GNUNET_NAMECACHE_block_cache (struct GNUNET_NAMECACHE_Handle *h,
-			      const struct GNUNET_GNSRECORD_Block *block,
-			      GNUNET_NAMECACHE_ContinuationWithStatus cont,
-			      void *cont_cls);
+                              const struct GNUNET_GNSRECORD_Block *block,
+                              GNUNET_NAMECACHE_ContinuationWithStatus cont,
+                              void *cont_cls);
 
 
 /**
@@ -147,8 +146,8 @@ typedef void
  */
 struct GNUNET_NAMECACHE_QueueEntry *
 GNUNET_NAMECACHE_lookup_block (struct GNUNET_NAMECACHE_Handle *h,
-			       const struct GNUNET_HashCode *derived_hash,
-			       GNUNET_NAMECACHE_BlockProcessor proc,
+                               const struct GNUNET_HashCode *derived_hash,
+                               GNUNET_NAMECACHE_BlockProcessor proc,
                                void *proc_cls);
 
 

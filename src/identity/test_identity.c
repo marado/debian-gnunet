@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file identity/test_identity.c
@@ -133,44 +133,51 @@ notification_cb (void *cls,
 
   switch (round)
   {
-  case 0: /* end of initial iteration */
+  case 0:   /* end of initial iteration */
     CHECK (NULL == ego);
     CHECK (NULL == identifier);
     break;
-  case 1: /* create */
+
+  case 1:   /* create */
     CHECK (NULL != ego);
     CHECK (NULL != identifier);
     CHECK (0 == strcmp (identifier, "test-id"));
     my_ego = ego;
     *ctx = &round;
     break;
-  case 2: /* rename */
+
+  case 2:   /* rename */
     CHECK (my_ego == ego);
     CHECK (NULL != identifier);
     CHECK (0 == strcmp (identifier, "test"));
     CHECK (*ctx == &round);
     break;
-  case 3: /* reconnect-down */
+
+  case 3:   /* reconnect-down */
     CHECK (my_ego == ego);
     CHECK (NULL == identifier);
     CHECK (*ctx == &round);
     *ctx = NULL;
     break;
-  case 4: /* reconnect-up */
+
+  case 4:   /* reconnect-up */
     CHECK (NULL != identifier);
     CHECK (0 == strcmp (identifier, "test"));
     my_ego = ego;
     *ctx = &round;
     break;
-  case 5: /* end of iteration after reconnect */
+
+  case 5:   /* end of iteration after reconnect */
     CHECK (NULL == ego);
     CHECK (NULL == identifier);
     break;
-  case 6: /* delete */
+
+  case 6:   /* delete */
     CHECK (my_ego == ego);
     CHECK (*ctx == &round);
     *ctx = NULL;
     break;
+
   default:
     CHECK (0);
   }

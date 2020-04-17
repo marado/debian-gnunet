@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/gnunet-service-dht_routing.c
@@ -41,7 +41,6 @@
  */
 struct RecentRequest
 {
-
   /**
    * The peer this request was received from.
    */
@@ -82,7 +81,6 @@ struct RecentRequest
    * Request options.
    */
   enum GNUNET_DHT_RouteOption options;
-
 };
 
 
@@ -141,7 +139,6 @@ struct ProcessContext
    * Type of the reply.
    */
   enum GNUNET_BLOCK_Type type;
-
 };
 
 
@@ -167,8 +164,8 @@ process (void *cls,
   struct GNUNET_HashCode hc;
   const struct GNUNET_HashCode *eval_key;
 
-  if ( (rr->type != GNUNET_BLOCK_TYPE_ANY) &&
-       (rr->type != pc->type) )
+  if ((rr->type != GNUNET_BLOCK_TYPE_ANY) &&
+      (rr->type != pc->type))
     return GNUNET_OK;           /* type missmatch */
 
   if (0 != (rr->options & GNUNET_DHT_RO_RECORD_ROUTE))
@@ -181,18 +178,18 @@ process (void *cls,
     gpl = 0;
     ppl = 0;
   }
-  if ( (0 != (rr->options & GNUNET_DHT_RO_FIND_PEER)) &&
-       (pc->type == GNUNET_BLOCK_TYPE_DHT_HELLO) )
+  if ((0 != (rr->options & GNUNET_DHT_RO_FIND_PEER)) &&
+      (pc->type == GNUNET_BLOCK_TYPE_DHT_HELLO))
   {
     /* key may not match HELLO, which is OK since
      * the search is approximate.  Still, the evaluation
      * would fail since the match is not exact.  So
      * we fake it by changing the key to the actual PID ... */
     GNUNET_BLOCK_get_key (GDS_block_context,
-			  GNUNET_BLOCK_TYPE_DHT_HELLO,
+                          GNUNET_BLOCK_TYPE_DHT_HELLO,
                           pc->data,
                           pc->data_size,
-			  &hc);
+                          &hc);
     eval_key = &hc;
   }
   else
@@ -220,47 +217,58 @@ process (void *cls,
   case GNUNET_BLOCK_EVALUATION_OK_LAST:
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# Good REPLIES matched against routing table"),
+                                ("# Good REPLIES matched against routing table"),
                               1, GNUNET_NO);
     GDS_NEIGHBOURS_handle_reply (&rr->peer,
-				 pc->type,
-				 pc->expiration_time,
-				 key,
+                                 pc->type,
+                                 pc->expiration_time,
+                                 key,
                                  ppl, pc->put_path,
-				 gpl, pc->get_path,
-				 pc->data,
+                                 gpl, pc->get_path,
+                                 pc->data,
                                  pc->data_size);
     break;
+
   case GNUNET_BLOCK_EVALUATION_OK_DUPLICATE:
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# Duplicate REPLIES matched against routing table"),
+                              (
+                                "# Duplicate REPLIES matched against routing table"),
                               1, GNUNET_NO);
     return GNUNET_OK;
+
   case GNUNET_BLOCK_EVALUATION_RESULT_INVALID:
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# Invalid REPLIES matched against routing table"),
+                              (
+                                "# Invalid REPLIES matched against routing table"),
                               1, GNUNET_NO);
     return GNUNET_SYSERR;
+
   case GNUNET_BLOCK_EVALUATION_RESULT_IRRELEVANT:
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# Irrelevant REPLIES matched against routing table"),
+                              (
+                                "# Irrelevant REPLIES matched against routing table"),
                               1, GNUNET_NO);
     return GNUNET_OK;
+
   case GNUNET_BLOCK_EVALUATION_REQUEST_VALID:
     GNUNET_break (0);
     return GNUNET_OK;
+
   case GNUNET_BLOCK_EVALUATION_REQUEST_INVALID:
     GNUNET_break (0);
     return GNUNET_OK;
+
   case GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED:
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# Unsupported REPLIES matched against routing table"),
+                              (
+                                "# Unsupported REPLIES matched against routing table"),
                               1, GNUNET_NO);
     return GNUNET_SYSERR;
+
   default:
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -315,7 +323,7 @@ GDS_ROUTING_process (enum GNUNET_BLOCK_Type type,
        So we set 'data' to a 0-byte non-NULL value just to be sure */
     GNUNET_break (0 == data_size);
     pc.data_size = 0;
-    pc.data = ""; /* something not null */
+    pc.data = "";   /* something not null */
   }
   GNUNET_CONTAINER_multihashmap_get_multiple (recent_map,
                                               key,
@@ -335,17 +343,17 @@ expire_oldest_entry ()
   struct RecentRequest *recent_req;
 
   GNUNET_STATISTICS_update (GDS_stats,
-			    gettext_noop
-			    ("# Entries removed from routing table"), 1,
-			    GNUNET_NO);
+                            gettext_noop
+                              ("# Entries removed from routing table"), 1,
+                            GNUNET_NO);
   recent_req = GNUNET_CONTAINER_heap_peek (recent_heap);
   GNUNET_assert (recent_req != NULL);
   GNUNET_CONTAINER_heap_remove_node (recent_req->heap_node);
   GNUNET_BLOCK_group_destroy (recent_req->bg);
   GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CONTAINER_multihashmap_remove (recent_map,
-						       &recent_req->key,
-						       recent_req));
+                 GNUNET_CONTAINER_multihashmap_remove (recent_map,
+                                                       &recent_req->key,
+                                                       recent_req));
   GNUNET_free (recent_req);
 }
 
@@ -368,13 +376,13 @@ try_combine_recent (void *cls,
   struct RecentRequest *in = cls;
   struct RecentRequest *rr = value;
 
-  if ( (0 != GNUNET_memcmp (&in->peer,
-		     &rr->peer)) ||
-       (in->type != rr->type) ||
-       (in->xquery_size != rr->xquery_size) ||
-       (0 != memcmp (in->xquery,
-		     rr->xquery,
-		     in->xquery_size)) )
+  if ((0 != GNUNET_memcmp (&in->peer,
+                           &rr->peer)) ||
+      (in->type != rr->type) ||
+      (in->xquery_size != rr->xquery_size) ||
+      (0 != memcmp (in->xquery,
+                    rr->xquery,
+                    in->xquery_size)))
     return GNUNET_OK;
   GNUNET_break (GNUNET_SYSERR !=
                 GNUNET_BLOCK_group_merge (in->bg,
@@ -414,7 +422,7 @@ GDS_ROUTING_add (const struct GNUNET_PeerIdentity *sender,
                             gettext_noop ("# Entries added to routing table"),
                             1,
                             GNUNET_NO);
-  recent_req = GNUNET_malloc (sizeof (struct RecentRequest) + xquery_size);
+  recent_req = GNUNET_malloc (sizeof(struct RecentRequest) + xquery_size);
   recent_req->peer = *sender;
   recent_req->key = *key;
   recent_req->bg = bg;
@@ -428,12 +436,12 @@ GDS_ROUTING_add (const struct GNUNET_PeerIdentity *sender,
   if (GNUNET_SYSERR ==
       GNUNET_CONTAINER_multihashmap_get_multiple (recent_map,
                                                   key,
-						  &try_combine_recent,
+                                                  &try_combine_recent,
                                                   recent_req))
   {
     GNUNET_STATISTICS_update (GDS_stats,
                               gettext_noop
-                              ("# DHT requests combined"),
+                                ("# DHT requests combined"),
                               1, GNUNET_NO);
     return;
   }
@@ -455,7 +463,8 @@ void
 GDS_ROUTING_init ()
 {
   recent_heap = GNUNET_CONTAINER_heap_create (GNUNET_CONTAINER_HEAP_ORDER_MIN);
-  recent_map = GNUNET_CONTAINER_multihashmap_create (DHT_MAX_RECENT * 4 / 3, GNUNET_NO);
+  recent_map = GNUNET_CONTAINER_multihashmap_create (DHT_MAX_RECENT * 4 / 3,
+                                                     GNUNET_NO);
 }
 
 
@@ -474,5 +483,6 @@ GDS_ROUTING_done ()
   GNUNET_CONTAINER_multihashmap_destroy (recent_map);
   recent_map = NULL;
 }
+
 
 /* end of gnunet-service-dht_routing.c */

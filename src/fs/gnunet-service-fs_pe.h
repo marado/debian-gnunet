@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_pe.h
@@ -69,9 +69,13 @@ GSF_plan_notify_request_done_ (struct GSF_PendingRequest *pr);
  * @return GNUNET_YES if 'result' was changed, GNUNET_NO otherwise.
  */
 int
-GSF_request_plan_reference_get_last_transmission_ (struct GSF_PendingRequestPlanBijection *pr_head,
-						   struct GSF_ConnectedPeer *sender,
-						   struct GNUNET_TIME_Absolute *result);
+GSF_request_plan_reference_get_last_transmission_ (struct
+                                                   GSF_PendingRequestPlanBijection
+                                                   *pr_head,
+                                                   struct GSF_ConnectedPeer *
+                                                   sender,
+                                                   struct GNUNET_TIME_Absolute *
+                                                   result);
 
 /**
  * Initialize plan subsystem.

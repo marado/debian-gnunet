@@ -1,19 +1,19 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2016, 2017 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2016, 2017 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -45,7 +45,8 @@
 /**
  * How long do we wait until we forcefully terminate autoconfiguration?
  */
-#define AUTOCONFIG_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5)
+#define AUTOCONFIG_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 5)
 
 
 /**
@@ -53,7 +54,6 @@
  */
 struct ClientHandle
 {
-
   /**
    * Kept in a DLL.
    */
@@ -171,7 +171,8 @@ static struct GNUNET_STATISTICS_Handle *stats;
  */
 static int
 check_autoconfig_request (void *cls,
-			  const struct GNUNET_NAT_AUTO_AutoconfigRequestMessage *message)
+                          const struct
+                          GNUNET_NAT_AUTO_AutoconfigRequestMessage *message)
 {
   return GNUNET_OK;  /* checked later */
 }
@@ -215,28 +216,28 @@ conclude_autoconfig_request (void *cls)
 
   /* Send back response */
   diff = GNUNET_CONFIGURATION_get_diff (ac->orig,
-					ac->c);
+                                        ac->c);
   buf = GNUNET_CONFIGURATION_serialize (diff,
-					&c_size);
+                                        &c_size);
   GNUNET_CONFIGURATION_destroy (diff);
   env = GNUNET_MQ_msg_extra (arm,
-			     c_size,
-			     GNUNET_MESSAGE_TYPE_NAT_AUTO_CFG_RESULT);
+                             c_size,
+                             GNUNET_MESSAGE_TYPE_NAT_AUTO_CFG_RESULT);
   arm->status_code = htonl ((uint32_t) ac->status_code);
   arm->type = htonl ((uint32_t) ac->type);
   GNUNET_memcpy (&arm[1],
-		 buf,
-		 c_size);
+                 buf,
+                 c_size);
   GNUNET_free (buf);
   GNUNET_MQ_send (ch->mq,
-		  env);
+                  env);
 
   /* clean up */
   GNUNET_CONFIGURATION_destroy (ac->orig);
   GNUNET_CONFIGURATION_destroy (ac->c);
   GNUNET_CONTAINER_DLL_remove (ac_head,
-			       ac_tail,
-			       ac);
+                               ac_tail,
+                               ac);
   GNUNET_free (ac);
   GNUNET_SERVICE_client_continue (ch->client);
 }
@@ -254,7 +255,7 @@ check_autoconfig_finished (struct AutoconfigContext *ac)
   GNUNET_SCHEDULER_cancel (ac->timeout_task);
   ac->timeout_task
     = GNUNET_SCHEDULER_add_now (&conclude_autoconfig_request,
-				ac);
+                                ac);
 }
 
 
@@ -270,16 +271,18 @@ update_enable_upnpc_option (struct AutoconfigContext *ac)
   {
   case GNUNET_YES:
     GNUNET_CONFIGURATION_set_value_string (ac->c,
-					   "NAT",
-					   "ENABLE_UPNP",
-					   "YES");
+                                           "NAT",
+                                           "ENABLE_UPNP",
+                                           "YES");
     break;
+
   case GNUNET_NO:
     GNUNET_CONFIGURATION_set_value_string (ac->c,
-					   "NAT",
-					   "ENABLE_UPNP",
-					   "NO");
+                                           "NAT",
+                                           "ENABLE_UPNP",
+                                           "NO");
     break;
+
   case GNUNET_SYSERR:
     /* We are unsure, do not change option */
     break;
@@ -296,10 +299,11 @@ update_enable_upnpc_option (struct AutoconfigContext *ac)
  */
 static void
 handle_autoconfig_request (void *cls,
-			   const struct GNUNET_NAT_AUTO_AutoconfigRequestMessage *message)
+                           const struct
+                           GNUNET_NAT_AUTO_AutoconfigRequestMessage *message)
 {
   struct ClientHandle *ch = cls;
-  size_t left = ntohs (message->header.size) - sizeof (*message);
+  size_t left = ntohs (message->header.size) - sizeof(*message);
   struct AutoconfigContext *ac;
 
   ac = GNUNET_new (struct AutoconfigContext);
@@ -308,9 +312,9 @@ handle_autoconfig_request (void *cls,
   ac->c = GNUNET_CONFIGURATION_create ();
   if (GNUNET_OK !=
       GNUNET_CONFIGURATION_deserialize (ac->c,
-					(const char *) &message[1],
-					left,
-					NULL))
+                                        (const char *) &message[1],
+                                        left,
+                                        NULL))
   {
     GNUNET_break (0);
     GNUNET_SERVICE_client_drop (ch->client);
@@ -319,27 +323,27 @@ handle_autoconfig_request (void *cls,
     return;
   }
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-	      "Received REQUEST_AUTO_CONFIG message from client\n");
+              "Received REQUEST_AUTO_CONFIG message from client\n");
 
   GNUNET_CONTAINER_DLL_insert (ac_head,
-			       ac_tail,
-			       ac);
+                               ac_tail,
+                               ac);
   ac->orig
     = GNUNET_CONFIGURATION_dup (ac->c);
   ac->timeout_task
     = GNUNET_SCHEDULER_add_delayed (AUTOCONFIG_TIMEOUT,
-				    &conclude_autoconfig_request,
-				    ac);
+                                    &conclude_autoconfig_request,
+                                    ac);
   ac->enable_upnpc = GNUNET_SYSERR; /* undecided */
 
   /* Probe for upnpc */
   if (GNUNET_SYSERR ==
       GNUNET_OS_check_helper_binary ("upnpc",
-				     GNUNET_NO,
-				     NULL))
+                                     GNUNET_NO,
+                                     NULL))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-		_("UPnP client `upnpc` command not found, disabling UPnP\n"));
+                _ ("UPnP client `upnpc` command not found, disabling UPnP\n"));
     ac->enable_upnpc = GNUNET_NO;
   }
   else
@@ -367,15 +371,15 @@ shutdown_task (void *cls)
   while (NULL != (ac = ac_head))
   {
     GNUNET_CONTAINER_DLL_remove (ac_head,
-				 ac_tail,
-				 ac);
+                                 ac_tail,
+                                 ac);
     terminate_ac_activities (ac);
     GNUNET_free (ac);
   }
   if (NULL != stats)
   {
     GNUNET_STATISTICS_destroy (stats,
-			       GNUNET_NO);
+                               GNUNET_NO);
     stats = NULL;
   }
 }
@@ -395,9 +399,9 @@ run (void *cls,
 {
   cfg = c;
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   stats = GNUNET_STATISTICS_create ("nat-auto",
-				    cfg);
+                                    cfg);
 }
 
 
@@ -411,8 +415,8 @@ run (void *cls,
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *c,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct ClientHandle *ch;
 
@@ -420,8 +424,8 @@ client_connect_cb (void *cls,
   ch->mq = mq;
   ch->client = c;
   GNUNET_CONTAINER_DLL_insert (ch_head,
-			       ch_tail,
-			       ch);
+                               ch_tail,
+                               ch);
   return ch;
 }
 
@@ -435,14 +439,14 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *c,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
 {
   struct ClientHandle *ch = internal_cls;
 
   GNUNET_CONTAINER_DLL_remove (ch_head,
-			       ch_tail,
-			       ch);
+                               ch_tail,
+                               ch);
   GNUNET_free (ch);
 }
 
@@ -451,20 +455,20 @@ client_disconnect_cb (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("nat-auto",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_var_size (autoconfig_request,
-			GNUNET_MESSAGE_TYPE_NAT_AUTO_REQUEST_CFG,
-			struct GNUNET_NAT_AUTO_AutoconfigRequestMessage,
-			NULL),
- GNUNET_MQ_handler_end ());
+  ("nat-auto",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_var_size (autoconfig_request,
+                         GNUNET_MESSAGE_TYPE_NAT_AUTO_REQUEST_CFG,
+                         struct GNUNET_NAT_AUTO_AutoconfigRequestMessage,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 
-#if defined(LINUX) && defined(__GLIBC__)
+#if defined(__linux__) && defined(__GLIBC__)
 #include <malloc.h>
 
 /**
@@ -477,6 +481,8 @@ GNUNET_ARM_memory_init ()
   mallopt (M_TOP_PAD, 1 * 1024);
   malloc_trim (0);
 }
+
+
 #endif
 
 /* end of gnunet-service-nat.c */

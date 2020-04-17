@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file fs/test_fs_search_persistence.c
  * @brief simple testcase for persistence of search operation
@@ -54,7 +54,7 @@ static struct GNUNET_FS_PublishContext *publish;
 
 static const struct GNUNET_CONFIGURATION_Handle *cfg;
 
-static struct GNUNET_SCHEDULER_Task * timeout_task;
+static struct GNUNET_SCHEDULER_Task *timeout_task;
 
 static int err;
 
@@ -64,7 +64,7 @@ abort_error (void *cls)
 {
   timeout_task = NULL;
   fprintf (stderr,
-	   "Timeout\n");
+           "Timeout\n");
   if (NULL != search)
   {
     GNUNET_FS_search_stop (search);
@@ -154,15 +154,17 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
   {
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS:
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Publish is progressing (%llu/%llu at level %u off %llu)...\n",
-		(unsigned long long) event->value.publish.completed,
-		(unsigned long long) event->value.publish.size,
-		event->value.publish.specifics.progress.depth,
-		(unsigned long long) event->value.publish.specifics.
-		progress.offset);
+                "Publish is progressing (%llu/%llu at level %u off %llu)...\n",
+                (unsigned long long) event->value.publish.completed,
+                (unsigned long long) event->value.publish.size,
+                event->value.publish.specifics.progress.depth,
+                (unsigned long long) event->value.publish.specifics.
+                progress.offset);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_PROGRESS_DIRECTORY:
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_COMPLETED:
     kuri = GNUNET_FS_uri_ksk_create_from_args (1, keywords);
     start = GNUNET_TIME_absolute_get ();
@@ -171,36 +173,43 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_FS_uri_destroy (kuri);
     GNUNET_assert (search != NULL);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_SUSPEND:
     if (event->value.publish.pc == publish)
       publish = NULL;
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_RESUME:
     if (NULL == publish)
       publish = event->value.publish.pc;
     break;
+
   case GNUNET_FS_STATUS_SEARCH_RESULT:
     /* FIXME: consider_restart (event->status); cannot be tested with
      * search result since we exit here after the first one... */
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		"Search complete.\n");
+                "Search complete.\n");
     GNUNET_SCHEDULER_add_now (&abort_search_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_ERROR:
-    FPRINTF (stderr, "Error publishing file: %s\n",
+    fprintf (stderr, "Error publishing file: %s\n",
              event->value.publish.specifics.error.message);
     GNUNET_break (0);
     GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_SEARCH_ERROR:
-    FPRINTF (stderr, "Error searching file: %s\n",
+    fprintf (stderr, "Error searching file: %s\n",
              event->value.search.specifics.error.message);
     GNUNET_SCHEDULER_add_now (&abort_search_task, NULL);
     break;
+
   case GNUNET_FS_STATUS_SEARCH_SUSPEND:
     if (event->value.search.sc == search)
       search = NULL;
     break;
+
   case GNUNET_FS_STATUS_SEARCH_RESUME:
     if (NULL == search)
     {
@@ -208,6 +217,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
       return "search";
     }
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_START:
     GNUNET_assert (0 == strcmp ("publish-context", event->value.publish.cctx));
     GNUNET_assert (NULL == event->value.publish.pctx);
@@ -215,6 +225,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_assert (0 == event->value.publish.completed);
     GNUNET_assert (1 == event->value.publish.anonymity);
     break;
+
   case GNUNET_FS_STATUS_PUBLISH_STOPPED:
     GNUNET_assert (publish == event->value.publish.pc);
     GNUNET_assert (FILESIZE == event->value.publish.size);
@@ -222,6 +233,7 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_FS_stop (fs);
     fs = NULL;
     break;
+
   case GNUNET_FS_STATUS_SEARCH_START:
     consider_restart (event->status);
     GNUNET_assert (search == NULL);
@@ -229,15 +241,18 @@ progress_cb (void *cls, const struct GNUNET_FS_ProgressInfo *event)
     GNUNET_assert (0 == strcmp ("search", event->value.search.cctx));
     GNUNET_assert (1 == event->value.search.anonymity);
     break;
+
   case GNUNET_FS_STATUS_SEARCH_RESULT_STOPPED:
     break;
+
   case GNUNET_FS_STATUS_SEARCH_STOPPED:
     GNUNET_assert (search == event->value.search.sc);
     GNUNET_SCHEDULER_add_now (&abort_publish_task, NULL);
     search = NULL;
     break;
+
   default:
-    FPRINTF (stderr, "Unexpected event: %d\n", event->status);
+    fprintf (stderr, "Unexpected event: %d\n", event->status);
     break;
   }
   return NULL;
@@ -281,11 +296,11 @@ run (void *cls,
   GNUNET_assert (NULL != fi);
   start = GNUNET_TIME_absolute_get ();
   publish =
-      GNUNET_FS_publish_start (fs, fi, NULL, NULL, NULL,
-                               GNUNET_FS_PUBLISH_OPTION_NONE);
+    GNUNET_FS_publish_start (fs, fi, NULL, NULL, NULL,
+                             GNUNET_FS_PUBLISH_OPTION_NONE);
   GNUNET_assert (publish != NULL);
   timeout_task = GNUNET_SCHEDULER_add_delayed (LIFETIME,
-					       &abort_error, NULL);
+                                               &abort_error, NULL);
 }
 
 
@@ -293,10 +308,11 @@ int
 main (int argc, char *argv[])
 {
   if (0 != GNUNET_TESTING_peer_run ("test-fs-search-persistence",
-				    "test_fs_search_data.conf",
-				    &run, NULL))
+                                    "test_fs_search_data.conf",
+                                    &run, NULL))
     return 1;
   return err;
 }
+
 
 /* end of test_fs_search_persistence.c */

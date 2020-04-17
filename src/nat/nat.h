@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file src/nat/nat.h
@@ -27,7 +27,6 @@
 #ifndef NAT_H
 #define NAT_H
 #include "gnunet_util_lib.h"
-
 
 
 GNUNET_NETWORK_STRUCT_BEGIN
@@ -62,7 +61,6 @@ struct GNUNET_NAT_TestMessage
    * #GNUNET_YES for TCP, #GNUNET_NO for UDP.
    */
   int32_t is_tcp;
-
 };
 
 
@@ -127,7 +125,6 @@ struct GNUNET_NAT_RegisterMessage
      sockaddr' */
 
   /* Followed by @e str_len section name to use for options */
-  
 };
 
 
@@ -180,7 +177,6 @@ struct GNUNET_NAT_RequestConnectionReversalMessage
   /* followed by a `struct sockaddr` of @e local_addr_size bytes */
 
   /* followed by a `struct sockaddr` of @e remote_addr_size bytes */
-
 };
 
 
@@ -195,12 +191,11 @@ struct GNUNET_NAT_ConnectionReversalRequestedMessage
   struct GNUNET_MessageHeader header;
 
   /* followed by a `struct sockaddr_in` */
-  
 };
 
 
 /**
- * Service notifying the client about changes in the set of 
+ * Service notifying the client about changes in the set of
  * addresses it has.
  */
 struct GNUNET_NAT_AddressChangeNotificationMessage
@@ -212,7 +207,7 @@ struct GNUNET_NAT_AddressChangeNotificationMessage
 
   /**
    * #GNUNET_YES to add, #GNUNET_NO to remove the address from the list.
-   */ 
+   */
   int32_t add_remove GNUNET_PACKED;
 
   /**
@@ -220,7 +215,6 @@ struct GNUNET_NAT_AddressChangeNotificationMessage
    */
   uint32_t addr_class GNUNET_PACKED;
   /* followed by a `struct sockaddr` */
-  
 };
 
 

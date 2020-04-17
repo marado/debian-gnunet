@@ -1,8 +1,5 @@
 # This Makefile.am is in the public domain
 AM_CPPFLAGS = -I$(top_srcdir)/src/include
-if MINGW
- WINFLAGS = -Wl,--no-undefined -Wl,--export-all-symbols -lole32 -lshell32 -liconv -lstdc++ -lcomdlg32 -lgdi32
-endif
 
 plugindir = $(libdir)/gnunet
 
@@ -28,7 +25,7 @@ libgnunetdht_la_LIBADD = \
   $(XLIB) \
   $(LTLIBINTL)
 libgnunetdht_la_LDFLAGS = \
-  $(GN_LIB_LDFLAGS) $(WINFLAGS) \
+  $(GN_LIB_LDFLAGS)  \
   -version-info 3:0:0
 
 
@@ -79,6 +76,8 @@ gnunet_service_dht_LDADD = \
   $(top_builddir)/src/datacache/libgnunetdatacache.la \
   $(top_builddir)/src/util/libgnunetutil.la \
   -lm
+gnunet_service_dht_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_dht_get_SOURCES = \
  gnunet-dht-get.c
@@ -86,6 +85,8 @@ gnunet_dht_get_LDADD = \
   libgnunetdht.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
+gnunet_dht_get_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_dht_put_SOURCES = \
  gnunet-dht-put.c
@@ -93,6 +94,8 @@ gnunet_dht_put_LDADD = \
   libgnunetdht.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
+gnunet_dht_put_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_dht_monitor_SOURCES = \
  gnunet-dht-monitor.c
@@ -100,6 +103,8 @@ gnunet_dht_monitor_LDADD = \
   libgnunetdht.la \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la
+gnunet_dht_monitor_LDFLAGS = \
+  $(GN_LIBINTL)
 
 gnunet_dht_profiler_SOURCES = \
   gnunet_dht_profiler.c
@@ -108,6 +113,8 @@ gnunet_dht_profiler_LDADD = \
   $(top_builddir)/src/core/libgnunetcore.la \
   $(top_builddir)/src/util/libgnunetutil.la \
  $(top_builddir)/src/testbed/libgnunettestbed.la
+gnunet_dht_profiler_LDFLAGS = \
+  $(GN_LIBINTL)
 
 if HAVE_TESTING
 noinst_LIBRARIES = libgnunetdhttest.a
@@ -213,13 +220,7 @@ check_SCRIPTS = \
   test_dht_tools.py
 endif
 
-do_subst = $(SED) -e 's,[@]PYTHON[@],$(PYTHON),g' -e 's,[@]bindir[@],$(bindir),g'
-
 SUFFIXES = .py.in .py
 .py.in.py:
-	$(do_subst) < $(srcdir)/$< > $@
+	$(AWK) -v bdir="$(bindir)" -v py="$(PYTHON)" -v awkay="$(AWK_BINARY)" -v pfx="$(prefix)" -v prl="$(PERL)" -v sysconfdirectory="$(sysconfdir)" -v pkgdatadirectory="$(pkgdatadir)" -f $(top_srcdir)/bin/dosubst.awk < $(srcdir)/$< > $@
 	chmod +x $@
-
-test_dht_tools.py: test_dht_tools.py.in Makefile
-	$(do_subst) < $(srcdir)/test_dht_tools.py.in > test_dht_tools.py
-	chmod +x test_dht_tools.py

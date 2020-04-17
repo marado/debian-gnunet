@@ -3,11 +3,11 @@
 
 #define _GNU_SOURCE  1
 
+/* Using texinfo version 4 specific switches */
+/* #undef ACTIVATE_TEXINFO4 */
+
 /* Define to 1 if the `closedir' function returns void instead of `int'. */
 /* #undef CLOSEDIR_VOID */
-
-/* This is a Cygwin system */
-/* #undef CYGWIN */
 
 /* This is an Apple Darwin system */
 /* #undef DARWIN */
@@ -15,7 +15,7 @@
 /* Not building the documentation */
 #define DOCUMENTATION 1
 
-/* Not building only the documentation */
+/* Doing a normal build, more than only documentation */
 #define DOCUMENTATION_ONLY 0
 
 /* Benchmarks are enabled */
@@ -35,19 +35,13 @@
 #define ENABLE_NSE_HISTOGRAM 0
 
 /* 1 if freed memory should be poisoned, 0 otherwise */
-#define ENABLE_POISONING 1
+#define ENABLE_POISONING 0
 
 /* Build with support for SuperMUC */
 #define ENABLE_SUPERMUC 0
 
-/* enable workarounds used on Windows (only useful for test cases) */
-#define ENABLE_WINDOWS_WORKAROUNDS 0
-
 /* Build a Mac OS X Framework */
 /* #undef FRAMEWORK_BUILD */
-
-/* This is a FreeBSD system */
-/* #undef FREEBSD */
 
 /* This is a GNU system */
 /* #undef GNU */
@@ -61,19 +55,28 @@
 
 /* 1 if extra logging is enabled, 2 for very verbose extra logging, 0
    otherwise */
-#define GNUNET_EXTRA_LOGGING GNUNET_YES
+#define GNUNET_EXTRA_LOGGING GNUNET_NO
+
+/* Not installing gnunet-logread */
+#define GNUNET_LOGREAD 0
 
 /* Lacking ABE library */
 #define HAVE_ABE 0
 
 /* Define to 1 if you have the <argz.h> header file. */
-#define HAVE_ARGZ_H 1
+/* #undef HAVE_ARGZ_H */
 
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #define HAVE_ARPA_INET_H 1
 
 /* Define to 1 if you have the `atoll' function. */
 #define HAVE_ATOLL 1
+
+/* Path to awk */
+#define HAVE_AWK 1
+
+/* Define to 1 if you have the <bluetooth/bluetooth.h> header file. */
+/* #undef HAVE_BLUETOOTH_BLUETOOTH_H */
 
 /* Define to 1 if you have the <byteswap.h> header file. */
 #define HAVE_BYTESWAP_H 1
@@ -98,7 +101,7 @@
 
 /* Define to 1 if you have the declaration of `CURLINFO_TLS_SESSION', and to 0
    if you don't. */
-#define HAVE_DECL_CURLINFO_TLS_SESSION 1
+/* #undef HAVE_DECL_CURLINFO_TLS_SESSION */
 
 /* Define to 1 if you have the declaration of `gcry_mpi_set_opaque_copy', and
    to 0 if you don't. */
@@ -107,10 +110,6 @@
 /* Define to 1 if you have the declaration of `struct in6_ifreq', and to 0 if
    you don't. */
 #define HAVE_DECL_STRUCT_IN6_IFREQ 0
-
-/* Define to 1 if you have the declaration of `_stati64', and to 0 if you
-   don't. */
-#define HAVE_DECL__STATI64 0
 
 /* Define to 1 if you have the <dirent.h> header file, and it defines `DIR'.
    */
@@ -129,7 +128,7 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the <execinfo.h> header file. */
-#define HAVE_EXECINFO_H 1
+/* #undef HAVE_EXECINFO_H */
 
 /* explicit_bzero supported */
 /* #undef HAVE_EXPLICIT_BZERO */
@@ -149,32 +148,17 @@
 /* Define to 1 if fseeko (and presumably ftello) exists and is declared. */
 #define HAVE_FSEEKO 1
 
-/* Define this if getaddrinfo() is available */
-#define HAVE_GETADDRINFO 1
-
 /* getaddrinfo_a supported */
-#define HAVE_GETADDRINFO_A 1
-
-/* Define this if gethostbyaddr() is available */
-#define HAVE_GETHOSTBYADDR 1
-
-/* Define this if gethostbyname() is available */
-#define HAVE_GETHOSTBYNAME 1
+/* #undef HAVE_GETADDRINFO_A */
 
 /* Define to 1 if you have the `gethostbyname2' function. */
 #define HAVE_GETHOSTBYNAME2 1
-
-/* Define this if gethostname() is available */
-#define HAVE_GETHOSTNAME 1
 
 /* Define to 1 if you have the `getifaddrs' function. */
 #define HAVE_GETIFADDRS 1
 
 /* getloadavg supported */
 #define HAVE_GETLOADAVG 1
-
-/* Define this if getnameinfo() is available */
-#define HAVE_GETNAMEINFO 1
 
 /* Define to 1 if you have the `getpeereid' function. */
 /* #undef HAVE_GETPEEREID */
@@ -194,12 +178,6 @@
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #define HAVE_GETTEXT 1
 
-/* Define to 1 if you have the <glpk.h> header file. */
-#define HAVE_GLPK_H 1
-
-/* Define to 1 if `presolve' is a member of `glp_iocp'. */
-#define HAVE_GLP_IOCP_PRESOLVE 1
-
 /* We have GnuTLS */
 #define HAVE_GNUTLS true
 
@@ -207,16 +185,16 @@
 #define HAVE_GNUTLS_ABSTRACT_H 1
 
 /* We have GnuTLS with DANE support */
-#define HAVE_GNUTLS_DANE 1
+#define HAVE_GNUTLS_DANE 0
 
 /* Define to 1 if you have the <gnutls/dane.h> header file. */
-#define HAVE_GNUTLS_DANE_H 1
+/* #undef HAVE_GNUTLS_DANE_H */
 
 /* Define if you have the iconv() function and it works. */
 #define HAVE_ICONV 1
 
 /* Define to 1 if you have the <idn2.h> header file. */
-#define HAVE_IDN2_H 1
+/* #undef HAVE_IDN2_H */
 
 /* Define to 1 if you have the <idn2/idn2.h> header file. */
 /* #undef HAVE_IDN2_IDN2_H */
@@ -229,9 +207,6 @@
 
 /* Define to 1 if you have the <ifaddrs.h> header file. */
 #define HAVE_IFADDRS_H 1
-
-/* Define this if inet_ntoa() is available */
-/* #undef HAVE_INET_NTOA */
 
 /* Define to 1 if you have the `initgroups' function. */
 #define HAVE_INITGROUPS 1
@@ -258,31 +233,25 @@
 #define HAVE_LIBATOMIC 1
 
 /* Lacking bluetooth library */
-#define HAVE_LIBBLUETOOTH 1
+#define HAVE_LIBBLUETOOTH 0
 
 /* Lacking libcurl */
-#define HAVE_LIBCURL 1
+#define HAVE_LIBCURL 0
 
 /* Define to 1 if you have the `curl-gnutls' library (-lcurl-gnutls). */
-#define HAVE_LIBCURL_GNUTLS 1
+/* #undef HAVE_LIBCURL_GNUTLS */
 
 /* Have libextractor */
 #define HAVE_LIBEXTRACTOR 1
 
-/* Have GLPK */
-#define HAVE_LIBGLPK 1
-
 /* Lacking libgnurl */
-#define HAVE_LIBGNURL 0
-
-/* Define to 1 if you have the `gnurx' library (-lgnurx). */
-/* #undef HAVE_LIBGNURX */
+#define HAVE_LIBGNURL 1
 
 /* Define to 1 if you have 'libidn' (-lidn). */
-/* #undef HAVE_LIBIDN */
+#define HAVE_LIBIDN 1
 
 /* Define to 1 if you have 'libidn2' (-lidn2). */
-#define HAVE_LIBIDN2 1
+/* #undef HAVE_LIBIDN2 */
 
 /* Define to 1 if you have the `intl' library (-lintl). */
 /* #undef HAVE_LIBINTL */
@@ -299,11 +268,8 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #define HAVE_LIBM 1
 
-/* Define to 1 if you have the `plibc' library (-lplibc). */
-/* #undef HAVE_LIBPLIBC */
-
 /* Define to 1 if you have the <libpq-fe.h> header file. */
-#define HAVE_LIBPQ_FE_H 1
+/* #undef HAVE_LIBPQ_FE_H */
 
 /* Define to 1 if you have the `resolv' library (-lresolv). */
 /* #undef HAVE_LIBRESOLV */
@@ -330,7 +296,7 @@
 /* #undef HAVE_MACH_MACH_H */
 
 /* Define to 1 if you have the `mallinfo' function. */
-#define HAVE_MALLINFO 1
+/* #undef HAVE_MALLINFO */
 
 /* Define to 1 if you have the <malloc.h> header file. */
 #define HAVE_MALLOC_H 1
@@ -362,9 +328,6 @@
 /* We have libmicrohttpd */
 #define HAVE_MHD 1
 
-/* Define to 1 if you have the <microhttpd.h> header file. */
-#define HAVE_MICROHTTPD_H 1
-
 /* Define to 1 if you have the `mremap' function. */
 #define HAVE_MREMAP 1
 
@@ -387,34 +350,40 @@
 #define HAVE_NETINET_IP_H 1
 
 /* Define to 1 if you have the <nss.h> header file. */
-#define HAVE_NSS_H 1
+/* #undef HAVE_NSS_H */
 
 /* Define to 1 if the system has the type `off_t'. */
 #define HAVE_OFF_T 1
 
-/* lacking ogg */
-#define HAVE_OGG 1
+/* Lacking ogg */
+/* #undef HAVE_OGG */
 
 /* Define to 1 if you have the <ogg/ogg.h> header file. */
-#define HAVE_OGG_OGG_H 1
+/* #undef HAVE_OGG_OGG_H */
 
-/* Have libopus library */
-/* #undef HAVE_OPUS */
+/* Lacking libopus library */
+#define HAVE_OPUS 0
+
+/* Define to 1 if you have the <opus/opus.h> header file. */
+/* #undef HAVE_OPUS_OPUS_H */
 
 /* Lacking pbc library */
 #define HAVE_PBC 0
 
-/* Define to 1 if PostgreSQL libraries are available */
-#define HAVE_POSTGRESQL 1
+/* Path to Perl */
+#define HAVE_PERL 1
 
-/* Have libpulse(audio) library */
-/* #undef HAVE_PULSE */
+/* Lacking PostgreSQL */
+#define HAVE_POSTGRESQL 0
+
+/* Lacking libpulse(audio) library */
+#define HAVE_PULSE 0
+
+/* Define to 1 if you have the <pulse/simple.h> header file. */
+/* #undef HAVE_PULSE_SIMPLE_H */
 
 /* Define to 1 if you have the `random' function. */
 #define HAVE_RANDOM 1
-
-/* Define this if select() is available */
-/* #undef HAVE_SELECT */
 
 /* Define to 1 if you have the `setresuid' function. */
 #define HAVE_SETRESUID 1
@@ -436,9 +405,6 @@
 
 /* Do we have sockaddr_un.sun_len? */
 /* #undef HAVE_SOCKADDR_UN_SUN_LEN */
-
-/* Define this if socket() is available */
-/* #undef HAVE_SOCKET */
 
 /* Define to 1 if you have the <sockLib.h> header file. */
 /* #undef HAVE_SOCKLIB_H */
@@ -569,9 +535,6 @@
 /* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
 #define HAVE_SYS_WAIT_H 1
 
-/* Define to 1 if you have the <terminos.h> header file. */
-/* #undef HAVE_TERMINOS_H */
-
 /* Define this if __thread is supported */
 #define HAVE_THREAD_LOCAL_GCC 1
 
@@ -609,7 +572,7 @@
 #define HAVE_WORKING_VFORK 1
 
 /* Lacking zbar library */
-#define HAVE_ZBAR 1
+#define HAVE_ZBAR 0
 
 /* Define to 1 if you have the <zbar.h> header file. */
 /* #undef HAVE_ZBAR_H */
@@ -626,98 +589,101 @@
 /* Path to ifconfig */
 #define IFCONFIG "/sbin/ifconfig"
 
-/* Not including the man pages in the build and installation */
-#define INCLUDE_MANPAGES 1
+/* if_tun.h include path */
+#define IF_TUN_HDR "linux/if_tun.h"
+
+/* Using texinfo version 5 or later switches */
+#define INCLUDE_MANPAGES 0
 
 /* Path to ip6tables */
-#define IP6TABLES "/sbin/ip6tables"
+/* #undef IP6TABLES */
 
 /* Path to iptables */
-#define IPTABLES "/sbin/iptables"
+/* #undef IPTABLES */
 
 /* Defined if libcurl supports AsynchDNS */
-#define LIBCURL_FEATURE_ASYNCHDNS 1
+/* #undef LIBCURL_FEATURE_ASYNCHDNS */
 
 /* Defined if libcurl supports IDN */
-#define LIBCURL_FEATURE_IDN 1
+/* #undef LIBCURL_FEATURE_IDN */
 
 /* Defined if libcurl supports IPv6 */
-#define LIBCURL_FEATURE_IPV6 1
+/* #undef LIBCURL_FEATURE_IPV6 */
 
 /* Defined if libcurl supports KRB4 */
 /* #undef LIBCURL_FEATURE_KRB4 */
 
 /* Defined if libcurl supports libz */
-#define LIBCURL_FEATURE_LIBZ 1
+/* #undef LIBCURL_FEATURE_LIBZ */
 
 /* Defined if libcurl supports NTLM */
-#define LIBCURL_FEATURE_NTLM 1
+/* #undef LIBCURL_FEATURE_NTLM */
 
 /* Defined if libcurl supports SSL */
-#define LIBCURL_FEATURE_SSL 1
+/* #undef LIBCURL_FEATURE_SSL */
 
 /* Defined if libcurl supports SSPI */
 /* #undef LIBCURL_FEATURE_SSPI */
 
 /* Defined if libcurl supports DICT */
-#define LIBCURL_PROTOCOL_DICT 1
+/* #undef LIBCURL_PROTOCOL_DICT */
 
 /* Defined if libcurl supports FILE */
-#define LIBCURL_PROTOCOL_FILE 1
+/* #undef LIBCURL_PROTOCOL_FILE */
 
 /* Defined if libcurl supports FTP */
-#define LIBCURL_PROTOCOL_FTP 1
+/* #undef LIBCURL_PROTOCOL_FTP */
 
 /* Defined if libcurl supports FTPS */
-#define LIBCURL_PROTOCOL_FTPS 1
+/* #undef LIBCURL_PROTOCOL_FTPS */
 
 /* Defined if libcurl supports HTTP */
-#define LIBCURL_PROTOCOL_HTTP 1
+/* #undef LIBCURL_PROTOCOL_HTTP */
 
 /* Defined if libcurl supports HTTPS */
-#define LIBCURL_PROTOCOL_HTTPS 1
+/* #undef LIBCURL_PROTOCOL_HTTPS */
 
 /* Defined if libcurl supports IMAP */
-#define LIBCURL_PROTOCOL_IMAP 1
+/* #undef LIBCURL_PROTOCOL_IMAP */
 
 /* Defined if libcurl supports LDAP */
-#define LIBCURL_PROTOCOL_LDAP 1
+/* #undef LIBCURL_PROTOCOL_LDAP */
 
 /* Defined if libcurl supports POP3 */
-#define LIBCURL_PROTOCOL_POP3 1
+/* #undef LIBCURL_PROTOCOL_POP3 */
 
 /* Defined if libcurl supports RTSP */
-#define LIBCURL_PROTOCOL_RTSP 1
+/* #undef LIBCURL_PROTOCOL_RTSP */
 
 /* Defined if libcurl supports SMTP */
-#define LIBCURL_PROTOCOL_SMTP 1
+/* #undef LIBCURL_PROTOCOL_SMTP */
 
 /* Defined if libcurl supports TELNET */
-#define LIBCURL_PROTOCOL_TELNET 1
+/* #undef LIBCURL_PROTOCOL_TELNET */
 
 /* Defined if libcurl supports TFTP */
-#define LIBCURL_PROTOCOL_TFTP 1
+/* #undef LIBCURL_PROTOCOL_TFTP */
 
 /* Defined if libgnurl supports AsynchDNS */
-/* #undef LIBGNURL_FEATURE_ASYNCHDNS */
+#define LIBGNURL_FEATURE_ASYNCHDNS 1
 
 /* Defined if libgnurl supports IDN */
 /* #undef LIBGNURL_FEATURE_IDN */
 
 /* Defined if libgnurl supports IPv6 */
-/* #undef LIBGNURL_FEATURE_IPV6 */
+#define LIBGNURL_FEATURE_IPV6 1
 
 /* Defined if libgnurl supports KRB4 */
 /* #undef LIBGNURL_FEATURE_KRB4 */
 
 /* Defined if libgnurl supports libz */
-/* #undef LIBGNURL_FEATURE_LIBZ */
+#define LIBGNURL_FEATURE_LIBZ 1
 
 /* Defined if libgnurl supports NTLM */
-/* #undef LIBGNURL_FEATURE_NTLM */
+#define LIBGNURL_FEATURE_NTLM 1
 
 /* Defined if libgnurl supports SSL */
-/* #undef LIBGNURL_FEATURE_SSL */
+#define LIBGNURL_FEATURE_SSL 1
 
 /* Defined if libgnurl supports SSPI */
 /* #undef LIBGNURL_FEATURE_SSPI */
@@ -735,10 +701,10 @@
 /* #undef LIBGNURL_PROTOCOL_FTPS */
 
 /* Defined if libgnurl supports HTTP */
-/* #undef LIBGNURL_PROTOCOL_HTTP */
+#define LIBGNURL_PROTOCOL_HTTP 1
 
 /* Defined if libgnurl supports HTTPS */
-/* #undef LIBGNURL_PROTOCOL_HTTPS */
+#define LIBGNURL_PROTOCOL_HTTPS 1
 
 /* Defined if libgnurl supports IMAP */
 /* #undef LIBGNURL_PROTOCOL_IMAP */
@@ -771,17 +737,8 @@
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
 
-/* This is a MinGW system */
-/* #undef MINGW */
-
 /* required libgcrypt version */
 #define NEED_LIBGCRYPT_VERSION "1.6.0"
-
-/* This is a NetBSD system */
-/* #undef NETBSD */
-
-/* This is an OpenBSD system */
-/* #undef OPENBSD */
 
 /* Some strange OS */
 /* #undef OTHEROS */
@@ -796,7 +753,7 @@
 #define PACKAGE_NAME "gnunet"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gnunet 0.11.6"
+#define PACKAGE_STRING "gnunet 0.12.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gnunet"
@@ -805,10 +762,10 @@
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.11.6"
+#define PACKAGE_VERSION "0.12.0"
 
 /* Path to ip */
-#define PATH_TO_IP "/bin/ip"
+#define PATH_TO_IP "/sbin/ip"
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -824,9 +781,6 @@
 
 /* This is a Solaris system */
 /* #undef SOLARIS */
-
-/* This is a BSD system */
-/* #undef SOMEBSD */
 
 /* Define to 1 if the `S_IS*' macros in <sys/stat.h> do not work properly. */
 /* #undef STAT_MACROS_BROKEN */
@@ -850,19 +804,16 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Path to upnpc binary */
-#define UPNPC "/usr/bin/upnpc"
+/* #undef UPNPC */
 
 /* VCS revision/hash or tarball version */
-#define VCS_VERSION "git-98f2f7c90"
+#define VCS_VERSION "git-f0f45c511"
 
 /* Version number of package */
-#define VERSION "0.11.6"
-
-/* This is a Windows system */
-/* #undef WINDOWS */
+#define VERSION "0.12.0"
 
 /* Define to 1 if the X Window System is missing or not being used. */
-/* #undef X_DISPLAY_MISSING */
+#define X_DISPLAY_MISSING 1
 
 /* Enable large inode numbers on Mac OS X 10.5.  */
 #ifndef _DARWIN_USE_64_BIT_INODE
@@ -880,9 +831,6 @@
 
 /* Need with solaris or errno doesnt work */
 /* #undef _REENTRANT */
-
-/* This is a Windows system */
-/* #undef _WIN32 */
 
 /* Define curl_free() as free() if our version of curl lacks curl_free. */
 /* #undef curl_free */

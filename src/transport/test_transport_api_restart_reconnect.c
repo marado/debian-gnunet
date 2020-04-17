@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_api_restart_reconnect.c
  * @brief base test case for transport implementations
@@ -62,11 +62,11 @@ restart_cb (void *cls)
 {
   static unsigned int c;
   struct GNUNET_TRANSPORT_TESTING_PeerContext *p = cls;
-  
+
   c++;
-  if ( (2 != c) &&
-       (NULL != strstr (ccc->test_name,
-			"2peers")) )
+  if ((2 != c) &&
+      (NULL != strstr (ccc->test_name,
+                       "2peers")))
     return;
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "Restarted peer %u (`%s'), issuing reconnect\n",
@@ -86,9 +86,9 @@ restart (struct GNUNET_TRANSPORT_TESTING_PeerContext *p)
               p->no,
               GNUNET_i2s (&p->id));
   GNUNET_assert (GNUNET_OK ==
-		 GNUNET_TRANSPORT_TESTING_restart_peer (p,
-							&restart_cb,
-							p));
+                 GNUNET_TRANSPORT_TESTING_restart_peer (p,
+                                                        &restart_cb,
+                                                        p));
 }
 
 
@@ -110,8 +110,9 @@ notify_receive (void *cls,
                 GNUNET_i2s (sender));
     GNUNET_free (ps);
   }
-  if ( (GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE == ntohs (message->header.type)) &&
-       (sizeof (struct GNUNET_TRANSPORT_TESTING_TestMessage) == ntohs (message->header.size)) )
+  if ((GNUNET_TRANSPORT_TESTING_SIMPLE_MTYPE == ntohs (message->header.type)) &&
+      (sizeof(struct GNUNET_TRANSPORT_TESTING_TestMessage) == ntohs (
+         message->header.size)))
   {
     if (GNUNET_NO == restarted)
     {
@@ -119,8 +120,8 @@ notify_receive (void *cls,
       fprintf (stderr, "TN: %s\n", ccc->test_name);
       restart (ccc->p[0]);
       if (NULL != strstr (ccc->test_name,
-			  "2peers"))
-	restart (ccc->p[1]);
+                          "2peers"))
+        restart (ccc->p[1]);
       return;
     }
     else
@@ -135,15 +136,15 @@ notify_receive (void *cls,
   {
     GNUNET_break (0);
     ccc->global_ret = GNUNET_SYSERR;
-    GNUNET_SCHEDULER_shutdown ();    
+    GNUNET_SCHEDULER_shutdown ();
   }
 }
 
 
 static void
 notify_connect (void *cls,
-		struct GNUNET_TRANSPORT_TESTING_PeerContext *me,
-		const struct GNUNET_PeerIdentity *other)
+                struct GNUNET_TRANSPORT_TESTING_PeerContext *me,
+                const struct GNUNET_PeerIdentity *other)
 {
   static struct GNUNET_TRANSPORT_TESTING_SendClosure sc = {
     .num_messages = 1
@@ -151,20 +152,20 @@ notify_connect (void *cls,
 
   sc.ccc = ccc;
   GNUNET_TRANSPORT_TESTING_log_connect (cls,
-					me,
-					other);
+                                        me,
+                                        other);
   if (me == ccc->p[0])
     p1_connected = GNUNET_YES;
   if (me == ccc->p[1])
     p2_connected = GNUNET_YES;
 
-  if ( (GNUNET_YES == restarted) &&
-       (GNUNET_YES == p1_connected) &&
-       (GNUNET_YES == p2_connected) )
+  if ((GNUNET_YES == restarted) &&
+      (GNUNET_YES == p1_connected) &&
+      (GNUNET_YES == p2_connected))
   {
     /* Peer was restarted and we received 3 connect messages (2 from first connect, 1 from reconnect) */
     GNUNET_SCHEDULER_add_now (&GNUNET_TRANSPORT_TESTING_simple_send,
-			      &sc);
+                              &sc);
   }
 }
 
@@ -211,5 +212,6 @@ main (int argc,
     return 1;
   return 0;
 }
+
 
 /* end of test_transport_api_restart_1peer.c */

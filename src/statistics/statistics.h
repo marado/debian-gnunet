@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -56,14 +56,13 @@ struct GNUNET_STATISTICS_ReplyMessage
    * The value.
    */
   uint64_t value GNUNET_PACKED;
-
 };
 
 /**
  * Flag for the `struct GNUNET_STATISTICS_ReplyMessage` UID only.
  * Note that other messages use #GNUNET_STATISTICS_SETFLAG_PERSISTENT.
  */
-#define GNUNET_STATISTICS_PERSIST_BIT ((uint32_t) (1LLU<<31))
+#define GNUNET_STATISTICS_PERSIST_BIT ((uint32_t) (1LLU << 31))
 
 /**
  * The value being set is an absolute change.
@@ -107,7 +106,6 @@ struct GNUNET_STATISTICS_SetMessage
    * be signed even though the type given here is unsigned.
    */
   uint64_t value GNUNET_PACKED;
-
 };
 
 
@@ -145,7 +143,6 @@ struct GNUNET_STATISTICS_WatchValueMessage
    * be signed even though the type given here is unsigned.
    */
   uint64_t value GNUNET_PACKED;
-
 };
 GNUNET_NETWORK_STRUCT_END
 

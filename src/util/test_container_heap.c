@@ -1,19 +1,19 @@
 /*
- This file is part of GNUnet.
- Copyright (C) 2008 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008 GNUnet e.V.
 
- GNUnet is free software: you can redistribute it and/or modify it
- under the terms of the GNU Affero General Public License as published
- by the Free Software Foundation, either version 3 of the License,
- or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
- GNUnet is distributed in the hope that it will be useful, but
- WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
  */
@@ -35,6 +35,7 @@ iterator_callback (void *cls,
   return GNUNET_OK;
 }
 
+
 static int
 nstrcmp (const char *a, const char *b)
 {
@@ -42,6 +43,7 @@ nstrcmp (const char *a, const char *b)
   GNUNET_assert (b != NULL);
   return strcmp (a, b);
 }
+
 
 static int
 check ()
@@ -107,15 +109,15 @@ check ()
   n6 = GNUNET_CONTAINER_heap_insert (myHeap, "30/200", 30);
   GNUNET_assert (5 == GNUNET_CONTAINER_heap_get_size (myHeap));
   GNUNET_CONTAINER_heap_remove_node (n5);
-  r = GNUNET_CONTAINER_heap_remove_root (myHeap);       /* n1 */
+  r = GNUNET_CONTAINER_heap_remove_root (myHeap);        /* n1 */
   GNUNET_assert (NULL != r);
   GNUNET_assert (0 == strcmp ("11", r));
   GNUNET_CONTAINER_heap_update_cost (n6, 200);
   GNUNET_CONTAINER_heap_remove_node (n3);
-  r = GNUNET_CONTAINER_heap_remove_root (myHeap);       /* n4 */
+  r = GNUNET_CONTAINER_heap_remove_root (myHeap);        /* n4 */
   GNUNET_assert (NULL != r);
   GNUNET_assert (0 == strcmp ("50", r));
-  r = GNUNET_CONTAINER_heap_remove_root (myHeap);       /* n6 */
+  r = GNUNET_CONTAINER_heap_remove_root (myHeap);        /* n6 */
   GNUNET_assert (NULL != r);
   GNUNET_assert (0 == strcmp ("30/200", r));
   GNUNET_assert (0 == GNUNET_CONTAINER_heap_get_size (myHeap));
@@ -286,5 +288,6 @@ main (int argc, char **argv)
   GNUNET_log_setup ("test-container-heap", "WARNING", NULL);
   return check ();
 }
+
 
 /* end of test_container_heap.c */

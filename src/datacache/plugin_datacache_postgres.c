@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file datacache/plugin_datacache_postgres.c
@@ -28,7 +28,7 @@
 #include "gnunet_pq_lib.h"
 #include "gnunet_datacache_plugin.h"
 
-#define LOG(kind,...) GNUNET_log_from (kind, "datacache-postgres", __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, "datacache-postgres", __VA_ARGS__)
 
 /**
  * Per-entry overhead estimate
@@ -48,7 +48,7 @@ struct Plugin
   /**
    * Native Postgres database handle.
    */
-  PGconn *dbh;
+  struct GNUNET_PQ_Context *dbh;
 
   /**
    * Number of key-value pairs in the database.
@@ -75,9 +75,12 @@ init_connection (struct Plugin *plugin)
                             "  value BYTEA NOT NULL,"
                             "  path BYTEA DEFAULT NULL)"
                             "WITH OIDS"),
-    GNUNET_PQ_make_try_execute ("CREATE INDEX IF NOT EXISTS idx_key ON gn011dc (key)"),
-    GNUNET_PQ_make_try_execute ("CREATE INDEX IF NOT EXISTS idx_dt ON gn011dc (discard_time)"),
-    GNUNET_PQ_make_execute ("ALTER TABLE gn011dc ALTER value SET STORAGE EXTERNAL"),
+    GNUNET_PQ_make_try_execute (
+      "CREATE INDEX IF NOT EXISTS idx_key ON gn011dc (key)"),
+    GNUNET_PQ_make_try_execute (
+      "CREATE INDEX IF NOT EXISTS idx_dt ON gn011dc (discard_time)"),
+    GNUNET_PQ_make_execute (
+      "ALTER TABLE gn011dc ALTER value SET STORAGE EXTERNAL"),
     GNUNET_PQ_make_execute ("ALTER TABLE gn011dc ALTER key SET STORAGE PLAIN"),
     GNUNET_PQ_EXECUTE_STATEMENT_END
   };
@@ -92,7 +95,7 @@ init_connection (struct Plugin *plugin)
                             2),
     GNUNET_PQ_make_prepare ("getex",
                             "SELECT length(value) AS len,oid,key FROM gn011dc"
-			    " WHERE discard_time < $1"
+                            " WHERE discard_time < $1"
                             " ORDER BY discard_time ASC LIMIT 1",
                             1),
     GNUNET_PQ_make_prepare ("getm",
@@ -101,7 +104,7 @@ init_connection (struct Plugin *plugin)
                             0),
     GNUNET_PQ_make_prepare ("get_random",
                             "SELECT discard_time,type,value,path,key FROM gn011dc"
-			    " WHERE discard_time >= $1"
+                            " WHERE discard_time >= $1"
                             " ORDER BY key ASC LIMIT 1 OFFSET $2",
                             2),
     GNUNET_PQ_make_prepare ("get_closest",
@@ -119,26 +122,11 @@ init_connection (struct Plugin *plugin)
   };
 
   plugin->dbh = GNUNET_PQ_connect_with_cfg (plugin->env->cfg,
-                                            "datacache-postgres");
+                                            "datacache-postgres",
+                                            es,
+                                            ps);
   if (NULL == plugin->dbh)
     return GNUNET_SYSERR;
-  if (GNUNET_OK !=
-      GNUNET_PQ_exec_statements (plugin->dbh,
-                                 es))
-  {
-    PQfinish (plugin->dbh);
-    plugin->dbh = NULL;
-    return GNUNET_SYSERR;
-  }
-
-  if (GNUNET_OK !=
-      GNUNET_PQ_prepare_statements (plugin->dbh,
-                                    ps))
-  {
-    PQfinish (plugin->dbh);
-    plugin->dbh = NULL;
-    return GNUNET_SYSERR;
-  }
   return GNUNET_OK;
 }
 
@@ -165,8 +153,8 @@ postgres_plugin_put (void *cls,
                      const char *data,
                      enum GNUNET_BLOCK_Type type,
                      struct GNUNET_TIME_Absolute discard_time,
-		     unsigned int path_info_len,
-		     const struct GNUNET_PeerIdentity *path_info)
+                     unsigned int path_info_len,
+                     const struct GNUNET_PeerIdentity *path_info)
 {
   struct Plugin *plugin = cls;
   uint32_t type32 = (uint32_t) type;
@@ -177,7 +165,8 @@ postgres_plugin_put (void *cls,
     GNUNET_PQ_query_param_auto_from_type (key),
     GNUNET_PQ_query_param_fixed_size (data, data_size),
     GNUNET_PQ_query_param_fixed_size (path_info,
-                                      path_info_len * sizeof (struct GNUNET_PeerIdentity)),
+                                      path_info_len * sizeof(struct
+                                                             GNUNET_PeerIdentity)),
     GNUNET_PQ_query_param_end
   };
   enum GNUNET_DB_QueryStatus ret;
@@ -197,7 +186,6 @@ postgres_plugin_put (void *cls,
  */
 struct HandleResultContext
 {
-
   /**
    * Function to call on each result, may be NULL.
    */
@@ -231,7 +219,7 @@ handle_results (void *cls,
 {
   struct HandleResultContext *hrc = cls;
 
-  for (unsigned int i=0;i<num_results;i++)
+  for (unsigned int i = 0; i < num_results; i++)
   {
     struct GNUNET_TIME_Absolute expiration_time;
     uint32_t type;
@@ -261,29 +249,29 @@ handle_results (void *cls,
       GNUNET_break (0);
       return;
     }
-    if (0 != (path_len % sizeof (struct GNUNET_PeerIdentity)))
+    if (0 != (path_len % sizeof(struct GNUNET_PeerIdentity)))
     {
       GNUNET_break (0);
       path_len = 0;
     }
-    path_len %= sizeof (struct GNUNET_PeerIdentity);
+    path_len %= sizeof(struct GNUNET_PeerIdentity);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Found result of size %u bytes and type %u in database\n",
-	 (unsigned int) data_size,
+         "Found result of size %u bytes and type %u in database\n",
+         (unsigned int) data_size,
          (unsigned int) type);
-    if ( (NULL != hrc->iter) &&
-         (GNUNET_SYSERR ==
-          hrc->iter (hrc->iter_cls,
-                     hrc->key,
-                     data_size,
-                     data,
-                     (enum GNUNET_BLOCK_Type) type,
-                     expiration_time,
-                     path_len,
-                     path)) )
+    if ((NULL != hrc->iter) &&
+        (GNUNET_SYSERR ==
+         hrc->iter (hrc->iter_cls,
+                    hrc->key,
+                    data_size,
+                    data,
+                    (enum GNUNET_BLOCK_Type) type,
+                    expiration_time,
+                    path_len,
+                    path)))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-	   "Ending iteration (client error)\n");
+           "Ending iteration (client error)\n");
       GNUNET_PQ_cleanup_result (rs);
       return;
     }
@@ -386,16 +374,16 @@ postgres_plugin_del (void *cls)
                                                   rs);
   if (0 >= res)
     res = GNUNET_PQ_eval_prepared_singleton_select (plugin->dbh,
-						    "getm",
-						    pempty,
-						    rs);
+                                                    "getm",
+                                                    pempty,
+                                                    rs);
   if (0 > res)
     return GNUNET_SYSERR;
   if (GNUNET_DB_STATUS_SUCCESS_NO_RESULTS == res)
   {
     /* no result */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Ending iteration (no more results)\n");
+         "Ending iteration (no more results)\n");
     return 0;
   }
   res = GNUNET_PQ_eval_prepared_non_select (plugin->dbh,
@@ -481,12 +469,12 @@ postgres_plugin_get_random (void *cls,
     GNUNET_break (0);
     return 0;
   }
-  if (0 != (path_len % sizeof (struct GNUNET_PeerIdentity)))
+  if (0 != (path_len % sizeof(struct GNUNET_PeerIdentity)))
   {
     GNUNET_break (0);
     path_len = 0;
   }
-  path_len %= sizeof (struct GNUNET_PeerIdentity);
+  path_len %= sizeof(struct GNUNET_PeerIdentity);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Found random value with key %s of size %u bytes and type %u in database\n",
        GNUNET_h2s (&key),
@@ -519,7 +507,6 @@ struct ExtractResultContext
    * Closure for @e iter.
    */
   void *iter_cls;
-
 };
 
 
@@ -541,7 +528,7 @@ extract_result_cb (void *cls,
 
   if (NULL == erc->iter)
     return;
-  for (unsigned int i=0;i<num_results;i++)
+  for (unsigned int i = 0; i < num_results; i++)
   {
     struct GNUNET_TIME_Absolute expiration_time;
     uint32_t type;
@@ -574,15 +561,15 @@ extract_result_cb (void *cls,
       GNUNET_break (0);
       return;
     }
-    if (0 != (path_len % sizeof (struct GNUNET_PeerIdentity)))
+    if (0 != (path_len % sizeof(struct GNUNET_PeerIdentity)))
     {
       GNUNET_break (0);
       path_len = 0;
     }
-    path_len %= sizeof (struct GNUNET_PeerIdentity);
+    path_len %= sizeof(struct GNUNET_PeerIdentity);
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Found result of size %u bytes and type %u in database\n",
-	 (unsigned int) data_size,
+         "Found result of size %u bytes and type %u in database\n",
+         (unsigned int) data_size,
          (unsigned int) type);
     if (GNUNET_SYSERR ==
         erc->iter (erc->iter_cls,
@@ -595,7 +582,7 @@ extract_result_cb (void *cls,
                    path))
     {
       LOG (GNUNET_ERROR_TYPE_DEBUG,
-	   "Ending iteration (client error)\n");
+           "Ending iteration (client error)\n");
       GNUNET_PQ_cleanup_result (rs);
       break;
     }
@@ -647,14 +634,14 @@ postgres_plugin_get_closest (void *cls,
   if (0 > res)
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Ending iteration (postgres error)\n");
+         "Ending iteration (postgres error)\n");
     return 0;
   }
   if (GNUNET_DB_STATUS_SUCCESS_NO_RESULTS == res)
   {
     /* no result */
     LOG (GNUNET_ERROR_TYPE_DEBUG,
-	 "Ending iteration (no more results)\n");
+         "Ending iteration (no more results)\n");
     return 0;
   }
   return res;
@@ -708,12 +695,11 @@ libgnunet_plugin_datacache_postgres_done (void *cls)
   struct GNUNET_DATACACHE_PluginFunctions *api = cls;
   struct Plugin *plugin = api->cls;
 
-  PQfinish (plugin->dbh);
+  GNUNET_PQ_disconnect (plugin->dbh);
   GNUNET_free (plugin);
   GNUNET_free (api);
   return NULL;
 }
-
 
 
 /* end of plugin_datacache_postgres.c */

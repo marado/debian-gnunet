@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/test_common_allocation.c
@@ -144,10 +144,11 @@ main (int argc, char *argv[])
                     NULL);
   ret = check ();
   if (ret != 0)
-    FPRINTF (stderr,
+    fprintf (stderr,
              "ERROR %d.\n",
              ret);
   return ret;
 }
+
 
 /* end of test_common_allocation.c */

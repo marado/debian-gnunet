@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -74,15 +74,16 @@ overlay_connect_status (void *cls,
   GNUNET_TESTBED_operation_done (op);
   op = NULL;
   if (NULL == emsg)
-    GNUNET_log (GNUNET_ERROR_TYPE_WARNING, "Peers 0 and 2 should not get connected\n");
+    GNUNET_log (GNUNET_ERROR_TYPE_WARNING,
+                "Peers 0 and 2 should not get connected\n");
   else
   {
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Peers 0 and 2 not connected: %s.  Success!\n", emsg);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Peers 0 and 2 not connected: %s.  Success!\n", emsg);
     result = GNUNET_OK;
   }
   GNUNET_SCHEDULER_shutdown ();
 }
-
 
 
 /**
@@ -118,8 +119,9 @@ test_master (void *cls,
                                        NULL,
                                        peers_[0],
                                        peers_[2]);
-  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS,
-                                                               60),
+  GNUNET_SCHEDULER_add_delayed (GNUNET_TIME_relative_multiply (
+                                  GNUNET_TIME_UNIT_SECONDS,
+                                  60),
                                 &do_shutdown, NULL);
 }
 
@@ -153,9 +155,10 @@ main (int argc, char **argv)
     return 1;
   GNUNET_assert (0 < GNUNET_asprintf (&dbfile, "%s/%s", pwd,
                                       "test-underlay.sqlite"));
-  GNUNET_CONFIGURATION_set_value_string (cfg, "TESTBED-UNDERLAY","DBFILE", dbfile);
+  GNUNET_CONFIGURATION_set_value_string (cfg, "TESTBED-UNDERLAY", "DBFILE",
+                                         dbfile);
   GNUNET_assert (GNUNET_OK == GNUNET_CONFIGURATION_write
-                 (cfg, "test_testbed_underlay.conf"));
+                   (cfg, "test_testbed_underlay.conf"));
   GNUNET_CONFIGURATION_destroy (cfg);
   cfg = NULL;
   GNUNET_free (dbfile);

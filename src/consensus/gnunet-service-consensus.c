@@ -11,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file consensus/gnunet-service-consensus.c
@@ -68,7 +68,8 @@ GNUNET_NETWORK_STRUCT_BEGIN
  * Tuple of integers that together
  * identify a task uniquely.
  */
-struct TaskKey {
+struct TaskKey
+{
   /**
    * A value from 'enum PhaseKind'.
    */
@@ -97,7 +98,6 @@ struct TaskKey {
    */
   int16_t leader GNUNET_PACKED;
 };
-
 
 
 struct SetKey
@@ -402,7 +402,6 @@ struct SetHandle
 };
 
 
-
 /**
  * A consensus session consists of one local client and the remote authorities.
  */
@@ -446,9 +445,9 @@ struct ConsensusSession
   int conclude_done;
 
   /**
-  * Global consensus identification, computed
-  * from the session id and participating authorities.
-  */
+   * Global consensus identification, computed
+   * from the session id and participating authorities.
+   */
   struct GNUNET_HashCode global_id;
 
   /**
@@ -551,16 +550,25 @@ phasename (uint16_t phase)
 {
   switch (phase)
   {
-    case PHASE_KIND_ALL_TO_ALL: return "ALL_TO_ALL";
-    case PHASE_KIND_ALL_TO_ALL_2: return "ALL_TO_ALL_2";
-    case PHASE_KIND_FINISH: return "FINISH";
-    case PHASE_KIND_GRADECAST_LEADER: return "GRADECAST_LEADER";
-    case PHASE_KIND_GRADECAST_ECHO: return "GRADECAST_ECHO";
-    case PHASE_KIND_GRADECAST_ECHO_GRADE: return "GRADECAST_ECHO_GRADE";
-    case PHASE_KIND_GRADECAST_CONFIRM: return "GRADECAST_CONFIRM";
-    case PHASE_KIND_GRADECAST_CONFIRM_GRADE: return "GRADECAST_CONFIRM_GRADE";
-    case PHASE_KIND_APPLY_REP: return "APPLY_REP";
-    default: return "(unknown)";
+  case PHASE_KIND_ALL_TO_ALL: return "ALL_TO_ALL";
+
+  case PHASE_KIND_ALL_TO_ALL_2: return "ALL_TO_ALL_2";
+
+  case PHASE_KIND_FINISH: return "FINISH";
+
+  case PHASE_KIND_GRADECAST_LEADER: return "GRADECAST_LEADER";
+
+  case PHASE_KIND_GRADECAST_ECHO: return "GRADECAST_ECHO";
+
+  case PHASE_KIND_GRADECAST_ECHO_GRADE: return "GRADECAST_ECHO_GRADE";
+
+  case PHASE_KIND_GRADECAST_CONFIRM: return "GRADECAST_CONFIRM";
+
+  case PHASE_KIND_GRADECAST_CONFIRM_GRADE: return "GRADECAST_CONFIRM_GRADE";
+
+  case PHASE_KIND_APPLY_REP: return "APPLY_REP";
+
+  default: return "(unknown)";
   }
 }
 
@@ -570,37 +578,50 @@ setname (uint16_t kind)
 {
   switch (kind)
   {
-    case SET_KIND_CURRENT: return "CURRENT";
-    case SET_KIND_LEADER_PROPOSAL: return "LEADER_PROPOSAL";
-    case SET_KIND_NONE: return "NONE";
-    default: return "(unknown)";
+  case SET_KIND_CURRENT: return "CURRENT";
+
+  case SET_KIND_LEADER_PROPOSAL: return "LEADER_PROPOSAL";
+
+  case SET_KIND_NONE: return "NONE";
+
+  default: return "(unknown)";
   }
 }
+
 
 static const char *
 rfnname (uint16_t kind)
 {
   switch (kind)
   {
-    case RFN_KIND_NONE: return "NONE";
-    case RFN_KIND_ECHO: return "ECHO";
-    case RFN_KIND_CONFIRM: return "CONFIRM";
-    default: return "(unknown)";
+  case RFN_KIND_NONE: return "NONE";
+
+  case RFN_KIND_ECHO: return "ECHO";
+
+  case RFN_KIND_CONFIRM: return "CONFIRM";
+
+  default: return "(unknown)";
   }
 }
+
 
 static const char *
 diffname (uint16_t kind)
 {
   switch (kind)
   {
-    case DIFF_KIND_NONE: return "NONE";
-    case DIFF_KIND_LEADER_CONSENSUS: return "LEADER_CONSENSUS";
-    case DIFF_KIND_GRADECAST_RESULT: return "GRADECAST_RESULT";
-    case DIFF_KIND_LEADER_PROPOSAL: return "LEADER_PROPOSAL";
-    default: return "(unknown)";
+  case DIFF_KIND_NONE: return "NONE";
+
+  case DIFF_KIND_LEADER_CONSENSUS: return "LEADER_CONSENSUS";
+
+  case DIFF_KIND_GRADECAST_RESULT: return "GRADECAST_RESULT";
+
+  case DIFF_KIND_LEADER_PROPOSAL: return "LEADER_PROPOSAL";
+
+  default: return "(unknown)";
   }
 }
+
 
 #ifdef GNUNET_EXTRA_LOGGING
 
@@ -615,12 +636,13 @@ debug_str_element (const struct GNUNET_SET_Element *el)
   return GNUNET_h2s (&hash);
 }
 
+
 static const char *
 debug_str_task_key (struct TaskKey *tk)
 {
   static char buf[256];
 
-  snprintf (buf, sizeof (buf),
+  snprintf (buf, sizeof(buf),
             "TaskKey kind=%s, p1=%d, p2=%d, l=%d, rep=%d",
             phasename (tk->kind), tk->peer1, tk->peer2,
             tk->leader, tk->repetition);
@@ -628,24 +650,26 @@ debug_str_task_key (struct TaskKey *tk)
   return buf;
 }
 
+
 static const char *
 debug_str_diff_key (struct DiffKey *dk)
 {
   static char buf[256];
 
-  snprintf (buf, sizeof (buf),
+  snprintf (buf, sizeof(buf),
             "DiffKey kind=%s, k1=%d, k2=%d",
             diffname (dk->diff_kind), dk->k1, dk->k2);
 
   return buf;
 }
 
+
 static const char *
 debug_str_set_key (const struct SetKey *sk)
 {
   static char buf[256];
 
-  snprintf (buf, sizeof (buf),
+  snprintf (buf, sizeof(buf),
             "SetKey kind=%s, k1=%d, k2=%d",
             setname (sk->set_kind), sk->k1, sk->k2);
 
@@ -658,12 +682,13 @@ debug_str_rfn_key (const struct RfnKey *rk)
 {
   static char buf[256];
 
-  snprintf (buf, sizeof (buf),
+  snprintf (buf, sizeof(buf),
             "RfnKey kind=%s, k1=%d, k2=%d",
             rfnname (rk->rfn_kind), rk->k1, rk->k2);
 
   return buf;
 }
+
 
 #endif /* GNUNET_EXTRA_LOGGING */
 
@@ -690,10 +715,12 @@ send_to_client_iter (void *cls,
     struct GNUNET_CONSENSUS_ElementMessage *m;
     const struct ConsensusElement *ce;
 
-    GNUNET_assert (GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT == element->element_type);
+    GNUNET_assert (GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT ==
+                   element->element_type);
     ce = element->data;
 
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "marker is %u\n", (unsigned) ce->marker);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "marker is %u\n",
+                (unsigned) ce->marker);
 
     if (0 != ce->marker)
       return GNUNET_YES;
@@ -703,10 +730,12 @@ send_to_client_iter (void *cls,
                 session->local_peer_idx,
                 debug_str_element (element));
 
-    ev = GNUNET_MQ_msg_extra (m, element->size - sizeof (struct ConsensusElement),
+    ev = GNUNET_MQ_msg_extra (m, element->size - sizeof(struct
+                                                        ConsensusElement),
                               GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_RECEIVED_ELEMENT);
     m->element_type = ce->payload_type;
-    GNUNET_memcpy (&m[1], &ce[1], element->size - sizeof (struct ConsensusElement));
+    GNUNET_memcpy (&m[1], &ce[1], element->size - sizeof(struct
+                                                         ConsensusElement));
     GNUNET_MQ_send (session->client_mq, ev);
   }
   else
@@ -714,7 +743,8 @@ send_to_client_iter (void *cls,
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "P%d: finished iterating elements for client\n",
                 session->local_peer_idx);
-    ev = GNUNET_MQ_msg_header (GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_CONCLUDE_DONE);
+    ev = GNUNET_MQ_msg_header (
+      GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_CONCLUDE_DONE);
     GNUNET_MQ_send (session->client_mq, ev);
   }
   return GNUNET_YES;
@@ -732,7 +762,7 @@ lookup_set (struct ConsensusSession *session, struct SetKey *key)
               debug_str_set_key (key));
 
   GNUNET_assert (SET_KIND_NONE != key->set_kind);
-  GNUNET_CRYPTO_hash (key, sizeof (struct SetKey), &hash);
+  GNUNET_CRYPTO_hash (key, sizeof(struct SetKey), &hash);
   return GNUNET_CONTAINER_multihashmap_get (session->setmap, &hash);
 }
 
@@ -748,7 +778,7 @@ lookup_diff (struct ConsensusSession *session, struct DiffKey *key)
               debug_str_diff_key (key));
 
   GNUNET_assert (DIFF_KIND_NONE != key->diff_kind);
-  GNUNET_CRYPTO_hash (key, sizeof (struct DiffKey), &hash);
+  GNUNET_CRYPTO_hash (key, sizeof(struct DiffKey), &hash);
   return GNUNET_CONTAINER_multihashmap_get (session->diffmap, &hash);
 }
 
@@ -764,7 +794,7 @@ lookup_rfn (struct ConsensusSession *session, struct RfnKey *key)
               debug_str_rfn_key (key));
 
   GNUNET_assert (RFN_KIND_NONE != key->rfn_kind);
-  GNUNET_CRYPTO_hash (key, sizeof (struct RfnKey), &hash);
+  GNUNET_CRYPTO_hash (key, sizeof(struct RfnKey), &hash);
   return GNUNET_CONTAINER_multihashmap_get (session->rfnmap, &hash);
 }
 
@@ -777,7 +807,7 @@ diff_insert (struct DiffEntry *diff,
   struct DiffElementInfo *di;
   struct GNUNET_HashCode hash;
 
-  GNUNET_assert ( (1 == weight) || (-1 == weight));
+  GNUNET_assert ((1 == weight) || (-1 == weight));
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
               "diff_insert with element size %u\n",
@@ -835,7 +865,8 @@ rfn_noncontested (struct ReferendumEntry *rfn)
 
   ret = 0;
   for (i = 0; i < rfn->num_peers; i++)
-    if ( (GNUNET_YES == rfn->peer_commited[i]) && (GNUNET_NO == rfn->peer_contested[i]) )
+    if ((GNUNET_YES == rfn->peer_commited[i]) && (GNUNET_NO ==
+                                                  rfn->peer_contested[i]))
       ret++;
 
   return ret;
@@ -855,7 +886,7 @@ rfn_vote (struct ReferendumEntry *rfn,
 
   /* Explicit voting only makes sense with VOTE_ADD or VOTE_REMOTE,
      since VOTE_KEEP is implicit in not voting. */
-  GNUNET_assert ( (VOTE_ADD == vote) || (VOTE_REMOVE == vote) );
+  GNUNET_assert ((VOTE_ADD == vote) || (VOTE_REMOVE == vote));
 
   GNUNET_SET_element_hash (element, &hash);
   ri = GNUNET_CONTAINER_multihashmap_get (rfn->rfn_elements, &hash);
@@ -880,6 +911,7 @@ static uint16_t
 task_other_peer (struct TaskEntry *task)
 {
   uint16_t me = task->step->session->local_peer_idx;
+
   if (task->key.peer1 == me)
     return task->key.peer2;
   return task->key.peer1;
@@ -931,7 +963,8 @@ set_result_cb (void *cls,
                 session->local_peer_idx,
                 (unsigned) element->element_type,
                 (unsigned) status);
-    GNUNET_assert (GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT == element->element_type);
+    GNUNET_assert (GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT ==
+                   element->element_type);
     consensus_element = element->data;
   }
 
@@ -986,13 +1019,13 @@ set_result_cb (void *cls,
       return;
   }
 
-  if ( (NULL != consensus_element) && (0 != consensus_element->marker) )
+  if ((NULL != consensus_element) && (0 != consensus_element->marker))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "P%u: got some marker\n",
-                  session->local_peer_idx);
-    if ( (GNUNET_YES == setop->transceive_contested) &&
-         (CONSENSUS_MARKER_CONTESTED == consensus_element->marker) )
+                session->local_peer_idx);
+    if ((GNUNET_YES == setop->transceive_contested) &&
+        (CONSENSUS_MARKER_CONTESTED == consensus_element->marker))
     {
       GNUNET_assert (NULL != output_rfn);
       rfn_contest (output_rfn, task_other_peer (task));
@@ -1001,7 +1034,6 @@ set_result_cb (void *cls,
 
     if (CONSENSUS_MARKER_SIZE == consensus_element->marker)
     {
-
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                   "P%u: got size marker\n",
                   session->local_peer_idx);
@@ -1012,11 +1044,13 @@ set_result_cb (void *cls,
       if (cse->sender_index == other_idx)
       {
         if (NULL == session->first_sizes_received)
-          session->first_sizes_received = GNUNET_new_array (session->num_peers, uint64_t);
+          session->first_sizes_received = GNUNET_new_array (session->num_peers,
+                                                            uint64_t);
         session->first_sizes_received[other_idx] = GNUNET_ntohll (cse->size);
 
-        uint64_t *copy = GNUNET_memdup (session->first_sizes_received, sizeof (uint64_t) * session->num_peers);
-        qsort (copy, session->num_peers, sizeof (uint64_t), cmp_uint64_t);
+        uint64_t *copy = GNUNET_memdup (session->first_sizes_received,
+                                        sizeof(uint64_t) * session->num_peers);
+        qsort (copy, session->num_peers, sizeof(uint64_t), cmp_uint64_t);
         session->lower_bound = copy[session->num_peers / 3 + 1];
         GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                     "P%u: lower bound %llu\n",
@@ -1032,132 +1066,137 @@ set_result_cb (void *cls,
 
   switch (status)
   {
-    case GNUNET_SET_STATUS_ADD_LOCAL:
-      GNUNET_assert (NULL != consensus_element);
+  case GNUNET_SET_STATUS_ADD_LOCAL:
+    GNUNET_assert (NULL != consensus_element);
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Adding element in Task {%s}\n",
+                debug_str_task_key (&task->key));
+    if (NULL != output_set)
+    {
+      // FIXME: record pending adds, use callback
+      GNUNET_SET_add_element (output_set->h,
+                              element,
+                              NULL,
+                              NULL);
+#ifdef GNUNET_EXTRA_LOGGING
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Adding element in Task {%s}\n",
-                  debug_str_task_key (&task->key));
-      if (NULL != output_set)
-      {
-        // FIXME: record pending adds, use callback
-        GNUNET_SET_add_element (output_set->h,
-                                element,
-                                NULL,
-                                NULL);
-#ifdef GNUNET_EXTRA_LOGGING
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: adding element %s into set {%s} of task {%s}\n",
-                    session->local_peer_idx,
-                    debug_str_element (element),
-                    debug_str_set_key (&setop->output_set),
-                    debug_str_task_key (&task->key));
-#endif
-      }
-      if (NULL != output_diff)
-      {
-        diff_insert (output_diff, 1, element);
-#ifdef GNUNET_EXTRA_LOGGING
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: adding element %s into diff {%s} of task {%s}\n",
-                    session->local_peer_idx,
-                    debug_str_element (element),
-                    debug_str_diff_key (&setop->output_diff),
-                    debug_str_task_key (&task->key));
-#endif
-      }
-      if (NULL != output_rfn)
-      {
-        rfn_vote (output_rfn, task_other_peer (task), VOTE_ADD, element);
-#ifdef GNUNET_EXTRA_LOGGING
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: adding element %s into rfn {%s} of task {%s}\n",
-                    session->local_peer_idx,
-                    debug_str_element (element),
-                    debug_str_rfn_key (&setop->output_rfn),
-                    debug_str_task_key (&task->key));
-#endif
-      }
-      // XXX: add result to structures in task
-      break;
-    case GNUNET_SET_STATUS_ADD_REMOTE:
-      GNUNET_assert (NULL != consensus_element);
-      if (GNUNET_YES == setop->do_not_remove)
-        break;
-      if (CONSENSUS_MARKER_CONTESTED == consensus_element->marker)
-        break;
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "Removing element in Task {%s}\n",
-                  debug_str_task_key (&task->key));
-      if (NULL != output_set)
-      {
-        // FIXME: record pending adds, use callback
-        GNUNET_SET_remove_element (output_set->h,
-                                   element,
-                                   NULL,
-                                   NULL);
-#ifdef GNUNET_EXTRA_LOGGING
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: removing element %s from set {%s} of task {%s}\n",
-                    session->local_peer_idx,
-                    debug_str_element (element),
-                    debug_str_set_key (&setop->output_set),
-                    debug_str_task_key (&task->key));
-#endif
-      }
-      if (NULL != output_diff)
-      {
-        diff_insert (output_diff, -1, element);
-#ifdef GNUNET_EXTRA_LOGGING
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: removing element %s from diff {%s} of task {%s}\n",
-                    session->local_peer_idx,
-                    debug_str_element (element),
-                    debug_str_diff_key (&setop->output_diff),
-                    debug_str_task_key (&task->key));
-#endif
-      }
-      if (NULL != output_rfn)
-      {
-        rfn_vote (output_rfn, task_other_peer (task), VOTE_REMOVE, element);
-#ifdef GNUNET_EXTRA_LOGGING
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: removing element %s from rfn {%s} of task {%s}\n",
-                    session->local_peer_idx,
-                    debug_str_element (element),
-                    debug_str_rfn_key (&setop->output_rfn),
-                    debug_str_task_key (&task->key));
-#endif
-      }
-      break;
-    case GNUNET_SET_STATUS_DONE:
-      // XXX: check first if any changes to the underlying
-      // set are still pending
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                  "P%u: Finishing setop in Task {%s} (%u/%u)\n",
+                  "P%u: adding element %s into set {%s} of task {%s}\n",
                   session->local_peer_idx,
-                  debug_str_task_key (&task->key),
-                  (unsigned int) task->step->finished_tasks,
-                  (unsigned int) task->step->tasks_len);
-      if (NULL != output_rfn)
-      {
-        rfn_commit (output_rfn, task_other_peer (task));
-      }
-      if (PHASE_KIND_ALL_TO_ALL == task->key.kind)
-      {
-        session->first_size = current_size;
-      }
-      finish_task (task);
+                  debug_str_element (element),
+                  debug_str_set_key (&setop->output_set),
+                  debug_str_task_key (&task->key));
+#endif
+    }
+    if (NULL != output_diff)
+    {
+      diff_insert (output_diff, 1, element);
+#ifdef GNUNET_EXTRA_LOGGING
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: adding element %s into diff {%s} of task {%s}\n",
+                  session->local_peer_idx,
+                  debug_str_element (element),
+                  debug_str_diff_key (&setop->output_diff),
+                  debug_str_task_key (&task->key));
+#endif
+    }
+    if (NULL != output_rfn)
+    {
+      rfn_vote (output_rfn, task_other_peer (task), VOTE_ADD, element);
+#ifdef GNUNET_EXTRA_LOGGING
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: adding element %s into rfn {%s} of task {%s}\n",
+                  session->local_peer_idx,
+                  debug_str_element (element),
+                  debug_str_rfn_key (&setop->output_rfn),
+                  debug_str_task_key (&task->key));
+#endif
+    }
+    // XXX: add result to structures in task
+    break;
+
+  case GNUNET_SET_STATUS_ADD_REMOTE:
+    GNUNET_assert (NULL != consensus_element);
+    if (GNUNET_YES == setop->do_not_remove)
       break;
-    case GNUNET_SET_STATUS_FAILURE:
-      // XXX: cleanup
-      GNUNET_break_op (0);
-      finish_task (task);
-      return;
-    default:
-      /* not reached */
-      GNUNET_assert (0);
+    if (CONSENSUS_MARKER_CONTESTED == consensus_element->marker)
+      break;
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "Removing element in Task {%s}\n",
+                debug_str_task_key (&task->key));
+    if (NULL != output_set)
+    {
+      // FIXME: record pending adds, use callback
+      GNUNET_SET_remove_element (output_set->h,
+                                 element,
+                                 NULL,
+                                 NULL);
+#ifdef GNUNET_EXTRA_LOGGING
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: removing element %s from set {%s} of task {%s}\n",
+                  session->local_peer_idx,
+                  debug_str_element (element),
+                  debug_str_set_key (&setop->output_set),
+                  debug_str_task_key (&task->key));
+#endif
+    }
+    if (NULL != output_diff)
+    {
+      diff_insert (output_diff, -1, element);
+#ifdef GNUNET_EXTRA_LOGGING
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: removing element %s from diff {%s} of task {%s}\n",
+                  session->local_peer_idx,
+                  debug_str_element (element),
+                  debug_str_diff_key (&setop->output_diff),
+                  debug_str_task_key (&task->key));
+#endif
+    }
+    if (NULL != output_rfn)
+    {
+      rfn_vote (output_rfn, task_other_peer (task), VOTE_REMOVE, element);
+#ifdef GNUNET_EXTRA_LOGGING
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: removing element %s from rfn {%s} of task {%s}\n",
+                  session->local_peer_idx,
+                  debug_str_element (element),
+                  debug_str_rfn_key (&setop->output_rfn),
+                  debug_str_task_key (&task->key));
+#endif
+    }
+    break;
+
+  case GNUNET_SET_STATUS_DONE:
+    // XXX: check first if any changes to the underlying
+    // set are still pending
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "P%u: Finishing setop in Task {%s} (%u/%u)\n",
+                session->local_peer_idx,
+                debug_str_task_key (&task->key),
+                (unsigned int) task->step->finished_tasks,
+                (unsigned int) task->step->tasks_len);
+    if (NULL != output_rfn)
+    {
+      rfn_commit (output_rfn, task_other_peer (task));
+    }
+    if (PHASE_KIND_ALL_TO_ALL == task->key.kind)
+    {
+      session->first_size = current_size;
+    }
+    finish_task (task);
+    break;
+
+  case GNUNET_SET_STATUS_FAILURE:
+    // XXX: cleanup
+    GNUNET_break_op (0);
+    finish_task (task);
+    return;
+
+  default:
+    /* not reached */
+    GNUNET_assert (0);
   }
 }
+
 
 #ifdef EVIL
 
@@ -1187,7 +1226,8 @@ struct Evilness
 
 
 static int
-parse_evilness_cram_subtype (const char *evil_subtype_str, struct Evilness *evil)
+parse_evilness_cram_subtype (const char *evil_subtype_str, struct
+                             Evilness *evil)
 {
   if (0 == strcmp ("replace", evil_subtype_str))
   {
@@ -1218,7 +1258,9 @@ get_evilness (struct ConsensusSession *session, struct Evilness *evil)
 
   GNUNET_assert (NULL != evil);
 
-  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (cfg, "consensus", "EVIL_SPEC", &evil_spec))
+  if (GNUNET_OK != GNUNET_CONFIGURATION_get_value_string (cfg, "consensus",
+                                                          "EVIL_SPEC",
+                                                          &evil_spec))
   {
     GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
                 "P%u: no evilness\n",
@@ -1241,7 +1283,8 @@ get_evilness (struct ConsensusSession *session, struct Evilness *evil)
     evil_type_str = NULL;
     evil_subtype_str = NULL;
 
-    ret = sscanf (field, "%u;%m[a-z-];%m[a-z-];%u", &peer_num, &evil_type_str, &evil_subtype_str, &evil_num);
+    ret = sscanf (field, "%u;%m[a-z-];%m[a-z-];%u", &peer_num, &evil_type_str,
+                  &evil_subtype_str, &evil_num);
 
     if (ret != 4)
     {
@@ -1312,6 +1355,7 @@ cleanup:
     free (evil_subtype_str);
 }
 
+
 #endif
 
 
@@ -1330,13 +1374,14 @@ commit_set (struct ConsensusSession *session,
   set = lookup_set (session, &setop->input_set);
   GNUNET_assert (NULL != set);
 
-  if ( (GNUNET_YES == setop->transceive_contested) && (GNUNET_YES == set->is_contested) )
+  if ((GNUNET_YES == setop->transceive_contested) && (GNUNET_YES ==
+                                                      set->is_contested))
   {
     struct GNUNET_SET_Element element;
     struct ConsensusElement ce = { 0 };
     ce.marker = CONSENSUS_MARKER_CONTESTED;
     element.data = &ce;
-    element.size = sizeof (struct ConsensusElement);
+    element.size = sizeof(struct ConsensusElement);
     element.element_type = GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT;
     GNUNET_SET_add_element (set->h, &element, NULL, NULL);
   }
@@ -1353,7 +1398,7 @@ commit_set (struct ConsensusSession *session,
     cse.size = GNUNET_htonll (session->first_size);
     cse.sender_index = session->local_peer_idx;
     element.data = &cse;
-    element.size = sizeof (struct ConsensusSizeElement);
+    element.size = sizeof(struct ConsensusSizeElement);
     element.element_type = GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT;
     GNUNET_SET_add_element (set->h, &element, NULL, NULL);
   }
@@ -1374,92 +1419,98 @@ commit_set (struct ConsensusSession *session,
     }
     switch (evil.type)
     {
-      case EVILNESS_CRAM_ALL:
-      case EVILNESS_CRAM_LEAD:
-      case EVILNESS_CRAM_ECHO:
-        /* We're not cramming elements in the
-           all-to-all round, since that would just
-           add more elements to the result set, but
-           wouldn't test robustness. */
-        if (PHASE_KIND_ALL_TO_ALL == task->key.kind)
-        {
-          GNUNET_SET_commit (setop->op, set->h);
-          break;
-        }
-        if ((EVILNESS_CRAM_LEAD == evil.type) &&
-            ((PHASE_KIND_GRADECAST_LEADER != task->key.kind) || SET_KIND_CURRENT != set->key.set_kind))
-        {
-          GNUNET_SET_commit (setop->op, set->h);
-          break;
-        }
-        if (EVILNESS_CRAM_ECHO == evil.type && (PHASE_KIND_GRADECAST_ECHO != task->key.kind))
-        {
-          GNUNET_SET_commit (setop->op, set->h);
-          break;
-        }
-        for (i = 0; i < evil.num; i++)
-        {
-          struct GNUNET_SET_Element element;
-          struct ConsensusStuffedElement se = {
-            .ce.payload_type = 0,
-            .ce.marker = 0,
-          };
-          element.data = &se;
-          element.size = sizeof (struct ConsensusStuffedElement);
-          element.element_type = GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT;
-
-          if (EVILNESS_SUB_REPLACEMENT == evil.subtype)
-          {
-            /* Always generate a new element. */
-            GNUNET_CRYPTO_hash_create_random (GNUNET_CRYPTO_QUALITY_WEAK, &se.rand);
-          }
-          else if (EVILNESS_SUB_NO_REPLACEMENT == evil.subtype)
-          {
-            /* Always cram the same elements, derived from counter. */
-            GNUNET_CRYPTO_hash (&i, sizeof (i), &se.rand);
-          }
-          else
-          {
-            GNUNET_assert (0);
-          }
-          GNUNET_SET_add_element (set->h, &element, NULL, NULL);
-#ifdef GNUNET_EXTRA_LOGGING
-          GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                      "P%u: evil peer: cramming element %s into set {%s} of task {%s}\n",
-                      session->local_peer_idx,
-                      debug_str_element (&element),
-                      debug_str_set_key (&setop->input_set),
-                      debug_str_task_key (&task->key));
-#endif
-        }
-        GNUNET_STATISTICS_update (statistics,
-                                  "# stuffed elements",
-                                  evil.num,
-                                  GNUNET_NO);
+    case EVILNESS_CRAM_ALL:
+    case EVILNESS_CRAM_LEAD:
+    case EVILNESS_CRAM_ECHO:
+      /* We're not cramming elements in the
+         all-to-all round, since that would just
+         add more elements to the result set, but
+         wouldn't test robustness. */
+      if (PHASE_KIND_ALL_TO_ALL == task->key.kind)
+      {
         GNUNET_SET_commit (setop->op, set->h);
         break;
-      case EVILNESS_SLACK:
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: evil peer: slacking\n",
-                    (unsigned int) session->local_peer_idx);
-        /* Do nothing. */
-      case EVILNESS_SLACK_A2A:
-        if ( (PHASE_KIND_ALL_TO_ALL_2 == task->key.kind ) ||
-             (PHASE_KIND_ALL_TO_ALL == task->key.kind) )
+      }
+      if ((EVILNESS_CRAM_LEAD == evil.type) &&
+          ((PHASE_KIND_GRADECAST_LEADER != task->key.kind) ||
+           (SET_KIND_CURRENT != set->key.set_kind) ))
+      {
+        GNUNET_SET_commit (setop->op, set->h);
+        break;
+      }
+      if ((EVILNESS_CRAM_ECHO == evil.type) && (PHASE_KIND_GRADECAST_ECHO !=
+                                                task->key.kind))
+      {
+        GNUNET_SET_commit (setop->op, set->h);
+        break;
+      }
+      for (i = 0; i < evil.num; i++)
+      {
+        struct GNUNET_SET_Element element;
+        struct ConsensusStuffedElement se = {
+          .ce.payload_type = 0,
+          .ce.marker = 0,
+        };
+        element.data = &se;
+        element.size = sizeof(struct ConsensusStuffedElement);
+        element.element_type = GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT;
+
+        if (EVILNESS_SUB_REPLACEMENT == evil.subtype)
         {
-          struct GNUNET_SET_Handle *empty_set;
-          empty_set = GNUNET_SET_create (cfg, GNUNET_SET_OPERATION_UNION);
-          GNUNET_SET_commit (setop->op, empty_set);
-          GNUNET_SET_destroy (empty_set);
+          /* Always generate a new element. */
+          GNUNET_CRYPTO_hash_create_random (GNUNET_CRYPTO_QUALITY_WEAK,
+                                            &se.rand);
+        }
+        else if (EVILNESS_SUB_NO_REPLACEMENT == evil.subtype)
+        {
+          /* Always cram the same elements, derived from counter. */
+          GNUNET_CRYPTO_hash (&i, sizeof(i), &se.rand);
         }
         else
         {
-          GNUNET_SET_commit (setop->op, set->h);
+          GNUNET_assert (0);
         }
-        break;
-      case EVILNESS_NONE:
+        GNUNET_SET_add_element (set->h, &element, NULL, NULL);
+#ifdef GNUNET_EXTRA_LOGGING
+        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                    "P%u: evil peer: cramming element %s into set {%s} of task {%s}\n",
+                    session->local_peer_idx,
+                    debug_str_element (&element),
+                    debug_str_set_key (&setop->input_set),
+                    debug_str_task_key (&task->key));
+#endif
+      }
+      GNUNET_STATISTICS_update (statistics,
+                                "# stuffed elements",
+                                evil.num,
+                                GNUNET_NO);
+      GNUNET_SET_commit (setop->op, set->h);
+      break;
+
+    case EVILNESS_SLACK:
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: evil peer: slacking\n",
+                  (unsigned int) session->local_peer_idx);
+
+    /* Do nothing. */
+    case EVILNESS_SLACK_A2A:
+      if ((PHASE_KIND_ALL_TO_ALL_2 == task->key.kind) ||
+          (PHASE_KIND_ALL_TO_ALL == task->key.kind))
+      {
+        struct GNUNET_SET_Handle *empty_set;
+        empty_set = GNUNET_SET_create (cfg, GNUNET_SET_OPERATION_UNION);
+        GNUNET_SET_commit (setop->op, empty_set);
+        GNUNET_SET_destroy (empty_set);
+      }
+      else
+      {
         GNUNET_SET_commit (setop->op, set->h);
-        break;
+      }
+      break;
+
+    case EVILNESS_NONE:
+      GNUNET_SET_commit (setop->op, set->h);
+      break;
     }
   }
 #else
@@ -1481,17 +1532,19 @@ commit_set (struct ConsensusSession *session,
 
 static void
 put_diff (struct ConsensusSession *session,
-         struct DiffEntry *diff)
+          struct DiffEntry *diff)
 {
   struct GNUNET_HashCode hash;
 
   GNUNET_assert (NULL != diff);
 
-  GNUNET_CRYPTO_hash (&diff->key, sizeof (struct DiffKey), &hash);
+  GNUNET_CRYPTO_hash (&diff->key, sizeof(struct DiffKey), &hash);
   GNUNET_assert (GNUNET_OK ==
-                 GNUNET_CONTAINER_multihashmap_put (session->diffmap, &hash, diff,
+                 GNUNET_CONTAINER_multihashmap_put (session->diffmap, &hash,
+                                                    diff,
                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
 }
+
 
 static void
 put_set (struct ConsensusSession *session,
@@ -1505,7 +1558,7 @@ put_set (struct ConsensusSession *session,
               "Putting set %s\n",
               debug_str_set_key (&set->key));
 
-  GNUNET_CRYPTO_hash (&set->key, sizeof (struct SetKey), &hash);
+  GNUNET_CRYPTO_hash (&set->key, sizeof(struct SetKey), &hash);
   GNUNET_assert (GNUNET_SYSERR !=
                  GNUNET_CONTAINER_multihashmap_put (session->setmap, &hash, set,
                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_REPLACE));
@@ -1518,12 +1571,11 @@ put_rfn (struct ConsensusSession *session,
 {
   struct GNUNET_HashCode hash;
 
-  GNUNET_CRYPTO_hash (&rfn->key, sizeof (struct RfnKey), &hash);
+  GNUNET_CRYPTO_hash (&rfn->key, sizeof(struct RfnKey), &hash);
   GNUNET_assert (GNUNET_OK ==
                  GNUNET_CONTAINER_multihashmap_put (session->rfnmap, &hash, rfn,
                                                     GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
 }
-
 
 
 static void
@@ -1586,14 +1638,20 @@ diff_compose (struct DiffEntry *diff_1,
   diff_new = diff_create ();
 
   iter = GNUNET_CONTAINER_multihashmap_iterator_create (diff_1->changes);
-  while (GNUNET_YES == GNUNET_CONTAINER_multihashmap_iterator_next (iter, NULL, (const void **) &di))
+  while (GNUNET_YES == GNUNET_CONTAINER_multihashmap_iterator_next (iter, NULL,
+                                                                    (const
+                                                                     void **) &
+                                                                    di))
   {
     diff_insert (diff_new, di->weight, di->element);
   }
   GNUNET_CONTAINER_multihashmap_iterator_destroy (iter);
 
   iter = GNUNET_CONTAINER_multihashmap_iterator_create (diff_2->changes);
-  while (GNUNET_YES == GNUNET_CONTAINER_multihashmap_iterator_next (iter, NULL, (const void **) &di))
+  while (GNUNET_YES == GNUNET_CONTAINER_multihashmap_iterator_next (iter, NULL,
+                                                                    (const
+                                                                     void **) &
+                                                                    di))
   {
     diff_insert (diff_new, di->weight, di->element);
   }
@@ -1625,6 +1683,8 @@ diff_destroy (struct DiffEntry *diff)
   GNUNET_CONTAINER_multihashmap_destroy (diff->changes);
   GNUNET_free (diff);
 }
+
+
 #endif
 
 
@@ -1787,7 +1847,6 @@ try_finish_step_early (struct Step *step)
                 "Decreased pending_prereq to %u for step `%s'.\n",
                 (unsigned int) step->subordinates[i]->pending_prereq,
                 step->subordinates[i]->debug_name);
-
 #endif
     try_finish_step_early (step->subordinates[i]);
   }
@@ -1822,7 +1881,6 @@ finish_step (struct Step *step)
                 "Decreased pending_prereq to %u for step `%s'.\n",
                 (unsigned int) step->subordinates[i]->pending_prereq,
                 step->subordinates[i]->debug_name);
-
 #endif
   }
 
@@ -1831,7 +1889,6 @@ finish_step (struct Step *step)
   // XXX: maybe schedule as task to avoid recursion?
   run_ready_steps (step->session);
 }
-
 
 
 /**
@@ -1888,40 +1945,43 @@ task_start_apply_round (struct TaskEntry *task)
 
     switch (majority_vote)
     {
-      case VOTE_ADD:
-        progress_cls->num_pending++;
-        GNUNET_assert (GNUNET_OK ==
-                       GNUNET_SET_add_element (set_out->h,
-                                               ri->element,
-                                               &set_mutation_done,
-                                               progress_cls));
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: apply round: adding element %s with %u-majority.\n",
-                    session->local_peer_idx,
-                    debug_str_element (ri->element), majority_num);
-        break;
-      case VOTE_REMOVE:
-        progress_cls->num_pending++;
-        GNUNET_assert (GNUNET_OK ==
-                       GNUNET_SET_remove_element (set_out->h,
-                                                  ri->element,
-                                                  &set_mutation_done,
-                                                  progress_cls));
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: apply round: deleting element %s with %u-majority.\n",
-                    session->local_peer_idx,
-                    debug_str_element (ri->element), majority_num);
-        break;
-      case VOTE_STAY:
-        GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-                    "P%u: apply round: keeping element %s with %u-majority.\n",
-                    session->local_peer_idx,
-                    debug_str_element (ri->element), majority_num);
-        // do nothing
-        break;
-      default:
-        GNUNET_assert (0);
-        break;
+    case VOTE_ADD:
+      progress_cls->num_pending++;
+      GNUNET_assert (GNUNET_OK ==
+                     GNUNET_SET_add_element (set_out->h,
+                                             ri->element,
+                                             &set_mutation_done,
+                                             progress_cls));
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: apply round: adding element %s with %u-majority.\n",
+                  session->local_peer_idx,
+                  debug_str_element (ri->element), majority_num);
+      break;
+
+    case VOTE_REMOVE:
+      progress_cls->num_pending++;
+      GNUNET_assert (GNUNET_OK ==
+                     GNUNET_SET_remove_element (set_out->h,
+                                                ri->element,
+                                                &set_mutation_done,
+                                                progress_cls));
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: apply round: deleting element %s with %u-majority.\n",
+                  session->local_peer_idx,
+                  debug_str_element (ri->element), majority_num);
+      break;
+
+    case VOTE_STAY:
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: apply round: keeping element %s with %u-majority.\n",
+                  session->local_peer_idx,
+                  debug_str_element (ri->element), majority_num);
+      // do nothing
+      break;
+
+    default:
+      GNUNET_assert (0);
+      break;
     }
   }
 
@@ -1939,29 +1999,33 @@ task_start_apply_round (struct TaskEntry *task)
     {
       switch (session->early_stopping)
       {
-        case EARLY_STOPPING_NONE:
-          session->early_stopping = EARLY_STOPPING_ONE_MORE;
-          GNUNET_log (GNUNET_ERROR_TYPE_INFO,
-                      "P%u: Stopping early (after one more superround)\n",
-                      session->local_peer_idx);
-          break;
-        case EARLY_STOPPING_ONE_MORE:
-          GNUNET_log (GNUNET_ERROR_TYPE_INFO, "P%u: finishing steps due to early finish\n",
-                      session->local_peer_idx);
-          session->early_stopping = EARLY_STOPPING_DONE;
-          {
-            struct Step *step;
-            for (step = session->steps_head; NULL != step; step = step->next)
-              try_finish_step_early (step);
-          }
-          break;
-        case EARLY_STOPPING_DONE:
-          /* We shouldn't be here anymore after early stopping */
-          GNUNET_break (0);
-          break;
-        default:
-          GNUNET_assert (0);
-          break;
+      case EARLY_STOPPING_NONE:
+        session->early_stopping = EARLY_STOPPING_ONE_MORE;
+        GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                    "P%u: Stopping early (after one more superround)\n",
+                    session->local_peer_idx);
+        break;
+
+      case EARLY_STOPPING_ONE_MORE:
+        GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                    "P%u: finishing steps due to early finish\n",
+                    session->local_peer_idx);
+        session->early_stopping = EARLY_STOPPING_DONE;
+        {
+          struct Step *step;
+          for (step = session->steps_head; NULL != step; step = step->next)
+            try_finish_step_early (step);
+        }
+        break;
+
+      case EARLY_STOPPING_DONE:
+        /* We shouldn't be here anymore after early stopping */
+        GNUNET_break (0);
+        break;
+
+      default:
+        GNUNET_assert (0);
+        break;
       }
     }
     else if (EARLY_STOPPING_NONE != session->early_stopping)
@@ -1972,7 +2036,8 @@ task_start_apply_round (struct TaskEntry *task)
     }
     else
     {
-      GNUNET_log (GNUNET_ERROR_TYPE_INFO, "P%u: NOT finishing early (majority not good enough)\n",
+      GNUNET_log (GNUNET_ERROR_TYPE_INFO,
+                  "P%u: NOT finishing early (majority not good enough)\n",
                   session->local_peer_idx);
     }
   }
@@ -2002,17 +2067,21 @@ task_start_grade (struct TaskEntry *task)
     put_rfn (session, output_rfn);
   }
 
-  diff_key = (struct DiffKey) { DIFF_KIND_LEADER_PROPOSAL, task->key.repetition, task->key.leader };
+  diff_key = (struct DiffKey) { DIFF_KIND_LEADER_PROPOSAL, task->key.repetition,
+                                task->key.leader };
   input_diff = lookup_diff (session, &diff_key);
   GNUNET_assert (NULL != input_diff);
 
-  rfn_key = (struct RfnKey) { RFN_KIND_ECHO, task->key.repetition, task->key.leader };
+  rfn_key = (struct RfnKey) { RFN_KIND_ECHO, task->key.repetition,
+                              task->key.leader };
   input_rfn = lookup_rfn (session, &rfn_key);
   GNUNET_assert (NULL != input_rfn);
 
-  iter = GNUNET_CONTAINER_multihashmap_iterator_create (input_rfn->rfn_elements);
+  iter = GNUNET_CONTAINER_multihashmap_iterator_create (
+    input_rfn->rfn_elements);
 
-  apply_diff_to_rfn (input_diff, output_rfn, task->key.leader, session->num_peers);
+  apply_diff_to_rfn (input_diff, output_rfn, task->key.leader,
+                     session->num_peers);
 
   while (GNUNET_YES ==
          GNUNET_CONTAINER_multihashmap_iterator_next (iter,
@@ -2030,17 +2099,20 @@ task_start_grade (struct TaskEntry *task)
 
     switch (majority_vote)
     {
-      case VOTE_STAY:
-        break;
-      case VOTE_ADD:
-        rfn_vote (output_rfn, task->key.leader, VOTE_ADD, ri->element);
-        break;
-      case VOTE_REMOVE:
-        rfn_vote (output_rfn, task->key.leader, VOTE_REMOVE, ri->element);
-        break;
-      default:
-        GNUNET_assert (0);
-        break;
+    case VOTE_STAY:
+      break;
+
+    case VOTE_ADD:
+      rfn_vote (output_rfn, task->key.leader, VOTE_ADD, ri->element);
+      break;
+
+    case VOTE_REMOVE:
+      rfn_vote (output_rfn, task->key.leader, VOTE_REMOVE, ri->element);
+      break;
+
+    default:
+      GNUNET_assert (0);
+      break;
     }
   }
   GNUNET_CONTAINER_multihashmap_iterator_destroy (iter);
@@ -2050,7 +2122,7 @@ task_start_grade (struct TaskEntry *task)
     noncontested = rfn_noncontested (input_rfn);
     if (noncontested < (session->num_peers / 3) * 2)
     {
-      gradecast_confidence = GNUNET_MIN(1, gradecast_confidence);
+      gradecast_confidence = GNUNET_MIN (1, gradecast_confidence);
     }
     if (noncontested < (session->num_peers / 3) + 1)
     {
@@ -2124,7 +2196,8 @@ task_start_reconcile (struct TaskEntry *task)
     }
   }
 
-  if ( (task->key.peer1 == session->local_peer_idx) && (task->key.peer2 == session->local_peer_idx) )
+  if ((task->key.peer1 == session->local_peer_idx) && (task->key.peer2 ==
+                                                       session->local_peer_idx))
   {
     /* XXX: mark the corresponding rfn as commited if necessary */
     finish_task (task);
@@ -2141,7 +2214,8 @@ task_start_reconcile (struct TaskEntry *task)
                 debug_str_set_key (&setop->input_set));
 
     rcm.header.type = htons (GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ROUND_CONTEXT);
-    rcm.header.size = htons (sizeof (struct GNUNET_CONSENSUS_RoundContextMessage));
+    rcm.header.size = htons (sizeof(struct
+                                    GNUNET_CONSENSUS_RoundContextMessage));
 
     rcm.kind = htons (task->key.kind);
     rcm.peer1 = htons (task->key.peer1);
@@ -2151,8 +2225,10 @@ task_start_reconcile (struct TaskEntry *task)
     rcm.is_contested = htons (0);
 
     GNUNET_assert (NULL == setop->op);
-    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "P%u: initiating set op with P%u, our set is %s\n",
-                session->local_peer_idx, task->key.peer2, debug_str_set_key (&setop->input_set));
+    GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                "P%u: initiating set op with P%u, our set is %s\n",
+                session->local_peer_idx, task->key.peer2, debug_str_set_key (
+                  &setop->input_set));
 
     struct GNUNET_SET_Option opts[] = {
       { GNUNET_SET_OPTION_BYZANTINE, { .num = session->lower_bound } },
@@ -2203,8 +2279,10 @@ task_start_eval_echo (struct TaskEntry *task)
   struct SetKey sk_out;
   struct RfnKey rk_in;
 
-  sk_in = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, task->key.repetition, task->key.leader };
-  sk_out = (struct SetKey) { SET_KIND_ECHO_RESULT, task->key.repetition, task->key.leader };
+  sk_in = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, task->key.repetition,
+                            task->key.leader };
+  sk_out = (struct SetKey) { SET_KIND_ECHO_RESULT, task->key.repetition,
+                             task->key.leader };
   output_set = lookup_set (session, &sk_out);
   if (NULL == output_set)
   {
@@ -2229,12 +2307,14 @@ task_start_eval_echo (struct TaskEntry *task)
   progress_cls = GNUNET_new (struct SetMutationProgressCls);
   progress_cls->task = task;
 
-  rk_in = (struct RfnKey) { RFN_KIND_ECHO, task->key.repetition, task->key.leader };
+  rk_in = (struct RfnKey) { RFN_KIND_ECHO, task->key.repetition,
+                            task->key.leader };
   input_rfn = lookup_rfn (session, &rk_in);
 
   GNUNET_assert (NULL != input_rfn);
 
-  iter = GNUNET_CONTAINER_multihashmap_iterator_create (input_rfn->rfn_elements);
+  iter = GNUNET_CONTAINER_multihashmap_iterator_create (
+    input_rfn->rfn_elements);
   GNUNET_assert (NULL != iter);
 
   while (GNUNET_YES ==
@@ -2254,34 +2334,36 @@ task_start_eval_echo (struct TaskEntry *task)
          can't simply send "nothing" for the value.  Thus we mark our 'confirm'
          reconciliation as contested.  Other peers might not know that the
          leader is faulty, thus we still re-distribute in the confirmation
-         round. */
-      output_set->is_contested = GNUNET_YES;
+         round. */output_set->is_contested = GNUNET_YES;
     }
 
     switch (majority_vote)
     {
-      case VOTE_ADD:
-        progress_cls->num_pending++;
-        GNUNET_assert (GNUNET_OK ==
-                       GNUNET_SET_add_element (output_set->h,
-                                               ri->element,
-                                               set_mutation_done,
-                                               progress_cls));
-        break;
-      case VOTE_REMOVE:
-        progress_cls->num_pending++;
-        GNUNET_assert (GNUNET_OK ==
-                       GNUNET_SET_remove_element (output_set->h,
-                                                  ri->element,
-                                                  set_mutation_done,
-                                                  progress_cls));
-        break;
-      case VOTE_STAY:
-        /* Nothing to do. */
-        break;
-      default:
-        /* not reached */
-        GNUNET_assert (0);
+    case VOTE_ADD:
+      progress_cls->num_pending++;
+      GNUNET_assert (GNUNET_OK ==
+                     GNUNET_SET_add_element (output_set->h,
+                                             ri->element,
+                                             set_mutation_done,
+                                             progress_cls));
+      break;
+
+    case VOTE_REMOVE:
+      progress_cls->num_pending++;
+      GNUNET_assert (GNUNET_OK ==
+                     GNUNET_SET_remove_element (output_set->h,
+                                                ri->element,
+                                                set_mutation_done,
+                                                progress_cls));
+      break;
+
+    case VOTE_STAY:
+      /* Nothing to do. */
+      break;
+
+    default:
+      /* not reached */
+      GNUNET_assert (0);
     }
   }
 
@@ -2312,10 +2394,12 @@ task_start_finish (struct TaskEntry *task)
                       task);
 }
 
+
 static void
 start_task (struct ConsensusSession *session, struct TaskEntry *task)
 {
-  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "P%u: starting task {%s}\n", session->local_peer_idx, debug_str_task_key (&task->key));
+  GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "P%u: starting task {%s}\n",
+              session->local_peer_idx, debug_str_task_key (&task->key));
 
   GNUNET_assert (GNUNET_NO == task->is_started);
   GNUNET_assert (GNUNET_NO == task->is_finished);
@@ -2325,8 +2409,6 @@ start_task (struct ConsensusSession *session, struct TaskEntry *task)
 
   task->is_started = GNUNET_YES;
 }
-
-
 
 
 /*
@@ -2342,14 +2424,16 @@ run_ready_steps (struct ConsensusSession *session)
 
   while (NULL != step)
   {
-    if ( (GNUNET_NO == step->is_running) && (0 == step->pending_prereq) && (GNUNET_NO == step->is_finished) )
+    if ((GNUNET_NO == step->is_running) && (0 == step->pending_prereq) &&
+        (GNUNET_NO == step->is_finished))
     {
       size_t i;
 
       GNUNET_assert (0 == step->finished_tasks);
 
 #ifdef GNUNET_EXTRA_LOGGING
-      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "P%u: Running step `%s' of round %d with %d tasks and %d subordinates\n",
+      GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
+                  "P%u: Running step `%s' of round %d with %d tasks and %d subordinates\n",
                   session->local_peer_idx,
                   step->debug_name,
                   step->round, step->tasks_len, step->subordinates_len);
@@ -2360,7 +2444,8 @@ run_ready_steps (struct ConsensusSession *session)
         start_task (session, step->tasks[i]);
 
       /* Sometimes there is no task to trigger finishing the step, so we have to do it here. */
-      if ( (step->finished_tasks == step->tasks_len) && (GNUNET_NO == step->is_finished))
+      if ((step->finished_tasks == step->tasks_len) && (GNUNET_NO ==
+                                                        step->is_finished))
         finish_step (step);
 
       /* Running the next ready steps will be triggered by task completion */
@@ -2371,7 +2456,6 @@ run_ready_steps (struct ConsensusSession *session)
 
   return;
 }
-
 
 
 static void
@@ -2402,9 +2486,11 @@ finish_task (struct TaskEntry *task)
  * @return index of peer, -1 if peer is not in session
  */
 static int
-get_peer_idx (const struct GNUNET_PeerIdentity *peer, const struct ConsensusSession *session)
+get_peer_idx (const struct GNUNET_PeerIdentity *peer, const struct
+              ConsensusSession *session)
 {
   int i;
+
   for (i = 0; i < session->num_peers; i++)
     if (0 == GNUNET_memcmp (peer, &session->peers[i]))
       return i;
@@ -2423,19 +2509,20 @@ get_peer_idx (const struct GNUNET_PeerIdentity *peer, const struct ConsensusSess
  */
 static void
 compute_global_id (struct ConsensusSession *session,
-		   const struct GNUNET_HashCode *local_session_id)
+                   const struct GNUNET_HashCode *local_session_id)
 {
   const char *salt = "gnunet-service-consensus/session_id";
 
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CRYPTO_kdf (&session->global_id,
-                                    sizeof (struct GNUNET_HashCode),
+                                    sizeof(struct GNUNET_HashCode),
                                     salt,
                                     strlen (salt),
                                     session->peers,
-                                    session->num_peers * sizeof (struct GNUNET_PeerIdentity),
+                                    session->num_peers * sizeof(struct
+                                                                GNUNET_PeerIdentity),
                                     local_session_id,
-                                    sizeof (struct GNUNET_HashCode),
+                                    sizeof(struct GNUNET_HashCode),
                                     NULL));
 }
 
@@ -2450,7 +2537,7 @@ compute_global_id (struct ConsensusSession *session,
 static int
 peer_id_cmp (const void *h1, const void *h2)
 {
-  return memcmp (h1, h2, sizeof (struct GNUNET_PeerIdentity));
+  return memcmp (h1, h2, sizeof(struct GNUNET_PeerIdentity));
 }
 
 
@@ -2463,7 +2550,8 @@ peer_id_cmp (const void *h1, const void *h2)
  */
 static void
 initialize_session_peer_list (struct ConsensusSession *session,
-                              const struct GNUNET_CONSENSUS_JoinMessage *join_msg)
+                              const struct
+                              GNUNET_CONSENSUS_JoinMessage *join_msg)
 {
   const struct GNUNET_PeerIdentity *msg_peers
     = (const struct GNUNET_PeerIdentity *) &join_msg[1];
@@ -2477,7 +2565,7 @@ initialize_session_peer_list (struct ConsensusSession *session,
   for (unsigned int i = 0; i < session->num_peers; i++)
   {
     if (0 == GNUNET_memcmp (&msg_peers[i],
-                     &my_peer))
+                            &my_peer))
     {
       local_peer_in_list = GNUNET_YES;
       break;
@@ -2493,10 +2581,11 @@ initialize_session_peer_list (struct ConsensusSession *session,
 
   GNUNET_memcpy (session->peers,
                  msg_peers,
-                 ntohl (join_msg->num_peers) * sizeof (struct GNUNET_PeerIdentity));
+                 ntohl (join_msg->num_peers) * sizeof(struct
+                                                      GNUNET_PeerIdentity));
   qsort (session->peers,
          session->num_peers,
-         sizeof (struct GNUNET_PeerIdentity),
+         sizeof(struct GNUNET_PeerIdentity),
          &peer_id_cmp);
 }
 
@@ -2508,7 +2597,7 @@ lookup_task (struct ConsensusSession *session,
   struct GNUNET_HashCode hash;
 
 
-  GNUNET_CRYPTO_hash (key, sizeof (struct TaskKey), &hash);
+  GNUNET_CRYPTO_hash (key, sizeof(struct TaskKey), &hash);
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "Looking up task hash %s\n",
               GNUNET_h2s (&hash));
   return GNUNET_CONTAINER_multihashmap_get (session->taskmap, &hash);
@@ -2547,13 +2636,15 @@ set_listen_cb (void *cls,
     return;
   }
 
-  if (GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ROUND_CONTEXT != ntohs (context_msg->type))
+  if (GNUNET_MESSAGE_TYPE_CONSENSUS_P2P_ROUND_CONTEXT != ntohs (
+        context_msg->type))
   {
     GNUNET_break_op (0);
     return;
   }
 
-  if (sizeof (struct GNUNET_CONSENSUS_RoundContextMessage) != ntohs (context_msg->size))
+  if (sizeof(struct GNUNET_CONSENSUS_RoundContextMessage) != ntohs (
+        context_msg->size))
   {
     GNUNET_break_op (0);
     return;
@@ -2562,11 +2653,11 @@ set_listen_cb (void *cls,
   cm = (struct GNUNET_CONSENSUS_RoundContextMessage *) context_msg;
 
   tk = ((struct TaskKey) {
-      .kind = ntohs (cm->kind),
-      .peer1 = ntohs (cm->peer1),
-      .peer2 = ntohs (cm->peer2),
-      .repetition = ntohs (cm->repetition),
-      .leader = ntohs (cm->leader),
+    .kind = ntohs (cm->kind),
+    .peer1 = ntohs (cm->peer1),
+    .peer2 = ntohs (cm->peer2),
+    .repetition = ntohs (cm->repetition),
+    .leader = ntohs (cm->leader),
   });
 
   GNUNET_log (GNUNET_ERROR_TYPE_DEBUG, "P%u: got req for task %s\n",
@@ -2617,7 +2708,6 @@ set_listen_cb (void *cls,
 }
 
 
-
 static void
 put_task (struct GNUNET_CONTAINER_MultiHashMap *taskmap,
           struct TaskEntry *t)
@@ -2627,7 +2717,7 @@ put_task (struct GNUNET_CONTAINER_MultiHashMap *taskmap,
 
   GNUNET_assert (NULL != t->step);
 
-  t = GNUNET_memdup (t, sizeof (struct TaskEntry));
+  t = GNUNET_memdup (t, sizeof(struct TaskEntry));
 
   s = t->step;
 
@@ -2649,10 +2739,10 @@ put_task (struct GNUNET_CONTAINER_MultiHashMap *taskmap,
   s->tasks[s->tasks_len] = t;
   s->tasks_len++;
 
-  GNUNET_CRYPTO_hash (&t->key, sizeof (struct TaskKey), &round_hash);
+  GNUNET_CRYPTO_hash (&t->key, sizeof(struct TaskKey), &round_hash);
   GNUNET_assert (GNUNET_OK ==
-      GNUNET_CONTAINER_multihashmap_put (taskmap, &round_hash, t,
-                                         GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
+                 GNUNET_CONTAINER_multihashmap_put (taskmap, &round_hash, t,
+                                                    GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
 }
 
 
@@ -2666,7 +2756,6 @@ install_step_timeouts (struct ConsensusSession *session)
 
   /* XXX: implement! */
 }
-
 
 
 /*
@@ -2753,6 +2842,7 @@ static struct Step *
 create_step (struct ConsensusSession *session, int round, int early_finishable)
 {
   struct Step *step;
+
   step = GNUNET_new (struct Step);
   step->session = session;
   step->round = round;
@@ -2798,7 +2888,8 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
   step = create_step (session, round, GNUNET_YES);
 
 #ifdef GNUNET_EXTRA_LOGGING
-  GNUNET_asprintf (&step->debug_name, "disseminate leader %u rep %u", lead, rep);
+  GNUNET_asprintf (&step->debug_name, "disseminate leader %u rep %u", lead,
+                   rep);
 #endif
   step_depend_on (step, step_before);
 
@@ -2815,7 +2906,8 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
         .step = step,
         .start = task_start_reconcile,
         .cancel = task_cancel_reconcile,
-        .key = (struct TaskKey) { PHASE_KIND_GRADECAST_LEADER, p1, p2, rep, me },
+        .key = (struct TaskKey) { PHASE_KIND_GRADECAST_LEADER, p1, p2, rep,
+                                  me },
       });
       task.cls.setop.input_set = (struct SetKey) { SET_KIND_CURRENT, rep };
       put_task (session->taskmap, &task);
@@ -2831,8 +2923,10 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
       .cancel = task_cancel_reconcile,
     });
     task.cls.setop.input_set = (struct SetKey) { SET_KIND_CURRENT, rep };
-    task.cls.setop.output_set = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, rep, me };
-    task.cls.setop.output_diff = (struct DiffKey) { DIFF_KIND_LEADER_PROPOSAL, rep, me };
+    task.cls.setop.output_set = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, rep,
+                                                  me };
+    task.cls.setop.output_diff = (struct DiffKey) { DIFF_KIND_LEADER_PROPOSAL,
+                                                    rep, me };
     put_task (session->taskmap, &task);
   }
   else
@@ -2842,13 +2936,16 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
     arrange_peers (&p1, &p2, n);
     task = ((struct TaskEntry) {
       .step = step,
-      .key = (struct TaskKey) { PHASE_KIND_GRADECAST_LEADER, p1, p2, rep, lead },
+      .key = (struct TaskKey) { PHASE_KIND_GRADECAST_LEADER, p1, p2, rep,
+                                lead },
       .start = task_start_reconcile,
       .cancel = task_cancel_reconcile,
     });
     task.cls.setop.input_set = (struct SetKey) { SET_KIND_CURRENT, rep };
-    task.cls.setop.output_set = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, rep, lead };
-    task.cls.setop.output_diff = (struct DiffKey) { DIFF_KIND_LEADER_PROPOSAL, rep, lead };
+    task.cls.setop.output_set = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, rep,
+                                                  lead };
+    task.cls.setop.output_diff = (struct DiffKey) { DIFF_KIND_LEADER_PROPOSAL,
+                                                    rep, lead };
     put_task (session->taskmap, &task);
   }
 
@@ -2872,7 +2969,8 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
       .start = task_start_reconcile,
       .cancel = task_cancel_reconcile,
     });
-    task.cls.setop.input_set = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, rep, lead };
+    task.cls.setop.input_set = (struct SetKey) { SET_KIND_LEADER_PROPOSAL, rep,
+                                                 lead };
     task.cls.setop.output_rfn = (struct RfnKey) { RFN_KIND_ECHO, rep, lead };
     put_task (session->taskmap, &task);
   }
@@ -2887,7 +2985,8 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
 
   arrange_peers (&p1, &p2, n);
   task = ((struct TaskEntry) {
-    .key = (struct TaskKey) { PHASE_KIND_GRADECAST_ECHO_GRADE, -1, -1, rep, lead },
+    .key = (struct TaskKey) { PHASE_KIND_GRADECAST_ECHO_GRADE, -1, -1, rep,
+                              lead },
     .step = step,
     .start = task_start_eval_echo
   });
@@ -2911,9 +3010,11 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
       .step = step,
       .start = task_start_reconcile,
       .cancel = task_cancel_reconcile,
-      .key = (struct TaskKey) { PHASE_KIND_GRADECAST_CONFIRM, p1, p2, rep, lead},
+      .key = (struct TaskKey) { PHASE_KIND_GRADECAST_CONFIRM, p1, p2, rep,
+                                lead },
     });
-    task.cls.setop.input_set = (struct SetKey) { SET_KIND_ECHO_RESULT, rep, lead };
+    task.cls.setop.input_set = (struct SetKey) { SET_KIND_ECHO_RESULT, rep,
+                                                 lead };
     task.cls.setop.output_rfn = (struct RfnKey) { RFN_KIND_CONFIRM, rep, lead };
     /* If there was at least one element in the echo round that was
        contested (i.e. it had no n-t majority), then we let the other peers
@@ -2927,13 +3028,15 @@ construct_task_graph_gradecast (struct ConsensusSession *session,
   /* Same round, since step only has local tasks */
   step = create_step (session, round, GNUNET_YES);
 #ifdef GNUNET_EXTRA_LOGGING
-  GNUNET_asprintf (&step->debug_name, "confirm grade leader %u rep %u", lead, rep);
+  GNUNET_asprintf (&step->debug_name, "confirm grade leader %u rep %u", lead,
+                   rep);
 #endif
   step_depend_on (step, prev_step);
 
   task = ((struct TaskEntry) {
     .step = step,
-    .key = (struct TaskKey) { PHASE_KIND_GRADECAST_CONFIRM_GRADE, -1, -1, rep, lead },
+    .key = (struct TaskKey) { PHASE_KIND_GRADECAST_CONFIRM_GRADE, -1, -1, rep,
+                              lead },
     .start = task_start_grade,
   });
   put_task (session->taskmap, &task);
@@ -3034,7 +3137,6 @@ construct_task_graph (struct ConsensusSession *session)
   step = NULL;
 
 
-
   /* Byzantine union */
 
   /* sequential repetitions of the gradecasts */
@@ -3060,11 +3162,12 @@ construct_task_graph (struct ConsensusSession *session)
 
     /* parallel gradecasts */
     for (lead = 0; lead < n; lead++)
-      construct_task_graph_gradecast (session, i, lead, step_rep_start, step_rep_end);
+      construct_task_graph_gradecast (session, i, lead, step_rep_start,
+                                      step_rep_end);
 
     task = ((struct TaskEntry) {
       .step = step_rep_end,
-      .key = (struct TaskKey) { PHASE_KIND_APPLY_REP, -1, -1, i, -1},
+      .key = (struct TaskKey) { PHASE_KIND_APPLY_REP, -1, -1, i, -1 },
       .start = task_start_apply_round,
     });
     put_task (session->taskmap, &task);
@@ -3072,8 +3175,8 @@ construct_task_graph (struct ConsensusSession *session)
     prev_step = step_rep_end;
   }
 
- /* There is no next gradecast round, thus the final
-    start step is the overall end step of the gradecasts */
+  /* There is no next gradecast round, thus the final
+     start step is the overall end step of the gradecasts */
   round += 1;
   step = create_step (session, round, GNUNET_NO);
 #ifdef GNUNET_EXTRA_LOGGING
@@ -3092,7 +3195,6 @@ construct_task_graph (struct ConsensusSession *session)
 }
 
 
-
 /**
  * Check join message.
  *
@@ -3106,8 +3208,8 @@ check_client_join (void *cls,
 {
   uint32_t listed_peers = ntohl (m->num_peers);
 
-  if ( (ntohs (m->header.size) - sizeof (*m)) !=
-       listed_peers * sizeof (struct GNUNET_PeerIdentity))
+  if ((ntohs (m->header.size) - sizeof(*m)) !=
+      listed_peers * sizeof(struct GNUNET_PeerIdentity))
   {
     GNUNET_break (0);
     return GNUNET_SYSERR;
@@ -3141,9 +3243,9 @@ handle_client_join (void *cls,
        NULL != other_session;
        other_session = other_session->next)
   {
-    if ( (other_session != session) &&
-         (0 == GNUNET_CRYPTO_hash_cmp (&session->global_id,
-                                       &other_session->global_id)) )
+    if ((other_session != session) &&
+        (0 == GNUNET_CRYPTO_hash_cmp (&session->global_id,
+                                      &other_session->global_id)))
       break;
   }
 
@@ -3161,9 +3263,9 @@ handle_client_join (void *cls,
               session->num_peers,
               session->local_peer_idx,
               GNUNET_STRINGS_relative_time_to_string
-              (GNUNET_TIME_absolute_get_difference (session->conclude_start,
-                                                    session->conclude_deadline),
-               GNUNET_YES));
+                (GNUNET_TIME_absolute_get_difference (session->conclude_start,
+                                                      session->conclude_deadline),
+                GNUNET_YES));
 
   session->set_listener
     = GNUNET_SET_listen (cfg,
@@ -3223,7 +3325,7 @@ client_insert_done (void *cls)
  */
 static int
 check_client_insert (void *cls,
-                      const struct GNUNET_CONSENSUS_ElementMessage *msg)
+                     const struct GNUNET_CONSENSUS_ElementMessage *msg)
 {
   return GNUNET_OK;
 }
@@ -3251,14 +3353,15 @@ handle_client_insert (void *cls,
     return;
   }
 
-  element_size = ntohs (msg->header.size) - sizeof (struct GNUNET_CONSENSUS_ElementMessage);
-  ce = GNUNET_malloc (sizeof (struct ConsensusElement) + element_size);
+  element_size = ntohs (msg->header.size) - sizeof(struct
+                                                   GNUNET_CONSENSUS_ElementMessage);
+  ce = GNUNET_malloc (sizeof(struct ConsensusElement) + element_size);
   GNUNET_memcpy (&ce[1], &msg[1], element_size);
   ce->payload_type = msg->element_type;
 
   struct GNUNET_SET_Element element = {
     .element_type = GNUNET_BLOCK_TYPE_CONSENSUS_ELEMENT,
-    .size = sizeof (struct ConsensusElement) + element_size,
+    .size = sizeof(struct ConsensusElement) + element_size,
     .data = ce,
   };
 
@@ -3374,8 +3477,8 @@ run (void *cls,
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *c,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *c,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct ConsensusSession *session = GNUNET_new (struct ConsensusSession);
 
@@ -3397,8 +3500,8 @@ client_connect_cb (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *c,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *c,
+                      void *internal_cls)
 {
   struct ConsensusSession *session = internal_cls;
 
@@ -3426,24 +3529,24 @@ client_disconnect_cb (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("consensus",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_fixed_size (client_conclude,
-                          GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_CONCLUDE,
-                          struct GNUNET_MessageHeader,
-                          NULL),
- GNUNET_MQ_hd_var_size (client_insert,
-                        GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_INSERT,
-                        struct GNUNET_CONSENSUS_ElementMessage,
-                        NULL),
- GNUNET_MQ_hd_var_size (client_join,
-                        GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_JOIN,
-                        struct GNUNET_CONSENSUS_JoinMessage,
-                        NULL),
- GNUNET_MQ_handler_end ());
+  ("consensus",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_fixed_size (client_conclude,
+                           GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_CONCLUDE,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_hd_var_size (client_insert,
+                         GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_INSERT,
+                         struct GNUNET_CONSENSUS_ElementMessage,
+                         NULL),
+  GNUNET_MQ_hd_var_size (client_join,
+                         GNUNET_MESSAGE_TYPE_CONSENSUS_CLIENT_JOIN,
+                         struct GNUNET_CONSENSUS_JoinMessage,
+                         NULL),
+  GNUNET_MQ_handler_end ());
 
 /* end of gnunet-service-consensus.c */

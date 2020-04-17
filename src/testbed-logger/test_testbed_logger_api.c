@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -30,7 +30,7 @@
 /**
  * Generic logging shortcut
  */
-#define LOG(kind,...)				\
+#define LOG(kind, ...)                           \
   GNUNET_log (kind, __VA_ARGS__)
 
 /**
@@ -62,19 +62,19 @@ static int result;
       GNUNET_SCHEDULER_cancel (task);     \
       task = NULL;    \
     }                                           \
-  } while (0)
+} while (0)
 
 /**
  * shortcut to exit during failure
  */
 #define FAIL_TEST(cond, ret) do {                               \
-    if (!(cond)) {                                              \
-      GNUNET_break(0);                                          \
+    if (! (cond)) {                                              \
+      GNUNET_break (0);                                          \
       CANCEL_TASK (abort_task);                                 \
       abort_task = GNUNET_SCHEDULER_add_now (&do_abort, NULL);  \
       ret;                                                      \
     }                                                           \
-  } while (0)
+} while (0)
 
 
 /**
@@ -135,7 +135,7 @@ iterator_cb (void *cls,
   if (GNUNET_OK !=
       GNUNET_DISK_file_size (filename,
                              &fs,
-			     GNUNET_NO,
+                             GNUNET_NO,
                              GNUNET_YES))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -171,20 +171,20 @@ flush_comp (void *cls,
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Flush running\n");
   FAIL_TEST (&write_task == cls,
-             return);
+             return );
   FAIL_TEST ((BSIZE * 2) == size,
-             return);
+             return );
   FAIL_TEST (GNUNET_OK ==
              GNUNET_TESTING_peer_stop (peer),
-             return);
+             return );
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Peer stopped, scanning %s\n",
        search_dir);
   FAIL_TEST (GNUNET_SYSERR !=
-	     GNUNET_DISK_directory_scan (search_dir,
-					 &iterator_cb,
-					 NULL),
-	     return);
+             GNUNET_DISK_directory_scan (search_dir,
+                                         &iterator_cb,
+                                         NULL),
+             return );
   shutdown_now ();
 }
 
@@ -199,9 +199,9 @@ do_write (void *cls)
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Write task running\n");
   if (0 == i)
-    write_task = GNUNET_SCHEDULER_add_delayed (TIME_REL_SECS(1),
-					       &do_write,
-					       NULL);
+    write_task = GNUNET_SCHEDULER_add_delayed (TIME_REL_SECS (1),
+                                               &do_write,
+                                               NULL);
   (void) memset (buf, i, BSIZE);
   GNUNET_TESTBED_LOGGER_write (h,
                                buf,
@@ -224,19 +224,19 @@ do_write (void *cls)
  */
 static void
 test_main (void *cls,
-	   const struct GNUNET_CONFIGURATION_Handle *cfg,
+           const struct GNUNET_CONFIGURATION_Handle *cfg,
            struct GNUNET_TESTING_Peer *p)
 {
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Connecting to logger\n");
   FAIL_TEST (NULL != (h = GNUNET_TESTBED_LOGGER_connect (cfg)),
-             return);
+             return );
   FAIL_TEST (GNUNET_OK ==
              GNUNET_CONFIGURATION_get_value_filename (cfg,
                                                       "testbed-logger",
                                                       "dir",
                                                       &search_dir),
-             return);
+             return );
   peer = p;
   write_task = GNUNET_SCHEDULER_add_now (&do_write,
                                          NULL);

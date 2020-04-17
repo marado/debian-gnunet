@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dht/plugin_block_dht.c
@@ -130,7 +130,7 @@ block_plugin_dht_evaluate (void *cls,
   }
   if (NULL == reply_block)
     return GNUNET_BLOCK_EVALUATION_REQUEST_VALID;
-  if (reply_block_size < sizeof (struct GNUNET_MessageHeader))
+  if (reply_block_size < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_break_op (0);
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
@@ -148,7 +148,7 @@ block_plugin_dht_evaluate (void *cls,
     return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
   }
   GNUNET_CRYPTO_hash (&pid,
-                      sizeof (pid),
+                      sizeof(pid),
                       &phash);
   if (GNUNET_YES ==
       GNUNET_BLOCK_GROUP_bf_test_and_set (group,
@@ -171,9 +171,9 @@ block_plugin_dht_evaluate (void *cls,
  */
 static int
 block_plugin_dht_get_key (void *cls,
-			  enum GNUNET_BLOCK_Type type,
+                          enum GNUNET_BLOCK_Type type,
                           const void *block,
-			  size_t block_size,
+                          size_t block_size,
                           struct GNUNET_HashCode *key)
 {
   const struct GNUNET_MessageHeader *msg;
@@ -182,11 +182,11 @@ block_plugin_dht_get_key (void *cls,
 
   if (type != GNUNET_BLOCK_TYPE_DHT_HELLO)
     return GNUNET_SYSERR;
-  if (block_size < sizeof (struct GNUNET_MessageHeader))
+  if (block_size < sizeof(struct GNUNET_MessageHeader))
   {
     GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                      "block-dht",
-                     _("Block not of type %u\n"),
+                     _ ("Block not of type %u\n"),
                      GNUNET_BLOCK_TYPE_DHT_HELLO);
     return GNUNET_NO;
   }
@@ -195,18 +195,18 @@ block_plugin_dht_get_key (void *cls,
   {
     GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                      "block-dht",
-                     _("Size mismatch for block\n"),
+                     _ ("Size mismatch for block\n"),
                      GNUNET_BLOCK_TYPE_DHT_HELLO);
     return GNUNET_NO;
   }
   hello = block;
-  memset (key, 0, sizeof (*key));
+  memset (key, 0, sizeof(*key));
   pid = (struct GNUNET_PeerIdentity *) key;
   if (GNUNET_OK != GNUNET_HELLO_get_id (hello, pid))
   {
     GNUNET_log_from (GNUNET_ERROR_TYPE_ERROR,
                      "block-dht",
-                     _("Block of type %u is malformed\n"),
+                     _ ("Block of type %u is malformed\n"),
                      GNUNET_BLOCK_TYPE_DHT_HELLO);
     return GNUNET_NO;
   }
@@ -220,8 +220,7 @@ block_plugin_dht_get_key (void *cls,
 void *
 libgnunet_plugin_block_dht_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_DHT_HELLO,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -247,5 +246,6 @@ libgnunet_plugin_block_dht_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_dht.c */

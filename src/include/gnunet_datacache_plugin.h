@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -63,7 +63,6 @@ typedef void
  */
 struct GNUNET_DATACACHE_PluginEnvironment
 {
-
   /**
    * Configuration to use.
    */
@@ -89,7 +88,6 @@ struct GNUNET_DATACACHE_PluginEnvironment
    * How much space are we allowed to use?
    */
   unsigned long long quota;
-
 };
 
 
@@ -98,7 +96,6 @@ struct GNUNET_DATACACHE_PluginEnvironment
  */
 struct GNUNET_DATACACHE_PluginFunctions
 {
-
   /**
    * Closure to pass to all plugin functions.
    */
@@ -122,11 +119,11 @@ struct GNUNET_DATACACHE_PluginFunctions
                   const struct GNUNET_HashCode *key,
                   uint32_t xor_distance,
                   size_t size,
-		  const char *data,
+                  const char *data,
                   enum GNUNET_BLOCK_Type type,
-		  struct GNUNET_TIME_Absolute discard_time,
-		  unsigned int path_info_len,
-		  const struct GNUNET_PeerIdentity *path_info);
+                  struct GNUNET_TIME_Absolute discard_time,
+                  unsigned int path_info_len,
+                  const struct GNUNET_PeerIdentity *path_info);
 
   /**
    * Iterate over the results for a particular key
@@ -185,7 +182,6 @@ struct GNUNET_DATACACHE_PluginFunctions
                                unsigned int num_results,
                                GNUNET_DATACACHE_Iterator iter,
                                void *iter_cls);
-
 };
 
 

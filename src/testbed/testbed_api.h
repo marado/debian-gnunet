@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -43,29 +43,29 @@
  */
 enum OperationType
 {
-    /**
-     * Peer create operation
-     */
+  /**
+   * Peer create operation
+   */
   OP_PEER_CREATE,
 
-    /**
-     * Peer start operation
-     */
+  /**
+   * Peer start operation
+   */
   OP_PEER_START,
 
-    /**
-     * Peer stop operation
-     */
+  /**
+   * Peer stop operation
+   */
   OP_PEER_STOP,
 
-    /**
-     * Peer destroy operation
-     */
+  /**
+   * Peer destroy operation
+   */
   OP_PEER_DESTROY,
 
-    /**
-     * Get peer information operation
-     */
+  /**
+   * Get peer information operation
+   */
   OP_PEER_INFO,
 
   /**
@@ -73,19 +73,19 @@ enum OperationType
    */
   OP_PEER_RECONFIGURE,
 
-    /**
-     * Overlay connection operation
-     */
+  /**
+   * Overlay connection operation
+   */
   OP_OVERLAY_CONNECT,
 
-    /**
-     * Forwarded operation
-     */
+  /**
+   * Forwarded operation
+   */
   OP_FORWARDED,
 
-    /**
-     * Link controllers operation
-     */
+  /**
+   * Link controllers operation
+   */
   OP_LINK_CONTROLLERS,
 
   /**
@@ -103,7 +103,6 @@ enum OperationType
    */
   OP_MANAGE_SERVICE
 };
-
 
 
 /**
@@ -269,7 +268,6 @@ struct GNUNET_TESTBED_Controller
    * The operation id counter. use current value and increment
    */
   uint32_t operation_counter;
-
 };
 
 
@@ -308,7 +306,6 @@ struct GNUNET_TESTBED_Barrier
    */
   int echo;
 };
-
 
 
 /**
@@ -394,7 +391,8 @@ GNUNET_TESTBED_compress_cfg_ (const struct GNUNET_CONFIGURATION_Handle *cfg,
 struct GNUNET_TESTBED_HelperInit *
 GNUNET_TESTBED_create_helper_init_msg_ (const char *cname,
                                         const char *hostname,
-                                        const struct GNUNET_CONFIGURATION_Handle *cfg);
+                                        const struct
+                                        GNUNET_CONFIGURATION_Handle *cfg);
 
 
 /**
@@ -412,7 +410,8 @@ GNUNET_TESTBED_create_helper_init_msg_ (const char *cname,
  *           operation
  */
 struct OperationContext *
-GNUNET_TESTBED_forward_operation_msg_ (struct GNUNET_TESTBED_Controller *controller,
+GNUNET_TESTBED_forward_operation_msg_ (struct
+                                       GNUNET_TESTBED_Controller *controller,
                                        uint64_t operation_id,
                                        const struct GNUNET_MessageHeader *msg,
                                        GNUNET_MQ_MessageCallback cc,
@@ -449,7 +448,9 @@ GNUNET_TESTBED_extract_config_ (const struct GNUNET_MessageHeader *msg);
  * @return the error message
  */
 const char *
-GNUNET_TESTBED_parse_error_string_ (const struct GNUNET_TESTBED_OperationFailureEventMessage *msg);
+GNUNET_TESTBED_parse_error_string_ (const struct
+                                    GNUNET_TESTBED_OperationFailureEventMessage
+                                    *msg);
 
 
 /**
@@ -479,7 +480,6 @@ struct GNUNET_TESTBED_Operation *
 GNUNET_TESTBED_get_slave_config_ (void *op_cls,
                                   struct GNUNET_TESTBED_Controller *master,
                                   uint32_t slave_host_id);
-
 
 
 /**
@@ -515,7 +515,6 @@ GNUNET_TESTBED_barrier_init_ (struct GNUNET_TESTBED_Controller *controller,
  */
 void
 GNUNET_TESTBED_barrier_remove_ (struct GNUNET_TESTBED_Barrier *barrier);
-
 
 
 #endif

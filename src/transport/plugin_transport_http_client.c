@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file transport/plugin_transport_http_client.c
@@ -28,18 +28,23 @@
 #if BUILD_HTTPS
 #define PLUGIN_NAME "https_client"
 #define HTTP_STAT_STR_CONNECTIONS "# HTTPS client connections"
-#define LIBGNUNET_PLUGIN_TRANSPORT_INIT libgnunet_plugin_transport_https_client_init
-#define LIBGNUNET_PLUGIN_TRANSPORT_DONE libgnunet_plugin_transport_https_client_done
+#define LIBGNUNET_PLUGIN_TRANSPORT_INIT \
+  libgnunet_plugin_transport_https_client_init
+#define LIBGNUNET_PLUGIN_TRANSPORT_DONE \
+  libgnunet_plugin_transport_https_client_done
 #else
 #define PLUGIN_NAME "http_client"
 #define HTTP_STAT_STR_CONNECTIONS "# HTTP client connections"
-#define LIBGNUNET_PLUGIN_TRANSPORT_INIT libgnunet_plugin_transport_http_client_init
-#define LIBGNUNET_PLUGIN_TRANSPORT_DONE libgnunet_plugin_transport_http_client_done
+#define LIBGNUNET_PLUGIN_TRANSPORT_INIT \
+  libgnunet_plugin_transport_http_client_init
+#define LIBGNUNET_PLUGIN_TRANSPORT_DONE \
+  libgnunet_plugin_transport_http_client_done
 #endif
 
 #define VERBOSE_CURL GNUNET_NO
 
-#define PUT_DISCONNECT_TIMEOUT GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 1)
+#define PUT_DISCONNECT_TIMEOUT GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 1)
 
 #define ENABLE_PUT GNUNET_YES
 #define ENABLE_GET GNUNET_YES
@@ -53,7 +58,7 @@
 #include "gnunet_curl_lib.h"
 
 
-#define LOG(kind,...) GNUNET_log_from(kind, PLUGIN_NAME, __VA_ARGS__)
+#define LOG(kind, ...) GNUNET_log_from (kind, PLUGIN_NAME, __VA_ARGS__)
 
 /**
  * Encapsulation of all of the state of the plugin.
@@ -142,7 +147,6 @@ struct HTTP_Message
    * buffer length
    */
   size_t size;
-
 };
 
 
@@ -327,7 +331,7 @@ struct HTTP_Client_Plugin
   /**
    * curl perform task
    */
-  struct GNUNET_SCHEDULER_Task * client_perform_task;
+  struct GNUNET_SCHEDULER_Task *client_perform_task;
 
   /**
    * Type of proxy server:
@@ -414,7 +418,7 @@ notify_session_monitor (struct HTTP_Client_Plugin *plugin,
 
   if (NULL == plugin->sic)
     return;
-  memset (&info, 0, sizeof (info));
+  memset (&info, 0, sizeof(info));
   info.state = state;
   info.is_inbound = GNUNET_NO;
   info.num_msg_pending = session->msgs_in_queue;
@@ -543,7 +547,8 @@ static void
 client_reschedule_session_timeout (struct GNUNET_ATS_Session *s)
 {
   GNUNET_assert (NULL != s->timeout_task);
-  s->timeout = GNUNET_TIME_relative_to_absolute (GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
+  s->timeout = GNUNET_TIME_relative_to_absolute (
+    GNUNET_CONSTANTS_IDLE_CONNECTION_TIMEOUT);
 }
 
 
@@ -592,7 +597,7 @@ client_schedule (struct HTTP_Client_Plugin *plugin,
   if (mret != CURLM_OK)
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("%s failed at %s:%d: `%s'\n"),
+         _ ("%s failed at %s:%d: `%s'\n"),
          "curl_multi_fdset",
          __FILE__,
          __LINE__,
@@ -610,9 +615,9 @@ client_schedule (struct HTTP_Client_Plugin *plugin,
   if (CURLM_OK != mret)
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-                _("%s failed at %s:%d: `%s'\n"),
-                "curl_multi_timeout", __FILE__, __LINE__,
-                curl_multi_strerror (mret));
+         _ ("%s failed at %s:%d: `%s'\n"),
+         "curl_multi_timeout", __FILE__, __LINE__,
+         curl_multi_strerror (mret));
     return GNUNET_SYSERR;
   }
 
@@ -623,9 +628,9 @@ client_schedule (struct HTTP_Client_Plugin *plugin,
 
   /* Schedule task to run when select is ready to read or write */
   plugin->client_perform_task =
-      GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
-                                   timeout, grs, gws,
-                                   &client_run, plugin);
+    GNUNET_SCHEDULER_add_select (GNUNET_SCHEDULER_PRIORITY_DEFAULT,
+                                 timeout, grs, gws,
+                                 &client_run, plugin);
   GNUNET_NETWORK_fdset_destroy (gws);
   GNUNET_NETWORK_fdset_destroy (grs);
   return GNUNET_OK;
@@ -646,7 +651,7 @@ client_schedule (struct HTTP_Client_Plugin *plugin,
 static int
 client_log (CURL *curl,
             curl_infotype type,
-	    const char *data,
+            const char *data,
             size_t size,
             void *cls)
 {
@@ -663,9 +668,11 @@ client_log (CURL *curl,
   case CURLINFO_TEXT:
     ttype = "TEXT";
     break;
+
   case CURLINFO_HEADER_IN:
     ttype = "HEADER_IN";
     break;
+
   case CURLINFO_HEADER_OUT:
     ttype = "HEADER_OUT";
     /* Overhead*/
@@ -674,6 +681,7 @@ client_log (CURL *curl,
     GNUNET_assert (NULL != ch->s);
     ch->s->overhead += size;
     break;
+
   default:
     ttype = "UNSPECIFIED";
     break;
@@ -695,6 +703,8 @@ client_log (CURL *curl,
        text);
   return 0;
 }
+
+
 #endif
 
 /**
@@ -766,14 +776,14 @@ http_client_plugin_send (void *cls,
        GNUNET_i2s (&s->address->peer));
 
   /* create new message and schedule */
-  msg = GNUNET_malloc (sizeof (struct HTTP_Message) + msgbuf_size);
+  msg = GNUNET_malloc (sizeof(struct HTTP_Message) + msgbuf_size);
   msg->size = msgbuf_size;
   msg->buf = (char *) &msg[1];
   msg->transmit_cont = cont;
   msg->transmit_cont_cls = cont_cls;
   GNUNET_memcpy (msg->buf,
-          msgbuf,
-          msgbuf_size);
+                 msgbuf,
+                 msgbuf_size);
   GNUNET_CONTAINER_DLL_insert_tail (s->msg_head,
                                     s->msg_tail,
                                     msg);
@@ -1060,8 +1070,8 @@ client_send_cb (void *stream,
          s->put.easyhandle);
     s->put_disconnect_task
       = GNUNET_SCHEDULER_add_delayed (PUT_DISCONNECT_TIMEOUT,
-				      &client_put_disconnect,
-				      s);
+                                      &client_put_disconnect,
+                                      s);
     s->put.state = H_PAUSED;
     return CURL_READFUNC_PAUSE;
   }
@@ -1071,8 +1081,8 @@ client_send_cb (void *stream,
   len = GNUNET_MIN (msg->size - msg->pos,
                     size * nmemb);
   GNUNET_memcpy (stream,
-		 &msg->buf[msg->pos],
-		 len);
+                 &msg->buf[msg->pos],
+                 len);
   msg->pos += len;
   if (msg->pos == msg->size)
   {
@@ -1107,7 +1117,7 @@ client_send_cb (void *stream,
                    plugin->protocol);
   GNUNET_STATISTICS_update (plugin->env->stats,
                             stat_txt,
-                            - len,
+                            -len,
                             GNUNET_NO);
   GNUNET_free (stat_txt);
   GNUNET_asprintf (&stat_txt,
@@ -1305,25 +1315,28 @@ client_run (void *cls)
     mret = curl_multi_perform (plugin->curl_multi_handle, &running);
 
     /* Get additional information for all handles */
-    while (NULL != (msg = curl_multi_info_read (plugin->curl_multi_handle, &msgs_left)))
+    while (NULL != (msg = curl_multi_info_read (plugin->curl_multi_handle,
+                                                &msgs_left)))
     {
       CURL *easy_h = msg->easy_handle;
       struct GNUNET_ATS_Session *s = NULL;
-      char *d = NULL; /* curl requires 'd' to be a 'char *' */
+      char *d = NULL;     /* curl requires 'd' to be a 'char *' */
 
       GNUNET_assert (NULL != easy_h);
 
       /* Obtain session from easy handle */
-      GNUNET_assert (CURLE_OK == curl_easy_getinfo (easy_h, CURLINFO_PRIVATE, &d));
+      GNUNET_assert (CURLE_OK == curl_easy_getinfo (easy_h, CURLINFO_PRIVATE,
+                                                    &d));
       s = (struct GNUNET_ATS_Session *) d;
       GNUNET_assert (NULL != s);
 
       if (msg->msg != CURLMSG_DONE)
-        continue; /* This should not happen */
+        continue;     /* This should not happen */
 
       /* Get HTTP response code */
       GNUNET_break (CURLE_OK == curl_easy_getinfo (easy_h,
-          CURLINFO_RESPONSE_CODE, &http_statuscode));
+                                                   CURLINFO_RESPONSE_CODE,
+                                                   &http_statuscode));
 
       if (easy_h == s->put.easyhandle)
         put_request = GNUNET_YES;
@@ -1331,7 +1344,7 @@ client_run (void *cls)
         put_request = GNUNET_NO;
 
       /* Log status of terminated request */
-      if  ((0 != msg->data.result) || (http_statuscode != 200))
+      if ((0 != msg->data.result) || (http_statuscode != 200))
         LOG (GNUNET_ERROR_TYPE_DEBUG,
              "Session %p/request %p: %s request to `%s' ended with status %i reason %i: `%s'\n",
              s, msg->easy_handle,
@@ -1356,11 +1369,11 @@ client_run (void *cls)
       /* Remove information */
       GNUNET_assert (plugin->cur_requests > 0);
       plugin->cur_requests--;
-      LOG  (GNUNET_ERROR_TYPE_INFO,
-          "%s request to %s done, number of requests decreased to %u\n",
-          (GNUNET_YES == put_request) ? "PUT" : "GET",
-          s->url,
-          plugin->cur_requests);
+      LOG (GNUNET_ERROR_TYPE_INFO,
+           "%s request to %s done, number of requests decreased to %u\n",
+           (GNUNET_YES == put_request) ? "PUT" : "GET",
+           s->url,
+           plugin->cur_requests);
 
       if (GNUNET_YES == put_request)
       {
@@ -1368,34 +1381,39 @@ client_run (void *cls)
         s->put.easyhandle = NULL;
         s->put.s = NULL;
 
-        switch (s->put.state) {
-          case H_NOT_CONNECTED:
-          case H_DISCONNECTED:
-          case H_TMP_DISCONNECTED:
-            /* This must not happen */
-            GNUNET_break (0);
-            break;
-          case H_TMP_RECONNECT_REQUIRED:
-            /* Transport called send while disconnect in progess, reconnect */
-            if (GNUNET_SYSERR == client_connect_put (s))
-            {
-              /* Reconnect failed, disconnect session */
-              http_client_plugin_session_disconnect (plugin, s);
-            }
-            break;
-          case H_TMP_DISCONNECTING:
-            /* PUT gets temporarily disconnected */
-            s->put.state = H_TMP_DISCONNECTED;
-            break;
-          case H_PAUSED:
-          case H_CONNECTED:
-            /* PUT gets permanently disconnected */
-            s->put.state = H_DISCONNECTED;
+        switch (s->put.state)
+        {
+        case H_NOT_CONNECTED:
+        case H_DISCONNECTED:
+        case H_TMP_DISCONNECTED:
+          /* This must not happen */
+          GNUNET_break (0);
+          break;
+
+        case H_TMP_RECONNECT_REQUIRED:
+          /* Transport called send while disconnect in progess, reconnect */
+          if (GNUNET_SYSERR == client_connect_put (s))
+          {
+            /* Reconnect failed, disconnect session */
             http_client_plugin_session_disconnect (plugin, s);
-            break;
-          default:
-            GNUNET_break (0);
-            break;
+          }
+          break;
+
+        case H_TMP_DISCONNECTING:
+          /* PUT gets temporarily disconnected */
+          s->put.state = H_TMP_DISCONNECTED;
+          break;
+
+        case H_PAUSED:
+        case H_CONNECTED:
+          /* PUT gets permanently disconnected */
+          s->put.state = H_DISCONNECTED;
+          http_client_plugin_session_disconnect (plugin, s);
+          break;
+
+        default:
+          GNUNET_break (0);
+          break;
         }
       }
       else if (GNUNET_NO == put_request)
@@ -1419,7 +1437,7 @@ client_run (void *cls)
         }
       }
       else
-        GNUNET_break (0); /* Must not happen */
+        GNUNET_break (0);    /* Must not happen */
 
       GNUNET_STATISTICS_set (plugin->env->stats,
                              HTTP_STAT_STR_CONNECTIONS,
@@ -1457,34 +1475,39 @@ open_tcp_stealth_socket_cb (void *clientp,
                   address->protocol);
     if (-1 == ret)
       return CURL_SOCKET_BAD;
-    if ( ( (SOCK_STREAM != address->socktype) ||
-           ( (0 != address->protocol) &&
-             (IPPROTO_TCP != address->protocol))) )
+    if (((SOCK_STREAM != address->socktype) ||
+         ((0 != address->protocol) &&
+          (IPPROTO_TCP != address->protocol))))
       return (curl_socket_t) ret;
-    if ( (0 != setsockopt (ret,
-                           IPPROTO_TCP,
-                           TCP_STEALTH,
-                           &s->address->peer,
-                           sizeof (struct GNUNET_PeerIdentity))) )
+    if ((0 != setsockopt (ret,
+                          IPPROTO_TCP,
+                          TCP_STEALTH,
+                          &s->address->peer,
+                          sizeof(struct GNUNET_PeerIdentity))))
     {
       GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
-                  _("TCP_STEALTH not supported on this platform.\n"));
+                  _ ("TCP_STEALTH not supported on this platform.\n"));
       (void) close (ret);
       return CURL_SOCKET_BAD;
     }
     return (curl_socket_t) ret;
+
   case CURLSOCKTYPE_ACCEPT:
     GNUNET_break (0);
     return CURL_SOCKET_BAD;
     break;
+
   case CURLSOCKTYPE_LAST:
     GNUNET_break (0);
     return CURL_SOCKET_BAD;
+
   default:
     GNUNET_break (0);
     return CURL_SOCKET_BAD;
   }
 }
+
+
 #endif
 
 
@@ -1537,7 +1560,8 @@ client_connect_get (struct GNUNET_ATS_Session *s)
                     &s->get);
 #endif
 #if BUILD_HTTPS
-  curl_easy_setopt (s->get.easyhandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+  curl_easy_setopt (s->get.easyhandle, CURLOPT_SSLVERSION,
+                    CURL_SSLVERSION_TLSv1);
   {
     if (HTTP_OPTIONS_VERIFY_CERTIFICATE ==
         (options & HTTP_OPTIONS_VERIFY_CERTIFICATE))
@@ -1605,7 +1629,7 @@ client_connect_get (struct GNUNET_ATS_Session *s)
     curl_easy_setopt (s->get.easyhandle,
                       CURLOPT_URL,
                       url);
-    GNUNET_free(url);
+    GNUNET_free (url);
   }
   else
   {
@@ -1633,7 +1657,8 @@ client_connect_get (struct GNUNET_ATS_Session *s)
                     CURLOPT_PRIVATE, s);
   curl_easy_setopt (s->get.easyhandle,
                     CURLOPT_CONNECTTIMEOUT_MS,
-                    (long) (HTTP_CLIENT_NOT_VALIDATED_TIMEOUT.rel_value_us / 1000LL));
+                    (long) (HTTP_CLIENT_NOT_VALIDATED_TIMEOUT.rel_value_us
+                            / 1000LL));
   curl_easy_setopt (s->get.easyhandle, CURLOPT_BUFFERSIZE,
                     2 * GNUNET_MAX_MESSAGE_SIZE);
 #if CURL_TCP_NODELAY
@@ -1810,7 +1835,8 @@ client_connect_put (struct GNUNET_ATS_Session *s)
                     s);
   curl_easy_setopt (s->put.easyhandle,
                     CURLOPT_CONNECTTIMEOUT_MS,
-                    (long) (HTTP_CLIENT_NOT_VALIDATED_TIMEOUT.rel_value_us / 1000LL));
+                    (long) (HTTP_CLIENT_NOT_VALIDATED_TIMEOUT.rel_value_us
+                            / 1000LL));
   curl_easy_setopt (s->put.easyhandle, CURLOPT_BUFFERSIZE,
                     2 * GNUNET_MAX_MESSAGE_SIZE);
 #if CURL_TCP_NODELAY
@@ -1832,9 +1858,9 @@ client_connect_put (struct GNUNET_ATS_Session *s)
   s->put.state = H_CONNECTED;
   s->plugin->cur_requests++;
 
-  LOG  (GNUNET_ERROR_TYPE_INFO,
-      "PUT request `%s' established, number of requests increased to %u\n",
-      s->url, s->plugin->cur_requests);
+  LOG (GNUNET_ERROR_TYPE_INFO,
+       "PUT request `%s' established, number of requests increased to %u\n",
+       s->url, s->plugin->cur_requests);
 
   return GNUNET_OK;
 }
@@ -1854,13 +1880,13 @@ client_connect (struct GNUNET_ATS_Session *s)
 
   /* create url */
   if (NULL ==
-      http_common_plugin_address_to_string(plugin->protocol,
-                                           s->address->address,
-                                           s->address->address_length))
+      http_common_plugin_address_to_string (plugin->protocol,
+                                            s->address->address,
+                                            s->address->address_length))
   {
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "Invalid address peer `%s'\n",
-         GNUNET_i2s(&s->address->peer));
+         GNUNET_i2s (&s->address->peer));
     return GNUNET_SYSERR;
   }
 
@@ -1936,7 +1962,8 @@ http_client_plugin_get_network (void *cls,
  */
 static enum GNUNET_NetworkType
 http_client_plugin_get_network_for_address (void *cls,
-                                            const struct GNUNET_HELLO_Address *address)
+                                            const struct
+                                            GNUNET_HELLO_Address *address)
 {
   struct HTTP_Client_Plugin *plugin = cls;
 
@@ -1977,7 +2004,7 @@ client_session_timeout (void *cls)
                                                GNUNET_YES));
   GNUNET_assert (GNUNET_OK ==
                  http_client_plugin_session_disconnect (s->plugin,
-                                                 s));
+                                                        s));
 }
 
 
@@ -2030,11 +2057,11 @@ http_client_plugin_get_session (void *cls,
     GNUNET_assert (NULL != sa);
     if (AF_INET == sa->sa_family)
     {
-      salen = sizeof (struct sockaddr_in);
+      salen = sizeof(struct sockaddr_in);
     }
     else if (AF_INET6 == sa->sa_family)
     {
-      salen = sizeof (struct sockaddr_in6);
+      salen = sizeof(struct sockaddr_in6);
     }
     net_type = plugin->env->get_address_type (plugin->env->cls, sa, salen);
     GNUNET_free (sa);
@@ -2057,9 +2084,9 @@ http_client_plugin_get_session (void *cls,
 
   s->put.state = H_NOT_CONNECTED;
   s->timeout = GNUNET_TIME_relative_to_absolute (HTTP_CLIENT_SESSION_TIMEOUT);
-  s->timeout_task =  GNUNET_SCHEDULER_add_delayed (HTTP_CLIENT_SESSION_TIMEOUT,
-                                                   &client_session_timeout,
-                                                   s);
+  s->timeout_task = GNUNET_SCHEDULER_add_delayed (HTTP_CLIENT_SESSION_TIMEOUT,
+                                                  &client_session_timeout,
+                                                  s);
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Created new session %p for `%s' address `%s''\n",
        s,
@@ -2079,8 +2106,9 @@ http_client_plugin_get_session (void *cls,
     LOG (GNUNET_ERROR_TYPE_ERROR,
          "Cannot connect to peer `%s' address `%s''\n",
          http_common_plugin_address_to_string (plugin->protocol,
-             s->address->address, s->address->address_length),
-             GNUNET_i2s (&s->address->peer));
+                                               s->address->address,
+                                               s->address->address_length),
+         GNUNET_i2s (&s->address->peer));
     client_delete_session (s);
     return NULL;
   }
@@ -2109,7 +2137,8 @@ client_start (struct HTTP_Client_Plugin *plugin)
   if (NULL == plugin->curl_multi_handle)
   {
     LOG (GNUNET_ERROR_TYPE_ERROR,
-         _("Could not initialize curl multi handle, failed to start %s plugin!\n"),
+         _ (
+           "Could not initialize curl multi handle, failed to start %s plugin!\n"),
          plugin->name);
     return GNUNET_SYSERR;
   }
@@ -2158,7 +2187,7 @@ LIBGNUNET_PLUGIN_TRANSPORT_DONE (void *cls)
     return NULL;
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Shutting down plugin `%s'\n"),
+       _ ("Shutting down plugin `%s'\n"),
        plugin->name);
   GNUNET_CONTAINER_multipeermap_iterate (plugin->sessions,
                                          &destroy_session_cb,
@@ -2175,7 +2204,7 @@ LIBGNUNET_PLUGIN_TRANSPORT_DONE (void *cls)
   }
   curl_global_cleanup ();
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Shutdown for plugin `%s' complete\n"),
+       _ ("Shutdown for plugin `%s' complete\n"),
        plugin->name);
   GNUNET_CONTAINER_multipeermap_destroy (plugin->sessions);
   GNUNET_free_non_null (plugin->proxy_hostname);
@@ -2209,7 +2238,7 @@ client_configure_plugin (struct HTTP_Client_Plugin *plugin)
   plugin->max_requests = max_requests;
 
   LOG (GNUNET_ERROR_TYPE_DEBUG,
-       _("Maximum number of requests is %u\n"),
+       _ ("Maximum number of requests is %u\n"),
        plugin->max_requests);
 
   /* Read proxy configuration */
@@ -2255,20 +2284,21 @@ client_configure_plugin (struct HTTP_Client_Plugin *plugin)
     {
       GNUNET_STRINGS_utf8_toupper (proxy_type, proxy_type);
 
-      if (0 == strcmp(proxy_type, "HTTP"))
+      if (0 == strcmp (proxy_type, "HTTP"))
         plugin->proxytype = CURLPROXY_HTTP;
-      else if (0 == strcmp(proxy_type, "SOCKS4"))
+      else if (0 == strcmp (proxy_type, "SOCKS4"))
         plugin->proxytype = CURLPROXY_SOCKS4;
-      else if (0 == strcmp(proxy_type, "SOCKS5"))
+      else if (0 == strcmp (proxy_type, "SOCKS5"))
         plugin->proxytype = CURLPROXY_SOCKS5;
-      else if (0 == strcmp(proxy_type, "SOCKS4A"))
+      else if (0 == strcmp (proxy_type, "SOCKS4A"))
         plugin->proxytype = CURLPROXY_SOCKS4A;
-      else if (0 == strcmp(proxy_type, "SOCKS5_HOSTNAME "))
-        plugin->proxytype = CURLPROXY_SOCKS5_HOSTNAME ;
+      else if (0 == strcmp (proxy_type, "SOCKS5_HOSTNAME "))
+        plugin->proxytype = CURLPROXY_SOCKS5_HOSTNAME;
       else
       {
         LOG (GNUNET_ERROR_TYPE_ERROR,
-             _("Invalid proxy type: `%s', disabling proxy! Check configuration!\n"),
+             _ (
+               "Invalid proxy type: `%s', disabling proxy! Check configuration!\n"),
              proxy_type);
 
         GNUNET_free (proxy_type);
@@ -2337,7 +2367,8 @@ http_client_plugin_address_to_string (void *cls,
  */
 static void
 http_client_plugin_update_session_timeout (void *cls,
-                                           const struct GNUNET_PeerIdentity *peer,
+                                           const struct
+                                           GNUNET_PeerIdentity *peer,
                                            struct GNUNET_ATS_Session *session)
 {
   client_reschedule_session_timeout (session);
@@ -2370,8 +2401,8 @@ http_client_plugin_update_inbound_delay (void *cls,
     GNUNET_SCHEDULER_cancel (s->recv_wakeup_task);
     s->recv_wakeup_task
       = GNUNET_SCHEDULER_add_delayed (delay,
-				      &client_wake_up,
-				      s);
+                                      &client_wake_up,
+                                      s);
   }
 }
 
@@ -2500,5 +2531,6 @@ LIBGNUNET_PLUGIN_TRANSPORT_INIT (void *cls)
   }
   return api;
 }
+
 
 /* end of plugin_transport_http_client.c */

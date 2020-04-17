@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file block/plugin_block_template.c
@@ -69,7 +69,8 @@ block_plugin_template_create_group (void *cls,
   guard = va_arg (va, const char *);
   if (0 == strcmp (guard,
                    "seen-set-size"))
-    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned int),
+    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned
+                                                                   int),
                                                            BLOOMFILTER_K);
   else if (0 == strcmp (guard,
                         "filter-size"))
@@ -149,7 +150,7 @@ block_plugin_template_get_key (void *cls,
                                enum GNUNET_BLOCK_Type type,
                                const void *block,
                                size_t block_size,
-			       struct GNUNET_HashCode *key)
+                               struct GNUNET_HashCode *key)
 {
   return GNUNET_SYSERR;
 }
@@ -163,8 +164,7 @@ block_plugin_template_get_key (void *cls,
 void *
 libgnunet_plugin_block_template_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     /* FIXME: insert supported block types here */
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -190,5 +190,6 @@ libgnunet_plugin_block_template_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_template.c */

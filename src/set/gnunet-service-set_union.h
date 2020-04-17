@@ -1,4 +1,3 @@
-
 /*
       This file is part of GNUnet
       Copyright (C) 2013-2017 GNUnet e.V.
@@ -12,12 +11,12 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file set/gnunet-service-set_union.h
  * @brief two-peer set operations
@@ -152,7 +151,6 @@ handle_union_p2p_inquiry (void *cls,
                           const struct InquiryMessage *msg);
 
 
-
 /**
  * Handle a request for full set transmission.
  *
@@ -162,7 +160,6 @@ handle_union_p2p_inquiry (void *cls,
 void
 handle_union_p2p_request_full (void *cls,
                                const struct GNUNET_MessageHeader *mh);
-
 
 
 /**

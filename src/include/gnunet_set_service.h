@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -52,7 +52,7 @@ extern "C"
 /**
  * Maximum size of a context message for set operation requests.
  */
-#define GNUNET_SET_CONTEXT_MESSAGE_MAX_SIZE ((1<<16) - 1024)
+#define GNUNET_SET_CONTEXT_MESSAGE_MAX_SIZE ((1 << 16) - 1024)
 
 
 /**
@@ -151,7 +151,6 @@ enum GNUNET_SET_Status
    */
   GNUNET_SET_STATUS_DONE
 };
-
 
 
 /**
@@ -258,7 +257,8 @@ struct GNUNET_SET_Option
   /**
    * Value for the option, only used with some options.
    */
-  union {
+  union
+  {
     uint64_t num;
   } v;
 };
@@ -321,7 +321,6 @@ typedef void
                               const struct GNUNET_PeerIdentity *other_peer,
                               const struct GNUNET_MessageHeader *context_msg,
                               struct GNUNET_SET_Request *request);
-
 
 
 typedef void

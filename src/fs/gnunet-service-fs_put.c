@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file fs/gnunet-service-fs_put.c
@@ -31,7 +31,8 @@
 /**
  * How often do we at most PUT content into the DHT?
  */
-#define MAX_DHT_PUT_FREQ GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_SECONDS, 5)
+#define MAX_DHT_PUT_FREQ GNUNET_TIME_relative_multiply ( \
+    GNUNET_TIME_UNIT_SECONDS, 5)
 
 /**
  * How many replicas do we try to create per PUT?
@@ -44,7 +45,6 @@
  */
 struct PutOperator
 {
-
   /**
    * Request to datastore for DHT PUTs (or NULL).
    */
@@ -63,7 +63,7 @@ struct PutOperator
   /**
    * ID of task that collects blocks for DHT PUTs.
    */
-  struct GNUNET_SCHEDULER_Task * dht_task;
+  struct GNUNET_SCHEDULER_Task *dht_task;
 
   /**
    * How many entires with zero anonymity of our type do we currently
@@ -88,8 +88,8 @@ struct PutOperator
  * of block that we're putting into the DHT).
  */
 static struct PutOperator operators[] = {
-  {NULL, GNUNET_BLOCK_TYPE_FS_UBLOCK, 0, 0, 0},
-  {NULL, GNUNET_BLOCK_TYPE_ANY, 0, 0, 0}
+  { NULL, GNUNET_BLOCK_TYPE_FS_UBLOCK, 0, 0, 0 },
+  { NULL, GNUNET_BLOCK_TYPE_ANY, 0, 0, 0 }
 };
 
 
@@ -116,8 +116,8 @@ schedule_next_put (struct PutOperator *po)
   if (po->zero_anonymity_count_estimate > 0)
   {
     delay =
-        GNUNET_TIME_relative_divide (GNUNET_DHT_DEFAULT_REPUBLISH_FREQUENCY,
-                                     po->zero_anonymity_count_estimate);
+      GNUNET_TIME_relative_divide (GNUNET_DHT_DEFAULT_REPUBLISH_FREQUENCY,
+                                   po->zero_anonymity_count_estimate);
     delay = GNUNET_TIME_relative_min (delay, MAX_DHT_PUT_FREQ);
   }
   else
@@ -127,7 +127,7 @@ schedule_next_put (struct PutOperator *po)
     delay = GNUNET_TIME_relative_multiply (GNUNET_TIME_UNIT_MINUTES, 5);
   }
   po->dht_task =
-      GNUNET_SCHEDULER_add_delayed (delay, &gather_dht_put_blocks, po);
+    GNUNET_SCHEDULER_add_delayed (delay, &gather_dht_put_blocks, po);
 }
 
 
@@ -178,7 +178,7 @@ delay_dht_put_task (void *cls)
  */
 static void
 process_dht_put_content (void *cls,
-                         const struct GNUNET_HashCode * key,
+                         const struct GNUNET_HashCode *key,
                          size_t size,
                          const void *data,
                          enum GNUNET_BLOCK_Type type,
@@ -231,13 +231,13 @@ gather_dht_put_blocks (void *cls)
 
   po->dht_task = NULL;
   po->dht_qe =
-      GNUNET_DATASTORE_get_zero_anonymity (GSF_dsh,
-                                           po->next_uid,
-                                           0,
-                                           UINT_MAX,
-                                           po->dht_put_type,
-                                           &process_dht_put_content,
-                                           po);
+    GNUNET_DATASTORE_get_zero_anonymity (GSF_dsh,
+                                         po->next_uid,
+                                         0,
+                                         UINT_MAX,
+                                         po->dht_put_type,
+                                         &process_dht_put_content,
+                                         po);
   if (NULL == po->dht_qe)
     po->dht_task = GNUNET_SCHEDULER_add_now (&delay_dht_put_task, po);
 }
@@ -255,7 +255,7 @@ GSF_put_init_ ()
   while (operators[i].dht_put_type != GNUNET_BLOCK_TYPE_ANY)
   {
     operators[i].dht_task =
-        GNUNET_SCHEDULER_add_now (&gather_dht_put_blocks, &operators[i]);
+      GNUNET_SCHEDULER_add_now (&gather_dht_put_blocks, &operators[i]);
     i++;
   }
 }
@@ -291,5 +291,6 @@ GSF_put_done_ ()
     i++;
   }
 }
+
 
 /* end of gnunet-service-fs_put.c */

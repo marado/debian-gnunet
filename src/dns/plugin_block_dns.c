@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file dns/plugin_block_dns.c
@@ -67,7 +67,8 @@ block_plugin_dns_create_group (void *cls,
   guard = va_arg (va, const char *);
   if (0 == strcmp (guard,
                    "seen-set-size"))
-    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned int),
+    bf_size = GNUNET_BLOCK_GROUP_compute_bloomfilter_size (va_arg (va, unsigned
+                                                                   int),
                                                            BLOOMFILTER_K);
   else if (0 == strcmp (guard,
                         "filter-size"))
@@ -110,7 +111,7 @@ block_plugin_dns_evaluate (void *cls,
                            enum GNUNET_BLOCK_Type type,
                            struct GNUNET_BLOCK_Group *bg,
                            enum GNUNET_BLOCK_EvaluationOptions eo,
-                           const struct GNUNET_HashCode * query,
+                           const struct GNUNET_HashCode *query,
                            const void *xquery,
                            size_t xquery_size,
                            const void *reply_block,
@@ -128,7 +129,7 @@ block_plugin_dns_evaluate (void *cls,
     if (NULL == reply_block)
       return GNUNET_BLOCK_EVALUATION_REQUEST_VALID;
 
-    if (sizeof (struct GNUNET_DNS_Advertisement) != reply_block_size)
+    if (sizeof(struct GNUNET_DNS_Advertisement) != reply_block_size)
     {
       GNUNET_break_op (0);
       return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
@@ -136,18 +137,19 @@ block_plugin_dns_evaluate (void *cls,
     ad = reply_block;
 
     if (ntohl (ad->purpose.size) !=
-        sizeof (struct GNUNET_DNS_Advertisement) -
-        sizeof (struct GNUNET_CRYPTO_EddsaSignature))
+        sizeof(struct GNUNET_DNS_Advertisement)
+        - sizeof(struct GNUNET_CRYPTO_EddsaSignature))
     {
       GNUNET_break_op (0);
       return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
     }
     if (0 ==
         GNUNET_TIME_absolute_get_remaining (GNUNET_TIME_absolute_ntoh
-                                            (ad->expiration_time)).rel_value_us)
+                                              (ad->expiration_time)).
+        rel_value_us)
     {
       GNUNET_log (GNUNET_ERROR_TYPE_DEBUG,
-		  "DNS advertisement has expired\n");
+                  "DNS advertisement has expired\n");
       return GNUNET_BLOCK_EVALUATION_RESULT_INVALID;
     }
     if (GNUNET_OK !=
@@ -167,6 +169,7 @@ block_plugin_dns_evaluate (void *cls,
                                             &phash))
       return GNUNET_BLOCK_EVALUATION_OK_DUPLICATE;
     return GNUNET_BLOCK_EVALUATION_OK_MORE;
+
   default:
     return GNUNET_BLOCK_EVALUATION_TYPE_NOT_SUPPORTED;
   }
@@ -186,9 +189,9 @@ block_plugin_dns_evaluate (void *cls,
  */
 static int
 block_plugin_dns_get_key (void *cls,
-			  enum GNUNET_BLOCK_Type type,
+                          enum GNUNET_BLOCK_Type type,
                           const void *block,
-			  size_t block_size,
+                          size_t block_size,
                           struct GNUNET_HashCode *key)
 {
   /* we cannot extract a key from a block of this type */
@@ -202,8 +205,7 @@ block_plugin_dns_get_key (void *cls,
 void *
 libgnunet_plugin_block_dns_init (void *cls)
 {
-  static enum GNUNET_BLOCK_Type types[] =
-  {
+  static enum GNUNET_BLOCK_Type types[] = {
     GNUNET_BLOCK_TYPE_DNS,
     GNUNET_BLOCK_TYPE_ANY       /* end of list */
   };
@@ -229,5 +231,6 @@ libgnunet_plugin_block_dns_done (void *cls)
   GNUNET_free (api);
   return NULL;
 }
+
 
 /* end of plugin_block_dns.c */

@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @author Christian Grothoff
@@ -57,10 +57,10 @@ struct GNUNET_NAT_AUTO_Test;
  */
 struct GNUNET_NAT_AUTO_Test *
 GNUNET_NAT_AUTO_test_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			    uint8_t proto,
-			    const char *section_name,
-			    GNUNET_NAT_TestCallback report,
-			    void *report_cls);
+                            uint8_t proto,
+                            const char *section_name,
+                            GNUNET_NAT_TestCallback report,
+                            void *report_cls);
 
 
 /**
@@ -99,9 +99,10 @@ GNUNET_NAT_AUTO_status2string (enum GNUNET_NAT_StatusCode err);
  */
 typedef void
 (*GNUNET_NAT_AUTO_AutoResultCallback)(void *cls,
-				      const struct GNUNET_CONFIGURATION_Handle *diff,
-				      enum GNUNET_NAT_StatusCode result,
-				      enum GNUNET_NAT_Type type);
+                                      const struct
+                                      GNUNET_CONFIGURATION_Handle *diff,
+                                      enum GNUNET_NAT_StatusCode result,
+                                      enum GNUNET_NAT_Type type);
 
 
 /**
@@ -115,8 +116,8 @@ typedef void
  */
 struct GNUNET_NAT_AUTO_AutoHandle *
 GNUNET_NAT_AUTO_autoconfig_start (const struct GNUNET_CONFIGURATION_Handle *cfg,
-				  GNUNET_NAT_AUTO_AutoResultCallback cb,
-				  void *cb_cls);
+                                  GNUNET_NAT_AUTO_AutoResultCallback cb,
+                                  void *cb_cls);
 
 
 /**

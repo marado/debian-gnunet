@@ -16,7 +16,7 @@
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file cadet/gnunet-service-cadet.c
@@ -46,7 +46,7 @@
 #include "gnunet-service-cadet_peer.h"
 #include "gnunet-service-cadet_paths.h"
 
-#define LOG(level, ...) GNUNET_log (level,__VA_ARGS__)
+#define LOG(level, ...) GNUNET_log (level, __VA_ARGS__)
 
 
 /**
@@ -222,7 +222,7 @@ GSC_2s (struct CadetClient *c)
   static char buf[32];
 
   GNUNET_snprintf (buf,
-                   sizeof (buf),
+                   sizeof(buf),
                    "Client(%u)",
                    c->id);
   return buf;
@@ -299,7 +299,8 @@ GSC_bind (struct CadetClient *c,
   ccn = client_get_next_ccn (c);
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap32_put (c->channels,
-                                                      ntohl (ccn.channel_of_client),
+                                                      ntohl (
+                                                        ccn.channel_of_client),
                                                       ch,
                                                       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
   LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -455,7 +456,7 @@ bind_loose_channel (void *cls,
 
   GCCH_bind (ch,
              op->c,
-	     &op->port);
+             &op->port);
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap_remove (loose_channels,
                                                        &op->h_port,
@@ -486,13 +487,13 @@ handle_port_open (void *cls,
        GSC_2s (c));
   if (NULL == c->ports)
     c->ports = GNUNET_CONTAINER_multihashmap_create (4,
-						     GNUNET_NO);
+                                                     GNUNET_NO);
   op = GNUNET_new (struct OpenPort);
   op->c = c;
   op->port = pmsg->port;
   GCCH_hash_port (&op->h_port,
-		  &pmsg->port,
-		  &my_full_id);
+                  &pmsg->port,
+                  &my_full_id);
   if (GNUNET_OK !=
       GNUNET_CONTAINER_multihashmap_put (c->ports,
                                          &op->port,
@@ -543,7 +544,7 @@ handle_port_close (void *cls,
     return;
   }
   op = GNUNET_CONTAINER_multihashmap_get (c->ports,
-					  &pmsg->port);
+                                          &pmsg->port);
   if (NULL == op)
   {
     GNUNET_break (0);
@@ -551,9 +552,9 @@ handle_port_close (void *cls,
     return;
   }
   GNUNET_assert (GNUNET_YES ==
-		 GNUNET_CONTAINER_multihashmap_remove (c->ports,
-						       &op->port,
-						       op));
+                 GNUNET_CONTAINER_multihashmap_remove (c->ports,
+                                                       &op->port,
+                                                       op));
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap_remove (open_ports,
                                                        &op->h_port,
@@ -613,7 +614,9 @@ handle_channel_create (void *cls,
   }
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap32_put (c->channels,
-                                                      ntohl (tcm->ccn.channel_of_client),
+                                                      ntohl (
+                                                        tcm->ccn.
+                                                        channel_of_client),
                                                       ch,
                                                       GNUNET_CONTAINER_MULTIHASHMAPOPTION_UNIQUE_ONLY));
 
@@ -629,7 +632,8 @@ handle_channel_create (void *cls,
  */
 static void
 handle_channel_destroy (void *cls,
-                        const struct GNUNET_CADET_LocalChannelDestroyMessage *msg)
+                        const struct
+                        GNUNET_CADET_LocalChannelDestroyMessage *msg)
 {
   struct CadetClient *c = cls;
   struct CadetChannel *ch;
@@ -642,18 +646,20 @@ handle_channel_destroy (void *cls,
        Can happen if the other side went down at the same time.*/
     LOG (GNUNET_ERROR_TYPE_DEBUG,
          "%s tried to destroy unknown channel %X\n",
-         GSC_2s(c),
+         GSC_2s (c),
          (uint32_t) ntohl (msg->ccn.channel_of_client));
     GNUNET_SERVICE_client_continue (c->client);
     return;
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "%s is destroying %s\n",
-       GSC_2s(c),
+       GSC_2s (c),
        GCCH_2s (ch));
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap32_remove (c->channels,
-                                                         ntohl (msg->ccn.channel_of_client),
+                                                         ntohl (
+                                                           msg->ccn.
+                                                           channel_of_client),
                                                          ch));
   GCCH_channel_local_destroy (ch,
                               c,
@@ -682,20 +688,18 @@ check_local_data (void *cls,
      ONE payload item or multiple? Seems current cadet_api
      at least in theory allows more than one. Next-gen
      cadet_api will likely no more, so we could then
-     simplify this mess again. */
-  /* Sanity check for message size */
-  payload_size = ntohs (msg->header.size) - sizeof (*msg);
+     simplify this mess again. *//* Sanity check for message size */payload_size = ntohs (msg->header.size) - sizeof(*msg);
   buf = (const char *) &msg[1];
-  while (payload_size >= sizeof (struct GNUNET_MessageHeader))
+  while (payload_size >= sizeof(struct GNUNET_MessageHeader))
   {
     /* need to memcpy() for alignment */
     GNUNET_memcpy (&pa,
                    buf,
-                   sizeof (pa));
+                   sizeof(pa));
     payload_claimed_size = ntohs (pa.size);
-    if ( (payload_size < payload_claimed_size) ||
-         (payload_claimed_size < sizeof (struct GNUNET_MessageHeader)) ||
-         (GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE < payload_claimed_size) )
+    if ((payload_size < payload_claimed_size) ||
+        (payload_claimed_size < sizeof(struct GNUNET_MessageHeader)) ||
+        (GNUNET_CONSTANTS_MAX_CADET_MESSAGE_SIZE < payload_claimed_size))
     {
       GNUNET_break (0);
       LOG (GNUNET_ERROR_TYPE_DEBUG,
@@ -745,7 +749,7 @@ handle_local_data (void *cls,
     GNUNET_SERVICE_client_continue (c->client);
     return;
   }
-  payload_size = ntohs (msg->header.size) - sizeof (*msg);
+  payload_size = ntohs (msg->header.size) - sizeof(*msg);
   GNUNET_STATISTICS_update (stats,
                             "# payload received from clients",
                             payload_size,
@@ -796,7 +800,7 @@ handle_local_ack (void *cls,
   }
   LOG (GNUNET_ERROR_TYPE_DEBUG,
        "Got a local ACK from %s for %s\n",
-       GSC_2s(c),
+       GSC_2s (c),
        GCCH_2s (ch));
   GCCH_handle_local_ack (ch,
                          msg->ccn);
@@ -828,7 +832,7 @@ get_all_peers_iterator (void *cls,
   msg->paths = htons (GCP_count_paths (p));
   msg->tunnel = htons (NULL != GCP_get_tunnel (p,
                                                GNUNET_NO));
-  msg->best_path_length = htonl (0); // FIXME: get length of shortest known path!
+  msg->best_path_length = htonl (0);  // FIXME: get length of shortest known path!
   GNUNET_MQ_send (c->mq,
                   env);
   return GNUNET_YES;
@@ -882,15 +886,16 @@ path_info_iterator (void *cls,
   unsigned int path_length;
 
   path_length = GCPP_get_length (path);
-  path_size = sizeof (struct GNUNET_PeerIdentity) * path_length;
-  if (sizeof (*resp) + path_size > UINT16_MAX)
+  path_size = sizeof(struct GNUNET_PeerIdentity) * path_length;
+  if (sizeof(*resp) + path_size > UINT16_MAX)
   {
     /* try just giving the relevant path */
-    path_length = GNUNET_MIN ((UINT16_MAX - sizeof (*resp)) / sizeof (struct GNUNET_PeerIdentity),
+    path_length = GNUNET_MIN ((UINT16_MAX - sizeof(*resp)) / sizeof(struct
+                                                                    GNUNET_PeerIdentity),
                               off);
-    path_size = sizeof (struct GNUNET_PeerIdentity) * path_length;
+    path_size = sizeof(struct GNUNET_PeerIdentity) * path_length;
   }
-  if (sizeof (*resp) + path_size > UINT16_MAX)
+  if (sizeof(*resp) + path_size > UINT16_MAX)
   {
     LOG (GNUNET_ERROR_TYPE_WARNING,
          "Path of %u entries is too long for info message\n",
@@ -934,8 +939,8 @@ handle_show_path (void *cls,
                GNUNET_NO);
   if (NULL != p)
     GCP_iterate_indirect_paths (p,
-				&path_info_iterator,
-				c->mq);
+                                &path_info_iterator,
+                                c->mq);
   env = GNUNET_MQ_msg (resp,
                        GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_PATH_END);
   GNUNET_MQ_send (c->mq,
@@ -1014,8 +1019,8 @@ handle_info_tunnels (void *cls,
  */
 static void *
 client_connect_cb (void *cls,
-		   struct GNUNET_SERVICE_Client *client,
-		   struct GNUNET_MQ_Handle *mq)
+                   struct GNUNET_SERVICE_Client *client,
+                   struct GNUNET_MQ_Handle *mq)
 {
   struct CadetClient *c;
 
@@ -1061,7 +1066,8 @@ GSC_handle_remote_channel_destroy (struct CadetClient *c,
                       env);
   GNUNET_assert (GNUNET_YES ==
                  GNUNET_CONTAINER_multihashmap32_remove (c->channels,
-                                                         ntohl (ccn.channel_of_client),
+                                                         ntohl (
+                                                           ccn.channel_of_client),
                                                          ch));
 }
 
@@ -1160,8 +1166,8 @@ client_release_ports (void *cls,
  */
 static void
 client_disconnect_cb (void *cls,
-		      struct GNUNET_SERVICE_Client *client,
-		      void *internal_cls)
+                      struct GNUNET_SERVICE_Client *client,
+                      void *internal_cls)
 {
   struct CadetClient *c = internal_cls;
 
@@ -1192,8 +1198,8 @@ client_disconnect_cb (void *cls,
                             -1,
                             GNUNET_NO);
   GNUNET_free (c);
-  if ( (NULL == clients_head) &&
-       (GNUNET_YES == shutting_down) )
+  if ((NULL == clients_head) &&
+      (GNUNET_YES == shutting_down))
     shutdown_rest ();
 }
 
@@ -1275,7 +1281,7 @@ run (void *cls,
   stats = GNUNET_STATISTICS_create ("cadet",
                                     c);
   GNUNET_SCHEDULER_add_shutdown (&shutdown_task,
-				 NULL);
+                                 NULL);
   ats_ch = GNUNET_ATS_connectivity_init (c);
   /* FIXME: optimize code to allow GNUNET_YES here! */
   open_ports = GNUNET_CONTAINER_multihashmap_create (16,
@@ -1292,7 +1298,6 @@ run (void *cls,
   GNUNET_log (GNUNET_ERROR_TYPE_INFO,
               "CADET started for peer %s\n",
               GNUNET_i2s (&my_full_id));
-
 }
 
 
@@ -1300,48 +1305,48 @@ run (void *cls,
  * Define "main" method using service macro.
  */
 GNUNET_SERVICE_MAIN
-("cadet",
- GNUNET_SERVICE_OPTION_NONE,
- &run,
- &client_connect_cb,
- &client_disconnect_cb,
- NULL,
- GNUNET_MQ_hd_fixed_size (port_open,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_OPEN,
-                          struct GNUNET_CADET_PortMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (port_close,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_CLOSE,
-                          struct GNUNET_CADET_PortMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (channel_create,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_CREATE,
-                          struct GNUNET_CADET_LocalChannelCreateMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (channel_destroy,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_DESTROY,
-                          struct GNUNET_CADET_LocalChannelDestroyMessage,
-                          NULL),
- GNUNET_MQ_hd_var_size (local_data,
-                        GNUNET_MESSAGE_TYPE_CADET_LOCAL_DATA,
-                        struct GNUNET_CADET_LocalData,
-                        NULL),
- GNUNET_MQ_hd_fixed_size (local_ack,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_ACK,
-                          struct GNUNET_CADET_LocalAck,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (get_peers,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PEERS,
-                          struct GNUNET_MessageHeader,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (show_path,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PATH,
-                          struct GNUNET_CADET_RequestPathInfoMessage,
-                          NULL),
- GNUNET_MQ_hd_fixed_size (info_tunnels,
-                          GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_TUNNELS,
-                          struct GNUNET_MessageHeader,
-                          NULL),
- GNUNET_MQ_handler_end ());
+  ("cadet",
+  GNUNET_SERVICE_OPTION_NONE,
+  &run,
+  &client_connect_cb,
+  &client_disconnect_cb,
+  NULL,
+  GNUNET_MQ_hd_fixed_size (port_open,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_OPEN,
+                           struct GNUNET_CADET_PortMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (port_close,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_PORT_CLOSE,
+                           struct GNUNET_CADET_PortMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (channel_create,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_CREATE,
+                           struct GNUNET_CADET_LocalChannelCreateMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (channel_destroy,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_CHANNEL_DESTROY,
+                           struct GNUNET_CADET_LocalChannelDestroyMessage,
+                           NULL),
+  GNUNET_MQ_hd_var_size (local_data,
+                         GNUNET_MESSAGE_TYPE_CADET_LOCAL_DATA,
+                         struct GNUNET_CADET_LocalData,
+                         NULL),
+  GNUNET_MQ_hd_fixed_size (local_ack,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_ACK,
+                           struct GNUNET_CADET_LocalAck,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (get_peers,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PEERS,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (show_path,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_PATH,
+                           struct GNUNET_CADET_RequestPathInfoMessage,
+                           NULL),
+  GNUNET_MQ_hd_fixed_size (info_tunnels,
+                           GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_TUNNELS,
+                           struct GNUNET_MessageHeader,
+                           NULL),
+  GNUNET_MQ_handler_end ());
 
 /* end of gnunet-service-cadet-new.c */

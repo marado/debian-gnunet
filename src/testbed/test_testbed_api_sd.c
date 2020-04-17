@@ -11,7 +11,7 @@
       WITHOUT ANY WARRANTY; without even the implied warranty of
       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
       Affero General Public License for more details.
-     
+
       You should have received a copy of the GNU Affero General Public License
       along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -82,7 +82,7 @@ run (void *cls, char *const *args, const char *cfgfile,
     goto err;
   }
 
- err:
+err:
   GNUNET_TESTBED_SD_destroy_ (h);
 }
 
@@ -100,11 +100,12 @@ main (int argc, char **argv)
 
   result = GNUNET_SYSERR;
   result =
-      GNUNET_PROGRAM_run (argc, argv,
-                          "test_testbed_api_sd", "nohelp", options, &run, NULL);
+    GNUNET_PROGRAM_run (argc, argv,
+                        "test_testbed_api_sd", "nohelp", options, &run, NULL);
   if ((GNUNET_OK != result))
     return 1;
   return ret;
 }
+
 
 /* end of test_testbed_api_sd.c */

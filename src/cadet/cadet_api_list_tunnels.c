@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file cadet/cadet_api_list_tunnels.c
  * @brief cadet api: client implementation of cadet service
@@ -36,7 +36,6 @@
  */
 struct GNUNET_CADET_ListTunnels
 {
-
   /**
    * Monitor callback
    */
@@ -46,7 +45,7 @@ struct GNUNET_CADET_ListTunnels
    * Info callback closure for @c tunnels_cb.
    */
   void *tunnels_cb_cls;
-  
+
   /**
    * Message queue to talk to CADET service.
    */
@@ -66,7 +65,6 @@ struct GNUNET_CADET_ListTunnels
    * Backoff for reconnect attempts.
    */
   struct GNUNET_TIME_Relative backoff;
-
 };
 
 
@@ -78,18 +76,18 @@ struct GNUNET_CADET_ListTunnels
  */
 static void
 handle_get_tunnels (void *cls,
-		    const struct GNUNET_CADET_LocalInfoTunnel *info)
+                    const struct GNUNET_CADET_LocalInfoTunnel *info)
 {
   struct GNUNET_CADET_ListTunnels *lt = cls;
   struct GNUNET_CADET_TunnelDetails td;
-  
+
   td.peer = info->destination;
   td.channels = ntohl (info->channels);
   td.connections = ntohl (info->connections);
   td.estate = ntohs (info->estate);
   td.cstate = ntohs (info->cstate);
   lt->tunnels_cb (lt->tunnels_cb_cls,
-		  &td);
+                  &td);
 }
 
 
@@ -101,13 +99,14 @@ handle_get_tunnels (void *cls,
  */
 static void
 handle_get_tunnels_end (void *cls,
-			const struct GNUNET_MessageHeader *msg)
+                        const struct GNUNET_MessageHeader *msg)
 {
   struct GNUNET_CADET_ListTunnels *lt = cls;
+
   (void) msg;
-  
+
   lt->tunnels_cb (lt->tunnels_cb_cls,
-		  NULL);
+                  NULL);
   GNUNET_CADET_list_tunnels_cancel (lt);
 }
 
@@ -129,17 +128,17 @@ reconnect (void *cls);
  */
 static void
 error_handler (void *cls,
-	       enum GNUNET_MQ_Error error)
+               enum GNUNET_MQ_Error error)
 {
   struct GNUNET_CADET_ListTunnels *lt = cls;
 
   GNUNET_MQ_destroy (lt->mq);
   lt->mq = NULL;
   lt->backoff = GNUNET_TIME_randomized_backoff (lt->backoff,
-						GNUNET_TIME_UNIT_MINUTES);
+                                                GNUNET_TIME_UNIT_MINUTES);
   lt->reconnect_task = GNUNET_SCHEDULER_add_delayed (lt->backoff,
-						     &reconnect,
-						     lt);
+                                                     &reconnect,
+                                                     lt);
 }
 
 
@@ -154,13 +153,13 @@ reconnect (void *cls)
   struct GNUNET_CADET_ListTunnels *lt = cls;
   struct GNUNET_MQ_MessageHandler handlers[] = {
     GNUNET_MQ_hd_fixed_size (get_tunnels,
-			     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS,
-			     struct GNUNET_CADET_LocalInfoTunnel,
-			     lt),
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS,
+                             struct GNUNET_CADET_LocalInfoTunnel,
+                             lt),
     GNUNET_MQ_hd_fixed_size (get_tunnels_end,
-			     GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS_END,
-			     struct GNUNET_MessageHeader,
-			     lt),
+                             GNUNET_MESSAGE_TYPE_CADET_LOCAL_INFO_TUNNELS_END,
+                             struct GNUNET_MessageHeader,
+                             lt),
     GNUNET_MQ_handler_end ()
   };
   struct GNUNET_MessageHeader *msg;
@@ -168,14 +167,14 @@ reconnect (void *cls)
 
   lt->reconnect_task = NULL;
   lt->mq = GNUNET_CLIENT_connect (lt->cfg,
-				  "cadet",
-				  handlers,
-				  &error_handler,
-				  lt);	
+                                  "cadet",
+                                  handlers,
+                                  &error_handler,
+                                  lt);
   if (NULL == lt->mq)
     return;
   env = GNUNET_MQ_msg (msg,
-		       GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_TUNNELS);
+                       GNUNET_MESSAGE_TYPE_CADET_LOCAL_REQUEST_INFO_TUNNELS);
   GNUNET_MQ_send (lt->mq,
                   env);
 }
@@ -193,8 +192,8 @@ reconnect (void *cls)
  */
 struct GNUNET_CADET_ListTunnels *
 GNUNET_CADET_list_tunnels (const struct GNUNET_CONFIGURATION_Handle *cfg,
-			   GNUNET_CADET_TunnelsCB callback,
-			   void *callback_cls)
+                           GNUNET_CADET_TunnelsCB callback,
+                           void *callback_cls)
 {
   struct GNUNET_CADET_ListTunnels *lt;
 

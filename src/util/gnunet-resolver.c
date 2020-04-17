@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file util/gnunet-resolver.c
@@ -44,14 +44,14 @@ static int reverse;
  */
 static void
 print_hostname (void *cls,
-		const char *hostname)
+                const char *hostname)
 {
   (void) cls;
   if (NULL == hostname)
     return;
-  FPRINTF (stdout,
-	   "%s\n",
-	   hostname);
+  fprintf (stdout,
+           "%s\n",
+           hostname);
 }
 
 
@@ -64,16 +64,16 @@ print_hostname (void *cls,
  */
 static void
 print_sockaddr (void *cls,
-		const struct sockaddr *addr,
-		socklen_t addrlen)
+                const struct sockaddr *addr,
+                socklen_t addrlen)
 {
   (void) cls;
   if (NULL == addr)
     return;
-  FPRINTF (stdout,
-	   "%s\n",
-	   GNUNET_a2s (addr,
-		       addrlen));
+  fprintf (stdout,
+           "%s\n",
+           GNUNET_a2s (addr,
+                       addrlen));
 }
 
 
@@ -104,51 +104,51 @@ run (void *cls,
   if (! reverse)
   {
     GNUNET_RESOLVER_ip_get (args[0],
-			    AF_UNSPEC,
-			    GET_TIMEOUT,
-			    &print_sockaddr,
-			    NULL);
+                            AF_UNSPEC,
+                            GET_TIMEOUT,
+                            &print_sockaddr,
+                            NULL);
     return;
   }
 
   sa = NULL;
-  memset (&v4, 0, sizeof (v4));
+  memset (&v4, 0, sizeof(v4));
   v4.sin_family = AF_INET;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v4.sin_len = sizeof (v4);
+  v4.sin_len = sizeof(v4);
 #endif
   if (1 == inet_pton (AF_INET,
-		      args[0],
-		      &v4.sin_addr))
+                      args[0],
+                      &v4.sin_addr))
   {
     sa = (struct sockaddr *) &v4;
-    salen = sizeof (v4);
+    salen = sizeof(v4);
   }
-  memset (&v6, 0, sizeof (v6));
+  memset (&v6, 0, sizeof(v6));
   v6.sin6_family = AF_INET6;
 #if HAVE_SOCKADDR_IN_SIN_LEN
-  v6.sin6_len = sizeof (v6);
+  v6.sin6_len = sizeof(v6);
 #endif
   if (1 == inet_pton (AF_INET6,
-		      args[0],
-		      &v6.sin6_addr))
+                      args[0],
+                      &v6.sin6_addr))
   {
     sa = (struct sockaddr *) &v6;
-    salen = sizeof (v6);
+    salen = sizeof(v6);
   }
   if (NULL == sa)
   {
     fprintf (stderr,
-	     "`%s' is not a valid IP: %s\n",
-	     args[0],
-	     strerror (errno));
+             "`%s' is not a valid IP: %s\n",
+             args[0],
+             strerror (errno));
     return;
   }
   GNUNET_RESOLVER_hostname_get (sa, salen,
-				GNUNET_YES,
-				GET_TIMEOUT,
-				&print_hostname,
-				NULL);
+                                GNUNET_YES,
+                                GET_TIMEOUT,
+                                &print_hostname,
+                                NULL);
 }
 
 
@@ -164,9 +164,9 @@ main (int argc, char *const *argv)
 {
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_option_flag ('r',
-                                  "reverse",
-                                  gettext_noop ("perform a reverse lookup"),
-                                  &reverse),
+                               "reverse",
+                               gettext_noop ("perform a reverse lookup"),
+                               &reverse),
     GNUNET_GETOPT_OPTION_END
   };
   int ret;
@@ -175,11 +175,12 @@ main (int argc, char *const *argv)
     return 2;
 
   ret = (GNUNET_OK ==
-	 GNUNET_PROGRAM_run (argc, argv, "gnunet-resolver [hostname]",
-			     gettext_noop ("Use build-in GNUnet stub resolver"),
-			     options, &run, NULL)) ? 0 : 1;
-  GNUNET_free ((void*) argv);
+         GNUNET_PROGRAM_run (argc, argv, "gnunet-resolver [hostname]",
+                             gettext_noop ("Use build-in GNUnet stub resolver"),
+                             options, &run, NULL)) ? 0 : 1;
+  GNUNET_free ((void *) argv);
   return ret;
 }
+
 
 /* end of gnunet-resolver.c */

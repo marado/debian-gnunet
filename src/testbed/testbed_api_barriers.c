@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet.
-  Copyright (C) 2008--2013, 2016 GNUnet e.V.
+   This file is part of GNUnet.
+   Copyright (C) 2008--2013, 2016 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
- 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
+
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file testbed/testbed_api_barriers.c
@@ -72,7 +72,6 @@ struct GNUNET_TESTBED_BarrierWaitHandle
 };
 
 
-
 /**
  * Check if barrier status message is well-formed.
  *
@@ -115,17 +114,20 @@ handle_status (void *cls,
            h->name,
            GNUNET_SYSERR);
     break;
+
   case GNUNET_TESTBED_BARRIERSTATUS_INITIALISED:
     h->cb (h->cb_cls,
            h->name,
            GNUNET_SYSERR);
     GNUNET_break (0);
     break;
+
   case GNUNET_TESTBED_BARRIERSTATUS_CROSSED:
     h->cb (h->cb_cls,
            h->name,
            GNUNET_OK);
     break;
+
   default:
     GNUNET_break_op (0);
     h->cb (h->cb_cls,
@@ -227,7 +229,7 @@ GNUNET_TESTBED_barrier_wait (const char *name,
     GNUNET_TESTBED_barrier_wait_cancel (h);
     return NULL;
   }
-  name_len = strlen (name); /* NOTE: unusual to not have 0-termination, change? */
+  name_len = strlen (name);  /* NOTE: unusual to not have 0-termination, change? */
   env = GNUNET_MQ_msg_extra (msg,
                              name_len,
                              GNUNET_MESSAGE_TYPE_TESTBED_BARRIER_WAIT);
@@ -257,5 +259,6 @@ GNUNET_TESTBED_barrier_wait_cancel (struct GNUNET_TESTBED_BarrierWaitHandle *h)
   GNUNET_CONFIGURATION_destroy (h->cfg);
   GNUNET_free (h);
 }
+
 
 /* end of testbed_api_barriers.c */

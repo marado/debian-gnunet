@@ -1,22 +1,22 @@
 /*
-  This file is part of GNUnet
-  (C) 2019 GNUnet e.V.
+   This file is part of GNUnet
+   (C) 2019 GNUnet e.V.
 
-  GNUnet is free software: you can redistribute it and/or modify it
-  under the terms of the GNU Affero General Public License as published
-  by the Free Software Foundation, either version 3 of the License,
-  or (at your option) any later version.
+   GNUnet is free software: you can redistribute it and/or modify it
+   under the terms of the GNU Affero General Public License as published
+   by the Free Software Foundation, either version 3 of the License,
+   or (at your option) any later version.
 
-  GNUnet is distributed in the hope that it will be useful, but
-  WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Affero General Public License for more details.
+   GNUnet is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Affero General Public License for more details.
 
-  You should have received a copy of the GNU Affero General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+   You should have received a copy of the GNU Affero General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 
 /**
  * @file json/test_json_mhd.c
@@ -74,16 +74,20 @@ access_handler_cb (void *cls,
     ret = MHD_queue_response (connection, MHD_HTTP_OK, resp);
     MHD_destroy_response (resp);
     return ret;
+
   case GNUNET_JSON_PR_CONTINUE:
     return MHD_YES;
+
   case GNUNET_JSON_PR_OUT_OF_MEMORY:
     GNUNET_break (0);
     global_ret = 3;
     break;
+
   case GNUNET_JSON_PR_REQUEST_TOO_LARGE:
     GNUNET_break (0);
     global_ret = 4;
     break;
+
   case GNUNET_JSON_PR_JSON_INVALID:
     GNUNET_break (0);
     global_ret = 5;
@@ -125,7 +129,7 @@ main (int argc, const char *const argv[])
   {
     char tmp[5];
 
-    GNUNET_snprintf (tmp, sizeof (tmp), "%u", i);
+    GNUNET_snprintf (tmp, sizeof(tmp), "%u", i);
     json_object_set_new (bigj, tmp, json_string (tmp));
   }
   str = json_dumps (bigj, JSON_INDENT (2));
@@ -183,5 +187,6 @@ main (int argc, const char *const argv[])
   curl_easy_cleanup (easy);
   return global_ret;
 }
+
 
 /* end of test_json_mhd.c */

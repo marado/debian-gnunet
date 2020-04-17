@@ -11,12 +11,12 @@
      WITHOUT ANY WARRANTY; without even the implied warranty of
      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
      Affero General Public License for more details.
-    
+
      You should have received a copy of the GNU Affero General Public License
      along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
      SPDX-License-Identifier: AGPL3.0-or-later
-*/
+ */
 /**
  * @file transport/test_transport_testing_restart.c
  * @brief test case for transport testing library:
@@ -115,15 +115,15 @@ run (void *cls,
     = GNUNET_SCHEDULER_add_delayed (TIMEOUT,
                                     &end_badly,
                                     NULL);
-  p = GNUNET_TRANSPORT_TESTING_start_peer(tth,
-                                          cfgfile,
-                                          1,
-                                          NULL, /* receive cb */
-                                          NULL, /* connect cb */
-                                          NULL, /* disconnect cb */
-					  NULL, /* nc/nd closure */
-                                          start_cb, /* startup cb */
-                                          NULL); /* closure */
+  p = GNUNET_TRANSPORT_TESTING_start_peer (tth,
+                                           cfgfile,
+                                           1,
+                                           NULL, /* receive cb */
+                                           NULL, /* connect cb */
+                                           NULL, /* disconnect cb */
+                                           NULL, /* nc/nd closure */
+                                           start_cb, /* startup cb */
+                                           NULL); /* closure */
   if (NULL == p)
   {
     GNUNET_log (GNUNET_ERROR_TYPE_ERROR,
@@ -139,10 +139,9 @@ main (int argc,
       char *argv[])
 {
   char *const argv_1[] = { "test_transport_testing_restart",
-    "-c",
-    "test_transport_api_data.conf",
-    NULL
-  };
+                           "-c",
+                           "test_transport_api_data.conf",
+                           NULL };
   struct GNUNET_GETOPT_CommandLineOption options[] = {
     GNUNET_GETOPT_OPTION_END
   };
@@ -150,7 +149,7 @@ main (int argc,
   GNUNET_log_setup ("test_transport_testing_restart",
                     "WARNING",
                     NULL);
-  GNUNET_PROGRAM_run ((sizeof (argv_1) / sizeof (char *)) - 1,
+  GNUNET_PROGRAM_run ((sizeof(argv_1) / sizeof(char *)) - 1,
                       argv_1,
                       "test_transport_testing_restart",
                       "nohelp",
@@ -159,5 +158,6 @@ main (int argc,
                       NULL);
   return ret;
 }
+
 
 /* end of test_transport_testing_restart.c */
