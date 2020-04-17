@@ -148,7 +148,6 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_27) $(am__EXEEXT_28) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_29) $(am__EXEEXT_30) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_31) $(am__EXEEXT_32) \
-@HAVE_TESTING_TRUE@	test_communicator_unix$(EXEEXT) \
 @HAVE_TESTING_TRUE@	$(am__EXEEXT_33)
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@am__append_2 = \
 @HAVE_GETOPT_BINARY_TRUE@@HAVE_TESTING_TRUE@test_transport_api_slow_ats
@@ -160,7 +159,9 @@ bin_PROGRAMS = gnunet-transport$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_timeout_udp \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_udp_nat \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_transport_api_reliability_udp \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_quota_compliance_udp
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_quota_compliance_udp \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_communicator_basic_unix \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@  test_communicator_basic_tcp
 
 @ENABLE_TEST_RUN_TRUE@TESTS = test_transport_address_switch_tcp$(EXEEXT) \
 @ENABLE_TEST_RUN_TRUE@	$(am__EXEEXT_14) $(am__EXEEXT_17) \
@@ -306,7 +307,9 @@ am__EXEEXT_27 = test_quota_compliance_unix$(EXEEXT) \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_timeout_udp$(EXEEXT) \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_udp_nat$(EXEEXT) \
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_transport_api_reliability_udp$(EXEEXT) \
-@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_quota_compliance_udp$(EXEEXT)
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_quota_compliance_udp$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_communicator_basic_unix$(EXEEXT) \
+@HAVE_EXPERIMENTAL_TRUE@@HAVE_TESTING_TRUE@	test_communicator_basic_tcp$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_34 = gnunet-helper-transport-wlan$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@LINUX_TRUE@am__EXEEXT_35 = gnunet-helper-transport-wlan-dummy$(EXEEXT)
 @HAVE_EXPERIMENTAL_TRUE@@HAVE_LIBBLUETOOTH_TRUE@@LINUX_TRUE@am__EXEEXT_36 = gnunet-helper-transport-bluetooth$(EXEEXT)
@@ -711,10 +714,26 @@ gnunet_transport_wlan_sender_OBJECTS =  \
 	$(am_gnunet_transport_wlan_sender_OBJECTS)
 gnunet_transport_wlan_sender_DEPENDENCIES =  \
 	$(top_builddir)/src/util/libgnunetutil.la
-am_test_communicator_unix_OBJECTS = test_communicator_unix.$(OBJEXT)
-test_communicator_unix_OBJECTS = $(am_test_communicator_unix_OBJECTS)
-test_communicator_unix_DEPENDENCIES = libgnunettransporttesting2.la \
-	$(top_builddir)/src/util/libgnunetutil.la
+am__test_communicator_basic_tcp_SOURCES_DIST =  \
+	test_communicator_basic.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_communicator_basic_tcp_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_communicator_basic.$(OBJEXT)
+test_communicator_basic_tcp_OBJECTS =  \
+	$(am_test_communicator_basic_tcp_OBJECTS)
+@HAVE_EXPERIMENTAL_TRUE@test_communicator_basic_tcp_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting2.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la
+am__test_communicator_basic_unix_SOURCES_DIST =  \
+	test_communicator_basic.c
+@HAVE_EXPERIMENTAL_TRUE@am_test_communicator_basic_unix_OBJECTS =  \
+@HAVE_EXPERIMENTAL_TRUE@	test_communicator_basic.$(OBJEXT)
+test_communicator_basic_unix_OBJECTS =  \
+	$(am_test_communicator_basic_unix_OBJECTS)
+@HAVE_EXPERIMENTAL_TRUE@test_communicator_basic_unix_DEPENDENCIES =  \
+@HAVE_EXPERIMENTAL_TRUE@	libgnunettransporttesting2.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_EXPERIMENTAL_TRUE@	$(top_builddir)/src/util/libgnunetutil.la
 am_test_http_common_OBJECTS = test_http_common.$(OBJEXT) \
 	plugin_transport_http_common.$(OBJEXT)
 test_http_common_OBJECTS = $(am_test_http_common_OBJECTS)
@@ -1438,7 +1457,7 @@ am__depfiles_remade = ./$(DEPDIR)/gnunet-communicator-tcp.Po \
 	./$(DEPDIR)/plugin_transport_udp.Plo \
 	./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo \
 	./$(DEPDIR)/plugin_transport_unix.Plo \
-	./$(DEPDIR)/test_communicator_unix.Po \
+	./$(DEPDIR)/test_communicator_basic.Po \
 	./$(DEPDIR)/test_http_common.Po \
 	./$(DEPDIR)/test_plugin_transport.Po \
 	./$(DEPDIR)/test_quota_compliance.Po \
@@ -1523,8 +1542,9 @@ SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(gnunet_transport_profiler_SOURCES) \
 	$(gnunet_transport_wlan_receiver_SOURCES) \
 	$(gnunet_transport_wlan_sender_SOURCES) \
-	$(test_communicator_unix_SOURCES) $(test_http_common_SOURCES) \
-	$(test_plugin_bluetooth_SOURCES) \
+	$(test_communicator_basic_tcp_SOURCES) \
+	$(test_communicator_basic_unix_SOURCES) \
+	$(test_http_common_SOURCES) $(test_plugin_bluetooth_SOURCES) \
 	$(test_plugin_http_client_SOURCES) \
 	$(test_plugin_http_server_SOURCES) \
 	$(test_plugin_https_client_SOURCES) \
@@ -1624,8 +1644,9 @@ DIST_SOURCES = $(libgnunet_plugin_transport_bluetooth_la_SOURCES) \
 	$(gnunet_transport_profiler_SOURCES) \
 	$(gnunet_transport_wlan_receiver_SOURCES) \
 	$(gnunet_transport_wlan_sender_SOURCES) \
-	$(test_communicator_unix_SOURCES) $(test_http_common_SOURCES) \
-	$(test_plugin_bluetooth_SOURCES) \
+	$(am__test_communicator_basic_tcp_SOURCES_DIST) \
+	$(am__test_communicator_basic_unix_SOURCES_DIST) \
+	$(test_http_common_SOURCES) $(test_plugin_bluetooth_SOURCES) \
 	$(test_plugin_http_client_SOURCES) \
 	$(test_plugin_http_server_SOURCES) \
 	$(test_plugin_https_client_SOURCES) \
@@ -2749,12 +2770,21 @@ test_plugin_tcp_LDADD = \
 @HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la  \
 @HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting.la
 
-test_communicator_unix_SOURCES = \
- test_communicator_unix.c
+@HAVE_EXPERIMENTAL_TRUE@test_communicator_basic_unix_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_communicator_basic.c
 
-test_communicator_unix_LDADD = \
- libgnunettransporttesting2.la \
- $(top_builddir)/src/util/libgnunetutil.la
+@HAVE_EXPERIMENTAL_TRUE@test_communicator_basic_unix_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting2.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la
+
+@HAVE_EXPERIMENTAL_TRUE@test_communicator_basic_tcp_SOURCES = \
+@HAVE_EXPERIMENTAL_TRUE@ test_communicator_basic.c
+
+@HAVE_EXPERIMENTAL_TRUE@test_communicator_basic_tcp_LDADD = \
+@HAVE_EXPERIMENTAL_TRUE@ libgnunettransporttesting2.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/testing/libgnunettesting.la \
+@HAVE_EXPERIMENTAL_TRUE@ $(top_builddir)/src/util/libgnunetutil.la
 
 test_plugin_unix_SOURCES = \
  test_plugin_transport.c
@@ -3501,8 +3531,10 @@ test_transport_api_slow_ats_peer2.conf \
   tcp_server_mst_legacy.c \
   tcp_server_legacy.c \
   tcp_service_legacy.c \
-test_communicator_1.conf \
-test_communicator_1.conf
+test_communicator_unix_peer1.conf \
+test_communicator_unix_peer2.conf \
+test_communicator_tcp_peer1.conf \
+test_communicator_tcp_peer2.conf
 
 all: all-am
 
@@ -3836,9 +3868,13 @@ gnunet-transport-wlan-sender$(EXEEXT): $(gnunet_transport_wlan_sender_OBJECTS) $
 	@rm -f gnunet-transport-wlan-sender$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gnunet_transport_wlan_sender_OBJECTS) $(gnunet_transport_wlan_sender_LDADD) $(LIBS)
 
-test_communicator_unix$(EXEEXT): $(test_communicator_unix_OBJECTS) $(test_communicator_unix_DEPENDENCIES) $(EXTRA_test_communicator_unix_DEPENDENCIES) 
-	@rm -f test_communicator_unix$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(test_communicator_unix_OBJECTS) $(test_communicator_unix_LDADD) $(LIBS)
+test_communicator_basic_tcp$(EXEEXT): $(test_communicator_basic_tcp_OBJECTS) $(test_communicator_basic_tcp_DEPENDENCIES) $(EXTRA_test_communicator_basic_tcp_DEPENDENCIES) 
+	@rm -f test_communicator_basic_tcp$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_communicator_basic_tcp_OBJECTS) $(test_communicator_basic_tcp_LDADD) $(LIBS)
+
+test_communicator_basic_unix$(EXEEXT): $(test_communicator_basic_unix_OBJECTS) $(test_communicator_basic_unix_DEPENDENCIES) $(EXTRA_test_communicator_basic_unix_DEPENDENCIES) 
+	@rm -f test_communicator_basic_unix$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(test_communicator_basic_unix_OBJECTS) $(test_communicator_basic_unix_LDADD) $(LIBS)
 
 test_http_common$(EXEEXT): $(test_http_common_OBJECTS) $(test_http_common_DEPENDENCIES) $(EXTRA_test_http_common_DEPENDENCIES) 
 	@rm -f test_http_common$(EXEEXT)
@@ -4211,7 +4247,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_udp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/plugin_transport_unix.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_communicator_unix.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_communicator_basic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_http_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_plugin_transport.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_quota_compliance.Po@am__quote@ # am--include-marker
@@ -5246,7 +5282,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/plugin_transport_udp.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_unix.Plo
-	-rm -f ./$(DEPDIR)/test_communicator_unix.Po
+	-rm -f ./$(DEPDIR)/test_communicator_basic.Po
 	-rm -f ./$(DEPDIR)/test_http_common.Po
 	-rm -f ./$(DEPDIR)/test_plugin_transport.Po
 	-rm -f ./$(DEPDIR)/test_quota_compliance.Po
@@ -5363,7 +5399,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/plugin_transport_udp.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_udp_broadcasting.Plo
 	-rm -f ./$(DEPDIR)/plugin_transport_unix.Plo
-	-rm -f ./$(DEPDIR)/test_communicator_unix.Po
+	-rm -f ./$(DEPDIR)/test_communicator_basic.Po
 	-rm -f ./$(DEPDIR)/test_http_common.Po
 	-rm -f ./$(DEPDIR)/test_plugin_transport.Po
 	-rm -f ./$(DEPDIR)/test_quota_compliance.Po
